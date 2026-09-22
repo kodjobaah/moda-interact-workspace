@@ -31,7 +31,6 @@ depends_on:
   - ARCH-020-COMMERCE-011
   - ARCH-020-DATABASE-001
   - ARCH-020-GATEWAY-001
-  - ARCH-020-GATEWAY-002
   - ARCH-020-SHARED-001
   - ARCH-020-SHOPIFY-001
   - ARCH-020-COMMERCE-013
@@ -44,7 +43,7 @@ depends_on:
   - ARCH-020-SYSTEM-TEST-002
 enables: []
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Validate merchant-configured MCP conversations end to end
@@ -163,7 +162,6 @@ For this task, record a requirement-to-fixture matrix with expected side effects
 - ARCH-020-COMMERCE-011
 - ARCH-020-DATABASE-001
 - ARCH-020-GATEWAY-001
-- ARCH-020-GATEWAY-002
 - ARCH-020-SHARED-001
 - ARCH-020-SHOPIFY-001
 - ARCH-020-COMMERCE-013

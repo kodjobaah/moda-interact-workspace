@@ -467,7 +467,7 @@ publication/preview duplicate protection with the complete user flow.
 | `moda_shared` | Published runtime schemas, pure capability selection, and the provider-neutral bounded runner reused by Background and Studio preview. No database/provider business implementation. |
 | `moda_database` | Canonical Prisma schema, migrations, constraints, indexes and ERD. |
 | `moda_app` | Merchant feature-selection UI using canonical preferences; preserve existing recovery settings. |
-| `moda_gateway` | Render Blueprint, routing, private network, secret-name wiring, health/timeout configuration and operational dashboards. |
+| `moda_gateway` | Render Blueprint, routing, private network, secret-name wiring and health/timeout configuration. Custom Grafana dashboards/alerts are developer-managed. |
 | `moda_system_test` | Terminal integrated validation, fixtures and evidence. |
 | `moda_architect` + developer | New-owner/submodule registration, dependency reconciliation, acceptance and final integration. |
 
@@ -669,10 +669,13 @@ not use shop/conversation IDs as unbounded metric labels. Never log tokens,
 customer messages, complete Shopify payloads or editable prompt contents.
 Telemetry outage must not fail business processing.
 
-COMMERCE-010 owns emissions; BACKGROUND tasks own host signals; GATEWAY-002 owns
-transport/dashboard/alert configuration. Show MCP errors/latency, tool outcomes,
-worker queue lag and provider throttling with environment filters. Preview cost
-and traffic must not be confused with customer conversations.
+COMMERCE-010 owns Commerce emissions; Background tasks own host/evidence signals;
+GATEWAY-001 preserves the existing OTLP/Loki/environment wiring. Custom Grafana
+dashboards and alerts are developer-managed directly in Grafana Cloud and are not
+repository implementation deliverables. The emitted inventory must remain sufficient
+for the developer to inspect MCP errors/latency, tool outcomes, worker queue lag,
+provider throttling and preview/live separation without introducing duplicate
+technical telemetry.
 
 ## Rollout / Migration
 
@@ -730,10 +733,10 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | complete | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
-| [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
+| [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | superseded (developer-managed Grafana, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | [ARCH-020-GATEWAY-003](../decisions/gateway/ARCH-020/GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | moda_gateway | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md) | Add frequency-based tool-result caching | moda_commerce | pending | All other ARCH-020 implementation tasks; exact list in task |
-| [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012  |
+| [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012  |
 
 ## Open Questions and Explicit Assumptions
 
@@ -2070,3 +2073,15 @@ this task. Once that source is developer-integrated, a fresh synchronized 024 sn
 can be returned to `moda_architect` for Blocked -> Ready reconciliation.
 
 No downstream task is launched automatically.
+
+
+## Grafana ownership decision — 2026-09-22
+
+The developer will create and maintain custom Commerce dashboards and alerts directly
+in the existing Grafana Cloud workspace. GATEWAY-002 is therefore Superseded rather
+than accepted/reworked. Commerce/Background telemetry production and the existing
+GATEWAY-001 observability transport remain part of ARCH-020; Grafana dashboard/alert
+layout and provisioning do not.
+
+GATEWAY-002 has been removed from COMMERCE-012 and SYSTEM-TEST-001 dependencies.
+Neither downstream task becomes Ready solely from this change.

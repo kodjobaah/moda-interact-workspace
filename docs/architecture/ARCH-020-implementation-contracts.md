@@ -828,26 +828,33 @@ npm run build. `npm start` serves production. COMMERCE-001 pins Node from worksp
 .nvmrc and compatible Next/React/MCP/client versions in lockfile and documents
 `docs/runtime-compatibility.md`; do not install unbounded `latest` at deployment.
 
-## C11. Observability and alerts
+## C11. Observability
 
 Reuse shared logging and available framework/OpenTelemetry technical signals.
-COMMERCE-010 must deliver `docs/observability-commerce.md` mapping every dashboard
-need to actual emitted metric/span names, units, attributes and local fixture
-samples. Only add domain signals missing from that inventory. Required bounded
-semantic outcomes: manifest granted/denied/unavailable, tool allowed/revoked/error,
-eligibility four outcomes, preview completed/cancelled/denied/unknown; routing
-outcomes belong to Background. IDs may correlate redacted logs/traces, never
-metric labels; never record phone, prompt, provider payload, token or transcript.
-Telemetry failure cannot change business outcome. Use purpose live/preview and
-explicit environment; normal automated tests export only to local sinks.
+COMMERCE-010 must deliver `docs/observability-commerce.md` mapping required
+operational needs to actual emitted metric/span names, units, attributes and local
+fixture samples. Only add domain signals missing from that inventory. Required
+bounded semantic outcomes: manifest granted/denied/unavailable, tool
+allowed/revoked/error, eligibility four outcomes,
+preview completed/cancelled/denied/unknown; routing outcomes belong to Background.
+IDs may correlate redacted logs/traces, never metric labels; never record phone,
+prompt, provider payload, token or transcript. Telemetry failure cannot change
+business outcome. Use purpose live/preview and explicit environment; normal
+automated tests export only to local sinks.
 
-Gateway dashboards use actual accepted inventory, never guessed metric names.
-Initial alert policy (operational defaults, not measured capacity): readiness
-unavailable2min; MCP failures >5% over5min with >=20 calls; oldest pending
-conversation turn >120s for5min; evidence-revalidation failures >10% over10min
-with >=20 evaluations. Distinguish expected permission denial from server errors.
-Every alert includes service/environment and runbook link, preview excluded from
-production alerts. No-data states shown explicitly; no traffic is not an error.
+Commerce uses the existing platform Grafana Cloud / OpenTelemetry / Loki pipeline
+already wired by infrastructure. No ARCH-020 repository task provisions custom
+Grafana dashboards or alert rules. The developer owns dashboard and alert creation
+directly in Grafana Cloud and may use the accepted Commerce/Background signal
+inventory to build those views.
+
+Previously documented alert thresholds remain optional operational starting points,
+not source-controlled acceptance criteria: readiness unavailable for 2 minutes;
+MCP failures >5% over 5 minutes with >=20 calls; oldest pending conversation turn
+>120 seconds for 5 minutes; evidence-revalidation failures >10% over 10 minutes with
+>=20 evaluations. Manual alerts should distinguish expected permission denial from
+server errors, separate environment/live/preview traffic and treat no traffic as
+NoData rather than success or failure.
 
 ## C12. Required review evidence and execution boundaries
 

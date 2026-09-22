@@ -1179,3 +1179,10 @@ Blocked on its own newer task branch until that accepted source is integrated an
 fresh synchronized snapshot is verified.
 
 No downstream task is launched.
+
+
+## GATEWAY-002 supersession dependency reconciliation — 2026-09-22
+
+ARCH-020-GATEWAY-002 is Superseded by the developer's decision to manage Grafana
+dashboards/alerts manually and has been removed from COMMERCE-012 dependencies.
+COMMERCE-012 remains Pending because COMMERCE-024 and GATEWAY-003 are not yet Complete.
