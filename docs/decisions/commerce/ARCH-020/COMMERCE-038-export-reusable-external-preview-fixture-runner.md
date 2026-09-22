@@ -9,8 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 168
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-025
@@ -426,3 +428,195 @@ Pending implementation.
 
 After acceptance, architect must re-evaluate COMMERCE-024 together with the accepted
 COMMERCE-019 source-integration prerequisite. No automatic launch.
+
+## Architect Review — Attempt 1 — 2026-09-22
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Reviewed the exact Attempt-1 implementation identified by the handoff as
+`16972af` and parent report `f107b817` against the complete COMMERCE-038 producer
+contract created from COMMERCE-024 Attempt-1 review.
+
+The missing producer seam is now implemented without moving final production
+composition out of COMMERCE-024.
+
+The accepted export is:
+
+```text
+src/commerce/external-preview/index.ts
+  createExternalFixtureRunner(...)
+```
+
+and the returned value satisfies the existing `PreviewExternalFixtureRunner`
+contract.
+
+The reusable runner's input authority is limited to the already-authenticated /
+server-frozen preview inputs:
+
+```text
+principal
+toolRevisionId
+CommerceToolDefinition
+TransformSample
+arguments
+AbortSignal
+```
+
+It does not load a replacement definition and it has no browser-authored definition
+authority.
+
+The implementation also resolves the core ownership requirement from this task:
+`ExternalPreviewService.runSample(...)` now invokes the same
+`createExternalFixtureRunner(...)` processing path rather than maintaining a second
+visual/JavaScript processing algorithm.
+
+The shared runner owns exactly the bounded synthetic processing boundary:
+
+```text
+canonical CommerceToolDefinition / TransformSample parsing
+EXTERNAL_HTTP requirement
+parameterized MIME normalization
+saved media allowlist
+JSON/TEXT handling
+resultPath selection
+accepted COMMERCE-025 visual processor
+accepted COMMERCE-026 code processor
+AbortSignal cancellation
+saved resultSchema validation
+ExternalHttpResultData construction
+accepted response-template rendering
+CommerceToolResult validation
+```
+
+The reusable runner does not own:
+
+```text
+preview replay/conflict
+external preview quota
+COMMERCE-030 receipt reads/writes
+provider HTTP
+credential resolution/decryption
+preview run/state persistence
+production route/factory composition
+```
+
+Those boundaries remain with their accepted owners.
+
+The positive visual and JavaScript regressions exercise both:
+
+```text
+direct createExternalFixtureRunner(...)
+and
+ExternalPreviewService.runSample(...)
+```
+
+with the same saved definition/sample processing behavior. Parameterized MIME,
+schema-fail-closed and cancellation paths are also covered.
+
+Direct source inspection is stronger than the fixture-only zero-side-effect counters:
+`ExternalFixtureRunnerDependencies` contains only the accepted code processor, visual
+processor and optional clock. It has no Redis, publication validator, provider,
+credential or preview-state dependency to call.
+
+No production integration, route, UI, database, credential, provider-HTTP,
+publication-lifecycle or preview-store source is modified by this task.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/external-preview/contracts.ts`
+- `moda-interact-commerce/src/commerce/external-preview/fixture-runner.ts`
+- `moda-interact-commerce/src/commerce/external-preview/service.ts`
+- `moda-interact-commerce/src/commerce/external-preview/index.ts`
+- `moda-interact-commerce/tests/external-preview.test.ts`
+- `moda-interact-commerce/package.json`
+- COMMERCE-038 task definition
+- C21 sections 2.3, 6, 7 and 9.5
+
+### Validation Reviewed
+
+Submitted evidence:
+
+```text
+npm run test:arch020-external-preview
+  PASS — 18 tests
+
+npm run test:arch020-external-publication
+  PASS — 11 tests
+
+npm run test:arch020-code-processor
+  PASS — 6 tests
+
+npx eslint src/commerce/external-preview tests/external-preview.test.ts
+  PASS
+
+git diff --check
+  PASS
+
+npm run typecheck
+npm run build
+  non-zero only on the unchanged documented repository baseline;
+  no COMMERCE-038-owned diagnostic is reported
+```
+
+The handoff also records both mirrored branches pushed, clean and claim-cleared.
+
+The review archive does not include installed repository dependencies, so architect
+review does not claim another dependency-backed execution. Acceptance is based on
+direct inspection of the exact submitted source plus the durable focused validation
+evidence.
+
+### Architecture Conformance
+
+Conformant.
+
+Accepted producer boundary:
+
+```text
+COMMERCE-031
+  createExternalPreviewService(...)
+  createExternalFixtureRunner(...)
+        |
+        +-- tool-test runSample uses shared fixture-processing kernel
+        |
+        +-- COMMERCE-024 may inject same runner into production Conversation PreviewService
+```
+
+The reusable runner is processing-only. Replay/quota/receipt/state and live provider /
+credential concerns remain outside it.
+
+### Follow-up
+
+`ARCH-020-COMMERCE-038` is Complete at Attempt 1.
+
+This acceptance satisfies the missing producer-seam blocker identified in
+COMMERCE-024 Attempt 1, but **does not yet make COMMERCE-024 Ready**.
+
+The exact submitted implementation base still lacks the accepted COMMERCE-019
+production preview source:
+
+```text
+src/commerce/integration/preview/adapters.ts
+  absent
+
+lib/preview/runtime.ts
+  still contains unavailableLoader
+```
+
+Therefore COMMERCE-024 remains blocked on the separate developer integration
+condition recorded in its Attempt-1 Architect Review:
+
+```text
+integrate accepted COMMERCE-019 implementation 8850b55
+into the canonical moda-interact-commerce implementation base
+```
+
+After that integration is complete, provide a fresh synchronized COMMERCE-024
+snapshot. `moda_architect` should verify the accepted COMMERCE-019 source markers and
+then transition the authoritative COMMERCE-024 task from Blocked to Ready while
+preserving Attempt 1. The next launcher claim then creates Attempt 2 exactly once.
+
+Do not automatically launch COMMERCE-024, COMMERCE-012 or any system-test task.
