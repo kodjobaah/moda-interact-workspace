@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-22T00:42:51Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -68,12 +68,12 @@ that SHA in the mapping document; pending producer symbols must not be guessed.
 
 ## Work Items
 
-- [ ] Own `src/commerce/integration/studio/` and minimal wiring in `src/studio/server-services.ts` plus Studio command Server Actions/client service transport. Do not change backend.ts, MCP route or preview runtime.
-- [ ] Implement every008 StudioServices method against real013 publication/read services and011 discovery; recheck auth per request/action, Origin on mutations and role before replay.
-- [ ] Apply the C20 field/error translation table, including source revision names, exact release members and pointer CAS. Rehydrate actual returned IDs into Studio view models; never synthesize IDs by splitting strings.
-- [ ] Keep existing008 components, routes and draft state. Wire functional commands, preserve unknown-operation identity and role-aware controls; no page redesign or backend business-rule reimplementation.
-- [ ] Create server-authorized merchant inspection/read models using013 current feature/grant-candidate resolver; never create a production conversation grant for U13.
-- [ ] Provide `docs/commerce-studio-integration.md` and `test:arch020-studio-integration`. Demonstrate the complete populated authoring flow before collecting secondary layout evidence.
+- [x] Own `src/commerce/integration/studio/` and minimal wiring in `src/studio/server-services.ts` plus Studio command Server Actions/client service transport. Do not change backend.ts, MCP route or preview runtime.
+- [x] Implement every008 StudioServices method against real013 publication/read services and011 discovery; recheck auth per request/action, Origin on mutations and role before replay.
+- [x] Apply the C20 field/error translation table, including source revision names, exact release members and pointer CAS. Rehydrate actual returned IDs into Studio view models; never synthesize IDs by splitting strings. The real-adapter proof remains pending infrastructure.
+- [x] Keep existing008 components, routes and draft state. Wire functional commands, preserve unknown-operation identity and role-aware controls; no page redesign or backend business-rule reimplementation.
+- [x] Create server-authorized merchant inspection/read models using013 current feature/grant-candidate resolver; never create a production conversation grant for U13.
+- [ ] Provide `docs/commerce-studio-integration.md` and `test:arch020-studio-integration`. The documentation and focused suite exist, but the named C20 script/path is absent and the complete real-service flow could not be executed.
 
 ## Interfaces / Contracts
 
@@ -138,34 +138,39 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Attempt 3 implementation submitted for Architect Review.
+Attempt 4 implementation submitted for Architect Review.
 
 ### Files Changed
 
-- `src/commerce/integration/studio/services.ts`
-- `src/studio/server-actions.ts`
-- `src/studio/server-services.ts`
-- `components/production-studio-page.tsx`
-- `tests/studio-integration.test.ts`
 - `docs/commerce-studio-integration.md`
+- `tests/studio-integration-c20.test.ts`
 
 ### Work Completed
 
-Connected the production Studio workspace to the accepted `CommerceBackend` facade. Attempt 3 corrects command rereads to use the configured environment pointer, including current pointer CAS versions and configured-environment release status, and limits U13 feature eligibility to authoritative non-null feature identities while retaining BASE capabilities for descriptor construction without synthesizing feature IDs. Added focused regressions for cross-environment activate/rollback rereads and BASE-plus-FEATURE eligibility. Reconciled the C20 producer mapping with accepted source revisions and recorded that the prepared COMMERCE-013 source does not expose the isolated seed/reset helper promised by C20. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
+Consumed the accepted COMMERCE-033 `seedC20IntegrationFixture` helper directly from the new real-adapter test. The test keeps the production backend, Prisma storage, lifecycle, inspection and Studio adapter real, substituting only discovery and query transports, and covers origin rejection, role authorization, replay/CAS, configured-environment activation/rollback, discovery outage, positive/excluded eligibility and read-only U13 behavior. Updated the mapping document with accepted producer revisions for COMMERCE-002, COMMERCE-008, COMMERCE-011 and COMMERCE-013. The C20 reset/test path was attempted but could not run because disposable targets were unavailable and the named npm test script is absent. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
 
 ### Validation Results
 
-- `npm run test:arch020-studio-integration` — passed, 1 file and 9 tests.
-- `npm run typecheck` — passed.
-- `npm run lint -- --quiet` — passed.
-- `npm run build` — passed; Next production build and route generation completed.
-- `git diff --check` — passed.
+Agent-executed:
 
-The focused tests cover the accepted facade adapter, strict lifecycle payloads, documentation search-to-document handoff, response-example validation, configured-environment release pointer rereads across activate/rollback, member ordering, feature-bound shop eligibility, no-active-release handling, operation ID forwarding with reread behavior, and stale CAS translation. The required real-adapter C20 path was not claimed: the accepted COMMERCE-013 source exports `getCommerceBackend()` and `createFixtureExecution`, but no isolated seed/reset helper is present. PostgreSQL/Redis evidence therefore remains blocked by that exact producer/export gap and requires Architect resolution; no live provider or production credential was used.
+- `npm run test:arch020-studio-integration` — passed, 1 file and 9 tests.
+- `npx eslint tests/studio-integration-c20.test.ts` — passed.
+- `git diff --check` — passed.
+- `npm run lint` — blocked by one C20-test lint error before the fix; rerun of the touched file passed. Repository lint otherwise reported only warnings.
+- `npm run typecheck` — blocked by 18 existing errors in shared-commerce contract consumers; no errors remain in `tests/studio-integration-c20.test.ts` after the fix.
+- `npm run build` — blocked after successful compile/runtime packaging and Prisma generation by the same 18 type errors.
+
+C20 execution evidence:
+
+- `npm run c20-fixture:reset` — not run successfully; exact output: `C20_FIXTURE_UNSAFE_ENVIRONMENT: C20 test targets are required`.
+- `npm run test:arch020-studio-integration:c20` — blocked; exact output: `npm error Missing script: "test:arch020-studio-integration:c20"`.
+- `npx vitest run tests/studio-integration-c20.test.ts` — blocked before tests; exact error: `C20_FIXTURE_UNSAFE_DATABASE_TARGET: disposable C20 targets are required`.
+
+PostgreSQL/Redis real-adapter evidence is therefore not claimed. No live provider, production credential, or non-task-owned infrastructure was used.
 
 ### Deviations
 
-No implementation scope deviation. The accepted backend facade does not expose a persisted release sequence number or shop plan in inspection results, so the adapter derives release display numbers deterministically from the publication snapshot and reads plan names from the existing subscription relation. Documentation upstream does not expose related field paths, so that DTO remains empty. The named C20 real-adapter validation remains pending because the accepted producer does not export the promised isolated seed/reset helper.
+The named `test:arch020-studio-integration:c20` package script is absent despite the documentation path being present. The required disposable PostgreSQL/Redis environment variables were also unavailable, so the reset and real-adapter test were not treated as passes. The prior implementation remains unchanged; this attempt only adds the C20 evidence test and mapping reconciliation.
 
 ### Assumptions
 
@@ -173,25 +178,15 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Commerce repository/submodule provisioning is complete; consume the accepted
-COMMERCE-001 foundation. The exact producer gap is the missing COMMERCE-013
-isolated seed/reset export required by C20 for consumer-owned real-adapter
-evidence; no competing helper was introduced in COMMERCE-018.
+Architect/developer action is required to provide disposable C20 PostgreSQL/Redis targets and add or authorize the named C20 npm script. Repository typecheck/build remain blocked by the documented shared-commerce contract mismatch in unrelated files.
 
 ### Architectural Concerns
 
-The C20 contract promises a shared isolated seed/helper from COMMERCE-013, but
-the accepted source in this prepared worktree exposes no such export. This
-prevents a truthful task-owned PostgreSQL/Redis real-adapter path; return the
-producer/export gap to Architect rather than treating mocked adapter tests as
-real-service acceptance.
+The accepted COMMERCE-033 helper is present and consumed directly, so the previous producer-export concern is resolved. The current blockers are environmental/script availability, not a substitute fixture or competing backend implementation.
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-018`.
-Implementation branch: `task/ARCH-020-COMMERCE-018`.
-Implementation commits/push: Attempt 1 `d074205` (`feat(commerce): integrate production studio services`), Attempt 2 `4fb9f91` (`ARCH-020: address commerce studio review`), and Attempt 3 `3de9940` (`ARCH-020: reconcile commerce studio integration`), pushed to `origin/task/ARCH-020-COMMERCE-018`.
-Parent report branch: `task/ARCH-020-COMMERCE-018` in the dedicated parent worktree; this report is the only parent change. Parent commit/push is recorded after this update. No parent service gitlink or main integration was performed.
+Attempt-4 implementation and parent report commits/pushes are recorded after this report update. No parent service gitlink or main integration was performed.
 
 ## Architect Review
 
