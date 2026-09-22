@@ -534,13 +534,40 @@ SHARED-002 is Accepted / Complete at Attempt 5 (`95bab1d`, Shared `0.14.2`). The
 direct C21 component frontier `COMMERCE-020/021/022/023/025/026/027` is Ready;
 remaining extension/integration/gateway/system-test tasks stay dependency-gated.
 
-## ARCH-020 COMMERCE-035 Attempt 1 follow-up — 2026-09-22
+## ARCH-020 COMMERCE-019 Attempt 3 readiness reconciliation — 2026-09-22
 
-COMMERCE-035 is **Changes Requested / Ready, Attempt 1 retained**, claim null. The
-fixture implementation itself now materially satisfies the prior grant-derivation and
-reset/isolation corrections. Acceptance is still blocked by two unresolved pieces of
-the existing proof contract: exact persisted release/response-contract evidence and
-real lifecycle audit/immutability/grant-relational-guard evidence. Real disposable
-PostgreSQL/Redis execution remains mandatory. If those target variables are absent
-after the proof-source correction, the repository agent must return the task
-`blocked`. No downstream task is launched or accepted from this review.
+COMMERCE-019 is **Ready, Attempt 2 retained**, claim null. Architect-accepted
+COMMERCE-033 (OpenAI/Groq preview model transport/config) and COMMERCE-034 (U14
+Conversation source gating) resolve the two Attempt-2 blockers. All explicit 019
+dependencies are Complete; the next `/moda-task ARCH-020-COMMERCE-019` claim becomes
+Attempt 3.
+
+The prepared Commerce worktree must contain the accepted 033/034 implementation after
+normal synchronization. If either producer is absent, 019 returns `blocked` without
+reimplementation until developer integration or explicit exact dependency-commit
+consumption makes the accepted producer source available. No downstream task is
+started by this reconciliation.
+
+### ARCH-020 COMMERCE-021 Attempt 1 review — 2026-09-21
+
+COMMERCE-021 is **Changes Requested / Ready, Attempt 1** (`b19f9d7`; report
+`5abdd61a`). Preserve its fixed-origin TLS/socket and Shared 0.14.2 integration;
+Attempt 2 closes production DNS/address classification, absolute stage deadline and
+abort cleanup, raw JSON safety/depth and explicit dispatcher exhaustiveness. The C21
+CANCELLED contradiction is reconciled to nonretryable `DEADLINE` at the
+CommerceToolResult boundary; runner-level cancellation remains separate. No dependent
+promotion or automatic launch.
+
+
+### ARCH-020 COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+COMMERCE-021 is **Accepted / Complete, Attempt 3**. The final corrections terminate
+rejected provider bodies and preserve nonretryable external `DEADLINE` semantics
+through the definition dispatcher. Existing production DNS/TLS pinning, bounded
+transport and raw-JSON safety remain accepted. No dependant is newly Ready from this
+acceptance alone.
+
+
+## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.

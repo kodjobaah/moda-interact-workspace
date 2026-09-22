@@ -1068,6 +1068,28 @@ COMMERCE-033. Because this provider task is Complete and 019's other declared
 prerequisites are already Complete, COMMERCE-019 remains **Ready, Attempt 0** with
 no active claim. No downstream task is started automatically.
 
+## COMMERCE-021 Attempt 1 review — 2026-09-21
+
+`ARCH-020-COMMERCE-021` is **Changes Requested / Ready, Attempt 1 retained** after
+review of `b19f9d7` / report `5abdd61a`. Keep the working fixed-origin TLS/socket,
+Shared 0.14.2 and response-processing integration. Attempt 2 is bounded to four
+functional corrections: production DNS + maintained address classification,
+absolute DNS/connect/body stage deadlines and abort cleanup, raw JSON depth/unsafe-key
+rejection, and explicit EXTERNAL_HTTP dispatch exhaustiveness. C21 cancellation is
+reconciled to nonretryable `DEADLINE` at the CommerceToolResult boundary because
+Shared 0.14.2 has no CANCELLED tool-result member; runner cancellation remains
+separate. No downstream task is promoted or launched.
+
+
+## COMMERCE-021 Attempt 2 review — 2026-09-22
+
+`ARCH-020-COMMERCE-021` is **Changes Requested / Ready, Attempt 2 retained**.
+Attempt 3 is narrowly bounded to provider-body termination on post-header rejection
+and preserving nonretryable external `DEADLINE` through DefinitionExecutor. Preserve
+the completed DNS/classifier, pinned TLS transport, stage deadlines, JSON safety,
+explicit dispatch and one-request budget work. No downstream task is promoted or
+launched.
+
 ## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
 
 COMMERCE-034 is **Accepted / Complete, Attempt 1**. The accepted U14 correction
@@ -1087,3 +1109,45 @@ validation owned by COMMERCE-030.
 No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
 COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
 other prerequisites. No downstream task is launched automatically.
+
+## ARCH-020 COMMERCE-019 Attempt 3 readiness reconciliation — 2026-09-22
+
+COMMERCE-019 is **Ready, Attempt 2 retained**, claim null. Architect-accepted
+COMMERCE-033 (OpenAI/Groq preview model transport/config) and COMMERCE-034 (U14
+Conversation source gating) resolve the two Attempt-2 blockers. All explicit 019
+dependencies are Complete; the next `/moda-task ARCH-020-COMMERCE-019` claim becomes
+Attempt 3.
+
+The prepared Commerce worktree must contain the accepted 033/034 implementation after
+normal synchronization. If either producer is absent, 019 returns `blocked` without
+reimplementation until developer integration or explicit exact dependency-commit
+consumption makes the accepted producer source available. No downstream task is
+started by this reconciliation.
+
+## COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+`ARCH-020-COMMERCE-021` is **Accepted / Complete, Attempt 3**. Provider-body cleanup
+and nonretryable EXTERNAL_HTTP deadline propagation now close the final review
+contract. Preserve the accepted DNS/socket pinning, stage-deadline, JSON-safety and
+one-provider-request implementation. COMMERCE-030 still waits on COMMERCE-025; later
+composition/gateway/final-checkpoint tasks retain their other dependencies. No
+automatic launch.
+
+
+## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.
+## COMMERCE-025 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-025 is **Accepted / Complete, Attempt 2** (`8b281cf`; report
+`04f10b0e`). The C21 visual response processor now preserves null/missing-last
+ordering in both sort directions with stable ties and is protected by the required
+server-only module boundary. Focused tests pass 6/6 and diff validation passes.
+Repository-wide lint/typecheck/build remain non-zero only on reported unrelated
+baseline diagnostics; the production Next compilation completed before the
+unrelated TypeScript phase failed, and no task-owned diagnostic was reported.
+
+Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
+because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
+all Complete. Later preview, assembly, cache, gateway and system-test work retains
+its remaining dependencies. No downstream task is started automatically.
