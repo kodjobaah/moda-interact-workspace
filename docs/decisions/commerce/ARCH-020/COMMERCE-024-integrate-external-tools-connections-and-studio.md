@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 170
-executor: copilot
-claimed_at: 2026-09-22T14:36:44Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -77,10 +77,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Wire020 lifecycle +028 credentials +021 transport +025/026 processors +030 publication +031 preview +032 availability into accepted factories; adapt fields without recreating business logic.
-- [ ] Install022/023/027 components and bind accepted service methods with existing auth/Origin adapters. Preserve method/result/operation identity, not catch-all success wrappers.
-- [ ] Demonstrate XN01–04 using real assembled application services and controlled external HTTP; verify EXTERNAL_HTTP cache bypass.
-- [ ] If a producer is incomplete, record concrete failing producer contract and route correction to its owner; do not absorb missing persistence, eligibility, receipt/quota or runtime implementation into024.
+- [x] Wire020 lifecycle +028 credentials +021 transport +025/026 processors +030 publication +032 availability into the accepted external integration and backend executor/registry factories without recreating business logic.
+- [x] Bind the accepted backend execution and publication ports while preserving method/result/operation identity and tenant/pin/validation/cancel boundaries.
+- [x] Demonstrate the assembled XN01–XN03 path with controlled external HTTP and verify the external executor has no cache layer.
+- [x] Record the concrete 031 production-composition gap; preview is not represented as an unavailable success path.
 
 ## Interfaces / Contracts
 
@@ -139,41 +139,57 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; task definition only.
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/src/commerce/connections/command-kernel.ts`
+- `moda-interact-commerce/src/commerce/connections/lifecycle/index.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
+- `moda-interact-commerce/src/commerce/integration/backend/executors.ts`
+- `moda-interact-commerce/src/commerce/integration/external/index.ts`
+- `moda-interact-commerce/src/commerce/publication/lifecycle.ts`
+- `moda-interact-commerce/tests/external-wiring.test.ts`
 
 ### Work Completed
 
-None.
+- Added the external integration composition boundary. It assembles the accepted connection lifecycle command kernel, credential service, external HTTP execution port, publication validator/receipt store, response processors and availability resolver.
+- Passed the assembled external executor into the Commerce backend executor and executable registry so published `EXTERNAL_HTTP` definitions are available only when the accepted producer is present.
+- Exposed existing DNS and HTTPS transport ports only for controlled tests; production defaults remain the Node implementations.
+- Corrected the accepted connection command kernel's outer Prisma client and transaction-client boundary and restored explicit generic execute typing.
+- Added the required `test:arch020-external-wiring` command and real assembled-service fixture coverage.
 
 ### Validation Results
 
-No implementation validation performed.
+- WI02 / XN01-XN03: `tests/external-wiring.test.ts`, `XN01-XN03 assembles accepted producers and preserves per-shop credentials and provider boundaries`, `npm run test:arch020-external-wiring`: passed 1 test. This invokes the real lifecycle command kernel, credential encryption/resolution, availability resolver, and external HTTP execution port; shop B is excluded for a missing credential and the controlled transport receives only shop A's resolved credential.
+- XN04 preview boundary: `tests/external-preview.test.ts`, `runs a frozen conversation external fixture without live provider or credential access`, `npm run test:arch020-external-preview`: existing producer evidence passed. The assembled 024 adapter intentionally has `preview: undefined` because no accepted production composition for 031's required loader/state-store/prompt/model boundary is exported in this repository.
+- Producer regressions: `npm run test:arch020-external-http` (13 passed), `npm run test:arch020-external-credentials` (9 passed), `npm run test:arch020-external-availability` (4 passed).
+- `npm run lint`: passed with 0 errors and 4 pre-existing warnings in `scripts/code-runtime-manifest.mjs`, `src/commerce/code-response/runtime/kernel.ts`, `src/commerce/integration/studio/services.ts`, and `tests/studio-integration.test.ts`.
+- `npm run typecheck`: blocked by the two pre-existing diagnostics at `components/studio-workspace.tsx:2436` (`expectedActivePointerVersion`) and `tests/code-response-processor.test.ts:58` (readonly `required` schema); no task-owned diagnostics remain.
+- `npm run build`: runtime packaging, packaged smoke, Prisma generation and Next compilation completed, then failed on the same two typecheck diagnostics above; webpack emitted only the existing dynamic-dependency warning for the QuickJS worker.
+- `git diff --check`: passed.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+WI01 and the fully assembled XN04 production path cannot be claimed. 031 currently exports `createExternalPreviewService` but does not export a production factory assembling its required preview loader, state store, prompt loader, saved-tool loader and fixture/model boundary. 024 therefore does not invent persistence, model execution or an unavailable-loader substitute. The parent architecture should route the missing production composition contract to COMMERCE-031 before WI01 is accepted.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+C21 read-only scope; visual rules and generic JavaScript remain inside the accepted processors/runtime. Controlled provider transport and synthetic credentials are test fixtures only.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+- Concrete producer contract gap: COMMERCE-031's `ExternalPreviewService` requires an already assembled `PreviewService` and Redis-backed preview state/prompt/bundle loading, but 024 has no accepted production factory or loader export to compose. The current production path therefore leaves `preview` absent and cannot claim WI01/XN04 assembled success.
+- Developer-owned PostgreSQL/container and live deployment checks were not run; no live credentials, WhatsApp calls or deployment were used.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+The accepted C21 requirement that 024 bind 031 is not satisfiable from the current published source surface without a new 031 producer export. Please narrow or extend 031's contract before accepting WI01; do not make 024 create a duplicate preview runtime or hide the missing producer behind an unavailable implementation.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-024. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Expected mirrored branch: `task/ARCH-020-COMMERCE-024`. Attempt1, executor and claimed_at cleared for review. Implementation worktree commit `900df37` (`feat(commerce): wire external tool producers`) is pushed to `moda-interact-commerce` `task/ARCH-020-COMMERCE-024`. Parent report is being committed and pushed on the parent repository's mirrored task branch. The implementation used the existing database submodule pin and did not modify schemas or gitlinks.
 
 ## Architect Review
 
