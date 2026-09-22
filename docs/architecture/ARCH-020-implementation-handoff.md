@@ -1041,6 +1041,15 @@ package `0.14.2`. The direct C21 component frontier is now Ready for
 normal launcher on an eligible Ready dependant when the developer chooses to start
 one. No automatic downstream launch occurs in this acceptance.
 
+
+## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
+
+COMMERCE-034 is **Accepted / Complete, Attempt 1**. The accepted U14 correction
+keeps tool-only handoff in Tool test and requires an authored persisted release or
+non-empty behaviour/draft source before Conversation preview can start; no synthetic
+tool-to-capability fallback is permitted. COMMERCE-019 now records COMMERCE-034 as
+an accepted prerequisite and remains **Ready**. No downstream task was launched by
+this state reconciliation.
 ## COMMERCE-026 Attempt 2 architect acceptance — 2026-09-21
 
 ARCH-020-COMMERCE-026 is **Accepted / Complete, Attempt 2** (`4b8e5bc`; report
