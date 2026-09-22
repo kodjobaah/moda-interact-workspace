@@ -30,7 +30,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | complete (Accepted, Attempt 2) | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
-| [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready (Changes Requested, Attempt 4) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
+| [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready (Changes Requested, Attempt 5) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
@@ -901,3 +901,20 @@ pre-seeding `externalDraft()`.
 The parent claim was stranded at `in_progress`; architect review clears it and returns
 the same task Ready. The next normal claim creates Attempt 5. No downstream promotion
 occurs.
+
+## COMMERCE-023 Attempt 5 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 5 retained; claim clear.** Implementation
+`c184c58` closes most of the Attempt 4 UI contract: typed code-panel composition,
+guarded mode switching, 8-filter/AND authoring, editable samples/schema chips, exact
+return context, real publication reason/review and a new-tool XN02 traversal are now
+present.
+
+Three bounded issues remain: U14/Publish must bind to the persisted saved revision and
+stay disabled for unsaved local edits; query Literal/IN typing must exactly enforce the
+C21 scalar contract while retaining invalid IN text locally; and the focused XN02 proof
+plus canonical Completion Report must establish the exact authoring/saved-definition/
+duplicate-guard assertions required by the prior reviews.
+
+No downstream promotion occurs. COMMERCE-024 and COMMERCE-012 remain gated. The next
+normal claim creates Attempt 6.

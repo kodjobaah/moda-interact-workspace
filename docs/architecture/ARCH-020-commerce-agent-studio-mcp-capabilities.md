@@ -1797,3 +1797,14 @@ proof.
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
 automatically.
+
+## COMMERCE-023 Attempt 5 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 5**, claim clear.
+Implementation `c184c58` is close to the C21 X06/XN02 boundary. The latest task review
+narrows Attempt 6 to three remaining items: bind U14 and Publish to the persisted saved
+revision rather than unsaved local state; make Literal/IN typed authoring exact and
+retain invalid IN text; and complete the exact XN02 proof/current Completion Report.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
+automatically.

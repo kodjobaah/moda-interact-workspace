@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 155
 executor: null
 claimed_at: null
@@ -2722,3 +2722,450 @@ Validation:
 
 The task is submitted to `moda_architect` for review. No downstream tasks were
 launched.
+
+### Attempt 5 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 5 snapshot
+representing implementation `c184c58` and developer-reported parent handoff
+`45e03d12`.
+
+Attempt 5 closes most of A4-R1 through A4-R5 and should be preserved:
+
+- the COMMERCE-027 slot is now invoked with one typed `ExternalCodePanelSlotProps`
+  object and has a bounded unavailable placeholder;
+- Visual/JavaScript switching now uses the Keep editing / Discard confirmation;
+- TEXT no longer silently replaces Visual processing;
+- query rows expose Agent input / Literal source selection;
+- LIST authoring exposes DESC sort, 8-filter cap and AND guidance;
+- editable synthetic status/contentType/body and schema keyword/chip guidance exist;
+- Manage connections preserves exact U06 return context in both selected/fallback
+  branches;
+- SUPER_ADMIN publication reason and redacted definition review are present;
+- the U14 port receives exact toolRevisionId/definition/fixture and returns one typed
+  result;
+- the focused suite now contains a real new-tool XN02 traversal instead of only
+  pre-seeded external drafts.
+
+Attempt 5 is **not accepted** because three bounded correctness/evidence gaps remain.
+These are the complete Attempt 5 rework contract.
+
+#### A5-R1 — U14 and Publish must use the persisted saved revision, never a mutable unsaved definition
+
+**Source and focused-test changes required.**
+
+C21 and the previous reviews require:
+
+```text
+Save draft
+-> exact saved toolRevisionId + exact saved definition
+-> U14 fixture execution
+
+Publish
+-> the reviewed/validated definition is the exact persisted revision being published
+```
+
+The current `ToolEditor` passes the mutable local `definition` into
+`ExternalHttpEditor`, and `ExternalHttpEditor` passes that same mutable definition to
+`ExternalFixtureControls`:
+
+```tsx
+<ExternalFixtureControls
+  toolRevisionId={toolRevisionId}
+  definition={definition}
+  ...
+/>
+```
+
+The fixture controls remain enabled whenever there is no command pending/unknown.
+Therefore:
+
+```text
+Save draft
+-> dirty becomes false
+-> edit query/schema/processing again
+-> dirty becomes true
+-> click U14 fixture
+-> fixture port receives UNSAVED local definition under the saved revision ID
+```
+
+That violates the frozen saved-revision contract.
+
+There is a related publication defect. Every edit invalidates `externalValidated`,
+but the user may re-Apply/re-Validate the **unsaved** local definition. The Publish
+button currently does not check `dirty`, so it can become enabled and publish the
+persisted server revision while the review panel displays different unsaved local
+content.
+
+Correct the host/editor contract around an explicit saved snapshot.
+
+A permitted exact shape is:
+
+```ts
+type ExternalHttpEditorProps = {
+  definition: ToolDefinition;       // current editable local definition
+  savedDefinition: ToolDefinition;  // current persisted selected revision
+  draftDirty: boolean;
+  ...
+};
+```
+
+Equivalent naming is acceptable.
+
+Required behavior:
+
+1. `ToolEditor` passes `selected.definition` as the saved definition.
+2. U14 `ExternalFixtureControls` receives **savedDefinition**, never the mutable local
+   definition.
+3. U14 fixture controls are frozen/disabled whenever `draftDirty === true`.
+4. After successful Save/load reconciliation, the persisted selected definition is
+   refreshed and `draftDirty === false`; only then can U14 run that revision.
+5. Publish is disabled whenever `dirty === true`, even if the unsaved local generation
+   was revalidated.
+6. The definition review must identify unsaved state if `dirty === true`; it must never
+   imply that unsaved local content is the persisted publication candidate.
+7. A successful Save followed by no edits may preserve current validation only when
+   the persisted definition is the same candidate that was validated. If the save
+   path normalizes/changes the definition, validation becomes stale.
+
+Also correct the processing-mode dirty guard. The current `processingDirty` flag is
+set from the generic `update()` path, so query/schema/connection edits mark processing
+dirty, and it is not reset after a successful Save. Determine processing dirtiness
+against the **saved responseProcessing** instead:
+
+```text
+current responseProcessing != savedDefinition.execution.responseProcessing
+  -> processing mode dirty
+
+equal
+  -> processing mode clean
+```
+
+Use Shared `canonicalJson` or an equivalent accepted deterministic comparison; do not
+invent a competing serialization contract.
+
+Focused regressions:
+
+```text
+Save external draft
+-> U14 run receives exact persisted saved definition
+
+edit query after Save
+-> U14 controls disabled/frozen
+-> zero fixture run
+-> Publish disabled
+
+revalidate unsaved edit
+-> Publish remains disabled because draft is unsaved
+
+save edited draft
+-> persisted saved definition refreshes
+-> dirty false
+-> U14 receives new saved definition
+
+query-only edit
+-> mode-switch "discard response-processing changes" is NOT shown
+
+processing edit
+-> mode-switch confirmation IS shown
+
+successful Save of processing
+-> subsequent mode switch sees processing clean until processing is edited again
+```
+
+#### A5-R2 — make typed Literal / IN authoring exactly conformant and retain invalid IN text
+
+**Source and focused-test changes required.**
+
+Query literals in C21 are:
+
+```text
+string | number | boolean
+```
+
+but the shared `renderScalar()` control currently includes `null` for every use. The
+query-literal callback silently ignores null, leaving a visible option that cannot
+produce the declared query contract.
+
+Split or parameterize the scalar control:
+
+```text
+query literal:
+  string | number | boolean
+
+filter scalar:
+  string | number | boolean | null
+```
+
+Do not widen Shared query literals.
+
+The current IN same-type check is also not exact:
+
+```ts
+values.every(
+  value => value === null || typeof value === typeof values[0]
+)
+```
+
+For example:
+
+```json
+["one", null]
+```
+
+passes that local condition because null is special-cased, even though C21 requires
+all IN values to have the same scalar type.
+
+Use one exact scalar-kind function:
+
+```ts
+type ScalarKind = 'string' | 'number' | 'boolean' | 'null';
+
+kind(value):
+  value === null ? 'null' : typeof value
+```
+
+and require:
+
+```text
+1 <= values.length <= 20
+every value is a supported scalar
+every kind(value) === kind(values[0])
+all numbers finite
+all strings satisfy the existing Shared bound
+```
+
+Do not commit mixed values.
+
+The previous review also required invalid typed IN text to remain editable. The current
+controlled input derives its value from `filter.values`; when JSON parsing or same-type
+validation fails, state is not updated, so the user's invalid text snaps back on the
+next render and no row error is shown.
+
+Maintain a local IN text/error draft per filter row:
+
+```text
+valid draft
+  -> update saved ResponseProcessing
+
+invalid draft
+  -> keep exact entered text visible
+  -> show bounded row error
+  -> do not mutate saved ResponseProcessing
+```
+
+When the saved filter changes externally, reconcile the local draft to the canonical
+saved values.
+
+Focused regressions:
+
+```text
+query Literal type options
+  -> string / number / boolean only
+  -> no null option
+
+IN ["one","two"]
+  -> accepted
+
+IN [1,2]
+  -> accepted
+
+IN [null,null]
+  -> accepted
+
+IN ["one",null]
+  -> rejected
+  -> exact entered text remains visible
+  -> saved processing unchanged
+
+IN [1,"2"]
+  -> rejected
+  -> exact entered text remains visible
+  -> saved processing unchanged
+
+IN 21 values
+  -> rejected without mutating saved processing
+```
+
+#### A5-R3 — complete the exact XN02 proof and reconcile the canonical Completion Report
+
+**Focused-test and task-record changes required. Source changes only where the proof
+exposes a defect.**
+
+The new seventh test is the correct traversal shape, but it still does not prove all
+assertions required by the preceding Architect Reviews.
+
+Extend that one traversal (do not create an arbitrary large matrix) so it proves:
+
+```text
+NEW TOOL
+- no pre-call to externalDraft(services)
+- connection display name/key/revision/scope/auth/documentation are visible
+
+AUTHORING
+- one Agent input query with omitIfMissing=true
+- one typed Literal query
+- projection output rename
+- projection omitIfMissing
+- boolean filter
+- numeric filter
+- same-type IN filter
+- DESC sort
+- limit
+- editable sample body/status/contentType changed from catalogue fixture
+- exact resultSchema
+
+MODE/SLOT
+- one focused regression proves dirty Visual -> JavaScript Keep/Discard behavior
+- one focused regression proves renderCodePanel receives exact typed object props
+
+RETURN
+- selected connection Manage connections exact returnTo
+- no-selected-revision fallback exact /connections?returnTo=...
+
+SAVE/U14
+- `updateToolDraft` receives the exact expected complete C21 execution JSON
+- agent descriptor name/description/inputSchema remain unchanged
+- fixture port receives exact persisted saved definition, not merely
+  `definition.execution.kind === 'EXTERNAL_HTTP'`
+- dirty edit after Save prevents fixture execution
+
+VALIDATION/PUBLISH
+- validation current before Save/Publish
+- blank publication reason keeps Publish disabled
+- exact trimmed reason is passed
+- ADMIN has no Publish control
+- review panel shows exact connection revision/path/processing state
+- literal query value is rendered as [literal]
+- dirty unsaved revalidation cannot enable Publish
+
+DUPLICATE GUARDS
+- duplicate Apply admitted once
+- duplicate Validate admitted once
+- duplicate Save admitted once
+- duplicate Publish admitted once
+
+SAFETY
+- global fetch spy remains zero
+- no credential value is rendered or passed
+```
+
+Retain the useful 7 focused tests and 18 StudioWorkspace tests.
+
+The canonical `## Completion Report` at the top of the task still describes Attempt 3
+and the Git/VCS block still records Attempt 3 / `c71b30e`. A later
+`### Attempt 5 Completion Report` is appended, but the standard durable report remains
+ambiguous.
+
+On Attempt 6, reconcile the normal Completion Report fields to the actual current
+attempt. Do not delete historical Architect Reviews, but the canonical current report
+must state:
+
+```text
+Attempt 6
+current implementation commit
+current parent report commit/evidence where known
+actual files changed
+actual validation results
+deviations
+unresolved issues
+worktree/launcher evidence
+```
+
+Do not leave the canonical report claiming Attempt 3.
+
+### Attempt 5 Reviewed Files
+
+- `components/studio-workspace.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/external-http/ports.ts`
+- `src/studio/external-http/fixture-controls.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `package.json`
+- C21 sections 2, 2.1, 6 and 8
+- the complete Attempt 4 Architect Review
+- the Attempt 5 Completion Report
+
+### Attempt 5 Validation Reviewed
+
+Submitted evidence:
+
+```text
+npm run test:arch020-external-tools-ui
+  PASS — 7/7
+
+npx vitest run tests/studio-workspace.test.tsx
+  PASS — 18/18
+
+scoped ESLint / task-owned diagnostics
+  PASS
+
+git diff --check
+  PASS
+
+repository-wide lint/typecheck/build
+  remain blocked by the documented unrelated baseline according to the Completion
+  Report; no accepted claim is made that these commands passed.
+```
+
+The archive contains no installed dependency tree or Git remote metadata, so
+dependency-backed commands and remote heads were not falsely claimed as independently
+rerun by the architect.
+
+### Attempt 5 Architecture Conformance
+
+Not yet accepted.
+
+The main U06/U14 structure is now aligned with C21 and most prior corrections are
+closed. Acceptance remains blocked only by the saved-vs-unsaved revision boundary,
+exact Literal/IN authoring semantics, and the incomplete exact XN02 evidence/current
+Completion Report reconciliation described above.
+
+### Attempt 5 Follow-up
+
+Return the same task to:
+
+```yaml
+status: ready
+attempt: 5
+executor: null
+claimed_at: null
+```
+
+The next:
+
+```text
+/moda-task ARCH-020-COMMERCE-023
+```
+
+must claim **Attempt 6 exactly once**.
+
+After A5-R1 through A5-R3 run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+npx vitest run tests/studio-workspace.test.tsx
+
+npx eslint \
+  src/studio/external-http \
+  components/studio-workspace.tsx \
+  tests/external-tools-ui.test.tsx
+
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+There must be no task-owned diagnostic under:
+
+```text
+src/studio/external-http/**
+components/studio-workspace.tsx
+tests/external-tools-ui.test.tsx
+```
+
+If repository-wide commands retain only the unchanged unrelated baseline, record the
+exact diagnostics and do not repair unrelated files.
+
+Update the canonical Completion Report/checklists, return to `review`, clear the claim,
+push both mirrored task branches and STOP. Do not start COMMERCE-024 or COMMERCE-012.
