@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 155
-executor: copilot
-claimed_at: 2026-09-22T04:00:42Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-SHARED-002
@@ -676,3 +676,75 @@ bounded validation above, set `status: review`, clear claim metadata according t
 normal handoff, push both task branches, and STOP.
 
 Do not start COMMERCE-024 or COMMERCE-012. They remain dependency-gated.
+
+## Completion Report: Attempt 2
+
+### Status
+
+Ready for Architect Review. Attempt 2 was prepared and claimed by the
+deterministic launcher; claim metadata is now cleared for handoff.
+
+### Launcher and VCS Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-022`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-022`.
+- Both task branches are `task/ARCH-020-COMMERCE-022`; prepared synchronization and recursive submodule checks passed.
+- Database submodule was at accepted commit `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+- Shared dependency remains pinned to `@modainteract/moda-interact-shared@0.14.2`.
+- Implementation commit: `9b777df`, pushed to `origin/task/ARCH-020-COMMERCE-022`.
+- No parent submodule gitlink, architecture index, or unrelated task file was staged.
+
+### Architect Correction Disposition
+
+- A0-R1: preserved server-owned `requireStudioAdminPage()` routes and the
+   serializable `ConnectionsRouteClient` composition; focused coverage mounts the
+   wrapper and VS Code diagnostics are clean for both routes and wrapper.
+- A0-R2: retained the shared `ConnectionResult`/unknown mutation envelopes,
+   synchronous gates, CUID-shaped operation IDs, immutable admitted payloads and
+   replay action; added exact metadata/credential replay and stale-CAS regressions.
+- A0-R3: retained search/cursor/enabled initialization and propagation through
+   U15, U16, create navigation and Back navigation, with Studio composer guards;
+   focused coverage verifies non-default initial list state and dirty/unknown
+   guard behavior is covered by the existing composer-backed mutation tests.
+- A0-R4: retained status-only credential dialogs, authorized `searchShops`,
+   PER_SHOP selection by returned shop ID, exact status CAS, NONE presentation and
+   bounded unavailable presentation; focused coverage verifies the Harbor shop ID,
+   unavailable result and absence of success. Fixtures contain two distinct shops,
+   a configured platform revision, a configured per-shop revision and a missing row.
+- A0-R5: retained independent `latest = revisions[0]` and explicit selected
+   revision state; focused regression confirms Overview remains Revision 2 after
+   selecting Revision 1 and Credentials remains on Revision 1.
+
+### Files
+
+Final task surface includes `app/connections/page.tsx`,
+`app/connections/[id]/page.tsx`, `src/studio/connections/**`, the Connections
+sidebar entry, `tests/connections-ui.test.tsx`, and the narrowly reconciled
+`package.json` merge markers. The attempt-2 source/test changes are the detail
+route cleanup, conflict resolution in the UI/package files, and focused
+regressions in `tests/connections-ui.test.tsx`.
+
+### Validation
+
+Agent-executed:
+
+- `npm run test:arch020-connections-ui`: passed, 1 file and 11 tests.
+- `npm run lint`: passed with 0 errors and 2 warnings outside the task boundary
+   (`scripts/code-runtime-manifest.mjs` and
+   `src/commerce/code-response/runtime/kernel.ts`).
+- `git diff --check`: passed.
+- VS Code diagnostics: no errors in the Connections routes, wrapper, contracts,
+   fixtures, UI or focused tests.
+
+Blocked by unchanged repository conditions outside this task:
+
+- `npm run typecheck`: Next route type generation passed, then 15 diagnostics
+   remained in lifecycle/backend CodeMirror and response-processor files; none
+   were in the task-owned Connections slice.
+- `npm run build`: `code-runtime:package` passed, then the existing packaged
+   QuickJS smoke failed with `packaged transform output mismatch` before Next
+   compilation. No Connections source was implicated.
+
+No live, database, container, deployment, backend, network or secret-bearing
+validation was run. No backend or provider implementation was added.
