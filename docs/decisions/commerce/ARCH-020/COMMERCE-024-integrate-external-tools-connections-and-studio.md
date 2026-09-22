@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 170
-executor: copilot
-claimed_at: 2026-09-22T18:29:29Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -309,6 +309,24 @@ for this review at:
 ```
 
 Both implementation and parent worktrees were reported clean after synchronization.
+
+### Attempt 4 Completion Update
+
+Attempt 4 reconciled the task branch with `origin/main` after the deterministic
+launcher reported a merge conflict in `src/commerce/integration/backend/executors.ts`.
+The resolution preserves both accepted behaviors: EXTERNAL_HTTP availability is
+reported only when an external executor is installed, and POLICY_OPERATION
+availability remains registry-backed and fail-closed. The merge was committed as
+`9158889fc5eead41b3cc610893de68613f350d6e` and pushed to the task branch.
+
+Validation after reconciliation:
+
+```text
+npm run test:arch020-external-wiring  PASS — 4/4
+Pylance diagnostics for executors.ts  none
+```
+
+No producer-owned implementation or parent report content was overwritten.
 
 ## Architect Review
 
