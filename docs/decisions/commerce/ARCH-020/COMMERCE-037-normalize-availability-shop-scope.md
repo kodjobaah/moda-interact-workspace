@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 151
 executor: null
 claimed_at: null
@@ -411,3 +411,121 @@ Pending.
 ### Follow-up
 
 Execute only after an authorized `/moda-task ARCH-020-COMMERCE-037` claim.
+
+## Architect Review — Attempt 1 — 2026-09-22
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Reviewed the submitted implementation `021dcf7` and parent report `15d9588b`
+against the complete COMMERCE-037 contract.
+
+The task's single behavioral correction is implemented exactly at the intended
+read-only availability boundary:
+
+```text
+availability input shopId
+  = trusted merchant shop identity
+
+revision.scope == PLATFORM
+  -> credential row selector shopId = null
+
+revision.scope == PER_SHOP
+  -> credential row selector shopId = input.shopId
+```
+
+The accepted implementation preserves all other COMMERCE-028 credential-service
+contracts unchanged. `getCredentialStatus`, `setCredential`, `removeCredential`
+and `resolveConnection` continue to use nullable `shopId` as the actual credential
+scope key.
+
+Direct source inspection confirms:
+
+- PLATFORM + NONE returns `available` without a credential lookup requirement;
+- authenticated PLATFORM availability reads only the null-scope credential row;
+- PER_SHOP availability reads only the requested merchant shop credential;
+- there is no fallback from a missing PER_SHOP row to PLATFORM or another shop;
+- missing revision, disabled connection, missing credential and unavailable key keep
+  the existing closed exclusion reasons;
+- unexpected lookup failure returns typed `{kind:'unavailable'}`;
+- the availability path inspects only credential metadata/key presence and does not
+  decrypt or return a secret;
+- the availability path performs no mutation/audit work.
+
+The focused regressions also preserve the existing credential mutation/resolution
+suite and prove the merchant-scope normalization independently of those older
+nullable-scope APIs.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/connections/credentials/index.ts`
+- `moda-interact-commerce/tests/external-credentials.test.ts`
+- `moda-interact-commerce/package.json`
+- `docs/architecture/ARCH-020-external-api-tools.md`
+
+### Validation Reviewed
+
+Submitted evidence:
+
+```text
+npm run test:arch020-external-credentials
+  PASS — 9 focused tests
+
+npx eslint \
+  src/commerce/connections/credentials \
+  tests/external-credentials.test.ts
+  PASS
+
+git diff --check
+  PASS
+
+repository lint:
+  non-zero only on the documented unrelated
+  src/studio/connections/connections-ui.tsx baseline
+
+repository typecheck:
+  non-zero only on the documented unrelated
+  command-kernel/lifecycle/integration/code-response baseline
+
+repository build:
+  application compilation completed and then stopped on the same unrelated
+  baseline type diagnostics
+```
+
+The uploaded archive does not include installed `node_modules`, so architect review
+does not claim a second dependency-backed rerun. Acceptance is based on direct source
+inspection plus the durable focused validation evidence.
+
+### Architecture Conformance
+
+Conformant.
+
+This task changes only the availability-port meaning of `shopId`; it does not change
+credential persistence, encryption, AAD, CAS/replay, mutation, decryption, connection
+lifecycle, database schema, Shared contracts, UI, HTTP execution or final composition.
+
+The canonical boundary is now:
+
+```text
+checkConnectionAvailability({connectionRevisionId, shopId})
+  shopId = trusted merchant identity
+
+credential selector:
+  PLATFORM -> null
+  PER_SHOP -> trusted merchant identity
+```
+
+while the existing nullable credential-scope APIs remain unchanged.
+
+### Follow-up
+
+`ARCH-020-COMMERCE-037` is Complete at Attempt 1.
+
+`ARCH-020-COMMERCE-032` remains Ready and now records COMMERCE-037 as an explicit
+dependency. It was already Ready in the submitted snapshot, so this acceptance does
+not create a new launch or claim.
+
+Do not automatically launch COMMERCE-032 or COMMERCE-024.
