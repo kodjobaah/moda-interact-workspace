@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 155
-executor: copilot
-claimed_at: 2026-09-22T11:01:04Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-SHARED-002
@@ -2694,3 +2694,31 @@ Return through:
 after this review overlay is committed. The next successful claim must create
 **Attempt 5 exactly once**. COMMERCE-024 and COMMERCE-012 remain dependency-gated.
 No downstream task is launched automatically.
+
+### Attempt 5 Completion Report
+
+Attempt 5 completed the A4-R1 through A4-R6 correction contract. The implementation
+commit is `c184c58`, pushed on `task/ARCH-020-COMMERCE-023`.
+
+Files changed:
+
+- `moda-interact-commerce/components/studio-workspace.tsx`
+- `moda-interact-commerce/src/studio/external-http/editor.tsx`
+- `moda-interact-commerce/src/studio/external-http/ports.ts`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+
+Validation:
+
+- Passed `npm run test:arch020-external-tools-ui` (7/7).
+- Passed `npx vitest run tests/studio-workspace.test.tsx` (18/18).
+- Passed scoped ESLint for the changed external HTTP, workspace, and test paths.
+- Passed task-owned editor/workspace/test diagnostics and `git diff --check`.
+- Repository lint remains blocked by the unchanged Connections effect error in
+  `src/studio/connections/connections-ui.tsx`.
+- Repository typecheck/build remain blocked by unchanged baseline diagnostics in
+  release command typing, connection kernel/lifecycle, backend executors,
+  CodeMirror dependencies, and an unrelated code-response test. No task-owned
+  external HTTP or traversal diagnostics remain.
+
+The task is submitted to `moda_architect` for review. No downstream tasks were
+launched.
