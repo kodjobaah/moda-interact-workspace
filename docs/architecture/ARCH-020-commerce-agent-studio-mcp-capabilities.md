@@ -1586,6 +1586,19 @@ system-test work remains dependency-gated. No dependent task is automatically
 started and no implementation/main merge or gitlink update is performed by this
 review.
 
+### COMMERCE-020 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `5229b033` and parent report `29a6ffb1`. Preserve the lifecycle/CAS,
+immutable-revision and transaction/audit direction. Four bounded C21 contract defects
+remain: Commerce still pins Shared `0.13.1` and locally duplicates/mismatches the
+accepted `0.14.2` connection contracts; the reusable command kernel omits credential
+actions and an actual same-connection `FOR UPDATE` lock; development bypass does not
+materialize/verify its reserved PlatformAdmin row before FK-backed writes; and lifecycle
+request validation/default-port normalization is not strict (`:443` is retained and
+invalid bounds may reach/clamp at Prisma). The task Architect Review contains exact
+A1-R1..A1-R4 source, behavior and focused-proof instructions. No exhaustive retest,
+downstream promotion or automatic launch.
 ## COMMERCE-033 Attempt 1 architect review — 2026-09-22
 
 **Changes Requested / Ready, Attempt 1 retained; claim clear.** The provider
@@ -1665,3 +1678,18 @@ Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
 because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
+
+## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
+connection-lifecycle producer now uses exact Shared `0.14.2` DTOs/results, implements
+the six-action reusable command kernel, authorizes before replay, materializes the
+development PlatformAdmin inside the transaction, acquires a parameterized
+same-connection PostgreSQL `FOR UPDATE` lock, keeps mutation/audit atomic, validates
+bounded lifecycle inputs and stores canonical HTTPS origins. Credential persistence,
+resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-021.
+
+`COMMERCE-028` is now **Ready** because its other declared prerequisites
+`DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
+`COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
+their other authoritative dependencies.

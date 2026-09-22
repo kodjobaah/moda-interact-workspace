@@ -27,7 +27,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | complete | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-033, ARCH-020-COMMERCE-034 |
-| [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | ready | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
+| [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | complete (Accepted, Attempt 2) | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
@@ -35,7 +35,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
-| [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | pending | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | ready | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
@@ -603,6 +603,19 @@ No task is claimed or launched by this reconciliation. `COMMERCE-028`, `030`, `0
 `032`, `024`, `GATEWAY-003`, `COMMERCE-012` and the system-test tasks retain their
 remaining dependency gates.
 
+### COMMERCE-020 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `5229b033` and parent report `29a6ffb1`. Preserve the lifecycle/CAS,
+immutable-revision and transaction/audit direction. Four bounded C21 contract defects
+remain: Commerce still pins Shared `0.13.1` and locally duplicates/mismatches the
+accepted `0.14.2` connection contracts; the reusable command kernel omits credential
+actions and an actual same-connection `FOR UPDATE` lock; development bypass does not
+materialize/verify its reserved PlatformAdmin row before FK-backed writes; and lifecycle
+request validation/default-port normalization is not strict (`:443` is retained and
+invalid bounds may reach/clamp at Prisma). The task Architect Review contains exact
+A1-R1..A1-R4 source, behavior and focused-proof instructions. No exhaustive retest,
+downstream promotion or automatic launch.
 ## COMMERCE-033 Attempt 1 review — 2026-09-22
 
 Changes Requested; Ready, Attempt 1 retained, claim clear; not accepted.
@@ -724,3 +737,16 @@ All declared prerequisites of COMMERCE-030 are now Complete, so
 **ARCH-020-COMMERCE-030 is promoted Ready, Attempt 0, claim clear**. COMMERCE-031,
 COMMERCE-024, COMMERCE-012 and terminal system-test work retain additional
 dependencies. No task is automatically launched.
+
+## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
+
+COMMERCE-020 is **Accepted / Complete, Attempt 2** at implementation `d2b7154`
+(parent report `a6d09e32`). The accepted producer now consumes Shared `0.14.2`,
+provides the six-action reusable command kernel with authorization-before-replay,
+development-principal materialization, parameterized same-connection `FOR UPDATE`,
+strict bounded lifecycle inputs, canonical origins, immutable revisions and atomic
+business-write/audit semantics.
+
+`COMMERCE-028` is promoted **Pending -> Ready** because `DATABASE-003` and
+`SHARED-002` are already Complete. No task is launched automatically. `COMMERCE-024`,
+`GATEWAY-003`, `COMMERCE-012` and system-test work retain their remaining gates.
