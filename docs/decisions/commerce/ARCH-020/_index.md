@@ -28,7 +28,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-034 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | ready | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
-| [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
+| [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | ready | ARCH-020-SHARED-002 |
@@ -650,3 +650,16 @@ integration/Prisma diagnostics reported outside the task files.
 No downstream task is newly Ready from this acceptance alone. COMMERCE-030 still
 requires COMMERCE-025; later preview, assembly, gateway and system-test work retain
 their remaining declared dependencies. No automatic task launch occurs.
+
+
+## COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+COMMERCE-021 is **Accepted / Complete, Attempt 3**. Attempt 3 closes provider-body
+termination for post-header rejection/unsupported-encoding paths and preserves
+nonretryable external `DEADLINE` semantics through `DefinitionExecutor`, while
+retaining the accepted DNS/socket pinning, bounded transport, JSON safety and
+one-request budget behavior. Submitted focused tests pass 13/13 and combined
+dispatcher/transport tests pass 26/26; lint and diff checks pass. Repository-wide
+typecheck/build remain blocked only by the recorded unrelated baseline diagnostics.
+No enabled task is newly Ready from this acceptance alone; all remaining dependency
+gates stay authoritative and nothing is launched automatically.

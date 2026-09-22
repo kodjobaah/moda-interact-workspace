@@ -1083,3 +1083,13 @@ validation owned by COMMERCE-030.
 No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
 COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
 other prerequisites. No downstream task is launched automatically.
+
+
+## COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+`ARCH-020-COMMERCE-021` is **Accepted / Complete, Attempt 3**. Provider-body cleanup
+and nonretryable EXTERNAL_HTTP deadline propagation now close the final review
+contract. Preserve the accepted DNS/socket pinning, stage-deadline, JSON-safety and
+one-provider-request implementation. COMMERCE-030 still waits on COMMERCE-025; later
+composition/gateway/final-checkpoint tasks retain their other dependencies. No
+automatic launch.

@@ -544,3 +544,12 @@ abort cleanup, raw JSON safety/depth and explicit dispatcher exhaustiveness. The
 CANCELLED contradiction is reconciled to nonretryable `DEADLINE` at the
 CommerceToolResult boundary; runner-level cancellation remains separate. No dependent
 promotion or automatic launch.
+
+
+### ARCH-020 COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+COMMERCE-021 is **Accepted / Complete, Attempt 3**. The final corrections terminate
+rejected provider bodies and preserve nonretryable external `DEADLINE` semantics
+through the definition dispatcher. Existing production DNS/TLS pinning, bounded
+transport and raw-JSON safety remain accepted. No dependant is newly Ready from this
+acceptance alone.

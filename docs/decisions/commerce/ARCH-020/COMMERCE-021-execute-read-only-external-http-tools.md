@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -196,6 +196,84 @@ Ready for Review (Attempt 3).
 The existing repository-wide typecheck/build baseline remains limited to the unchanged `src/commerce/integration/backend/executors.ts:17` discriminated-union errors and `tests/code-response-processor.test.ts:58` readonly-schema fixture error. No unrelated repair was made.
 
 ## Architect Review
+
+### Attempt 3 — Accepted (2026-09-22)
+
+Reviewer: moda_architect. **Accepted / Complete; Attempt 3; executor/claimed_at null.**
+Reviewed the exact submitted Attempt 3 archive, reported implementation `159e664`
+and verified parent report `2487989d8e90608267fb44f9fa6d9cefa6810845` on
+`origin/task/ARCH-020-COMMERCE-021`. The implementation repository commit is not
+accessible through the current GitHub connection, so implementation acceptance is
+grounded in direct inspection of the exact submitted source snapshot plus the
+recorded task validation evidence.
+
+Attempt 3 closes the complete A2-R1/A2-R2 correction contract. Provider response
+bodies are actively terminated before every post-header early return for 404, 429,
+5xx, unsupported content encoding and post-header deadline/abort paths. Production
+`IncomingMessage.destroy()` remains the primary cleanup mechanism; the bounded generic
+async-iterator fallback is used only when no destroy method exists. No rejected
+provider body is read or surfaced merely to drain it. Existing 404/429/5xx mappings,
+no-retry behavior and processor-call boundaries remain unchanged.
+
+`DefinitionExecutor` now selects retryability from the execution kind at both the
+pre-dispatch and post-execution deadline checks. EXTERNAL_HTTP therefore preserves
+`{code:'DEADLINE', retryable:false}` through the real dispatcher boundary, including
+already-aborted, already-expired and late-completion cases, while the adjacent
+Shopify Storefront and policy-operation deadline behavior remains unchanged. No Shared
+contract widening or runner-level cancellation change was introduced.
+
+Functional inspection also confirms the accepted Attempt 2 transport design remains
+intact: production DNS resolution with all/verbatim results, maintained global-address
+classification, socket pinning to the approved address with original Host/TLS SNI,
+independent DNS/connect/body bounds, decoded-byte limits, raw JSON safety traversal,
+explicit EXTERNAL_HTTP dispatch, and exactly one provider-budget reservation.
+
+Validation reviewed from the submitted report: `test:arch020-external-http` passes
+13 focused tests; the combined definition/external transport suite passes 26 tests;
+lint and `git diff --check` pass. Repository-wide typecheck/build remain blocked only
+by the recorded pre-existing diagnostics in `src/commerce/integration/backend/executors.ts:17`
+and `tests/code-response-processor.test.ts:58`; the Attempt 3 touched files are
+reported clean. The submitted archive does not contain installed dependencies, so the
+architect did not manufacture a redundant independent Vitest run.
+
+Architecture conformance: **PASS** for C21 HT01–HT04 and the bounded Attempt 3
+corrections. No new dependency, migration, provider protocol or deployment change is
+introduced by acceptance.
+
+No enabled task is newly Ready from this acceptance alone. COMMERCE-030 still awaits
+COMMERCE-025; COMMERCE-024, GATEWAY-003 and COMMERCE-012 retain additional unsatisfied
+dependencies. No downstream task is launched automatically.
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+Attempt 3 is accepted as the completed read-only external HTTP execution boundary.
+Historical Attempt 1/2 review contracts remain below as audit history.
+
+### Reviewed Files
+
+`src/commerce/external-http/index.ts`, `src/commerce/execution/executor.ts`,
+`tests/external-http-executor.test.ts`, `tests/definition-execution.test.ts`,
+`docs/external-http-executor.md`, package validation scripts and the Attempt 3
+Completion Report in the exact submitted snapshot.
+
+### Validation Reviewed
+
+Focused external HTTP 13/13; combined dispatcher/transport 26/26; lint and diff checks
+pass. Repository-wide typecheck/build baseline limitations are recorded above and are
+not regressions introduced by this task.
+
+### Architecture Conformance
+
+Accepted. The implementation conforms to C21 external HTTP ownership, security,
+bounded-resource, retry/deadline and result-contract requirements.
+
+### Follow-up
+
+None for COMMERCE-021. Recalculate dependants normally; do not auto-launch work.
 
 ### Attempt 2 — Changes Requested (2026-09-22)
 

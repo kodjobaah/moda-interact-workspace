@@ -1014,3 +1014,16 @@ and unsupported content-encoding), and the outer DefinitionExecutor must not cha
 external HTTP `DEADLINE` back to `retryable:true`. C21 continues to require
 nonretryable `DEADLINE` at the CommerceToolResult boundary. No Shared widening,
 provider retry or transport redesign.
+
+
+## COMMERCE-021 Attempt 3 acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 3.** The C21 HTTP execution boundary now terminates
+provider bodies on every post-header early rejection, including 404/429/5xx,
+unsupported content encoding and post-header deadline/abort paths. EXTERNAL_HTTP
+pre-dispatch and late deadlines remain nonretryable through `DefinitionExecutor`;
+existing Shopify/policy deadline semantics are unchanged. The previously accepted
+production DNS/global-address classification, pinned TLS socket, independent stage
+bounds, decoded-byte limit, raw JSON safety validation, one provider-budget
+reservation and no-retry/no-redirect behavior remain intact. No downstream task is
+newly Ready from this acceptance alone.

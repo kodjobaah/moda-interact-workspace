@@ -1183,3 +1183,13 @@ validation owned by COMMERCE-030.
 No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
 COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
 other prerequisites. No downstream task is launched automatically.
+
+
+## ARCH-020 COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+Current authoritative task state: `ARCH-020-COMMERCE-021` **Complete, Attempt 3,
+Accepted**, executor/claimed_at null. Attempt 3 closes post-header provider-body
+cleanup and nonretryable external deadline propagation through `DefinitionExecutor`;
+all prior accepted transport/security behavior is preserved. `COMMERCE-030` still
+requires COMMERCE-025, and COMMERCE-024/GATEWAY-003/COMMERCE-012 retain additional
+dependency gates. No downstream task is automatically launched.
