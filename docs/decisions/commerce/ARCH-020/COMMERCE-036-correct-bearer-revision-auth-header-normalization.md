@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 145
-executor: copilot
-claimed_at: 2026-09-22T11:35:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -153,10 +153,10 @@ The PER_SHOP/NONE prohibition remains unchanged.
 
 ## Work Items
 
-- [ ] Change lifecycle BEARER normalization to canonical persisted `authHeader:null`.
-- [ ] Preserve API_KEY and NONE validation exactly.
-- [ ] Add focused tests for null BEARER input, legacy `Authorization` normalization and invalid alternate BEARER header rejection.
-- [ ] Add a disposable-PostgreSQL regression proving real BEARER lifecycle creation satisfies the accepted DB CHECK.
+- [x] Change lifecycle BEARER normalization to canonical persisted `authHeader:null`.
+- [x] Preserve API_KEY and NONE validation exactly.
+- [x] Add focused tests for null BEARER input, legacy `Authorization` normalization and invalid alternate BEARER header rejection.
+- [x] Add a disposable-PostgreSQL regression proving real BEARER lifecycle creation satisfies the accepted DB CHECK.
 
 ## Interfaces / Contracts
 
@@ -183,12 +183,12 @@ The public `ConnectionRevisionView` for a persisted BEARER revision must expose
 
 ## Acceptance Criteria
 
-- [ ] BEARER lifecycle create with `authHeader:null` succeeds and returns/persists `authHeader:null`.
-- [ ] BEARER lifecycle create with legacy `authHeader:"Authorization"` succeeds but returns/persists `authHeader:null`.
-- [ ] BEARER lifecycle create with another nonblank header rejects `INVALID_INPUT` and writes nothing.
-- [ ] API_KEY custom-header and NONE-null behavior remain unchanged.
-- [ ] Real PostgreSQL creation proves no `CommerceExternalConnectionRevision_auth_header_check` failure for BEARER.
-- [ ] No credential-service/database/shared/UI source changes are introduced.
+- [x] BEARER lifecycle create with `authHeader:null` succeeds and returns/persists `authHeader:null`.
+- [x] BEARER lifecycle create with legacy `authHeader:"Authorization"` succeeds but returns/persists `authHeader:null`.
+- [x] BEARER lifecycle create with another nonblank header rejects `INVALID_INPUT` and writes nothing.
+- [x] API_KEY custom-header and NONE-null behavior remain unchanged.
+- [x] Real PostgreSQL creation proves no `CommerceExternalConnectionRevision_auth_header_check` failure for BEARER.
+- [x] No credential-service/database/shared/UI source changes are introduced.
 
 ## Validation
 
@@ -294,35 +294,62 @@ lifecycle value.
 
 ### Status
 
-Not Started.
+Implementation complete; returned to `moda_architect` review.
 
 ### Files Changed
 
-None.
+`src/commerce/connections/lifecycle/index.ts`
+`tests/connection-lifecycle.test.ts`
+`tests/connection-lifecycle-bearer-postgres.test.ts`
+`package.json`
 
 ### Work Completed
 
-None.
+Updated lifecycle normalization to accept blank/null or legacy `Authorization` for
+BEARER while persisting and returning `authHeader:null`; API_KEY retains its
+configured header and NONE remains canonical null. Added focused unit coverage,
+invalid-header no-write coverage, and a real Prisma/PostgreSQL regression for both
+accepted BEARER inputs. The PostgreSQL rehearsal uses an isolated target and leaves
+immutable connection history in that disposable fixture, matching existing
+rehearsal policy; only the Prisma client is disconnected during teardown.
 
 ### Validation Results
 
-Not run.
+Passed: `npm run test:arch020-external-connection-lifecycle` (11 tests).
+Passed: `DATABASE_URL=<isolated-arch020-database> npm run test:arch020-external-connection-lifecycle:postgres` (1 test; both null and legacy inputs persisted null).
+Passed: scoped ESLint for lifecycle and both focused tests.
+Passed: `git diff --check`.
+Repository-wide `npm run lint`, `npm run typecheck`, and `npm run build` retain
+unrelated baseline diagnostics only. Lint has one existing error in
+`src/studio/connections/connections-ui.tsx`; typecheck/build retain 11 existing
+errors in `src/commerce/connections/command-kernel.ts`,
+`src/commerce/connections/lifecycle/index.ts`'s pre-existing Prisma typing,
+`src/commerce/integration/backend/executors.ts`, and
+`tests/code-response-processor.test.ts`. No task-owned diagnostics remain.
 
 ### Deviations
 
-None.
+The real PostgreSQL test requires an already provisioned isolated `DATABASE_URL`.
+Immutable external connection revisions and audits cannot be deleted by teardown;
+the test therefore relies on disposable-fixture reset policy rather than issuing
+destructive deletes.
 
 ### Assumptions
 
-None beyond the binding contract above.
+The configured isolated PostgreSQL target was available through the existing local
+environment. Prisma client generation was required in the fresh worktree before
+the database regression could run.
 
 ### Unresolved Issues
 
-None known.
+Repository-wide baseline lint/typecheck/build failures remain outside this task's
+scope and are recorded above.
 
 ### Architectural Concerns
 
-None beyond the defect this task resolves.
+The implementation restores alignment with the accepted DATABASE-003 persistence
+contract without weakening the database check or changing COMMERCE-028 resolver
+behavior.
 
 ## Architect Review
 
