@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 190
 executor: null
 claimed_at: null
@@ -206,7 +206,7 @@ is performed.
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
@@ -227,3 +227,399 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+
+### Attempt 1 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 1 archive.
+Submitted implementation evidence: `6fb2ac5`; parent report evidence:
+`ccf6ecbc`.
+
+The implementation is directionally useful and should be preserved:
+
+- dashboard/environment controls exist;
+- live versus preview intent is visible;
+- queue age is converted from milliseconds to seconds;
+- strict C11 numeric thresholds/sample floors appear in the rule source;
+- NoData states are explicit;
+- the runbook covers service/provider/queue/evidence/rollback/capability-disable and
+  preview-isolation triage without embedding secrets;
+- `tests/validate-commerce-observability.sh`, shell syntax, dashboard JSON parsing and
+  alert YAML parsing pass locally.
+
+Attempt 1 is **not accepted** because the submitted artifacts are not yet tied to the
+accepted producer inventory or to an actually evaluable Grafana Cloud alert model.
+The following items are the complete Attempt 2 correction contract.
+
+#### A1-R1 — consume the accepted producer inventory exactly; do not invent signal names
+
+**Gateway source/tests/report changes required.**
+
+The task contract requires GATEWAY-002 to use the actual accepted COMMERCE-010 and
+BACKGROUND-002 inventory. The current fixture instead declares, among other values:
+
+```text
+commerce.discovery.outcome
+commerce.mcp.request
+commerce.eligibility.outcome
+commerce.preview.outcome
+background.commerce.evidence_refresh.outcome
+```
+
+and marks the Background refresh event as:
+
+```text
+status = pending-owner-signal
+```
+
+That is not acceptable evidence for a task whose upstream dependencies are already
+architect-accepted Complete. BACKGROUND-002's accepted report states that refresh
+outcome telemetry uses the existing OpenTelemetry metrics API; GATEWAY-002 currently
+queries a Loki log event name that is not established anywhere in this submitted
+parent snapshot.
+
+At start of Attempt 2, inspect the exact accepted dependency source/pins:
+
+```text
+ARCH-020-COMMERCE-010
+  accepted implementation e8b43e4604780754ba64b0653c7d6e029d58e3c3
+
+ARCH-020-BACKGROUND-002
+  accepted implementation 8b2f9835dcd98b5385a64fa873598b8379b2986d
+
+ARCH-020-GATEWAY-001
+  accepted implementation 478923a
+```
+
+Record the actual file/export that owns every dashboard/alert signal and the exact
+name, signal type, unit and bounded dimensions.
+
+Required result:
+
+```text
+dashboard/alert query name
+  == exact accepted producer/export name
+
+log event
+  -> Loki query only when the producer actually emits that structured log event
+
+OpenTelemetry metric
+  -> Prometheus/OTLP metric query using the actual exported metric name
+
+no "pending-owner-signal" fixture pretending to be an implemented producer
+```
+
+If the accepted dependency source truly lacks a required C11 producer signal, do not
+invent one and do not modify another repository from this task. Stop the same task as
+`blocked` and return the exact upstream owner/source gap to `moda_architect`.
+
+#### A1-R2 — correct the C11 readiness alert; discovery failure is not readiness
+
+**Alert source/tests/runbook changes required.**
+
+C11 requires:
+
+```text
+readiness unavailable for 2 consecutive minutes
+evaluation interval = 1 minute
+```
+
+The current rule instead counts any:
+
+```text
+commerce.discovery.outcome = UNAVAILABLE
+```
+
+inside a two-minute lookback and fires immediately when the count is non-zero.
+Developer-resource discovery is not Commerce `/health/ready`, and "one event in the
+last two minutes" is not "readiness continuously unavailable for two minutes."
+
+Use the actual accepted readiness/health signal available to the approved observability
+stack and implement:
+
+```text
+current readiness failure condition
+for: 2m
+NoData remains NoData
+environment/service explicit
+```
+
+Do not substitute discovery/schema/provider availability.
+
+If no accepted readiness source can reach Grafana without violating C10's private
+health-route boundary, return the task `blocked` with that concrete architecture gap;
+do not guess a proxy signal.
+
+#### A1-R3 — make the alert rules real Grafana-managed rules, not dashboard-templated YAML
+
+**Alert provisioning/configuration/tests/runbook changes required.**
+
+Current Grafana Alerting evaluates rules without dashboard context. Therefore alert
+queries cannot rely on dashboard variables such as:
+
+```text
+$environment
+```
+
+The current alert file uses `$environment` in every rule. It also provides no concrete
+Loki/Prometheus datasource binding for its query records, while mixing Loki,
+Prometheus and expression queries.
+
+Correct this with a Cloud-compatible, version-controlled rendering/import boundary.
+
+Required behavior:
+
+1. Alert evaluation is separated by environment without dashboard variables.
+   Either:
+   - render explicit test and production rules; or
+   - return independent alert instances grouped by the real
+     `deployment_environment_name` label.
+2. Every source query has an explicit datasource UID/type in the final payload.
+3. Expression/reduce queries use Grafana's expression datasource where required.
+4. Loki alert inputs are instant/reduced to evaluable numeric values before threshold
+   math; do not hand a raw range series directly to a scalar failure-rate condition.
+5. Every alert instance carries:
+   - service;
+   - environment;
+   - runbook link;
+   - preview excluded with `purpose=live` where applicable.
+6. No datasource credentials/tokens are committed.
+
+The platform observability contract uses Grafana Cloud. Grafana Cloud does not support
+server-side file provisioning from a local `provisioning/alerting` directory, so
+`alerts/commerce-operational.yaml` cannot be presented as a complete deployment
+mechanism by itself.
+
+Add one documented Cloud-compatible import path, for example:
+
+```text
+version-controlled source
+-> deterministic render using externally supplied Loki/Prometheus datasource UIDs
+-> Grafana Dashboard HTTP API / Alerting Provisioning HTTP API
+```
+
+or the already-approved Terraform equivalent if the repository already owns such a
+path. Do not introduce a second observability platform.
+
+A dry-run/local validation path must prove that the rendered payload contains no
+unresolved datasource/environment placeholders. Live credentials remain developer
+owned and are not printed.
+
+#### A1-R4 — complete the required operational views
+
+**Dashboard/tests/runbook changes required.**
+
+The binding parent architecture requires GATEWAY-002 to show:
+
+```text
+MCP errors
+MCP latency
+tool outcomes
+worker queue lag
+provider throttling
+```
+
+and the task also requires:
+
+```text
+eligibility outcomes
+preview isolation/cost
+evidence refresh
+```
+
+The submitted five-panel dashboard has request/error counts, eligibility, queue age,
+preview and evidence refresh, but no actual MCP latency view, no tool-outcome view and
+no provider-throttling view.
+
+Use only accepted signals from A1-R1:
+
+```text
+MCP latency
+  -> existing accepted framework/client/runtime latency signal
+  -> do not create a duplicate custom HTTP metric
+
+tool outcomes
+  -> accepted Commerce semantic execution/tool signal
+
+provider throttling
+  -> accepted provider/tool outcome or client signal showing THROTTLED/rate-limit
+     behavior
+```
+
+Keep preview data visibly separate from live production operations. Do not expose shop,
+conversation, customer, prompt, provider payload, token or transcript as metric labels.
+
+If one of these views has no accepted producer signal, return the exact upstream gap
+rather than creating a made-up fixture.
+
+#### A1-R5 — validate the actual alert boundaries, low samples, recovery and NoData
+
+**Validator/fixture changes required.**
+
+`tests/validate-commerce-observability.sh` currently proves mostly that strings exist.
+It does not prove the deterministic review matrix required by this task.
+
+Add bounded local fixtures/checks for at least:
+
+```text
+READINESS
+  first failed evaluation                 -> pending, not firing
+  continuously failed for 2 minutes       -> firing
+  recovery                                -> resolved
+  missing telemetry                       -> NoData
+
+MCP FAILURE RATE
+  A=20, F=1  (exactly 5%)                 -> not firing
+  A=20, F=2  (>5%)                        -> firing
+  A=19 regardless of ratio                -> not firing (sample floor)
+  DENIED/REVOKED/INVALID_INPUT             -> denominator, not operational numerator
+  preview purpose                          -> excluded
+
+QUEUE AGE
+  120 seconds exactly                      -> not firing
+  >120 seconds continuously for 5 minutes  -> firing
+  recovery                                 -> resolved
+  no series                                -> NoData
+
+EVIDENCE REFRESH
+  A=20, F=2  (exactly 10%)                -> not firing
+  A=20, F=3  (>10%)                        -> firing
+  A=19                                     -> not firing
+  missing telemetry                        -> NoData
+  preview/non-live                         -> excluded
+```
+
+Use the exact accepted producer outcome names discovered under A1-R1. Do not encode a
+separate business contract in the test merely to make the current alert text pass.
+
+The validator must additionally fail when:
+
+```text
+an alert query still contains $environment
+a source query lacks a datasource binding
+a rendered Cloud payload retains unresolved datasource placeholders
+the readiness rule is backed by discovery outcome
+required latency/tool/throttle views are absent
+```
+
+#### A1-R6 — reconcile the task record and preserve the developer-hosted evidence gate
+
+**Task/report changes required.**
+
+The authoritative task record still has all four Work Items unchecked even though the
+agent submitted the task for review, and the Git/VCS section still says commits
+"will be recorded here before submission."
+
+On Attempt 2, reconcile:
+
+```text
+Work Items
+Acceptance Criteria
+Validation
+Completion Report
+Git / VCS
+```
+
+truthfully.
+
+Record:
+
+```text
+Attempt 2 implementation commit
+Attempt 2 parent report commit
+dedicated parent/implementation worktrees
+clean/pushed evidence
+accepted dependency pins actually consumed
+actual signal-owner files/exports inspected
+```
+
+The user reported Attempt 1 implementation `6fb2ac5` and parent report `ccf6ecbc`;
+preserve those as historical evidence but do not present them as Attempt 2.
+
+The existing task text explicitly requires deployed arrival/alert evidence before
+final acceptance. Keep that developer-owned gate truthful. The repository agent must
+not fabricate hosted evidence and must not require live credentials to complete its
+source correction.
+
+After the agent-owned corrections return to `review`, developer evidence must record
+against the approved test Grafana environment:
+
+```text
+dashboard/import success
+one live Commerce signal arrival
+one preview signal arrival
+one queue-age metric arrival
+actual Background refresh signal arrival
+alert-rule evaluation for test boundary/recovery
+preview exclusion from production/live alerts
+NoData behavior where a signal is intentionally absent
+```
+
+No production mutation or paid-provider call is required merely for this validation.
+Do not mark hosted evidence PASS until the developer actually performs it.
+
+### Attempt 1 Reviewed Files
+
+- `dashboards/commerce-operational.json`
+- `alerts/commerce-operational.yaml`
+- `docs/commerce-operational-runbook.md`
+- `tests/fixtures/commerce-operational-signals.json`
+- `tests/validate-commerce-observability.sh`
+- C11 in `ARCH-020-implementation-contracts.md`
+- accepted COMMERCE-010 and BACKGROUND-002 parent task evidence
+- this task Completion Report
+
+### Attempt 1 Validation Reviewed
+
+Architect independently reran from the submitted archive:
+
+```text
+bash tests/validate-commerce-observability.sh
+  PASS — "commerce observability configuration validation passed"
+
+bash -n tests/validate-commerce-observability.sh
+  PASS
+
+Ruby YAML parse of alerts/commerce-operational.yaml
+  PASS
+
+jq parse of dashboards/commerce-operational.json
+  PASS
+```
+
+These checks establish syntax/string invariants only; they do not establish a valid
+Grafana-managed alert evaluation model or live signal arrival.
+
+The executor-reported `git diff --check` pass is retained as submitted evidence. The
+review archive is not a Git working tree, so the architect does not falsely claim an
+independent Git diff check.
+
+### Attempt 1 Architecture Conformance
+
+Not yet conformant with C11.
+
+The useful dashboard/runbook direction is preserved, but acceptance is blocked by the
+producer-inventory mismatch, incorrect readiness semantics, non-evaluable Grafana alert
+model, missing required latency/tool/throttling views, insufficient boundary fixtures
+and pending hosted evidence explicitly required by the task.
+
+### Attempt 1 Follow-up
+
+Return the same task to:
+
+```yaml
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next:
+
+```text
+/moda-task ARCH-020-GATEWAY-002
+```
+
+must claim **Attempt 2 exactly once**.
+
+Do not start COMMERCE-012 or SYSTEM-TEST-001. GATEWAY-003 remains independently Ready
+and is not changed by this review.

@@ -730,7 +730,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | complete | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
-| [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
+| [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | ready (Changes Requested, Attempt 1) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | [ARCH-020-GATEWAY-003](../decisions/gateway/ARCH-020/GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | moda_gateway | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md) | Add frequency-based tool-result caching | moda_commerce | pending | All other ARCH-020 implementation tasks; exact list in task |
 | [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012  |
@@ -2054,3 +2054,16 @@ Because their remaining prerequisites are already Complete, GATEWAY-003 (priorit
 175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
 Neither is started automatically. COMMERCE-012 and system-test work retain their
 additional dependency gates.
+
+## GATEWAY-002 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-GATEWAY-002 is **Changes Requested / Ready, Attempt 1**, claim clear.
+The first observability artifacts are retained, but the current rules are not yet
+C11/Grafana-Cloud conformant: they use unverified producer names, discovery as
+readiness, dashboard `$environment` variables inside backend alert evaluation,
+lack concrete datasource/evaluation bindings, and omit required latency/tool/throttle
+views. Attempt 2 is bounded to those observability corrections and exact fixtures.
+
+Developer-hosted Grafana arrival/alert evidence remains a required manual checkpoint
+before final acceptance. GATEWAY-003 remains Ready independently. COMMERCE-012 and
+SYSTEM-TEST-001 retain their gates.

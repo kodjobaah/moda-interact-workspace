@@ -790,3 +790,16 @@ Because their remaining prerequisites are already Complete, GATEWAY-003 (priorit
 175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
 Neither is started automatically. COMMERCE-012 and system-test work retain their
 additional dependency gates.
+
+## GATEWAY-002 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-GATEWAY-002 is **Changes Requested / Ready, Attempt 1**, claim clear.
+The first observability artifacts are retained, but the current rules are not yet
+C11/Grafana-Cloud conformant: they use unverified producer names, discovery as
+readiness, dashboard `$environment` variables inside backend alert evaluation,
+lack concrete datasource/evaluation bindings, and omit required latency/tool/throttle
+views. Attempt 2 is bounded to those observability corrections and exact fixtures.
+
+Developer-hosted Grafana arrival/alert evidence remains a required manual checkpoint
+before final acceptance. GATEWAY-003 remains Ready independently. COMMERCE-012 and
+SYSTEM-TEST-001 retain their gates.
