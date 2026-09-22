@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 140
 executor: null
 claimed_at: null
@@ -1024,3 +1024,516 @@ Implementation changes are on `task/ARCH-020-COMMERCE-018` in the dedicated
 implementation worktree. This parent report is on the mirrored parent task branch;
 both branches are to be committed and pushed for Architect Review. No enabled task,
 main merge, service gitlink update, or deployment was performed.
+
+## Architect Review — Attempt 7 — 2026-09-22
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Attempt 7 successfully closes the validation-only infrastructure gate from the prior
+Architect Review:
+
+```text
+npm run c20-fixture:reset
+  PASS
+
+npm run test:arch020-studio-integration:c20
+  PASS — 1 file / 4 tests
+
+npm run test:arch020-studio-integration
+  PASS — 1 file / 9 tests
+
+changed-test ESLint
+  PASS
+
+git diff --check
+  PASS
+
+disposable PostgreSQL/Redis
+  health PASS
+  cleanup PASS
+```
+
+The submitted Docker evidence is sufficient and is accepted. Do not repeat the
+Docker/provisioning work merely to manufacture more infrastructure evidence unless
+the Attempt-8 source change requires the C20 suite to be rerun, as specified below.
+
+The production Studio adapter corrections from the previous attempts remain accepted
+in substance. No new production-source defect was found during this review.
+
+One task-owned functional acceptance gap remains: **S01 / C20 I01 full authoring
+traversal is still not exercised against the real production services.**
+
+The current real C20 suite starts from COMMERCE-035's already-published tool,
+capabilities and releases. Its "authors through configured-environment activation and
+rollback" test only rolls back to the pre-seeded inactive release and reactivates the
+pre-seeded active release. It does not call:
+
+```text
+createTool
+createToolDraft
+publishToolRevision
+createCapability
+createDraft
+publishRevision
+createRelease
+```
+
+through `createCommerceStudioServices(...)`.
+
+C20 explicitly assigns former I01 `full authoring traversal` to COMMERCE-018 S01.
+The task's own S01 requires an actual author/validate/publish/release/activate flow
+through real services. The Completion Report correctly says full S01-S06 assembled
+acceptance is not claimed; therefore the task cannot yet move to Complete.
+
+This is not a request for exhaustive testing or another UI redesign. Attempt 8 is a
+single bounded real-adapter traversal.
+
+### A7-R1 — add one real S01 authoring traversal
+
+Primary file:
+
+```text
+tests/studio-integration-c20.test.ts
+```
+
+Do not change production source unless this exact real traversal exposes a genuine
+COMMERCE-018-owned adapter defect.
+
+Keep the existing four C20 tests. Add one fifth test with exactly this title:
+
+```text
+authors validates publishes releases activates and rolls back through real Studio services
+```
+
+Set:
+
+```ts
+authState.principal = principal(fixture.admins.superAdmin);
+```
+
+Use this exact operation/reason prefix:
+
+```text
+reason:
+  "ARCH-020 COMMERCE-018 S01 real authoring proof"
+
+operation IDs:
+  c20-studio-s01:create-tool
+  c20-studio-s01:create-tool-draft
+  c20-studio-s01:publish-tool
+  c20-studio-s01:create-capability
+  c20-studio-s01:create-capability-draft
+  c20-studio-s01:publish-capability
+  c20-studio-s01:create-release
+  c20-studio-s01:activate-release
+  c20-studio-s01:rollback-release
+```
+
+#### 1. Author and validate a new tool
+
+Create this exact tool definition in the test:
+
+```ts
+const authoredToolDefinition = {
+  name: 'c20_studio_authored_lookup',
+  definitionVersion: '1.0.0',
+  description: 'C20 Studio authored catalogue lookup.',
+  inputSchema: {
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  },
+  execution: {
+    kind: 'SHOPIFY_STOREFRONT_QUERY',
+    executorVersion: '1.0.0',
+    apiVersion: '2026-07',
+    schemaHash:
+      '54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc',
+    document:
+      'query C20StudioCatalog { products(first: 1) { nodes { id } } }',
+    operationName: 'C20StudioCatalog',
+    variables: {},
+    resultPath: 'products.nodes',
+  },
+  responseTemplate: {
+    kind: 'text',
+    text: '{{result.value}}',
+    unavailable: 'C20 Studio catalogue data is unavailable.',
+  },
+} as const;
+```
+
+Call:
+
+```ts
+services.validateToolDefinition({
+  definition: authoredToolDefinition,
+})
+```
+
+and require:
+
+```text
+kind: ok
+value.valid: true
+value.errors: []
+```
+
+Then call `services.createTool(...)` with:
+
+```text
+name:        c20_studio_authored_lookup
+displayName: C20 Studio Authored Lookup
+description: C20 Studio authored lookup.
+```
+
+Use the returned real `toolId`; do not infer or construct an ID.
+
+Call `services.createToolDraft(...)` using the exact returned tool ID and
+`authoredToolDefinition`. Require a real DRAFT revision and capture its returned
+`id` and `editVersion`.
+
+Call `services.publishToolRevision(...)` with that exact revision ID/editVersion.
+Require `status: PUBLISHED`. Use the returned exact `toolId` /
+`toolRevisionId` for the capability binding below.
+
+#### 2. Author a FEATURE capability and prove draft retention during discovery outage
+
+Call `services.createCapability(...)` with:
+
+```text
+key:         c20_studio_authored_feature
+displayName: C20 Studio Authored Feature
+description: C20 Studio authored feature.
+type:        FEATURE
+featureId:   fixture.billing.featureId
+```
+
+Use the returned real capability ID.
+
+Call `services.createDraft(...)` with:
+
+```ts
+promptTemplate:
+  'Use the C20 Studio authored lookup for fixture catalogue facts.',
+configuration: {},
+contractVersion: 'commerce.v1',
+toolBindings: [{
+  toolId: <exact created tool ID>,
+  toolRevisionId: <exact published tool revision ID>,
+}]
+```
+
+Capture the returned DRAFT revision exactly.
+
+Before publishing that capability revision, execute the already configured unavailable
+discovery path:
+
+```ts
+const discovery = await services.searchDocumentation({ query: 'product' });
+expect(discovery.kind).toBe('unavailable');
+```
+
+Then reread:
+
+```ts
+services.getCapability(
+  <exact created capability ID>,
+  <exact created draft revision ID>,
+)
+```
+
+and prove the draft still contains exactly the authored:
+
+```text
+promptTemplate
+configuration
+contractVersion
+toolBindings
+editVersion
+```
+
+This is the S04 saved-draft preservation proof. Do not infer preservation merely from
+audit counts.
+
+Then call `services.publishRevision(...)` with the exact draft revision ID and current
+editVersion and require a PUBLISHED revision.
+
+#### 3. Validate the response contract before release creation
+
+Use exactly:
+
+```ts
+const authoredResponseContract = {
+  version: 'response.v1',
+  instructions: 'Answer only from C20 Studio authoring facts.',
+  detailsSchema: {
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  },
+} as const;
+```
+
+Call:
+
+```ts
+services.validateResponseContract({
+  responseContract: authoredResponseContract,
+  example: {},
+  contentHash: 'c20-studio-s01-response-contract',
+})
+```
+
+and require:
+
+```text
+kind: ok
+value.valid: true
+value.errors: []
+value.contentHash: c20-studio-s01-response-contract
+```
+
+#### 4. Create the release with exact member order
+
+Create the release through `services.createRelease(...)` with:
+
+```text
+position 0:
+  capabilityId:
+    fixture.capabilities.base.capabilityId
+  capabilityRevisionId:
+    fixture.capabilities.base.revisionId
+
+position 1:
+  capabilityId:
+    <exact newly created FEATURE capability ID>
+  capabilityRevisionId:
+    <exact newly published FEATURE revision ID>
+```
+
+and:
+
+```text
+responseContract: authoredResponseContract
+```
+
+Require the returned release to preserve:
+
+```text
+members[0].position == 0
+members[0] == exact fixture BASE capability/revision identity
+
+members[1].position == 1
+members[1] == exact newly authored FEATURE capability/revision identity
+
+responseContract == authoredResponseContract
+```
+
+No array-index-derived IDs or latest-revision substitution is permitted.
+
+#### 5. Activate the newly authored release and rollback
+
+Before activation read:
+
+```ts
+services.getRelease(fixture.releases.active.releaseId)
+```
+
+and capture its real `activePointerVersion`.
+
+Activate the newly created release with that exact pointer CAS:
+
+```ts
+services.activateRelease({
+  operationId: 'c20-studio-s01:activate-release',
+  reason,
+  releaseId: <exact newly created release ID>,
+  expectedActiveReleaseVersion: <captured pointer version>,
+})
+```
+
+Require:
+
+```text
+kind: ok
+status: ACTIVE
+activePointerVersion == captured + 1
+```
+
+Then rollback to:
+
+```text
+fixture.releases.active.releaseId
+```
+
+using the exact returned `activePointerVersion` from activation. Require:
+
+```text
+kind: ok
+status: ACTIVE
+activePointerVersion == captured + 2
+```
+
+Reread the authored release after rollback and require it is no longer ACTIVE under
+the configured TEST environment.
+
+#### 6. Prove the lifecycle ledger
+
+After the flow, read:
+
+```ts
+const state = await backend.publication.snapshot();
+```
+
+For each of the nine S01 operation IDs listed above require:
+
+```text
+state.audits.filter(audit => audit.id === operationId).length == 1
+```
+
+Also assert the persisted release members/response contract using the returned real
+identities; do not use only total table counts.
+
+### A7-R2 — preserve the existing C20 evidence
+
+Attempt 8 must not weaken or delete the four existing real C20 scenarios. After the
+new S01 test is added, the real suite expectation becomes:
+
+```text
+tests/studio-integration-c20.test.ts
+  5 tests passed
+```
+
+The existing focused adapter suite remains:
+
+```text
+tests/studio-integration.test.ts
+  9 tests passed
+```
+
+No arbitrary additional test count is required.
+
+### A7-R3 — execution and failure routing
+
+Because the S01 test uses the real Prisma/lifecycle adapter, rerun the exact approved
+Attempt-7 disposable Docker procedure from the previous Architect Review. Use the same
+image versions, safety guards, dynamic loopback ports, database name, Redis namespace,
+ownership label and cleanup rules.
+
+Run:
+
+```bash
+npm run c20-fixture:reset
+npm run test:arch020-studio-integration:c20
+npm run test:arch020-studio-integration
+npx eslint tests/studio-integration-c20.test.ts
+git diff --check
+```
+
+Also rerun the repository-required:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
+
+The already documented unrelated baseline remains non-blocking only when materially
+unchanged and no diagnostic points at an Attempt-8-owned file.
+
+If the exact S01 flow exposes:
+
+```text
+COMMERCE-018 adapter defect
+```
+
+fix only that bounded defect inside COMMERCE-018, rerun the affected proof and report
+the change.
+
+If it exposes an accepted COMMERCE-013 or COMMERCE-035 producer defect, do **not**
+modify that producer from this task. Return COMMERCE-018 `blocked` with the exact
+reproduction for `moda_architect`.
+
+### A7-R4 — durable report/state reconciliation
+
+Before returning Attempt 8:
+
+1. check S01 only when the exact real traversal above passes;
+2. reconcile S02-S06 truthfully from the combined accepted component/focused/C20
+   evidence; do not claim terminal cross-service/system-test behavior that was not run;
+3. update Work Items / Acceptance Criteria / Validation where the evidence supports it;
+4. append an Attempt 8 Completion Report containing:
+   - implementation commit(s);
+   - parent report commit;
+   - launcher/worktree synchronization evidence;
+   - the 5/5 C20 result;
+   - the 9/9 focused Studio result;
+   - Docker endpoint class/server version/image digests/container names;
+   - database name/Redis namespace without URLs/password;
+   - health and cleanup success;
+   - lint/typecheck/build/diff results and exact unchanged baseline diagnostics;
+5. return:
+
+```yaml
+status: review
+attempt: 8
+executor: null
+claimed_at: null
+```
+
+6. push both mirrored task branches;
+7. STOP.
+
+Do not begin COMMERCE-012, COMMERCE-024, GATEWAY-001 or any system-test task.
+
+### Reviewed Files
+
+- `moda-interact-commerce/tests/studio-integration-c20.test.ts`
+- `moda-interact-commerce/tests/studio-integration.test.ts`
+- `moda-interact-commerce/src/commerce/integration/studio/services.ts`
+- `moda-interact-commerce/src/studio/server-actions.ts`
+- `moda-interact-commerce/src/studio/contracts.ts`
+- `moda-interact-commerce/src/commerce/integration/backend/c20-test-fixture.ts`
+- `docs/architecture/ARCH-020-implementation-contracts.md`
+- this task's Attempt-7 Completion Report
+
+### Validation Reviewed
+
+Attempt 7 durable evidence is accepted:
+
+```text
+real C20 suite:       4/4 PASS
+focused Studio suite: 9/9 PASS
+changed-test ESLint:  PASS
+git diff --check:     PASS
+PostgreSQL health:    PASS
+Redis health:         PASS
+container cleanup:    PASS
+```
+
+Repository-wide lint/typecheck/build remain non-zero only on the already recorded
+unrelated baseline according to the Completion Report.
+
+### Architecture Conformance
+
+Partial.
+
+The production adapter and the Attempt-7 validation infrastructure conform. The
+remaining gap is evidence for C20's explicitly assigned I01/S01 real authoring
+traversal. A task whose report explicitly says full S01 assembled acceptance is not
+claimed cannot yet satisfy its own S01 criterion.
+
+### Follow-up
+
+Return this same task to `ready`, retain `attempt: 7`, clear the claim and make no
+downstream task Ready.
+
+The next successful `/moda-task ARCH-020-COMMERCE-018` claim creates Attempt 8 exactly
+once.
+
+No production source correction is requested before that claim.
