@@ -38,7 +38,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
-| [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | ready (Changes Requested, Attempt 1) | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
+| [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | ready (Attempt 2 checkpoint; Attempt 2 retained) | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-037, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-037](COMMERCE-037-normalize-availability-shop-scope.md) | Normalize external availability merchant shop scope | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-028 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
@@ -1051,3 +1051,16 @@ repository-wide diagnostics are the documented unrelated baseline.
 COMMERCE-024's human-readable dependency list/index row is reconciled to include
 COMMERCE-036, matching its authoritative YAML. COMMERCE-024 remains Pending because
 other prerequisites are still incomplete. No task is automatically launched.
+
+## COMMERCE-031 Attempt 2 implementation checkpoint — 2026-09-22
+
+COMMERCE-031 is returned **Ready, Attempt 2 retained, claim cleared**.
+
+The Attempt-2 lifecycle/source corrections are accepted in substance: server-owned
+saved definitions, claim-before-side-effects, tool-test cancellation/expiry,
+conversation fixture byte bounds/freezing and the synthetic conversation runner hook
+are present. The next claim creates Attempt 3 and is limited to the named PR01-PR03
+regressions, any defect those exact regressions expose, required validation and
+durable Completion Report/commit/push reconciliation.
+
+No downstream task is promoted.

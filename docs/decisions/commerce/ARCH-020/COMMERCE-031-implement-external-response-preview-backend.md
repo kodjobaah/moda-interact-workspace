@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T13:05:59Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-019
@@ -707,3 +707,507 @@ The next successful `/moda-task ARCH-020-COMMERCE-031` claim creates Attempt 2
 exactly once.
 
 Implement only A1-R1 through A1-R6, return to Review and STOP.
+
+## Architect Review — Attempt 2 implementation checkpoint — 2026-09-22
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+This is an implementation checkpoint, not an acceptance review.
+
+Direct inspection of the current Attempt-2 worktree accepts the lifecycle/source
+corrections from A1-R1 through A1-R4 in substance:
+
+```text
+server-owned saved tool definitions                         implemented
+saved definition frozen into preview identity               implemented
+claim/replay before quota/receipt/processor side effects    implemented
+tool-test cancel state and AbortSignal propagation           implemented
+RUNNING expiry -> UNKNOWN on the same run ID                implemented
+aggregate conversation external-fixture byte bound           implemented
+conversation saved-definition freezing                       implemented
+conversation synthetic external fixture runner hook          implemented
+response media/type validation                               implemented
+```
+
+Do not redesign or revert those paths merely because this task is returned to Ready.
+
+The task is returned to `ready` only because the required named PR01-PR03 regressions,
+Completion Report reconciliation, commits and mirrored pushes remain incomplete.
+The next successful `/moda-task ARCH-020-COMMERCE-031` claim creates Attempt 3
+exactly once.
+
+Attempt 3 is **proof/handoff focused** unless one of the exact regressions below
+exposes a genuine COMMERCE-031-owned production defect.
+
+### A2-R1 — finish PR01 named processor lifecycle proof
+
+Primary file:
+
+```text
+tests/external-preview.test.ts
+```
+
+Keep the current tests. The focused suite must contain and pass these exact named
+scenarios.
+
+#### Visual processor
+
+Use this exact test title:
+
+```text
+runs visual JSON sample through processor receipt and saved preview lifecycle
+```
+
+It must prove:
+
+```text
+actual createResponseProcessor() is used
+saved server-owned EXTERNAL_HTTP definition is used
+COMMERCE-030 validateSampleAndRecord called exactly once
+status == COMPLETED
+result.data.values == exact expected processed object
+getToolTest(same previewRunId) returns the exact terminal result
+provider HTTP calls == 0
+credential resolution calls == 0
+credential decryption calls == 0
+```
+
+#### JavaScript processor
+
+Add this exact test title:
+
+```text
+runs JavaScript sample through the accepted code processor and receipt lifecycle
+```
+
+Use the actual accepted `createCodeResponseProcessor()` and a saved EXTERNAL_HTTP
+definition whose response processing is `JAVASCRIPT`.
+
+Require:
+
+```text
+COMMERCE-030 validator called exactly once
+status == COMPLETED
+bounded processed values equal the expected object
+same run reread returns the exact terminal result
+provider HTTP calls == 0
+credential resolution calls == 0
+credential decryption calls == 0
+```
+
+Do not replace either processor with a test-only implementation merely to satisfy
+the test name.
+
+### A2-R2 — finish PR02 replay/cancel/expiry/quota proof
+
+Use two service instances that share the same PreviewStateStore/Redis-backed test
+state where required.
+
+Add these exact test titles:
+
+```text
+replays the same preview run across two instances before quota validation and processing
+
+conflicts a changed sample payload before quota validation and processing
+
+cancels a blocked external tool test across instances and releases quota
+
+expires a running external tool test to UNKNOWN on the same run id
+
+enforces distributed external preview quota across different new run ids
+```
+
+#### Same-operation replay
+
+For two concurrent calls with the same:
+
+```text
+previewRunId
+toolRevisionId
+arguments
+fixture
+saved definition identity
+```
+
+prove:
+
+```text
+savedTools.load may occur as required to establish the frozen identity
+one CREATED preview execution
+validator calls == 1
+processor calls == 1
+quota admission for business execution == 1
+both callers observe the same previewRunId
+both callers observe the same terminal result
+neither caller receives QUOTA_EXCEEDED
+```
+
+A REPLAY must perform zero second receipt/processor side effects.
+
+#### Changed payload conflict
+
+Reuse the same previewRunId but change at least the fixture body.
+
+Require:
+
+```text
+ID_CONFLICT
+second validator call count == 0
+second processor call count == 0
+second business quota admission count == 0
+```
+
+#### Cancellation
+
+Make the processor block until its AbortSignal is aborted.
+
+Execution:
+
+```text
+instance A -> starts new external preview run and blocks in processor
+instance B -> cancelToolTest(principal, same previewRunId)
+```
+
+Require:
+
+```text
+processor signal becomes aborted
+same previewRunId becomes CANCELLED
+result == null
+quota released
+later getToolTest(same previewRunId) remains CANCELLED
+```
+
+#### Expiry
+
+Persist/produce a RUNNING tool test, advance the injected clock past
+`PREVIEW_SLOT_MS`, then read the same run.
+
+Require:
+
+```text
+status == UNKNOWN
+previewRunId unchanged
+no replacement run created
+```
+
+#### Distributed quota
+
+Use two **different** newly-created run IDs for the same admin and prove the accepted
+external-preview distributed quota behavior. This scenario is separate from replay;
+same-operation replay must never fail only because the quota is already occupied by
+its original operation.
+
+### A2-R3 — finish PR03 saved-definition/rejection/zero-live-dependency proof
+
+Add these exact test titles:
+
+```text
+uses the server saved definition and ignores a caller definition override
+
+rejects a foreign conversation fixture tool revision before storing the conversation
+
+rejects a fixture for a selected non external tool before storing the conversation
+
+rejects conversation external fixtures above the aggregate byte limit
+
+rejects unsupported external sample media without processing
+
+rejects an oversize external sample without processing
+
+rejects raw HTML when the saved response mode cannot accept it
+
+rejects invalid processor output without raw fallback
+
+runs a frozen conversation external fixture without live provider or credential access
+```
+
+#### Saved definition authority
+
+The public Attempt-3 sample request must not have an authoritative `definition`
+field.
+
+If necessary, construct a raw/cast request containing a conflicting extra
+`definition` property and prove:
+
+```text
+server savedTools.load definition determines processing
+caller-supplied extra definition has no effect
+receipt identity uses server-saved definition
+returned connectionRevisionId/runtime trace comes from server-saved definition
+```
+
+#### Conversation ownership/type validation
+
+Before conversation state is stored:
+
+```text
+foreign toolRevisionId not in frozen manifest
+  -> reject
+
+selected toolRevisionId whose saved definition is not EXTERNAL_HTTP
+  -> reject
+
+aggregate UTF-8 bytes of all fixture bodyText values > 262144
+  -> reject
+```
+
+Do not infer EXTERNAL_HTTP ownership from fixture key/name; use the server-owned saved
+tool definition.
+
+#### Media/size/output rejection
+
+Explicitly prove:
+
+```text
+unsupported media -> fail closed, zero processor call when processing is impossible
+
+oversize sample/request -> fail closed before processing
+
+raw HTML incompatible with saved response mode -> fail closed
+
+processor invalid output -> fail closed
+                         -> no raw-body/result fallback
+```
+
+#### Zero live dependencies
+
+For both successful external-fixture execution and the relevant rejection paths, use
+explicit traps/counters for the live dependencies available at the composition
+boundary.
+
+At minimum prove:
+
+```text
+provider HTTP calls       == 0
+credential resolution     == 0
+credential decryption     == 0
+```
+
+Trap functions should throw if invoked; do not infer zero calls only because one test
+factory happens not to expose a dependency.
+
+#### Conversation synthetic execution
+
+For a frozen conversation tool whose exact toolRevisionId has a matching external
+fixture:
+
+```text
+externalFixtureRunner is used
+normal/live PreviewToolExecutionPort.execute is not used for that tool call
+saved/frozen definition is used
+normal bounded CommerceToolResult reaches the runner
+fixture/definition remains frozen for the conversation lifetime
+```
+
+A later changed fixture request using the same conversation identity must conflict
+through the existing frozen conversation payload identity.
+
+### A2-R4 — preserve already-implemented Attempt-2 source behavior
+
+Do not proactively edit production source beyond what is required by a failing named
+regression.
+
+The following current implementation is accepted in substance and must not regress:
+
+```text
+src/commerce/external-preview/**
+  server-owned savedTools loader
+  no caller-authoritative definition
+  claim-before-side-effects execution
+  COMMERCE-030 receipt delegation
+  COMMERCE-025/026 processor delegation
+  bounded media/type validation
+
+src/commerce/preview/**
+  cancelRequested stored state
+  requestCancelToolTest
+  cancelToolTest
+  AbortController ownership
+  CANCELLED same-ID terminal state
+  RUNNING expiry -> UNKNOWN
+  aggregate external fixture byte bound
+  frozen external definitions for conversation
+  externalFixtureRunner synthetic hook
+```
+
+If a named regression exposes an actual COMMERCE-031 defect, make the smallest
+task-owned source correction, record it in the Completion Report and rerun only the
+affected focused proof plus the required validation below.
+
+If the failure is in an accepted producer owned by COMMERCE-025, COMMERCE-026 or
+COMMERCE-030, do not modify that producer from this task. Return COMMERCE-031
+`blocked` with the exact reproduction for `moda_architect`.
+
+### A2-R5 — exact validation contract
+
+After the named PR01-PR03 regressions are complete, run exactly once:
+
+```bash
+npm run test:arch020-external-preview
+
+npm run test:arch020-external-publication
+
+npm run test:arch020-code-processor
+
+npx vitest run \
+  tests/preview-service.test.ts \
+  tests/preview-store.test.ts \
+  tests/preview-routes.test.ts
+
+npx eslint \
+  src/commerce/external-preview \
+  src/commerce/preview \
+  tests/external-preview.test.ts
+
+npm run typecheck
+npm run build
+
+git diff --check
+```
+
+The external-preview suite must identify the named PR01-PR03 scenarios in its output
+or Completion Report. A passing aggregate count without the named evidence is not
+sufficient.
+
+Repository `typecheck`/`build` may remain non-zero only when:
+
+```text
+diagnostics are materially unchanged from the documented baseline
+AND
+no diagnostic points at:
+  src/commerce/external-preview/**
+  src/commerce/preview/**
+  tests/external-preview.test.ts
+```
+
+Do not fix unrelated Prisma/integration work from COMMERCE-031.
+
+### A2-R6 — implementation commit, Completion Report and mirrored handoff
+
+Once A2-R1 through A2-R5 pass, commit/push the implementation worktree before
+reconciling the parent report.
+
+Implementation commit must include only task-owned corrections/proof files, normally:
+
+```text
+src/commerce/external-preview/**
+src/commerce/preview/**
+tests/external-preview.test.ts
+package.json / package-lock.json only when actually required by this task
+```
+
+Record the resulting implementation SHA.
+
+Then update the canonical Completion Report in this task file.
+
+The Attempt-3 report must contain:
+
+```text
+Attempt: 3
+implementation commit: <exact SHA>
+parent report commit: <filled after parent commit>
+
+launcher-resolved implementation worktree
+launcher-resolved parent worktree
+start-of-attempt synchronization evidence
+both mirrored branches pushed/clean
+
+PR01:
+  visual processor lifecycle test name + PASS
+  JavaScript processor lifecycle test name + PASS
+
+PR02:
+  cross-instance same-operation replay test + PASS
+  changed-payload conflict test + PASS
+  cancellation test + PASS
+  expiry UNKNOWN test + PASS
+  different-new-run distributed quota test + PASS
+
+PR03:
+  saved-definition authority + PASS
+  foreign fixture rejection + PASS
+  non-external fixture rejection + PASS
+  aggregate byte bound + PASS
+  unsupported media + PASS
+  oversize input + PASS
+  raw HTML fail-closed + PASS
+  invalid output/no fallback + PASS
+  frozen conversation synthetic fixture + PASS
+  explicit zero provider HTTP/credential/decrypt counters + PASS
+
+adjacent validation:
+  external publication command/result
+  code processor command/result
+  legacy preview command/result
+  focused ESLint
+  typecheck/build exact baseline diagnostics
+  git diff --check
+```
+
+Only check the Work Items / Acceptance Criteria / Validation items when this evidence
+actually exists.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+Do not edit this Architect Review.
+
+Commit the parent report, push the parent task branch, confirm both mirrored task
+branches are clean and synchronized, then STOP.
+
+Do not begin COMMERCE-024, COMMERCE-012 or any system-test task.
+
+### Reviewed Files
+
+Checkpoint inspection covered:
+
+- `moda-interact-commerce/src/commerce/external-preview/contracts.ts`
+- `moda-interact-commerce/src/commerce/external-preview/service.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/preview/store.ts`
+- `moda-interact-commerce/src/commerce/preview/redis-store.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/tests/external-preview.test.ts`
+- this task's existing Completion Report and Attempt-1 Architect Review
+
+### Validation Reviewed
+
+Checkpoint handoff reports:
+
+```text
+Attempt-2 lifecycle source corrections implemented
+focused/adjacent tests: 34/34 plus external suites PASS
+changed-boundary ESLint: PASS
+git diff --check: PASS
+repository typecheck/build: existing unrelated baseline
+```
+
+Those results are accepted as implementation-progress evidence but are not yet
+sufficient for Architect Review because the named PR01-PR03 regressions and durable
+Attempt-3 report do not yet exist.
+
+### Architecture Conformance
+
+Source direction is conformant in substance.
+
+The remaining gate is deterministic proof/handoff, not a new architecture design.
+
+### Follow-up
+
+Return the same task to `ready`, preserve `attempt: 2`, clear the claim.
+
+The next successful `/moda-task ARCH-020-COMMERCE-031` claim creates Attempt 3
+exactly once.
+
+Attempt 3 implements only A2-R1 through A2-R6, returns to Review and STOPs.

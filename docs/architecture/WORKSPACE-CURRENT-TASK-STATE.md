@@ -1557,3 +1557,18 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-031 Attempt 2 implementation checkpoint — 2026-09-22
+
+**Ready, Attempt 2 retained; claim cleared.**
+
+The external-preview lifecycle corrections requested after Attempt 1 are now present
+in source and accepted in substance: saved definitions are server-owned/frozen,
+preview replay is claimed before quota/receipt/processor work, tool tests support
+cancel/expiry on the same run identity, conversation fixture bodies are aggregate
+bounded and frozen, and synthetic external conversation calls have an injected
+runner path.
+
+The remaining COMMERCE-031 gate is named PR01-PR03 proof plus durable mirrored
+handoff. The next launcher claim is Attempt 3 and must not broaden into new preview
+architecture or downstream integration. COMMERCE-024/012 remain gated.
