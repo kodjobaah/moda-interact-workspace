@@ -1339,6 +1339,33 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
 
+## COMMERCE-028 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Changes Requested / Ready, Attempt 1**, claim clear.
+Implementation `715da4d` is provisionally conformant at the credential-service source
+boundary, but C21 CR02 is not yet proven. The latest task review requires a dedicated
+real PostgreSQL credential rehearsal using two independent Prisma clients plus the
+accepted COMMERCE-020 command kernel to prove NULL-platform uniqueness, one-effect/
+one-audit replay, stale-CAS race, transaction rollback and no plaintext persistence.
+The developer must execute that committed scenario before CR02 may be checked.
+
+No dependency is promoted. COMMERCE-032, GATEWAY-003, COMMERCE-024, COMMERCE-012
+and terminal system-test work retain their dependencies. No downstream task is
+started automatically.
+
+## COMMERCE-028 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Accepted / Complete, Attempt 2** (`7384f81`; report
+`f5214dc1`). CR01–CR03 are established, including the dedicated real PostgreSQL
+CR02-PG-01..05 rehearsal with two Prisma clients, actual command-kernel replay/CAS,
+NULL-platform uniqueness, rollback and no-plaintext persistence.
+
+COMMERCE-032 is **Ready, Attempt 0**. Review separately identified a pre-existing
+COMMERCE-020/database contradiction for BEARER revision `authHeader`. C21 now makes
+the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
+credential resolution derives `Authorization`. The bounded producer correction is
+materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
+on it before final production composition. No task is started automatically.
 ## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
 
 ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
