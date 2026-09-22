@@ -177,6 +177,38 @@ the same unrelated commerce execution typing failures in
 ### Deviations
 
 No scope deviation. The architect-authored review text was preserved unchanged.
+Implemented in isolated worktree; pending architect review.
+
+### Files Changed
+
+`moda-interact-commerce/src/studio/connections/`, `app/connections/`,
+`components/studio-shell.tsx`, `app/styles.css`,
+`tests/connections-ui.test.tsx`, `package.json`, and `package-lock.json`.
+
+### Work Completed
+
+Added fixture-backed U15/U16 Connections routes with ADMIN/SUPER_ADMIN
+presentation, search/filter/cursor navigation, immutable revision selection,
+status-only credential controls, per-shop status selection, guarded lifecycle
+commands, and the Connections sidebar entry after Explore Shopify. The typed
+port now includes `updateMetadata` and explicit `setEnabled` operations.
+
+### Validation Results
+
+Focused `npm run test:arch020-connections-ui` passed 5 tests in the isolated
+worktree, including the XN01 fixture path and duplicate-click credential guard.
+VS Code diagnostics are clean for the Connections source and focused test file.
+`npm run lint` passed with two pre-existing warnings outside the touched
+Connections files. `git diff --check` passed. Full repository typecheck remains
+unverified; the previously observed full typecheck was blocked by pre-existing
+backend/Prisma diagnostics and is not claimed here.
+
+### Deviations
+
+Initial implementation was mistakenly made in the main checkout; it was
+preserved and transferred into the dedicated worktree before this report.
+The frontend uses strict fixture ports and does not implement backend, network,
+or cryptographic behavior.
 
 ### Assumptions
 
@@ -200,15 +232,15 @@ failures are pre-existing and outside the owned frontend boundary.
 
 Expected mirrored branch: `task/ARCH-020-COMMERCE-022`.
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-022`.
 Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-022`.
 The implementation worktree was physically isolated. Dependency pin: shared
 `0.14.2`. Implementation commit: `0bffc5b` (`fix commerce connections
 correction pass`), pushed to the expected remote branch. The parent report is
 being committed and pushed on the mirrored parent branch for Architect Review.
+Dedicated worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-022`.
+Branch: `task/ARCH-020-COMMERCE-022`. Implementation commit and push are being
 
 ## Architect Review
-
 ### Review Status
 
 Changes Requested.

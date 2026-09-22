@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -24,7 +24,7 @@ enables:
   - ARCH-020-COMMERCE-024
   - ARCH-020-GATEWAY-003
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Implement scoped external API credentials

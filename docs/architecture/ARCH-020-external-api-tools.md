@@ -504,13 +504,18 @@ Decode declared responseFormat under section2.2. Reject MIME/charset mismatch,
 invalid JSON in JSON mode, unsafe keys or missing visual resultPath. TEXT mode
 passes bodyText to code without attempting JSON parsing. Pass selected visual
 source or TransformResponse to the injected processing dispatcher; INVALID_RESPONSE maps to
-UNAVAILABLE false, deadline/cancel preserve their existing codes. No raw fallback.
+UNAVAILABLE false. At the published `CommerceToolResult` boundary, both processor
+deadline and processor cancellation map to nonretryable DEADLINE because accepted
+Shared 0.14.2 does not expose CANCELLED in `CommerceErrorCodeSchema`; runner-level
+turn cancellation remains CANCELLED. No raw fallback.
 
 Error mapping: missing/disabled/foreign credential -> DENIED nonretryable; invalid
 arguments -> INVALID_INPUT false; remote401/403/404, redirect, bad JSON/schema/body
 bound/DNS target -> UNAVAILABLE false;429 -> THROTTLED true;5xx/connection failure ->
-UNAVAILABLE true; deadline -> DEADLINE false; abort -> CANCELLED false. No raw provider
-body, credentials or URL query in returned errors/logs. Bound numeric status and
+UNAVAILABLE true; deadline -> DEADLINE false; abort/cancel -> DEADLINE false at the
+`CommerceToolResult` boundary. Runner-level `RunCommerceTurnResult` cancellation
+remains CANCELLED; COMMERCE-021 must not locally widen the accepted Shared 0.14.2
+result union. No raw provider body, credentials or URL query in returned errors/logs. Bound numeric status and
 connection revision ID may appear in diagnostic fields with shared logging.
 Do not turn a missing field into a made-up success. Templates retain unavailable text.
 
@@ -976,3 +981,85 @@ execution frontier is `COMMERCE-020`, `021`, `022`, `023`, `025`, `026` and `027
 Ready. This does not imply that credentials, real HTTP, processors, publication,
 preview, availability, production wiring, gateway configuration or system tests
 are complete; their own task dependencies remain authoritative.
+
+### COMMERCE-020 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `5229b033` and parent report `29a6ffb1`. Preserve the lifecycle/CAS,
+immutable-revision and transaction/audit direction. Four bounded C21 contract defects
+remain: Commerce still pins Shared `0.13.1` and locally duplicates/mismatches the
+accepted `0.14.2` connection contracts; the reusable command kernel omits credential
+actions and an actual same-connection `FOR UPDATE` lock; development bypass does not
+materialize/verify its reserved PlatformAdmin row before FK-backed writes; and lifecycle
+request validation/default-port normalization is not strict (`:443` is retained and
+invalid bounds may reach/clamp at Prisma). The task Architect Review contains exact
+A1-R1..A1-R4 source, behavior and focused-proof instructions. No exhaustive retest,
+downstream promotion or automatic launch.
+
+## COMMERCE-021 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; claims cleared.** Reviewed
+implementation `b19f9d7` and report `5abdd61a`. The fixed-origin/TLS pinning, query
+encoding, one-request direction, injected processors, result validation and provider
+status mapping are retained. Four bounded functional corrections remain: provide the
+actual Node DNS resolver and replace local CIDR maintenance with a maintained global
+address classifier; impose absolute DNS/connect/body stage deadlines with active
+stream cleanup; reject raw parsed JSON beyond depth 20 or containing prototype-
+pollution keys before processing; and make EXTERNAL_HTTP an explicit exhaustive
+014 dispatcher branch. HT03 must prove compressed-size and in-flight deadline/abort
+behaviour through the production path, not only an already-aborted signal.
+
+Architectural contradiction resolved here: accepted Shared 0.14.2 does not permit a
+`CANCELLED` `CommerceToolResult`. Therefore processor/HTTP cancellation maps to
+nonretryable `DEADLINE` at this tool-result boundary; turn-runner cancellation remains
+runner-level `CANCELLED`. No new Shared publication is required by COMMERCE-021.
+Downstream C21 tasks remain dependency-gated.
+
+
+## COMMERCE-021 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 2 retained; claims cleared.** The production DNS
+factory/classifier, socket pinning, independent DNS/connect/body bounds, active
+body-abort handling, raw JSON safety traversal and explicit EXTERNAL_HTTP dispatcher
+from Attempt 2 are retained. Two bounded conformance issues remain: post-header
+early rejection must terminate the provider response body (including 404/429/5xx
+and unsupported content-encoding), and the outer DefinitionExecutor must not change
+external HTTP `DEADLINE` back to `retryable:true`. C21 continues to require
+nonretryable `DEADLINE` at the CommerceToolResult boundary. No Shared widening,
+provider retry or transport redesign.
+
+
+## COMMERCE-021 Attempt 3 acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 3.** The C21 HTTP execution boundary now terminates
+provider bodies on every post-header early rejection, including 404/429/5xx,
+unsupported content encoding and post-header deadline/abort paths. EXTERNAL_HTTP
+pre-dispatch and late deadlines remain nonretryable through `DefinitionExecutor`;
+existing Shopify/policy deadline semantics are unchanged. The previously accepted
+production DNS/global-address classification, pinned TLS socket, independent stage
+bounds, decoded-byte limit, raw JSON safety validation, one provider-budget
+reservation and no-retry/no-redirect behavior remain intact. No downstream task is
+newly Ready from this acceptance alone.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+The C21 section 6 / X12-XN04 frontend implementation is **Accepted / Complete** at
+Attempt 3. Published source is immutable, unpublished SUPER_ADMIN drafts can be
+validated/saved/tested before SUPER_ADMIN-only publication, typed sample failures and
+schema expected-details are preserved, and run admission/reconciliation retains one
+operation identity. Final host installation and assembled engine/provider flow remain
+COMMERCE-024 / SYSTEM-TEST-002 scope.
+## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
+connection-lifecycle producer now uses exact Shared `0.14.2` DTOs/results, implements
+the six-action reusable command kernel, authorizes before replay, materializes the
+development PlatformAdmin inside the transaction, acquires a parameterized
+same-connection PostgreSQL `FOR UPDATE` lock, keeps mutation/audit atomic, validates
+bounded lifecycle inputs and stores canonical HTTPS origins. Credential persistence,
+resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-021.
+
+`COMMERCE-028` is now **Ready** because its other declared prerequisites
+`DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
+`COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
+their other authoritative dependencies.
