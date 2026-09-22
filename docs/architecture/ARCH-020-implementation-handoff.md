@@ -1525,3 +1525,17 @@ synthetic runner with zero live provider/credential calls; and reconcile the
 unchecked Work Items/PR criteria only after that evidence exists.
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched.
+
+## COMMERCE-031 Attempt 4 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 4 retained.**
+
+The external-preview lifecycle implementation remains substantially correct and the
+new foreign fixture rejection is valid. Acceptance is still blocked by three
+task-owned items: normalize parameterized sample MIME before the saved allowlist
+comparison; prove replay/quota/cancel/expiry through the actual Redis preview store;
+and exercise the successful frozen conversation external-fixture path with explicit
+zero live provider/credential execution.
+
+Attempt 5 is bounded to those corrections/evidence and Completion Report
+reconciliation. COMMERCE-024/012 remain gated and no downstream task is launched.
