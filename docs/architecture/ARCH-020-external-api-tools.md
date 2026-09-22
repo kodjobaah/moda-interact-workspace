@@ -1071,23 +1071,18 @@ bounds, decoded-byte limit, raw JSON safety validation, one provider-budget
 reservation and no-retry/no-redirect behavior remain intact. No downstream task is
 newly Ready from this acceptance alone.
 
-## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+## COMMERCE-023 Attempt 2 architect review — 2026-09-22
 
-The C21 section 6 / X12-XN04 frontend implementation is **Accepted / Complete** at
-Attempt 3. Published source is immutable, unpublished SUPER_ADMIN drafts can be
-validated/saved/tested before SUPER_ADMIN-only publication, typed sample failures and
-schema expected-details are preserved, and run admission/reconciliation retains one
-operation identity. Final host installation and assembled engine/provider flow remain
-COMMERCE-024 / SYSTEM-TEST-002 scope.
-## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
+`ARCH-020-COMMERCE-023` remains **Ready / Changes Requested, Attempt 2**. Attempt 2
+correctly made External API a first-class U06 choice and removed implicit fixture
+composition, but the complete section 6/X06/XN02 contract is not yet met. Required
+remaining work is bounded to a Shared-valid starter draft plus exact
+connection/revision return context, lossless typed query/projection/filter editing and
+mode/code-panel slot behavior, canonical generation/hash guarded synthetic sample
+validation, and exact frozen-revision U14 fixture execution through an injected port.
+No live provider/credential/backend implementation moves into COMMERCE-023.
 
-**Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
-connection-lifecycle producer now uses exact Shared `0.14.2` DTOs/results, implements
-the six-action reusable command kernel, authorizes before replay, materializes the
-development PlatformAdmin inside the transaction, acquires a parameterized
-same-connection PostgreSQL `FOR UPDATE` lock, keeps mutation/audit atomic, validates
-bounded lifecycle inputs and stores canonical HTTPS origins. Credential persistence,
-resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-021.
+## COMMERCE-023 Attempt 3 architect review — 2026-09-22
 
 `COMMERCE-028` is now **Ready** because its other declared prerequisites
 `DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
@@ -1143,6 +1138,29 @@ Two C21 mismatches remain: definition identity must use the canonical
 must validate current non-secret connection/revision auth shape without requiring a
 live PER_SHOP credential. No dependant is promoted until COMMERCE-030 is Complete.
 
+## COMMERCE-023 Attempt 4 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 4**, claim clear. The
+committed implementation advances the external fixture integration, but C21 X06/XN02
+is not yet complete. The task's latest Architect Review is the complete deterministic
+Attempt 5 correction contract: code-panel/mode-switch wiring; query/literal and
+8-filter typed authoring; editable sample and response-shape guidance; exact fallback
+return context plus role-aware publication reason/review; and one full new-tool XN02
+proof.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
+automatically.
+
+## COMMERCE-023 Attempt 5 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 5**, claim clear.
+Implementation `c184c58` is close to the C21 X06/XN02 boundary. The latest task review
+narrows Attempt 6 to three remaining items: bind U14 and Publish to the persisted saved
+revision rather than unsaved local state; make Literal/IN typed authoring exact and
+retain invalid IN text; and complete the exact XN02 proof/current Completion Report.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
+automatically.
 ## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 3** (`d15d3f5`).
@@ -1219,3 +1237,21 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-023 Attempt 7 architect review — 2026-09-22
+
+`ARCH-020-COMMERCE-023` remains **Ready / Changes Requested, Attempt 7**. The saved
+revision/U14 separation and typed IN draft handling are materially improved. Final
+acceptance is bounded to preserving validation across Save only for an already
+validated exact persisted candidate, using the persisted selected definition rather
+than composer-unsaved content as `savedDefinition`, and making IN validation
+scalar-only with canonical-draft reconciliation. COMMERCE-024 remains gated.
+
+## COMMERCE-023 Attempt 8 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-023` is **Accepted / Complete, Attempt 8**. U06/U14 now preserve a
+true persisted saved-definition baseline independently from composer-unsaved state,
+and Save preserves current validation only for an already-validated candidate
+persisted unchanged. IN filters are locally scalar-only/same-kind/bounded and retained
+invalid drafts reconcile when canonical filters change. Final production composition
+remains COMMERCE-024 ownership.

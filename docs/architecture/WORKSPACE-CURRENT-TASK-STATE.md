@@ -1338,16 +1338,23 @@ because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 ar
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
 
+## COMMERCE-023 Attempt 2 architect review — 2026-09-22
 
-## COMMERCE-035 validation-only unblock — 2026-09-22
+`ARCH-020-COMMERCE-023` is **Ready / Changes Requested, Attempt 2**, claim clear.
+Attempt 2 passes its submitted focused tests but still lacks several required U06/U14
+runtime behaviors from the existing correction contract. The latest task review is the
+authoritative Attempt 3 contract. COMMERCE-024 and COMMERCE-012 remain dependency
+gated; nothing is launched automatically.
 
-COMMERCE-035: **Ready / Attempt 3 retained / claim clear**. Next claim is Attempt 4.
-No source correction is currently requested. Attempt 4 is explicitly authorised to
-create its own loopback-only disposable Docker PostgreSQL/Redis targets and execute
-the C20 reset/proof. Missing pre-supplied URLs are not a blocker. Dependants are not
-auto-launched.
+## COMMERCE-023 Attempt 3 architect review — 2026-09-22
 
-## COMMERCE-035 Attempt 4 architect acceptance — 2026-09-22
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 3**, claim clear.
+Implementation `c71b30e` materially improves the U06 external editor but does not yet
+satisfy C21 X06/XN02. The task's latest Architect Review is the complete deterministic
+Attempt 4 correction contract: valid starter/return context, complete typed
+query/filter/sort and code-slot authoring, editable sample plus current-validation
+review/publish state, exact-revision U14 fixture port with no task-owned diagnostics,
+and the owned new-tool XN02 path.
 
 **Accepted / Complete, Attempt 4** (`9a0120b`; parent report `b357be28`).
 
@@ -1456,6 +1463,29 @@ The next claim is Attempt 3 and must correct only canonical tool revision hashin
 remove credential existence from publication/sample gating while retaining current
 non-secret connection auth-shape checks. Dependants remain gated.
 
+## COMMERCE-023 Attempt 4 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 4**, claim clear. The
+committed implementation advances the external fixture integration, but C21 X06/XN02
+is not yet complete. The task's latest Architect Review is the complete deterministic
+Attempt 5 correction contract: code-panel/mode-switch wiring; query/literal and
+8-filter typed authoring; editable sample and response-shape guidance; exact fallback
+return context plus role-aware publication reason/review; and one full new-tool XN02
+proof.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
+automatically.
+
+## COMMERCE-023 Attempt 5 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 5**, claim clear.
+Implementation `c184c58` is close to the C21 X06/XN02 boundary. The latest task review
+narrows Attempt 6 to three remaining items: bind U14 and Publish to the persisted saved
+revision rather than unsaved local state; make Literal/IN typed authoring exact and
+retain invalid IN text; and complete the exact XN02 proof/current Completion Report.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
+automatically.
 ## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 3** (`d15d3f5`).
@@ -1557,3 +1587,22 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-023 Attempt 7 architect review — 2026-09-22
+
+COMMERCE-023 is **Ready / Attempt 7 retained / claim clear**. Focused 7/7 external UI
+and 18/18 Studio tests pass, but exact source review still finds two bounded runtime
+issues: Save currently creates validation unconditionally, and IN local validation can
+treat same-type objects/arrays as scalar until the Shared schema rejects them. The
+canonical Completion Report also needs the final submitted commits. The next claim is
+Attempt 8. COMMERCE-024/012 remain dependency-gated.
+
+## COMMERCE-023 Attempt 8 acceptance — 2026-09-22
+
+COMMERCE-023 is **Complete / Accepted, Attempt 8**, claim clear. Focused external UI
+7/7, Studio 18/18, targeted ESLint and diff checks pass; repository-wide failures
+remain the documented unrelated baseline. The submitted parent report is `5afce557`
+and implementation is `23b1c82`.
+
+No COMMERCE-024 promotion is made from this branch because this exact snapshot still
+contains other non-Complete prerequisites. No automatic launch.
