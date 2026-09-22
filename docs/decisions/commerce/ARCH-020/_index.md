@@ -35,7 +35,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
-| [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | ready | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | ready (Changes Requested, Attempt 1) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
@@ -750,3 +750,20 @@ business-write/audit semantics.
 `COMMERCE-028` is promoted **Pending -> Ready** because `DATABASE-003` and
 `SHARED-002` are already Complete. No task is launched automatically. `COMMERCE-024`,
 `GATEWAY-003`, `COMMERCE-012` and system-test work retain their remaining gates.
+
+## COMMERCE-028 Attempt 1 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 1 retained; claim clear.** Reviewed implementation
+`715da4d` and parent handoff `c4179b47`. The inspected AES-256-GCM credential service,
+exact-scope resolution, key rotation and COMMERCE-020 command-kernel delegation are
+provisionally conformant; no production redesign is requested.
+
+Acceptance remains blocked by CR02 evidence. The submitted fake-kernel race is not the
+required two-client PostgreSQL race, and the developer command named in the report
+does not currently exercise credentials or the NULL-platform partial unique index.
+Attempt 2 must add the dedicated real-Prisma credential rehearsal specified in the
+task, correct the BEARER fixture's `authHeader`, and obtain the developer-run
+PostgreSQL PASS before checking CR02.
+
+No downstream promotion occurs. COMMERCE-032, GATEWAY-003, COMMERCE-024 and
+COMMERCE-012 remain gated. No task is automatically launched.

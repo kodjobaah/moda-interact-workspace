@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -211,24 +211,441 @@ report update is the review handoff commit.
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Definition only; no implementation acceptance.
+Reviewed by `moda_architect` against the exact submitted snapshot representing
+implementation `715da4d` and parent review handoff `c4179b47`.
+
+The production credential-service implementation is directionally conformant and does
+**not** require a redesign in this review. Source inspection confirms:
+
+- AES-256-GCM encryption using a random 12-byte nonce and the normal 16-byte GCM tag;
+- AAD is canonical `{connectionRevisionId, shopId, keyId}`;
+- no application default key exists; the injected active key is used for new writes
+  and retained old keys can decrypt existing credentials;
+- PLATFORM and PER_SHOP lookup is exact with no fallback to another shop/platform;
+- PLATFORM+NONE resolves without authentication;
+- authenticated revisions require an exact credential;
+- connection disable is rechecked on every resolution;
+- availability exposes only bounded status/key-presence information and deliberately
+  does not decrypt;
+- decrypt/AAD/tag/key failures fail closed as unavailable;
+- public `CredentialStatus` contains no secret/ciphertext/nonce/tag/suffix;
+- the sensitive authentication result remains local to Commerce;
+- set/remove delegate mutation replay, connection locking, active SUPER_ADMIN
+  authorization and audit append to the accepted COMMERCE-020 command kernel rather
+  than cloning that mechanism.
+
+The focused suite reports 4/4 and the adjacent connection lifecycle suite 9/9.
+
+Attempt 1 is **not accepted** because required CR02 evidence is knowingly incomplete,
+and the executable developer command named by the Completion Report does not currently
+exercise credentials at all. The current
+`scripts/rehearse-commerce-backend-postgres.sh` runs the existing C20 publication
+adapter rehearsal and publication lifecycle rehearsal; it does not call
+`createCredentialService`, does not create a NULL-platform credential and does not
+exercise the external-credential partial unique index.
+
+The current focused CR02 race is also not the required two-client evidence: both
+operations share one in-memory fake command kernel whose `commandTail` serializes all
+calls. It therefore cannot prove cross-client PostgreSQL row locking, real audit
+atomicity or the database uniqueness arbiter.
+
+The corrections below are the complete Attempt 1 rework contract. **No production
+credential source change is presently required unless the real PostgreSQL rehearsal
+exposes a defect.**
+
+#### A1-R1 — add one real PostgreSQL credential rehearsal using the accepted kernel
+
+**Committed test/package-script changes required. Production source changes only if
+the rehearsal exposes a defect.**
+
+Add exactly:
+
+```text
+tests/external-credentials-postgres.test.ts
+```
+
+and this package script:
+
+```json
+"test:arch020-external-credentials:postgres":
+  "vitest run tests/external-credentials-postgres.test.ts"
+```
+
+Do not modify or repurpose the existing C20
+`test:arch020-backend-integration:postgres` rehearsal merely to make this task pass.
+COMMERCE-028 gets its own bounded database proof.
+
+The new test uses the supplied `DATABASE_URL` disposable PostgreSQL target and:
+
+```ts
+PrismaClient
+createConnectionLifecycle
+createConnectionCommandKernel
+createCredentialService
+```
+
+from the actual accepted implementation. Do not fake the command kernel in this file.
+
+Use **two independent `PrismaClient` instances**, and construct a separate real
+`ConnectionCommandKernel`/credential service for each client with the same:
+
+```text
+commandHmacKey
+credential keyring
+activeKeyId
+```
+
+No live credential value is used. Fixed synthetic values are allowed only inside the
+test and must never be printed/logged.
+
+The isolated target may create/upsert one deterministic active SUPER_ADMIN test
+principal. Use a unique connection key/revision per test run so immutable
+revision/audit rows do not require cleanup. Do not disable triggers or weaken
+constraints.
+
+The rehearsal must execute these exact CR02 cases through the real service/kernel
+unless a case explicitly says direct database insertion.
+
+##### CR02-PG-01 — NULL-platform uniqueness
+
+Create one real PLATFORM + BEARER connection/revision through
+`createConnectionLifecycle`, with `authHeader: null`.
+
+Then through `createCredentialService`:
+
+```text
+setCredential(
+  connectionRevisionId = created revision
+  shopId = null
+  expectedEditVersion = null
+)
+```
+
+must succeed.
+
+Verify in PostgreSQL:
+
+```text
+exactly one CommerceExternalCredential row
+connectionRevisionId = created revision
+shopId IS NULL
+nonce length = 12
+authTag length = 16
+ciphertext does not contain the plaintext secret
+keyId = active key ID
+```
+
+Then attempt a second **direct valid database INSERT** for the same revision with
+`shopId = null`, valid nonce/tag/ciphertext/key/admin fields.
+
+It must fail on:
+
+```text
+CommerceExternalCredential_platform_revision_key
+```
+
+or the equivalent PostgreSQL/Prisma unique-constraint error. The existing first row
+must remain unchanged.
+
+This proves the real partial unique index. Do not simulate it with an in-memory Map.
+
+##### CR02-PG-02 — exact replay gives one effect and one audit
+
+Call the first real credential service twice with the exact same:
+
+```text
+principal
+operationId
+reason
+connectionRevisionId
+shopId = null
+expectedEditVersion
+secret
+```
+
+The second result must equal the first replay result.
+
+Query PostgreSQL and prove:
+
+```text
+one credential effect
+one CommerceExternalConnectionAudit row for actorAdminId + operationId
+audit action = SET_CREDENTIAL
+audit result contains no secret/ciphertext/nonce/authTag
+```
+
+Changed input with the same operation ID must return:
+
+```text
+conflict / CONFLICTING_REPLAY
+```
+
+and must not add another credential effect or success audit.
+
+##### CR02-PG-03 — two-client stale-CAS race
+
+First create/rotate the platform credential to a known current `editVersion`.
+
+From the two independently constructed real services/Prisma clients, concurrently
+call:
+
+```text
+setCredential(... expectedEditVersion = same current version ...)
+```
+
+with two different operation IDs and two different synthetic replacement secrets.
+
+Required result:
+
+```text
+exactly one ok
+exactly one conflict / STALE_CAS
+final credential editVersion increments exactly once
+exactly one of the two replacement secrets resolves through resolveConnection
+the losing command has no success audit
+```
+
+Do not serialize the two calls in the test with a shared promise tail/mutex. PostgreSQL
+plus the real COMMERCE-020 connection lock/CAS path must arbitrate the race.
+
+##### CR02-PG-04 — rollback includes credential effect and audit
+
+Construct a **test-only command-kernel dependency wrapper** around a real Prisma
+transaction whose transaction proxy delegates every operation to the real
+`Prisma.TransactionClient` except:
+
+```text
+commerceExternalConnectionAudit.create
+```
+
+which throws a fixed `INJECTED_CREDENTIAL_AUDIT_FAILURE` after the credential mutate
+has completed.
+
+Use that kernel with `createCredentialService` and issue a unique SET_CREDENTIAL
+command against a separate disposable revision.
+
+The service must return bounded unavailable/failure and PostgreSQL must show after the
+transaction:
+
+```text
+no credential row from the injected command
+no audit row from the injected command
+```
+
+This proves the credential write and audit share the real transaction. Do not change
+production kernel code, add a production failure hook or disable database protections.
+
+##### CR02-PG-05 — no plaintext persistence
+
+For every successful credential created by this rehearsal, inspect only bounded
+database fields and assert that the synthetic plaintext does not occur in:
+
+```text
+ciphertext decoded as bytes/text
+CommerceExternalConnectionAudit.result JSON
+```
+
+Do not print the secret to stdout, snapshots or assertion messages.
+
+#### A1-R2 — correct focused fixture realism and retain the existing fast suite
+
+**Focused-test change required.**
+
+Keep the existing `test:arch020-external-credentials` fast suite.
+
+Its PLATFORM/BEARER fixture currently creates:
+
+```text
+authHeader = "Authorization"
+```
+
+even though the accepted C21/database contract requires `authHeader = null` for
+BEARER and production `resolveConnection` supplies the Authorization header itself.
+
+Correct the fixture builder to produce:
+
+```text
+API_KEY -> configured API-key header
+BEARER  -> null
+NONE    -> null
+```
+
+Retain the existing CR01/CR03 positive/rejection/rotation assertions and add a small
+assertion that the returned `ConnectionRevisionView` for BEARER has `authHeader:null`.
+Do not weaken production validation to accommodate the old fake row.
+
+Also rename/reword the current in-memory CR02 test/report evidence so it does not call
+the shared fake-kernel Promise race a **two-client** race. It remains useful unit-level
+CAS/replay coverage; CR02-PG-03 is the two-client proof.
+
+#### A1-R3 — run the developer-owned PostgreSQL evidence before returning to Review
+
+**Validation required.**
+
+After A1-R1/A1-R2, run the normal focused checks:
+
+```bash
+npm run test:arch020-external-credentials
+npm run test:arch020-external-connection-lifecycle
+
+npx eslint \
+  src/commerce/connections/credentials \
+  tests/external-credentials.test.ts \
+  tests/external-credentials-postgres.test.ts
+
+git diff --check
+```
+
+Then the developer must run against a **disposable PostgreSQL database that has the
+current migrations**:
+
+```bash
+DATABASE_URL="<isolated-arch020-database>" \
+  npm run test:arch020-external-credentials:postgres
+```
+
+Required observed result:
+
+```text
+CR02-PG-01 PASS
+CR02-PG-02 PASS
+CR02-PG-03 PASS
+CR02-PG-04 PASS
+CR02-PG-05 PASS
+```
+
+If this database rehearsal exposes a production defect, fix only the
+COMMERCE-028-owned `src/commerce/connections/credentials/**` behavior needed to make
+the existing C21 contract pass, preserve the regression and rerun both focused suites
+plus the PostgreSQL rehearsal.
+
+Then run repository validation once:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If repository-wide lint/typecheck/build remain blocked solely by the unchanged
+documented baseline outside:
+
+```text
+src/commerce/connections/credentials/**
+tests/external-credentials.test.ts
+tests/external-credentials-postgres.test.ts
+package.json
+package-lock.json
+```
+
+record the exact diagnostics and prove no task-owned diagnostic. Do not repair
+unrelated Connections, publication, Prisma-integration or code-response files in
+COMMERCE-028.
+
+Before returning to Review:
+
+```text
+CR01 checked
+CR02 checked only after the real PostgreSQL command passes
+CR03 checked
+all required Validation checkboxes truthful
+Completion Report maps every CR02-PG case -> committed test name -> command ->
+observable result
+```
+
+A task with CR02 knowingly unchecked must not be returned to Review as complete.
 
 ### Reviewed Files
 
-Not applicable.
+- `src/commerce/connections/credentials/index.ts`
+- `tests/external-credentials.test.ts`
+- `src/commerce/connections/command-kernel.ts` (accepted dependency inspected; no
+  modification authorized)
+- `tests/connection-lifecycle.test.ts` (adjacent kernel evidence inspected)
+- `scripts/rehearse-commerce-backend-postgres.sh`
+- `tests/backend-postgres-rehearsal.test.ts`
+- `database/prisma/migrations/20260921160000_arch020_external_connections/migration.sql`
+- `package.json`
+- C21 sections 3, 4, 8 and 9.1–9.2
+- this task Completion Report
 
 ### Validation Reviewed
 
-Not applicable.
+Submitted Attempt 1 evidence:
+
+```text
+npm run test:arch020-external-credentials
+  PASS — 4/4
+
+npm run test:arch020-external-connection-lifecycle
+  PASS — 9/9
+
+npx eslint src/commerce/connections/credentials tests/external-credentials.test.ts
+  PASS
+
+git diff --check
+  PASS
+
+npm run lint
+  NON-ZERO — reported pre-existing Connections hook diagnostic/warnings;
+  no credential diagnostic
+
+npm run typecheck
+  NON-ZERO — reported pre-existing command-kernel/lifecycle/integration/
+  code-response diagnostics; no credential diagnostic
+
+npm run build
+  QuickJS packaging/smoke, Prisma generation and Next compilation PASS;
+  later type checking stopped on the same reported unrelated diagnostics
+```
+
+The task itself records CR02 as unchecked and developer PostgreSQL evidence as
+unexecuted. Inspection also confirms the named existing backend PostgreSQL rehearsal
+does not contain a credential scenario, so merely running that existing command would
+not satisfy CR02.
+
+The uploaded archive contains no installed dependencies or Git remote metadata, so
+dependency-backed commands and remote heads were not falsely claimed as independently
+rerun from the review container.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Production implementation is provisionally conformant with the C21
+credential-service boundary, but task acceptance is incomplete because the required
+real PostgreSQL uniqueness/atomicity/two-client evidence does not yet exist.
+
+No changes to COMMERCE-020 kernel/lifecycle source, DATABASE schema/migrations,
+external HTTP transport, UI, connection factory, gateway or deployment are authorized
+by this correction.
 
 ### Follow-up
 
-Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+Return the same task to the normal execution path:
+
+```yaml
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next:
+
+```text
+/moda-task ARCH-020-COMMERCE-028
+```
+
+must claim **Attempt 2 exactly once**.
+
+The implementing agent must read this complete Architect Review before source
+inspection, implement only A1-R1 through A1-R3, run the bounded validation, update the
+Completion Report/checklists, set the task to review, clear the claim on handoff, push
+both mirrored task branches and STOP.
+
+Do not start COMMERCE-032, GATEWAY-003, COMMERCE-024 or COMMERCE-012. They remain
+dependency-gated.
