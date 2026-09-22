@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 145
-executor: copilot
-claimed_at: 2026-09-22T01:07:41Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -74,7 +74,7 @@ that SHA in the mapping document; pending producer symbols must not be guessed.
 - [x] Own `src/commerce/integration/preview/` and minimal composition in `lib/preview/runtime.ts` plus U14 client injection. Do not edit018 Studio services/actions or013 backend factory.
 - [x] Implement PreviewBundleLoader, PreviewPromptLoader and PreviewToolExecutionPort from accepted009 types using013 read facade and authorized saved revisions. Do not replace authored prompts with generic strings.
 - [x] Freeze exact revision content, response definition and synthetic grant at start. After a saved draft changes, an existing conversation still executes its frozen definition; no reloading latest tool content during later turns.
-- [ ] Instantiate009 PreviewService/RedisPreviewStateStore and typed ports. Use014 actual interpreter with isolated fixture operation adapters. For explicit MODEL mode, consume the architect-accepted COMMERCE-033 `readConfig().preview` contract and `createPreviewModel(...)`; never use Background/production credentials or `createUnavailableModel`. FIXTURE mode remains credential-free.
+- [x] Instantiate009 PreviewService/RedisPreviewStateStore and typed ports. Use014 actual interpreter with isolated fixture operation adapters. For explicit MODEL mode, consume the architect-accepted COMMERCE-033 `readConfig().preview` contract and `createPreviewModel(...)`; never use Background/production credentials or `createUnavailableModel`. FIXTURE mode remains credential-free.
 - [x] Connect017 PreviewClient to exact C9.1 routes. Retain008 layout handoff and Back restoration using component fixture mounting where needed; no dependency on018 service adapters.
 - [x] Provide `docs/commerce-preview-integration.md` and `test:arch020-preview-integration` plus `test:arch020-preview-integration:redis`; preserve existing quotas/replay/cancel logic instead of duplicating it.
 
@@ -114,7 +114,7 @@ Readiness never launches a task; use the normal dedicated mirrored worktrees.
 ## Acceptance Criteria
 
 - [x] P01: real017 UI ->009 route -> real saved loader -> Shared runner/interpreter -> Redis -> reply/details flow; no fake preview service or constant EVAL response.
-- [ ] P02: N10/N11/N13 preview portion covers release/draft/tool entry, sidebar, Back and refresh loss. Tool-test entry is integrated; consume architect-accepted COMMERCE-034 Conversation source gating as-is. Do not fabricate a capability or prompt in COMMERCE-019.
+- [x] P02: N10/N11/N13 preview portion covers release/draft/tool entry, sidebar, Back and refresh loss. Tool-test entry is integrated; consume architect-accepted COMMERCE-034 Conversation source gating as-is. Do not fabricate a capability or prompt in COMMERCE-019.
 - [x] P03: repeated/concurrent Send, same-ID changed payload, cancel/complete race, expired/unknown state and quota boundaries preserve one reservation/model start per logical run across two service instances.
 - [x] P04: edit/publish saved content between turns; frozen prompts/tool definitions and language/history persist. New conversation sees new selection; no production grant/reset/write.
 - [x] P05: denied staff or foreign/missing revision fails before loading sensitive content; fixture/model credentials remain isolated and no WhatsApp/live-Shopify transport is constructed.
@@ -145,10 +145,9 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Blocked, Attempt 3 rework submitted after the Architect Blocked review. The
-accepted MODEL configuration and transport are now composed in the production
-preview runtime; the U14 tool-only Conversation Start source contradiction
-remains unresolved and is not fabricated here.
+Review, Attempt 4 submitted. The accepted MODEL configuration and transport are
+composed in the production preview runtime. COMMERCE-034's accepted U14 source
+gating is consumed as-is; no tool-only Conversation source was fabricated.
 
 ### Files Changed
 
@@ -226,6 +225,42 @@ Connected production `PreviewService` composition to Redis, the accepted COMMERC
 branch `task/ARCH-020-COMMERCE-019`. COMMERCE-013 accepted source commit:
 `4d529773fde26599027aef2d76fbd70bc974b352`. No parent service gitlink or main
 integration was performed.
+
+### Attempt 4 — Review Handoff (2026-09-22)
+
+Implementation commit: `8850b55` (`feat(preview): compose configured model provider`),
+pushed to `origin/task/ARCH-020-COMMERCE-019` from the dedicated implementation
+worktree. The preparation launcher claim was
+`79c2786246b702464a574a1999d61960712c5932`; it reported dependency gate passed
+and recursive submodule status ready, with the database submodule at
+`7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+
+The runtime now calls `readConfig()` once and uses its `redisUrl`, `environment`,
+and discriminated `preview` configuration. Enabled MODEL mode injects
+`createPreviewModel(config.preview)`; disabled configuration leaves the model absent
+for credential-free FIXTURE mode. The obsolete unavailable-model helper was removed.
+The focused composition test proves FIXTURE completes with zero provider requests and
+MODEL dispatches the accepted injected provider once. Existing COMMERCE-034 U14 tests
+prove tool-only entry creates no Conversation while a saved release or authored draft
+can create one.
+
+Validation evidence:
+
+- `npm run test:arch020-preview-integration`: passed, 4 files and 38 tests.
+- `npm run test:arch020-preview-model-provider`: passed, 1 file and 9 tests.
+- `npm run test:arch020-preview-integration:redis`: passed, 1 file and 4 tests.
+- `npm run typecheck`: blocked by existing Shared export/type failures in
+  code-response, external-http, execution, and connections, plus the existing
+  readonly code-response fixture issue; no changed-file failure reported.
+- `npm run lint`: blocked by the existing
+  `src/studio/connections/connections-ui.tsx` synchronous-effect rule; six unrelated
+  warnings were also reported, with no changed-file lint failure.
+- `npm run build`: compiled successfully, then stopped in the same existing type-check
+  failures as `npm run typecheck`.
+- `git diff --check`: passed.
+
+No live OpenAI/Groq, Shopify, WhatsApp, PostgreSQL, or production credential call was
+made. This task is returned to Architect review and no enabled task was launched.
 
 ## Architect Review
 
