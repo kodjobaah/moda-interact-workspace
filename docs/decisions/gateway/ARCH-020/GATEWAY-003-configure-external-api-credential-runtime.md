@@ -68,10 +68,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Declare server-only keyring, active-key selector and stable command-HMAC secret on appropriate Commerce runtime only; no NEXT_PUBLIC or Background copies.
-- [ ] Document key generation by operator, retained decrypt-key rotation, rollback, missing-config behavior and migration-before-runtime ordering.
-- [ ] Validate configuration examples without printing secrets and preserve staff-only public Studio plus Background-only private MCP ingress.
-- [ ] Extend the explicit public Commerce page allowlist for C21 U15 `/connections` and U16 `/connections/[id]`: GET/HEAD plus authenticated Next Server Action POST only; no deeper catch-all.
+- [x] Declare server-only keyring, active-key selector and stable command-HMAC secret on appropriate Commerce runtime only; no NEXT_PUBLIC or Background copies.
+- [x] Document key generation by operator, retained decrypt-key rotation, rollback, missing-config behavior and migration-before-runtime ordering.
+- [x] Validate configuration examples without printing secrets and preserve staff-only public Studio plus Background-only private MCP ingress.
+- [x] Extend the explicit public Commerce page allowlist for C21 U15 `/connections` and U16 `/connections/[id]`: GET/HEAD plus authenticated Next Server Action POST only; no deeper catch-all.
 
 ## Interfaces / Contracts
 
@@ -96,10 +96,10 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] X08: blueprint/config checks show exactly the three new settings in server scope, no secrets committed and no accidental public MCP route.
-- [ ] Runbook explains encrypted credentials cannot be decrypted after dropping old key; missing config disables external operations without breaking Shopify.
-- [ ] No live connection created, no deployment asserted; runtime behavior evidence comes from020/024 controlled tests.
-- [ ] C21 U15/U16 route fixtures prove `/connections` and `/connections/<id>` GET/HEAD plus Next-Action POST are allowed, wrong methods return 405, deeper paths return 404 and public MCP denial remains unchanged.
+- [x] X08: blueprint/config checks show exactly the three new settings in server scope, no secrets committed and no accidental public MCP route.
+- [x] Runbook explains encrypted credentials cannot be decrypted after dropping old key; missing config disables external operations without breaking Shopify.
+- [x] No live connection created, no deployment asserted; runtime behavior evidence comes from COMMERCE-024 controlled tests.
+- [x] C21 U15/U16 route fixtures prove `/connections` and `/connections/<id>` GET/HEAD plus Next-Action POST are allowed, wrong methods return 405, deeper paths return 404 and public MCP denial remains unchanged.
 
 ## Validation
 
@@ -130,11 +130,11 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Implementation complete; submitted for Architect Review. No live Render deployment, connection, provider credential, or production assertion was created.
+Attempt 2 corrections complete; submitted for Architect Review. No live Render deployment, connection, provider credential, or production assertion was created.
 
 ### Files Changed
 
-Implementation branch `task/ARCH-020-GATEWAY-003`, commit `844043f`:
+Implementation branch `task/ARCH-020-GATEWAY-003`, Attempt 2 commit `54bbecf` (based on `844043f`):
 
 - `render.test.yaml`
 - `render.production.yaml`
@@ -153,17 +153,22 @@ Extended the explicit HAProxy Commerce page allowlist for U15/U16: `/connections
 
 Added the `./scripts/validate:arch020-external-runtime` static/config validation command and documented operator key generation, retained-key rotation, rollback, missing-configuration behavior, and migration-before-runtime ordering without committing secret values.
 
+Addressed Attempt 1 corrections: the runbook now states that HMAC-key rotation requires an explicitly designed replay/audit migration and is not an ordinary Render environment edit. It records accepted COMMERCE-029 deployment evidence: the pinned `quickjs-sync.v1` / `quickjs-emscripten@0.31.0` package, artifact SHA-256 `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, 64 MiB WASM ceiling smoke, packaged worker/loader/WASM under `build/code-runtime/`, and no request-time download. Both Render Commerce build commands invoke `npm run prisma:generate && npm run build`, whose accepted Commerce build path runs package and smoke before Next build.
+
+The accepted four-worker profile has 4 x (64 MiB V8 old-space + 16 MiB V8 young-space + 64 MiB WASM) = 576 MiB before the host process. Therefore `0.5c-512mb` test Commerce is an explicit capacity gap, not sufficient evidence; `0.5c-1g` production has more headroom but remains unproven without host-level load measurement. The four-worker cap was not silently reduced; the capacity decision is returned to architecture/deployment ownership.
+
 ### Validation Results
 
 Passed:
 
 - `./scripts/validate:arch020-external-runtime`: passed; positive blueprint validation, 51 expected negative rejections, shell syntax, exact runtime-setting checks, and bounded route/MCP invariants.
+- `bash tests/run-tests.sh`: passed, `162 passed, 0 failed`; rendered HAProxy configuration validated with the actual HAProxy binary and exercised U15/U16 routes, deeper-path rejection, and public MCP variants.
 - `bash tests/validate-render-blueprints.sh`: passed.
 - `bash tests/validate-render-blueprints-negative.sh`: passed, including the three new connection-runtime negative cases.
 - `bash -n docker/entrypoint.sh tests/run-tests.sh tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`: passed.
 - `git diff --check`: passed.
 
-Not run: `bash tests/run-tests.sh` because it is the developer-owned Docker route suite; this environment has Docker but agent policy prohibits launching long-running/container validation without explicit authorization. HAProxy binary is not installed, so direct `haproxy -c` was not run. This repository has no `package.json`, so typecheck, build, and lint scripts are unavailable. No live Render, OAuth, Background assertion, provider, PostgreSQL, or deployment validation was performed.
+Accepted dependency evidence consumed from COMMERCE-029: `npm run code-runtime:package`, `npm run code-runtime:smoke`, and `npm run build` passed on its accepted branch/report, including packaged artifact execution and the 67,108,864-byte WASM ceiling probe. No Commerce source was modified by this gateway task. Direct host `haproxy -c` was not run because HAProxy is not installed locally; the Docker suite rendered and validated the configuration with the actual HAProxy binary. No live Render, OAuth, Background assertion, provider, PostgreSQL, or deployment validation was performed.
 
 ### Deviations
 
@@ -175,7 +180,7 @@ C21 read-only scope; the three settings are supplied externally by Render or an 
 
 ### Unresolved Issues
 
-Developer-owned Docker route validation remains pending, including the live HAProxy render check and U15/U16 HTTP assertions. No claim is made for live deployment behavior.
+No local validation remains pending for this correction cycle. Capacity sufficiency for four concurrent workers on the configured Commerce plans remains an explicit architecture/deployment decision; no claim is made for live deployment behavior.
 
 ### Architectural Concerns
 
@@ -183,7 +188,7 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: `task/ARCH-020-GATEWAY-003`, Attempt 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-003`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-003`. Implementation commit `844043f` was pushed to `origin/task/ARCH-020-GATEWAY-003`. Parent report is being committed and pushed on the mirrored parent branch.
+Expected mirrored branch: `task/ARCH-020-GATEWAY-003`, Attempt 2. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-003`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-003`. Attempt 2 implementation commit `54bbecf` and prior implementation commit `844043f` are pushed to `origin/task/ARCH-020-GATEWAY-003`; parent claim commit `a235391` is pushed, and this Attempt 2 parent report is being committed and pushed now. Both worktrees were reused with physical isolation; recursive submodule preparation was ready with no entries. Accepted dependency pin consumed: COMMERCE-029 commit `f22e2d6`, report `4069f60`, `quickjs-emscripten@0.31.0`, artifact SHA-256 `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`.
 
 ## Architect Review
 
