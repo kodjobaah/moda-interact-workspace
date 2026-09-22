@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 150
-executor: null
-claimed_at: null
-attempt: 3
+executor: copilot
+claimed_at: 2026-09-22T14:02:44Z
+attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-019
   - ARCH-020-COMMERCE-009
