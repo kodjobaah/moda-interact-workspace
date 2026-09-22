@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 145
 executor: null
 claimed_at: null
@@ -263,6 +263,58 @@ No live OpenAI/Groq, Shopify, WhatsApp, PostgreSQL, or production credential cal
 made. This task is returned to Architect review and no enabled task was launched.
 
 ## Architect Review
+
+### Attempt 4 — Accepted (2026-09-22)
+
+Reviewer: `moda_architect`. **Accepted / Complete; Attempt 4 retained; executor/claimed_at null.** Reviewed the exact submitted `moda-interact-workspace-ARCH-020-COMMERCE-019(4).zip`, parent report commit `73a1e96ddc7b0843582ae172fb380a592f1eef19` (verified as the current remote parent task head), the reported implementation commit `8850b55`, the accepted COMMERCE-033/034 producer contracts, and C9/C20. The implementation repository commit is not independently addressable through the current GitHub connector, so implementation inspection is grounded in the exact submitted archive.
+
+The narrow resumption contract is satisfied. Production preview composition calls the canonical `readConfig()` once, consumes `config.redisUrl`, `config.environment` and the discriminated `config.preview` value, injects accepted `createPreviewModel(config.preview)` only when preview is enabled, and leaves `model` undefined when disabled so FIXTURE remains provider-free. The obsolete unavailable-model production fallback is absent.
+
+The accepted COMMERCE-034 U14 behavior is present unchanged: a tool-only handoff remains Tool test, Conversation Start is disabled without a real persisted release or authored draft/behaviour source, DRAFT Conversation payloads contain the selected capability revisions and `toolRevisionIds: []`, and no synthetic capability/prompt/tool-to-capability mapping is introduced.
+
+Previously accepted Attempt-2 work is preserved: exact definitions/prompts are frozen into bounded Redis-persisted conversation snapshots, restart/replica execution does not depend on process-local registries, and direct saved-tool testing uses the authorized empty-capability selection.
+
+Supporting validation is sufficient for this functional review: preview integration **38 passed**, provider/config **9 passed**, Redis integration **4 passed**, and `git diff --check` passed. Repository-wide typecheck/lint/build remain blocked only by the documented pre-existing diagnostics outside this change; no changed-file regression is identified. No live/paid provider call is required for this task.
+
+No enabled task becomes Ready solely from this acceptance. GATEWAY-001 still waits on COMMERCE-018; COMMERCE-031 still waits on COMMERCE-025/030; COMMERCE-024 and COMMERCE-012 retain broader incomplete prerequisite sets; SYSTEM-TEST-001 remains terminal/manual-gated. Nothing is launched automatically.
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+COMMERCE-019 now composes the architect-accepted provider/config and U14 source-gating prerequisites without duplicating their ownership.
+
+### Reviewed Files
+
+- `lib/preview/runtime.ts`
+- `lib/server/config.ts`
+- `src/commerce/integration/preview/model-provider.ts`
+- `src/commerce/integration/preview/adapters.ts`
+- `src/commerce/preview/service.ts`
+- `src/commerce/preview/types.ts`
+- `src/studio/preview/preview-screen.tsx`
+- `tests/preview-integration.test.ts`
+- `tests/preview-model-provider.test.ts`
+- `tests/preview-screen.test.tsx`
+- `docs/commerce-preview-integration.md`
+
+### Validation Reviewed
+
+- `npm run test:arch020-preview-integration`: 38 passed (submitted evidence)
+- `npm run test:arch020-preview-model-provider`: 9 passed (submitted evidence)
+- `npm run test:arch020-preview-integration:redis`: 4 passed (submitted evidence)
+- `git diff --check`: passed (submitted evidence)
+- typecheck/lint/build: documented pre-existing repository blockers only; no task-owned regression identified
+
+### Architecture Conformance
+
+Conforms to C9/C20 and the accepted COMMERCE-033/034 ownership boundaries. FIXTURE remains credential-free; MODEL uses only the dedicated preview provider configuration; U14 does not fabricate conversation capability state.
+
+### Follow-up
+
+None for COMMERCE-019. Recalculate dependants only from their full dependency sets; no automatic launch.
 
 ### Attempt 2 — Blocked (2026-09-21)
 

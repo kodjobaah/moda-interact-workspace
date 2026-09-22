@@ -1132,3 +1132,8 @@ contract. Preserve the accepted DNS/socket pinning, stage-deadline, JSON-safety 
 one-provider-request implementation. COMMERCE-030 still waits on COMMERCE-025; later
 composition/gateway/final-checkpoint tasks retain their other dependencies. No
 automatic launch.
+
+
+## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.
