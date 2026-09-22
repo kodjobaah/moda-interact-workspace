@@ -90,9 +90,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] X06: full authoring of C21 sample and list-filter example, including field rename/filter/sort/limit, produces exact stored execution JSON.
-- [ ] No lost edits on save/discard/return, duplicate Test/Publish guarded, modified response invalidates old validation; keyboard/narrow controls usable.
-- [ ] U14 external tests show processed fixtures and existing reply template with zero network calls; no U15 backend dependency for component acceptance.
+- [x] X06: full authoring of C21 sample and list-filter example, including field rename/filter/sort/limit, produces exact stored execution JSON.
+- [x] No lost edits on save/discard/return, duplicate Test/Publish guarded, modified response invalidates old validation; keyboard/narrow controls usable.
+- [x] U14 external tests show processed fixtures and existing reply template with zero network calls; no U15 backend dependency for component acceptance.
 
 ## Validation
 
