@@ -65,10 +65,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement exact fields, tabs, dialogs, search/pagination/return navigation and permission presentation specified in section6. Add Connections after Explore Shopify.
-- [ ] Credential controls use status-only reads, replace/remove dialogs, explicit reason/CAS and no reveal or browser persistence. Do not claim frontend masking is server authorization.
-- [ ] Apply immediate guards to every mutation, retain operation/payload on unknown outcomes and reconcile same command. Revision selection never silently changes to latest.
-- [ ] Document component port mapping and XN01 evidence. Use existing styles/components; provide narrow and keyboard validation with populated fixtures.
+- [x] Implement exact fields, tabs, dialogs, search/pagination/return navigation and permission presentation specified in section6. Add Connections after Explore Shopify.
+- [x] Credential controls use status-only reads, replace/remove dialogs, explicit reason/CAS and no reveal or browser persistence. Do not claim frontend masking is server authorization.
+- [x] Apply immediate guards to every mutation, retain operation/payload on unknown outcomes and reconcile same command. Revision selection never silently changes to latest.
+- [x] Document component port mapping and XN01 evidence. Use existing styles/components; provide narrow and keyboard validation with populated fixtures.
 
 ## Interfaces / Contracts
 
@@ -90,9 +90,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] X05/XN01: new connection -> exact revision -> credential status -> list, plus revision creation without copied secret, all against strict port fixtures.
-- [ ] ADMIN read-only, pending/double-click, stale/unknown, cancellation/unsaved navigation, missing key and revoked-session states work without secret leakage.
-- [ ] No backend or network implementation; component builds with fixture ports before020/021 complete.
+- [x] X05/XN01: new connection -> exact revision -> credential status -> list, plus revision creation without copied secret, all against strict port fixtures.
+- [x] ADMIN read-only, pending/double-click, stale/unknown, cancellation/unsaved navigation, missing key and revoked-session states work without secret leakage.
+- [x] No backend or network implementation; component builds with fixture ports before020/021 complete.
 
 ## Validation
 
@@ -122,23 +122,38 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Implemented in isolated worktree; pending architect review.
 
 ### Files Changed
 
-None; task definition only.
+`moda-interact-commerce/src/studio/connections/`, `app/connections/`,
+`components/studio-shell.tsx`, `app/styles.css`,
+`tests/connections-ui.test.tsx`, `package.json`, and `package-lock.json`.
 
 ### Work Completed
 
-None.
+Added fixture-backed U15/U16 Connections routes with ADMIN/SUPER_ADMIN
+presentation, search/filter/cursor navigation, immutable revision selection,
+status-only credential controls, per-shop status selection, guarded lifecycle
+commands, and the Connections sidebar entry after Explore Shopify. The typed
+port now includes `updateMetadata` and explicit `setEnabled` operations.
 
 ### Validation Results
 
-No implementation validation performed.
+Focused `npm run test:arch020-connections-ui` passed 5 tests in the isolated
+worktree, including the XN01 fixture path and duplicate-click credential guard.
+VS Code diagnostics are clean for the Connections source and focused test file.
+`npm run lint` passed with two pre-existing warnings outside the touched
+Connections files. `git diff --check` passed. Full repository typecheck remains
+unverified; the previously observed full typecheck was blocked by pre-existing
+backend/Prisma diagnostics and is not claimed here.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+Initial implementation was mistakenly made in the main checkout; it was
+preserved and transferred into the dedicated worktree before this report.
+The frontend uses strict fixture ports and does not implement backend, network,
+or cryptographic behavior.
 
 ### Assumptions
 
@@ -154,9 +169,9 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-022. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Dedicated worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-022`.
+Branch: `task/ARCH-020-COMMERCE-022`. Implementation commit and push are being
+prepared; no merge, service gitlink update, or downstream launch performed.
 
 ## Architect Review
 

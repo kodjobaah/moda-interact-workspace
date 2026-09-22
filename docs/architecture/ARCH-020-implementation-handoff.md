@@ -1088,6 +1088,19 @@ package `0.14.2`. The direct C21 component frontier is now Ready for
 normal launcher on an eligible Ready dependant when the developer chooses to start
 one. No automatic downstream launch occurs in this acceptance.
 
+### COMMERCE-020 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `5229b033` and parent report `29a6ffb1`. Preserve the lifecycle/CAS,
+immutable-revision and transaction/audit direction. Four bounded C21 contract defects
+remain: Commerce still pins Shared `0.13.1` and locally duplicates/mismatches the
+accepted `0.14.2` connection contracts; the reusable command kernel omits credential
+actions and an actual same-connection `FOR UPDATE` lock; development bypass does not
+materialize/verify its reserved PlatformAdmin row before FK-backed writes; and lifecycle
+request validation/default-port normalization is not strict (`:443` is retained and
+invalid bounds may reach/clamp at Prisma). The task Architect Review contains exact
+A1-R1..A1-R4 source, behavior and focused-proof instructions. No exhaustive retest,
+downstream promotion or automatic launch.
 ## COMMERCE-033 Attempt 1 architect review — 2026-09-22
 
 **Changes Requested / Ready, Attempt 1 retained; claim clear.** The provider
@@ -1180,6 +1193,18 @@ one-provider-request implementation. COMMERCE-030 still waits on COMMERCE-025; l
 composition/gateway/final-checkpoint tasks retain their other dependencies. No
 automatic launch.
 
+## COMMERCE-027 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 1**, claim clear.
+Submitted implementation `771c1ff` establishes the isolated U17/raw-sample component
+boundary but does not yet satisfy C21 X12/XN04. The task's latest Architect Review is
+the complete deterministic correction contract covering Shared sample shape, content
+hash/stale-result guards, saved-revision run identity, cancel/cooldown/replay behavior,
+published/role/publish review rules, CodeMirror 6 local editor requirements, bounded
+failure presentation and focused evidence.
+
+No dependency is promoted. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
+gated. No downstream task is launched automatically.
 
 ## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
@@ -1198,3 +1223,65 @@ Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
 because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
+
+
+## COMMERCE-035 validation-only unblock — 2026-09-22
+
+`ARCH-020-COMMERCE-035` is Ready for validation-only Attempt 4. The architect has
+explicitly authorised autonomous **local** Docker provisioning for its disposable C20
+PostgreSQL/Redis proof, using the exact procedure in the task's latest Architect
+Review. The agent must not wait for developer-supplied test URLs when a local
+Unix-socket Docker engine is available. This authorisation is task-specific and does
+not authorise deployed/shared infrastructure access.
+
+## COMMERCE-035 Attempt 4 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 4** (`9a0120b`; parent report `b357be28`).
+
+The C20 isolated integration fixture boundary has now executed successfully against
+real task-owned disposable PostgreSQL and Redis targets. The guarded reset and
+focused fixture proof passed, closing the remaining F02/F03/F05/F06 infrastructure
+and relational-proof gates. Repository-wide typecheck/lint/build remain blocked only
+by previously documented unrelated Shared/external-response/Connections diagnostics;
+no COMMERCE-035-owned file is implicated and `git diff --check` passes.
+
+The C20 producer gate is therefore satisfied. This acceptance does not automatically
+launch a consumer and does not rewrite newer COMMERCE-018/019 task branches from the
+older COMMERCE-035 parent snapshot. Reconcile each current consumer branch after this
+acceptance is integrated.
+## COMMERCE-027 Attempt 2 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 2**, claim clear.
+Attempt 2 correctly implements the Shared `TransformSample` boundary, canonical
+browser hash/stale-result guards, returned-saved-revision run dispatch, retained
+preview identity, RUNNING cancel/status controls and locally bundled CodeMirror 6.
+
+Acceptance remains gated only by three task-owned corrections recorded
+deterministically in the task: reachable SUPER_ADMIN draft publication workflow,
+structured MIME/OUTPUT/SCHEMA failure presentation with `expected`, and correct
+pre-dispatch save-failure plus serialized read/cancel reconciliation semantics.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched
+automatically.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-027` is **Complete / Accepted, Attempt 3**. Consume the exported
+`CodeResponsePanel` / `RawResponseSamplePanel` as the accepted C21 frontend boundary;
+do not reopen its editor, role, typed-failure or retained-run-identity mechanics during
+COMMERCE-024 composition. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
+dependency-gated; no task is auto-started.
+## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
+connection-lifecycle producer now uses exact Shared `0.14.2` DTOs/results, implements
+the six-action reusable command kernel, authorizes before replay, materializes the
+development PlatformAdmin inside the transaction, acquires a parameterized
+same-connection PostgreSQL `FOR UPDATE` lock, keeps mutation/audit atomic, validates
+bounded lifecycle inputs and stores canonical HTTPS origins. Credential persistence,
+resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-021.
+
+`COMMERCE-028` is now **Ready** because its other declared prerequisites
+`DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
+`COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
+their other authoritative dependencies.
