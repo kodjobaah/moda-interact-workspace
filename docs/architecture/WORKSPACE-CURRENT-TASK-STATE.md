@@ -1400,6 +1400,19 @@ The next claim is Attempt 3 and must correct only canonical tool revision hashin
 remove credential existence from publication/sample gating while retaining current
 non-secret connection auth-shape checks. Dependants remain gated.
 
+## COMMERCE-032 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
+preserves original grant tool/revision/provenance and current exclusion identities,
+but cannot be accepted against the current COMMERCE-028 availability port: 032 passes
+trusted merchant `shopId` for all candidates, while 028 currently requires null for
+PLATFORM credential availability and therefore falsely returns `CREDENTIAL_MISSING`.
+
+C21 now makes the intended boundary explicit and
+**ARCH-020-COMMERCE-037 is Ready, Attempt 0** to normalize only the producer's
+read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
+accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
+COMMERCE-012 remain gated. No task is started automatically.
 ## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
@@ -1420,3 +1433,17 @@ Connections tests, lint, diff check and task-owned diagnostics pass; typecheck/b
 remain non-zero only on the documented unrelated 15-error repository baseline.
 COMMERCE-024 and COMMERCE-012 retain additional incomplete prerequisites and receive
 no automatic promotion from this acceptance.
+## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
+
+The read-only external availability consumer is now proven against the accepted
+COMMERCE-037 producer semantics: trusted merchant identity is passed unchanged into
+`checkConnectionAvailability`, PLATFORM credentials are selected at null scope by
+the producer, and PER_SHOP isolation remains merchant-specific. Existing resolver
+behavior preserves original grant pinning, exact tool/revision/capability identity,
+explicit current exclusions and typed lookup outage without provider calls, secret
+access, grant writes or cross-call caching.
+
+No downstream task becomes Ready solely from this acceptance. COMMERCE-024 and
+COMMERCE-012 remain behind their other authoritative dependencies.
