@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 155
-executor: copilot
-claimed_at: 2026-09-21T23:47:33Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-020-SHARED-002
@@ -122,62 +122,61 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Ready for Review.
+Attempt 1 complete; returned to Architect Review.
 
 ### Files Changed
 
-Implementation branch contains the ten task-scoped files listed below.
+Implementation branch contains the seven task-scoped files listed below.
 
 ### Work Completed
 
-Implemented U15/U16 Connections pages using typed fixture ports, added the
-Connections sidebar item after Explore Shopify, and added the declared focused
-test script. The UI supports search, enabled filtering, pagination, detail tabs,
-immutable revision selection/creation, credential status-only reads, explicit
-SUPER_ADMIN reason acknowledgements, duplicate-click guards, same-operation
-credential retry retention, unknown-outcome messaging, ADMIN read-only controls,
-and return navigation retaining search.
+Completed the architect-requested correction pass for the Connections U15/U16
+frontend. The authenticated server routes now pass only serializable route
+state into a client wrapper that creates one fixture port per mounted route;
+`ConnectionsPage` remains directly injectable for focused tests. The UI now
+uses the shared `ConnectionResult` envelope, synchronous mutation gates,
+CUID-shaped operation IDs, exact admitted payload replay for unknown outcomes,
+known-result handling, route-state-preserving navigation, navigation blockers,
+PER_SHOP shop selection, and independent latest/selected revision state.
 
 Files changed:
 
-- `app/styles.css`
-- `components/studio-shell.tsx`
-- `package.json`
-- `package-lock.json`
 - `app/connections/page.tsx`
 - `app/connections/[id]/page.tsx`
+- `src/studio/connections/connections-route-client.tsx`
 - `src/studio/connections/connections-ui.tsx`
 - `src/studio/connections/contracts.ts`
 - `src/studio/connections/fixtures.ts`
 - `tests/connections-ui.test.tsx`
 
-The launcher claim step was attempted but could not repair durable claim state
-because the existing implementation worktree was already dirty. The dirty files
-matched this task scope exactly, so the implementation was preserved and
-submitted with `attempt: 0` and no claimed timestamp.
+The canonical launcher preparation and claim completed successfully for Attempt
+1 at `2026-09-21T23:47:33Z`. The implementation was performed in the dedicated
+worktree and the parent report was maintained in the separate parent worktree;
+no unrelated changes were discarded or reset.
 
 ### Validation Results
 
 Agent-executed validation:
 
-- `npm run test:arch020-connections-ui`: passed, 1 file and 4 tests.
+- `npm run test:arch020-connections-ui`: passed, 1 file and 7 tests.
 - `npm run lint`: passed with 0 errors and 2 existing warnings outside the task
-  (`scripts/code-runtime-manifest.mjs` and
-  `src/commerce/code-response/runtime/kernel.ts`).
+   (`scripts/code-runtime-manifest.mjs` and
+   `src/commerce/code-response/runtime/kernel.ts`).
 - `git diff --check`: passed.
-- VS Code diagnostics for the changed Connections UI and focused test: no
-  errors.
 
-`npm run typecheck` was run but is blocked by existing repository-wide Prisma
-and publication typing failures: 188 errors in 7 files, outside the task files.
-No typecheck error was reported for the changed Connections UI or focused test.
+`npm run typecheck` exits nonzero on the known repository baseline. The final
+run reported no diagnostics in `src/studio/connections/**`, `app/connections/**`,
+or `tests/connections-ui.test.tsx`; the remaining failures are outside the task
+boundary.
+
+`npm run build` compiled the Next.js application successfully, then stopped on
+the same unrelated commerce execution typing failures in
+`src/commerce/execution/executor.ts`, `src/commerce/execution/renderer.ts`, and
+`src/commerce/integration/backend/executors.ts`.
 
 ### Deviations
 
-The canonical launcher could not complete its claim phase because the isolated
-implementation worktree was already dirty. No dirty file was discarded or reset.
-The implementation was validated in place and the parent report was updated on
-the mirrored task branch for architect review.
+No scope deviation. The architect-authored review text was preserved unchanged.
 
 ### Assumptions
 
@@ -187,8 +186,9 @@ for the approved commerce view/input types.
 
 ### Unresolved Issues
 
-Repository-wide typecheck remains unresolved outside this task; focused tests,
-lint, diagnostics and whitespace checks pass. No live, deployment, database or
+Repository-wide typecheck and the final production build remain blocked by
+pre-existing failures outside this task. Focused tests, task-boundary typecheck
+inspection, lint, and whitespace checks pass. No live, deployment, database or
 backend validation was required or run.
 
 ### Architectural Concerns
@@ -202,11 +202,10 @@ Expected mirrored branch: `task/ARCH-020-COMMERCE-022`.
 
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-022`.
 Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-022`.
-The implementation worktree was physically isolated and contained only the
-task-scoped dirty files at continuation. Dependency pin: shared `0.14.2`.
-Implementation commit: `dd0164b` (`feat(commerce): build connections studio pages`).
-Parent report commit and both remote push results are recorded in the final
-submission after publication.
+The implementation worktree was physically isolated. Dependency pin: shared
+`0.14.2`. Implementation commit: `0bffc5b` (`fix commerce connections
+correction pass`), pushed to the expected remote branch. The parent report is
+being committed and pushed on the mirrored parent branch for Architect Review.
 
 ## Architect Review
 
