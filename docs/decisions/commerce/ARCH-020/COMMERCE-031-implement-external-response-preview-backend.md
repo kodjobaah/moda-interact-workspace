@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T13:40:18Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-019
@@ -121,49 +121,45 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Implementation complete for the bounded first slice; submitted for Architect Review with acceptance gaps recorded below.
+Attempt 3 implementation submitted for Architect Review. The durable launcher claim advanced the task from Attempt 2 to Attempt 3 when preparation was re-entered; this report records that fact rather than rewriting claim history.
 
 ### Files Changed
 
 - `moda-interact-commerce/src/commerce/external-preview/contracts.ts`
 - `moda-interact-commerce/src/commerce/external-preview/service.ts`
-- `moda-interact-commerce/src/commerce/external-preview/index.ts`
 - `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/preview/store.ts`
+- `moda-interact-commerce/src/commerce/preview/redis-store.ts`
 - `moda-interact-commerce/src/commerce/preview/service.ts`
 - `moda-interact-commerce/tests/external-preview.test.ts`
-- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/tests/preview-store.test.ts`
+- `moda-interact-commerce/tests/preview-redis-lua.test.ts`
 
 ### Work Completed
 
-Added bounded optional external response fixtures to conversation/tool-test schemas and stored state, including ownership checking and frozen fixture retention. Added `createExternalPreviewService` with canonical code hash validation, accepted COMMERCE-026 code and COMMERCE-025 visual processor injection, COMMERCE-030 sample-validation/receipt delegation, distributed Redis admin slot, and existing preview replay/conflict result persistence. Added external tool-test completion without live tool execution.
+External samples now load and clone/freeze the canonical saved revision, reject non-external or incompatible media, claim the canonical tool-test identity before quota/receipt/processor work, and preserve replay/conflict semantics. Tool-test cancellation state is persisted through memory and Redis stores, cancellation polls the same preview ID, and quota is released only after acquisition. Conversation fixture state has aggregate UTF-8 bounds plus frozen saved definitions and a synthetic runner boundary that bypasses live tool execution when wired by the composition owner.
+
+### Acceptance Evidence
+
+- PR01: `runs visual JSON sample through processor receipt and saved preview lifecycle` and `runs JavaScript sample through the accepted code processor and receipt lifecycle` pass in `tests/external-preview.test.ts`; actual COMMERCE-025/026 processors are used, the COMMERCE-030 validator is called once, results are `COMPLETED`, and stored replay returns the same result.
+- PR02: `races the same preview identity across service instances without duplicate processing` and `cancels a blocked processor on the same preview identity` pass; one shared state store yields one validator/processor and cancellation yields `CANCELLED` on the same ID with abort propagation. Existing preview service/store/Redis lifecycle suites also pass.
+- PR03: `ignores caller-supplied definitions and rejects unsupported saved revisions before processing`, `fails closed for unsupported media, raw HTML, and invalid processor output`, and `bounds aggregate conversation fixtures and rejects foreign fixture keys` pass. Legacy requests remain unchanged because fixture fields remain optional.
 
 ### Validation Results
 
-PR01 partial: `tests/external-preview.test.ts` covers visual JSON processing, receipt-validator delegation, and canonical code validation; `npm run test:arch020-external-preview` passed 3 tests. Adjacent `npm run test:arch020-external-publication` passed 11 tests, `npm run test:arch020-code-processor` passed 6 tests, and focused legacy preview routes/store passed 10 tests. Changed-file ESLint passed. Repository typecheck remains blocked by pre-existing Prisma generation and integration diagnostics; no changed external-preview errors remain.
-
-PR02 partial: external preview replay/conflict is covered in `tests/external-preview.test.ts`; Redis cross-instance quota/cancel/expiry coverage is not yet implemented.
-
-PR03 partial: legacy request compatibility and zero live executor usage are covered by the implementation shape and focused positive test; the required foreign-fixture, unsupported-media, oversize, raw HTML, invalid-output, and explicit zero HTTP/credential/decryption call regressions are not yet covered.
-
-### Deviations
-
-The accepted COMMERCE-030 validator currently returns only a success envelope, so the external preview service independently reprocesses the frozen sample with the accepted 025/026 processors to persist the bounded preview result. The production runtime factory remains owned by the existing preview composition and was not broadened into live external adapters.
-
-### Assumptions
-
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
-
-### Unresolved Issues
-
-The current slice does not yet provide the complete C21 PR02 Redis race matrix or all PR03 rejection cases. The `runSample` contract requires the saved definition from the caller so COMMERCE-030 can recheck current definition identity; no new definition loader was invented.
-
-### Architectural Concerns
-
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+- `npm run test:arch020-external-preview`: PASS, 9 tests.
+- `npm run test:arch020-external-publication`: PASS, 11 tests.
+- `npm run test:arch020-code-processor`: PASS, 6 tests.
+- Focused preview lifecycle command: PASS, 34 tests.
+- Focused ESLint: PASS.
+- `git diff --check`: PASS.
+- Touched-file TypeScript diagnostics: none after final repair.
+- Repository `npm run typecheck`: non-zero only for existing Prisma-generated and unrelated integration diagnostics; no remaining diagnostics point to Attempt-3-owned source/tests.
+- Repository `npm run build`: non-zero on the same existing Prisma/integration baseline; production compilation reached the existing unrelated diagnostics.
 
 ### Git / VCS
 
-Expected mirrored branch: `task/ARCH-020-COMMERCE-031`, attempt 1. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-031`; parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-031`. Dependencies were installed from the committed lockfile for validation. Commit and push evidence is recorded after submission.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-031`. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-031`. Implementation commits: `7243937`, `b3dfcb4`, `411970e`; launcher claim commit: `cb791c27a8e4b3934788a3e4bb747ba0c3a275ab`. Canonical preparation verified dependency gate passed, origin/main incorporation, and recursive submodule readiness at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
 ## Architect Review
 
