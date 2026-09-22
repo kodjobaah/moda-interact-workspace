@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T00:16:16Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-SHARED-002
@@ -67,7 +67,7 @@ and never expose secrets or raw external response data in errors/logs.
 ## Work Items
 
 - [x] Implement createExternalHttpExecutionPort and explicit EXTERNAL_HTTP branch, runtime wrapper/schema validation, rendering and result/error mapping. Existing query/policy dispatch remains exhaustive.
-- [ ] Implement fixed-origin DNS/socket pinning, TLS hostname verification, target classification, no redirects/proxies/cookies, encoded bounded query and abort/deadline/decompression limits.
+- [x] Implement fixed-origin DNS/socket pinning, TLS hostname verification, target classification, no redirects/proxies/cookies, encoded bounded query and abort/deadline/decompression limits.
 - [x] Decode declared JSON/TEXT without assuming structured content; apply injected visual/code dispatcher before final schema validation/rendering; on failure return bounded error, never raw upstream data. Exclude provider responses from logs.
 - [x] Consume shared per-call budgets with no hidden retries; current connection authorization every call. Document transport fixture evidence and exact public factory in docs/external-http-executor.md.
 
@@ -94,8 +94,8 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 - [x] HT01: supported GET is proven through the production DNS-aware HTTPS transport path into a controlled HTTPS server, with injected auth, exact encoded query and filtered valid response reaching the renderer.
 - [x] HT02: the recorded socket address matches approved DNS resolution; private, mapped, mixed-resolution and redirect attempts fail before unsafe dispatch; the transport performs no second hostname lookup.
-- [ ] HT03: UTF-8 JSON and TEXT decoding, one-request budget, streamed/decompressed byte bound, absolute DNS/connect/body deadlines, caller abort, MIME/schema/status mapping and raw JSON safety validation are covered by focused fixtures with no raw body fallback.
-- [ ] HT04: synthetic 404/429/5xx and malformed/unsafe data produce the required bounded errors; existing Shopify/policy dispatch remains passing; denial cases have adjacent permitted cases through the same entry point.
+- [x] HT03: UTF-8 JSON and TEXT decoding, one-request budget, streamed/decompressed byte bound, absolute DNS/connect/body deadlines, caller abort, MIME/schema/status mapping and raw JSON safety validation are covered by focused fixtures with no raw body fallback.
+- [x] HT04: synthetic 404/429/5xx and malformed/unsafe data produce the required bounded errors; existing Shopify/policy dispatch remains passing; denial cases have adjacent permitted cases through the same entry point.
 
 ## Validation
 
@@ -161,6 +161,39 @@ Ready for Review (Attempt 2).
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-021`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-021`.
 - Attempt-1 history below is preserved verbatim; this Attempt-2 report supersedes its stale validation claims.
+
+### Attempt-3 Completion Report
+
+#### Status
+
+Ready for Review (Attempt 3).
+
+#### Work Completed
+
+- A2-R1: added bounded provider-body termination for every post-header early rejection: 404/429/503 status handling, unsupported content encoding, and already-aborted/no-body-stage paths. Production `IncomingMessage.destroy()` remains the primary cleanup mechanism; generic async iterables use their iterator return path only when no destroy method exists.
+- A2-R2: preserved nonretryable `DEADLINE` at `DefinitionExecutor` only for the explicit `EXTERNAL_HTTP` dispatch path, including pre-dispatch caller abort/deadline and a deadline reached after the external port returns. Shopify Storefront and policy execution retain their existing retryable deadline behavior.
+- Added controlled regressions proving each early-rejection body is terminated with one provider call and zero processor calls, and dispatcher regressions proving external pre/late deadlines are nonretryable while adjacent query behavior is unchanged.
+- Updated the external HTTP fixture table with response-body cleanup and dispatcher-deadline evidence.
+
+#### Validation Results
+
+- `npm run test:arch020-external-http`: passed, 1 file and 13 tests.
+- `npm exec vitest run tests/definition-execution.test.ts tests/external-http-executor.test.ts`: passed, 2 files and 26 tests.
+- `npm run lint`: passed with 0 errors and the existing warnings in `scripts/code-runtime-manifest.mjs:7` and `src/commerce/code-response/runtime/kernel.ts:91`.
+- `npm run typecheck`: blocked only by the unchanged unrelated diagnostics in `src/commerce/integration/backend/executors.ts:17` and `tests/code-response-processor.test.ts:58`; the Attempt-3 touched files introduce no TypeScript diagnostics.
+- `npm run build`: runtime packaging, packaged smoke, Prisma generation, and production compilation passed; final type checking stopped only on the same unchanged two-file baseline diagnostics.
+- `git diff --check`: passed.
+
+#### Git / VCS
+
+- Implementation commit: `159e664` (`fix(commerce): bound external HTTP cleanup`), pushed to `task/ARCH-020-COMMERCE-021`.
+- Launcher claim: Attempt 3 claimed and pushed as `2cf003bf1662e73298fe93ebb9bc95349becceac`; dependency gate passed, implementation submodule `database` was ready at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+- Physical worktree isolation: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-021`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-021`; both use `task/ARCH-020-COMMERCE-021` and no shared checkout was used for task implementation.
+- Start-of-attempt synchronization: parent was already current with its remote task branch and `origin/main`; implementation was already current with its remote task branch and incorporated `origin/main`. Recursive submodule sync/update both passed.
+
+#### Deviations and Unresolved Issues
+
+The existing repository-wide typecheck/build baseline remains limited to the unchanged `src/commerce/integration/backend/executors.ts:17` discriminated-union errors and `tests/code-response-processor.test.ts:58` readonly-schema fixture error. No unrelated repair was made.
 
 ## Architect Review
 
