@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 170
 executor: null
 claimed_at: null
@@ -2809,3 +2809,485 @@ The next successful:
 claim creates Attempt 5 exactly once.
 
 Implement only A4-R1 through A4-R4, return to Review and STOP.
+
+## Architect Unblock Review — Attempt 5 infrastructure supersession — 2026-09-22
+
+### Review Status
+
+Ready
+
+### Review Notes
+
+The Attempt-5 block is superseded.
+
+The absence of:
+
+```text
+COMMERCE_TEST_DATABASE_URL
+COMMERCE_TEST_REDIS_URL
+COMMERCE_C20_REDIS_NAMESPACE
+```
+
+is **not** an architectural or external-infrastructure blocker for COMMERCE-024.
+
+Those variables are optional caller-supplied overrides. When they are not supplied as
+a complete safe set, the task must provision its own disposable local PostgreSQL and
+Redis targets, run the required XN04/WI01 proof against them, and remove those
+resources before returning to Architect Review.
+
+The repository already contains the accepted safe local-Docker pattern in:
+
+```text
+scripts/readiness-docker.mjs
+```
+
+including:
+
+```text
+postgres:16.4-alpine
+redis:7.4.0-alpine
+local Unix-socket Docker context verification
+127.0.0.1-only random host ports
+tmpfs database/Redis storage
+per-run ownership labels
+no persistent Docker volumes
+generated fixture password
+Prisma schema preparation
+SIGINT/SIGTERM-aware cleanup
+ownership verification before resource deletion
+```
+
+Attempt 6 must reuse that safety model. It must not require the developer to export
+the three test-target variables manually.
+
+No Attempt-5 implementation source was changed. Preserve the accepted Attempt-4
+source state and continue the existing A4-R1/A4-R2 proof contract.
+
+### A5-U1 — exact target-selection rule
+
+At the start of the disposable WI01/XN04 runner:
+
+```text
+if ALL of:
+  COMMERCE_TEST_DATABASE_URL
+  COMMERCE_TEST_REDIS_URL
+  COMMERCE_C20_REDIS_NAMESPACE
+are non-empty:
+  use caller-supplied override mode
+
+otherwise:
+  ignore any partial override values
+  create a complete task-owned disposable PostgreSQL + Redis target set
+```
+
+Never combine one caller-supplied target with one auto-created target.
+
+A generic caller `DATABASE_URL` by itself is never sufficient and must never be used
+as the WI01/XN04 integration target.
+
+For either mode, the child test process must receive:
+
+```text
+DATABASE_URL=<exact disposable/test PostgreSQL URL>
+COMMERCE_TEST_DATABASE_URL=<same exact PostgreSQL URL>
+COMMERCE_TEST_REDIS_URL=<exact disposable/test Redis URL>
+COMMERCE_C20_REDIS_NAMESPACE=<task-owned namespace>
+DEPLOYMENT_ENVIRONMENT_NAME=test
+NODE_ENV=test
+```
+
+The invariant:
+
+```text
+DATABASE_URL == COMMERCE_TEST_DATABASE_URL
+```
+
+must hold inside the child process.
+
+### A5-U2 — add one self-provisioning external-wiring runner
+
+Permitted files:
+
+```text
+scripts/run-external-wiring-disposable.mjs
+package.json
+tests/external-wiring.test.ts
+tests/external-wiring-integration.test.ts
+lib/preview/runtime.ts
+```
+
+plus the already-permitted Attempt-5 composition/test files if A4-R1/A4-R2 exposes a
+real 024-owned defect.
+
+Add:
+
+```text
+scripts/run-external-wiring-disposable.mjs
+```
+
+and package command:
+
+```text
+test:arch020-external-wiring:disposable
+```
+
+equivalent to:
+
+```text
+node scripts/run-external-wiring-disposable.mjs
+```
+
+The wrapper must own target provisioning and cleanup. `tests/**` must not contain
+shelling-out Docker lifecycle code.
+
+#### Reuse the accepted Docker safety pattern
+
+The new wrapper should import/reuse the safe primitives from:
+
+```text
+scripts/readiness-docker.mjs
+```
+
+where practical, especially:
+
+```text
+images
+commandRunner
+```
+
+It may factor a small reusable Docker-fixture helper from `readiness-docker.mjs` if
+needed, but must preserve `npm run test:readiness-docker` behavior unchanged.
+
+Do not add Testcontainers or another container framework solely for this task.
+
+#### Auto-provisioned resource identity
+
+Use one unique run ID, for example:
+
+```text
+arch020-c024-a6-<random UUID/suffix>
+```
+
+and an ownership label dedicated to this runner, for example:
+
+```text
+moda.commerce.external-wiring-run=<run-id>
+```
+
+All created containers and the task-owned Docker network must carry that exact label.
+
+Container/network names must be derived only from the run ID.
+
+#### PostgreSQL
+
+Use exactly:
+
+```text
+image: postgres:16.4-alpine
+bind: 127.0.0.1::<random host port> -> 5432
+POSTGRES_USER=fixture
+POSTGRES_PASSWORD=<generated random secret>
+POSTGRES_DB=arch020_c20_c024_<lowercase safe suffix>
+tmpfs: /var/lib/postgresql/data
+```
+
+The database name must satisfy the existing C20 safety rule:
+
+```text
+^arch020_c20_[a-z0-9_]+$
+```
+
+No named/persistent Docker volume is permitted.
+
+Wait for:
+
+```text
+pg_isready
+```
+
+before schema preparation.
+
+Build:
+
+```text
+COMMERCE_TEST_DATABASE_URL =
+postgresql://fixture:<secret>@127.0.0.1:<random-port>/<database>
+```
+
+Do not print the secret-bearing URL.
+
+#### Redis
+
+Use exactly:
+
+```text
+image: redis:7.4.0-alpine
+bind: 127.0.0.1::<random host port> -> 6379
+tmpfs: /data
+redis-server --save "" --appendonly no --requirepass <same-or-separate generated secret>
+```
+
+Wait for authenticated:
+
+```text
+redis-cli ping
+```
+
+to return:
+
+```text
+PONG
+```
+
+Build:
+
+```text
+COMMERCE_TEST_REDIS_URL =
+redis://:<secret>@127.0.0.1:<random-port>
+```
+
+Do not print the secret-bearing URL.
+
+Use a unique namespace satisfying the existing C20 safety rule:
+
+```text
+COMMERCE_C20_REDIS_NAMESPACE=arch020:c20:c024_<lowercase safe suffix>
+```
+
+Never use `FLUSHALL` or `FLUSHDB`.
+
+### A5-U3 — prepare only the disposable database
+
+Before the integration test, run the repository's pinned Prisma CLI against the
+disposable database only:
+
+```bash
+node node_modules/prisma/build/index.js \
+  db push \
+  --schema database/prisma/schema.prisma \
+  --skip-generate
+```
+
+with child:
+
+```text
+DATABASE_URL=<COMMERCE_TEST_DATABASE_URL>
+```
+
+The runner must never run `db push`, migration reset or seed against an unrelated
+caller `DATABASE_URL`.
+
+If the WI01 fixture requires the existing reset contract, call:
+
+```text
+scripts/reset-c20-integration-fixture.mjs
+```
+
+only with the exact disposable/test values and:
+
+```text
+DEPLOYMENT_ENVIRONMENT_NAME=test
+DATABASE_URL == COMMERCE_TEST_DATABASE_URL
+```
+
+The existing reset script's safe database-name and Redis-namespace checks remain
+authoritative.
+
+### A5-U4 — run the outstanding XN04/WI01 proof in the child environment
+
+After the targets are ready and schema is prepared, the wrapper must run:
+
+```bash
+npm run test:arch020-external-wiring
+```
+
+with the exact child environment from A5-U1.
+
+Attempt 6 must continue the existing Architect Review contract:
+
+```text
+XN04:
+  productionService()
+  RedisPreviewStateStore
+  real U14 POST
+  same persisted preview identity
+  real U14 GET
+  visual + JavaScript saved-DRAFT samples
+
+WI01:
+  real connection/revision
+  PER_SHOP synthetic credential
+  saved DRAFT external tool
+  synthetic sample + COMMERCE-030 receipt
+  tool publication
+  capability publication
+  release creation + activation
+  persisted conversation grant
+  signed RS256 assertion
+  backend.mcp JSON-RPC tools/call
+  exactly one controlled HTTPS request
+```
+
+The disposable wrapper does not reduce or replace any A4-R1/A4-R2 acceptance
+requirement.
+
+The WI01/XN04 tests still must not:
+
+```text
+construct a replacement PreviewService
+use InMemoryPreviewStateStore for XN04
+fabricate final manifest/grant state instead of persistence
+override backend.runtime.verifyAssertion
+call backend.runtime.execution.execute as the final WI01 path
+call a live third-party / Shopify / WhatsApp / paid-model endpoint
+```
+
+### A5-U5 — cleanup is mandatory and part of acceptance
+
+Cleanup must run in a `finally` path for:
+
+```text
+PASS
+test assertion failure
+child-process non-zero exit
+Prisma/schema failure
+SIGINT
+SIGTERM
+timeout
+```
+
+Cleanup must:
+
+```text
+inspect only resources carrying this run's ownership label
+verify the label owner exactly matches the run ID
+remove both owned containers with --force --volumes
+remove the owned network
+leave no persistent volumes
+```
+
+After cleanup, query Docker again by the exact ownership label and require zero
+remaining containers/networks.
+
+If cleanup cannot prove removal, the wrapper exits non-zero even when tests passed.
+
+The runner must redact generated passwords and connection URLs from captured output.
+
+### A5-U6 — legitimate block conditions after this review
+
+Missing test-target environment variables are no longer a legitimate block reason.
+
+Attempt 6 may return Blocked only when a real prerequisite prevents safe
+self-provisioning, for example:
+
+```text
+Docker executable unavailable
+Docker daemon unavailable
+selected Docker context is not a local unix:// socket
+required image cannot be pulled/started
+loopback-only port binding cannot be established
+Prisma cannot prepare the newly created disposable schema
+resource cleanup/ownership verification fails
+```
+
+The exact command/error must be recorded.
+
+Do not return Blocked merely because:
+
+```text
+COMMERCE_TEST_DATABASE_URL is unset
+COMMERCE_TEST_REDIS_URL is unset
+COMMERCE_C20_REDIS_NAMESPACE is unset
+```
+
+### A5-U7 — Attempt-6 durable handoff
+
+Before Review, run:
+
+```bash
+npm run test:arch020-external-wiring:disposable
+
+npm run test:arch020-external-preview
+npm run test:arch020-external-publication
+npm run test:arch020-external-http
+npm run test:arch020-external-credentials
+npm run test:arch020-external-availability
+
+npx eslint \
+  scripts/run-external-wiring-disposable.mjs \
+  src/commerce/integration/external \
+  src/commerce/integration/backend/executors.ts \
+  src/commerce/publication/lifecycle.ts \
+  lib/preview/runtime.ts \
+  app/api/studio/preview/tool-tests/route.ts \
+  tests/external-wiring.test.ts \
+  tests/external-wiring-integration.test.ts
+
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If `tests/external-wiring-integration.test.ts` is not created, omit only that path
+from ESLint.
+
+The disposable command's durable output must record, without secrets:
+
+```text
+Docker context validation PASS
+PostgreSQL container started on loopback random port
+Redis container started on loopback random port
+schema preparation PASS
+XN04 PASS
+WI01 PASS
+cleanup PASS
+zero owned resources remain
+```
+
+Do not record passwords or full connection URLs.
+
+The Completion Report must replace the Attempt-5 block with current Attempt-6
+evidence and map the exact XN04/WI01 test names/results.
+
+Return exactly:
+
+```yaml
+status: review
+attempt: 6
+executor: null
+claimed_at: null
+```
+
+Record:
+
+```text
+final implementation commit
+final parent report commit
+launcher-resolved implementation worktree
+launcher-resolved parent/docs worktree
+both branches pushed
+both worktrees clean
+```
+
+Then STOP.
+
+Do not launch COMMERCE-012 or SYSTEM-TEST-002.
+
+### State Transition
+
+This review changes only:
+
+```yaml
+status: ready
+attempt: 5
+executor: null
+claimed_at: null
+```
+
+The next successful:
+
+```text
+/moda-task ARCH-020-COMMERCE-024
+```
+
+claim creates Attempt 6 exactly once.

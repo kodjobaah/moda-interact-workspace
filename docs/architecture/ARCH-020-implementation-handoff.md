@@ -1694,3 +1694,23 @@ in-memory/direct-executor substitutes rejected in Attempt 3.
 
 Attempt 5 is bounded to those proofs and report reconciliation. COMMERCE-012 and
 SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 5 infrastructure unblock — 2026-09-22
+
+**Ready, Attempt 5 retained; claim cleared.**
+
+Missing `COMMERCE_TEST_DATABASE_URL`, `COMMERCE_TEST_REDIS_URL` and
+`COMMERCE_C20_REDIS_NAMESPACE` no longer block the final COMMERCE-024 integration
+proof. They are optional complete-set overrides. Attempt 6 must create its own
+task-owned disposable PostgreSQL/Redis targets when absent.
+
+The self-provisioning runner must reuse the accepted local-Docker safety pattern from
+`moda-interact-commerce/scripts/readiness-docker.mjs`: local Unix-socket context,
+pinned PostgreSQL/Redis images, loopback-only random ports, tmpfs, generated
+credentials, task ownership labels, safe C20 database/Redis namespace naming, schema
+preparation only against the disposable database, signal-aware cleanup and a final
+zero-owned-resource check.
+
+The outstanding XN04 production preview POST/GET proof and WI01 persisted
+publication/release/grant + signed `backend.mcp tools/call` proof remain the
+acceptance gate. COMMERCE-012 and SYSTEM-TEST-002 remain gated.

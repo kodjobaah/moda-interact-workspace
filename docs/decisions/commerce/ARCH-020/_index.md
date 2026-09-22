@@ -32,7 +32,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | Complete (Accepted, Attempt 8) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | ready (Changes Requested; Attempt 4 retained) | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036, ARCH-020-COMMERCE-038 |
+| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | ready (Attempt 5 unblock; self-provision disposable targets) | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036, ARCH-020-COMMERCE-038 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
@@ -1293,3 +1293,20 @@ instead of persisting publication/release/grant state and invoking signed
 
 Attempt 5 is limited to those two proofs and durable report reconciliation. No
 downstream task is promoted.
+
+## COMMERCE-024 Attempt 5 infrastructure unblock — 2026-09-22
+
+COMMERCE-024 is **Ready, Attempt 5 retained, claim cleared**.
+
+The Attempt-5 block caused only by missing `COMMERCE_TEST_DATABASE_URL`,
+`COMMERCE_TEST_REDIS_URL` and `COMMERCE_C20_REDIS_NAMESPACE` is superseded.
+Those values are optional complete-set overrides, not prerequisites.
+
+The next claim creates Attempt 6. Attempt 6 must self-provision task-owned disposable
+PostgreSQL and Redis targets when the override set is absent, using the repository's
+existing `readiness-docker.mjs` safety model: local Unix-socket Docker only,
+loopback random ports, tmpfs, ownership labels, safe C20 database/namespace names,
+Prisma schema preparation and guaranteed verified cleanup.
+
+The existing XN04 and WI01 production-composition requirements remain unchanged.
+No downstream task is promoted.
