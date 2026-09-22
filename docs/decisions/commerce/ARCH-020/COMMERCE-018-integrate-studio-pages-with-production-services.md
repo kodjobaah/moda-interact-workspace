@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 140
-executor: null
-claimed_at: null
-attempt: 3
+executor: copilot
+claimed_at: 2026-09-22T00:42:51Z
+attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-013
   - ARCH-020-COMMERCE-008
@@ -26,7 +26,7 @@ enables:
   - ARCH-020-GATEWAY-001
   - ARCH-020-COMMERCE-024
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Integrate Studio pages with production services
