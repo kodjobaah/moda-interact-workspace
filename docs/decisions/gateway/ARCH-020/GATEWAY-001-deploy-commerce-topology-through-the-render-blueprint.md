@@ -102,6 +102,17 @@ independent. Validate blueprint wiring without paid provider calls or deployment
 record provider-quality evidence separately. Reconcile these names against the
 accepted BACKGROUND-001 handoff before publishing configuration.
 
+Preview MODEL wiring is separately fixed by C10/COMMERCE-033. Declare
+`COMMERCE_PREVIEW_ENABLED`, `COMMERCE_PREVIEW_PROVIDER`,
+`COMMERCE_PREVIEW_MODEL` and secret `COMMERCE_PREVIEW_API_KEY` on the Commerce
+service; never expose them as `NEXT_PUBLIC_*`. Test/development hosted configuration is
+`COMMERCE_PREVIEW_ENABLED=true`, `COMMERCE_PREVIEW_PROVIDER=groq`,
+`COMMERCE_PREVIEW_MODEL=openai/gpt-oss-20b`; the API key is an external Render secret.
+Production provider/model are independently configurable. Allowed providers are exactly
+`openai|groq`; no fallback and no configurable preview base URL. Gateway only wires the
+variables; Commerce owns provider HTTP behavior. No paid provider call is required for
+Blueprint acceptance.
+
 ### Required evidence
 
 Use existing gateway validation shell/config tooling (repository has no package.json; do not invent npm build). Add deterministic host/path/method fixtures with stub upstream; include direct private calls missing credentials and each public encoded/alias MCP attempt. Deployment credentials/real hosts remain external inputs.

@@ -1210,6 +1210,19 @@ No dependent is newly Ready from this acceptance alone: COMMERCE-030 still await
 COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
 other prerequisites. No downstream task is launched automatically.
 
+## ARCH-020 COMMERCE-019 Attempt 3 readiness reconciliation — 2026-09-22
+
+COMMERCE-019 is **Ready, Attempt 2 retained**, claim null. Architect-accepted
+COMMERCE-033 (OpenAI/Groq preview model transport/config) and COMMERCE-034 (U14
+Conversation source gating) resolve the two Attempt-2 blockers. All explicit 019
+dependencies are Complete; the next `/moda-task ARCH-020-COMMERCE-019` claim becomes
+Attempt 3.
+
+The prepared Commerce worktree must contain the accepted 033/034 implementation after
+normal synchronization. If either producer is absent, 019 returns `blocked` without
+reimplementation until developer integration or explicit exact dependency-commit
+consumption makes the accepted producer source available. No downstream task is
+started by this reconciliation.
 
 ## ARCH-020 COMMERCE-021 Attempt 3 accepted — 2026-09-22
 
@@ -1220,16 +1233,21 @@ all prior accepted transport/security behavior is preserved. `COMMERCE-030` stil
 requires COMMERCE-025, and COMMERCE-024/GATEWAY-003/COMMERCE-012 retain additional
 dependency gates. No downstream task is automatically launched.
 
-## COMMERCE-023 Attempt 1 architect review — 2026-09-22
 
-ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 1**, claim clear. The
-submitted external-tool visual editor proves a useful zero-network starting point, but
-does not yet satisfy C21 X06/XN02. The task's latest Architect Review is the complete
-deterministic correction contract covering external-draft entry, exact
-connection/revision return context, full query/filter authoring, protected visual/code
-mode switching, synchronized Advanced JSON, result-schema/sample validation with
-stale-hash guards, schema/review/publish guidance, exported U14 fixture controls and
-the full injected-port XN02 owned flow.
+## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
-No dependency is promoted. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
-gated. No downstream task is launched automatically.
+`ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.
+## COMMERCE-025 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-025 is **Accepted / Complete, Attempt 2** (`8b281cf`; report
+`04f10b0e`). The C21 visual response processor now preserves null/missing-last
+ordering in both sort directions with stable ties and is protected by the required
+server-only module boundary. Focused tests pass 6/6 and diff validation passes.
+Repository-wide lint/typecheck/build remain non-zero only on reported unrelated
+baseline diagnostics; the production Next compilation completed before the
+unrelated TypeScript phase failed, and no task-owned diagnostic was reported.
+
+Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
+because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
+all Complete. Later preview, assembly, cache, gateway and system-test work retains
+its remaining dependencies. No downstream task is started automatically.
