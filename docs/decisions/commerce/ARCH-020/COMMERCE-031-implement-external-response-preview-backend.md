@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -2213,3 +2213,169 @@ exactly once.
 
 Implement only A4-R1 through A4-R5, return to Review, push both mirrored branches and
 STOP. Do not begin COMMERCE-024, COMMERCE-012 or any system-test task.
+
+## Architect Review — Attempt 5 — 2026-09-22
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Reviewed the exact Attempt 5 submission at implementation `abb02d9` and parent report
+`5f334581` against the complete Attempt-4 A4-R1..A4-R5 correction contract.
+
+Attempt 5 closes all remaining COMMERCE-031-owned functional and evidence gaps.
+
+A4-R1 — MIME normalization — is resolved:
+
+```ts
+const sampleMime = sample.contentType
+  .split(';', 1)[0]
+  .trim()
+  .toLowerCase();
+```
+
+The focused regression proves
+`application/json; charset=utf-8` is accepted when the saved media allowlist contains
+`application/json`.
+
+A4-R2 — actual Redis PR02 proof — is resolved using the repository's existing local
+`redis-server` + `ioredis` harness and real `RedisPreviewStateStore` instances.
+The committed scenarios prove:
+
+```text
+same-operation replay across Redis-backed instances
+  -> one validator call
+  -> one processor call
+  -> one business quota acquisition
+  -> same terminal result
+  -> no replay QUOTA_EXCEEDED
+
+changed payload with same previewRunId
+  -> ID_CONFLICT before second validator/processor/quota side effects
+
+cross-instance cancel
+  -> blocked processor AbortSignal aborted
+  -> same run becomes CANCELLED
+  -> later reads remain CANCELLED
+
+RUNNING expiry
+  -> same run becomes UNKNOWN
+  -> stale owner cannot complete it
+
+different new run IDs
+  -> second new run is QUOTA_EXCEEDED while first owns slot
+  -> quota releases after terminal cancellation
+  -> later distinct run can acquire
+```
+
+A4-R3 — synthetic conversation execution — is resolved:
+
+- the frozen conversation external definition is loaded server-side;
+- the exact frozen fixture and definition are supplied to `externalFixtureRunner`;
+- the normal live `PreviewToolExecutionPort` path is not used for the matching
+  external fixture;
+- the run reaches terminal `COMPLETED`;
+- changed fixture content on the same frozen conversation identity conflicts;
+- foreign fixture IDs and selected-but-non-EXTERNAL_HTTP fixture IDs are rejected
+  before persistence.
+
+Direct source inspection confirms the external preview/conversation services have no
+provider HTTP or credential decrypt dependency of their own; the accepted synthetic
+branch bypasses the normal live tool executor. The focused successful conversation
+test also records zero live-executor use while exercising the synthetic runner.
+
+A4-R4 fail-closed behavior remains present and is strengthened:
+
+- unsupported media fails before validator/processor work;
+- oversize sample is rejected at the public request boundary before processing;
+- raw HTML incompatible with the saved response mode fails closed;
+- invalid processor output fails closed without raw-result fallback;
+- caller-supplied definition data is non-authoritative.
+
+The Work Items and PR01-PR03 Acceptance Criteria are now checked consistently with
+the committed evidence.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/external-preview/contracts.ts`
+- `moda-interact-commerce/src/commerce/external-preview/service.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/preview/store.ts`
+- `moda-interact-commerce/src/commerce/preview/redis-store.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/tests/external-preview.test.ts`
+- `moda-interact-commerce/tests/preview-store.test.ts`
+- `moda-interact-commerce/tests/preview-redis-lua.test.ts`
+- this task's Attempt-5 Completion Report
+
+### Validation Reviewed
+
+Submitted Attempt-5 evidence:
+
+```text
+npm run test:arch020-external-preview
+  PASS — 13 tests
+
+npm run test:arch020-external-publication
+  PASS — 11 tests
+
+npm run test:arch020-code-processor
+  PASS — 6 tests
+
+preview lifecycle / Redis / route focused validation
+  PASS — 43 tests
+  includes 9 real Redis Lua tests
+
+focused ESLint
+  PASS
+
+git diff --check
+  PASS
+
+repository typecheck/build
+  non-zero only on 12 documented pre-existing repository diagnostics
+  no Attempt-5-owned file is implicated
+```
+
+The uploaded archive does not include installed dependencies, so architect review does
+not claim another dependency-backed execution. Acceptance is based on direct
+inspection of the exact submitted source plus the durable focused validation evidence.
+
+### Architecture Conformance
+
+Conformant for COMMERCE-031.
+
+Accepted invariants now include:
+
+```text
+server-owned saved external definition authority
+frozen saved definition included in preview identity
+claim/replay before business quota/receipt/processor side effects
+same-operation replay with no duplicate side effects
+same-ID changed payload conflict
+same-ID cancellation and expiry state
+real Redis-backed cross-instance replay/quota/cancel proof
+normalized MIME comparison
+bounded synthetic samples
+COMMERCE-025/026 processor reuse
+COMMERCE-030 receipt validator reuse
+frozen conversation external definitions/fixtures
+synthetic conversation fixture execution without live tool execution
+foreign/non-external fixture rejection before persistence
+fail-closed unsupported media/oversize/raw-output behavior
+no publication/runtime validation bypass
+```
+
+### Follow-up
+
+`ARCH-020-COMMERCE-031` is Complete at Attempt 5.
+
+`ARCH-020-COMMERCE-024` is promoted from Pending to Ready because all of its declared
+dependencies are now Complete.
+
+Do not automatically launch COMMERCE-024.
+
+`ARCH-020-COMMERCE-012` remains Pending behind its later integration/gateway
+frontier. No system-test task is launched by this acceptance.

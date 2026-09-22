@@ -1539,3 +1539,20 @@ zero live provider/credential execution.
 
 Attempt 5 is bounded to those corrections/evidence and Completion Report
 reconciliation. COMMERCE-024/012 remain gated and no downstream task is launched.
+
+## COMMERCE-031 Attempt 5 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 5** (`abb02d9`; parent report `5f334581`).
+
+The external response preview backend now satisfies PR01-PR03: actual visual and
+JavaScript processors run through the accepted preview/receipt lifecycle; saved
+definitions are server-owned and frozen; replay claims precede quota/receipt/processor
+side effects; Redis-backed cross-instance replay, conflict, cancellation, expiry and
+different-new-run quota behavior are proven; MIME parameters are normalized; and
+conversation external fixtures execute through the frozen synthetic path without
+normal live tool execution. Invalid foreign/non-external fixtures and malformed or
+oversize response samples fail closed.
+
+`ARCH-020-COMMERCE-024` is now **Ready** because every declared dependency is
+Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
+their remaining integration/gateway gates.
