@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 155
 executor: null
 claimed_at: null
@@ -173,9 +173,11 @@ Return contradictory accepted source facts to moda_architect before weakening co
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-023`.
 Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-023`.
 Branch: `task/ARCH-020-COMMERCE-023`; Attempt 8; implementation commit `23b1c82`, pushed.
-Parent report worktree is the physical mirrored task worktree listed above. Launcher
-preparation passed the dependency gate, synchronized both worktrees, and initialized the
-recursive database submodule at the recorded commit. The claim was cleared before handoff.
+Parent report commit: `5afce557`, pushed. Both implementation and parent task worktrees
+were clean at handoff. Parent report worktree is the physical mirrored task worktree
+listed above. Launcher preparation passed the dependency gate, synchronized both
+worktrees, and initialized the recursive database submodule at the recorded commit.
+The claim was cleared before handoff.
 
 ## Architect Review
 
@@ -3494,3 +3496,120 @@ Return the same task through:
 ```
 
 The next claim becomes **Attempt 8** exactly once.
+
+### Attempt 8 — Accepted (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 8 archive and
+parent handoff `5afce557e6f7ac6a29ec0dbce83fc188fa0303d0`. The current remote
+`task/ARCH-020-COMMERCE-023` parent branch matches that handoff commit. The task
+records implementation commit `23b1c82`; the Commerce implementation remote is not
+readable through the current review connector, so implementation acceptance is
+grounded in the exact submitted archive.
+
+**Accepted / Complete, Attempt 8.**
+
+The bounded Attempt 7 correction contract is satisfied.
+
+1. **Saved-vs-unsaved validation boundary**
+   - editable definition state is initialized from composer-unsaved content when
+     present;
+   - persisted `savedDefinition` is initialized independently from the actual
+     selected persisted revision;
+   - U14 continues to receive the persisted saved definition and remains frozen while
+     the draft is dirty;
+   - successful Save refreshes both editable and persisted definition state from the
+     returned revision;
+   - Save does not manufacture validation:
+     `externalValidated` survives only when the candidate was already validated before
+     Save **and** the persisted returned definition is canonically identical to the
+     submitted validated candidate;
+   - if persistence normalizes/changes the definition, validation becomes stale and
+     publication remains disabled until the returned definition is applied/validated.
+
+2. **Exact scalar-only IN editing and reconciliation**
+   - local IN validation accepts only `string`, finite `number`, `boolean`, or `null`;
+   - values must contain 1..20 entries and all entries must have exactly the same
+     scalar kind;
+   - strings retain the accepted 2048-byte bound;
+   - objects and arrays are rejected locally instead of being cast as a scalar kind;
+   - invalid local text remains visible with a bounded row error and does not call
+     `setVisual(...)` or mutate canonical processing;
+   - `filterDraftKey = canonicalJson(filters)` drives reconciliation, so when an
+     accepted editor path changes the canonical filters, retained local IN drafts and
+     errors are replaced by the new canonical values.
+
+3. **Canonical report reconciliation**
+   - the current Completion Report identifies Attempt 8;
+   - implementation commit `23b1c82` is recorded;
+   - this Architect acceptance reconciles the submitted parent report commit
+     `5afce557`;
+   - both mirrored worktrees were reported clean, pushed, status `review`, claim
+     cleared before architect disposition.
+
+Previously accepted COMMERCE-023 behavior remains intact:
+- External API is a first-class U06 tool-purpose choice;
+- valid EXTERNAL_HTTP starter drafts use an explicit authorized connection revision;
+- connection/revision metadata and guarded Manage-connections return context are
+  explicit;
+- typed query mappings, literals, projections, LIST filters, sort and limits are
+  lossless;
+- Advanced JSON and visual processing remain two views of the same processing value;
+- Visual/JavaScript mode switching does not silently discard edited content;
+- the COMMERCE-027 code editor remains injected through the typed slot;
+- synthetic sample Apply/Validate uses current hash/generation guards and zero live
+  network/credential access;
+- publication remains role/current-validation/reason gated;
+- U14 fixture execution receives the exact saved revision/definition through the
+  injected fixture port.
+
+Submitted validation reviewed:
+
+```text
+npm run test:arch020-external-tools-ui
+  PASS — 7/7 focused tests
+
+npx vitest run tests/studio-workspace.test.tsx
+  PASS — 18/18
+
+targeted ESLint
+  PASS
+
+git diff --check
+  PASS
+
+repository lint/typecheck/build
+  NON-ZERO only on the documented unrelated baseline diagnostics
+```
+
+The focused suite does not individually enumerate every new scalar/save edge, but the
+submitted production source directly implements the required guards. No additional
+implementation round is warranted merely to expand test enumeration.
+
+### Architecture Conformance
+
+Conformant with the C21 U06/U14 / X06 / XN02 frontend boundary.
+
+COMMERCE-023 does not own U15/U16 connection implementation, provider HTTP,
+credentials, Shared contracts, publication backend, preview backend or final
+production composition.
+
+### Dependency Frontier
+
+COMMERCE-023 is Complete.
+
+This exact COMMERCE-023 parent snapshot does **not** yet contain all architect
+acceptances from the separately advancing task branches. Its durable index still
+contains non-Complete entries for other COMMERCE-024 prerequisites. Therefore this
+acceptance does not promote COMMERCE-024 from this branch.
+
+Readiness must be reconciled later from a parent snapshot in which every declared
+COMMERCE-024 prerequisite is durably Complete together. No downstream task is
+launched automatically.
+
+### Review Status
+
+Accepted.
+
+### Follow-up
+
+None for COMMERCE-023.

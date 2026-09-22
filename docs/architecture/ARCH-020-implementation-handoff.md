@@ -1497,3 +1497,13 @@ downstream task is started automatically.
 current U06/U14 authoring, saved-definition refresh and typed editor work. Attempt 8
 must close only A7-R1..A7-R3 from the latest task review before COMMERCE-024 consumes
 this frontend. COMMERCE-024 and COMMERCE-012 remain gated; nothing is auto-started.
+
+## COMMERCE-023 Attempt 8 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-023` is **Complete / Accepted, Attempt 8**. Consumers may rely on
+the accepted U06/U14 external authoring frontend: exact saved-vs-unsaved revision
+separation, current-validation publication gating, typed query/projection/filter
+editing, scalar-only IN validation/reconciliation, guarded return context, injected
+code-panel slot and exact saved-revision fixture execution. COMMERCE-024 readiness
+must be reconciled only once all of its producer acceptances coexist in one parent
+snapshot.

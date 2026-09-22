@@ -1246,3 +1246,12 @@ acceptance is bounded to preserving validation across Save only for an already
 validated exact persisted candidate, using the persisted selected definition rather
 than composer-unsaved content as `savedDefinition`, and making IN validation
 scalar-only with canonical-draft reconciliation. COMMERCE-024 remains gated.
+
+## COMMERCE-023 Attempt 8 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-023` is **Accepted / Complete, Attempt 8**. U06/U14 now preserve a
+true persisted saved-definition baseline independently from composer-unsaved state,
+and Save preserves current validation only for an already-validated candidate
+persisted unchanged. IN filters are locally scalar-only/same-kind/bounded and retained
+invalid drafts reconcile when canonical filters change. Final production composition
+remains COMMERCE-024 ownership.

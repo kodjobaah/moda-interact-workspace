@@ -1596,3 +1596,13 @@ issues: Save currently creates validation unconditionally, and IN local validati
 treat same-type objects/arrays as scalar until the Shared schema rejects them. The
 canonical Completion Report also needs the final submitted commits. The next claim is
 Attempt 8. COMMERCE-024/012 remain dependency-gated.
+
+## COMMERCE-023 Attempt 8 acceptance — 2026-09-22
+
+COMMERCE-023 is **Complete / Accepted, Attempt 8**, claim clear. Focused external UI
+7/7, Studio 18/18, targeted ESLint and diff checks pass; repository-wide failures
+remain the documented unrelated baseline. The submitted parent report is `5afce557`
+and implementation is `23b1c82`.
+
+No COMMERCE-024 promotion is made from this branch because this exact snapshot still
+contains other non-Complete prerequisites. No automatic launch.

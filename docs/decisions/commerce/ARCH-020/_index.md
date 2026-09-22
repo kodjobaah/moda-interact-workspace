@@ -30,7 +30,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | complete (Accepted, Attempt 2) | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
-| [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready (Changes Requested, Attempt 7) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
+| [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | Complete (Accepted, Attempt 8) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
@@ -1101,3 +1101,17 @@ IN validation must reject non-scalar JSON values locally and reconcile stale loc
 drafts when the canonical filter changes; and the canonical Completion Report must
 record final commits `ba75d1f` / `4d89113e`. COMMERCE-024/012 remain gated; no task
 is auto-started.
+
+## COMMERCE-023 Attempt 8 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 8** (`23b1c82`; parent report `5afce557`).
+
+The final saved-vs-unsaved validation boundary is correct: persisted
+`savedDefinition` is independent from composer-unsaved content and Save preserves
+validation only for an already-validated candidate returned unchanged by persistence.
+IN editing is now scalar-only, same-kind, finite/bounded and reconciles retained local
+draft/error state when canonical filters change.
+
+This exact parent snapshot still contains other non-Complete COMMERCE-024
+prerequisites, so no downstream readiness is promoted here and nothing is
+auto-started.

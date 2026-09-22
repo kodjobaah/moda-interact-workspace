@@ -1984,3 +1984,11 @@ Before treating COMMERCE-023 as a completed producer, Save must not manufacture 
 validation, `savedDefinition` must always begin from the persisted selected revision,
 and IN local validation must reject non-scalars and reconcile stale drafts. Production
 composition remains COMMERCE-024-owned.
+
+## COMMERCE-023 Attempt 8 acceptance — 2026-09-22
+
+The external U06/U14 authoring frontend is **Accepted / Complete** at Attempt 8. Its
+persisted saved-definition boundary, current validation gating, typed visual/query
+authoring, scalar-only IN reconciliation and injected saved-revision fixture flow are
+now accepted. Production external composition remains COMMERCE-024-owned and is not
+launched by this acceptance.
