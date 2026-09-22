@@ -1407,3 +1407,11 @@ pass, but exact source review still finds five bounded U15/U16 runtime defects i
 syntax, unknown reconciliation, credential navigation guarding, credential
 status/CAS freshness and terminal detail reads. The next claim is Attempt 3.
 COMMERCE-024/012 remain dependency-gated.
+
+## COMMERCE-022 Attempt 3 architect review — 2026-09-22
+
+COMMERCE-022 is **Ready / Attempt 3 retained / claim clear**. Focused 13/13 tests and
+task-local diagnostics pass, but exact source review confirms three prior runtime
+corrections remain: parent-owned credential navigation state, exact credential
+status/CAS context and terminal U16 read states. The next claim is Attempt 4.
+COMMERCE-024/012 remain dependency-gated.

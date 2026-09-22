@@ -1804,3 +1804,11 @@ The Connections frontend remains **Ready / Changes Requested, Attempt 2**. Do no
 consume it as a completed C21 producer until the exact Attempt 3 corrections in the
 task review are closed. Existing Shared-result, list-state, shop-search and
 latest-vs-selected revision corrections are retained. COMMERCE-024 remains gated.
+
+## COMMERCE-022 Attempt 3 architect review — 2026-09-22
+
+The Connections frontend remains **Ready / Changes Requested, Attempt 3**. Route syntax
+and same-operation replay are now closed; retain them. Do not treat COMMERCE-022 as a
+completed producer until credential dirty/unknown state participates in the parent
+U16 blocker, status/CAS is exact to revision/shop context, and terminal detail reads
+render bounded states instead of permanent loading. COMMERCE-024 remains gated.

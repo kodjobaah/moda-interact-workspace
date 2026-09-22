@@ -1307,3 +1307,10 @@ accepted A0 route-wrapper/result/list-state/shop-selection/latest-revision work.
 Attempt 3 must close only the latest task review A2-R1..A2-R5 before COMMERCE-024 may
 consume the Connections frontend. COMMERCE-024 and COMMERCE-012 remain gated; nothing
 is auto-started.
+
+## COMMERCE-022 Attempt 3 review — 2026-09-22
+
+`ARCH-020-COMMERCE-022` is **Ready / Changes Requested, Attempt 3**. Preserve the
+accepted route/replay/list-state/shop-selection/latest-revision work. Attempt 4 must
+close only A3-R1..A3-R3 from the latest task review before COMMERCE-024 consumes U15/U16.
+COMMERCE-024 and COMMERCE-012 remain gated; nothing is auto-started.

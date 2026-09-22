@@ -1125,3 +1125,11 @@ revision context. Final X05/XN01 acceptance is bounded to route syntax, complete
 same-operation replay lifecycle, credential dirty/unknown tab locking, exact
 credential-status context/CAS and terminal connection-read states. No backend or
 credential implementation moves into this task.
+
+## COMMERCE-022 Attempt 3 architect review — 2026-09-22
+
+`ARCH-020-COMMERCE-022` remains **Ready / Changes Requested, Attempt 3**. Route syntax
+and repeatable same-operation reconciliation are now corrected. Final X05/XN01
+acceptance is bounded to the still-outstanding credential dirty/unknown navigation
+guard, exact revision/shop status-CAS ownership and terminal connection-detail read
+states. No backend or credential implementation moves into this task.
