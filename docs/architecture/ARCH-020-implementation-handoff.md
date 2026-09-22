@@ -1371,3 +1371,15 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
+## COMMERCE-018 Attempt 8 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-018` is **Complete / Accepted, Attempt 8**. Consumers may rely on
+the production Studio adapter for the accepted C20 read/write mapping, Origin/role
+enforcement, replay/CAS behavior, exact release-member/pointer semantics, response
+validation and read-only U13 inspection. The full real authoring traversal now passes
+through production services (5/5 C20; 9/9 focused Studio). Optional source revision
+fields are omitted rather than hashed as `undefined`.
+
+This acceptance promotes GATEWAY-001 to Ready. COMMERCE-024, COMMERCE-012 and
+system-test work remain gated by their other prerequisites; no task is auto-started.

@@ -1867,3 +1867,12 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
+## COMMERCE-018 Attempt 8 acceptance — 2026-09-22
+
+The production Studio composition task is **Accepted / Complete** at Attempt 8. Its
+real C20 proof now includes the complete S01 author/validate/publish/release/
+activate/rollback traversal, saved-draft preservation during discovery outage and
+one-audit-per-operation verification. Preview remains COMMERCE-019-owned and external
+production composition remains COMMERCE-024-owned. GATEWAY-001 becomes Ready; no
+automatic execution follows from readiness.

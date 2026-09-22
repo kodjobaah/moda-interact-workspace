@@ -1470,3 +1470,14 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
+## COMMERCE-018 Attempt 8 acceptance — 2026-09-22
+
+COMMERCE-018 is **Complete / Accepted, Attempt 8**, claim clear. The missing real S01
+authoring traversal now passes: C20 5/5 and focused Studio 9/9. The bounded
+optional-source-revision operation-hash correction is accepted. Repository-wide
+lint/typecheck/build remain non-zero only on the recorded unrelated baseline.
+
+All declared prerequisites of ARCH-020-GATEWAY-001 are now Complete, so GATEWAY-001 is
+**Ready / Attempt 0 / claim clear**. It is not launched automatically. COMMERCE-024,
+COMMERCE-012 and system-test tasks retain other gates.

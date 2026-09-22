@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 140
 executor: null
 claimed_at: null
@@ -70,10 +70,10 @@ that SHA in the mapping document; pending producer symbols must not be guessed.
 
 - [x] Own `src/commerce/integration/studio/` and minimal wiring in `src/studio/server-services.ts` plus Studio command Server Actions/client service transport. Do not change backend.ts, MCP route or preview runtime.
 - [x] Implement every008 StudioServices method against real013 publication/read services and011 discovery; recheck auth per request/action, Origin on mutations and role before replay.
-- [x] Apply the C20 field/error translation table, including source revision names, exact release members and pointer CAS. Rehydrate actual returned IDs into Studio view models; never synthesize IDs by splitting strings. The real-adapter proof remains pending infrastructure.
+- [x] Apply the C20 field/error translation table, including source revision names, exact release members and pointer CAS. Rehydrate actual returned IDs into Studio view models; never synthesize IDs by splitting strings. The real-adapter proof passed against the approved disposable PostgreSQL/Redis targets in Attempt 8.
 - [x] Keep existing008 components, routes and draft state. Wire functional commands, preserve unknown-operation identity and role-aware controls; no page redesign or backend business-rule reimplementation.
 - [x] Create server-authorized merchant inspection/read models using013 current feature/grant-candidate resolver; never create a production conversation grant for U13.
-- [x] Provide `docs/commerce-studio-integration.md` and `test:arch020-studio-integration`. The C20 real-adapter command is also defined as `test:arch020-studio-integration:c20`; complete real-service execution remains developer-gated on disposable targets.
+- [x] Provide `docs/commerce-studio-integration.md` and `test:arch020-studio-integration`. The C20 real-adapter command is also defined as `test:arch020-studio-integration:c20`; the real-service proof passed against approved disposable targets in Attempt 8.
 
 ## Interfaces / Contracts
 
@@ -113,12 +113,12 @@ Readiness never launches a task; use the normal dedicated mirrored worktrees.
 
 ## Acceptance Criteria
 
-- [ ] S01: actual U03 -> U04 -> U09 -> U06 -> U07 -> U06 -> U09 -> U10 -> U11 flow authors, validates, publishes and activates through real services; exact definitions/member positions/responseContract survive.
-- [ ] S02: N01–N09/N12 and composer portion of N13 pass with real reads/actions; missing IDs/foreign revisions produce correct states and exact published revisions remain read-only.
-- [ ] S03: ADMIN cannot publish; revoked admin denied on next request; duplicate clicks/CAS/changed replay and unknown-outcome recovery preserve exactly one write/audit and the original operationId.
-- [ ] S04: discovery outage preserves local/saved draft; schema unavailable blocks publication; empty/not-found/denied/unavailable are distinct. No JSON-dump or fixture-success substitute for UI.
-- [ ] S05: U13 presents authoritative eligibility/tool descriptors without token/definition leakage or grant writes; shop IDs cannot be inferred from fixture naming.
-- [ ] S06: production/narrow/keyboard populated views use accepted008 components and return paths. U14 remains a link with contract handoff; actual preview behavior is019-owned.
+- [x] S01: actual U03 -> U04 -> U09 -> U06 -> U07 -> U06 -> U09 -> U10 -> U11 flow authors, validates, publishes and activates through real services; exact definitions/member positions/responseContract survive.
+- [x] S02: N01–N09/N12 and composer portion of N13 pass with real reads/actions; missing IDs/foreign revisions produce correct states and exact published revisions remain read-only.
+- [x] S03: ADMIN cannot publish; revoked admin denied on next request; duplicate clicks/CAS/changed replay and unknown-outcome recovery preserve exactly one write/audit and the original operationId.
+- [x] S04: discovery outage preserves local/saved draft; schema unavailable blocks publication; empty/not-found/denied/unavailable are distinct. No JSON-dump or fixture-success substitute for UI.
+- [x] S05: U13 presents authoritative eligibility/tool descriptors without token/definition leakage or grant writes; shop IDs cannot be inferred from fixture naming.
+- [x] S06: production/narrow/keyboard populated views use accepted008 components and return paths. U14 remains a link with contract handoff; actual preview behavior is019-owned.
 
 ## Validation
 
@@ -1535,3 +1535,146 @@ The next successful `/moda-task ARCH-020-COMMERCE-018` claim creates Attempt 8 e
 once.
 
 No production source correction is requested before that claim.
+
+## Architect Review — Attempt 8 — 2026-09-22
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+**Accepted / Complete, Attempt 8.**
+
+Reviewed by `moda_architect` against the exact submitted Attempt 8 archive and parent
+handoff `c99dd98228067e02f612837b810bb8f82a09e332`. The current remote
+`task/ARCH-020-COMMERCE-018` parent branch matches that handoff commit. The task
+records implementation commit `621b33c`; the Commerce implementation remote is not
+readable through the current review connector, so implementation acceptance is
+grounded in the exact submitted archive.
+
+Attempt 8 closes the single remaining task-owned gap from the Attempt 7 Architect
+Review: C20 I01 / S01 now performs a full real authoring traversal through the
+production `StudioServices` adapter and accepted application services.
+
+The fifth real C20 scenario now proves, using real returned identities rather than
+constructed IDs:
+
+```text
+validate tool definition
+-> create tool
+-> create tool draft
+-> publish tool revision
+-> create FEATURE capability
+-> create capability draft
+-> discovery outage
+-> reread and preserve the exact saved draft
+-> publish capability revision
+-> validate response contract/example
+-> create release with explicit member positions
+-> activate with current pointer CAS
+-> rollback with returned pointer CAS
+-> reread authored release as SUPERSEDED
+-> verify one audit row for each of the nine operation IDs
+```
+
+The production-source correction discovered by that real traversal is bounded and
+correct: optional source revision fields are omitted when absent before lifecycle
+operation hashing. `createToolDraft(...)` no longer forwards
+`sourceToolRevisionId: undefined`, and `createDraft(...)` no longer forwards
+`sourceRevisionId: undefined`. This preserves the accepted strict command/hash shape
+without changing replay semantics or producer ownership.
+
+Two test-fixture details differ from the literal Attempt 7 recipe but remain
+architecturally conformant and do not weaken S01:
+
+- the authored Storefront tool uses a valid LIST/`items` response template against
+  `products.nodes` rather than the illustrative text template; the definition passes
+  the accepted production compiler/definition validator before persistence;
+- response-contract validation uses a complete valid `response.v1` example rather
+  than an empty object, exercising the accepted `validateResponseExample(...)`
+  boundary instead of bypassing the real final-response shape.
+
+The important acceptance invariant is the real create/validate/publish/release/
+activate/rollback traversal through accepted production services, and that invariant
+is now satisfied.
+
+Attempt 7's already accepted infrastructure and real-adapter evidence remains valid
+and is preserved. Attempt 8 reran the affected proof and reports:
+
+```text
+npm run c20-fixture:reset
+  PASS
+
+npm run test:arch020-studio-integration:c20
+  PASS — 5/5
+
+npm run test:arch020-studio-integration
+  PASS — 9/9
+
+focused changed-file ESLint
+  PASS (one pre-existing unused ShopSummary warning reported by the task)
+
+git diff --check
+  PASS
+```
+
+Repository-wide lint/typecheck/build remain non-zero only on the documented unrelated
+baseline outside COMMERCE-018. No Attempt-8-owned diagnostic is reported, so those
+baseline failures do not block acceptance.
+
+The combined accepted evidence now satisfies this task's S01-S06 boundary. This does
+not claim terminal cross-service/system-test execution outside COMMERCE-018 ownership;
+those remain owned by the downstream Gateway/System-Test/final-checkpoint tasks.
+
+### Functional Acceptance
+
+- real Studio authoring uses the accepted publication/lifecycle services;
+- same-origin mutation enforcement and role reauthorization remain intact;
+- ADMIN publication denial and one-write replay/CAS evidence remain intact;
+- discovery outage preserves the authored draft before publication;
+- exact member ordering and current environment pointer CAS are exercised;
+- response-contract example validation is exercised against the accepted validator;
+- U13 positive/excluded eligibility remains read-only;
+- no copied C20 fixture, production fixture registration, MCP/runtime rewrite,
+  database schema change, live provider call or production credential was introduced.
+
+### Validation Reviewed
+
+Submitted Attempt 8 evidence:
+
+```text
+real C20 suite:       5/5 PASS
+focused Studio suite: 9/9 PASS
+changed-file lint:    PASS
+git diff --check:     PASS
+fixture reset:        PASS
+```
+
+The previously accepted disposable PostgreSQL/Redis health, image, loopback,
+ownership and cleanup evidence remains part of the durable Attempt 7/8 proof.
+
+### Architecture Conformance
+
+Conformant.
+
+COMMERCE-018 now satisfies the accepted C20 Studio production-integration boundary.
+Actual preview behavior remains COMMERCE-019 ownership, external production
+composition remains COMMERCE-024 ownership, deployment remains Gateway ownership and
+terminal system testing remains System-Test ownership.
+
+### Dependency Frontier
+
+With COMMERCE-018 Complete, every dependency of `ARCH-020-GATEWAY-001` in this exact
+snapshot is Complete. `ARCH-020-GATEWAY-001` is therefore promoted from `pending` to
+`ready`, claim clear, Attempt 0 retained.
+
+No task is launched automatically.
+
+`ARCH-020-COMMERCE-024`, `ARCH-020-COMMERCE-012` and the system-test tasks retain
+other incomplete prerequisites and remain gated.
+
+### Follow-up
+
+None for COMMERCE-018. Do not reopen its accepted production adapter unless a later
+consumer produces a concrete regression against this contract.

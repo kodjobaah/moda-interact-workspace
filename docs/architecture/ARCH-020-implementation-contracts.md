@@ -2027,3 +2027,18 @@ activate, rollback) rather than only operating on COMMERCE-035's pre-seeded
 published graph. Attempt 8 is limited to that deterministic proof plus explicit
 saved-draft preservation during the intentional discovery outage unless the real
 flow exposes a bounded 018-owned defect. No downstream task is promoted.
+
+## COMMERCE-018 Attempt 8 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 8** (`621b33c`; parent report `c99dd982`).
+
+The remaining C20 I01/S01 gap is closed by a fifth real Studio integration scenario
+that creates and publishes a tool and FEATURE capability, preserves the saved draft
+through discovery outage, validates the response contract, creates an explicitly
+ordered release, activates and rolls back using the real configured-environment
+pointer CAS, and proves one audit per operation. The adapter's optional source revision
+fields are omitted when absent before lifecycle hashing. Real C20 is 5/5; focused
+Studio integration is 9/9.
+
+All GATEWAY-001 prerequisites are consequently Complete; GATEWAY-001 is Ready but is
+not auto-started.

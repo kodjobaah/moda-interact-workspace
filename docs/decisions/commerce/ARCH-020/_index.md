@@ -25,7 +25,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-015](COMMERCE-015-provide-trusted-basket-and-product-policy-adapters.md) | Provide trusted basket and product policy adapters | complete | ARCH-020-COMMERCE-001, ARCH-020-DATABASE-001, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | complete | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | complete | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
-| [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready (Changes Requested; Attempt 7 retained) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-035 |
+| [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-035 |
 | [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-033, ARCH-020-COMMERCE-034 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | complete (Accepted, Attempt 2) | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
@@ -955,3 +955,18 @@ contracts for status/mutation/resolution remain unchanged.
 
 COMMERCE-032 remains Ready and now explicitly depends on COMMERCE-037. No task is
 claimed or launched automatically.
+
+## COMMERCE-018 Attempt 8 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 8** (`621b33c`; parent report `c99dd982`).
+
+The fifth real C20 Studio scenario now performs the missing I01/S01 production-service
+authoring traversal: tool create/draft/publish, FEATURE capability
+create/draft/publish, saved-draft preservation through discovery outage, response
+validation, exact-member release creation, pointer-CAS activation/rollback and
+one-audit-per-operation verification. C20 passes 5/5 and the focused Studio suite
+passes 9/9. The bounded optional-source-revision hashing correction is accepted.
+
+This acceptance makes ARCH-020-GATEWAY-001 Ready because all of its prerequisites are
+now Complete. No task is launched automatically; COMMERCE-024/012 and system-test
+work retain other gates.
