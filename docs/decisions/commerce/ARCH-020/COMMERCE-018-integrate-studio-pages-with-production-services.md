@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-22T10:42:00Z
+executor: null
+claimed_at: null
 attempt: 7
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -954,3 +954,73 @@ When the C20 reset/proof and focused Studio suite pass:
 8. **STOP**.
 
 Do not begin COMMERCE-012, COMMERCE-024, GATEWAY-001 or any system-test task.
+
+## Attempt 7 Completion Report
+
+### Status
+
+Attempt 7 C20 validation completed and submitted for Architect Review. The bounded
+real-adapter proof and focused Studio suite pass. Full S01-S06 assembled-flow
+acceptance remains architect/system-test gated and is not claimed here.
+
+### Files Changed
+
+- `tests/studio-integration-c20.test.ts`
+
+The test now supplies a synthetic valid assertion key for real backend construction,
+uses the accepted `LifecycleError('FORBIDDEN', ...)` authorization contract, keeps
+ADMIN publication denial separate from SUPER_ADMIN replay/CAS coverage, asserts the
+audit operation row identity, and restores the intentionally toggled capability
+before the later read-only U13 eligibility proof. No production adapter, backend,
+MCP route, preview runtime, Shared package, database schema, or COMMERCE-035 fixture
+source was changed.
+
+### Validation Results
+
+Agent-executed:
+
+- `npm run c20-fixture:reset` — passed against the disposable target.
+- `npm run test:arch020-studio-integration:c20` — passed, 1 file and 4 tests.
+- `npm run test:arch020-studio-integration` — passed, 1 file and 9 tests.
+- `npx eslint tests/studio-integration-c20.test.ts` — passed.
+- `git diff --check` — passed.
+
+The real C20 scenarios proved same-origin/mismatched-origin rejection before
+mutation, ADMIN publication denial, one-write replay/CAS, configured-environment
+activation/rollback, discovery outage handling with preserved state, positive and
+excluded U13 eligibility, descriptor reads, and zero U13 writes/execution. The test
+consumed `seedC20IntegrationFixture` from COMMERCE-035 directly.
+
+### Disposable C20 Evidence
+
+- Docker context: local `unix://` endpoint; server `29.5.2`.
+- PostgreSQL image: `postgres:16.4-alpine`, RepoDigest
+  `postgres@sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c`.
+- Redis image: `redis:7.4.0-alpine`, RepoDigest
+  `redis@sha256:c35af3bbcef51a62c8bae5a9a563c6f1b60d7ebaea4cb5a3ccbcc157580ae098`.
+- Run containers: `arch020-c20-commerce018-a7-final-postgres` and
+  `arch020-c20-commerce018-a7-final-redis`.
+- Database: `arch020_c20_commerce018_a7`.
+- Redis namespace: `arch020:c20:commerce018-a7`.
+- PostgreSQL health: passed; Redis health: passed.
+- Cleanup: passed for both containers after ownership verification.
+
+Repository-wide checks were rerun as required. `npm run lint` remains blocked by
+the existing Connections UI `react-hooks/set-state-in-effect` error and warnings;
+`npm run typecheck` and `npm run build` remain blocked by the previously recorded
+connection-lifecycle, backend-executor, CodeMirror, and response-processor baseline
+diagnostics. The Studio integration files and changed C20 test introduced no
+reported diagnostics.
+
+### Deviations
+
+No scope deviation. Disposable infrastructure used only the explicitly authorised
+local Docker Unix context, two loopback-only tmpfs containers, synthetic fixture
+credentials, and no persistent volumes or deployed services.
+
+### Git / VCS
+
+Implementation changes are on `task/ARCH-020-COMMERCE-018` in the dedicated
+implementation worktree. This parent report is on the mirrored parent task branch;
+both branches are to be committed and pushed for Architect Review. No enabled task,
+main merge, service gitlink update, or deployment was performed.
