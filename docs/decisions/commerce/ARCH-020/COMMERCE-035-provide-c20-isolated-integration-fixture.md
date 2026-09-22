@@ -509,6 +509,20 @@ Architect Review, then execute:
 ```bash
 npm run c20-fixture:reset
 npm run test:arch020-c20-integration-fixture
+```bash
+# 1. The developer/test harness supplies disposable targets.
+export COMMERCE_TEST_DATABASE_URL='postgresql://.../arch020_c20_<unique_name>'
+export COMMERCE_TEST_REDIS_URL='redis://...'
+export COMMERCE_C20_REDIS_NAMESPACE='arch020:c20:<unique_name>'
+export DEPLOYMENT_ENVIRONMENT_NAME='test'
+
+# 2. Reset only those targets.
+npm run c20-fixture:reset
+
+# 3. Run the real fixture proof.
+npm run test:arch020-c20-integration-fixture
+
+# 4. Repository checks.
 npm run typecheck
 npm run lint -- --quiet
 npm run build
@@ -528,6 +542,9 @@ not a local Unix socket, an approved image cannot be started, or a disposable
 container never becomes healthy, record that exact infrastructure condition and
 return the task `blocked`. Do not mark F02/F03/F05/F06 complete without the real
 proof.
+If disposable PostgreSQL or Redis is unavailable, record the exact command and failure
+and return the task `blocked`; do not mark F02/F03/F05/F06 or the focused validation
+complete.
 
 ## Stop Condition
 
@@ -638,6 +655,35 @@ Implementation branch: `task/ARCH-020-COMMERCE-035`; implementation commit:
 The launcher claimed Attempt 2 with parent claim commit
 `4c21b8aa4a51b98d53c81fbe366265242cbc0ac5`; the parent synchronization commit
 is `f105630b`. The claim is now cleared per the blocked-task contract.
+Not Started
+
+### Files Changed
+
+None
+
+### Work Completed
+
+None
+
+### Validation Results
+
+None
+
+### Deviations
+
+None
+
+### Assumptions
+
+None
+
+### Unresolved Issues
+
+None
+
+### Architectural Concerns
+
+None
 
 ## Architect Review
 
@@ -1374,3 +1420,24 @@ COMMERCE-019 is already Complete in this snapshot and is not reopened by this
 producer acceptance.
 
 Do not automatically launch either consumer.
+Pending
+
+### Review Notes
+
+Pending implementation.
+
+### Reviewed Files
+
+None
+
+### Validation Reviewed
+
+None
+
+### Architecture Conformance
+
+Pending.
+
+### Follow-up
+
+None
