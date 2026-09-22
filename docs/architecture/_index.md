@@ -803,3 +803,24 @@ its composition ownership and must not be carried forward after resynchronizatio
 Final composition remains 024-owned after both unblock conditions are satisfied.
 
 No downstream task is launched; COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 unblock reconciliation — 2026-09-22
+
+**Ready, Attempt 1 retained; claim cleared.**
+
+The two blockers recorded by COMMERCE-024 Attempt-1 review are now resolved in the
+canonical Commerce implementation base.
+
+Developer verification on main
+`4e01e20ea3f94e6125b8017340d869d5198db6d0` proves accepted COMMERCE-019
+implementation `8850b55` is an ancestor, the production preview adapters/runtime are
+present and `unavailableLoader` is absent. Accepted COMMERCE-038 implementation
+`16972af` is also an ancestor and `createExternalFixtureRunner` is present.
+
+COMMERCE-024 may therefore be reclaimed. The next launcher claim creates Attempt 2
+exactly once and is limited to the previously defined composition-only contract.
+COMMERCE-012 and SYSTEM-TEST-002 remain gated until 024 is accepted Complete.
+
+A local untracked `typescript` artifact was present in the developer main worktree;
+it is not part of the accepted source and should be moved/removed before launch rather
+than committed.

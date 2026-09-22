@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 170
 executor: null
 claimed_at: null
@@ -776,3 +776,156 @@ Unblock sequence:
 ```
 
 No downstream task is promoted. COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## Architect Unblock Review — 2026-09-22
+
+### Review Status
+
+Ready
+
+### Verification
+
+The two independent blockers recorded by the Attempt-1 Architect Review are now
+satisfied.
+
+#### U1 — accepted COMMERCE-019 source is integrated into canonical Commerce main
+
+Developer verification against canonical `moda-interact-commerce/main` reports:
+
+```text
+MAIN=4e01e20ea3f94e6125b8017340d869d5198db6d0
+
+src/commerce/integration/preview/adapters.ts
+  PRESENT
+
+lib/preview/runtime.ts:
+  unavailableLoader              ABSENT
+  createPreviewBundleLoader      PRESENT
+  createPreviewPromptLoader      PRESENT
+  createPreviewToolExecutor      PRESENT
+  readConfig                     PRESENT
+
+git merge-base --is-ancestor 8850b55 HEAD
+  PASS
+```
+
+Therefore the accepted COMMERCE-019 implementation `8850b55` is now part of the
+canonical implementation base from which the launcher may create the next
+COMMERCE-024 worktree.
+
+Do not recreate COMMERCE-019 source inside COMMERCE-024.
+
+#### U2 — COMMERCE-038 producer seam is accepted and integrated
+
+`ARCH-020-COMMERCE-038` is architect-accepted Complete at Attempt 1:
+
+```text
+implementation: 16972af
+parent report:  f107b817
+```
+
+Developer verification against canonical Commerce main reports:
+
+```text
+src/commerce/external-preview/index.ts:
+  createExternalFixtureRunner PRESENT
+
+git merge-base --is-ancestor 16972af HEAD
+  PASS
+```
+
+Therefore the reusable `PreviewExternalFixtureRunner` producer required by
+COMMERCE-024 is present in the canonical implementation base.
+
+### State Transition
+
+The authoritative task is transitioned:
+
+```yaml
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next successful:
+
+```text
+/moda-task ARCH-020-COMMERCE-024
+```
+
+claim creates Attempt 2 exactly once.
+
+Attempt 2 must implement only the existing **Post-unblock Attempt-2 composition
+contract** in the Attempt-1 Architect Review. That contract remains authoritative.
+
+### Start-of-Attempt Guards
+
+Before making any Attempt-2 source edit, the launcher-resolved implementation
+worktree must prove:
+
+```bash
+test -f src/commerce/integration/preview/adapters.ts
+
+grep -Fq "createPreviewBundleLoader" lib/preview/runtime.ts
+grep -Fq "createPreviewPromptLoader" lib/preview/runtime.ts
+grep -Fq "createPreviewToolExecutor" lib/preview/runtime.ts
+grep -Fq "readConfig" lib/preview/runtime.ts
+
+if grep -Fq "unavailableLoader" lib/preview/runtime.ts; then
+  echo "BLOCKED: stale COMMERCE-019 source" >&2
+  exit 1
+fi
+
+grep -Fq "createExternalFixtureRunner" \
+  src/commerce/external-preview/index.ts
+```
+
+Also record:
+
+```bash
+git merge-base --is-ancestor 8850b55 HEAD
+git merge-base --is-ancestor 16972af HEAD
+```
+
+If any guard fails, make no COMMERCE-024 source edit and return the task Blocked with
+the exact failed guard.
+
+### Scope Reminder
+
+Attempt 2 is composition-only.
+
+In particular, do not carry forward Attempt-1 edits to:
+
+```text
+src/commerce/connections/command-kernel.ts
+src/commerce/connections/lifecycle/index.ts
+```
+
+Consume the synchronized accepted producer versions instead.
+
+The exact narrowly authorized publication binding and all XN01-XN04/WI01 evidence
+requirements remain as written in the Attempt-1 Architect Review.
+
+### Local Worktree Hygiene
+
+The developer's verification output also showed one untracked local file:
+
+```text
+?? typescript
+```
+
+That file is not part of either accepted implementation and does not invalidate the
+source-integration verification above. Before launching Attempt 2, the developer
+should preserve/move or intentionally remove that untracked local artifact so the
+canonical main worktree is clean. Do not commit it merely to satisfy cleanliness.
+
+### Follow-up
+
+COMMERCE-024 is Ready at Attempt 1.
+
+Do not automatically launch the task. The developer may now invoke the launcher; the
+launcher must create Attempt 2 exactly once.
+
+COMMERCE-012 and SYSTEM-TEST-002 remain gated until COMMERCE-024 is architect-accepted
+Complete.
