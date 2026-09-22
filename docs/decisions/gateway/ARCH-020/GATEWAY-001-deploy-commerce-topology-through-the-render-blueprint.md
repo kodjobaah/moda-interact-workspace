@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 180
-executor: copilot
-claimed_at: 2026-09-22T14:49:32Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -171,22 +171,20 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Attempt 3 — Ready for Review (2026-09-22). A2-R1, A2-R2 and A2-R4 are implemented
-and validated locally; A2-R3/U15/U16 remain assigned to GATEWAY-003. No live
-Render deployment, browser OAuth completion, private assertion verification,
-paid provider call, or production resource mutation was performed.
+Attempt 4 — Ready for Review (2026-09-22). A3-R1 is implemented as a runbook-only
+correction and validated locally. A2-R3/U15/U16 remain assigned to GATEWAY-003.
+No live Render deployment, browser OAuth completion, private assertion
+verification, paid provider call, or production resource mutation was performed.
 
 ### Files Changed
 
-Implementation changes retain the accepted private Commerce service and C7.1/C9.1/
-C10 routing while making Commerce host configuration an external deployment input.
-Both Blueprints remove the Commerce gateway domain and group Studio origin, add
-service-level `sync: false` inputs for `COMMERCE_PUBLIC_HOST`,
-`COMMERCE_STUDIO_ORIGIN` and `AUTH_URL`, and keep Commerce private. Validators
-and negative fixtures cover hard-coded, committed-domain and missing-input cases.
-The deployment runbook now documents manual custom-domain/DNS/TLS attachment,
-drift checks, authenticated Studio smoke inputs, corrected Auth.js callback
-reachability, and externally supplied Background assertions.
+The Attempt 4 implementation change is limited to
+`moda-interact-gateway/docs/commerce-deployment.md`. The runbook now supplies
+valid externally captured C5 MCP JSON-RPC input, valid C15 discovery payloads
+and `apiVersion=2026-07`, concrete matching UUID/payload inputs for C9.1 preview
+routes, and fail-fast guards for every required external smoke variable. The
+accepted Attempt 3 Blueprint/proxy topology and A2-R1/A2-R2 deployment-input and
+authentication corrections are preserved.
 
 ### Work Completed
 
@@ -197,20 +195,24 @@ encoded-separator, duplicate-separator and dot-segment variants are denied
 before proxying. Background-only MCP URL/signing configuration and Commerce-only
 verification keys are separated. Test and production preview/transcription
 settings are independent; Groq is retained and OpenAI is explicit. The hosted
-smoke contract now requires `COMMERCE_PUBLIC_HOST`, `GATEWAY_PUBLIC_ORIGIN`,
-`STUDIO_COOKIE_HEADER`, `STUDIO_NEXT_ACTION_ID`, `STUDIO_NEXT_ACTION_BODY`,
-and six externally supplied Background assertion values; the gateway does not
-generate or sign tokens.
+smoke contract requires `COMMERCE_INTERNAL_SERVICE_ADDRESS`,
+`COMMERCE_MCP_URL`, `COMMERCE_PUBLIC_HOST`, `GATEWAY_PUBLIC_ORIGIN`,
+`STUDIO_COOKIE_HEADER`, `STUDIO_NEXT_ACTION_ID`, `STUDIO_NEXT_ACTION_BODY`, six
+externally supplied Background assertions, one valid C5 request body, three
+discovery bodies, and concrete matching preview IDs/bodies. The gateway does
+not generate or sign tokens.
 
 ### Validation Results
 
 | Requirement | Command / fixture | Result |
 |---|---|---|
+| A3-R1 runbook smoke contract | `docs/commerce-deployment.md` review | Valid C5 body reused for missing/valid/wrong-claim assertions; valid discovery bodies and `apiVersion=2026-07`; concrete matching preview IDs/bodies; all required guards present |
 | Render topology and credential wiring | `bash tests/validate-render-blueprints.sh` | Passed |
 | Legacy and Commerce negative mutations | `bash tests/validate-render-blueprints-negative.sh` | Passed; 48 meaningful mutations rejected for expected reasons, including all seven new A2-R1 classes |
-| Routing, headers, body integrity, timeouts and MCP variants | `bash tests/run-tests.sh` | 150 passed, 0 failed |
-| HAProxy rendering | Docker build plus entrypoint `haproxy -c` | Configuration valid |
-| Shell and whitespace | `bash -n docker/entrypoint.sh tests/run-tests.sh`; `git diff --check` | Passed |
+| Routing, headers, body integrity, timeouts and MCP variants | `bash tests/run-tests.sh` (Attempt 3 executor evidence; not rerun for Markdown-only Attempt 4) | 150 passed, 0 failed |
+| HAProxy rendering | Docker build plus entrypoint `haproxy -c` (Attempt 3 executor evidence) | Configuration valid |
+| Shell syntax | `bash -n docker/entrypoint.sh tests/run-tests.sh tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh` | Passed |
+| Whitespace | `git diff --check` | Passed |
 
 The Docker suite covers every C15 page/detail route with GET/HEAD and Server
 Action POST checks, NextAuth GET/POST, all four discovery methods, all seven
@@ -225,9 +227,10 @@ service-level Render deployment inputs. The operator must attach the chosen
 Commerce custom hostname to the gateway, configure DNS/TLS, and verify all
 three values agree; the Blueprint does not claim that any hostname is
 provisioned. `COMMERCE_MCP_URL` is also an operator-supplied service-level input
-built from Render's actual Commerce Internal Service Address. No credential
-values are committed. Local fixtures do not prove hosted Google OAuth or
-Commerce private assertion verification.
+built from Render's actual Commerce Internal Service Address. The Attempt 4
+smoke bodies, preview IDs and assertions remain external harness inputs. No
+credential values are committed. Local fixtures do not prove hosted Google
+OAuth, Commerce private assertion verification, or provider quality.
 
 ### Assumptions
 
@@ -239,10 +242,13 @@ service is introduced.
 
 Developer-owned follow-up: deploy test topology, attach and verify the chosen
 Commerce hostname/DNS/TLS and matching service inputs, exercise real Google
-OAuth in a browser, supply valid and five wrong-claim Background RS256
-assertions, verify private caller denial, and run the authenticated hosted
-health/Server Action/discovery/preview smoke commands. No live deployment or
-OAuth completion is claimed here.
+OAuth in a browser, capture a valid authenticated Studio cookie and current
+Server Action inputs, supply valid and five wrong-claim Background RS256
+assertions plus a valid C5 body, provide current discovery/preview bodies and
+matching UUIDs, verify private caller denial, and run the authenticated hosted
+health/Server Action/discovery/preview smoke commands. No live deployment,
+OAuth completion, assertion verification, or paid provider-quality result is
+claimed here.
 
 ### Architectural Concerns
 
@@ -252,7 +258,7 @@ the exact C9.1 route allowlist against the accepted Commerce route tree.
 ### Git / VCS
 
 Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-001`, branch `task/ARCH-020-GATEWAY-001`, Attempt 3 commit **7bd5865ae6c3e412d03e383fd2bd951fb0c47c89**, pushed to origin. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-001`. No main integration, gitlink change, deployment, or enabled-task launch was performed.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-001`, branch `task/ARCH-020-GATEWAY-001`, Attempt 4 implementation commit **478923a**, pushed to origin. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-001`. No main integration, gitlink change, deployment, or enabled-task launch was performed.
 
 ## Architect Review
 
