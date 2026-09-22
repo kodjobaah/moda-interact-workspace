@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -190,3 +190,520 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+
+## Architect Review — Attempt 1 — 2026-09-22
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Reviewed the submitted Attempt 1 implementation against C21 section 2.3, section 9.5
+and PR01-PR03.
+
+The submitted slice establishes a useful foundation and the following work is accepted
+in substance and must be preserved:
+
+- additive `TransformSample` fields on preview request/stored state;
+- exact selected-tool ownership rejection for unknown conversation fixture keys;
+- `validateCode(...)` canonical `{source,runtimeVersion}` hash verification;
+- accepted COMMERCE-026 compiler/process adapter reuse;
+- accepted COMMERCE-025 visual processor reuse;
+- COMMERCE-030 `validateSampleAndRecord(...)` delegation rather than a second receipt
+  writer;
+- existing `PreviewService.runExternalToolTest(...)` replay/conflict persistence;
+- zero direct provider HTTP / credential decrypt dependencies in
+  `external-preview/**`;
+- old preview request fields remain optional rather than becoming mandatory.
+
+Do not redesign those working boundaries.
+
+The task cannot be accepted as a "bounded first slice" because its own Acceptance
+Criteria require PR01-PR03 complete before Review/Complete. The Completion Report
+correctly records PR02 and PR03 as partial.
+
+Four bounded functional corrections remain.
+
+### A1-R1 — claim/replay must happen before quota, receipt validation or processing
+
+Files permitted:
+
+```text
+src/commerce/external-preview/contracts.ts
+src/commerce/external-preview/service.ts
+src/commerce/preview/service.ts
+tests/external-preview.test.ts
+```
+
+The current `runSample(...)` order is incorrect:
+
+```text
+active staff
+-> external Redis slot
+-> publicationValidation.validateSampleAndRecord
+-> PreviewService.runExternalToolTest
+-> PreviewStateStore.claimToolTest
+```
+
+This allows a replay to consume quota and execute the receipt validator before the
+canonical `previewRunId` replay/conflict decision. A second instance racing the same
+operation can return `QUOTA_EXCEEDED` rather than the original run.
+
+Required order:
+
+```text
+parse bounded request
+-> active staff
+-> load/freeze canonical saved external tool revision (A1-R2)
+-> PreviewStateStore.claimToolTest using complete frozen payload identity
+   -> CONFLICT: ID_CONFLICT, zero quota/validator/processor calls
+   -> REPLAY: return exact stored run, zero quota/validator/processor calls
+   -> CREATED:
+        acquire external preview quota
+        validate sample/record receipt
+        process fixture
+        complete same previewRunId
+        release quota
+```
+
+Implement this by placing quota acquisition, COMMERCE-030 validation and processor
+execution inside the `process` callback that `PreviewService.runExternalToolTest(...)`
+invokes only for a newly CREATED run. Do not duplicate the preview claim engine in
+`external-preview`.
+
+The payload hash/claim identity must include the complete frozen:
+
+```text
+previewRunId
+toolRevisionId
+fixtureId
+arguments
+externalResponseFixture
+canonical saved definition identity required by the accepted preview lifecycle
+```
+
+A changed fixture, arguments, tool revision or saved-definition identity with the same
+run ID must conflict.
+
+Same-operation replay must not create/write a second publication receipt.
+
+### A1-R2 — server-load and freeze the saved external definition; caller may not supply it
+
+Files permitted:
+
+```text
+src/commerce/external-preview/contracts.ts
+src/commerce/external-preview/service.ts
+tests/external-preview.test.ts
+```
+
+Current `ExternalPreviewSampleInput` accepts:
+
+```ts
+definition?: CommerceToolDefinition
+```
+
+from the caller. Remove that field.
+
+Add one injected server-side saved-revision port to
+`ExternalPreviewDependencies`:
+
+```ts
+savedTools: {
+  load(input: {
+    principal: PreviewPrincipal;
+    toolRevisionId: string;
+  }): Promise<{
+    toolRevisionId: string;
+    definition: CommerceToolDefinition;
+  } | null>;
+};
+```
+
+`runSample(...)` must:
+
+1. call `savedTools.load(...)` once before claiming;
+2. require a non-null exact matching `toolRevisionId`;
+3. parse the returned definition with the canonical Shared
+   `CommerceToolDefinitionSchema`;
+4. require `definition.execution.kind === "EXTERNAL_HTTP"`;
+5. clone/freeze that exact saved definition;
+6. use only that frozen definition for:
+   - replay identity;
+   - COMMERCE-030 validation;
+   - visual/code processing;
+   - returned connectionRevisionId/runtime trace.
+
+Missing/mismatched/non-EXTERNAL_HTTP saved revisions fail with bounded
+`INVALID_INPUT`/`UNAVAILABLE` according to the existing Preview error convention and
+perform zero processor/receipt writes.
+
+Do not introduce a second definition schema or let browser/service callers choose a
+different definition for an existing toolRevisionId.
+
+### A1-R3 — complete tool-test status/cancel/expiry on the same preview identity
+
+Files permitted:
+
+```text
+src/commerce/preview/types.ts
+src/commerce/preview/store.ts
+src/commerce/preview/redis-store.ts
+src/commerce/preview/service.ts
+src/commerce/external-preview/contracts.ts
+src/commerce/external-preview/service.ts
+tests/external-preview.test.ts
+```
+
+C21 requires external sample execution to reuse existing preview
+`status/read/cancel/replay` semantics. Attempt 1 exposes read but no tool-test cancel
+operation.
+
+Extend `StoredToolTest` with:
+
+```ts
+cancelRequested: boolean;
+```
+
+and update `StoredToolTestSchema`, in-memory store and Redis transport accordingly.
+
+Add to `PreviewStateStore`:
+
+```ts
+requestCancelToolTest(
+  environment: string,
+  adminId: string,
+  id: string,
+  now: number,
+): Promise<StoredToolTest | null>;
+```
+
+Semantics:
+
+```text
+missing -> null
+RUNNING -> set cancelRequested=true
+terminal -> return unchanged terminal record
+```
+
+Add to `PreviewService`:
+
+```ts
+cancelToolTest(
+  principal: PreviewPrincipal,
+  runId: string,
+): Promise<RunResponse>;
+```
+
+Use the same controller/execution ownership pattern already used for conversation
+runs. A newly-created external tool test must have an AbortController registered
+under its existing `previewRunId`; cancellation aborts the processor signal and the
+same stored run becomes `CANCELLED`.
+
+If cancellation wins after the claim but before terminal completion:
+
+```text
+status: CANCELLED
+same previewRunId
+result: null
+quota released
+```
+
+If a process becomes indeterminate because ownership/Redis completion cannot be
+confirmed, retain the same run ID and return/store `UNKNOWN`; do not generate a new
+operation.
+
+The existing `PREVIEW_SLOT_MS` expiry behavior for a RUNNING tool test must preserve
+the same ID and transition it to UNKNOWN.
+
+Expose corresponding delegation from `ExternalPreviewService`:
+
+```ts
+getToolTest(...)
+cancelToolTest(...)
+```
+
+No new UI route/client is required by this task unless an existing server route must
+be minimally extended to expose the already-existing C9 cancel surface. Do not build
+COMMERCE-027/024 UI here.
+
+### A1-R4 — conversation external fixtures must be bounded, external-only and actually used
+
+Files permitted:
+
+```text
+src/commerce/preview/types.ts
+src/commerce/preview/service.ts
+src/commerce/external-preview/contracts.ts
+src/commerce/external-preview/service.ts
+tests/external-preview.test.ts
+```
+
+Attempt 1 stores `conversation.externalResponseFixtures`, but
+`PreviewService.execute(...)` ignores them and always calls the normal
+`toolExecutor.execute(...)`. That does not satisfy C21 and can route a synthetic
+external preview toward the live execution boundary.
+
+Correct the conversation fixture path.
+
+#### Request bounds
+
+`ConversationBodySchema.externalResponseFixtures` remains optional and max 32
+entries, but must additionally require:
+
+```text
+sum UTF-8 byte length of every fixture.bodyText <= 262144
+```
+
+Do not raise the individual TransformSample bound or the existing preview envelope.
+
+#### Ownership/type validation
+
+At conversation creation, for every fixture key:
+
+```text
+key must be an exact toolRevisionId present in the frozen selected manifest
+the exact saved tool revision must resolve server-side
+its canonical definition.execution.kind must be EXTERNAL_HTTP
+```
+
+Unknown selected IDs and selected-but-non-external tools must fail before conversation
+state is stored.
+
+Use the same server-owned saved-tool revision authority established in A1-R2; do not
+infer external-ness from the fixture or tool name.
+
+Freeze the validated fixture map and exact saved external definitions for the
+conversation's 24-hour preview lifetime so later draft edits cannot alter the active
+synthetic conversation.
+
+#### Execution
+
+When a frozen conversation tool descriptor has a matching external fixture:
+
+```text
+DO NOT call the normal/live PreviewToolExecutionPort.execute path
+DO NOT call provider HTTP
+DO NOT resolve/decrypt credentials
+```
+
+Process the frozen synthetic fixture using the selected definition's accepted
+COMMERCE-025/026 processor exactly as the saved definition requires, validate/render
+through the same bounded output path, and return a normal `CommerceToolResult` to the
+existing runner.
+
+A selected non-external tool or an external tool without an external fixture retains
+the pre-existing preview behavior; do not change old empty-map/no-fixture requests.
+
+The same external fixture is static for that synthetic conversation. A later request
+with changed fixture content and the same conversation ID must conflict through the
+existing frozen conversation payload identity.
+
+### A1-R5 — finish PR01 and PR03 focused evidence
+
+File:
+
+```text
+tests/external-preview.test.ts
+```
+
+Keep the current three tests and extend the focused suite. Do not add an arbitrary
+broad test quota.
+
+At minimum add the following named scenarios.
+
+#### PR01 — actual processor success in both modes
+
+```text
+"runs visual JSON sample through processor receipt and saved preview lifecycle"
+```
+
+Preserve/strengthen the existing visual success so it asserts:
+
+```text
+actual createResponseProcessor used
+COMMERCE-030 validator called once
+status COMPLETED
+result.data.values exact
+same run read returns exact result
+```
+
+Add:
+
+```text
+"runs JavaScript sample through the accepted code processor and receipt lifecycle"
+```
+
+using actual `createCodeResponseProcessor()`, valid saved EXTERNAL_HTTP definition,
+JSON/TEXT shape appropriate to that definition, and require COMPLETED bounded values.
+
+#### PR02 — Redis/lifecycle behavior
+
+Use two service instances sharing the same preview Redis/store fixtures and prove:
+
+```text
+same previewRunId + same payload raced across two instances
+  -> one execution/validator/processor
+  -> both observe the same run identity/result
+  -> no QUOTA_EXCEEDED replay
+
+same previewRunId + changed fixture
+  -> ID_CONFLICT
+  -> zero second validator/processor calls
+
+cancel a blocked processor
+  -> CANCELLED on same run ID
+  -> processor receives aborted signal
+  -> quota released
+  -> reread remains CANCELLED
+
+expired RUNNING tool test
+  -> UNKNOWN on same run ID
+```
+
+Also prove two different newly-created runs for the same admin contend on the
+distributed external-preview quota as specified; this is separate from same-operation
+replay.
+
+#### PR03 — bounded rejection and zero live dependencies
+
+Add explicit regressions for:
+
+```text
+caller cannot supply/override saved definition
+
+foreign conversation fixture toolRevisionId
+  -> reject
+
+fixture for selected non-EXTERNAL_HTTP tool
+  -> reject
+
+conversation fixture total body bytes > 256KiB
+  -> reject
+
+unsupported sample media
+  -> fail closed
+
+oversize sample/request
+  -> fail closed
+
+raw HTML supplied where saved response mode cannot accept it
+  -> fail closed
+
+processor invalid output
+  -> fail closed
+  -> no raw fallback
+```
+
+For the successful and rejected external fixture paths assert explicit counters:
+
+```text
+provider HTTP calls       == 0
+credential resolution     == 0
+credential decryption     == 0
+```
+
+Use injected trap functions that throw if invoked; do not prove zero calls merely by
+the absence of such dependencies in one test factory.
+
+### A1-R6 — durable report and stop condition
+
+Before returning Attempt 2:
+
+1. update Work Items/Acceptance Criteria/Validation only when their named PR evidence
+   actually passes;
+2. replace the "bounded first slice" Completion Report with the exact Attempt-2
+   implementation/report evidence;
+3. record implementation commit(s), parent report commit, launcher/worktree
+   synchronization evidence and the exact focused test names/results;
+4. record repository-wide baseline failures accurately without fixing unrelated code;
+5. return:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+6. push both mirrored task branches;
+7. STOP.
+
+Do not begin COMMERCE-024, COMMERCE-012 or any system-test task.
+
+### Required Validation
+
+Run exactly once after the corrections:
+
+```bash
+npm run test:arch020-external-preview
+npm run test:arch020-external-publication
+npm run test:arch020-code-processor
+npx vitest run \
+  tests/preview-service.test.ts \
+  tests/preview-store.test.ts \
+  tests/preview-routes.test.ts
+npx eslint \
+  src/commerce/external-preview \
+  src/commerce/preview \
+  tests/external-preview.test.ts
+npm run typecheck
+npm run build
+git diff --check
+```
+
+The focused external-preview suite must prove PR01-PR03 by named scenario, not only
+suite count.
+
+Repository typecheck/build may remain non-zero only for the unchanged documented
+baseline and only if no diagnostic points at Attempt-2-owned files.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/external-preview/contracts.ts`
+- `moda-interact-commerce/src/commerce/external-preview/service.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/preview/store.ts`
+- `moda-interact-commerce/src/commerce/preview/redis-store.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/tests/external-preview.test.ts`
+- `docs/architecture/ARCH-020-external-api-tools.md`
+- this task's Attempt-1 Completion Report
+
+### Validation Reviewed
+
+Submitted Attempt-1 evidence:
+
+```text
+external preview focused:       3 PASS
+external publication adjacent: 11 PASS
+code processor adjacent:        6 PASS
+legacy preview adjacent:       10 PASS
+changed-file ESLint:            PASS
+repository typecheck:           unrelated existing baseline
+```
+
+The report itself records PR02 and PR03 as partial. Direct source inspection confirms
+the missing behavior described above.
+
+### Architecture Conformance
+
+Partial.
+
+PR01 has a visual positive path but no successful code-sample path. PR02 is missing
+same-operation cross-instance replay ordering, tool-test cancellation and explicit
+expiry/quota races. PR03 is missing required rejection evidence, and conversation
+external fixtures are stored but not consumed by the conversation tool execution
+path.
+
+No downstream task may be promoted from this review.
+
+### Follow-up
+
+Return the same task to `ready`, retain Attempt 1 and clear the claim.
+
+The next successful `/moda-task ARCH-020-COMMERCE-031` claim creates Attempt 2
+exactly once.
+
+Implement only A1-R1 through A1-R6, return to Review and STOP.

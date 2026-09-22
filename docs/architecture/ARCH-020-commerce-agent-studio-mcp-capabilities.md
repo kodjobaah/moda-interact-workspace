@@ -1938,3 +1938,17 @@ access, grant writes or cross-call caching.
 
 No downstream task becomes Ready solely from this acceptance. COMMERCE-024 and
 COMMERCE-012 remain behind their other authoritative dependencies.
+
+## COMMERCE-031 Attempt 1 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 1 retained.**
+
+The first external-preview slice correctly reuses COMMERCE-025/026 processors,
+COMMERCE-030 receipt validation and the existing preview result store, but does not
+yet satisfy PR01-PR03. Same-operation replay is currently recognized only after
+external quota/receipt validation, tool-test cancel is absent, caller-supplied
+definition remains authoritative, and conversation external fixtures are frozen in
+state but ignored during conversation tool execution. Attempt 2 is bounded to those
+producer-owned corrections and their named focused evidence.
+
+COMMERCE-024 and COMMERCE-012 remain gated; no downstream task is launched.
