@@ -892,6 +892,34 @@ quota, eligibility, transport, persistence or sandbox logic. A missing producer
 is returned with concrete reproduction to its owner; the architect adjusts its
 status/task scope explicitly. Do not hide it behind unavailable or expand024 silently.
 
+
+
+### 9.5.1. COMMERCE-038 external preview fixture-runner correction
+
+COMMERCE-024 Attempt-1 integration review exposed one producer seam that is not
+available from accepted COMMERCE-031: production Conversation preview needs a
+`PreviewExternalFixtureRunner`, while 031 currently exposes the external tool-test
+service and only an injected conversation runner hook.
+
+`ARCH-020-COMMERCE-038` owns this bounded producer correction.
+
+It exports a reusable synthetic external fixture runner from
+`src/commerce/external-preview/**`. The runner reuses the same accepted visual/code
+sample-processing kernel as COMMERCE-031 tool-test execution, including MIME
+normalization, resultPath, schema validation and response rendering, but owns no
+preview replay/quota, publication receipt, provider HTTP, credentials or state writes.
+
+COMMERCE-024 consumes that runner during final production composition and injects it
+into the accepted COMMERCE-019 `PreviewService`.
+
+COMMERCE-024 remains composition-only. It must not copy the fixture-processing
+algorithm merely to complete final wiring.
+
+Separately, accepted COMMERCE-019 implementation `8850b55` must be present in the
+canonical implementation base before 024 resumes. A stale main/base that still has
+the unavailable preview loader is an integration-state blocker, not permission for
+024 to recreate COMMERCE-019.
+
 ### 9.6. Evidence and review rules
 
 Every narrowed/new task uses its named criteria CL/CR/HT/SB/CA/PV/PR/AV/WI. Before

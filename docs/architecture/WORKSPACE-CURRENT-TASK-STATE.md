@@ -1655,3 +1655,28 @@ oversize response samples fail closed.
 `ARCH-020-COMMERCE-024` is now **Ready** because every declared dependency is
 Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
 their remaining integration/gateway gates.
+
+## COMMERCE-024 Attempt 1 blocked / COMMERCE-038 created — 2026-09-22
+
+COMMERCE-024 is **Blocked, Attempt 1 retained**.
+
+The submitted implementation correctly refused to represent the missing XN04
+composition as successful, but review identified two distinct causes.
+
+First, its implementation base is stale relative to accepted COMMERCE-019
+implementation `8850b55`: the accepted preview adapters are absent and the production
+runtime still uses `unavailableLoader`. That accepted implementation must be
+developer-integrated into the canonical Commerce implementation base before 024 is
+reclaimed.
+
+Second, accepted COMMERCE-031 does not export the reusable
+`PreviewExternalFixtureRunner` required to inject frozen external synthetic fixtures
+into production Conversation preview without copying 031 processing logic.
+`ARCH-020-COMMERCE-038` is created **Ready, Attempt 0** to export only that producer
+seam.
+
+024's current changes under connection command/lifecycle producer files are outside
+its composition ownership and must not be carried forward after resynchronization.
+Final composition remains 024-owned after both unblock conditions are satisfied.
+
+No downstream task is launched; COMMERCE-012 and SYSTEM-TEST-002 remain gated.
