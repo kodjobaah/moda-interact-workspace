@@ -32,7 +32,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | Complete | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032 |
+| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
@@ -44,7 +44,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
-| [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | ready | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -1036,15 +1036,18 @@ The duplicate COMMERCE-037 dependency and stale duplicate 032/037 index rows are
 reconciled. No downstream promotion occurs because COMMERCE-024 and COMMERCE-012
 retain other incomplete prerequisites.
 
-## COMMERCE-031 Attempt 1 architect review — 2026-09-22
+## COMMERCE-036 Attempt 1 architect acceptance — 2026-09-22
 
-COMMERCE-031 is **Changes Requested / Ready, Attempt 1 retained, claim cleared**.
+**Accepted / Complete, Attempt 1; claim clear.** Implementation `ccc8c41` and parent
+handoff `e0f0265e` restore the canonical BEARER metadata boundary: null/blank and
+legacy `Authorization` inputs are accepted, but persisted/public revision metadata is
+always `authHeader:null`. API_KEY/NONE behavior is unchanged.
 
-Attempt 1 establishes the external preview service, optional frozen sample fields,
-processor delegation and basic replay/conflict path, but PR01-PR03 are incomplete.
-The key remaining owned behavior is: claim/replay before quota/receipt side effects,
-server-owned saved-definition loading, tool-test cancel/expiry lifecycle, actual
-conversation use of frozen external fixtures with no live provider/credential path,
-and the focused PR01-PR03 rejection/race matrix.
+Focused lifecycle tests pass 11/11 and the real PostgreSQL regression passes for both
+accepted BEARER input forms, proving the DATABASE-003 auth-header CHECK is satisfied
+with a real lifecycle write. Scoped ESLint and `git diff --check` pass; remaining
+repository-wide diagnostics are the documented unrelated baseline.
 
-No downstream task is promoted.
+COMMERCE-024's human-readable dependency list/index row is reconciled to include
+COMMERCE-036, matching its authoritative YAML. COMMERCE-024 remains Pending because
+other prerequisites are still incomplete. No task is automatically launched.
