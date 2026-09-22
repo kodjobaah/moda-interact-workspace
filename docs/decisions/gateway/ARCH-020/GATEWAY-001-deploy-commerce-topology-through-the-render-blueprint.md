@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 180
-executor: copilot
-claimed_at: 2026-09-22T14:21:44Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -171,17 +171,22 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Attempt 2 — Ready for Review (2026-09-22). The Attempt 1 review corrections are
-implemented locally; no live Render deployment, OAuth login, private assertion
-call, paid provider call, or production resource mutation was performed.
+Attempt 3 — Ready for Review (2026-09-22). A2-R1, A2-R2 and A2-R4 are implemented
+and validated locally; A2-R3/U15/U16 remain assigned to GATEWAY-003. No live
+Render deployment, browser OAuth completion, private assertion verification,
+paid provider call, or production resource mutation was performed.
 
 ### Files Changed
 
-Implementation changes add the private Commerce Render service and C7.1/C9.1/
-C10 configuration, Commerce upstream and explicit Studio routing, public MCP
-denial, worker-only MCP signing scope, transcription/preview wiring, Docker
-fixtures, strict positive/negative blueprint validators, and deployment/
-rollback documentation.
+Implementation changes retain the accepted private Commerce service and C7.1/C9.1/
+C10 routing while making Commerce host configuration an external deployment input.
+Both Blueprints remove the Commerce gateway domain and group Studio origin, add
+service-level `sync: false` inputs for `COMMERCE_PUBLIC_HOST`,
+`COMMERCE_STUDIO_ORIGIN` and `AUTH_URL`, and keep Commerce private. Validators
+and negative fixtures cover hard-coded, committed-domain and missing-input cases.
+The deployment runbook now documents manual custom-domain/DNS/TLS attachment,
+drift checks, authenticated Studio smoke inputs, corrected Auth.js callback
+reachability, and externally supplied Background assertions.
 
 ### Work Completed
 
@@ -191,14 +196,18 @@ page/auth/asset and C9.1 preview families. `/api/mcp`, `/mcp`, trailing,
 encoded-separator, duplicate-separator and dot-segment variants are denied
 before proxying. Background-only MCP URL/signing configuration and Commerce-only
 verification keys are separated. Test and production preview/transcription
-settings are independent; Groq is retained and OpenAI is explicit.
+settings are independent; Groq is retained and OpenAI is explicit. The hosted
+smoke contract now requires `COMMERCE_PUBLIC_HOST`, `GATEWAY_PUBLIC_ORIGIN`,
+`STUDIO_COOKIE_HEADER`, `STUDIO_NEXT_ACTION_ID`, `STUDIO_NEXT_ACTION_BODY`,
+and six externally supplied Background assertion values; the gateway does not
+generate or sign tokens.
 
 ### Validation Results
 
 | Requirement | Command / fixture | Result |
 |---|---|---|
 | Render topology and credential wiring | `bash tests/validate-render-blueprints.sh` | Passed |
-| Legacy and Commerce negative mutations | `bash tests/validate-render-blueprints-negative.sh` | Passed; 41 meaningful mutations rejected for expected reasons |
+| Legacy and Commerce negative mutations | `bash tests/validate-render-blueprints-negative.sh` | Passed; 48 meaningful mutations rejected for expected reasons, including all seven new A2-R1 classes |
 | Routing, headers, body integrity, timeouts and MCP variants | `bash tests/run-tests.sh` | 150 passed, 0 failed |
 | HAProxy rendering | Docker build plus entrypoint `haproxy -c` | Configuration valid |
 | Shell and whitespace | `bash -n docker/entrypoint.sh tests/run-tests.sh`; `git diff --check` | Passed |
@@ -211,12 +220,14 @@ attempts, and legacy provider-body/header behavior.
 
 ### Deviations
 
-`COMMERCE_PUBLIC_HOST` and the Commerce custom domain remain explicit Render
-deployment inputs; the Blueprint does not claim that `commerce-test` or
-`commerce` DNS is provisioned. `COMMERCE_MCP_URL` is also an operator-supplied
-service-level input built from Render's actual Commerce Internal Service
-Address. No credential values are committed. Local fixtures do not prove
-hosted Google OAuth or Commerce private assertion verification.
+`COMMERCE_PUBLIC_HOST`, `COMMERCE_STUDIO_ORIGIN` and `AUTH_URL` are explicit
+service-level Render deployment inputs. The operator must attach the chosen
+Commerce custom hostname to the gateway, configure DNS/TLS, and verify all
+three values agree; the Blueprint does not claim that any hostname is
+provisioned. `COMMERCE_MCP_URL` is also an operator-supplied service-level input
+built from Render's actual Commerce Internal Service Address. No credential
+values are committed. Local fixtures do not prove hosted Google OAuth or
+Commerce private assertion verification.
 
 ### Assumptions
 
@@ -226,9 +237,12 @@ service is introduced.
 
 ### Unresolved Issues
 
-Developer-owned follow-up: deploy test topology, exercise Google OAuth, verify
-valid Background RS256 assertions and denial of other private callers, confirm
-Render DNS/TLS, and run hosted health checks.
+Developer-owned follow-up: deploy test topology, attach and verify the chosen
+Commerce hostname/DNS/TLS and matching service inputs, exercise real Google
+OAuth in a browser, supply valid and five wrong-claim Background RS256
+assertions, verify private caller denial, and run the authenticated hosted
+health/Server Action/discovery/preview smoke commands. No live deployment or
+OAuth completion is claimed here.
 
 ### Architectural Concerns
 
@@ -238,7 +252,7 @@ the exact C9.1 route allowlist against the accepted Commerce route tree.
 ### Git / VCS
 
 Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-001`, branch `task/ARCH-020-GATEWAY-001`, Attempt 2 commit **12ca000**, pushed to origin. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-001`. No main integration, gitlink change, deployment, or enabled-task launch was performed.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-001`, branch `task/ARCH-020-GATEWAY-001`, Attempt 3 commit **7bd5865ae6c3e412d03e383fd2bd951fb0c47c89**, pushed to origin. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-001`. No main integration, gitlink change, deployment, or enabled-task launch was performed.
 
 ## Architect Review
 
