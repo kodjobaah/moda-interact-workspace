@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 155
-executor: copilot
-claimed_at: 2026-09-22T10:51:46Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-SHARED-002
@@ -1187,3 +1187,55 @@ Return the same task through:
 
 The next claim becomes **Attempt 3** exactly once. COMMERCE-024 and COMMERCE-012
 remain gated until COMMERCE-022 is architect-accepted Complete.
+
+## Completion Report: Attempt 3
+
+### Status
+
+Ready for Architect Review. Attempt 3 was prepared and claimed by the deterministic launcher; claim metadata is cleared for handoff.
+
+### Work Completed
+
+- Removed the invalid bare `use server` token from the authenticated U15 route while preserving server-owned `requireStudioAdminPage()` and serializable client-wrapper props.
+- Completed unknown-operation reconciliation for all mutation paths: replay now always releases transient pending state, preserves the admitted operation/payload after uncertain replay, and exposes Create's `Check original operation` action.
+- Create replay reuses the original closure and return-state navigation; known outcomes remain bounded and successful reconciliation opens the created U16 route.
+- Added focused regressions for repeatable unknown credential replay and unknown Create reconciliation.
+
+### Files Changed
+
+- `app/connections/page.tsx`
+- `src/studio/connections/connections-ui.tsx`
+- `tests/connections-ui.test.tsx`
+
+### Validation Results
+
+- `npm run test:arch020-connections-ui`: passed, 1 file and 13 tests.
+- `npm run lint`: passed with 0 errors and two pre-existing warnings outside the task boundary (`scripts/code-runtime-manifest.mjs` and `src/commerce/code-response/runtime/kernel.ts`).
+- `npm run typecheck`: route type generation passed; the command remains blocked by 15 existing diagnostics in unrelated connection backend, integration backend, CodeMirror and response-processor files. No task-owned Connections diagnostic was reported.
+- `npm run build`: runtime packaging, smoke validation, Prisma generation and Next compilation passed; the command then stopped on the same 15 unrelated repository TypeScript diagnostics.
+- `git diff --check`: passed.
+- VS Code diagnostics: no errors in the two route modules, Connections UI or focused tests.
+
+### Architect Correction Disposition
+
+- A2-R1: removed the invalid bare route directive; the authenticated route remains a Server Component and passes only serializable values to the client wrapper.
+- A2-R2: `checkOriginal` uses `finally` to release transient pending state, while `settle` remains the only logical-operation authority; Create now renders and replays the retained unknown operation.
+
+### Git / VCS
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-022`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-022`.
+- Branch: `task/ARCH-020-COMMERCE-022` in both worktrees; implementation commit `b6164bc` pushed to `origin/task/ARCH-020-COMMERCE-022`.
+- Launcher synchronization, dependency gate and recursive submodule preparation passed; database submodule remained at accepted commit `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+- No main merge, service gitlink update, downstream task launch or deployment performed.
+
+### Unresolved Issues
+
+Repository-wide typecheck/build remain blocked by unchanged diagnostics outside this task boundary. No live, database, deployment, backend, network or secret-bearing validation was run.
+
+### Architect Review
+
+### Review Status
+
+Pending.
