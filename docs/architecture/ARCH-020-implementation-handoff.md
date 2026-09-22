@@ -1177,6 +1177,31 @@ because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 ar
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
 
+
+## COMMERCE-035 validation-only unblock — 2026-09-22
+
+`ARCH-020-COMMERCE-035` is Ready for validation-only Attempt 4. The architect has
+explicitly authorised autonomous **local** Docker provisioning for its disposable C20
+PostgreSQL/Redis proof, using the exact procedure in the task's latest Architect
+Review. The agent must not wait for developer-supplied test URLs when a local
+Unix-socket Docker engine is available. This authorisation is task-specific and does
+not authorise deployed/shared infrastructure access.
+
+## COMMERCE-035 Attempt 4 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 4** (`9a0120b`; parent report `b357be28`).
+
+The C20 isolated integration fixture boundary has now executed successfully against
+real task-owned disposable PostgreSQL and Redis targets. The guarded reset and
+focused fixture proof passed, closing the remaining F02/F03/F05/F06 infrastructure
+and relational-proof gates. Repository-wide typecheck/lint/build remain blocked only
+by previously documented unrelated Shared/external-response/Connections diagnostics;
+no COMMERCE-035-owned file is implicated and `git diff --check` passes.
+
+The C20 producer gate is therefore satisfied. This acceptance does not automatically
+launch a consumer and does not rewrite newer COMMERCE-018/019 task branches from the
+older COMMERCE-035 parent snapshot. Reconcile each current consumer branch after this
+acceptance is integrated.
 ## COMMERCE-027 Attempt 2 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 2**, claim clear.
