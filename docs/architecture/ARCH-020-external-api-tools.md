@@ -1115,3 +1115,13 @@ Two C21 mismatches remain: definition identity must use the canonical
 `toolHashInput(definition)` content hash already used by the lifecycle, and publication
 must validate current non-secret connection/revision auth shape without requiring a
 live PER_SHOP credential. No dependant is promoted until COMMERCE-030 is Complete.
+
+## COMMERCE-022 Attempt 2 architect review — 2026-09-22
+
+`ARCH-020-COMMERCE-022` remains **Ready / Changes Requested, Attempt 2**. The core
+U15/U16 correction direction is preserved, including Shared result envelopes,
+search/cursor return state, authorized PER_SHOP selection and independent selected
+revision context. Final X05/XN01 acceptance is bounded to route syntax, complete
+same-operation replay lifecycle, credential dirty/unknown tab locking, exact
+credential-status context/CAS and terminal connection-read states. No backend or
+credential implementation moves into this task.

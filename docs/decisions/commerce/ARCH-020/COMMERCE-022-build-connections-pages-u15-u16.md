@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 155
 executor: null
 claimed_at: null
@@ -748,3 +748,442 @@ Blocked by unchanged repository conditions outside this task:
 
 No live, database, container, deployment, backend, network or secret-bearing
 validation was run. No backend or provider implementation was added.
+
+### Attempt 2 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 2 archive and
+parent handoff `5de26a7d9040a1244b3362cc1ba877c1685f1e14`. The current remote
+`task/ARCH-020-COMMERCE-022` parent branch matches that commit. The task records
+implementation commit `9b777df`; the Commerce implementation remote is not readable
+through the current review connector, so implementation review is grounded in the
+exact submitted archive.
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claimed_at remain null.
+Not accepted.**
+
+Attempt 2 materially closes much of A0-R1 through A0-R5 and those corrections must
+be preserved:
+
+- server-authenticated routes now use a serializable client wrapper and the fixture
+  port is created client-side once per mounted wrapper;
+- Shared `ConnectionResult` envelopes, CUID-shaped operation IDs and immutable
+  admitted payloads are used;
+- search/cursor/enabled state is propagated between U15/U16/create/back;
+- Studio navigation blockers are used for top-level dirty/unknown navigation;
+- PER_SHOP shop lookup uses authorized `ShopSummary` rows rather than free-form shop
+  IDs;
+- credential dialogs retain status-only reads and exact CAS values when the matching
+  status is current;
+- latest revision and selected credential revision are independent, and the submitted
+  regression proves Revision 2 remains latest while Revision 1 stays selected.
+
+Submitted focused evidence reports 11 passing Connections tests, zero lint errors
+(two unrelated warnings), and `git diff --check` passing. Repository typecheck/build
+remain blocked by recorded unrelated baseline diagnostics. These are useful supporting
+results, but the remaining defects below are directly observable in the submitted
+source.
+
+The corrections below are the complete Attempt 2 rework contract. Do not redesign
+unrelated Connections behavior.
+
+#### A2-R1 — make the real `/connections` server page syntactically valid
+
+File:
+`app/connections/page.tsx`.
+
+The exact submitted file begins with the literal bytes:
+
+```text
+use server
+```
+
+without quotes. This is not a JavaScript/TypeScript directive and is syntactically
+invalid. Independent TypeScript parser inspection of the submitted file reports:
+
+```text
+Unexpected keyword or identifier.
+```
+
+The App Router page is already a Server Component by default and
+`requireStudioAdminPage()` must remain server-owned.
+
+Correction:
+
+- remove the bare `use server` line entirely;
+- do **not** convert the page to `"use client"`;
+- retain server-side `requireStudioAdminPage()`;
+- continue passing only serializable role/query-state values into
+  `ConnectionsRouteClient`.
+
+Required proof:
+- TypeScript parsing/typechecking of both Connections page modules has no task-owned
+  syntax/route diagnostic;
+- the focused route-wrapper test still proves the client wrapper creates the fixture
+  port, not the server page.
+
+Do not add Server Actions or backend wiring here.
+
+#### A2-R2 — finish unknown-operation reconciliation for every mutation
+
+Files:
+`src/studio/connections/connections-ui.tsx`,
+`tests/connections-ui.test.tsx`.
+
+The common `useMutation.checkOriginal()` currently does:
+
+```ts
+setPending(true);
+try {
+  onResult(await current.call());
+} catch {
+  setPending(false);
+}
+```
+
+On a normal resolved replay — whether `ok`, known failure or another `unknown` —
+`pending` is never cleared. Consequences include:
+
+- a second `unknown` replay leaves **Check original operation** disabled forever;
+- a successfully reconciled credential mutation leaves that mutation hook permanently
+  pending, so later Set/Replace/Remove controls stay disabled until remount.
+
+Use a `finally` so reconciliation always releases only the transient `pending` flag:
+
+```ts
+async function checkOriginal(...) {
+  const current = admitted.current;
+  if (!current) return;
+  setPending(true);
+  try {
+    onResult(await current.call());
+  } catch {
+    // transport remains uncertain; keep admitted payload/operation and unknown state
+  } finally {
+    setPending(false);
+  }
+}
+```
+
+Do not clear `gate.current`, `admitted.current` or the unknown operation merely because
+the replay transport threw. `settle(...)` remains the only authority that clears the
+logical operation on a known result.
+
+The Create connection mutation also has no rendered reconciliation action when it
+returns `kind:'unknown'`. The page becomes navigation-locked with no way to execute
+the required same-operation replay.
+
+Add the same **Check original operation** surface for `createMutation.unknown`.
+Replaying Create must call the exact retained create closure/payload and:
+- on `ok`, navigate to the created U16 connection using the originally admitted
+  list return state;
+- on known failure, unlock and retain the create form/input with the bounded known
+  message;
+- on another `unknown` or thrown transport, keep the same operation/payload and
+  allow another Check after `pending` clears.
+
+Required focused proof:
+
+```text
+create -> unknown -> Check original operation -> same operationId/payload -> ok
+  -> exactly two port calls
+  -> one logical command
+  -> U16 navigation occurs
+  -> pending is no longer stuck
+
+credential -> unknown -> replay returns unknown
+  -> Check original operation becomes enabled again
+  -> third replay may reconcile the same operation
+
+credential -> unknown -> replay returns ok
+  -> later credential mutation controls are enabled normally
+```
+
+Do not allocate a replacement operation ID for reconciliation.
+
+#### A2-R3 — credential dirty/unknown state must participate in tab/navigation guards
+
+Files:
+`src/studio/connections/connections-ui.tsx`,
+`tests/connections-ui.test.tsx`.
+
+`CredentialPanel` currently installs its own navigation blocker, but
+`ConnectionDetail` decides tab changes using only its **parent**:
+
+```ts
+dirty
+locked
+```
+
+state. Credential `secret`, credential `reason`, open credential dialog and
+`mutation.unknown` are not represented in those parent values.
+
+Therefore, while the Credentials tab contains an unsaved secret/reason:
+
+```text
+Credentials -> click Revisions/Overview
+```
+
+can execute `setTab(...)` directly and unmount the credential form without invoking
+the credential blocker. The same bypass can discard an unresolved unknown credential
+operation and its retained secret/payload.
+
+Use one combined ConnectionDetail navigation state. The deterministic local contract
+is:
+
+```ts
+type CredentialGuardState = {
+  dirty: boolean;
+  locked: boolean;
+};
+```
+
+- `CredentialPanel` reports its current `{dirty,locked}` to `ConnectionDetail`;
+- credential dirty means secret/reason/dialog is present;
+- credential locked means an unresolved credential `unknown` operation exists;
+- `ConnectionDetail` combines that state with metadata/revision/enabled dirty/locked
+  state before deciding any tab/back/sidebar navigation;
+- do not maintain two competing `setNavigationBlocker(...)` owners for the same U16
+  screen;
+- when the user chooses **Discard unsaved changes**, clear credential
+  secret/reason/dialog as well as the applicable parent draft before allowing the
+  requested tab/navigation;
+- when credential state is locked, expose only **Stay** until the original operation
+  is reconciled; tab changes must not unmount the retained operation.
+
+An implementation may use a parent-owned reset generation/callback to clear the child
+form on discard; do not move the secret into URL/storage or parent-rendered diagnostics.
+
+Required focused proof:
+
+```text
+typed credential secret/reason -> click another U16 tab
+  -> Stay / Discard unsaved changes appears
+  -> Stay preserves secret/reason and current tab
+  -> Discard clears the credential form before the tab changes
+
+unknown credential operation -> click another tab/back
+  -> Finish the pending operation
+  -> no Discard action
+  -> retained operation remains available for Check original operation
+```
+
+#### A2-R4 — credential status/CAS must belong to the exact selected revision/shop
+
+Files:
+`src/studio/connections/connections-ui.tsx`,
+`tests/connections-ui.test.tsx`.
+
+`CredentialPanel` retains the previous `status` while a new
+`getCredentialStatus(...)` call is pending or returns a known non-ok result. It also
+calls `getCredentialStatus` with `shopId:null` before any shop is selected for a
+PER_SHOP revision.
+
+That allows stale status/CAS to be displayed or used against a newly selected shop or
+revision. For example:
+
+```text
+Linen House -> configured editVersion 4
+select Harbor Goods
+Harbor status request is still pending/unavailable
+old configured status remains
+```
+
+The UI can temporarily render Replace/Remove or submit the old CAS against Harbor.
+
+Use an exact credential-context key:
+
+```ts
+`${revision.id}:${shopId ?? ''}`
+```
+
+and treat status as current only when it was returned for that exact key.
+
+Required behavior:
+
+- PLATFORM: load status for `{revision.id, shopId:null}`;
+- PER_SHOP with no selected shop: **do not call** `getCredentialStatus`; clear current
+  status and show a bounded "Select a shop to view credential status" state;
+- whenever revision or selected shop changes, immediately clear the previous status
+  before starting the new read;
+- while the exact status is loading, mutation controls are disabled;
+- `ok` status becomes current only for the exact still-selected context;
+- `unavailable`, `forbidden`, `not-found` or thrown read clears current status and
+  renders the bounded known state with **zero Set/Replace/Remove mutation controls**;
+- Set/Replace/Remove payload CAS must come only from the exact current successful
+  status;
+- a late status result for an older revision/shop must be ignored.
+
+Required focused proof:
+
+```text
+PER_SHOP initial render -> zero status read until shop selected
+
+select configured Linen -> Replace/Remove use Linen editVersion
+
+then select Harbor whose status is unavailable
+  -> old Linen configured status disappears immediately
+  -> no credential mutation button is available
+  -> no stale CAS can be submitted
+
+rapid shop A -> shop B with A resolving late
+  -> B remains the visible/current status
+```
+
+Do not introduce a free-form shop ID or credential value read.
+
+#### A2-R5 — terminal connection-read states must not remain "Loading connection..."
+
+File:
+`src/studio/connections/connections-ui.tsx`,
+`tests/connections-ui.test.tsx`.
+
+C21 section 6 requires the existing loading/not-found/forbidden/unavailable UI states.
+`ConnectionDetail` currently keeps `connection === undefined` for every non-ok read
+result and for `ok(null)`, while only writing the result to `message`. Because the
+render returns early whenever `!connection`, the user sees:
+
+```text
+Loading connection...
+```
+
+forever and never sees the terminal state/message.
+
+Represent the detail read state explicitly. At minimum:
+
+```text
+loading
+loaded(ConnectionView)
+not-found
+forbidden
+unavailable
+```
+
+`ok(null)` is treated as not-found. Render a bounded terminal state with
+**Back to Connections** preserving `search/cursor/enabled`. Do not show mutation
+controls in terminal states.
+
+Required focused proof:
+
+```text
+get -> not-found       -> not-found UI, no infinite loading
+get -> ok(null)        -> not-found UI
+get -> forbidden       -> bounded forbidden UI
+get -> unavailable     -> bounded unavailable UI
+```
+
+No backend or authentication implementation is added by this correction.
+
+### Preserved A0-R5 acceptance
+
+The latest-vs-selected revision correction is functionally present and must not be
+reworked:
+
+```text
+connection.revisions = [2,1]
+select revision 1
+Overview -> Latest revision = 2
+Credentials -> selected revision = 1
+```
+
+### Validation and Attempt 3 stop condition
+
+Run only the bounded task validation:
+
+```bash
+npm run test:arch020-connections-ui
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+Additionally run a direct TypeScript parser/typecheck over the two Connections page
+modules so the bare-directive regression cannot be hidden by unrelated build failure.
+
+If repository-wide typecheck/build remain non-zero solely on the documented unchanged
+baseline outside task-owned files, record the exact diagnostics and demonstrate that
+`app/connections/**`, `src/studio/connections/**` and
+`tests/connections-ui.test.tsx` have no new diagnostics.
+
+Do not repair unrelated Prisma, publication, CodeMirror, response-processor or backend
+code.
+
+Before handoff:
+1. add focused regressions for A2-R1 through A2-R5;
+2. update Work Items / Acceptance Criteria / Completion Report truthfully;
+3. set `status: review`;
+4. after the next launcher claim the task is Attempt 3;
+5. clear `executor` and `claimed_at`;
+6. push both mirrored task branches;
+7. STOP.
+
+Do not begin COMMERCE-024 or COMMERCE-012.
+
+### Review Status
+
+Changes Requested.
+
+### Reviewed Files
+
+- `app/connections/page.tsx`
+- `app/connections/[id]/page.tsx`
+- `src/studio/connections/connections-route-client.tsx`
+- `src/studio/connections/contracts.ts`
+- `src/studio/connections/fixtures.ts`
+- `src/studio/connections/connections-ui.tsx`
+- `tests/connections-ui.test.tsx`
+- C21 sections 4 and 6 / X05 / XN01
+- Attempt 2 Completion Report
+
+### Validation Reviewed
+
+Submitted Attempt 2 evidence:
+
+```text
+npm run test:arch020-connections-ui
+  PASS — 11 focused tests
+
+npm run lint
+  PASS — 0 errors, 2 unrelated warnings
+
+git diff --check
+  PASS
+
+npm run typecheck
+  NON-ZERO only on documented unrelated repository diagnostics according to the
+  Completion Report
+
+npm run build
+  code-runtime package step passed; stopped on the recorded unrelated packaged
+  QuickJS smoke baseline before Next compilation
+```
+
+Independent review validation of the exact submitted `app/connections/page.tsx` with
+the TypeScript parser reports:
+
+```text
+Unexpected keyword or identifier.
+```
+
+for the bare `use server` first line.
+
+### Architecture Conformance
+
+The implementation is close to the intended C21 Connections frontend and A0-R5 is
+closed. Acceptance is blocked only by the bounded route syntax, unknown-operation
+reconciliation, credential navigation locking, exact credential status/CAS context,
+and terminal read-state defects above.
+
+No backend, crypto, HTTP, database, U06, preview, MCP or production-factory ownership
+moves into COMMERCE-022.
+
+### Follow-up
+
+Return the same task through:
+
+```text
+/moda-task ARCH-020-COMMERCE-022
+```
+
+The next claim becomes **Attempt 3** exactly once. COMMERCE-024 and COMMERCE-012
+remain gated until COMMERCE-022 is architect-accepted Complete.

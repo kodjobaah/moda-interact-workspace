@@ -1299,3 +1299,11 @@ completed receipt/liveness/MIME/renderer/runtime-revalidation work. Attempt 3 is
 bounded to canonical tool-definition hashing via Shared `toolHashInput` and
 credential-independent connection/revision publication admission. COMMERCE-031,
 COMMERCE-024 and COMMERCE-012 remain gated; no automatic launch.
+
+## COMMERCE-022 Attempt 2 review — 2026-09-22
+
+`ARCH-020-COMMERCE-022` is **Ready / Changes Requested, Attempt 2**. Preserve the
+accepted A0 route-wrapper/result/list-state/shop-selection/latest-revision work.
+Attempt 3 must close only the latest task review A2-R1..A2-R5 before COMMERCE-024 may
+consume the Connections frontend. COMMERCE-024 and COMMERCE-012 remain gated; nothing
+is auto-started.

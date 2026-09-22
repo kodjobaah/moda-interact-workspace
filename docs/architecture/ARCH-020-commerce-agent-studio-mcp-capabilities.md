@@ -1797,3 +1797,10 @@ sample-MIME plus production-renderer reuse, bounded schema issues, and complete
 PV02/PV03 runtime-revalidation evidence.
 
 No dependency is promoted and no downstream task is launched automatically.
+
+## COMMERCE-022 Attempt 2 architect review — 2026-09-22
+
+The Connections frontend remains **Ready / Changes Requested, Attempt 2**. Do not
+consume it as a completed C21 producer until the exact Attempt 3 corrections in the
+task review are closed. Existing Shared-result, list-state, shop-search and
+latest-vs-selected revision corrections are retained. COMMERCE-024 remains gated.

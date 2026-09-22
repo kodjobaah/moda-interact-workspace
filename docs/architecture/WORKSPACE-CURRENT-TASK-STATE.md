@@ -1399,3 +1399,11 @@ focused 9-scenario suite and closes the receipt/liveness/MIME/renderer/runtime p
 The next claim is Attempt 3 and must correct only canonical tool revision hashing and
 remove credential existence from publication/sample gating while retaining current
 non-secret connection auth-shape checks. Dependants remain gated.
+
+## COMMERCE-022 Attempt 2 architect review — 2026-09-22
+
+COMMERCE-022 is **Ready / Attempt 2 retained / claim clear**. Submitted focused tests
+pass, but exact source review still finds five bounded U15/U16 runtime defects in route
+syntax, unknown reconciliation, credential navigation guarding, credential
+status/CAS freshness and terminal detail reads. The next claim is Attempt 3.
+COMMERCE-024/012 remain dependency-gated.
