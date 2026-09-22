@@ -59,10 +59,8 @@ database revision. Never copy the Prisma schema into Commerce.
 ```text
 003 publication +004/014 MCP +005/015 products +006/016 discounts +007 recommendations +011 compiler ->013 backend integration
 013 +008 Studio +002 auth +011 discovery ->018 Studio integration
-009 +002 ->033 OpenAI/Groq preview model provider
-017 +009 ->034 U14 tool-entry source gating correction
-013 +009 preview +017 U14 +008 composer +002 auth +033 +034 ->019 preview integration
-018 may run independently;019 remains blocked until033/034 are accepted
+013 +009 preview +017 U14 +008 composer +002 auth ->019 preview integration
+018 and019 run concurrently; neither depends on the other
 013 +018 +019 + existing prerequisites ->GATEWAY-001
 all feature/infrastructure tasks ->012 caching ->terminal SYSTEM-TEST-001
 ```
@@ -915,7 +913,7 @@ Changes Requested summaries.
 Read [C21](ARCH-020-external-api-tools.md) before extension work.
 
 ```text
-DATABASE-003 (Complete)              SHARED-002 (Ready; publish once)
+DATABASE-003 (Complete)              SHARED-002 (Complete; 0.14.2 accepted)
         \                            /
          ->020 connection service   +->021 HTTP executor (ports)
                                     +->025 visual processor
@@ -953,10 +951,11 @@ GATEWAY-001 +020/021/026/028/029 ->GATEWAY-003
 all extension implementation ->012 cache bypass ->SYSTEM-TEST-001 (manual)
 ```
 
-DATABASE-003 and SHARED-002 remain independent executable prerequisites.
-COMMERCE-029 is Complete at accepted Attempt 4 with the reusable bounded runtime;
-COMMERCE-026 remains Pending until SHARED-002 is also Complete. Each submission maps
-named acceptance cases to committed scenarios and actual results.
+DATABASE-003 and SHARED-002 are Complete. COMMERCE-029 is Complete at accepted
+Attempt 4 with the reusable bounded runtime. The direct Shared-gated component
+frontier 020/021/022/023/025/026/027 is Ready; later tasks remain gated by their
+other declared prerequisites. Each submission maps named acceptance cases to
+committed scenarios and actual results.
 
 ### COMMERCE-013 Attempt 8 architect review — 2026-09-21
 
@@ -987,6 +986,9 @@ COMMERCE-018/019 are **Ready, Attempt 0, claims null** after checking their expl
 prerequisites. No automatic launch, main merge, implementation edit or gitlink update.
 Other deployment/cache/system gates retain their dependencies and manual validation.
 
+### SHARED-002 Attempt 4 review — 2026-09-21
+
+SHARED-002 is **Changes Requested / Ready, Attempt 4 retained**, executor/claim null. Reviewed `b23a7c1` / `52b14319`. Existing Attempt 1 fixes and `0.14.1` submitted consumer proof are retained. A4-R1 closes the remaining LIST publication wrapper/cardinality hole; A4-R2 restores the root package README/export inventory and publishes the corrected next patch version; A4-R3 makes the Completion Report current-state evidence coherent. No downstream task is promoted or launched until SHARED-002 is accepted Complete.
 ### DATABASE-003 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1030,48 +1032,58 @@ Frontier: SHARED-002 remains Ready, so COMMERCE-026 stays Pending. Nothing else 
 promoted or launched by this acceptance; GATEWAY-003 and the final cache/system
 gates remain downstream.
 
-## COMMERCE-019 Attempt 1 architect review — 2026-09-21
+### SHARED-002 Attempt 5 accepted — 2026-09-21
 
-**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** The submitted
-preview composition is not accepted yet. Exact saved prompts/Redis lifecycle and
-fixture interpreter wiring are retained, but frozen tool definitions currently live
-in process-local Maps rather than the Redis-owned conversation snapshot, so a restart/
-second replica loses them and a later draft can overwrite an older conversation's
-execution definition. Production tool tests also request a fabricated
-`preview-capability` revision that the accepted COMMERCE-013 saved facade rejects.
-The accepted U14 tool-entry Start path currently produces a zero-capability manifest,
-and MODEL composition uses an unapproved `PREVIEW_MODEL_URL` plus an adapter that is
-always unavailable instead of the accepted separate preview configuration. Exact
-A1-R1–R3 corrections are in the task review. No dependent promotion, automatic launch,
-main integration or gitlink update.
-## COMMERCE-019 Attempt 2 blocked — 2026-09-21
+**Accepted / Complete, Attempt 5.** Implementation `95bab1d`; exact published Shared
+package `0.14.2`. The direct C21 component frontier is now Ready for
+`COMMERCE-020`, `021`, `022`, `023`, `025`, `026` and `027`. Do not rerun
+`/moda-task ARCH-020-SHARED-002`; it has no further correction attempt. Use the
+normal launcher on an eligible Ready dependant when the developer chooses to start
+one. No automatic downstream launch occurs in this acceptance.
 
-ARCH-020-COMMERCE-019 is **Blocked, Attempt 2**, claims cleared. Attempt 2 preserves
-the real preview integration and closes the process-local frozen-definition defect:
-exact definitions/authored prompts are now bounded in a private snapshot persisted
-with Redis conversation state, and saved-tool tests use the accepted empty-capability
-read shape. Reported focused/Redis tests, typecheck, lint and build pass; no broader
-test expansion is required for this decision.
+## COMMERCE-033 Attempt 1 architect review — 2026-09-22
 
-Two architecture/ownership gaps prevent acceptance. First, accepted U14 can submit a
-tool-only DRAFT to Conversation Start, but COMMERCE-013 returns no capability/authored
-prompt for that selection while the Shared manifest requires non-empty
-`conversation_core` capability provenance. C20 forbids fabricating a generic prompt;
-the U14 owner must require a real conversation source while retaining tool entry for
-Tool test. Second, ARCH-020 names preview MODEL configuration but defines no provider
-transport/protocol and Commerce has no accepted `PreviewModelPort` provider adapter;
-MODEL therefore remains fail-closed. Architect/provider resolution is required before
-another COMMERCE-019 claim. COMMERCE-012/024/031, GATEWAY-001 and SYSTEM-TEST-001
-remain gated; nothing is launched automatically.
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The provider
+transport is materially correct but its strict response parser currently rejects
+standard OpenAI/Groq Chat Completions function calls because those calls contain
+`id` and `type: "function"` alongside `function`. A1-R1 requires accepting and
+validating that standard envelope while continuing to map only function name and
+parsed arguments into the existing Shared `ModelStep`. No provider-call ID is
+added to the Shared contract. Existing config, fixed endpoints, secret isolation,
+one-request/no-retry behavior and token accounting are preserved. COMMERCE-019
+remains blocked; no downstream task is promoted or launched.
 
-### COMMERCE-019 Attempt 2 deterministic blocked review — 2026-09-21
+## COMMERCE-033 Attempt 2 architect acceptance — 2026-09-22
 
-Attempt 2 preserves accepted Redis frozen snapshots and saved-tool execution but is
-Blocked on two now-materialised prerequisites. COMMERCE-033 is Ready and implements
-one native-fetch OpenAI-compatible `PreviewModelPort` for exact providers
-`openai|groq`, fixed endpoints, actual completion-token accounting and no fallback;
-hosted test/development selects Groq/openai-gpt-oss-20b via the C10 variables.
-COMMERCE-034 is Ready and fixes U14 so a tool-only handoff remains Tool test and cannot
-start Conversation until a real release/behaviour source is selected. They are
-independent and may run in parallel.019 depends on both; once both are architect
-accepted, its next claim is Attempt3 and only composes their accepted outputs.
+ARCH-020-COMMERCE-033 is **Accepted / Complete, Attempt 2** (`94d31ea`; report
+`6e0d5849`). The server-only OpenAI/Groq native-fetch preview transport now accepts
+the standard Chat Completions function-tool response envelope (`id`,
+`type: "function"`, `function`) while preserving only function name and parsed
+arguments in the Shared `ModelStep`. Fixed endpoints, exact request mapping,
+provider token accounting, cancellation, response bounds, no-retry/fallback and
+secret-isolation behavior remain accepted.
+
+The durable graph is reconciled so COMMERCE-019 explicitly depends on
+COMMERCE-033. Because this provider task is Complete and 019's other declared
+prerequisites are already Complete, COMMERCE-019 remains **Ready, Attempt 0** with
+no active claim. No downstream task is started automatically.
+
+## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
+
+COMMERCE-034 is **Accepted / Complete, Attempt 1**. The accepted U14 correction
+keeps tool-only handoff in Tool test and requires an authored persisted release or
+non-empty behaviour/draft source before Conversation preview can start; no synthetic
+tool-to-capability fallback is permitted. COMMERCE-019 now records COMMERCE-034 as
+an accepted prerequisite and remains **Ready**. No downstream task was launched by
+this state reconciliation.
+## COMMERCE-026 Attempt 2 architect acceptance — 2026-09-21
+
+ARCH-020-COMMERCE-026 is **Accepted / Complete, Attempt 2** (`4b8e5bc`; report
+`170074b3`). The C21 JavaScript response adapter is accepted over the existing
+COMMERCE-029 QuickJS runtime and Shared `0.14.2` contracts. It preserves the bounded
+server-only processor/compile ports and does not duplicate publication/sample schema
+validation owned by COMMERCE-030.
+
+No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
+COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
+other prerequisites. No downstream task is launched automatically.
