@@ -852,3 +852,11 @@ this task. Once that source is developer-integrated, a fresh synchronized 024 sn
 can be returned to `moda_architect` for Blocked -> Ready reconciliation.
 
 No downstream task is launched automatically.
+
+
+## ARCH-020 Grafana ownership decision — 2026-09-22
+
+GATEWAY-002 is Superseded at Attempt 2. Custom Commerce dashboards and alerts are
+developer-managed in Grafana Cloud; repository-owned telemetry emissions and existing
+OTLP/Loki transport remain unchanged. No implementation or system-test task depends on
+GATEWAY-002 after this reconciliation.

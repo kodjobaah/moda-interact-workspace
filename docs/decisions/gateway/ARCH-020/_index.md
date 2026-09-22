@@ -9,7 +9,7 @@ Definitions are on local main for review by explicit developer request. Individu
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ARCH-020-GATEWAY-001](GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
-| [ARCH-020-GATEWAY-002](GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
+| [ARCH-020-GATEWAY-002](GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | superseded (developer-managed Grafana, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 
 ## ARCH-020-GATEWAY-001 readiness — 2026-09-22
@@ -81,3 +81,30 @@ All dependencies of GATEWAY-002 and GATEWAY-003 are now Complete. Both are promo
 to **Ready, Attempt 0, claim clear**. GATEWAY-003 retains the later C21 U15/U16
 `/connections` route extension. COMMERCE-012 and system-test tasks remain gated by
 additional dependencies. No task is automatically launched.
+
+## GATEWAY-002 Attempt 1 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 1; claim clear.** Implementation `6fb2ac5`
+adds a useful first dashboard/alert/runbook set, but C11 is not yet satisfied.
+The latest task review requires the next attempt to bind every query to the exact
+accepted COMMERCE-010/BACKGROUND-002 producer inventory; replace discovery-based
+"readiness"; make Grafana Cloud alert payloads actually evaluable/provisionable
+without dashboard `$environment` variables; add the required MCP latency,
+tool-outcome and provider-throttling views; and replace string-presence validation
+with the exact boundary/low-sample/recovery/NoData matrix.
+
+Hosted Grafana arrival/alert evidence remains developer-owned and is explicitly
+required before final acceptance; the repository agent must not fabricate it.
+GATEWAY-003 remains independently Ready. COMMERCE-012 and SYSTEM-TEST-001 are not
+promoted.
+
+
+## GATEWAY-002 superseded — 2026-09-22
+
+The developer explicitly chose to manage Commerce custom dashboards and alerts directly
+in the existing Grafana Cloud workspace. GATEWAY-002 therefore has no remaining
+repository implementation deliverable and is **Superseded, Attempt 2**.
+
+Attempts 1/2 are not accepted or merged. Existing Commerce/Background telemetry and the
+GATEWAY-001 OTLP/Loki/environment wiring remain authoritative. COMMERCE-012 and
+SYSTEM-TEST-001 no longer depend on GATEWAY-002; both retain other incomplete gates.

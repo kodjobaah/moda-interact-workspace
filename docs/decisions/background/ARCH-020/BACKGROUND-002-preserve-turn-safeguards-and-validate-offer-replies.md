@@ -19,7 +19,6 @@ depends_on:
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
-  - ARCH-020-GATEWAY-002
   - ARCH-020-SYSTEM-TEST-002
 created: 2026-09-20
 updated: 2026-09-21
@@ -122,11 +121,9 @@ Every dependency must be Complete and architect-accepted before execution. Recon
 
 - ARCH-020-COMMERCE-012
 - ARCH-020-SYSTEM-TEST-001
-- ARCH-020-GATEWAY-002
 - ARCH-020-SYSTEM-TEST-002
 
 - ARCH-020-SYSTEM-TEST-001
-- ARCH-020-GATEWAY-002
 
 ## Acceptance Criteria
 

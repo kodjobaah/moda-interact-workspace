@@ -30,7 +30,6 @@ depends_on:
   - ARCH-020-COMMERCE-011
   - ARCH-020-DATABASE-001
   - ARCH-020-GATEWAY-001
-  - ARCH-020-GATEWAY-002
   - ARCH-020-SHARED-001
   - ARCH-020-SHOPIFY-001
   - ARCH-020-COMMERCE-013
@@ -61,7 +60,7 @@ depends_on:
 enables:
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Add frequency-based tool-result caching
@@ -360,7 +359,6 @@ or correctness dependency. Do not expose cache controls as model tool arguments.
 - ARCH-020-COMMERCE-011
 - ARCH-020-DATABASE-001
 - ARCH-020-GATEWAY-001
-- ARCH-020-GATEWAY-002
 - ARCH-020-SHARED-001
 - ARCH-020-SHOPIFY-001
 - ARCH-020-COMMERCE-013
