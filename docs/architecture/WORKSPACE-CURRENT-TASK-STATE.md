@@ -1412,3 +1412,11 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+COMMERCE-022 is **Complete / Accepted, Attempt 4**, claim clear. Focused 20/20
+Connections tests, lint, diff check and task-owned diagnostics pass; typecheck/build
+remain non-zero only on the documented unrelated 15-error repository baseline.
+COMMERCE-024 and COMMERCE-012 retain additional incomplete prerequisites and receive
+no automatic promotion from this acceptance.

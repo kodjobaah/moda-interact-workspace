@@ -1140,3 +1140,12 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-022` is **Accepted / Complete, Attempt 4**. The C21 U15/U16
+frontend now has one parent-owned dirty/unknown navigation boundary, credential status
+and CAS scoped to the exact revision/shop context with stale-read protection, and
+bounded terminal not-found/forbidden/unavailable detail states. Earlier Shared result,
+same-operation replay, authorized shop-selection and latest-vs-selected revision
+corrections remain intact. Production wiring remains COMMERCE-024 ownership.

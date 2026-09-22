@@ -1810,3 +1810,10 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+The Connections U15/U16 frontend is **Accepted / Complete** at Attempt 4. Final
+credential dirty/unknown navigation, exact shop/revision status ownership and terminal
+read-state gaps are closed. Production external-tool/Connections composition remains
+with COMMERCE-024; no downstream execution is implied by this acceptance.

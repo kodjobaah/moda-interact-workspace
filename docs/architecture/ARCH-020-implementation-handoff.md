@@ -1312,3 +1312,12 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-022` is **Complete / Accepted, Attempt 4**. Consumers may treat the
+U15/U16 frontend as the accepted Connections producer: Shared result envelopes,
+same-operation replay, write-only credential controls, parent-owned navigation guard,
+exact revision/shop credential status/CAS context, terminal detail states and preserved
+list return state. COMMERCE-024 and COMMERCE-012 remain gated by their other
+dependencies; no task is auto-started.

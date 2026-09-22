@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 155
 executor: null
 claimed_at: null
@@ -1735,3 +1735,126 @@ run. No backend or provider implementation was added.
 
 Repository-wide typecheck and build remain blocked by unchanged baseline
 diagnostics outside the task boundary. The architect review text was not edited.
+
+### Attempt 4 — Accepted (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 4 archive and
+parent handoff `9db5ca1b892d9ea0d73a9c2f1f8876dae631663e`. The current remote
+`task/ARCH-020-COMMERCE-022` parent branch matches that handoff commit. The task
+records implementation commit `e6cfd73`; the Commerce implementation remote is not
+readable through the current review connector, so implementation acceptance is
+grounded in the exact submitted archive.
+
+**Accepted / Complete, Attempt 4.**
+
+The three bounded Attempt 3 corrections are satisfied:
+
+1. **Parent-owned credential navigation state**
+   - `CredentialPanel` reports `{dirty,locked}` to `ConnectionDetail`;
+   - the parent U16 blocker combines credential state with metadata/revision/enabled
+     state;
+   - credential dirty state receives the existing Stay/Discard flow;
+   - parent discard resets credential secret/reason/dialog state through the reset
+     generation before the requested tab/navigation is allowed;
+   - unresolved credential `unknown` contributes `locked=true`, so navigation shows
+     the existing "Finish the pending operation" state with no discard path;
+   - the child no longer owns a competing U16 navigation blocker.
+
+2. **Exact revision/shop credential status and CAS**
+   - PER_SHOP performs no status read before an authorized shop is selected;
+   - status is valid only for the exact `${revision.id}:${shopId ?? ''}` context;
+   - changing revision/shop makes the previous status non-current immediately;
+   - async reads are cancelled/ignored when their prior context unmounts/changes;
+   - unavailable/forbidden/not-found status produces no Set/Replace/Remove controls;
+   - credential mutation CAS is taken only from the exact current successful
+     `CredentialStatus`;
+   - late status from an older shop/revision cannot replace the current context.
+
+3. **Terminal U16 detail-read states**
+   - initial detail state is explicit `loading`;
+   - `not-found`, `ok(null)`, `forbidden`, `unavailable` and thrown reads become
+     terminal bounded states instead of permanent "Loading connection...";
+   - terminal states render no mutation/tab controls;
+   - Back to Connections preserves the original `search`, `cursor` and `enabled`
+     return state.
+
+Previously accepted corrections remain intact:
+- valid server/client Connections route split;
+- Shared `ConnectionResult` envelopes;
+- synchronous duplicate-write guards;
+- CUID-shaped operation IDs and immutable admitted payloads;
+- repeatable same-operation reconciliation, including Create;
+- authorized `ShopSummary` PER_SHOP selection;
+- write-only credential values;
+- list/search/cursor/enabled return-state propagation;
+- latest connection revision remains independent from explicitly selected credential
+  revision.
+
+Submitted validation reviewed:
+
+```text
+npm run test:arch020-connections-ui
+  PASS — 20/20 focused tests
+
+npm run lint
+  PASS — 0 errors; two unrelated existing warnings
+
+git diff --check
+  PASS
+
+npm run typecheck
+  route type generation PASS;
+  NON-ZERO only on the documented 15 unrelated repository baseline diagnostics
+
+npm run build
+  runtime packaging/smoke, Prisma generation and Next compilation PASS;
+  later TypeScript phase stops on the same 15 unrelated baseline diagnostics
+
+task-owned Connections diagnostics
+  CLEAN
+```
+
+Those repository-wide baseline diagnostics are outside COMMERCE-022 and are not
+regressions introduced by Attempt 4.
+
+Architecture conformance: **conformant** with the C21 U15/U16 / X05 / XN01 frontend
+boundary. No backend, crypto, HTTP, database, U06, preview, MCP or production-factory
+ownership moved into this task.
+
+No dependant becomes Ready solely from this acceptance:
+- `ARCH-020-COMMERCE-024` still has multiple incomplete dependencies;
+- `ARCH-020-COMMERCE-012` remains the later/final implementation checkpoint.
+
+No downstream task is launched automatically.
+
+### Review Status
+
+Accepted.
+
+### Reviewed Files
+
+- `app/connections/page.tsx`
+- `app/connections/[id]/page.tsx`
+- `src/studio/connections/connections-route-client.tsx`
+- `src/studio/connections/contracts.ts`
+- `src/studio/connections/fixtures.ts`
+- `src/studio/connections/connections-ui.tsx`
+- `tests/connections-ui.test.tsx`
+- C21 sections 4 and 6 / X05 / XN01
+- Attempt 4 Completion Report
+
+### Validation Reviewed
+
+Focused 20/20 Connections tests, repository lint, task-owned diagnostics and
+`git diff --check` pass. Typecheck/build reach only the documented unchanged
+repository baseline outside this task.
+
+### Architecture Conformance
+
+Conformant. Credential navigation locking, exact credential status/CAS context and
+terminal U16 read states now satisfy the remaining correction contract while
+preserving all accepted earlier behavior.
+
+### Follow-up
+
+None for COMMERCE-022. Dependants remain gated by their complete dependency sets.
