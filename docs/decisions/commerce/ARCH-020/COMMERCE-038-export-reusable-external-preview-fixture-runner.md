@@ -9,10 +9,8 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 168
-executor: copilot
-claimed_at: 2026-09-22T15:18:15Z
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-025
@@ -265,10 +263,10 @@ No arbitrary broad test count is required.
 
 ## Work Items
 
-- [ ] Extract/share the accepted external fixture processing kernel.
-- [ ] Export a reusable `PreviewExternalFixtureRunner`.
-- [ ] Preserve existing COMMERCE-031 runSample replay/quota/receipt behavior.
-- [ ] Add focused visual/JavaScript/MIME/schema/cancel regressions.
+- [x] Extract/share the accepted external fixture processing kernel.
+- [x] Export a reusable `PreviewExternalFixtureRunner`.
+- [x] Preserve existing COMMERCE-031 runSample replay/quota/receipt behavior.
+- [x] Add focused visual/JavaScript/MIME/schema/cancel regressions.
 
 ## Interfaces / Contracts
 
@@ -308,14 +306,14 @@ ARCH-020-COMMERCE-024
 
 ## Acceptance Criteria
 
-- [ ] One exported reusable runner satisfies `PreviewExternalFixtureRunner`.
-- [ ] Tool-test and conversation synthetic processing share one implementation.
-- [ ] Visual and JavaScript fixtures produce canonical schema-validated/rendered results.
-- [ ] Parameterized MIME is normalized identically to accepted C21 behavior.
-- [ ] Invalid schema/output fails closed without raw fallback.
-- [ ] Direct runner has zero quota/receipt/provider/credential/state side effects.
-- [ ] Existing COMMERCE-031 replay/cancel/quota/receipt regressions remain passing.
-- [ ] No production integration or UI source is modified.
+- [x] One exported reusable runner satisfies `PreviewExternalFixtureRunner`.
+- [x] Tool-test and conversation synthetic processing share one implementation.
+- [x] Visual and JavaScript fixtures produce canonical schema-validated/rendered results.
+- [x] Parameterized MIME is normalized identically to accepted C21 behavior.
+- [x] Invalid schema/output fails closed without raw fallback.
+- [x] Direct runner has zero quota/receipt/provider/credential/state side effects.
+- [x] Existing COMMERCE-031 replay/cancel/quota/receipt regressions remain passing.
+- [x] No production integration or UI source is modified.
 
 ## Validation
 
@@ -366,27 +364,33 @@ COMMERCE-024 owns final production assembly after this producer is accepted.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+`src/commerce/external-preview/contracts.ts`, `src/commerce/external-preview/fixture-runner.ts`, `src/commerce/external-preview/service.ts`, `src/commerce/external-preview/index.ts`, and `tests/external-preview.test.ts`.
 
 ### Work Completed
 
-None.
+Extracted the canonical synthetic EXTERNAL_HTTP processing kernel and exported `createExternalFixtureRunner` through the external-preview composition boundary. The runner accepts only the authenticated principal, revision ID, frozen definition, frozen sample, arguments, and signal; it performs bounded MIME normalization, visual/JavaScript processing, result-schema validation, result construction, response-template rendering, and final CommerceToolResult validation. `runSample` retains saved-definition loading, replay/conflict handling, quota, publication receipt validation, cancellation, and legacy preview result shape while routing processing through the shared kernel. Direct runner tests prove no quota, receipt, provider, or credential work.
 
 ### Validation Results
 
-None.
+`npm run test:arch020-external-preview`: PASS, 18 tests.
+`npm run test:arch020-external-publication`: PASS, 11 tests.
+`npm run test:arch020-code-processor`: PASS, 6 tests.
+`npx eslint src/commerce/external-preview tests/external-preview.test.ts`: PASS.
+`git diff --check`: PASS.
+`npm run typecheck`: baseline failure with 12 diagnostics in unchanged `components/studio-workspace.tsx`, `src/commerce/connections/command-kernel.ts`, `src/commerce/connections/lifecycle/index.ts`, `src/commerce/integration/backend/executors.ts`, and `tests/code-response-processor.test.ts`; no task-owned diagnostics.
+`npm run build`: compilation completed, then failed on the same unchanged baseline type diagnostics; no task-owned diagnostics.
 
 ### Deviations
 
-None.
+The repository-wide typecheck/build baseline remains unresolved outside this task. Node 24.21.0 was used because it was available; the package declares 24.19.0.
 
 ### Assumptions
 
-None.
+No live credentials, provider calls, deployments, WhatsApp operations, or merchant calls were used. COMMERCE-024 production composition remains out of scope and is not implemented here.
 
 ### Unresolved Issues
 
