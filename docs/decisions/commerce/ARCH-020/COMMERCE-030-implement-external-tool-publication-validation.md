@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T04:11:19Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-SHARED-002
@@ -121,7 +121,7 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Review; Attempt 2 implementation committed and pushed for moda_architect review.
+Review; Attempt 3 implementation committed and pushed for moda_architect review.
 
 ### Files Changed
 
@@ -137,12 +137,15 @@ Review; Attempt 2 implementation committed and pushed for moda_architect review.
 - Implemented strict definition/sample bounds, visual and JavaScript sample processing, result-schema validation, semantic template validation, and no-network sample admission.
 - Implemented Redis receipt storage with environment/revision/definition/runtime key binding, 24-hour TTL, bounded receipt fields, inactive-staff rejection and fail-closed unavailable handling.
 - Added visual and code positive paths plus role/liveness, cross-author, MIME, strict receipt, expiry, write-outage, safe schema issue, list rendering and runtime revalidation regressions.
+- Aligned saved-definition identity with the canonical `toolHashInput` content hash and removed credential existence from synthetic sample/publication admission; persisted connection scope/auth shape is still validated.
 
 ### Validation Results
 
 | Criterion | Test / command | Observable result |
 |---|---|---|
-| PV01/PV02/PV03 | `tests/external-publication.test.ts` / 9 focused scenarios; `npm run test:arch020-external-publication` | Passed: visual/code admission, role and tester liveness, cross-author receipt, MIME/list rendering, strict receipt/expiry/write outage and runtime revalidation. |
+| PV01/PV02/PV03 | `tests/external-publication.test.ts` / 11 focused scenarios; `npm run test:arch020-external-publication` | Passed: visual/code admission, role and tester liveness, cross-author receipt, MIME/list rendering, strict receipt/expiry/write outage and runtime revalidation. |
+| A2-R1 canonical hash | `tests/external-publication.test.ts` / `uses the canonical lifecycle hash and rejects the raw definition hash`; same command | Passed; canonical `toolHashInput` hash admits the sample/publication and raw definition hashing is rejected. |
+| A2-R2 connection shape | `tests/external-publication.test.ts` / `validates persisted connection auth shape without requiring credentials`; same command | Passed; PLATFORM/PER_SHOP valid auth shapes pass without credential lookup, invalid scope/auth combinations reject. |
 | Focused lint | `npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts` | Passed with no warnings/errors. |
 | Task-local diagnostics | VS Code diagnostics for all changed implementation/test files | No errors. |
 | Repository lint | `npm run lint` | Blocked by pre-existing `src/studio/connections/connections-ui.tsx:235` hook error; no publication lint errors. |
@@ -173,7 +176,7 @@ Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspa
 
 Preparation packet: dependency gate passed for SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026; recursive database submodule sync/update passed at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
-Implementation commit: `13463e5` (`fix(ARCH-020-COMMERCE-030): tighten external publication validation`), pushed to `origin task/ARCH-020-COMMERCE-030`.
+Implementation commit: `d15d3f5` (`fix(ARCH-020-COMMERCE-030): align hash and connection admission`), pushed to `origin task/ARCH-020-COMMERCE-030`.
 
 ## Architect Review
 
