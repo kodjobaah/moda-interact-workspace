@@ -533,3 +533,23 @@ ARCH-020 remains In Progress.
 SHARED-002 is Accepted / Complete at Attempt 5 (`95bab1d`, Shared `0.14.2`). The
 direct C21 component frontier `COMMERCE-020/021/022/023/025/026/027` is Ready;
 remaining extension/integration/gateway/system-test tasks stay dependency-gated.
+
+
+### ARCH-020 COMMERCE-021 Attempt 1 review — 2026-09-21
+
+COMMERCE-021 is **Changes Requested / Ready, Attempt 1** (`b19f9d7`; report
+`5abdd61a`). Preserve its fixed-origin TLS/socket and Shared 0.14.2 integration;
+Attempt 2 closes production DNS/address classification, absolute stage deadline and
+abort cleanup, raw JSON safety/depth and explicit dispatcher exhaustiveness. The C21
+CANCELLED contradiction is reconciled to nonretryable `DEADLINE` at the
+CommerceToolResult boundary; runner-level cancellation remains separate. No dependent
+promotion or automatic launch.
+
+
+### ARCH-020 COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+COMMERCE-021 is **Accepted / Complete, Attempt 3**. The final corrections terminate
+rejected provider bodies and preserve nonretryable external `DEADLINE` semantics
+through the definition dispatcher. Existing production DNS/TLS pinning, bounded
+transport and raw-JSON safety remain accepted. No dependant is newly Ready from this
+acceptance alone.

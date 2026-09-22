@@ -1586,14 +1586,49 @@ system-test work remains dependency-gated. No dependent task is automatically
 started and no implementation/main merge or gitlink update is performed by this
 review.
 
+## COMMERCE-033 Attempt 1 architect review — 2026-09-22
 
-## COMMERCE-025 Attempt 1 architect review — 2026-09-21
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The provider
+transport is materially correct but its strict response parser currently rejects
+standard OpenAI/Groq Chat Completions function calls because those calls contain
+`id` and `type: "function"` alongside `function`. A1-R1 requires accepting and
+validating that standard envelope while continuing to map only function name and
+parsed arguments into the existing Shared `ModelStep`. No provider-call ID is
+added to the Shared contract. Existing config, fixed endpoints, secret isolation,
+one-request/no-retry behavior and token accounting are preserved. COMMERCE-019
+remains blocked; no downstream task is promoted or launched.
 
-ARCH-020-COMMERCE-025 is **Changes Requested / Ready, Attempt 1 retained**, claims
-cleared. Submitted implementation `44f9138` provides the bounded visual processor,
-but DESC sorting violates C21's direction-independent missing/null-last rule and
-the module lacks the required `server-only` marker. The canonical task Architect
-Review contains the exact correction and regression contract. Submitted focused
-5/5 and lint/diff evidence is preserved; repository typecheck remains reported on
-unrelated baseline errors and production build evidence is still required. No
-dependent task is promoted or launched.
+## COMMERCE-033 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-033 is **Accepted / Complete, Attempt 2** (`94d31ea`; report
+`6e0d5849`). The server-only OpenAI/Groq native-fetch preview transport now accepts
+the standard Chat Completions function-tool response envelope (`id`,
+`type: "function"`, `function`) while preserving only function name and parsed
+arguments in the Shared `ModelStep`. Fixed endpoints, exact request mapping,
+provider token accounting, cancellation, response bounds, no-retry/fallback and
+secret-isolation behavior remain accepted.
+
+The durable graph is reconciled so COMMERCE-019 explicitly depends on
+COMMERCE-033. Because this provider task is Complete and 019's other declared
+prerequisites are already Complete, COMMERCE-019 remains **Ready, Attempt 0** with
+no active claim. No downstream task is started automatically.
+
+## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
+
+COMMERCE-034 is **Accepted / Complete, Attempt 1**. The accepted U14 correction
+keeps tool-only handoff in Tool test and requires an authored persisted release or
+non-empty behaviour/draft source before Conversation preview can start; no synthetic
+tool-to-capability fallback is permitted. COMMERCE-019 now records COMMERCE-034 as
+an accepted prerequisite and remains **Ready**. No downstream task was launched by
+this state reconciliation.
+## COMMERCE-026 Attempt 2 architect acceptance — 2026-09-21
+
+ARCH-020-COMMERCE-026 is **Accepted / Complete, Attempt 2** (`4b8e5bc`; report
+`170074b3`). The C21 JavaScript response adapter is accepted over the existing
+COMMERCE-029 QuickJS runtime and Shared `0.14.2` contracts. It preserves the bounded
+server-only processor/compile ports and does not duplicate publication/sample schema
+validation owned by COMMERCE-030.
+
+No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
+COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
+other prerequisites. No downstream task is launched automatically.
