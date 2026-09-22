@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 180
-executor: copilot
-claimed_at: 2026-09-22T12:26:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-002
@@ -171,62 +171,98 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Not Started.
+Attempt 1 — Ready for Review (2026-09-22). Implementation commit **9dbc61c**
+is committed and pushed to `task/ARCH-020-GATEWAY-001`; architect acceptance is
+pending. No live Render deployment, OAuth login, private assertion call, paid
+provider call, or production resource mutation was performed.
 
 ### Files Changed
 
-None; implementation has not started.
+Implementation changes add the private Commerce Render service and C7.1/C9.1/
+C10 configuration, Commerce upstream and explicit Studio routing, public MCP
+denial, worker-only MCP signing scope, transcription/preview wiring, Docker
+fixtures, strict positive/negative blueprint validators, and deployment/
+rollback documentation.
 
 ### Work Completed
 
-None; task definition only.
+Commerce uses the accepted recursive build contract, `PORT`, `/health/live`,
+and no startup migration. The gateway exposes the Studio host through explicit
+page/auth/asset and C9.1 preview families. `/api/mcp`, `/mcp`, trailing,
+encoded-separator, duplicate-separator and dot-segment variants are denied
+before proxying. Background-only MCP URL/signing configuration and Commerce-only
+verification keys are separated. Test and production preview/transcription
+settings are independent; Groq is retained and OpenAI is explicit.
 
 ### Validation Results
 
-Not run. At execution, distinguish agent checks from exact developer validation required.
+| Requirement | Command / fixture | Result |
+|---|---|---|
+| Render topology and credential wiring | `bash tests/validate-render-blueprints.sh` | Passed |
+| Legacy and Commerce negative mutations | `bash tests/validate-render-blueprints-negative.sh` | Passed; 37 rejected |
+| Routing, headers, body integrity, timeouts and MCP variants | `bash tests/run-tests.sh` | 67 passed, 0 failed |
+| HAProxy rendering | Docker build plus entrypoint `haproxy -c` | Configuration valid |
+| Shell and whitespace | `bash -n docker/entrypoint.sh tests/run-tests.sh`; `git diff --check` | Passed |
+
+The Docker suite covers GET/POST/OPTIONS, Commerce root and preview fixtures,
+public MCP direct/trailing/alias/encoded/duplicate-separator/dot-segment
+attempts, and legacy provider-body/header behavior.
 
 ### Deviations
 
-Task definition authored on local main by explicit developer request. Normal execution policy remains unchanged.
+The Studio hostname uses the established `commerce-test` / `commerce` domain
+convention; deployment-specific external DNS remains a Render input. No
+credential values are committed. Local fixtures do not prove hosted Google
+OAuth or Commerce private assertion verification.
 
 ### Assumptions
 
-Use the parent architecture and actual accepted dependency revisions. Return contradictory source facts to moda_architect.
+Build/start/health values are transcribed from accepted C10 and COMMERCE-001
+contracts. Provider keys remain Render-managed secrets and no second Redis
+service is introduced.
 
 ### Unresolved Issues
 
-See parent architecture review assumptions; no implementation evidence asserted.
+Developer-owned follow-up: deploy test topology, exercise Google OAuth, verify
+valid Background RS256 assertions and denial of other private callers, confirm
+Render DNS/TLS, and run hosted health checks.
 
 ### Architectural Concerns
 
-None newly reported.
+None newly reported. Architect should review the external Studio hostname and
+the exact C9.1 route allowlist against the accepted Commerce route tree.
 
 ### Git / VCS
 
-Expected execution branch: task/ARCH-020-GATEWAY-001. Attempt: 0. No implementation worktree, commit, push or validation is asserted. At submission record canonical workspace, both physical worktrees/branches, synchronization, recursive database submodule SHA/evidence, implementation and parent commit/push results, and confirmation that no parent service gitlink or main integration was performed.
+Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-001`, branch `task/ARCH-020-GATEWAY-001`, commit `9dbc61c`, pushed to origin. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-001`; this report is the only parent change. No main integration, gitlink change, deployment, or enabled-task launch was performed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending.
+Ready for architect review.
 
 ### Review Notes
 
-No implementation submitted. This task is a reviewable definition.
+Implementation and local evidence are submitted. Hosted OAuth, private-network
+assertion, and Render smoke validation remain developer-owned.
 
 ### Reviewed Files
 
-None for implementation review.
+Implementation commit `9dbc61c`; files summarized above.
 
 ### Validation Reviewed
 
-None for implementation review.
+Local blueprint validators, Docker gateway fixtures, and HAProxy validation
+listed above.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms to C5, C7.1, C9.1 and C10 at the Gateway ownership boundary; Commerce
+and Background retain application auth and assertion verification.
 
 ### Follow-up
 
-Reconcile task/index/frontier after review; preserve the terminal/manual system-test gate.
+Reconcile task/index/frontier after review and preserve the terminal/manual
+system-test gate. Do not launch enabled tasks from this report.
