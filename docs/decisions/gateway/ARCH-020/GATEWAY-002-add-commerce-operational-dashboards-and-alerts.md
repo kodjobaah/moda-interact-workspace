@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 190
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-20
-updated: 2026-09-20
+updated: 2026-09-22
 ---
 
 # Add Commerce operational dashboards and alerts

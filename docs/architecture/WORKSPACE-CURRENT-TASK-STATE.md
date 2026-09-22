@@ -409,8 +409,9 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-BACKGROUND-001 | background | complete | 3 | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | ARCH-020-BACKGROUND-002 | background | complete | 4 | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
-| ARCH-020-GATEWAY-001 | gateway | pending | 0 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
-| ARCH-020-GATEWAY-002 | gateway | pending | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
+| ARCH-020-GATEWAY-001 | gateway | Complete / Accepted | 4 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
+| ARCH-020-GATEWAY-002 | gateway | Ready | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
+| ARCH-020-GATEWAY-003 | gateway | Ready | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 | ARCH-020-COMMERCE-012 | commerce | pending | 0 | All other ARCH-020 implementation tasks; readiness checkpoint in task |
 | ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001  , ARCH-020-COMMERCE-012  |
 
@@ -1655,3 +1656,15 @@ oversize response samples fail closed.
 `ARCH-020-COMMERCE-024` is now **Ready** because every declared dependency is
 Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
 their remaining integration/gateway gates.
+
+## GATEWAY-001 Attempt 4 architect acceptance — 2026-09-22
+
+ARCH-020-GATEWAY-001 is **Complete / Accepted, Attempt 4** (`478923a`; parent
+report `cb41f7c`). The Render/private-MCP/public-Studio topology and final hosted
+smoke contract are accepted. Real deployment/DNS/TLS/OAuth/assertion smoke remains
+a developer validation checkpoint, not an unfinished implementation dependency.
+
+Because their remaining prerequisites are already Complete, GATEWAY-003 (priority
+175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
+Neither is started automatically. COMMERCE-012 and system-test work retain their
+additional dependency gates.

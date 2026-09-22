@@ -778,3 +778,15 @@ oversize response samples fail closed.
 `ARCH-020-COMMERCE-024` is now **Ready** because every declared dependency is
 Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
 their remaining integration/gateway gates.
+
+## GATEWAY-001 Attempt 4 architect acceptance — 2026-09-22
+
+ARCH-020-GATEWAY-001 is **Complete / Accepted, Attempt 4** (`478923a`; parent
+report `cb41f7c`). The Render/private-MCP/public-Studio topology and final hosted
+smoke contract are accepted. Real deployment/DNS/TLS/OAuth/assertion smoke remains
+a developer validation checkpoint, not an unfinished implementation dependency.
+
+Because their remaining prerequisites are already Complete, GATEWAY-003 (priority
+175) and GATEWAY-002 (priority 190) are now **Ready, Attempt 0, claim clear**.
+Neither is started automatically. COMMERCE-012 and system-test work retain their
+additional dependency gates.

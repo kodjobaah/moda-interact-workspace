@@ -8,9 +8,9 @@ Definitions are on local main for review by explicit developer request. Individu
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-GATEWAY-001](GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | ready (Changes Requested, Attempt 3) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
-| [ARCH-020-GATEWAY-002](GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
+| [ARCH-020-GATEWAY-001](GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
+| [ARCH-020-GATEWAY-002](GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
+| [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 
 ## ARCH-020-GATEWAY-001 readiness — 2026-09-22
 
@@ -63,3 +63,21 @@ UUIDs. No Blueprint/HAProxy redesign is requested.
 
 GATEWAY-002/GATEWAY-003 and later Commerce/system-test work remain gated. No task is
 started automatically.
+
+
+## GATEWAY-001 Attempt 4 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 4; claim clear.** The runbook-only implementation
+`478923a` closes the final A3-R1 evidence contract: valid externally supplied C5,
+C15 and C9.1 bodies/identifiers, required `apiVersion=2026-07`, authenticated Studio
+inputs and fail-fast guards are now documented without embedding credentials.
+
+Architect reran the positive Blueprint validator, all 48 expected-reason negative
+cases and the required shell syntax checks successfully. Attempt 4 did not change
+Gateway configuration, so the accepted Attempt 3 Docker/HAProxy evidence remains
+150/150 and configuration-valid.
+
+All dependencies of GATEWAY-002 and GATEWAY-003 are now Complete. Both are promoted
+to **Ready, Attempt 0, claim clear**. GATEWAY-003 retains the later C21 U15/U16
+`/connections` route extension. COMMERCE-012 and system-test tasks remain gated by
+additional dependencies. No task is automatically launched.

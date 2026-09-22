@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 180
 executor: null
 claimed_at: null
@@ -264,7 +264,7 @@ Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspa
 
 ### Review Status
 
-Changes Requested — Attempt 2.
+Accepted — Attempt 4.
 
 ### Review Notes
 
@@ -1033,3 +1033,151 @@ Return through:
 
 after this review overlay is committed. The next successful claim must create
 **Attempt 4 exactly once**. No downstream task is promoted automatically.
+
+### Attempt 4 — Accepted (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 4 archive and
+the canonical Attempt 4 Completion Report. Submitted implementation evidence:
+`478923a`; parent report: `cb41f7c`.
+
+Attempt 4 is accepted.
+
+The only Attempt 4 implementation change is the deployment runbook, and it closes
+A3-R1 without reopening the accepted Attempt 3 Blueprint/proxy implementation.
+
+The hosted validation contract now correctly separates Gateway-owned configuration
+from developer/harness-owned live inputs:
+
+```text
+C5 private MCP:
+  BACKGROUND_ASSERTION
+  five separately signed wrong-claim assertions
+  BACKGROUND_MCP_REQUEST_BODY containing one valid bounded JSON-RPC request
+
+C15 discovery:
+  valid search body
+  valid canonical-document body
+  schema apiVersion=2026-07
+  valid bounded draft-definition validation body
+
+C9.1 preview:
+  concrete client-generated UUIDs
+  matching valid POST bodies
+  the same IDs reused by GET/run/cancel operations
+
+Studio:
+  authenticated Cookie header
+  current Next-Action id/body
+
+Deployment:
+  actual Render Internal Service Address
+  externally selected Commerce public hostname/origin
+```
+
+The runbook fail-fast guards every required external value and does not print or
+commit credentials. The same valid MCP request body is reused across missing,
+valid and wrong-claim assertion checks, so the negative path isolates assertion
+validation rather than JSON-RPC parsing.
+
+The discovery smoke now uses:
+
+```text
+POST search    {query}
+POST document  {path}
+GET schema     ?apiVersion=2026-07
+POST validate  {definition}
+```
+
+and the preview smoke now requires matching externally supplied identifiers/bodies
+for tool-test, conversation and conversation-run lifecycle operations. Only the
+defined cancellation request uses `{}`.
+
+The runbook continues to distinguish route reachability from successful Google OAuth:
+the developer must complete the real browser login after deployment rather than
+treating a curl callback probe as OAuth completion.
+
+#### Validation reviewed
+
+Architect independently reran from the submitted Attempt 4 source:
+
+```text
+bash tests/validate-render-blueprints.sh
+  PASS
+
+bash tests/validate-render-blueprints-negative.sh
+  PASS — 48/48 expected-reason negative cases
+
+bash -n \
+  docker/entrypoint.sh \
+  tests/run-tests.sh \
+  tests/validate-render-blueprints.sh \
+  tests/validate-render-blueprints-negative.sh
+  PASS
+```
+
+Attempt 4 is Markdown/runbook-only. Per the Attempt 3 correction contract, the
+Gateway Docker suite was not required to be rerun when implementation/configuration
+did not change. The previously submitted Attempt 3 evidence remains:
+
+```text
+bash tests/run-tests.sh
+  PASS — 150 passed / 0 failed
+
+HAProxy render / haproxy -c
+  PASS
+```
+
+The extracted review archive is not a Git working tree, so the architect does not
+falsely claim an independent `git diff --check`; the executor reports that check
+passed.
+
+#### Architecture conformance
+
+Accepted.
+
+GATEWAY-001 now conforms to the ARCH-020 deployment boundary:
+
+- Commerce is a private Render service;
+- browser Studio traffic reaches Commerce only through the explicit gateway allowlist;
+- public MCP aliases/normalisation attempts are denied;
+- private MCP URL and Background signing inputs are not hard-coded;
+- Commerce assertion verification remains separate from Studio OAuth;
+- Commerce public hostname/origin/Auth.js origin remain service-level deployment
+  inputs so future domain changes do not require a repository change;
+- Commerce requests retain the accepted 128 KiB body bound and 100-second backend
+  timeout;
+- test and production provider/transcription configuration remain isolated;
+- deployment/smoke instructions are executable once the developer supplies the real
+  hosted values.
+
+Live Render deployment, DNS/TLS attachment, browser Google OAuth, hosted assertion
+verification and hosted preview/discovery execution remain an intentional
+developer-owned validation checkpoint after implementation acceptance. They are not
+encoded as implementation-task dependencies.
+
+#### Frontier reconciliation
+
+Set:
+
+```text
+ARCH-020-GATEWAY-001
+  Complete — Accepted, Attempt 4
+```
+
+All declared dependencies of both following tasks are now Complete, so promote
+without claiming:
+
+```text
+ARCH-020-GATEWAY-003
+  Ready — Attempt 0
+  priority 175
+
+ARCH-020-GATEWAY-002
+  Ready — Attempt 0
+  priority 190
+```
+
+GATEWAY-003 retains ownership of the later C21 U15/U16 `/connections` route delta.
+
+Do **not** promote COMMERCE-012 or system-test tasks yet; they retain additional
+incomplete dependencies. No downstream task is automatically launched.
