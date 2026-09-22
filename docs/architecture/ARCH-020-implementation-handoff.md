@@ -1460,3 +1460,14 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+## GATEWAY-001 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-GATEWAY-001 is **Changes Requested / Ready, Attempt 1**, claim clear. The
+Commerce topology direction is valid, but the submitted Blueprint/proxy still uses
+guessed private MCP coordinates, incomplete/incorrect Studio route methods, legacy
+10 MiB/60-second Commerce bounds, unreliable filename-dependent negative validation
+and prose-only hosted smoke guidance. The task's latest Architect Review contains the
+complete bounded Attempt 2 correction contract.
+
+GATEWAY-002, GATEWAY-003, COMMERCE-012 and terminal system-test work remain gated.
+No downstream task is started automatically.

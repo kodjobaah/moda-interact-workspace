@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 180
 executor: null
 claimed_at: null
@@ -241,28 +241,503 @@ Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspa
 
 ### Review Status
 
-Ready for architect review.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Implementation and local evidence are submitted. Hosted OAuth, private-network
-assertion, and Render smoke validation remain developer-owned.
+Reviewed by `moda_architect` against the exact submitted snapshot associated by the
+Completion Report with implementation `9dbc61c` and parent handoff `f05023bc`.
+
+Attempt 1 establishes a useful Gateway foundation and should be preserved:
+
+- a private Commerce Render service is declared for test and production;
+- the accepted recursive Commerce build/start/liveness contract is represented;
+- Commerce receives database, Redis, hosted-auth, assertion-verification and preview
+  configuration while Background messaging owns MCP signing configuration;
+- no second Redis service is introduced;
+- public Commerce traffic is host-routed through HAProxy and `/api/mcp` is denied on
+  the public Commerce host;
+- test/production preview/transcription configuration is separated;
+- rollback/migration sequencing is documented;
+- submitted local gateway, HAProxy and Blueprint-positive validation evidence is
+  useful.
+
+Attempt 1 is **not accepted** because the committed Blueprint/proxy cannot yet satisfy
+C5/C7/C9/C10/C15 on Render. The corrections below are the complete Attempt 1 rework
+contract. Keep the work inside `moda-interact-gateway`; do not change Commerce or
+Background application source to compensate for infrastructure defects.
+
+#### A1-R1 — remove guessed private MCP coordinates and use supported Render configuration forms
+
+**Blueprint, validator and deployment-document changes required.**
+
+The Blueprint currently commits:
+
+```text
+http://moda-interact-commerce-test:3000/api/mcp
+http://moda-interact-commerce-production:3000/api/mcp
+```
+
+for `COMMERCE_MCP_URL`.
+
+This is not a valid deployment contract. Render assigns each web/private service a
+stable **internal service address** and the actual HTTP port is a service property.
+The Blueprint reference exposes `fromService.property = host|port|hostport`; the
+service name plus `:3000` is not that property. Commerce itself binds `PORT`, which is
+Render-owned in hosted Node services.
+
+Render Blueprints also do **not** support variable interpolation, so a Blueprint cannot
+safely concatenate `http://` + `hostport` + `/api/mcp` in one `value` field.
+
+Use this deterministic boundary:
+
+1. Remove `COMMERCE_MCP_URL` from the `commerce-mcp` env-var group and delete that
+   hard-coded group if it becomes empty.
+2. Declare `COMMERCE_MCP_URL` **directly on the messaging worker** as a service-level
+   external deployment input (`sync:false`). No other service receives it.
+3. `docs/commerce-deployment.md` must instruct the deployer to obtain the exact
+   Commerce **Internal Service Address** from Render after Blueprint provisioning and
+   set:
+
+   ```text
+   COMMERCE_MCP_URL=http://<exact-render-commerce-host:port>/api/mcp
+   ```
+
+4. The deployment smoke section must verify that the host:port portion of the configured
+   URL equals the currently provisioned Commerce internal service address and that the
+   URL ends exactly in `/api/mcp`.
+5. Blueprint validation must reject a committed literal `COMMERCE_MCP_URL` value and
+   reject the key on Commerce/Admin/Gateway/any non-messaging service.
+
+Do **not** invent a private DNS hostname or fixed port merely to keep the value in YAML.
+If the architecture later adds a Gateway-owned startup interpolation mechanism, that
+must consume Render's `hostport`; it must not change Background's accepted
+`COMMERCE_MCP_URL` contract inside this task.
+
+Current Render Blueprint semantics also do not support `sync:false` inside
+`envVarGroups`. For every **GATEWAY-001-added** secret/external value, use a supported
+service-level declaration rather than an env-group `sync:false` entry. At minimum:
+
+```text
+Commerce service:
+  AUTH_SECRET
+  AUTH_GOOGLE_ID
+  AUTH_GOOGLE_SECRET
+  COMMERCE_ASSERTION_PUBLIC_KEYS
+  COMMERCE_PREVIEW_API_KEY
+
+Production Commerce external configuration where intentionally operator-supplied:
+  COMMERCE_PREVIEW_PROVIDER
+  COMMERCE_PREVIEW_MODEL
+
+Messaging worker:
+  COMMERCE_MCP_URL
+  COMMERCE_ASSERTION_PRIVATE_KEY
+  COMMERCE_ASSERTION_KEY_ID
+  WHATSAPP_OPENAI_API_KEY
+```
+
+Keep non-secret fixed values in environment groups only where the Blueprint format
+supports them. Do not duplicate the same key through two attached groups/service-level
+entries. Do not broaden this correction into an unrelated migration of every legacy
+ARCH-002 environment group; only make the new ARCH-020 requirements deployable and
+record any retained baseline separately.
+
+Required validator regressions:
+
+```text
+fixed/hard-coded COMMERCE_MCP_URL               -> reject
+COMMERCE_MCP_URL on Commerce                    -> reject
+signing private key on Commerce                  -> reject
+assertion public keys on messaging worker        -> reject
+new ARCH-020 secret declared as group sync:false -> reject
+missing worker COMMERCE_MCP_URL declaration      -> reject
+```
+
+#### A1-R2 — implement the exact C15/C9.1 public allowlist and NextAuth/Server Action methods
+
+**HAProxy and route-fixture changes required.**
+
+The current public Commerce allowlist is incomplete and method-incompatible:
+
+```text
+missing page families:
+  /capabilities
+  /capabilities/<id>
+  /releases
+  /releases/<id>
+  /features/<id>
+  /tools/<id>
+  /sign-in
+  /access-denied
+
+missing C15 discovery APIs:
+  POST /api/studio/discovery/search
+  POST /api/studio/discovery/document
+  GET  /api/studio/discovery/schema
+  POST /api/studio/discovery/validate
+
+current page rule:
+  GET/HEAD only
+  -> required Next.js Server Action POSTs are rejected 405
+
+current /api/auth/* rule:
+  GET/HEAD only
+  -> NextAuth POST sign-in/callback/sign-out flows are rejected 405
+```
+
+The preview ACL is also too broad: GET and POST are accepted for every preview regex,
+so undocumented combinations such as `GET /api/studio/preview/conversations` or
+`POST /api/studio/preview/tool-tests/<runId>` can reach Commerce.
+
+Implement the binding route/method matrix exactly.
+
+**Pages**
+
+```text
+GET/HEAD:
+  /
+  /features
+  /features/<one segment>
+  /tools
+  /tools/<one segment>
+  /explore
+  /capabilities
+  /capabilities/<one segment>
+  /releases
+  /releases/<one segment>
+  /shops
+  /shops/<one segment>
+  /preview
+  /sign-in
+  /access-denied
+```
+
+Allow POST to those Studio page/detail routes **only for a Next Server Action request**
+(the request must carry the Next Action header used by the accepted Next runtime).
+All other page methods reject before proxying.
+
+**NextAuth**
+
+```text
+/api/auth/* -> GET or POST only
+```
+
+Do not use the current broad `/auth/` prefix as a substitute for the C15 page routes.
+
+**Discovery**
+
+```text
+POST /api/studio/discovery/search
+POST /api/studio/discovery/document
+GET  /api/studio/discovery/schema
+POST /api/studio/discovery/validate
+```
+
+No other discovery method/path is public.
+
+**Preview C9.1**
+
+```text
+GET  /api/studio/preview/fixtures
+POST /api/studio/preview/tool-tests
+GET  /api/studio/preview/tool-tests/<runId>
+POST /api/studio/preview/conversations
+POST /api/studio/preview/conversations/<conversationId>/runs
+GET  /api/studio/preview/conversations/<conversationId>/runs/<runId>
+POST /api/studio/preview/conversations/<conversationId>/runs/<runId>/cancel
+```
+
+Reject all undocumented GET/POST/OPTIONS combinations.
+
+**Assets**
+
+Keep the existing bounded `/_next/*`/favicon handling and do not let an asset wildcard
+cover `/api/*`.
+
+**MCP**
+
+Public Commerce `/api/mcp` remains 404 for every verb and normalization attempt. Add
+fixtures for at least:
+
+```text
+/api/mcp
+/api/mcp/
+/mcp
+/API/MCP
+/api%2fmcp
+/api%252fmcp
+/api//mcp
+/api/./mcp
+/api/../api/mcp
+/api/%2e/mcp
+/api/%252e/mcp
+/api%5cmcp
+/api%255cmcp
+```
+
+The implementation may reject ambiguous encoded separators/dot segments generically
+before route classification; do not depend on Next.js normalizing them safely.
+
+Required route tests must cover every page/API family above plus wrong-method negative
+cases. A passing root page plus one preview fixture is insufficient acceptance evidence.
+
+#### A1-R3 — apply the Commerce-specific 128 KiB body bound and 100-second read timeout
+
+**HAProxy + focused test changes required.**
+
+C10 requires for the public Commerce upstream:
+
+```text
+request body bound = 128 KiB
+read timeout       = 100 seconds
+```
+
+The submitted gateway currently uses the legacy global defaults:
+
+```text
+CLIENT_MAX_BODY_SIZE = 10m
+PROXY_READ_TIMEOUT   = 60s
+```
+
+and the Blueprint does not override them. Therefore Commerce is neither 128 KiB
+bounded nor configured for the accepted preview timeout.
+
+Do not silently change unrelated Shopify/Admin/Messaging limits just to satisfy
+Commerce.
+
+Implement a Commerce-specific request guard before proxying:
+
+```text
+body size <= 131072 bytes -> eligible for normal route processing
+body size > 131072 bytes  -> 413
+```
+
+Preserve the existing legacy global limit for non-Commerce hosts unless another
+architecture task changes it.
+
+Set the Commerce backend's upstream server/read timeout to exactly `100s` without
+changing other backends' accepted timeout unless necessary for HAProxy correctness.
+
+Focused evidence:
+
+```text
+Commerce body 131072 bytes -> not rejected by size guard
+Commerce body 131073 bytes -> 413 and zero upstream call
+same oversized payload on existing non-Commerce fixture -> retains legacy behavior
+rendered commerce_backend config -> timeout server 100s
+legacy backend timeout remains unchanged
+```
+
+No 100-second wall-clock test is required; validate the rendered HAProxy configuration
+and use a short deterministic fixture for route/body behavior.
+
+#### A1-R4 — make Blueprint negative validation meaningful, not filename-dependent false positives
+
+**Validator changes required.**
+
+`validate-render-blueprints.sh` currently determines environment from the **file
+name**:
+
+```ruby
+environment = path.include?("production") ? "production" : "test"
+```
+
+but `validate-render-blueprints-negative.sh` writes every mutated fixture to a generic
+temporary filename such as `/tmp/.../group_sync_false.yaml`.
+
+As a result, every negative case built from `render.production.yaml` is evaluated as a
+**test** Blueprint and can fail merely because `moda-interact-test-config` is absent.
+That is a false-positive rejection and makes the reported "37 rejected" count
+insufficient evidence of the intended mutations.
+
+Fix environment discovery so it is derived from Blueprint content, not the path. A
+permitted deterministic rule is:
+
+```text
+read DEPLOYMENT_ENVIRONMENT_NAME from the common config group
+accept exactly test | production
+cross-check group/service/database names against that value
+```
+
+Then strengthen the negative runner:
+
+```text
+run_negative_case <environment> <case> <expected-error-fragment>
+```
+
+It must fail if:
+
+1. the mutated Blueprint unexpectedly validates; or
+2. validation fails for a reason that does not contain the expected error fragment.
+
+This prevents unrelated missing-group errors from satisfying a negative test.
+
+The existing `group_sync_false` case must become a **real mutation**. Do not set a
+field to the value it already has and count that as a rejected fixture.
+
+Add negative cases for the GATEWAY-001-specific failures in A1-R1/A1-R2/A1-R3.
+
+After correction, record the exact number of meaningful negative fixtures and their
+expected failure reasons; do not reuse the current `37 rejected` claim without rerun.
+
+#### A1-R5 — provide exact developer deployment/smoke commands and resolve the unverified Studio hostname claim
+
+**Documentation/report changes required.**
+
+The task Validation explicitly requires exact developer-owned deployment/smoke
+commands with expected public/private/health outcomes. `docs/commerce-deployment.md`
+currently describes these checks in prose but does not provide executable commands.
+
+Add one copy/paste smoke section with external inputs named explicitly. It must cover:
+
+```text
+1. obtain the actual Commerce Internal Service Address from Render
+2. set/verify COMMERCE_MCP_URL on the messaging worker
+3. private GET /health/live -> 200 {status:ok}
+4. private GET /health/ready -> 200 {status:ready}
+5. public Commerce /api/mcp -> 404 even with browser/admin cookies
+6. private POST /api/mcp without assertion -> denied
+7. private POST /api/mcp with a short-lived valid Background RS256 assertion -> accepted MCP response
+8. same private request with wrong issuer/subject/audience/environment/kid -> denied
+9. public sign-in page and NextAuth Google callback path reach Commerce through gateway
+10. one authenticated Studio page Server Action POST reaches Commerce
+11. every C9.1 preview family and C15 discovery family has one hosted smoke request
+```
+
+Use environment variables/placeholders for credentials/tokens; commands must not echo
+private key material or committed secrets. The valid assertion itself may be supplied
+as an external short-lived `$BACKGROUND_ASSERTION`; this task does not reimplement the
+Background signer.
+
+The Completion Report currently calls `commerce-test.modainteract.com` /
+`commerce.modainteract.com` an established convention while also saying external DNS
+is still a deployment input. Resolve that contradiction before acceptance:
+
+```text
+either
+  record durable developer/provisioning evidence that these are the supplied Studio
+  hostnames
+or
+  treat the Commerce custom domain/COMMERCE_PUBLIC_HOST as an explicit deployment
+  input and document how it is applied/drift-checked
+```
+
+Do not claim an unprovisioned hostname is "real" merely because it follows the Admin
+naming convention.
+
+Live deployment itself is still **not required** for this task's architect acceptance;
+the exact smoke procedure and local evidence are required. Hosted results remain a
+later developer/system-test layer.
+
+#### A1-R6 — reconcile task evidence/checklists and rerun the scoped validation
+
+Before Attempt 2 returns to Review:
+
+1. Update Work Items, Acceptance Criteria and Validation checkboxes truthfully.
+2. Replace the current requirement matrix with one that maps each C7.1/C9.1/C10/C15
+   requirement to an exact fixture/test and observed result.
+3. Record the Render Blueprint semantics used for service-level external secrets and
+   the manual/dynamic MCP URL input.
+4. Run exactly:
+
+```bash
+bash tests/validate-render-blueprints.sh
+bash tests/validate-render-blueprints-negative.sh
+bash tests/run-tests.sh
+bash -n docker/entrypoint.sh tests/run-tests.sh \
+  tests/validate-render-blueprints.sh \
+  tests/validate-render-blueprints-negative.sh
+
+git diff --check
+```
+
+5. Render the HAProxy configuration with the same test environment used by
+   `tests/run-tests.sh` and run `haproxy -c` (Docker is acceptable if HAProxy is not
+   installed locally).
+6. Record the exact positive/negative/route test totals after the corrected matrices.
+7. Set `status: review`, clear claim metadata, push implementation and parent task
+   branches and STOP.
+
+No live Render sync/deployment and no enabled-task execution is authorized by this
+correction.
 
 ### Reviewed Files
 
-Implementation commit `9dbc61c`; files summarized above.
+- `moda-interact-gateway/render.test.yaml`
+- `moda-interact-gateway/render.production.yaml`
+- `moda-interact-gateway/haproxy/haproxy.cfg`
+- `moda-interact-gateway/docker/entrypoint.sh`
+- `moda-interact-gateway/tests/run-tests.sh`
+- `moda-interact-gateway/tests/validate-render-blueprints.sh`
+- `moda-interact-gateway/tests/validate-render-blueprints-negative.sh`
+- `moda-interact-gateway/docs/commerce-deployment.md`
+- C5, C7.1, C9.1, C10 and C15 in `ARCH-020-implementation-contracts.md`
+- this task Completion Report
 
 ### Validation Reviewed
 
-Local blueprint validators, Docker gateway fixtures, and HAProxy validation
-listed above.
+Submitted evidence:
+
+```text
+tests/run-tests.sh
+  reported 67 passed / 0 failed
+
+validate-render-blueprints.sh
+  PASS
+
+validate-render-blueprints-negative.sh
+  reported 37 rejected
+
+HAProxy config validation
+  reported PASS
+
+shell checks / git diff --check
+  reported PASS
+```
+
+Architect independently reran the submitted positive and negative Blueprint scripts.
+The positive validator passes. The negative runner prints all cases as rejected, but
+inspection/reproduction proves production-derived fixtures are currently classified as
+`test` from their temporary filename; at least those rejections are not evidence that
+the intended mutations were caught.
+
+Current Render Blueprint documentation was also checked during review: service
+`hostport` is the supported private-network coordinate; Blueprint variable
+interpolation is not supported; and `sync:false` is not supported inside environment
+groups. The submitted GATEWAY-001 configuration conflicts with those deployment
+semantics for its new MCP/secret wiring.
 
 ### Architecture Conformance
 
-Conforms to C5, C7.1, C9.1 and C10 at the Gateway ownership boundary; Commerce
-and Background retain application auth and assertion verification.
+Not yet conformant with C5/C7.1/C9.1/C10/C15.
+
+The service topology and ownership direction are correct, but acceptance is blocked by
+invalid private MCP coordinates/secret declaration semantics, incomplete and
+method-incorrect public Studio routing, wrong Commerce body/timeout bounds, unreliable
+negative Blueprint evidence and missing exact deployment smoke commands.
 
 ### Follow-up
 
-Reconcile task/index/frontier after review and preserve the terminal/manual
-system-test gate. Do not launch enabled tasks from this report.
+Return the same task to:
+
+```yaml
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next:
+
+```text
+/moda-task ARCH-020-GATEWAY-001
+```
+
+must claim **Attempt 2 exactly once**.
+
+Implement only A1-R1 through A1-R6, rerun the bounded validation, update the current
+Completion Report, return to `review`, clear the claim, push both mirrored branches and
+STOP.
+
+Do not begin GATEWAY-002, GATEWAY-003, COMMERCE-012 or SYSTEM-TEST-001.
