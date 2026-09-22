@@ -1497,10 +1497,10 @@ persisted non-secret connection revision state (`enabled`, `revisionPresent`,
 Active-staff receipt semantics, strict 24-hour TTL, sample MIME/schema validation,
 production renderer reuse and later real-provider runtime validation remain intact.
 
-`ARCH-020-COMMERCE-031` is now **Ready** because COMMERCE-019, COMMERCE-009,
-SHARED-002, COMMERCE-025, COMMERCE-026 and COMMERCE-030 are Complete. It is not
-automatically launched. COMMERCE-024 and COMMERCE-012 remain Pending behind their
-other authoritative prerequisites.
+`ARCH-020-COMMERCE-031` is **Review, Attempt 5**, with implementation `abb02d9`
+and executor/claimed_at null. Architect review is required before downstream
+promotion. COMMERCE-024 and COMMERCE-012 remain Pending behind their other
+authoritative prerequisites.
 ## COMMERCE-018 Attempt 7 architect review — 2026-09-22
 
 **Changes Requested / Ready, Attempt 7 retained.**
@@ -1606,3 +1606,52 @@ and implementation is `23b1c82`.
 
 No COMMERCE-024 promotion is made from this branch because this exact snapshot still
 contains other non-Complete prerequisites. No automatic launch.
+
+## COMMERCE-031 Attempt 3 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 3 retained.**
+
+The external-preview implementation is substantially conformant: saved definitions
+are server-owned/frozen, replay claims precede business side effects, tool tests
+support same-ID cancel/expiry state, and conversation external definitions/fixtures
+are frozen with a synthetic runner hook. Attempt 3 also adds successful visual and
+JavaScript sample paths.
+
+Remaining work is bounded to: normalize parameterized sample MIME before comparison;
+prove the external-preview replay/quota/cancel/expiry contract against the actual
+Redis preview store; exercise frozen conversation external fixtures through the
+synthetic runner with zero live provider/credential calls; and reconcile the
+unchecked Work Items/PR criteria only after that evidence exists.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched.
+
+## COMMERCE-031 Attempt 4 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 4 retained.**
+
+The external-preview lifecycle implementation remains substantially correct and the
+new foreign fixture rejection is valid. Acceptance is still blocked by three
+task-owned items: normalize parameterized sample MIME before the saved allowlist
+comparison; prove replay/quota/cancel/expiry through the actual Redis preview store;
+and exercise the successful frozen conversation external-fixture path with explicit
+zero live provider/credential execution.
+
+Attempt 5 is bounded to those corrections/evidence and Completion Report
+reconciliation. COMMERCE-024/012 remain gated and no downstream task is launched.
+
+## COMMERCE-031 Attempt 5 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 5** (`abb02d9`; parent report `5f334581`).
+
+The external response preview backend now satisfies PR01-PR03: actual visual and
+JavaScript processors run through the accepted preview/receipt lifecycle; saved
+definitions are server-owned and frozen; replay claims precede quota/receipt/processor
+side effects; Redis-backed cross-instance replay, conflict, cancellation, expiry and
+different-new-run quota behavior are proven; MIME parameters are normalized; and
+conversation external fixtures execute through the frozen synthetic path without
+normal live tool execution. Invalid foreign/non-external fixtures and malformed or
+oversize response samples fail closed.
+
+`ARCH-020-COMMERCE-024` is now **Ready** because every declared dependency is
+Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
+their remaining integration/gateway gates.

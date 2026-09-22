@@ -32,13 +32,13 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | Complete (Accepted, Attempt 8) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036 |
+| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | ready | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
-| [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
+| [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | complete (Accepted, Attempt 5) | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-037, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-037](COMMERCE-037-normalize-availability-shop-scope.md) | Normalize external availability merchant shop scope | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-028 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
@@ -1115,3 +1115,46 @@ draft/error state when canonical filters change.
 This exact parent snapshot still contains other non-Complete COMMERCE-024
 prerequisites, so no downstream readiness is promoted here and nothing is
 auto-started.
+
+## COMMERCE-031 Attempt 3 architect review — 2026-09-22
+
+COMMERCE-031 is **Changes Requested / Ready, Attempt 3 retained, claim cleared**.
+
+Attempt 3 materially completes the saved-definition, claim-before-side-effects,
+cancel/expiry, fixture-bound and processor lifecycle implementation. One real C21
+source defect remains: external sample MIME comparison must strip parameters such as
+`; charset=utf-8`, matching the accepted COMMERCE-030 behavior.
+
+The task also still owes its explicit real-Redis cross-instance replay/quota/cancel
+proof and a service-level synthetic conversation fixture proof with zero live
+provider/credential paths. Attempt 4 is bounded to those corrections/evidence and
+durable task reconciliation. No downstream task is promoted.
+
+## COMMERCE-031 Attempt 4 architect review — 2026-09-22
+
+COMMERCE-031 is **Changes Requested / Ready, Attempt 4 retained, claim cleared**.
+
+Attempt 4 preserves the substantial preview lifecycle work and adds valid
+foreign-conversation-fixture rejection, but the submitted source still contains the
+parameterized-MIME comparison bug from Attempt 3. The required actual Redis
+cross-instance replay/quota/cancel proof and successful synthetic conversation fixture
+execution proof are also still absent.
+
+Attempt 5 is limited to MIME normalization, those exact Redis/conversation proofs,
+explicit fail-closed counters and durable report reconciliation. No downstream task
+is promoted.
+
+## COMMERCE-031 Attempt 5 architect acceptance — 2026-09-22
+
+COMMERCE-031 is **Accepted / Complete, Attempt 5** at implementation `abb02d9`
+(parent report `5f334581`).
+
+The accepted external-preview backend now provides normalized MIME handling,
+server-owned/frozen saved definitions, claim-before-side-effects replay semantics,
+real Redis-backed cross-instance replay/quota/cancel/expiry behavior, bounded fixture
+processing, and frozen synthetic conversation external-tool execution without the
+normal live tool path.
+
+`COMMERCE-024` is promoted **Pending -> Ready** because all of its declared
+prerequisites are Complete. No task is launched automatically. `COMMERCE-012` and
+terminal system-test work remain behind their later integration/gateway gates.
