@@ -1586,6 +1586,32 @@ system-test work remains dependency-gated. No dependent task is automatically
 started and no implementation/main merge or gitlink update is performed by this
 review.
 
+## COMMERCE-033 Attempt 1 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The provider
+transport is materially correct but its strict response parser currently rejects
+standard OpenAI/Groq Chat Completions function calls because those calls contain
+`id` and `type: "function"` alongside `function`. A1-R1 requires accepting and
+validating that standard envelope while continuing to map only function name and
+parsed arguments into the existing Shared `ModelStep`. No provider-call ID is
+added to the Shared contract. Existing config, fixed endpoints, secret isolation,
+one-request/no-retry behavior and token accounting are preserved. COMMERCE-019
+remains blocked; no downstream task is promoted or launched.
+
+## COMMERCE-033 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-033 is **Accepted / Complete, Attempt 2** (`94d31ea`; report
+`6e0d5849`). The server-only OpenAI/Groq native-fetch preview transport now accepts
+the standard Chat Completions function-tool response envelope (`id`,
+`type: "function"`, `function`) while preserving only function name and parsed
+arguments in the Shared `ModelStep`. Fixed endpoints, exact request mapping,
+provider token accounting, cancellation, response bounds, no-retry/fallback and
+secret-isolation behavior remain accepted.
+
+The durable graph is reconciled so COMMERCE-019 explicitly depends on
+COMMERCE-033. Because this provider task is Complete and 019's other declared
+prerequisites are already Complete, COMMERCE-019 remains **Ready, Attempt 0** with
+no active claim. No downstream task is started automatically.
 
 ## COMMERCE-034 Attempt 1 acceptance reconciliation — 2026-09-22
 
