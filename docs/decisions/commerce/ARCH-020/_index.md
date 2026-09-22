@@ -41,6 +41,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | complete (Accepted, Attempt 5) | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-037, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-037](COMMERCE-037-normalize-availability-shop-scope.md) | Normalize external availability merchant shop scope | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-028 |
+| [ARCH-020-COMMERCE-038](COMMERCE-038-export-reusable-external-preview-fixture-runner.md) | Export reusable external preview fixture runner | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
@@ -1158,3 +1159,23 @@ normal live tool path.
 `COMMERCE-024` is promoted **Pending -> Ready** because all of its declared
 prerequisites are Complete. No task is launched automatically. `COMMERCE-012` and
 terminal system-test work remain behind their later integration/gateway gates.
+
+## COMMERCE-038 Attempt 1 architect acceptance — 2026-09-22
+
+COMMERCE-038 is **Accepted / Complete, Attempt 1** at implementation `16972af`
+(parent report `f107b817`).
+
+The accepted external-preview producer now exports a reusable
+`createExternalFixtureRunner(...)` that shares the same bounded
+visual/JavaScript/MIME/schema/rendering kernel as COMMERCE-031 tool-test execution
+while owning no replay, quota, publication-receipt, provider, credential or
+preview-state side effects.
+
+This clears COMMERCE-024's missing external fixture-runner producer dependency.
+It does **not** clear COMMERCE-024's separate implementation-base blocker:
+accepted COMMERCE-019 implementation `8850b55` is still absent from the Commerce
+source in this snapshot. The authoritative COMMERCE-024 task therefore remains
+Blocked on its own newer task branch until that accepted source is integrated and a
+fresh synchronized snapshot is verified.
+
+No downstream task is launched.
