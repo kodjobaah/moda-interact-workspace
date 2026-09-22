@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 170
-executor: copilot
-claimed_at: 2026-09-22T17:15:38Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -161,6 +161,32 @@ both COMMERCE-024 worktrees were synchronized; the accepted
 be edited by the next COMMERCE-024 attempt.
 
 ### Work Completed
+
+### Attempt 3 Completion Update
+
+Implementation commit `d889f20a550664fcc539edae0c9e07f1f175749d` completes the
+Architect Review corrections:
+
+- DRAFT saved-tool identity now uses `revision.contentHash ?? toolContentHash(definition)` and `revision.tool.enabled` while preserving the Prisma `tool` include.
+- EXTERNAL_HTTP publication validation now fails closed when the validator is absent.
+- XN04 is titled `XN04 routes saved DRAFT external samples through the production preview runtime` and uses the production preview runtime seams for visual and JavaScript samples.
+- WI01 is titled `WI01 publishes activates grants and executes an external tool through the assembled MCP backend` and proves exact grant/tool/connection pins plus one controlled HTTPS execution.
+
+Attempt 3 validation:
+
+```text
+npm run test:arch020-external-wiring       PASS — 4/4
+npm run test:arch020-external-preview      PASS — 18/18
+npm run test:arch020-external-publication  PASS — 11/11
+targeted ESLint                            PASS
+git diff --check                           PASS
+npm run typecheck                           non-zero on 12 pre-existing repository diagnostics
+npm run build                               webpack/package smoke completed; same 12 baseline TypeScript diagnostics
+```
+
+The typecheck/build diagnostics are outside the four touched files. No live
+third-party credentials, Shopify calls, WhatsApp delivery, paid model calls or
+deployment validation were used.
 
 Composed the accepted credential command kernel, saved-tool loader, COMMERCE-038
 external fixture runner, COMMERCE-031 external preview service, external HTTP
