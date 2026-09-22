@@ -229,7 +229,8 @@ not an implementation of Background behavior.
 Expected execution branch: `task/ARCH-020-GATEWAY-002`. Attempt: 2. The exact
 Attempt 2 implementation commit is `8bae447826333c291720519168dd28cdacc3de4b`.
 The implementation worktree is clean and pushed. The exact Attempt 2 parent report
-commit is recorded in this section after the parent report commit is created. The
+commit is `7b54065a`. The final metadata-only report correction follows in the
+parent branch history. The
 parent worktree is dedicated and clean before this report edit; the parent report
 branch will be pushed to `origin/task/ARCH-020-GATEWAY-002`. No main integration,
 parent service gitlink update, live deployment or enabled-task launch is performed.
