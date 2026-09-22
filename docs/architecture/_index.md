@@ -896,3 +896,20 @@ calling the assembled `backend.mcp` JSON-RPC `tools/call` endpoint.
 
 Attempt 4 is bounded to those two proofs and report reconciliation. Accepted producer
 implementations remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 4 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 4 retained; claim cleared.**
+
+The merge-conflict resolution preserving both EXTERNAL_HTTP and POLICY_OPERATION
+availability is accepted in substance. The already-accepted DRAFT identity and
+fail-closed publication fixes also remain intact.
+
+The outstanding gate is unchanged: XN04 must traverse the Redis-backed production
+preview runtime through the actual U14 POST/GET routes, and WI01 must persist the
+real publication/release/grant lifecycle and invoke a signed assembled
+`backend.mcp` JSON-RPC `tools/call`. The current 4/4 wiring suite still uses the
+in-memory/direct-executor substitutes rejected in Attempt 3.
+
+Attempt 5 is bounded to those proofs and report reconciliation. COMMERCE-012 and
+SYSTEM-TEST-002 remain gated.

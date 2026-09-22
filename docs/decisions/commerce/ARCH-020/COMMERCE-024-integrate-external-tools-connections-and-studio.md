@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 170
 executor: null
 claimed_at: null
@@ -2170,3 +2170,620 @@ The next successful:
 claim creates Attempt 4 exactly once.
 
 Implement only A3-R1 through A3-R3, return to Review and STOP.
+
+## Architect Review — Attempt 4 — 2026-09-22
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Reviewed the exact Attempt-4 snapshot submitted after implementation merge commit
+`9158889fc5eead41b3cc610893de68613f350d6e` and reported parent commit
+`56e6c4bb`.
+
+The `origin/main` conflict resolution in:
+
+```text
+src/commerce/integration/backend/executors.ts
+```
+
+is accepted in substance and must be preserved.
+
+The resolved registry behavior is correct:
+
+```text
+SHOPIFY_STOREFRONT_QUERY
+  -> available only for accepted executorVersion 1.0.0
+
+EXTERNAL_HTTP
+  -> available iff input.externalHttp is installed
+
+POLICY_OPERATION
+  -> available iff the accepted policy registry contains
+     operation + operationVersion
+```
+
+Do not reopen that merge merely because this task is returned to Ready.
+
+Attempt 4 is not accepted because it does not implement the two remaining
+final-composition requirements from the previous Architect Review. The submitted
+focused suite remains 4/4 because the existing XN04/WI01 tests still prove the same
+test-double paths rejected in Attempt 3.
+
+Direct source inspection confirms:
+
+```text
+tests/external-wiring.test.ts
+
+XN04:
+  still imports InMemoryPreviewStateStore
+  still constructs new PreviewService(...)
+  still calls installPreviewServiceForTests(...)
+  still calls getExternalPreviewService().runSample(...) directly
+  does not call U14 POST
+  does not call U14 GET
+  does not prove productionService() / RedisPreviewStateStore identity
+
+WI01:
+  still constructs grant/manifest state in test code
+  still assigns backend.runtime.verifyAssertion
+  still calls backend.runtime.execution.execute(...)
+  does not persist the required release/grant state
+  does not call backend.mcp(... JSON-RPC tools/call ...)
+```
+
+The existing A3-R1 and A3-R2 contracts remain architecturally correct. Attempt 5 must
+execute them rather than resubmitting the merge-only state.
+
+### A4-R1 — make XN04 a production runtime + U14 route proof
+
+The existing test title remains:
+
+```text
+XN04 routes saved DRAFT external samples through the production preview runtime
+```
+
+The test must no longer construct or install a `PreviewService`.
+
+#### Required source shape
+
+`lib/preview/runtime.ts` may add one bounded dependency-install seam for tests.
+Equivalent naming is acceptable, but the seam may provide only:
+
+```ts
+type PreviewRuntimeTestDependencies = {
+  backend: CommerceBackend;
+  redis: PreviewRedisTransport;
+  config: ReturnType<typeof readConfig>;
+};
+
+installPreviewRuntimeDependenciesForTests(
+  value: PreviewRuntimeTestDependencies | undefined,
+): void;
+```
+
+The dependency seam MUST NOT accept:
+
+```text
+PreviewService
+PreviewStateStore
+ExternalPreviewService
+PreviewBundleLoader
+PreviewToolExecutionPort
+```
+
+`productionService()` must still construct the accepted production graph itself:
+
+```text
+PreviewService
+  store: RedisPreviewStateStore(injected-or-production Redis transport)
+  loader: createPreviewBundleLoader(backend)
+  promptLoader: createPreviewPromptLoader()
+  toolExecutor: createPreviewToolExecutor(backend, environment)
+  savedTools: backend.external?.savedTools
+  externalFixtureRunner: backend.external?.externalFixtureRunner
+  model: accepted configured preview model only
+```
+
+Changing or clearing runtime test dependencies must clear the cached production
+PreviewService and cached external preview wrapper.
+
+`getExternalPreviewService()` must be built from the same backend and the exact same
+`getPreviewService()` instance.
+
+Do not remove `installPreviewServiceForTests(...)` if older accepted tests need it.
+The XN04 test itself must not call it.
+
+#### Required XN04 test structure
+
+In `tests/external-wiring.test.ts` or a dedicated
+`tests/external-wiring-integration.test.ts` included by
+`test:arch020-external-wiring`:
+
+```text
+DO NOT:
+  import InMemoryPreviewStateStore for XN04
+  new PreviewService(...) for XN04
+  installPreviewServiceForTests(...) for XN04
+  call ExternalPreviewService.runSample(...) directly as the primary proof
+```
+
+Configure:
+
+```text
+real assembled CommerceBackend containing accepted external integration
+real RedisPreviewStateStore through the runtime dependency seam
+test environment/config
+saved DRAFT:
+  status = DRAFT
+  contentHash = null
+  tool.enabled = true
+```
+
+Invoke the actual route functions:
+
+```text
+POST app/api/studio/preview/tool-tests/route.ts
+GET  app/api/studio/preview/tool-tests/[runId]/route.ts
+```
+
+Use the repository's existing Studio-auth test mocking convention so the route obtains
+a valid `previewPrincipal()`.
+
+Run two independent saved DRAFT samples:
+
+```text
+visual response-processing definition
+JavaScript response-processing definition
+```
+
+For each require:
+
+```text
+POST response is successful
+returned previewRunId is non-empty
+terminal status == COMPLETED
+COMMERCE-030 sample receipt exists for exact saved DRAFT definition identity
+
+GET same previewRunId:
+  status == COMPLETED
+  exact same result payload
+  same underlying Redis-backed production PreviewService identity
+
+provider HTTP calls == 0
+credential resolution calls == 0
+credential decryption calls == 0
+```
+
+Also include one ordinary request without `externalResponseFixture` and assert the U14
+POST route delegates to the normal production `getPreviewService().runToolTest(...)`
+path, not the external preview service.
+
+Use the already-existing local Redis test harness/transport. If the required local
+Redis prerequisite is unavailable, return this task Blocked with the exact
+infrastructure condition; do not replace it with `InMemoryPreviewStateStore`.
+
+#### Mandatory source assertions before Review
+
+The final XN04 implementation must satisfy:
+
+```bash
+# The named XN04 body must not construct/install PreviewService directly.
+# Manual/code-review invariant:
+#   no new PreviewService(...)
+#   no new InMemoryPreviewStateStore(...)
+#   no installPreviewServiceForTests(...)
+# inside XN04.
+
+grep -Fq "POST" app/api/studio/preview/tool-tests/route.ts
+test -f 'app/api/studio/preview/tool-tests/[runId]/route.ts'
+```
+
+The Completion Report must identify the route test by exact test title and observable
+POST/GET results, not only `4/4`.
+
+### A4-R2 — make WI01 a persisted lifecycle + signed MCP JSON-RPC proof
+
+Keep the exact title:
+
+```text
+WI01 publishes activates grants and executes an external tool through the assembled MCP backend
+```
+
+The current test does not satisfy this requirement because it creates its grant and
+manifest in memory and calls the executor directly.
+
+#### Required infrastructure
+
+Use the repository's disposable ARCH-020 integration targets:
+
+```text
+COMMERCE_TEST_DATABASE_URL
+COMMERCE_TEST_REDIS_URL
+DATABASE_URL == COMMERCE_TEST_DATABASE_URL
+```
+
+Reuse the accepted C20 fixture utilities and real clients where appropriate:
+
+```text
+seedC20IntegrationFixture(...)
+PrismaClient
+ioredis
+```
+
+Do not target a developer/shared PostgreSQL or Redis instance.
+
+If those disposable integration targets are not available, return the task Blocked
+with that exact infrastructure condition. Do not downgrade WI01 back to fabricated
+authorization state.
+
+#### Required persisted flow
+
+Through accepted application services, perform exactly this lifecycle.
+
+##### 1. Connection and credential
+
+Use:
+
+```text
+backend.external.lifecycle.create(...)
+and/or createRevision(...)
+backend.external.credentials.setCredential(...)
+```
+
+Create one immutable `PER_SHOP` external connection revision and a synthetic
+credential for shop A.
+
+##### 2. Saved external tool DRAFT
+
+Through the real `CommerceLifecycle` on `backend.publication`:
+
+```text
+createTool(...)
+createToolDraft(...)
+```
+
+The DRAFT must be `EXTERNAL_HTTP` and pin the immutable connection revision.
+
+Require before sample:
+
+```text
+revision.status == DRAFT
+revision.contentHash == null
+tool.enabled == true
+```
+
+##### 3. Synthetic sample + receipt
+
+Use the accepted production-composed external preview path to run a synthetic sample
+against that exact saved DRAFT.
+
+Require COMMERCE-030 sample receipt persistence for:
+
+```text
+toolRevisionId == saved DRAFT revision
+definitionHash == canonical saved DRAFT definition identity
+connectionRevisionId == immutable connection revision
+```
+
+##### 4. Publication, capability and release
+
+Continue through the real publication lifecycle:
+
+```text
+publishToolRevision(...)
+createCapability(...)
+createCapabilityDraft(...)
+publishCapabilityRevision(...)
+createRelease(...)
+activateRelease(...)
+```
+
+Use the exact current method signatures from the accepted lifecycle source.
+
+Require:
+
+```text
+published tool revision == DRAFT revision used for receipt
+active release contains the exact published tool revision
+release pointer for TEST points at the created release
+```
+
+##### 5. Persisted shop/conversation/grant
+
+Use a real shop/conversation in the disposable integration database.
+
+Persist the immutable conversation grant through the repository's accepted
+persistence/fixture path. The normal backend Prisma authorization resolver must later
+load it.
+
+The persisted grant must pin:
+
+```text
+shopId == shop A
+conversationId == test conversation
+releaseId == activated release
+toolRevisionId == exact published external revision
+selected capability includes the external capability
+```
+
+Do not pass a fabricated manifest/grant through a custom authorization callback.
+
+##### 6. Real signed MCP request
+
+Do not mutate:
+
+```ts
+backend.runtime.verifyAssertion
+```
+
+Generate an RS256 test key pair and configure the assembled backend verifier with the
+public key using the accepted backend configuration seam.
+
+Use the existing `jose` / `SignJWT` pattern from:
+
+```text
+tests/mcp-service.test.ts
+```
+
+Sign a valid execute assertion for the persisted:
+
+```text
+shopId
+conversationId
+grantId
+releaseId
+environment = TEST
+```
+
+Invoke the actual MCP endpoint:
+
+```ts
+await backend.mcp(
+  new Request('http://commerce.test/api/mcp', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'wi01-tools-call',
+      method: 'tools/call',
+      params: {
+        name: /* published external tool name */,
+        arguments: /* bounded fixture arguments */,
+      },
+    }),
+  }),
+);
+```
+
+Do not use as the final proof:
+
+```text
+backend.runtime.execution.execute(...)
+a custom authorize(...) callback
+a manually assembled manifest
+a manually assembled grant
+an overridden verifyAssertion
+```
+
+Require:
+
+```text
+MCP/JSON-RPC response success
+CommerceToolResult.status == OK
+
+controlled external HTTPS transport calls == 1
+transport receives shop A's resolved synthetic credential
+
+executed toolRevisionId == published revision
+executed connectionRevisionId == immutable connection revision
+
+another shop cannot use shop A's credential
+
+publication was admitted only after COMMERCE-030 validation/receipt
+no EXTERNAL_HTTP result-cache read/write path is introduced
+no live third-party / Shopify / WhatsApp / paid-model call
+```
+
+Calling `tools/list` first is optional. A real `tools/call` is mandatory.
+
+#### Mandatory source assertions before Review
+
+The WI01 test body must no longer contain:
+
+```text
+backend.runtime.execution.execute(
+backend.runtime.verifyAssertion =
+```
+
+and must contain a real:
+
+```text
+backend.mcp(
+tools/call
+SignJWT
+```
+
+path.
+
+The Completion Report must map WI01 to the exact test title and persistent observable
+state, including release pointer and grant rows.
+
+### A4-R3 — preserve accepted Attempt-3 source + merge resolution
+
+The following are accepted in substance and must not be rewritten unless A4-R1/A4-R2
+reveals a concrete defect:
+
+```text
+src/commerce/integration/external/index.ts
+  saved DRAFT canonical identity / tool.enabled mapping
+
+src/commerce/publication/lifecycle.ts
+  fail-closed EXTERNAL_HTTP validation
+
+src/commerce/integration/backend/executors.ts
+  merged EXTERNAL_HTTP availability
+  merged POLICY_OPERATION registry availability
+```
+
+The final COMMERCE-024 diff must contain no task-owned algorithm changes under:
+
+```text
+src/commerce/connections/**
+src/commerce/external-preview/**
+src/commerce/external-publication/**
+src/commerce/external-http/**
+src/commerce/external-response/**
+src/commerce/code-response/**
+```
+
+If A4-R1/A4-R2 exposes an actual accepted-producer defect, stop and return the exact
+reproduction to `moda_architect`; do not repair that producer from 024.
+
+### A4-R4 — durable Attempt-5 handoff
+
+Before Review, reconcile the Completion Report into one current Attempt-5 report.
+Do not submit another merge-only "Completion Update".
+
+The current report must map:
+
+```text
+DRAFT identity:
+  exact regression + PASS
+
+publication fail-closed:
+  exact regression + PASS
+
+executors merge:
+  EXTERNAL_HTTP + POLICY_OPERATION availability regression + PASS
+
+XN04:
+  exact POST route call
+  exact GET route call
+  Redis-backed productionService proof
+  visual + JavaScript saved-DRAFT observations
+
+WI01:
+  disposable DB/Redis target
+  created connection revision
+  created/published tool revision
+  sample receipt
+  published capability revision
+  activated release / pointer
+  persisted grant
+  signed backend.mcp tools/call
+  controlled HTTPS observation
+```
+
+Check WI01/WI02/WI03 only when those exact current proofs pass.
+
+Return exactly:
+
+```yaml
+status: review
+attempt: 5
+executor: null
+claimed_at: null
+```
+
+Record:
+
+```text
+final implementation commit
+final parent report commit
+launcher-resolved implementation worktree
+launcher-resolved parent/docs worktree
+both branches pushed
+both worktrees clean
+```
+
+Then STOP.
+
+Do not launch COMMERCE-012 or SYSTEM-TEST-002.
+
+### Required Validation
+
+Run:
+
+```bash
+npm run test:arch020-external-wiring
+npm run test:arch020-external-preview
+npm run test:arch020-external-publication
+npm run test:arch020-external-http
+npm run test:arch020-external-credentials
+npm run test:arch020-external-availability
+
+npx eslint \
+  src/commerce/integration/external \
+  src/commerce/integration/backend/executors.ts \
+  src/commerce/publication/lifecycle.ts \
+  lib/preview/runtime.ts \
+  app/api/studio/preview/tool-tests/route.ts \
+  tests/external-wiring.test.ts \
+  tests/external-wiring-integration.test.ts
+
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If `tests/external-wiring-integration.test.ts` is not created, omit it from ESLint.
+
+The focused wiring suite must include the real XN04 and WI01 paths above. An aggregate
+`4/4` is not sufficient when the named tests still exercise test-double paths.
+
+Repository typecheck/build may remain non-zero only for a materially unchanged
+documented baseline and only if no diagnostic points at an Attempt-5-owned file.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/integration/backend/executors.ts`
+- `moda-interact-commerce/lib/preview/runtime.ts`
+- `moda-interact-commerce/tests/external-wiring.test.ts`
+- `moda-interact-commerce/app/api/studio/preview/tool-tests/route.ts`
+- `moda-interact-commerce/app/api/studio/preview/tool-tests/[runId]/route.ts`
+- Attempt-4 Completion Update
+- previous Attempt-3 Architect Review
+
+### Validation Reviewed
+
+Submitted Attempt-4 evidence:
+
+```text
+external wiring: 4/4 PASS
+preview:        18/18 PASS
+publication:    11/11 PASS
+ESLint:          PASS
+git diff --check PASS
+```
+
+Those checks confirm the merge resolution did not break the existing focused suite.
+They do not establish the outstanding XN04 or WI01 production-composition paths.
+
+### Architecture Conformance
+
+Partial.
+
+The `executors.ts` merge resolution is conformant and accepted in substance.
+
+The final production runtime / persisted MCP proof remains incomplete. No new
+producer task is required from the submitted snapshot.
+
+### Follow-up
+
+Return the same task to `ready`, preserve `attempt: 4`, clear the claim.
+
+The next successful:
+
+```text
+/moda-task ARCH-020-COMMERCE-024
+```
+
+claim creates Attempt 5 exactly once.
+
+Implement only A4-R1 through A4-R4, return to Review and STOP.
