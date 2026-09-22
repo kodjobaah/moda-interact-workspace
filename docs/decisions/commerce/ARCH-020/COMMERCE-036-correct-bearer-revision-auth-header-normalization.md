@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 145
 executor: null
 claimed_at: null
@@ -480,3 +480,256 @@ yet Complete. Its durable dependency documentation is reconciled to include
 COMMERCE-036, matching the already-authoritative task YAML.
 
 No downstream task is automatically launched.
+
+## Architect Review Correction — Attempt 1 acceptance superseded — 2026-09-22
+
+### Review Status
+
+Changes Requested — Attempt 1 retained.
+
+This review **supersedes the earlier Attempt 1 acceptance disposition** recorded
+above. The earlier review history is retained for auditability, but its conclusion
+that the lifecycle already accepts omitted/blank BEARER/NONE `authHeader` values is
+not supported by the submitted production source.
+
+The exact current snapshot still contains:
+
+```ts
+const CreateConnectionSchema = ConnectionCommandSchema.extend({
+  ...
+  revision: RevisionInputSchema,
+});
+
+const CreateRevisionSchema = ConnectionCommandSchema.extend({
+  ...
+  revision: RevisionInputSchema,
+});
+
+function normalizeRevision(input: RevisionInput) {
+  const value = parseStrict(RevisionInputSchema, input);
+  ...
+}
+```
+
+and the accepted Shared `RevisionInputSchema` still requires:
+
+```ts
+authHeader: z.string().min(1).max(128).nullable()
+```
+
+Therefore both of these task-required compatibility inputs are rejected **before**
+`normalizeRevision()` executes:
+
+```text
+authHeader omitted / undefined
+authHeader = ""
+```
+
+The previous acceptance correctly recognized the canonical database/runtime boundary,
+but over-stated the producer compatibility actually implemented and tested.
+
+The task is returned to:
+
+```text
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next normal claim creates Attempt 2 exactly once.
+
+### Preserved Attempt 1 implementation
+
+Do not undo the correct producer/database work already present:
+
+- BEARER `authHeader:null` succeeds and persists/views `null`;
+- legacy BEARER `authHeader:"Authorization"` succeeds and persists/views `null`;
+- another nonblank BEARER header fails before business/audit writes;
+- API_KEY preserves a valid configured custom header;
+- NONE canonicalizes accepted input to `null`;
+- PER_SHOP + NONE remains prohibited;
+- COMMERCE-028 continues to derive the runtime
+  `Authorization: Bearer <secret>` header;
+- the real PostgreSQL regression proves the canonical BEARER rows satisfy the
+  DATABASE-003 auth-header CHECK.
+
+### A1-R1 — normalize missing/empty NONE and BEARER authHeader before the Shared parse
+
+Files:
+
+```text
+src/commerce/connections/lifecycle/index.ts
+tests/connection-lifecycle.test.ts
+```
+
+The binding compatibility contract is:
+
+```text
+BEARER:
+  null
+  omitted / undefined
+  ""
+  whitespace-only
+  legacy "Authorization"
+    -> accepted
+    -> persisted/view authHeader:null
+
+NONE:
+  null
+  omitted / undefined
+  ""
+  whitespace-only
+    -> accepted for valid NONE scope
+    -> persisted/view authHeader:null
+
+API_KEY:
+  omitted / undefined / blank
+    -> invalid
+```
+
+Do **not** change or republish Shared. This remains a service-local backwards-
+compatibility shim around the canonical Shared contract.
+
+Add a local preprocess for revision input before the outer lifecycle request parse.
+Equivalent implementation is acceptable; the required semantics are:
+
+```ts
+const CompatibleRevisionInputSchema = z.preprocess((raw) => {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return raw;
+  }
+
+  const value = raw as Record<string, unknown>;
+  const authMode = value.authMode;
+  const authHeader = value.authHeader;
+
+  const blankOrMissing =
+    authHeader === undefined ||
+    (
+      typeof authHeader === "string" &&
+      authHeader.trim() === ""
+    );
+
+  if (
+    blankOrMissing &&
+    (authMode === "BEARER" || authMode === "NONE")
+  ) {
+    return {
+      ...value,
+      authHeader: null,
+    };
+  }
+
+  return raw;
+}, RevisionInputSchema);
+```
+
+Use that compatibility schema for the `revision` field in **both**:
+
+```text
+CreateConnectionSchema
+CreateRevisionSchema
+```
+
+After the preprocess:
+- the strict canonical Shared schema still validates the revision;
+- `normalizeRevision(...)` still performs the accepted origin/header semantic checks;
+- unknown revision fields remain rejected;
+- API_KEY missing/blank remains invalid;
+- no Shared contract, database constraint, credential resolver, UI, HTTP execution or
+  final composition code is changed.
+
+### Required focused proof
+
+Exercise the real lifecycle service:
+
+```text
+BEARER + authHeader omitted
+  -> ok
+  -> persisted/view null
+
+BEARER + authHeader ""
+  -> ok
+  -> persisted/view null
+
+BEARER + authHeader "   "
+  -> ok
+  -> persisted/view null
+
+NONE + authHeader omitted
+  -> ok for PLATFORM
+  -> persisted/view null
+
+NONE + authHeader ""
+  -> ok for PLATFORM
+  -> persisted/view null
+
+API_KEY + authHeader omitted
+  -> invalid
+  -> zero business/audit writes
+
+API_KEY + authHeader ""
+  -> invalid
+  -> zero business/audit writes
+```
+
+Retain the existing proof for:
+- BEARER + null;
+- BEARER + `Authorization`;
+- alternate nonblank BEARER rejection;
+- API_KEY + valid custom header;
+- NONE + null.
+
+Because the canonical TypeScript `RevisionInput` type requires the property, tests for
+the raw omitted-field compatibility boundary may use a narrow test-only cast. Do not
+weaken the exported Shared type to make those cases compile.
+
+The existing PostgreSQL regression remains sufficient database proof because this
+remaining issue occurs before the canonical persisted `null` value is produced.
+
+### Attempt 2 validation
+
+Run:
+
+```bash
+npm run test:arch020-external-connection-lifecycle
+
+DATABASE_URL="<isolated-arch020-database>" \
+  npm run test:arch020-external-connection-lifecycle:postgres
+
+npx eslint \
+  src/commerce/connections/lifecycle \
+  tests/connection-lifecycle.test.ts \
+  tests/connection-lifecycle-bearer-postgres.test.ts
+
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If repository-wide commands remain non-zero solely on the already documented unrelated
+baseline, record those exact diagnostics and continue. Do not repair unrelated source.
+
+### Stop condition
+
+Before handoff:
+
+1. add only the A1-R1 compatibility correction/regressions;
+2. update the task report truthfully;
+3. set `status: review`;
+4. after the next launcher claim the task is Attempt 2;
+5. clear `executor` and `claimed_at`;
+6. push both mirrored branches;
+7. STOP.
+
+Do not begin COMMERCE-024.
+
+### Architecture Conformance
+
+The architectural direction remains correct. This review corrects only the earlier
+acceptance disposition: canonical BEARER persistence/runtime behavior is sound, but
+the task's required raw input compatibility is not complete until A1-R1 is applied.
+
+COMMERCE-024 therefore remains gated on COMMERCE-036.

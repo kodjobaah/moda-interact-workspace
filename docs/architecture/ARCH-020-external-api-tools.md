@@ -1196,3 +1196,13 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-036 Attempt 1 acceptance correction — 2026-09-22
+
+The prior COMMERCE-036 Attempt 1 acceptance is **superseded**. Its persisted BEARER
+`authHeader:null` normalization, DATABASE-003 compatibility and COMMERCE-028 runtime
+resolver boundary remain correct. However the current outer lifecycle schemas still
+apply strict Shared `RevisionInputSchema` before normalization, so omitted/undefined
+and empty-string NONE/BEARER headers do not yet satisfy the task's compatibility
+contract. COMMERCE-036 returns to Ready for that one service-local preprocess;
+COMMERCE-024 remains gated.

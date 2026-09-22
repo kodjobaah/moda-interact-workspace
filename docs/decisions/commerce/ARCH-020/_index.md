@@ -47,7 +47,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
-| [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | ready (Acceptance superseded; Changes Requested, Attempt 1) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -942,3 +942,13 @@ repository-wide diagnostics are the documented unrelated baseline.
 COMMERCE-024's human-readable dependency list/index row is reconciled to include
 COMMERCE-036, matching its authoritative YAML. COMMERCE-024 remains Pending because
 other prerequisites are still incomplete. No task is automatically launched.
+
+## COMMERCE-036 Attempt 1 acceptance correction — 2026-09-22
+
+The earlier Attempt 1 acceptance is **superseded**. The canonical BEARER persistence
+fix and PostgreSQL proof remain valid, but exact source inspection confirms the outer
+lifecycle request still uses the strict Shared `RevisionInputSchema`, so omitted/
+`undefined` and empty-string NONE/BEARER `authHeader` values are rejected before
+normalization. COMMERCE-036 is returned to **Ready, Attempt 1 retained, claim clear**
+for the single service-local pre-parse compatibility correction. COMMERCE-024 remains
+gated; no task is auto-started.

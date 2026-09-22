@@ -1339,3 +1339,11 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-036 Attempt 1 acceptance correction — 2026-09-22
+
+`ARCH-020-COMMERCE-036` is **Ready / acceptance superseded / Attempt 1 retained**.
+Preserve the accepted BEARER database/runtime normalization. Attempt 2 must only
+preprocess missing/undefined/empty NONE/BEARER `authHeader` values to canonical null
+before the strict Shared revision parse; API_KEY missing/blank remains invalid.
+COMMERCE-024 remains gated and nothing is auto-started.

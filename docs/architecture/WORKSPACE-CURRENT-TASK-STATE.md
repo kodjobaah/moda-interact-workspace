@@ -1439,3 +1439,11 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-036 Attempt 1 acceptance correction — 2026-09-22
+
+COMMERCE-036 is **Ready / Attempt 1 retained / claim clear**. The earlier acceptance
+is superseded because the current lifecycle outer schema still rejects omitted/
+undefined and empty-string NONE/BEARER `authHeader` before semantic normalization.
+Canonical persisted BEARER null behavior and the PostgreSQL proof remain valid.
+The next claim is Attempt 2. COMMERCE-024 remains dependency-gated.
