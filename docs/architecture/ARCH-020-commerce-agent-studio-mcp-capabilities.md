@@ -1709,5 +1709,78 @@ query/filter/sort and code-slot authoring, editable sample plus current-validati
 review/publish state, exact-revision U14 fixture port with no task-owned diagnostics,
 and the owned new-tool XN02 path.
 
-No dependency is promoted. COMMERCE-024, COMMERCE-012 and terminal system-test work
-retain their declared dependencies. No downstream task is launched automatically.
+ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 2**, claim clear.
+Attempt 2 correctly implements the Shared `TransformSample` boundary, canonical
+browser hash/stale-result guards, returned-saved-revision run dispatch, retained
+preview identity, RUNNING cancel/status controls and locally bundled CodeMirror 6.
+
+Acceptance remains gated only by three task-owned corrections recorded
+deterministically in the task: reachable SUPER_ADMIN draft publication workflow,
+structured MIME/OUTPUT/SCHEMA failure presentation with `expected`, and correct
+pre-dispatch save-failure plus serialized read/cancel reconciliation semantics.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched
+automatically.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-027` is **Accepted / Complete, Attempt 3**. The C21 code-response
+frontend now has a reachable SUPER_ADMIN draft/test/publish path while published source
+remains immutable, preserves typed MIME/code/output/schema failures, and distinguishes
+pre-dispatch save failure from retained-ID UNKNOWN reconciliation with serialized
+read/cancel operations. Existing CodeMirror/raw-sample/content-hash corrections remain
+intact. COMMERCE-024 and COMMERCE-012 retain other dependency gates; no automatic
+launch.
+## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
+connection-lifecycle producer now uses exact Shared `0.14.2` DTOs/results, implements
+the six-action reusable command kernel, authorizes before replay, materializes the
+development PlatformAdmin inside the transaction, acquires a parameterized
+same-connection PostgreSQL `FOR UPDATE` lock, keeps mutation/audit atomic, validates
+bounded lifecycle inputs and stores canonical HTTPS origins. Credential persistence,
+resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-021.
+
+`COMMERCE-028` is now **Ready** because its other declared prerequisites
+`DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
+`COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
+their other authoritative dependencies.
+
+## COMMERCE-028 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Changes Requested / Ready, Attempt 1**, claim clear.
+Implementation `715da4d` is provisionally conformant at the credential-service source
+boundary, but C21 CR02 is not yet proven. The latest task review requires a dedicated
+real PostgreSQL credential rehearsal using two independent Prisma clients plus the
+accepted COMMERCE-020 command kernel to prove NULL-platform uniqueness, one-effect/
+one-audit replay, stale-CAS race, transaction rollback and no plaintext persistence.
+The developer must execute that committed scenario before CR02 may be checked.
+
+No dependency is promoted. COMMERCE-032, GATEWAY-003, COMMERCE-024, COMMERCE-012
+and terminal system-test work retain their dependencies. No downstream task is
+started automatically.
+
+## COMMERCE-028 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Accepted / Complete, Attempt 2** (`7384f81`; report
+`f5214dc1`). CR01–CR03 are established, including the dedicated real PostgreSQL
+CR02-PG-01..05 rehearsal with two Prisma clients, actual command-kernel replay/CAS,
+NULL-platform uniqueness, rollback and no-plaintext persistence.
+
+COMMERCE-032 is **Ready, Attempt 0**. Review separately identified a pre-existing
+COMMERCE-020/database contradiction for BEARER revision `authHeader`. C21 now makes
+the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
+credential resolution derives `Authorization`. The bounded producer correction is
+materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
+on it before final production composition. No task is started automatically.
+## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
+
+ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
+The current combined snapshot still contains implementation `59f0c34` unchanged; only
+unrelated ARCH-020 coordination documentation has advanced since the original review
+overlay. The deterministic correction contract in the task is unchanged: tester and
+publisher liveness/role enforcement, exact 24-hour fail-closed receipt semantics,
+sample-MIME plus production-renderer reuse, bounded schema issues, and complete
+PV02/PV03 runtime-revalidation evidence.
+
+No dependency is promoted and no downstream task is launched automatically.

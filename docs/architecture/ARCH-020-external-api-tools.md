@@ -413,7 +413,10 @@ explicit443 or path; reject userinfo, any non443 port, IP literals, query/fragme
 nonroot paths and single-label/local hostnames. API_KEY authHeader must match HTTP
 token grammar and cannot be Host, Cookie, Set-Cookie, Content-Length, Transfer-Encoding,
 Connection, Proxy-Authorization, Accept, Authorization or any Sec-/Proxy- prefix.
-BEARER always uses Authorization. Secret value1..8192 bytes, no CR/LF/NUL.
+BEARER accepts an omitted/null authHeader or legacy literal `Authorization` at the
+lifecycle input boundary, but canonical persistence and `ConnectionRevisionView` use
+`authHeader:null`;028 derives runtime header name `Authorization` for BEARER. Any
+other nonblank BEARER header rejects. Secret value1..8192 bytes, no CR/LF/NUL.
 
 Service methods (principal supplied separately from trusted server auth):
 
@@ -1054,13 +1057,56 @@ No live provider/credential/backend implementation moves into COMMERCE-023.
 
 ## COMMERCE-023 Attempt 3 architect review — 2026-09-22
 
-ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 3**, claim clear.
-Implementation `c71b30e` materially improves the U06 external editor but does not yet
-satisfy C21 X06/XN02. The task's latest Architect Review is the complete deterministic
-Attempt 4 correction contract: valid starter/return context, complete typed
-query/filter/sort and code-slot authoring, editable sample plus current-validation
-review/publish state, exact-revision U14 fixture port with no task-owned diagnostics,
-and the owned new-tool XN02 path.
+`COMMERCE-028` is now **Ready** because its other declared prerequisites
+`DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
+`COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
+their other authoritative dependencies.
 
-No dependency is promoted. COMMERCE-024, COMMERCE-012 and terminal system-test work
-retain their declared dependencies. No downstream task is launched automatically.
+## COMMERCE-028 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Changes Requested / Ready, Attempt 1**, claim clear.
+Implementation `715da4d` is provisionally conformant at the credential-service source
+boundary, but C21 CR02 is not yet proven. The latest task review requires a dedicated
+real PostgreSQL credential rehearsal using two independent Prisma clients plus the
+accepted COMMERCE-020 command kernel to prove NULL-platform uniqueness, one-effect/
+one-audit replay, stale-CAS race, transaction rollback and no plaintext persistence.
+The developer must execute that committed scenario before CR02 may be checked.
+
+No dependency is promoted. COMMERCE-032, GATEWAY-003, COMMERCE-024, COMMERCE-012
+and terminal system-test work retain their dependencies. No downstream task is
+started automatically.
+
+## COMMERCE-028 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Accepted / Complete, Attempt 2** (`7384f81`; report
+`f5214dc1`). CR01–CR03 are established, including the dedicated real PostgreSQL
+CR02-PG-01..05 rehearsal with two Prisma clients, actual command-kernel replay/CAS,
+NULL-platform uniqueness, rollback and no-plaintext persistence.
+
+COMMERCE-032 is **Ready, Attempt 0**. Review separately identified a pre-existing
+COMMERCE-020/database contradiction for BEARER revision `authHeader`. C21 now makes
+the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
+credential resolution derives `Authorization`. The bounded producer correction is
+materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
+on it before final production composition. No task is started automatically.
+## COMMERCE-030 Attempt 1 architect review rebased — 2026-09-22
+
+ARCH-020-COMMERCE-030 remains **Changes Requested / Ready, Attempt 1**, claim clear.
+The current combined snapshot still contains implementation `59f0c34` unchanged; only
+unrelated ARCH-020 coordination documentation has advanced since the original review
+overlay. The deterministic correction contract in the task is unchanged: tester and
+publisher liveness/role enforcement, exact 24-hour fail-closed receipt semantics,
+sample-MIME plus production-renderer reuse, bounded schema issues, and complete
+PV02/PV03 runtime-revalidation evidence.
+
+No dependency is promoted and no downstream task is launched automatically.
+
+## COMMERCE-030 Attempt 2 architect review — 2026-09-22
+
+`ARCH-020-COMMERCE-030` remains **Ready / Changes Requested, Attempt 2**. The receipt
+and sample-validation implementation now satisfies the staff-liveness, fixed TTL,
+MIME, production rendering, bounded schema-error and runtime-revalidation portions.
+Two C21 mismatches remain: definition identity must use the canonical
+`toolHashInput(definition)` content hash already used by the lifecycle, and publication
+must validate current non-secret connection/revision auth shape without requiring a
+live PER_SHOP credential. No dependant is promoted until COMMERCE-030 is Complete.
