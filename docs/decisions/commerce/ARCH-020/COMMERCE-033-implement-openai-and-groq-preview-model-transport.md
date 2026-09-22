@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 140
 executor: null
 claimed_at: null
@@ -448,3 +448,85 @@ execution path. The next authorised claim becomes Attempt 2. Do not start
 COMMERCE-019 or another enabled task; COMMERCE-019 remains blocked until
 COMMERCE-033 is architect-accepted Complete and its other prerequisite is
 resolved.
+
+### Attempt 2 — Accepted (2026-09-22)
+
+Reviewer: `moda_architect`. **Accepted / Complete, Attempt 2; executor/claimed_at
+null.**
+
+Reviewed the exact submitted snapshot representing implementation `94d31ea` and
+parent report `6e0d5849`. Attempt 2 closes A1-R1 without widening the Shared runner
+contract.
+
+The response parser now validates the standard OpenAI/Groq Chat Completions
+function-tool envelope:
+
+```ts
+{
+  id: string,
+  type: 'function',
+  function: {
+    name: string,
+    arguments: string,
+  },
+}
+```
+
+and maps only:
+
+```ts
+{
+  name: call.function.name,
+  arguments: JSON.parse(call.function.arguments),
+}
+```
+
+into `ModelStep.calls`. Provider call IDs are not persisted or added to the Shared
+contract. Non-function calls are rejected.
+
+The rest of the accepted Attempt 1 implementation remains intact:
+
+- fixed OpenAI and Groq Chat Completions endpoints;
+- native `fetch`, one POST per invocation and zero adapter retries/fallback;
+- exact system/context/history/tool-result/tool descriptor mapping;
+- `tool_choice: 'required'`, `parallel_tool_calls: false` and
+  `max_completion_tokens`;
+- AbortSignal propagation;
+- response body bound at 262,144 UTF-8 bytes;
+- exact provider `usage.completion_tokens` accounting with no estimation;
+- malformed JSON/tool arguments/usage and non-2xx/network failures fail with the
+  generic redacted provider-unavailable error;
+- preview configuration is disabled by default and enabled configuration requires
+  exact lowercase provider/model/key validation;
+- the API key remains server-only and is not written to browser output, Redis,
+  database or logs by this adapter.
+
+The realistic controlled fixtures now include `id` and `type: 'function'` for both
+providers and include explicit non-function rejection coverage.
+
+Submitted validation:
+
+```text
+npm run test:arch020-preview-model-provider   PASS, 9 tests
+focused ESLint                                PASS
+npm run typecheck                             PASS
+npm run build                                 PASS
+git diff --check                              PASS
+```
+
+No live/paid provider call is required by this task.
+
+The submitted archive contains no installed `node_modules` or Git remote metadata,
+so those dependency-backed commands and remote heads were not falsely claimed as
+independently rerun from the review container. Acceptance is grounded in the exact
+submitted source plus the recorded passing validation evidence.
+
+Architecture conformance: **Accepted.** COMMERCE-033 owns only the server-side
+OpenAI/Groq `PreviewModelPort` transport/config prerequisite. COMMERCE-019 retains
+production preview composition ownership.
+
+Dependency reconciliation: COMMERCE-019's durable YAML dependency list must include
+`ARCH-020-COMMERCE-033`, matching this task's `enables` contract and the requirement
+that production composition occurs only after this provider transport is accepted.
+Because COMMERCE-033 becomes Complete in this same review, COMMERCE-019 remains
+Ready at Attempt 0 with no active claim. No task is automatically launched.
