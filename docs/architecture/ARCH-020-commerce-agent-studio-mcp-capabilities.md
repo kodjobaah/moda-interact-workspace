@@ -1752,22 +1752,23 @@ because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 ar
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
 
-## COMMERCE-035 Attempt 4 architect acceptance — 2026-09-22
+## COMMERCE-023 Attempt 2 architect review — 2026-09-22
 
-**Accepted / Complete, Attempt 4** (`9a0120b`; parent report `b357be28`).
+The U06/U14 external authoring task remains **Ready / Changes Requested, Attempt 2**.
+Keep the accepted explicit-port/new-tool direction, but do not treat COMMERCE-023 as a
+consumable producer until the complete typed authoring, exact connection return,
+stale-validation/hash and frozen U14 fixture boundaries in the latest Architect Review
+are closed. COMMERCE-024 remains gated.
 
-The C20 isolated integration fixture boundary has now executed successfully against
-real task-owned disposable PostgreSQL and Redis targets. The guarded reset and
-focused fixture proof passed, closing the remaining F02/F03/F05/F06 infrastructure
-and relational-proof gates. Repository-wide typecheck/lint/build remain blocked only
-by previously documented unrelated Shared/external-response/Connections diagnostics;
-no COMMERCE-035-owned file is implicated and `git diff --check` passes.
+## COMMERCE-023 Attempt 3 architect review — 2026-09-22
 
-The C20 producer gate is therefore satisfied. This acceptance does not automatically
-launch a consumer and does not rewrite newer COMMERCE-018/019 task branches from the
-older COMMERCE-035 parent snapshot. Reconcile each current consumer branch after this
-acceptance is integrated.
-## COMMERCE-027 Attempt 2 architect review — 2026-09-22
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 3**, claim clear.
+Implementation `c71b30e` materially improves the U06 external editor but does not yet
+satisfy C21 X06/XN02. The task's latest Architect Review is the complete deterministic
+Attempt 4 correction contract: valid starter/return context, complete typed
+query/filter/sort and code-slot authoring, editable sample plus current-validation
+review/publish state, exact-revision U14 fixture port with no task-owned diagnostics,
+and the owned new-tool XN02 path.
 
 ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 2**, claim clear.
 Attempt 2 correctly implements the Shared `TransformSample` boundary, canonical
@@ -1853,6 +1854,29 @@ PV02/PV03 runtime-revalidation evidence.
 
 No dependency is promoted and no downstream task is launched automatically.
 
+## COMMERCE-023 Attempt 4 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 4**, claim clear. The
+committed implementation advances the external fixture integration, but C21 X06/XN02
+is not yet complete. The task's latest Architect Review is the complete deterministic
+Attempt 5 correction contract: code-panel/mode-switch wiring; query/literal and
+8-filter typed authoring; editable sample and response-shape guidance; exact fallback
+return context plus role-aware publication reason/review; and one full new-tool XN02
+proof.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
+automatically.
+
+## COMMERCE-023 Attempt 5 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-023 is **Changes Requested / Ready, Attempt 5**, claim clear.
+Implementation `c184c58` is close to the C21 X06/XN02 boundary. The latest task review
+narrows Attempt 6 to three remaining items: bind U14 and Publish to the persisted saved
+revision rather than unsaved local state; make Literal/IN typed authoring exact and
+retain invalid IN text; and complete the exact XN02 proof/current Completion Report.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
+automatically.
 ## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 3** (`d15d3f5`).
@@ -1951,27 +1975,20 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
-## GATEWAY-001 Attempt 1 architect review — 2026-09-22
 
-ARCH-020-GATEWAY-001 is **Changes Requested / Ready, Attempt 1**, claim clear. The
-Commerce topology direction is valid, but the submitted Blueprint/proxy still uses
-guessed private MCP coordinates, incomplete/incorrect Studio route methods, legacy
-10 MiB/60-second Commerce bounds, unreliable filename-dependent negative validation
-and prose-only hosted smoke guidance. The task's latest Architect Review contains the
-complete bounded Attempt 2 correction contract.
+## COMMERCE-023 Attempt 7 architect review — 2026-09-22
 
-GATEWAY-002, GATEWAY-003, COMMERCE-012 and terminal system-test work remain gated.
-No downstream task is started automatically.
+The external U06/U14 frontend remains **Ready / Changes Requested, Attempt 7**.
+Persisted saved-definition refresh and most typed authoring behavior are now present.
+Before treating COMMERCE-023 as a completed producer, Save must not manufacture sample
+validation, `savedDefinition` must always begin from the persisted selected revision,
+and IN local validation must reject non-scalars and reconcile stale drafts. Production
+composition remains COMMERCE-024-owned.
 
-## GATEWAY-001 Attempt 2 architect review — 2026-09-22
+## COMMERCE-023 Attempt 8 acceptance — 2026-09-22
 
-ARCH-020-GATEWAY-001 is **Changes Requested / Ready, Attempt 2**, claim clear.
-Implementation `12ca000` now conforms on the major private-topology, explicit
-U01–U14/C9.1/discovery route, MCP-denial, Commerce body-size/timeout and validator
-boundaries. The remaining Attempt 3 corrections are limited to making the Commerce
-public hostname a genuine Render deployment input and correcting hosted smoke commands
-for authenticated Studio/Auth.js/private-assertion behavior.
-
-The later C21 U15/U16 `/connections` public-route delta is explicitly added to
-GATEWAY-003 scope. GATEWAY-002, GATEWAY-003, COMMERCE-012 and system-test work remain
-dependency-gated; no task is started automatically.
+The external U06/U14 authoring frontend is **Accepted / Complete** at Attempt 8. Its
+persisted saved-definition boundary, current validation gating, typed visual/query
+authoring, scalar-only IN reconciliation and injected saved-revision fixture flow are
+now accepted. Production external composition remains COMMERCE-024-owned and is not
+launched by this acceptance.
