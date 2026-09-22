@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 140
-executor: copilot
-claimed_at: 2026-09-22T01:55:51Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -73,7 +73,7 @@ that SHA in the mapping document; pending producer symbols must not be guessed.
 - [x] Apply the C20 field/error translation table, including source revision names, exact release members and pointer CAS. Rehydrate actual returned IDs into Studio view models; never synthesize IDs by splitting strings. The real-adapter proof remains pending infrastructure.
 - [x] Keep existing008 components, routes and draft state. Wire functional commands, preserve unknown-operation identity and role-aware controls; no page redesign or backend business-rule reimplementation.
 - [x] Create server-authorized merchant inspection/read models using013 current feature/grant-candidate resolver; never create a production conversation grant for U13.
-- [ ] Provide `docs/commerce-studio-integration.md` and `test:arch020-studio-integration`. The documentation and focused suite exist, but the named C20 script/path is absent and the complete real-service flow could not be executed.
+- [x] Provide `docs/commerce-studio-integration.md` and `test:arch020-studio-integration`. The C20 real-adapter command is also defined as `test:arch020-studio-integration:c20`; complete real-service execution remains developer-gated on disposable targets.
 
 ## Interfaces / Contracts
 
@@ -138,16 +138,17 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Attempt 4 implementation submitted for Architect Review.
+Attempt 5 implementation submitted for Architect Review.
 
 ### Files Changed
 
 - `docs/commerce-studio-integration.md`
 - `tests/studio-integration-c20.test.ts`
+- `package.json`
 
 ### Work Completed
 
-Consumed the accepted COMMERCE-033 `seedC20IntegrationFixture` helper directly from the new real-adapter test. The test keeps the production backend, Prisma storage, lifecycle, inspection and Studio adapter real, substituting only discovery and query transports, and covers origin rejection, role authorization, replay/CAS, configured-environment activation/rollback, discovery outage, positive/excluded eligibility and read-only U13 behavior. Updated the mapping document with accepted producer revisions for COMMERCE-002, COMMERCE-008, COMMERCE-011 and COMMERCE-013. The C20 reset/test path was attempted but could not run because disposable targets were unavailable and the named npm test script is absent. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
+Consumed the accepted COMMERCE-033 `seedC20IntegrationFixture` helper directly from the real-adapter test. The test keeps the production backend, Prisma storage, lifecycle, inspection and Studio adapter real, substituting only discovery and query transports, and covers origin rejection, role authorization, replay/CAS, configured-environment activation/rollback, discovery outage, positive/excluded eligibility and read-only U13 behavior. Updated the mapping document with accepted producer revisions for COMMERCE-002, COMMERCE-008, COMMERCE-011 and COMMERCE-013, and added the documented `test:arch020-studio-integration:c20` script. No fixture service, MCP route, preview runtime, Shared package, or database schema was changed.
 
 ### Validation Results
 
@@ -156,21 +157,20 @@ Agent-executed:
 - `npm run test:arch020-studio-integration` — passed, 1 file and 9 tests.
 - `npx eslint tests/studio-integration-c20.test.ts` — passed.
 - `git diff --check` — passed.
-- `npm run lint` — passed after the C20-test fix, with four pre-existing warnings and no errors.
-- `npm run typecheck` — blocked by 18 existing errors in shared-commerce contract consumers; no errors remain in `tests/studio-integration-c20.test.ts` after the fix.
-- `npm run build` — blocked after successful compile/runtime packaging and Prisma generation by the same 18 type errors.
+- `npm run lint` — blocked by one pre-existing error in `src/studio/connections/connections-ui.tsx` (`react-hooks/set-state-in-effect`) and eight warnings; no C20-test error.
+- `npm run typecheck` — route type generation passed, then blocked on three unrelated baseline errors: two narrowing errors in `src/commerce/integration/backend/executors.ts` and one readonly-schema typing error in `tests/code-response-processor.test.ts`.
+- `git diff --check` — passed.
 
 C20 execution evidence:
 
-- `npm run c20-fixture:reset` — not run successfully; exact output: `C20_FIXTURE_UNSAFE_ENVIRONMENT: C20 test targets are required`.
-- `npm run test:arch020-studio-integration:c20` — blocked; exact output: `npm error Missing script: "test:arch020-studio-integration:c20"`.
-- `npx vitest run tests/studio-integration-c20.test.ts` — blocked before tests; exact error: `C20_FIXTURE_UNSAFE_DATABASE_TARGET: disposable C20 targets are required`.
+- `npm run c20-fixture:reset` — not run; disposable C20 targets were not provisioned.
+- `npm run test:arch020-studio-integration:c20` — resolved the new script and blocked before tests; exact error: `C20_FIXTURE_UNSAFE_DATABASE_TARGET: disposable C20 targets are required`.
 
 PostgreSQL/Redis real-adapter evidence is therefore not claimed. No live provider, production credential, or non-task-owned infrastructure was used.
 
 ### Deviations
 
-The named `test:arch020-studio-integration:c20` package script is absent despite the documentation path being present. The required disposable PostgreSQL/Redis environment variables were also unavailable, so the reset and real-adapter test were not treated as passes. The prior implementation remains unchanged; this attempt only adds the C20 evidence test and mapping reconciliation.
+The required disposable PostgreSQL/Redis environment variables were unavailable, so the reset and real-adapter test were not treated as passes. This attempt adds the missing named C20 script and reconciles the existing evidence/mapping; no out-of-scope source was changed.
 
 ### Assumptions
 
@@ -178,15 +178,15 @@ Use the parent architecture and actual accepted dependency revisions. Return con
 
 ### Unresolved Issues
 
-Architect/developer action is required to provide disposable C20 PostgreSQL/Redis targets and add or authorize the named C20 npm script. Repository typecheck/build remain blocked by the documented shared-commerce contract mismatch in unrelated files.
+Architect/developer action is required to provide disposable C20 PostgreSQL/Redis targets and rerun the real-adapter path. Repository lint remains blocked by the unrelated connections UI error; typecheck did not complete in the available validation window.
 
 ### Architectural Concerns
 
-The accepted COMMERCE-033 helper is present and consumed directly, so the previous producer-export concern is resolved. The current blockers are environmental/script availability, not a substitute fixture or competing backend implementation.
+The accepted COMMERCE-033 helper is present and consumed directly, and the named C20 script now exists. The remaining blocker is disposable infrastructure availability, not a substitute fixture or competing backend implementation.
 
 ### Git / VCS
 
-Attempt-4 implementation and parent report commits/pushes are recorded after this report update. No parent service gitlink or main integration was performed.
+Attempt-5 implementation and parent report commits/pushes are recorded after this report update. No parent service gitlink or main integration was performed.
 
 ## Architect Review
 
