@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T14:02:44Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-019
@@ -68,10 +68,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Extend accepted ToolTestBodySchema/ConversationBodySchema/stored preview state with C21 optional external fixtures, preserving old request behavior; freeze exact saved revision/definition/runtime before executing.
-- [ ] Implement section9 createExternalPreviewService with validateCode/runSample plus read/cancel delegation to existing lifecycle; use030 sample-validation receipt writer, never a duplicate receipt engine.
-- [ ] Enforce authenticated Origin/role, exact tool ownership, Redis distributed admin limits, existing run identity/replay/cancel and bounded preview envelope. Preserve only synthetic samples under existing TTL.
-- [ ] Inject025/026 directly with fixture data; assert zero live HTTP/credential/decryption dependencies. Provide actual Redis cross-instance replay/quota/cancel fixtures.
+- [x] Extend accepted ToolTestBodySchema/ConversationBodySchema/stored preview state with C21 optional external fixtures, preserving old request behavior; freeze exact saved revision/definition/runtime before executing.
+- [x] Implement section9 createExternalPreviewService with validateCode/runSample plus read/cancel delegation to existing lifecycle; use030 sample-validation receipt writer, never a duplicate receipt engine.
+- [x] Enforce authenticated Origin/role, exact tool ownership, Redis distributed admin limits, existing run identity/replay/cancel and bounded preview envelope. Preserve only synthetic samples under existing TTL.
+- [x] Inject025/026 directly with fixture data; assert zero live HTTP/credential/decryption dependencies. Provide actual Redis cross-instance replay/quota/cancel fixtures.
 
 ## Interfaces / Contracts
 
@@ -93,9 +93,9 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 
 ## Acceptance Criteria
 
-- [ ] PR01: save->sample->processed result->receipt succeeds for text code and visual JSON with actual processors and accepted preview lifecycle.
-- [ ] PR02: repeat same run returns original result; changed payload conflicts; cancel/unknown/expiry and two-instance quotas use same identity; changed draft does not alter frozen preview.
-- [ ] PR03: old preview request unchanged; invalid foreign fixture ID, unsupported media/oversize, raw HTML and invalid output fail safely; provider/decrypt call counts remain zero.
+- [x] PR01: save->sample->processed result->receipt succeeds for text code and visual JSON with actual processors and accepted preview lifecycle.
+- [x] PR02: repeat same run returns original result; changed payload conflicts; cancel/unknown/expiry and two-instance quotas use same identity; changed draft does not alter frozen preview.
+- [x] PR03: old preview request unchanged; invalid foreign fixture ID, unsupported media/oversize, raw HTML and invalid output fail safely; provider/decrypt call counts remain zero.
 
 ## Validation
 
@@ -121,7 +121,7 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Attempt 3 implementation submitted for Architect Review. The durable launcher claim advanced the task from Attempt 2 to Attempt 3 when preparation was re-entered; this report records that fact rather than rewriting claim history.
+Attempt 4 implementation submitted for Architect Review. The implementation branch is pushed at `598d641`; the launcher claim remains recorded in the task history.
 
 ### Files Changed
 
@@ -137,29 +137,29 @@ Attempt 3 implementation submitted for Architect Review. The durable launcher cl
 
 ### Work Completed
 
-External samples now load and clone/freeze the canonical saved revision, reject non-external or incompatible media, claim the canonical tool-test identity before quota/receipt/processor work, and preserve replay/conflict semantics. Tool-test cancellation state is persisted through memory and Redis stores, cancellation polls the same preview ID, and quota is released only after acquisition. Conversation fixture state has aggregate UTF-8 bounds plus frozen saved definitions and a synthetic runner boundary that bypasses live tool execution when wired by the composition owner.
+External samples now load and clone/freeze the canonical saved revision, reject non-external or incompatible media, claim the canonical tool-test identity before quota/receipt/processor work, and preserve replay/conflict semantics. Tool-test cancellation state is persisted through memory and Redis stores, cancellation polls the same preview ID, and quota is released only after acquisition. Conversation fixture state has aggregate UTF-8 bounds, rejects foreign keys before persistence, freezes saved definitions, and uses the synthetic runner boundary without live tool execution.
 
 ### Acceptance Evidence
 
 - PR01: `runs visual JSON sample through processor receipt and saved preview lifecycle` and `runs JavaScript sample through the accepted code processor and receipt lifecycle` pass in `tests/external-preview.test.ts`; actual COMMERCE-025/026 processors are used, the COMMERCE-030 validator is called once, results are `COMPLETED`, and stored replay returns the same result.
 - PR02: `races the same preview identity across service instances without duplicate processing` and `cancels a blocked processor on the same preview identity` pass; one shared state store yields one validator/processor and cancellation yields `CANCELLED` on the same ID with abort propagation. Existing preview service/store/Redis lifecycle suites also pass.
-- PR03: `ignores caller-supplied definitions and rejects unsupported saved revisions before processing`, `fails closed for unsupported media, raw HTML, and invalid processor output`, and `bounds aggregate conversation fixtures and rejects foreign fixture keys` pass. Legacy requests remain unchanged because fixture fields remain optional.
+- PR03: `ignores caller-supplied definitions and rejects unsupported saved revisions before processing`, `fails closed for unsupported media, raw HTML, and invalid processor output`, and `rejects foreign conversation fixtures before persistence` pass. Legacy requests remain unchanged because fixture fields remain optional.
 
 ### Validation Results
 
-- `npm run test:arch020-external-preview`: PASS, 9 tests.
+- `npm run test:arch020-external-preview`: PASS, 10 tests.
 - `npm run test:arch020-external-publication`: PASS, 11 tests.
 - `npm run test:arch020-code-processor`: PASS, 6 tests.
 - Focused preview lifecycle command: PASS, 34 tests.
 - Focused ESLint: PASS.
 - `git diff --check`: PASS.
 - Touched-file TypeScript diagnostics: none after final repair.
-- Repository `npm run typecheck`: non-zero only for existing Prisma-generated and unrelated integration diagnostics; no remaining diagnostics point to Attempt-3-owned source/tests.
-- Repository `npm run build`: non-zero on the same existing Prisma/integration baseline; production compilation reached the existing unrelated diagnostics.
+- Repository `npm run typecheck`: non-zero with 12 existing diagnostics in studio workspace, connection command/lifecycle, external executor, and processor-test files; none point to the Attempt-4 change.
+- Repository `npm run build`: non-zero on the same existing diagnostics after successful runtime packaging, smoke validation, Prisma generation, and production compilation.
 
 ### Git / VCS
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-031`. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-031`. Implementation commits: `7243937`, `b3dfcb4`, `411970e`; launcher claim commit: `cb791c27a8e4b3934788a3e4bb747ba0c3a275ab`. Canonical preparation verified dependency gate passed, origin/main incorporation, and recursive submodule readiness at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-031`. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-031`. Implementation commits: `7243937`, `b3dfcb4`, `411970e`, `598d641`; launcher claim commit: `9c8751af92b76a57dbfb55495cccd4a99367a4dd`. Canonical preparation verified dependency gate passed, origin/main incorporation, and recursive submodule readiness at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
 ## Architect Review
 
