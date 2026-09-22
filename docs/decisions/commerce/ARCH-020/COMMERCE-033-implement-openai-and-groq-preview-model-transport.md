@@ -256,6 +256,19 @@ Implementation complete; returned to `moda_architect` review.
 - Repository `npm run typecheck`: passed.
 - `npm run build`: passed, including runtime packaging/smoke validation and Prisma client generation.
 - Validation used the isolated implementation worktree and synthetic controlled fetches only; no paid/live provider calls were made.
+Not Started.
+
+### Files Changed
+
+None.
+
+### Work Completed
+
+None.
+
+### Validation Results
+
+Not run.
 
 ### Deviations
 
@@ -530,3 +543,33 @@ Dependency reconciliation: COMMERCE-019's durable YAML dependency list must incl
 that production composition occurs only after this provider transport is accepted.
 Because COMMERCE-033 becomes Complete in this same review, COMMERCE-019 remains
 Ready at Attempt 0 with no active claim. No task is automatically launched.
+### Git / VCS
+
+Defined but not claimed. Expected mirrored branch `task/ARCH-020-COMMERCE-033`.
+Record normal launcher preparation/isolation/commit/push evidence on execution.
+
+## Architect Review
+
+### Review Status
+
+Pending.
+
+### Review Notes
+
+Awaiting implementation against the deterministic provider contract above.
+
+### Reviewed Files
+
+None.
+
+### Validation Reviewed
+
+None.
+
+### Architecture Conformance
+
+Awaiting implementation.
+
+### Follow-up
+
+Accept independently, then leave019 blocked until COMMERCE-034 is also Complete.

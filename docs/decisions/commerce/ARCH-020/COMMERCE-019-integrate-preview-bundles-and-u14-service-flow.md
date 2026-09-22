@@ -21,6 +21,7 @@ depends_on:
   - ARCH-020-COMMERCE-008
   - ARCH-020-COMMERCE-002
   - ARCH-020-COMMERCE-033
+  - ARCH-020-COMMERCE-034
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-001
@@ -28,7 +29,7 @@ enables:
   - ARCH-020-COMMERCE-024
   - ARCH-020-COMMERCE-031
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Integrate preview bundles and the U14 service flow
@@ -96,6 +97,7 @@ PreviewResult and body/error shapes remain009/C9.1, not UI-specific alternatives
 - ARCH-020-COMMERCE-017
 - ARCH-020-COMMERCE-008
 - ARCH-020-COMMERCE-002
+- ARCH-020-COMMERCE-034
 
 All dependencies must be Complete and architect-accepted before execution.
 Readiness never launches a task; use the normal dedicated mirrored worktrees.
