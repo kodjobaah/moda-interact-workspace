@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 155
-executor: copilot
-claimed_at: 2026-09-22T03:26:57Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-SHARED-002
@@ -65,10 +65,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Implement exact U06 connection/revision/GET/query/schema controls and Process response visual editor + Advanced configuration for the same section2.1 schema.
-- [ ] Display supplied connection documentation in Studio; source/processed sample side by side, counts and field errors. Use injected processor port fixtures; never execute source in browser;027 supplies code panel. Do not infer a trusted schema from a sample.
-- [ ] Implement U06->U16 return-context contract, saved revision U14 test/return, stale validation invalidation and source hash checks. No secret fields; no live call/decryption in Fixture or Model preview.
-- [ ] Preserve existing publication/release flow and exact tool binding/version selection. Demonstrate owned XN02 sections through injected connection/processor/service ports.
+- [x] Implement exact U06 connection/revision/GET/query/schema controls and Process response visual editor + Advanced configuration for the same section2.1 schema.
+- [x] Display supplied connection documentation in Studio; source/processed sample side by side, counts and field errors. Use injected processor port fixtures; never execute source in browser;027 supplies code panel. Do not infer a trusted schema from a sample.
+- [x] Implement U06->U16 return-context contract, saved revision U14 test/return, stale validation invalidation and source hash checks. No secret fields; no live call/decryption in Fixture or Model preview.
+- [x] Preserve existing publication/release flow and exact tool binding/version selection. Demonstrate owned XN02 sections through injected connection/processor/service ports.
 
 ## Interfaces / Contracts
 
@@ -90,9 +90,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [x] X06: full authoring of C21 sample and list-filter example, including field rename/filter/sort/limit, produces exact stored execution JSON.
+- [x] X06: full authoring of C21 sample and list-filter example, including typed query/literal mappings, field rename/filter/sort/limit, produces exact stored execution JSON.
 - [x] No lost edits on save/discard/return, duplicate Test/Publish guarded, modified response invalidates old validation; keyboard/narrow controls usable.
-- [x] U14 external tests show processed fixtures and existing reply template with zero network calls; no U15 backend dependency for component acceptance.
+- [x] U14 external tests show all four injected fixture outcomes, processed fixtures and existing reply template with zero network calls; no U15 backend dependency for component acceptance.
 
 ## Validation
 
@@ -122,7 +122,7 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Implementation complete; submitted to moda_architect for review after Attempt 2 rework.
+Implementation complete; submitted to moda_architect for review after Attempt 3 rework.
 
 ### Files Changed
 
@@ -134,26 +134,29 @@ Implementation complete; submitted to moda_architect for review after Attempt 2 
 
 ### Work Completed
 
-Implemented explicit external UI-port composition, External API tool creation with exact
-authorized connection revision selection, guarded Manage connections navigation, response
-processing/query/schema/sample controls, stale sample validation, role-aware publication
-gating, and explicit U14 fixture controls. Focused tests now inject the fixture port rather
-than relying on an application default.
+Completed A2-R1 through A2-R5: valid exact-revision external draft creation, connection
+metadata and guarded U06/U16 return context, lossless typed query/projection/filter editing,
+mode confirmation and typed COMMERCE-027 code slot, canonical SHA-256 sample generation/hash
+guards with separate Apply and Validate, schema guidance/review state, and an injected
+four-outcome frozen-revision U14 fixture port. The end-to-end focused test covers the new
+tool path and preserves zero network calls and credential redaction.
 
 ### Validation Results
 
 Passed: `npm run test:arch020-external-tools-ui` (6/6).
-Passed: `npx vitest run tests/studio-workspace.test.tsx` (18/18, isolated rerun).
+Passed: `npx vitest run tests/studio-workspace.test.tsx` (18/18).
 Passed: changed-slice ESLint for `src/studio/external-http`, `components/studio-workspace.tsx`,
 and `tests/external-tools-ui.test.tsx`.
-Passed: `get_errors` on all changed files and `git diff --check`.
-`npm run typecheck` remains blocked by existing unrelated Prisma/publication-storage
-diagnostics; no diagnostics were reported for changed files.
+Passed: `git diff --check`.
+Repository `npm run lint` remains blocked only by the pre-existing Connections effect error
+in `src/studio/connections/connections-ui.tsx`; warnings remain outside this task. Repository
+`npm run typecheck` and `npm run build` remain blocked by existing Prisma/publication-storage,
+CodeMirror dependency, and unrelated integration diagnostics; task-owned changed-slice lint
+and focused tests are clean.
 
 ### Deviations
 
-No scope deviations. Repository-wide typecheck remains blocked by pre-existing baseline
-Prisma/publication-storage diagnostics outside this task's changed files.
+No scope deviations. The repository-wide baseline failures were not modified.
 
 ### Assumptions
 
@@ -171,8 +174,10 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-023`.
 Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-023`.
-Branch: `task/ARCH-020-COMMERCE-023`; attempt 2; implementation commit `dd647bf` pushed to origin.
-Dependencies were prepared and passed; recursive database submodule was initialized and ready.
+Branch: `task/ARCH-020-COMMERCE-023`; Attempt 3; implementation commit `c71b30e` pushed to origin.
+Launcher preparation passed the dependency gate, synchronized both worktrees, and initialized
+the recursive database submodule at the recorded commit. Parent claim commit `d3d4c609` was
+created and pushed by the launcher.
 
 ## Architect Review
 
