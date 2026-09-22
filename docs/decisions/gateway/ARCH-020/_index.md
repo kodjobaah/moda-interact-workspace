@@ -10,7 +10,7 @@ Definitions are on local main for review by explicit developer request. Individu
 |---|---|---|---|
 | [ARCH-020-GATEWAY-001](GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
 | [ARCH-020-GATEWAY-002](GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | superseded (developer-managed Grafana, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | ready | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
+| [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | ready (Changes Requested, Attempt 1) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 
 ## ARCH-020-GATEWAY-001 readiness — 2026-09-22
 
@@ -108,3 +108,19 @@ repository implementation deliverable and is **Superseded, Attempt 2**.
 Attempts 1/2 are not accepted or merged. Existing Commerce/Background telemetry and the
 GATEWAY-001 OTLP/Loki/environment wiring remain authoritative. COMMERCE-012 and
 SYSTEM-TEST-001 no longer depend on GATEWAY-002; both retain other incomplete gates.
+
+
+## GATEWAY-003 Attempt 1 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 1; claim clear.** Implementation `844043f`
+correctly scopes the three Commerce-only connection settings and U15/U16 Gateway
+routing, and the architect independently reproduced the static/config validators.
+
+Attempt 2 is bounded to four remaining items: run the local Docker/HAProxy route suite
+(which is agent-owned local validation under the current policy); close C21 §7's
+accepted QuickJS package/deployment and per-replica memory-capacity evidence without
+editing Commerce runtime source; state explicitly that command-HMAC rotation requires
+a replay-strategy migration rather than an env-only rotation; and reconcile task/VCS
+checklists.
+
+GATEWAY-002 remains Superseded. COMMERCE-012 and SYSTEM-TEST-002 remain Pending.

@@ -814,3 +814,14 @@ GATEWAY-002 is Superseded at Attempt 2. Custom Commerce dashboards and alerts ar
 developer-managed in Grafana Cloud; repository-owned telemetry emissions and existing
 OTLP/Loki transport remain unchanged. No implementation or system-test task depends on
 GATEWAY-002 after this reconciliation.
+
+## GATEWAY-003 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-GATEWAY-003 is **Changes Requested / Ready, Attempt 1**, claim clear.
+The three runtime settings and bounded U15/U16 route delta are preserved. Attempt 2
+must add the missing agent-owned local HAProxy route proof and C21 §7 packaged-runtime
+/per-replica capacity evidence, tighten command-HMAC rotation wording and reconcile the
+task report. No Commerce runtime implementation change is authorised.
+
+GATEWAY-002 remains Superseded. COMMERCE-012 and SYSTEM-TEST-002 remain Pending.
+COMMERCE-024's separate Architect Review state is unchanged.

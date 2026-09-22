@@ -411,7 +411,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | ARCH-020-SHOPIFY-001 | shopify | complete | 1 | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | ARCH-020-GATEWAY-001 | gateway | Complete / Accepted | 4 | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
 | ARCH-020-GATEWAY-002 | gateway | Superseded | 2 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| ARCH-020-GATEWAY-003 | gateway | Ready | 0 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
+| ARCH-020-GATEWAY-003 | gateway | Ready / Changes Requested | 1 | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 | ARCH-020-COMMERCE-012 | commerce | pending | 0 | All other ARCH-020 implementation tasks; readiness checkpoint in task |
 | ARCH-020-SYSTEM-TEST-001 | system-test | pending | 0 | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001  , ARCH-020-COMMERCE-012  |
 
@@ -1692,3 +1692,14 @@ Developer-managed Grafana dashboards/alerts replace the repository-owned GATEWAY
 deliverable. Attempt 2 is Superseded; its implementation is not merged. Downstream
 dependency lists no longer require GATEWAY-002. COMMERCE-012 and SYSTEM-TEST-001 remain
 Pending due to other prerequisites.
+
+## GATEWAY-003 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-GATEWAY-003 is **Changes Requested / Ready, Attempt 1**, claim clear.
+The three runtime settings and bounded U15/U16 route delta are preserved. Attempt 2
+must add the missing agent-owned local HAProxy route proof and C21 §7 packaged-runtime
+/per-replica capacity evidence, tighten command-HMAC rotation wording and reconcile the
+task report. No Commerce runtime implementation change is authorised.
+
+GATEWAY-002 remains Superseded. COMMERCE-012 and SYSTEM-TEST-002 remain Pending.
+COMMERCE-024's separate Architect Review state is unchanged.

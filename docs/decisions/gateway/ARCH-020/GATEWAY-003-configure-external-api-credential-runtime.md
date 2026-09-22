@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 175
 executor: null
 claimed_at: null
@@ -189,7 +189,7 @@ Expected mirrored branch: `task/ARCH-020-GATEWAY-003`, Attempt 1. Implementation
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
@@ -226,3 +226,326 @@ deeper path -> 404
 
 Preserve GATEWAY-001's public MCP/ambiguous-path denial and existing explicit route
 matrix. No blanket proxy is authorized.
+
+### Attempt 1 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 1 archive.
+Submitted implementation evidence: `844043f`; parent report evidence:
+`ef59f012`.
+
+Attempt 1 is well scoped and the following changes should be preserved:
+
+- exactly the three C21 connection-runtime settings are declared as Commerce
+  service-level `sync:false` inputs in both Render environments;
+- the positive validator requires those settings on Commerce and rejects accepted
+  Commerce secrets on non-owner services;
+- the public Studio allowlist adds only `/connections` and one-segment
+  `/connections/<id>` through the existing page route boundary;
+- GET/HEAD are allowed and POST still requires `Next-Action`;
+- deeper Connections paths remain outside the page allowlist;
+- the existing public MCP/ambiguous-path denial is unchanged;
+- the operator runbook correctly explains retained decrypt keys, active-key rotation,
+  rollback, migration-before-runtime ordering, fail-closed missing configuration and
+  no fallback application key;
+- no Commerce application, database, Shared, Background or sandbox implementation
+  source was modified.
+
+The architect independently reran:
+
+```text
+./scripts/validate:arch020-external-runtime
+  PASS
+
+bash tests/validate-render-blueprints.sh
+  PASS
+
+bash tests/validate-render-blueprints-negative.sh
+  PASS — all 51 submitted expected-reason cases rejected
+
+bash -n \
+  docker/entrypoint.sh \
+  tests/run-tests.sh \
+  tests/validate-render-blueprints.sh \
+  tests/validate-render-blueprints-negative.sh
+  PASS
+```
+
+Attempt 1 is **not accepted** because three bounded task-owned requirements plus task
+record reconciliation remain. These are the complete Attempt 2 correction contract.
+
+#### A1-R1 — run the local deterministic Gateway route/HAProxy validation
+
+**Validation/report changes required. Source changes only if this proof exposes a
+defect.**
+
+The Completion Report says:
+
+```text
+bash tests/run-tests.sh
+  not run because it is developer-owned Docker validation
+```
+
+That classification is incorrect under the current
+`docs/agent-live-validation-execution-policy.md`.
+
+The policy explicitly distinguishes:
+
+```text
+agent-owned:
+  local deterministic integration tests
+  local/mocked fixtures
+  syntax/config parsing
+
+developer-owned:
+  commands that contact deployed/shared environments
+```
+
+`tests/run-tests.sh` is the repository's local deterministic Docker/HAProxy fixture
+suite. It does not become developer-owned merely because it uses containers or takes
+longer than a syntax check.
+
+Attempt 2 must run, in the dedicated implementation worktree:
+
+```bash
+bash tests/run-tests.sh
+```
+
+and record the exact pass/fail count.
+
+That proof must include the already-committed U15/U16 cases:
+
+```text
+GET  /connections                     -> routed
+HEAD /connections                     -> routed
+POST /connections + Next-Action       -> routed
+POST /connections without Next-Action -> 405
+
+GET  /connections/<id>                     -> routed
+HEAD /connections/<id>                     -> routed
+POST /connections/<id> + Next-Action       -> routed
+POST /connections/<id> without Next-Action -> 405
+
+wrong methods                         -> 405
+/connections/<id>/<deeper>            -> 404
+public MCP variants                   -> 404
+```
+
+The suite must exercise the rendered HAProxy configuration, not merely grep the source.
+If Docker itself is unavailable or broken on the executor machine, record the concrete
+local tooling failure and return the task `blocked`; do not relabel a local check as
+developer-owned.
+
+Direct host `haproxy -c` remains optional when the binary is not installed if the
+Docker fixture already validates the rendered configuration with the actual HAProxy
+binary.
+
+No live Render/DNS/OAuth/provider call is required by this item.
+
+#### A1-R2 — close C21 §7 packaged-runtime and per-replica memory evidence
+
+**Gateway validation/runbook/report changes required. Do not modify Commerce runtime
+implementation from this task.**
+
+C21 §7 assigns GATEWAY-003 the deployment-side proof that the already accepted
+COMMERCE-029 runtime package is actually viable in the Commerce deployment:
+
+```text
+Package/bundle the pinned WASM asset and Node worker entry in Commerce runtime;
+never download them on requests.
+
+Run production image/build smoke for:
+  fresh worker
+  WASM memory ceiling
+  timeout
+  4-worker cap
+
+Keep per-replica memory sufficient for measured worst case,
+or return an explicit contract/capacity gap.
+```
+
+Attempt 1 does not address this requirement at all.
+
+Do **not** reimplement, edit or copy the QuickJS runtime. COMMERCE-029 is already the
+accepted producer and records:
+
+```text
+runtimeVersion: quickjs-sync.v1
+quickjs-emscripten: 0.31.0
+WASM maximum: 64 MiB
+worker V8 old-space: 64 MiB
+worker V8 young-space: 16 MiB
+maximum active workers: 4
+no queue
+packaged worker/loader/WASM smoke: PASS
+artifact SHA-256:
+  0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045
+```
+
+Gateway's job is to verify deployment consumption of that accepted producer.
+
+Attempt 2 must:
+
+1. inspect/record the accepted COMMERCE-029 package/build exports and commit;
+2. prove the Render Commerce build command executes the accepted production build
+   path that packages/smokes the pinned worker/loader/WASM artifact, with no request-time
+   download;
+3. run or consume an accepted local production-build/package smoke that proves a fresh
+   packaged worker starts and the accepted runtime profile is loadable;
+4. establish the memory-capacity decision for **both** Render Commerce plans.
+
+The current Blueprint is:
+
+```text
+test Commerce:
+  plan: 0.5c-512mb
+
+production Commerce:
+  plan: 0.5c-1g
+```
+
+Do not assume these plans are sufficient. Record the accepted/measured runtime
+worst-case memory evidence and compare it with the per-replica plan.
+
+The accepted runtime permits four concurrent workers and each worker has independent
+V8/WASM limits; therefore the 512 MiB test plan cannot be declared sufficient merely
+because one worker smoke passes. Either:
+
+```text
+A. provide bounded local evidence that the configured replica memory safely supports
+   the four-worker contract plus the host Next.js process;
+```
+
+or:
+
+```text
+B. change the Gateway deployment plan/configuration to a plan demonstrated sufficient;
+```
+
+or, if neither is justified:
+
+```text
+C. return the task blocked with the concrete capacity gap so moda_architect can decide
+   whether a future explicit C21 concurrency amendment is needed.
+```
+
+Gateway must not silently reduce the Commerce four-worker cap; that would be a runtime
+contract change owned outside this task.
+
+The proof is local/build-time. It does not require a live Render deployment and must
+not expose credentials.
+
+#### A1-R3 — document the HMAC rotation rule exactly
+
+**Runbook/report change required.**
+
+The current runbook correctly says:
+
+```text
+COMMERCE_CONNECTION_COMMAND_HMAC_KEY
+  ... kept stable for command replay auditing
+```
+
+but C21 §7 is stronger:
+
+```text
+HMAC-key rotation needs an explicit migration of replay strategy;
+it is not an automatic environment-variable change.
+```
+
+Add that exact operational consequence.
+
+Required runbook behavior:
+
+```text
+normal keyring rotation:
+  add new AES decrypt key
+  make it active
+  retain old decrypt keys until deliberate re-encryption completes
+
+command HMAC key:
+  do not rotate as an ordinary Render env edit
+  rotation requires an explicitly designed replay/audit migration
+  stop/return to architecture owner before changing it
+```
+
+Do not invent the migration in this Gateway task.
+
+#### A1-R4 — reconcile task checklists and current VCS evidence
+
+**Task-record changes required.**
+
+The task was submitted for review while all Work Items and Acceptance Criteria remain
+unchecked. That contradicts the normal repository-agent completion protocol.
+
+On Attempt 2, update the checklists truthfully after A1-R1 through A1-R3.
+
+The current Git/VCS section also says:
+
+```text
+Parent report is being committed and pushed
+```
+
+even though the developer supplied parent report commit `ef59f012`.
+
+Attempt 2 must record:
+
+```text
+Attempt 2 implementation commit
+Attempt 2 parent report commit
+dedicated parent worktree
+dedicated implementation worktree
+push/clean evidence
+accepted dependency pins consumed
+exact local validation actually run
+exact developer-owned live validation intentionally unrun
+```
+
+Live Render deployment, OAuth, provider credentials and production mutation remain
+developer-owned/unrun and do not block the local correction cycle.
+
+### Attempt 1 Reviewed Files
+
+- `render.test.yaml`
+- `render.production.yaml`
+- `haproxy/haproxy.cfg`
+- `tests/validate-render-blueprints.sh`
+- `tests/validate-render-blueprints-negative.sh`
+- `tests/run-tests.sh`
+- `scripts/validate:arch020-external-runtime`
+- `docs/commerce-deployment.md`
+- C21 §2.2, §7, §8 and §9
+- accepted COMMERCE-029 runtime evidence
+- `docs/agent-live-validation-execution-policy.md`
+- this task Completion Report
+
+### Attempt 1 Architecture Conformance
+
+Not yet accepted.
+
+The connection-secret placement and U15/U16 Gateway routing implementation are
+directionally conformant and remain within Gateway ownership. Acceptance is withheld
+only for the missing local route proof, missing C21 §7 deployment/runtime-capacity
+evidence, incomplete HMAC-rotation wording and task-record reconciliation.
+
+### Attempt 1 Follow-up
+
+Return the same task to:
+
+```yaml
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next:
+
+```text
+/moda-task ARCH-020-GATEWAY-003
+```
+
+must claim **Attempt 2 exactly once**.
+
+Do not start COMMERCE-012 or SYSTEM-TEST-002. GATEWAY-002 remains Superseded.
+COMMERCE-024 remains independently in Architect Review and is not changed by this
+review.
