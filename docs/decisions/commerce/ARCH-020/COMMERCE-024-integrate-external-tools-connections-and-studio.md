@@ -29,11 +29,12 @@ depends_on:
   - ARCH-020-COMMERCE-030
   - ARCH-020-COMMERCE-031
   - ARCH-020-COMMERCE-032
+  - ARCH-020-COMMERCE-036
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-002
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Wire accepted external API components into production factories
