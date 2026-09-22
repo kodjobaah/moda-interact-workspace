@@ -1569,15 +1569,18 @@ Because their remaining prerequisites are already Complete, GATEWAY-003 (priorit
 Neither is started automatically. COMMERCE-012 and system-test work retain their
 additional dependency gates.
 
-## GATEWAY-002 Attempt 1 architect review — 2026-09-22
+## COMMERCE-038 Attempt 1 architect acceptance — 2026-09-22
 
-ARCH-020-GATEWAY-002 is **Changes Requested / Ready, Attempt 1**, claim clear.
-The first observability artifacts are retained, but the current rules are not yet
-C11/Grafana-Cloud conformant: they use unverified producer names, discovery as
-readiness, dashboard `$environment` variables inside backend alert evaluation,
-lack concrete datasource/evaluation bindings, and omit required latency/tool/throttle
-views. Attempt 2 is bounded to those observability corrections and exact fixtures.
+**Accepted / Complete, Attempt 1** (`16972af`; parent report `f107b817`).
 
-Developer-hosted Grafana arrival/alert evidence remains a required manual checkpoint
-before final acceptance. GATEWAY-003 remains Ready independently. COMMERCE-012 and
-SYSTEM-TEST-001 retain their gates.
+The reusable external synthetic fixture-processing seam required by final production
+composition is now available from the accepted COMMERCE-031 producer. It shares the
+same visual/JavaScript processing kernel as tool-test execution and introduces no
+quota, receipt, provider, credential or preview-state side effects.
+
+COMMERCE-024 remains blocked on its separate implementation-base condition: accepted
+COMMERCE-019 source `8850b55` is still not present in the Commerce source reviewed in
+this task. Once that source is developer-integrated, a fresh synchronized 024 snapshot
+can be returned to `moda_architect` for Blocked -> Ready reconciliation.
+
+No downstream task is launched automatically.
