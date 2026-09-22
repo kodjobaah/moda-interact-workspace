@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T03:36:03Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-SHARED-002
@@ -68,10 +68,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Export section9 createExternalPublicationValidation with validateForPublication/validateSampleAndRecord/readReceipt and injected connection metadata, compiler/processor and receipt store ports.
-- [ ] Derive output wrapper/template schema; validate visual projection or code syntax/runtime and sample output before issuing receipt. No additional network call or guessed output schema.
-- [ ] Implement Redis receipt store/TTL/key hash and active tester checks; changed definition/sample outcomes never reuse stale success. Keep sample data/source out of receipt.
-- [ ] Provide real-validator sample->receipt->publication positive test plus stale/expired/unavailable and semantically invalid template tests.
+- [x] Export section9 createExternalPublicationValidation with validateForPublication/validateSampleAndRecord/readReceipt and injected connection metadata, compiler/processor and receipt store ports.
+- [x] Derive output wrapper/template schema; validate visual projection or code syntax/runtime and sample output before issuing receipt. No additional network call or guessed output schema.
+- [x] Implement Redis receipt store/TTL/key hash and active tester checks; changed definition/sample outcomes never reuse stale success. Keep sample data/source out of receipt.
+- [x] Provide real-validator sample->receipt->publication positive test plus stale/expired/unavailable and semantically invalid template tests.
 
 ## Interfaces / Contracts
 
@@ -93,9 +93,9 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 
 ## Acceptance Criteria
 
-- [ ] PV01: saved external tool with valid sample receives exact definition/runtime receipt and passes full publication admission; both visual and code modes covered.
-- [ ] PV02: missing/expired/changed-hash/inactive-author receipt or Redis outage blocks; invalid schema/template/projection/syntax performs zero publication writes.
-- [ ] PV03: altered real response later fails same schema validation; published receipt is never treated as permission to skip runtime validation.
+- [x] PV01: saved external tool with valid sample receives exact definition/runtime receipt and passes full publication admission; both visual and code modes covered.
+- [x] PV02: missing/expired/changed-hash/inactive-author receipt or Redis outage blocks; invalid schema/template/projection/syntax performs zero publication writes.
+- [x] PV03: altered real response later fails same schema validation; published receipt is never treated as permission to skip runtime validation.
 
 ## Validation
 
@@ -121,7 +121,7 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Review; implementation committed and pushed for moda_architect review.
+Review; Attempt 2 implementation committed and pushed for moda_architect review.
 
 ### Files Changed
 
@@ -136,20 +136,18 @@ Review; implementation committed and pushed for moda_architect review.
 - Added typed `createExternalPublicationValidation` ports for saved-definition identity, connection metadata, compiler, visual/code processors, staff authorization, clock and digest injection.
 - Implemented strict definition/sample bounds, visual and JavaScript sample processing, result-schema validation, semantic template validation, and no-network sample admission.
 - Implemented Redis receipt storage with environment/revision/definition/runtime key binding, 24-hour TTL, bounded receipt fields, inactive-staff rejection and fail-closed unavailable handling.
-- Added visual and code positive paths plus missing, unavailable, inactive, changed-hash, invalid-template and receipt-store regression scenarios.
+- Added visual and code positive paths plus role/liveness, cross-author, MIME, strict receipt, expiry, write-outage, safe schema issue, list rendering and runtime revalidation regressions.
 
 ### Validation Results
 
 | Criterion | Test / command | Observable result |
 |---|---|---|
-| PV01 visual | `tests/external-publication.test.ts` / `records a real visual sample receipt and admits the matching definition`; `npm run test:arch020-external-publication` | Passed; receipt contains revision, runtime and tester binding and matching admission returns `ok: true`. |
-| PV01 code | `tests/external-publication.test.ts` / `records a code-mode sample receipt through the injected processor`; same command | Passed; injected code processor path records `quickjs-sync.v1` receipt. |
-| PV02 rejection | `tests/external-publication.test.ts` / `blocks missing, unavailable, inactive, and changed-hash receipts`; same command | Passed; missing/stale/inactive block and receipt outage returns `VALIDATOR_UNAVAILABLE`. |
-| PV02 invalid definition | `tests/external-publication.test.ts` / `rejects a semantically invalid template before writing a receipt`; same command | Passed; no receipt write occurs. |
-| Receipt bounds | `tests/external-publication.test.ts` / `stores only bounded receipt data under the environment and hash key with a TTL`; same command | Passed; environment/hash key, `86400` TTL and receipt-only payload verified. |
+| PV01/PV02/PV03 | `tests/external-publication.test.ts` / 9 focused scenarios; `npm run test:arch020-external-publication` | Passed: visual/code admission, role and tester liveness, cross-author receipt, MIME/list rendering, strict receipt/expiry/write outage and runtime revalidation. |
 | Focused lint | `npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts` | Passed with no warnings/errors. |
 | Task-local diagnostics | VS Code diagnostics for all changed implementation/test files | No errors. |
-| Repository typecheck | `npm run typecheck` | Still fails on unrelated existing Prisma/integration diagnostics; no `external-publication` diagnostics remain. |
+| Repository lint | `npm run lint` | Blocked by pre-existing `src/studio/connections/connections-ui.tsx:235` hook error; no publication lint errors. |
+| Repository typecheck/build | `npm run typecheck`; `npm run build` | Blocked by pre-existing Prisma/integration/CodeMirror/processor-test diagnostics; no publication diagnostics remain and the production bundle compiled before typecheck. |
+| Diff check | `git diff --check` | Passed. |
 
 Developer-owned PostgreSQL/container checks were not run; this task owns Redis receipt/admission ports and has no migration scope.
 
@@ -175,7 +173,7 @@ Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspa
 
 Preparation packet: dependency gate passed for SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026; recursive database submodule sync/update passed at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
-Implementation commit: `59f0c34` (`feat(commerce): validate external publication samples`), pushed to `origin task/ARCH-020-COMMERCE-030`.
+Implementation commit: `13463e5` (`fix(ARCH-020-COMMERCE-030): tighten external publication validation`), pushed to `origin task/ARCH-020-COMMERCE-030`.
 
 ## Architect Review
 
