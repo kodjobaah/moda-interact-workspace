@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -843,5 +843,424 @@ The implementing agent must read this complete Architect Review before source
 inspection, implement only A1-R1 through A1-R7, run the bounded validation above,
 update the Completion Report and checkboxes, set the task to review, clear the claim on
 handoff, push both mirrored task branches and STOP.
+
+Do not start COMMERCE-024 or COMMERCE-012. They remain dependency-gated.
+
+### Attempt 2 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 2 snapshot
+representing implementation commits `22619b5`, `0c92e5e` and parent handoff
+`56bc050c`.
+
+Attempt 2 materially closes A1-R1 through A1-R4 and most of A1-R6/A1-R7:
+
+- Shared `TransformSample` / `ExternalResponseFormat` are now the canonical sample
+  contract and JSON/TEXT mode is no longer inferred from parsed sample content;
+- browser content hashes use Shared `canonicalJson({source,runtimeVersion})` plus
+  Web Crypto SHA-256;
+- late code-validation and sample-start results are generation-guarded;
+- Run saves first and dispatches the `toolRevisionId` returned by that save;
+- the admitted `previewRunId` is retained before dispatch and survives an uncertain
+  transport outcome;
+- RUNNING exposes independent status and cancel controls instead of awaiting an
+  automatic read;
+- cooldown is represented explicitly;
+- the CodeMirror 6 editor is locally bundled with line numbers and JavaScript mode;
+- published source is rendered read-only;
+- raw JSON `null`, malformed JSON and active-HTML injection regressions are covered;
+- focused validation reports 11/11 passing with scoped ESLint and diff checks clean.
+
+Attempt 2 is **not accepted** because three bounded functional gaps remain. The items
+below are the complete Attempt 2 rework contract. Do not redesign the editor or expand
+COMMERCE-027 into host composition, backend, sandbox, receipt or live-provider work.
+
+#### A2-R1 — make the SUPER_ADMIN publication path reachable without weakening published immutability
+
+**Source and focused-test changes required.**
+
+The current permission gates are:
+
+```ts
+const canAuthor = role === "ADMIN" && !published;
+const canTest = role === "ADMIN" && !published;
+```
+
+while Publish is rendered only for `SUPER_ADMIN` and is disabled until:
+
+```text
+saved current hash
++ current validation == valid
++ current sample run == COMPLETED
++ nonblank reason
+```
+
+No real mount can satisfy that combination:
+
+```text
+ADMIN
+  -> can save/validate/run
+  -> never gets Publish
+
+SUPER_ADMIN
+  -> gets Publish
+  -> cannot save/validate/run
+  -> local validation remains idle
+  -> local run remains absent
+  -> Publish remains disabled forever
+```
+
+This is a functional X12 failure, not a role-label cosmetic issue.
+
+For an **unpublished draft**, `SUPER_ADMIN` inherits the same author/test controls as
+`ADMIN`; only publication remains SUPER_ADMIN-only. For a **published revision**,
+source remains read-only for every role and must be cloned before editing.
+
+Use exactly:
+
+```ts
+const canAuthor = !published && (role === "ADMIN" || role === "SUPER_ADMIN");
+const canTest = !published && (role === "ADMIN" || role === "SUPER_ADMIN");
+const canPublish = !published && role === "SUPER_ADMIN" && Boolean(onPublish);
+```
+
+`Create draft` from a published revision may be offered to either authorized role when
+`onCreateDraft` is supplied. It must never make the published source editable in
+place.
+
+Render the publication-review section only for an **unpublished** SUPER_ADMIN draft:
+
+```text
+Published source   read-only
+Candidate source   read-only
+Reason             required trim 1..1000
+Publish
+```
+
+Publish remains disabled until that same mounted draft has:
+
+```text
+current saved contentHash
+current code validation success
+current COMPLETED sample result
+valid reason
+```
+
+and still calls:
+
+```ts
+onPublish({
+  contentHash: currentHash,
+  reason: reason.trim(),
+})
+```
+
+Known publish failure retains source, sample and reason and displays no success.
+
+Focused proof:
+
+```text
+SUPER_ADMIN + unpublished draft
+  -> can edit
+  -> Validate
+  -> Save
+  -> Run
+  -> COMPLETED
+  -> enter reason
+  -> Publish enabled
+  -> onPublish receives exact current hash + trimmed reason
+
+SUPER_ADMIN + published revision
+  -> editor read-only
+  -> no Publish for the published revision
+  -> Create draft available when onCreateDraft exists
+
+ADMIN + unpublished draft
+  -> author/test available
+  -> no Publish control
+```
+
+Do not weaken server-side publication/receipt checks owned by COMMERCE-030/024.
+
+#### A2-R2 — preserve typed runtime failure categories and schema `expected` details end-to-end
+
+**Source and focused-test changes required.**
+
+`RawSampleFailure` defines the required bounded UI categories, but
+`SampleRunResult` still carries only an optional generic `diagnostic`, and
+`runFailure()` currently collapses every failed run into:
+
+```text
+diagnostic present -> SCHEMA
+otherwise          -> CODE
+```
+
+It also drops `CodeIssue.expected`.
+
+Therefore these required C21 outcomes cannot currently be distinguished:
+
+```text
+MIME_OR_UTF8
+OUTPUT
+SCHEMA expected <rule/type>
+```
+
+and the schema panel cannot show the required expected rule/type from a failed sample
+run.
+
+Make the local run port structured. Use exactly this discriminated failure contract or
+an equivalent shape with the same information:
+
+```ts
+export type SampleExecutionFailure =
+  | {
+      code: "MIME_OR_UTF8" | "CODE" | "OUTPUT";
+      message?: string;
+    }
+  | {
+      code: "SCHEMA";
+      path: string;
+      expected?: string;
+      message?: string;
+    };
+
+export type SampleRunResult =
+  | {
+      previewRunId: string;
+      status: "RUNNING" | "COMPLETED" | "CANCELLED" | "UNKNOWN";
+      values?: Record<string, unknown>;
+      renderedText?: string;
+    }
+  | {
+      previewRunId: string;
+      status: "FAILED";
+      failure: SampleExecutionFailure;
+    };
+```
+
+Do not use provider body, rejected raw value, source, credential, stack or host path in
+the failure object.
+
+Map terminal UI state exactly:
+
+```text
+FAILED/MIME_OR_UTF8 -> RawSampleFailure {code:"MIME_OR_UTF8", ...}
+FAILED/CODE         -> RawSampleFailure {code:"CODE", ...}
+FAILED/OUTPUT       -> RawSampleFailure {code:"OUTPUT", ...}
+FAILED/SCHEMA       -> RawSampleFailure {
+                         code:"SCHEMA",
+                         path,
+                         expected,
+                         message
+                       }
+CANCELLED           -> CANCELLED
+UNKNOWN             -> UNKNOWN
+start cooldown      -> COOLDOWN
+start unavailable   -> UNAVAILABLE
+```
+
+Keep `forbidden` as the existing bounded authorization message; do not invent a new
+Shared MCP error.
+
+The current `runFailure()` must no longer infer SCHEMA merely because a generic
+diagnostic exists.
+
+Focused proof:
+
+```text
+FAILED MIME_OR_UTF8
+  -> visible MIME_OR_UTF8
+
+FAILED OUTPUT
+  -> visible OUTPUT
+
+FAILED SCHEMA {
+  path:"/price",
+  expected:"number",
+  message:"Expected number"
+}
+  -> visible SCHEMA /price expected number
+  -> rejected raw value is absent
+
+start unavailable
+  -> visible UNAVAILABLE state
+
+start cooldown
+  -> visible COOLDOWN state
+  -> input preserved
+```
+
+The UI categories remain frontend presentation data; do not change the published Shared
+MCP error protocol.
+
+#### A2-R3 — distinguish pre-dispatch save failure from UNKNOWN run, and serialize read/cancel reconciliation
+
+**Source and focused-test changes required.**
+
+The current `runSample()` wraps save and dispatch in one `try/catch`. If
+`onSaveDraft()` throws **before a preview run is allocated or dispatched**, the catch
+still reports:
+
+```text
+Run status is unknown. Check the original operation before retrying.
+```
+
+That statement is false: no run operation exists to reconcile. The existing Attempt 2
+test currently locks in this incorrect message.
+
+Split save from run admission.
+
+Required flow:
+
+```text
+validate current draft
+  -> save if needed
+
+save fails / save cannot confirm exact current contentHash
+  -> zero previewRunId allocation
+  -> zero runSample call
+  -> activeRun remains null
+  -> message:
+     "Draft could not be saved. No sample run was started."
+
+save succeeds
+  -> allocate exactly one previewRunId
+  -> retain UNKNOWN with that ID immediately
+  -> dispatch exact frozen run payload
+
+dispatch throws / response cannot confirm same ID
+  -> retain UNKNOWN with original previewRunId
+  -> Check original operation uses that exact ID
+```
+
+Update the existing save-failure regression accordingly:
+
+```text
+save throws
+  -> port.runSample called 0 times
+  -> no Check original operation button
+  -> "No sample run was started" visible
+```
+
+Also prevent `readRun` and `cancelRun` from racing each other through the single
+`pending` state. While one reconciliation request is in flight, do not admit the other.
+After it completes, expose the appropriate controls again for the retained run status.
+
+A deterministic implementation is:
+
+```text
+pending === "read" || pending === "cancel"
+  -> disable both Check status/reconcile and Cancel
+```
+
+while keeping both controls present for a RUNNING run when neither request is pending.
+
+Focused proof:
+
+```text
+RUNNING
+  -> Check run status + Cancel both initially enabled
+
+deferred readRun admitted
+  -> second read disabled
+  -> Cancel disabled until read resolves
+  -> no second reconciliation request admitted
+
+deferred cancelRun admitted
+  -> Check run status disabled until cancel resolves
+  -> no read/cancel state overwrite
+```
+
+### Attempt 2 Validation Reviewed
+
+Submitted evidence:
+
+```text
+npm run test:arch020-code-editor
+  PASS — 11/11
+
+npx eslint src/studio/code-response tests/code-editor.test.tsx
+  PASS
+
+git diff --check
+  PASS
+
+npm run lint
+  NON-ZERO only on reported pre-existing
+  src/studio/connections/connections-ui.tsx diagnostic/warnings
+
+npm run typecheck
+  NON-ZERO only on reported pre-existing
+  src/commerce/integration/backend/executors.ts diagnostics and
+  tests/code-response-processor.test.ts readonly-schema mismatch
+
+npm run build
+  QuickJS package/smoke + application compilation PASS;
+  subsequent type checking stops on the same three unrelated diagnostics
+```
+
+No task-owned C21 diagnostic was reported. Those repository-wide baseline conditions
+are not the reason for this review outcome.
+
+For Attempt 3 run exactly:
+
+```bash
+npm run test:arch020-code-editor
+npx eslint src/studio/code-response tests/code-editor.test.tsx
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If the repository-wide commands remain non-zero solely on the same unchanged baseline
+outside the task-owned files, record the exact diagnostics and prove there is still no
+diagnostic in:
+
+```text
+src/studio/code-response/**
+tests/code-editor.test.tsx
+package.json
+package-lock.json
+```
+
+Do not repair unrelated Connections, executor or processor-test baseline code.
+
+### Attempt 2 Architecture Conformance
+
+Not yet Accepted.
+
+A1-R1 through A1-R4 and the CodeMirror/raw-sample portions of A1-R6 are materially
+corrected. Remaining non-conformance is limited to the unreachable SUPER_ADMIN publish
+workflow, loss of typed MIME/OUTPUT/schema-expected failure semantics, and incorrect
+UNKNOWN/reconciliation semantics around pre-dispatch save failure plus read/cancel
+race admission.
+
+No host-page/sidebar work, COMMERCE-023 visual authoring, COMMERCE-026 sandbox
+implementation, COMMERCE-030 receipt logic, COMMERCE-031 preview backend, live HTTP,
+credential, database or final COMMERCE-024 composition is authorized by this rework.
+
+### Attempt 2 Follow-up
+
+Return the same task to the normal execution path:
+
+```yaml
+status: ready
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+The next:
+
+```text
+/moda-task ARCH-020-COMMERCE-027
+```
+
+must claim **Attempt 3 exactly once**.
+
+The implementing agent must read the complete latest Architect Review before source
+inspection, implement only A2-R1 through A2-R3, add the focused regressions above, run
+the bounded validation, update the Completion Report/checklists, set the task to
+review, clear the claim on handoff, push both mirrored task branches and STOP.
 
 Do not start COMMERCE-024 or COMMERCE-012. They remain dependency-gated.

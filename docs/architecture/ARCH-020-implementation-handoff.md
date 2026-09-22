@@ -1163,3 +1163,18 @@ Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
 because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
+
+## COMMERCE-027 Attempt 2 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 2**, claim clear.
+Attempt 2 correctly implements the Shared `TransformSample` boundary, canonical
+browser hash/stale-result guards, returned-saved-revision run dispatch, retained
+preview identity, RUNNING cancel/status controls and locally bundled CodeMirror 6.
+
+Acceptance remains gated only by three task-owned corrections recorded
+deterministically in the task: reachable SUPER_ADMIN draft publication workflow,
+structured MIME/OUTPUT/SCHEMA failure presentation with `expected`, and correct
+pre-dispatch save-failure plus serialized read/cancel reconciliation semantics.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched
+automatically.
