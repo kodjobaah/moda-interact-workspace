@@ -1141,6 +1141,20 @@ promotes `COMMERCE-020`, `021`, `022`, `023`, `026` and `027` to Ready and confi
 `COMMERCE-025` Ready. All later C21 tasks retain unsatisfied dependencies; no task
 is launched, no main integration is performed and no service gitlink is changed.
 
+## COMMERCE-022 pre-claim implementation review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 0 retained; executor/claim null.** Reviewed
+submitted implementation `dd0164b` and parent reports `330a355` / `b74842df`.
+The U15/U16 visual skeleton and Shared `0.14.2` usage are preserved, but C21 X05/XN01
+is not yet satisfied: server routes pass a function-valued fixture port into a Client
+Component, mutation ports bypass the canonical result/unknown-replay contract,
+search/cursor return state and dirty/unknown navigation are not preserved, PER_SHOP
+credentials use a free-form shop ID instead of authorized shop search/status rows,
+and Overview conflates selected with latest revision. The task was implemented before
+a successful launcher claim, so no Attempt 1 is invented retroactively. The next
+successful `/moda-task ARCH-020-COMMERCE-022` claim creates Attempt 1 from the
+already-pushed implementation branch and executes exact A0-R1–A0-R5 in the task
+Architect Review. No downstream promotion or automatic launch.
 ### COMMERCE-020 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1412,6 +1426,13 @@ No decryption, mutation or fallback is added to availability.
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
 
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+COMMERCE-022 is **Complete / Accepted, Attempt 4**, claim clear. Focused 20/20
+Connections tests, lint, diff check and task-owned diagnostics pass; typecheck/build
+remain non-zero only on the documented unrelated 15-error repository baseline.
+COMMERCE-024 and COMMERCE-012 retain additional incomplete prerequisites and receive
+no automatic promotion from this acceptance.
 ## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).

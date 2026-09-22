@@ -1586,6 +1586,20 @@ system-test work remains dependency-gated. No dependent task is automatically
 started and no implementation/main merge or gitlink update is performed by this
 review.
 
+## COMMERCE-022 pre-claim implementation review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 0 retained; executor/claim null.** Reviewed
+submitted implementation `dd0164b` and parent reports `330a355` / `b74842df`.
+The U15/U16 visual skeleton and Shared `0.14.2` usage are preserved, but C21 X05/XN01
+is not yet satisfied: server routes pass a function-valued fixture port into a Client
+Component, mutation ports bypass the canonical result/unknown-replay contract,
+search/cursor return state and dirty/unknown navigation are not preserved, PER_SHOP
+credentials use a free-form shop ID instead of authorized shop search/status rows,
+and Overview conflates selected with latest revision. The task was implemented before
+a successful launcher claim, so no Attempt 1 is invented retroactively. The next
+successful `/moda-task ARCH-020-COMMERCE-022` claim creates Attempt 1 from the
+already-pushed implementation branch and executes exact A0-R1–A0-R5 in the task
+Architect Review. No downstream promotion or automatic launch.
 ### COMMERCE-020 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1810,6 +1824,12 @@ No decryption, mutation or fallback is added to availability.
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
 
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+The Connections U15/U16 frontend is **Accepted / Complete** at Attempt 4. Final
+credential dirty/unknown navigation, exact shop/revision status ownership and terminal
+read-state gaps are closed. Production external-tool/Connections composition remains
+with COMMERCE-024; no downstream execution is implied by this acceptance.
 ## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
