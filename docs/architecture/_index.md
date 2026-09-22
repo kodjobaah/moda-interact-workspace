@@ -547,3 +547,22 @@ request validation/default-port normalization is not strict (`:443` is retained 
 invalid bounds may reach/clamp at Prisma). The task Architect Review contains exact
 A1-R1..A1-R4 source, behavior and focused-proof instructions. No exhaustive retest,
 downstream promotion or automatic launch.
+
+### ARCH-020 COMMERCE-021 Attempt 1 review — 2026-09-21
+
+COMMERCE-021 is **Changes Requested / Ready, Attempt 1** (`b19f9d7`; report
+`5abdd61a`). Preserve its fixed-origin TLS/socket and Shared 0.14.2 integration;
+Attempt 2 closes production DNS/address classification, absolute stage deadline and
+abort cleanup, raw JSON safety/depth and explicit dispatcher exhaustiveness. The C21
+CANCELLED contradiction is reconciled to nonretryable `DEADLINE` at the
+CommerceToolResult boundary; runner-level cancellation remains separate. No dependent
+promotion or automatic launch.
+
+
+### ARCH-020 COMMERCE-021 Attempt 3 accepted — 2026-09-22
+
+COMMERCE-021 is **Accepted / Complete, Attempt 3**. The final corrections terminate
+rejected provider bodies and preserve nonretryable external `DEADLINE` semantics
+through the definition dispatcher. Existing production DNS/TLS pinning, bounded
+transport and raw-JSON safety remain accepted. No dependant is newly Ready from this
+acceptance alone.
