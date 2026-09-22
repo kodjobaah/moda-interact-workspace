@@ -1573,6 +1573,53 @@ artifact, isolation, serialization and fixed-memory evidence is preserved.
 No dependent task is newly Ready: COMMERCE-026 still awaits SHARED-002. GATEWAY-003,
 COMMERCE-012 and system validation keep their remaining gates. ARCH-020 remains In
 Progress and no task is launched automatically.
+### COMMERCE-018 Attempt 1 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
+implementation `d074205` and parent report `686abc47`. Production Studio composition
+is present, but six bounded functional corrections remain: mutation Server Actions
+need the canonical Origin guard; capability publication currently sends a strict-schema
+extra field; documentation search paths are double-prefixed on document fetch; release
+read models do not carry the current environment pointer CAS/member-order semantics;
+response validation ignores the supplied example; and U13 omits positive eligibility.
+The exact correction contract is recorded in COMMERCE-018 Architect Review. Submitted
+focused tests (3), typecheck, lint, build and diff hygiene pass, but do not establish
+these flows. No exhaustive retest is requested and no downstream task is promoted or
+launched.
+
+### COMMERCE-018 Attempt 2 architect review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claim null.** Attempt 2
+closes the Origin-boundary source check, strict capability-publish payload, discovery
+path handoff and response-example validation, and preserves no-active-release and
+descriptor de-duplication. Acceptance is still blocked because mutation release
+rereads use the environment-agnostic `release(state,id)` helper (returning the wrong
+pointer CAS/status), U13 still substitutes capability IDs for missing feature IDs,
+the named suite remains mocked-adapter evidence rather than C20's required
+real-application-service integration path, and the C20 producer-SHA/source/export
+mapping table is still absent. Exact A2-R1..R4 corrections are recorded in the task's
+Architect Review. Submitted 8 focused tests plus typecheck/lint/build/diff hygiene are
+retained as passing evidence. No dependent task is promoted or launched.
+
+
+### COMMERCE-018 Attempt 3 / COMMERCE-033 fixture correction — 2026-09-21
+
+COMMERCE-018 is **Blocked, Attempt 3 retained, claims null** after source-level
+acceptance of its environment-aware release rereads and authoritative U13 feature
+identity handling. Real C20 integration evidence is blocked by a producer gap: the
+accepted COMMERCE-013 backend does not contain the C20 persistent integration
+seed/reset boundary.
+
+The architect creates `ARCH-020-COMMERCE-033` as a bounded producer-correction task:
+**Ready, Attempt 0, executor/claimed_at null**, depends only on accepted COMMERCE-013.
+It has deterministic file ownership, exact exports, TEST target guards, a dedicated
+disposable PostgreSQL reset contract, prefix-scoped Redis cleanup, exact fixture graph
+and real-infrastructure validation. C20 now names 033 as the fixture owner while the
+accepted013 production runtime remains unchanged.
+
+COMMERCE-018 and unclaimed COMMERCE-019 both depend on 033 and are Blocked until it
+is Complete. Their existing attempt numbers are preserved; neither is automatically
+claimed or launched. COMMERCE-012, GATEWAY and system-test gates remain downstream.
 
 ## SHARED-002 Attempt 5 architect acceptance — 2026-09-21
 
@@ -1759,6 +1806,14 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
 
+## COMMERCE-018 Attempt 6 autonomous validation unblock — 2026-09-22
+
+The Studio production-integration implementation remains source-complete pending its
+task-owned C20 real-adapter proof. `ARCH-020-COMMERCE-035` is now the canonical,
+Accepted/Complete C20 fixture producer; stale historical prose naming COMMERCE-033 as
+that fixture is superseded. COMMERCE-018 is Ready for validation-only Attempt 7 with
+architect-authorised local disposable Docker PostgreSQL/Redis provisioning. No
+downstream promotion occurs until architect acceptance of COMMERCE-018.
 ## COMMERCE-028 Attempt 1 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-028 is **Changes Requested / Ready, Attempt 1**, claim clear.
@@ -1798,6 +1853,22 @@ PV02/PV03 runtime-revalidation evidence.
 
 No dependency is promoted and no downstream task is launched automatically.
 
+## COMMERCE-018 Attempt 7 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 7 retained.**
+
+The real C20 infrastructure gate is now closed: disposable PostgreSQL/Redis health,
+fixture reset, 4/4 real Studio integration scenarios, 9/9 focused adapter tests and
+container cleanup all pass. The production Studio adapter remains accepted in
+substance.
+
+The remaining COMMERCE-018 task-owned requirement is C20 I01 / S01: the real suite
+must perform one full authoring traversal through production `StudioServices`
+(create tool/draft/publish, create capability/draft/publish, create release,
+activate, rollback) rather than only operating on COMMERCE-035's pre-seeded
+published graph. Attempt 8 is limited to that deterministic proof plus explicit
+saved-draft preservation during the intentional discovery outage unless the real
+flow exposes a bounded 018-owned defect. No downstream task is promoted.
 ## COMMERCE-032 Attempt 1 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
@@ -1824,6 +1895,14 @@ No decryption, mutation or fallback is added to availability.
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
 
+## COMMERCE-018 Attempt 8 acceptance — 2026-09-22
+
+The production Studio composition task is **Accepted / Complete** at Attempt 8. Its
+real C20 proof now includes the complete S01 author/validate/publish/release/
+activate/rollback traversal, saved-draft preservation during discovery outage and
+one-audit-per-operation verification. Preview remains COMMERCE-019-owned and external
+production composition remains COMMERCE-024-owned. GATEWAY-001 becomes Ready; no
+automatic execution follows from readiness.
 ## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
 
 The Connections U15/U16 frontend is **Accepted / Complete** at Attempt 4. Final
