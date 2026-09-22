@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 190
-executor: copilot
-claimed_at: 2026-09-22T15:34:52Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-GATEWAY-001
@@ -59,10 +59,10 @@ Follow the parent architecture's tenant/policy/revision contracts and the assign
 
 ## Work Items
 
-- [ ] Use accepted signal inventory to add MCP error/latency, eligibility outcomes, provider throttling and conversation-lag views.
-- [ ] Enforce explicit environment and production-versus-preview filters; avoid duplicating framework metrics.
-- [ ] Configure actionable alerts for service unavailability, queue lag and systematic evidence/permission failures with documented thresholds.
-- [ ] Document triage for release rollback, capability disable, provider failure and preview cost without secret/customer exposure.
+- [x] Use accepted signal inventory to add MCP error/latency, eligibility outcomes, provider throttling and conversation-lag views.
+- [x] Enforce explicit environment and production-versus-preview filters; avoid duplicating framework metrics.
+- [x] Configure actionable alerts for service unavailability, queue lag and systematic evidence/permission failures with documented thresholds.
+- [x] Document triage for release rollback, capability disable, provider failure and preview cost without secret/customer exposure.
 
 ## Interfaces / Contracts
 
@@ -130,7 +130,8 @@ Normal execution uses /moda-task and scripts/start-agent-task.py preparation, de
 
 ### Status
 
-Ready for Review. Attempt 1 implementation is complete and locally validated.
+Ready for Review. Attempt 2 implementation is complete and locally validated. The
+hosted Grafana arrival/evaluation gate remains developer-owned.
 
 ### Files Changed
 
@@ -139,68 +140,99 @@ Ready for Review. Attempt 1 implementation is complete and locally validated.
 - `docs/commerce-operational-runbook.md`
 - `tests/fixtures/commerce-operational-signals.json`
 - `tests/validate-commerce-observability.sh`
+- `scripts/render-commerce-alerts.sh`
 
 ### Work Completed
 
-Added a version-controlled Grafana dashboard with service/environment selectors,
-live MCP and eligibility views, worker oldest-waiting-age view, preview view and
-Background-owned evidence-refresh view. Added four C11 alert rules with explicit
-production/live filters, inclusive sample floors, strictly-greater thresholds,
-consecutive-duration handling for queue lag, and `NoData` states. Added the
-operational runbook for unavailable service, permission/provider failures, queue
-lag, evidence failures, rollback, capability disablement and preview isolation.
-The evidence-refresh rule and panel are intentionally marked as Background-002
-owned; until that accepted terminal event exists they remain `No data` rather
-than fabricating a business signal.
+Attempt 2 consumes the accepted dependency pins `e8b43e4604780754ba64b0653c7d6e029d58e3c3`
+(ARCH-020-COMMERCE-010), `8b2f9835dcd98b5385a64fa873598b8379b2986d`
+(ARCH-020-BACKGROUND-002), and `478923a` (ARCH-020-GATEWAY-001). The accepted
+producer/export evidence used by the artifacts is:
+
+- Commerce `commerce.mcp.request`, `commerce.definition.outcome`,
+  `commerce.eligibility.outcome`, and `commerce.preview.outcome` semantic
+  outcomes, with `purpose=live` or `purpose=preview` bounded dimensions.
+- Existing framework metrics `http_server_request_duration_seconds_bucket` and
+  `http_server_response_status_code_total` for MCP latency and request/error
+  views, avoiding a duplicate HTTP metric.
+- Commerce `/health/ready` through the existing `probe_success` readiness probe.
+- Background `moda.background.queue.oldest_waiting_age_ms` for oldest pending
+  queue age, in milliseconds.
+- Background OpenTelemetry counter
+  `moda.background.commerce.evidence.refresh`, with bounded
+  `moda.commerce.evidence.outcome` values for evidence-refresh outcomes.
+
+The dashboard now has ten panels covering MCP errors and latency, tool outcomes,
+eligibility, provider throttling, queue lag, preview isolation/cost and evidence
+refresh. Alert source queries have explicit Loki/Prometheus datasource bindings;
+Grafana expressions use datasource `-100`; rules are rendered into independent
+test and production instances without dashboard variables. The runbook documents
+the Grafana Cloud HTTP API import boundary and triage for readiness, permission
+and provider failures, queue lag, evidence failures, rollback, capability
+disablement and preview isolation without secrets or customer data.
 
 ### Validation Results
 
 | Requirement | Fixture / command | Expected side effect | Result |
 | --- | --- | --- | --- |
-| Emitted Commerce signal names and units | `tests/fixtures/commerce-operational-signals.json`; `tests/validate-commerce-observability.sh` | Dashboard/alerts reference discovery, MCP, eligibility, preview, queue-age and refresh names; queue age is milliseconds | PASS |
-| Production vs preview/environment isolation | `dashboards/commerce-operational.json`; validator | Environment selector is test/production; production alert queries require `purpose=live`; preview sample is visible only in preview panel | PASS |
-| MCP denominator and threshold | `alerts/commerce-operational.yaml`; validator | Operational failure rate is `F / A > 0.05` with inclusive `A >= 20`; expected DENIED is excluded | PASS |
-| Queue lag threshold and duration | alert rule plus fixture sample `121000ms` | Converted age is strictly greater than 120 seconds and must remain true for 5 minutes | PASS |
-| Evidence failure threshold and ownership | alert rule, runbook and pending-owner fixture | `F / A > 0.10`, `A >= 20`, live only; missing Background signal remains No data | PASS locally; hosted signal pending |
-| Configuration syntax and hygiene | `bash -n tests/validate-commerce-observability.sh`; Ruby YAML parse; `git diff --check` | Valid shell/YAML and no whitespace errors | PASS |
+| Accepted producer inventory and units | `tests/fixtures/commerce-operational-signals.json`; validator | Exact Commerce semantic names, framework latency/error metrics, readiness probe, Background queue-age/evidence exports; queue age is milliseconds | PASS |
+| Grafana Cloud rendering boundary | `scripts/render-commerce-alerts.sh`; validator with synthetic datasource UIDs | Eight explicit test/production rules, no unresolved placeholders, every query has a datasource binding, expressions use `-100`, no `$environment` | PASS |
+| Required operational views and isolation | `dashboards/commerce-operational.json`; validator | Ten panels include MCP errors/latency, tool outcomes, eligibility, throttling, queue lag, preview and evidence refresh; test/production selector and live/preview separation | PASS |
+| Readiness semantics | readiness fixture and alert rule; validator | `/health/ready` `probe_success`, first failure pending, two-minute continuous failure firing, recovery resolved, missing telemetry NoData | PASS |
+| MCP denominator and threshold | boundary fixture; validator | `F / A > 0.05`, inclusive `A >= 20`; `A=20,F=1` not firing, `A=20,F=2` firing, `A=19` not firing; denied/permission outcomes excluded; preview excluded | PASS |
+| Queue lag threshold and duration | boundary fixture and alert rule; validator | `120s` not firing; `121s` for 5 minutes firing; recovery and absent series are covered as resolved/NoData | PASS |
+| Evidence failure threshold and ownership | boundary fixture, alert rule and runbook; validator | `F / A > 0.10`, inclusive `A >= 20`; `A=20,F=2` not firing, `A=20,F=3` firing, `A=19` not firing, missing/non-live excluded | PASS locally; hosted Background arrival pending |
+| Configuration syntax and hygiene | `bash tests/validate-commerce-observability.sh`; `bash -n tests/validate-commerce-observability.sh`; `git diff --check`; JSON/YAML parsing in validator | Configuration, fixture, rendered payload and whitespace checks pass | PASS |
 
-Exact local results: `tests/validate-commerce-observability.sh` passed with
-`commerce observability configuration validation passed`; `bash -n ...` passed;
-Ruby parsed `alerts/commerce-operational.yaml`; `git diff --check` passed.
+Exact local result from the implementation worktree: `bash
+tests/validate-commerce-observability.sh` exited 0 and printed
+`commerce observability configuration validation passed`. The validator itself
+ran `jq`, Python fixture/payload checks, rendered with
+`LOKI_DATASOURCE_UID=synthetic-loki PROMETHEUS_DATASOURCE_UID=synthetic-prometheus`,
+and verified eight rendered rules. `bash -n tests/validate-commerce-observability.sh`
+passed; the validator's JSON/YAML parsing checks passed; and `git diff --check`
+passed. The implementation worktree was clean at the pushed commit.
 
 ### Deviations
 
-No scope deviation. The C11 evidence-refresh signal is not emitted by the
-accepted Commerce inventory; the alert documents Background-002 ownership and
-does not substitute Commerce eligibility outcomes.
+No scope deviation. The evidence-refresh signal remains Background-002-owned;
+the gateway uses its accepted OpenTelemetry export and does not substitute
+Commerce eligibility outcomes. Grafana Cloud credentials and datasource UIDs
+remain external inputs.
 
 ### Assumptions
 
 The deployed Grafana data sources and service/resource label mapping are supplied
-by the developer's environment. Dashboard JSON is provisioned with Loki and
-Prometheus datasource variables and does not commit backend credentials.
+by the developer's environment. The version-controlled alert manifest is rendered
+with externally supplied Loki/Prometheus datasource UIDs and imported through the
+Grafana Cloud HTTP API; no backend credentials are committed.
 
 ### Unresolved Issues
 
-Developer-owned hosted validation remains: provision the dashboard/alerts in the
-approved Grafana environment, verify test then production arrival, capture live
-Commerce and preview events, confirm preview exclusion, exercise alert boundaries
-and recovery, and verify Background's terminal evidence-refresh signal. No live
-deployment, backend provisioning, provider call or hosted alert evaluation was
-performed by this agent.
+Developer-owned hosted validation remains: provision/import the rendered dashboard
+and alerts in the approved test Grafana environment; verify dashboard/import
+success; capture one live Commerce event, one preview event, one queue-age metric
+and the Background evidence-refresh signal; exercise alert boundaries/recovery;
+confirm production/live alerts exclude preview; and verify intentional NoData
+behaviour. No live deployment, backend provisioning, provider call or hosted alert
+evaluation was performed by this agent. Expected success is recorded hosted
+arrival and alert-evaluation evidence for each item, with no production mutation.
 
 ### Architectural Concerns
 
-The evidence-refresh alert cannot become actionable until Background emits the
-accepted terminal signal named in the fixture. This is an explicit cross-repo
-handoff, not an implementation of Background behavior.
+The evidence-refresh alert remains NoData until the accepted Background terminal
+signal arrives in the hosted environment. This is an explicit cross-repo handoff,
+not an implementation of Background behavior.
 
 ### Git / VCS
 
-Expected execution branch: `task/ARCH-020-GATEWAY-002`. Attempt: 1. Implementation
-and parent report commits/pushes will be recorded here before submission. No main
-integration, parent service gitlink update, live deployment or enabled-task launch
-is performed.
+Expected execution branch: `task/ARCH-020-GATEWAY-002`. Attempt: 2. The exact
+Attempt 2 implementation commit is `8bae447826333c291720519168dd28cdacc3de4b`.
+The implementation worktree is clean and pushed. The exact Attempt 2 parent report
+commit is recorded in this section after the parent report commit is created. The
+parent worktree is dedicated and clean before this report edit; the parent report
+branch will be pushed to `origin/task/ARCH-020-GATEWAY-002`. No main integration,
+parent service gitlink update, live deployment or enabled-task launch is performed.
 
 ## Architect Review
 
