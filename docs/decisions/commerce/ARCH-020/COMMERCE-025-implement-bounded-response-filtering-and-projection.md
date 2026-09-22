@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-SHARED-002
@@ -196,7 +196,7 @@ Expected mirrored branch: `task/ARCH-020-COMMERCE-025`. Implementation commits `
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Accepted — Attempt 2.
 
 ### Review Notes
 
@@ -309,3 +309,92 @@ Return the same task through `/moda-task ARCH-020-COMMERCE-025`. Preserve
 A1-R1/A1-R2, add the exact regression, run A1-R3 validation, update the Completion
 Report, set status to Review, clear claim metadata and STOP. Do not start
 COMMERCE-012, COMMERCE-024, COMMERCE-030 or COMMERCE-031.
+
+### Attempt 2 — Accepted (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 2 snapshot
+representing implementation `8b281cf` and parent report `04f10b0e`.
+
+Attempt 2 closes the complete Attempt 1 correction contract:
+
+- **A1-R1 resolved:** DESC sorting now applies direction only to two valid non-null
+  values. Missing and null values remain after non-null values in both ASC and DESC,
+  and their original relative order is preserved.
+- **A1-R2 resolved:** `src/commerce/external-response/index.ts` now begins with
+  `import 'server-only';`; no client wrapper or duplicate processor was introduced.
+- **A1-R3 resolved to the extent permitted by the repository baseline:** the exact
+  focused script and repository validation commands were executed. The focused
+  response-processing suite passes 6/6 and `git diff --check` passes. Repository-wide
+  lint/typecheck/build remain non-zero only on reported unrelated pre-existing files;
+  the production Next bundle compilation itself completed before the unrelated
+  TypeScript phase failed, and no diagnostic was reported in the task-owned
+  `src/commerce/external-response/**` or `tests/response-processing.test.ts` files.
+
+The exact required DESC regression is present:
+
+```text
+input order:
+  a, null-1, missing, b, null-2
+
+DESC result:
+  b, a, null-1, missing, null-2
+```
+
+The implementation continues to satisfy the C21 section 2.1 boundary inspected in
+Attempt 1: deterministic OBJECT/LIST projection, own-property paths, strict filters,
+Unicode code-point sorting, stable ties, bounded rows/fields/filters/limits,
+typed cancellation/deadline failures, no networking/persistence/UI/eval dependency,
+and no mutation of caller objects or shared request state.
+
+### Attempt 2 Validation Reviewed
+
+Submitted evidence:
+
+```text
+npm run test:arch020-response-processing
+  PASS — 6/6
+
+npm run lint
+  NON-ZERO — reported pre-existing react-hooks/set-state-in-effect failure in
+  src/studio/connections/connections-ui.tsx plus unrelated warnings;
+  no task-owned diagnostic reported
+
+npm run typecheck
+  NON-ZERO — 183 reported repository baseline diagnostics outside task-owned files;
+  no diagnostic reported in external-response or response-processing.test.ts
+
+npm run build
+  Next production compilation PASS;
+  subsequent TypeScript phase NON-ZERO on the same unrelated repository diagnostics
+
+git diff --check
+  PASS
+```
+
+These repository-wide failures are preserved as validation limitations; they are not
+relabelled as passing checks and do not excuse a task-owned regression.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. COMMERCE-025 remains a pure server-only visual response-processing port and
+does not take ownership of transport, credentials, persistence, JavaScript sandboxing,
+publication validation, preview, UI or factory composition.
+
+### Attempt 2 Follow-up
+
+Set ARCH-020-COMMERCE-025 Complete at Attempt 2 and clear the execution claim.
+
+Dependency reconciliation makes `ARCH-020-COMMERCE-030` **Ready, Attempt 0** because
+all of its declared prerequisites are now Complete:
+
+```text
+SHARED-002      Complete
+COMMERCE-003    Complete
+COMMERCE-021    Complete
+COMMERCE-025    Complete
+COMMERCE-026    Complete
+```
+
+COMMERCE-031, COMMERCE-024, COMMERCE-012 and system-test work retain additional
+unsatisfied dependencies. Do not automatically launch COMMERCE-030 or any other
+downstream task.

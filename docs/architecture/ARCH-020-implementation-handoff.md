@@ -1119,3 +1119,18 @@ contract. Preserve the accepted DNS/socket pinning, stage-deadline, JSON-safety 
 one-provider-request implementation. COMMERCE-030 still waits on COMMERCE-025; later
 composition/gateway/final-checkpoint tasks retain their other dependencies. No
 automatic launch.
+
+## COMMERCE-025 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-025 is **Accepted / Complete, Attempt 2** (`8b281cf`; report
+`04f10b0e`). The C21 visual response processor now preserves null/missing-last
+ordering in both sort directions with stable ties and is protected by the required
+server-only module boundary. Focused tests pass 6/6 and diff validation passes.
+Repository-wide lint/typecheck/build remain non-zero only on reported unrelated
+baseline diagnostics; the production Next compilation completed before the
+unrelated TypeScript phase failed, and no task-owned diagnostic was reported.
+
+Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
+because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
+all Complete. Later preview, assembly, cache, gateway and system-test work retains
+its remaining dependencies. No downstream task is started automatically.
