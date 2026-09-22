@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 180
 executor: null
 claimed_at: null
@@ -703,3 +703,327 @@ must claim **Attempt 3 exactly once**.
 Implement only A2-R1/A2-R2/A2-R4, preserve the accepted Attempt 2 proxy/topology
 behavior, return to review and STOP. Do not begin GATEWAY-002, GATEWAY-003,
 COMMERCE-012 or system-test tasks.
+
+### Attempt 3 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 3 snapshot
+identified by the Completion Report as implementation `7bd5865ae6c3e412d03e383fd2bd951fb0c47c89`
+and parent report `db1f387`.
+
+Attempt 3 closes the infrastructure/runtime defects from Attempt 2 and those changes
+must be preserved:
+
+- `COMMERCE_PUBLIC_HOST`, `COMMERCE_STUDIO_ORIGIN` and Commerce `AUTH_URL` are now
+  service-level `sync:false` deployment inputs rather than committed Commerce hostnames;
+- the gateway Blueprint no longer claims a Commerce custom domain and the private
+  Commerce service remains domainless;
+- the deployment runbook explains attaching the chosen custom hostname to the gateway
+  and verifying host/origin drift;
+- the Auth.js callback route is corrected to `/api/auth/callback/google`;
+- hosted Studio requests now use an authenticated cookie and Server Action requests use
+  the current `Next-Action` identifier/body;
+- the valid assertion plus five wrong-claim assertions are externally supplied by the
+  Background-owned harness;
+- positive Blueprint validation passes;
+- the architect independently reran the submitted negative validator and confirmed
+  **48** expected-reason rejections;
+- the submitted Docker gateway suite remains **150 passed / 0 failed**. Docker is not
+  available in the architect review environment, so that result remains executor
+  evidence rather than a falsely claimed independent rerun;
+- A2-R3 remains correctly assigned to pending GATEWAY-003: C21 U15/U16 `/connections`
+  routing is not duplicated into this task.
+
+Attempt 3 is **not yet accepted** because the hosted smoke section is authenticated
+but still not executable against the accepted C5/C9.1/C15 application contracts.
+This is the only remaining GATEWAY-001 correction.
+
+#### A3-R1 — use valid C5/C9.1/C15 smoke payloads and concrete IDs
+
+**Runbook/report changes required. No Blueprint, HAProxy or application implementation
+change is required unless this documentation correction exposes a separate defect.**
+
+The current runbook sends `{}` for several operations whose accepted API contracts
+require structured input, and uses literal `<runId>` / `<conversationId>` placeholders
+inside commands described as copy/paste hosted smoke checks.
+
+Because those commands use `curl -f`, an application-level `400 INVALID_INPUT` is a
+failed smoke even when Gateway routing and authentication are correct.
+
+##### C5 private MCP
+
+The current valid-assertion command sends:
+
+```sh
+-d '{}'
+```
+
+to `/api/mcp`.
+
+C5 requires a valid JSON-RPC Streamable HTTP request. Therefore a correct Background
+assertion can still reach Commerce and fail body validation, which does not prove:
+
+```text
+private MCP + valid Background assertion -> accepted protocol request
+```
+
+Require one externally supplied Background-owned valid request body:
+
+```sh
+export BACKGROUND_MCP_REQUEST_BODY='<valid bounded C5 JSON-RPC request matching BACKGROUND_ASSERTION purpose>'
+```
+
+Do not invent or sign assertions in Gateway. The Background-owned harness supplies the
+valid assertion, the five structurally valid wrong-claim assertions, and the matching
+valid bounded C5 request body.
+
+Use the **same valid MCP body** for:
+
+```text
+missing assertion
+valid assertion
+wrong issuer
+wrong subject
+wrong audience
+wrong environment
+wrong kid
+```
+
+so the negative checks isolate authentication rather than mixing an invalid JSON-RPC
+body with claim validation.
+
+The valid path must assert an accepted non-error HTTP/protocol result. Do not depend on
+an arbitrary response substring unless that marker is explicitly supplied by the
+Background test harness and documented.
+
+##### C15 discovery
+
+The binding contract is:
+
+```text
+POST /api/studio/discovery/search
+  {query:string1..500}
+
+POST /api/studio/discovery/document
+  {path:string1..512}
+
+GET /api/studio/discovery/schema
+  apiVersion=2026-07 required
+  parentType/search/cursor optional
+
+POST /api/studio/discovery/validate
+  {definition:<bounded draft definition>}
+```
+
+The current runbook sends `{}` to search/document/validate and omits the required
+`apiVersion` from schema.
+
+Use externally supplied, non-secret, current valid smoke inputs:
+
+```sh
+export STUDIO_DISCOVERY_SEARCH_BODY='<valid JSON body containing query>'
+export STUDIO_DISCOVERY_DOCUMENT_BODY='<valid JSON body containing an approved canonical shopify.dev/docs path>'
+export STUDIO_DISCOVERY_VALIDATE_BODY='<valid JSON body containing a bounded current draft definition>'
+```
+
+Then call schema exactly with:
+
+```text
+/api/studio/discovery/schema?apiVersion=2026-07
+```
+
+Every request retains:
+
+```sh
+-H "Cookie: ${STUDIO_COOKIE_HEADER}"
+```
+
+and every `curl -f` invocation must be capable of succeeding with the documented
+inputs.
+
+##### C9.1 preview
+
+The binding POST inputs are not `{}` except cancellation:
+
+```text
+POST /api/studio/preview/tool-tests
+  {previewRunId,toolRevisionId,fixtureId,arguments}
+
+POST /api/studio/preview/conversations
+  {previewConversationId,mode,selection,fixtureId}
+
+POST /api/studio/preview/conversations/<id>/runs
+  {previewRunId,message}
+
+POST .../cancel
+  {}
+```
+
+Client-generated preview IDs must be concrete UUIDs and the GET paths must use the same
+IDs; literal `<runId>` / `<conversationId>` strings are not executable hosted smoke.
+
+Require externally supplied bounded smoke values, for example:
+
+```sh
+export STUDIO_PREVIEW_TOOL_TEST_RUN_ID='<UUID matching tool-test body>'
+export STUDIO_PREVIEW_TOOL_TEST_BODY='<valid JSON body>'
+
+export STUDIO_PREVIEW_CONVERSATION_ID='<UUID matching conversation body>'
+export STUDIO_PREVIEW_CONVERSATION_BODY='<valid FIXTURE-mode JSON body>'
+
+export STUDIO_PREVIEW_RUN_ID='<UUID matching conversation-run body>'
+export STUDIO_PREVIEW_RUN_BODY='<valid JSON body>'
+```
+
+The body values may be generated/captured by the current hosted Studio or test harness;
+Gateway must not fabricate saved tool/release/capability IDs.
+
+Use those exact values for:
+
+```text
+POST tool test
+GET same tool-test run ID
+POST conversation
+POST run under same conversation ID
+GET same conversation/run IDs
+POST cancel same conversation/run IDs with {}
+```
+
+Keep FIXTURE mode for the deployment smoke unless the developer explicitly intends a
+paid MODEL validation. No provider credential is printed.
+
+##### Required shell guards
+
+Before the smoke calls, fail fast for every required external variable using shell
+parameter guards, including at least:
+
+```text
+COMMERCE_INTERNAL_SERVICE_ADDRESS
+COMMERCE_PUBLIC_HOST
+GATEWAY_PUBLIC_ORIGIN
+STUDIO_COOKIE_HEADER
+STUDIO_NEXT_ACTION_ID
+STUDIO_NEXT_ACTION_BODY
+BACKGROUND_ASSERTION
+BACKGROUND_ASSERTION_WRONG_ISSUER
+BACKGROUND_ASSERTION_WRONG_SUBJECT
+BACKGROUND_ASSERTION_WRONG_AUDIENCE
+BACKGROUND_ASSERTION_WRONG_ENVIRONMENT
+BACKGROUND_ASSERTION_WRONG_KID
+BACKGROUND_MCP_REQUEST_BODY
+STUDIO_DISCOVERY_SEARCH_BODY
+STUDIO_DISCOVERY_DOCUMENT_BODY
+STUDIO_DISCOVERY_VALIDATE_BODY
+STUDIO_PREVIEW_TOOL_TEST_RUN_ID
+STUDIO_PREVIEW_TOOL_TEST_BODY
+STUDIO_PREVIEW_CONVERSATION_ID
+STUDIO_PREVIEW_CONVERSATION_BODY
+STUDIO_PREVIEW_RUN_ID
+STUDIO_PREVIEW_RUN_BODY
+```
+
+Do not echo the cookie, assertions, private keys or provider credentials.
+
+##### Attempt 4 validation
+
+This correction is documentation/evidence-only. Preserve the accepted Attempt 3
+Blueprint/proxy implementation.
+
+Run:
+
+```bash
+bash tests/validate-render-blueprints.sh
+bash tests/validate-render-blueprints-negative.sh
+
+bash -n \
+  docker/entrypoint.sh \
+  tests/run-tests.sh \
+  tests/validate-render-blueprints.sh \
+  tests/validate-render-blueprints-negative.sh
+
+git diff --check
+```
+
+The existing `150 passed / 0 failed` Docker route/body suite does not need to be
+rerun merely because the hosted-smoke Markdown changed, unless the executor changes
+Gateway implementation/configuration again. If any Gateway implementation/configuration
+file changes, rerun `bash tests/run-tests.sh` and record the exact result.
+
+Update the Completion Report to **Attempt 4**, identifying the runbook-only correction,
+validation actually rerun and any unrun hosted checks. Do not claim live Render,
+Google OAuth, Background assertion or provider validation unless actually performed.
+
+Return the task to:
+
+```yaml
+status: review
+attempt: 4
+executor: null
+claimed_at: null
+```
+
+push both mirrored task branches and STOP. Do not start GATEWAY-002, GATEWAY-003,
+COMMERCE-012 or system-test work.
+
+### Attempt 3 Reviewed Files
+
+- `moda-interact-gateway/render.test.yaml`
+- `moda-interact-gateway/render.production.yaml`
+- `moda-interact-gateway/haproxy/haproxy.cfg`
+- `moda-interact-gateway/docker/entrypoint.sh`
+- `moda-interact-gateway/tests/run-tests.sh`
+- `moda-interact-gateway/tests/validate-render-blueprints.sh`
+- `moda-interact-gateway/tests/validate-render-blueprints-negative.sh`
+- `moda-interact-gateway/docs/commerce-deployment.md`
+- `ARCH-020-GATEWAY-003` C21 U15/U16 assignment
+- this task Completion Report and complete Attempt 2 Architect Review
+
+### Attempt 3 Validation Reviewed
+
+Submitted evidence:
+
+```text
+bash tests/validate-render-blueprints.sh
+  PASS
+
+bash tests/validate-render-blueprints-negative.sh
+  PASS — 48 expected-reason rejections
+
+bash tests/run-tests.sh
+  PASS — 150 passed / 0 failed (executor evidence)
+
+HAProxy render / haproxy -c
+  PASS (executor evidence)
+
+shell syntax
+  PASS
+
+git diff --check
+  PASS (executor evidence)
+```
+
+Architect independently reran the positive validator, negative validator and shell
+syntax checks successfully from the submitted source. The extracted review archive is
+not a Git repository, so the architect does not falsely claim an independent
+`git diff --check`. Docker is unavailable in the architect environment, so the 150-test
+suite remains submitted executor evidence.
+
+### Attempt 3 Architecture Conformance
+
+Infrastructure conformance is otherwise accepted.
+
+The private/public Render topology, external hostname boundary, C15/C9.1 gateway
+allowlist, public MCP denial, Commerce 128 KiB body bound, 100-second timeout and
+secret ownership now conform to ARCH-020. Acceptance is withheld only because the
+developer smoke procedure still mixes correct routing/authentication with invalid
+application payloads and placeholder IDs.
+
+### Attempt 3 Follow-up
+
+Return through:
+
+```text
+/moda-task ARCH-020-GATEWAY-001
+```
+
+after this review overlay is committed. The next successful claim must create
+**Attempt 4 exactly once**. No downstream task is promoted automatically.

@@ -1507,3 +1507,14 @@ editing, scalar-only IN validation/reconciliation, guarded return context, injec
 code-panel slot and exact saved-revision fixture execution. COMMERCE-024 readiness
 must be reconciled only once all of its producer acceptances coexist in one parent
 snapshot.
+
+## GATEWAY-001 Attempt 3 architect review — 2026-09-22
+
+ARCH-020-GATEWAY-001 is **Changes Requested / Ready, Attempt 3**, claim clear.
+The Render/HAProxy implementation from `7bd5865` is preserved. Attempt 4 is
+documentation/evidence-only: hosted smoke commands must use valid C5/C9.1/C15 bodies,
+the required C15 schema apiVersion and concrete matching preview UUIDs rather than
+`{}`/placeholder IDs. The later C21 U15/U16 route extension remains assigned to
+GATEWAY-003.
+
+No downstream task is promoted or started automatically.

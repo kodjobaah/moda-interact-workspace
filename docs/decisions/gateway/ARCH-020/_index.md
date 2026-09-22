@@ -8,7 +8,7 @@ Definitions are on local main for review by explicit developer request. Individu
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ARCH-020-GATEWAY-001](GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | ready (Changes Requested, Attempt 2) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
+| [ARCH-020-GATEWAY-001](GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | ready (Changes Requested, Attempt 3) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
 | [ARCH-020-GATEWAY-002](GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 
@@ -46,3 +46,20 @@ callback path plus separate wrong-claim assertions.
 C21 U15/U16 `/connections` route exposure is assigned to pending GATEWAY-003 as a
 bounded downstream route delta rather than silently left unowned. No downstream task
 is promoted or launched.
+
+## GATEWAY-001 Attempt 3 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 3; claim clear.** Implementation `7bd5865`
+closes the Blueprint/proxy corrections from Attempt 2: Commerce public host/origin/Auth
+URL are deployment inputs, no Commerce custom domain is committed, authenticated
+Studio/Auth.js routing is corrected, and the positive/48-case negative validators pass.
+The submitted Docker gateway suite remains 150/150.
+
+One documentation/evidence correction remains. The hosted smoke block authenticates
+requests but still sends invalid `{}` bodies to strict C5/C9.1/C15 operations, omits
+C15's required `apiVersion=2026-07`, and uses literal preview ID placeholders. Attempt 4
+must use externally supplied valid MCP/discovery/preview bodies and concrete matching
+UUIDs. No Blueprint/HAProxy redesign is requested.
+
+GATEWAY-002/GATEWAY-003 and later Commerce/system-test work remain gated. No task is
+started automatically.
