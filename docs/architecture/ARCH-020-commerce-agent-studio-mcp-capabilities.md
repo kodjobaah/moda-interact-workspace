@@ -1975,3 +1975,12 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-023 Attempt 7 architect review — 2026-09-22
+
+The external U06/U14 frontend remains **Ready / Changes Requested, Attempt 7**.
+Persisted saved-definition refresh and most typed authoring behavior are now present.
+Before treating COMMERCE-023 as a completed producer, Save must not manufacture sample
+validation, `savedDefinition` must always begin from the persisted selected revision,
+and IN local validation must reject non-scalars and reconcile stale drafts. Production
+composition remains COMMERCE-024-owned.

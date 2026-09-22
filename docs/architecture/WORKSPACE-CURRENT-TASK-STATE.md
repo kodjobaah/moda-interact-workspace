@@ -1587,3 +1587,12 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-023 Attempt 7 architect review — 2026-09-22
+
+COMMERCE-023 is **Ready / Attempt 7 retained / claim clear**. Focused 7/7 external UI
+and 18/18 Studio tests pass, but exact source review still finds two bounded runtime
+issues: Save currently creates validation unconditionally, and IN local validation can
+treat same-type objects/arrays as scalar until the Shared schema rejects them. The
+canonical Completion Report also needs the final submitted commits. The next claim is
+Attempt 8. COMMERCE-024/012 remain dependency-gated.

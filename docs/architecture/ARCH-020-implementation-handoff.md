@@ -1490,3 +1490,10 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-023 Attempt 7 review — 2026-09-22
+
+`ARCH-020-COMMERCE-023` is **Ready / Changes Requested, Attempt 7**. Preserve the
+current U06/U14 authoring, saved-definition refresh and typed editor work. Attempt 8
+must close only A7-R1..A7-R3 from the latest task review before COMMERCE-024 consumes
+this frontend. COMMERCE-024 and COMMERCE-012 remain gated; nothing is auto-started.

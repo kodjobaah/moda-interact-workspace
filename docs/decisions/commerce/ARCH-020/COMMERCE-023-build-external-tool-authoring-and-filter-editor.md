@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 155
 executor: null
 claimed_at: null
@@ -3168,3 +3168,330 @@ exact diagnostics and do not repair unrelated files.
 
 Update the canonical Completion Report/checklists, return to `review`, clear the claim,
 push both mirrored task branches and STOP. Do not start COMMERCE-024 or COMMERCE-012.
+
+### Attempt 7 — Changes Requested (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 7 archive and
+parent handoff `4d89113ef861b7a12c577cb2a381d0b8e7adad76`. The current remote
+`task/ARCH-020-COMMERCE-023` parent branch matches that handoff commit. The task
+records implementation commit `ba75d1f`; the Commerce implementation remote is not
+readable through the current review connector, so implementation review is grounded
+in the exact submitted archive.
+
+**Changes Requested; Ready, Attempt 7 retained; executor/claimed_at remain null.
+Not accepted.**
+
+Attempt 7 materially closes most of A5-R1/A5-R2 and those corrections must be
+preserved:
+
+- `ExternalHttpEditor` now receives separate editable `definition` and persisted
+  `savedDefinition`;
+- U14 fixture execution receives `savedDefinition`, not the mutable local definition;
+- U14 is frozen while the draft is dirty;
+- response-processing mode dirtiness is compared against the saved
+  `responseProcessing` using canonical JSON rather than generic editor dirtiness;
+- query literals expose only string/number/boolean;
+- IN filter invalid text is retained locally and does not mutate saved processing on
+  a failed local parse;
+- successful Save refreshes local editable and saved definitions from the returned
+  persisted revision;
+- the focused suite reports 7/7 and StudioWorkspace reports 18/18.
+
+Three bounded issues remain from the existing A5 contract.
+
+#### A7-R1 — Save must never create validation; preserve it only for the exact validated persisted candidate
+
+Files:
+`components/studio-workspace.tsx`,
+`tests/external-tools-ui.test.tsx`.
+
+The current successful external Save callback does:
+
+```ts
+const saved = value as ToolRevision;
+setDefinition(structuredClone(saved.definition));
+setSavedDefinition(structuredClone(saved.definition));
+setExternalValidated(true);
+```
+
+This is incorrect. A Save is not a validation operation.
+
+Current failure mode:
+
+```text
+edit external definition
+-> validation becomes stale/false
+-> Save without Apply/Validate
+-> Save succeeds
+-> setExternalValidated(true)
+-> dirty becomes false
+-> enter publication reason
+-> Publish becomes enabled
+```
+
+That violates the existing A5-R1 rule that validation may survive Save only when:
+1. the candidate was already current/validated before Save; and
+2. the persisted returned definition is exactly the same candidate that was validated.
+
+Required correction:
+
+```ts
+const candidateWasValidated = externalValidated;
+const submittedDefinition = parsed.data;
+
+...
+(value) => {
+  const saved = value as ToolRevision;
+  const persistedMatchesSubmitted =
+    canonicalJson(saved.definition) === canonicalJson(submittedDefinition);
+
+  setDefinition(structuredClone(saved.definition));
+  setSavedDefinition(structuredClone(saved.definition));
+  setExternalValidated(
+    candidateWasValidated && persistedMatchesSubmitted
+  );
+}
+```
+
+Equivalent code is acceptable. Use the existing accepted canonical serialization
+contract; do not invent another hash format.
+
+Also correct the persisted baseline initialization. The current state is:
+
+```ts
+const base =
+  composerTool matches selected
+    ? composerTool.definition
+    : selected?.definition;
+
+const [savedDefinition] = useState(structuredClone(base));
+```
+
+When returning to U06 with unsaved composer content, `base` is intentionally mutable
+local content and is **not** the persisted selected revision. Initialize
+`savedDefinition` from the actual persisted selected revision:
+
+```text
+editable definition:
+  composer unsaved definition when present, else selected.definition
+
+savedDefinition:
+  selected.definition
+```
+
+The composer-unsaved path must still set the overall draft dirty/frozen as it does
+today.
+
+Required focused proof:
+
+```text
+edit -> Save without Validate
+  -> Save succeeds
+  -> dirty false
+  -> Publish remains disabled
+
+Validate candidate A -> Save returns exact A
+  -> validation may remain current
+  -> Publish may enable after valid reason
+
+Validate candidate A -> Save returns normalized/different B
+  -> editable/saved definition refreshes to B
+  -> validation becomes stale
+  -> Publish disabled until B is applied/validated
+
+return from composer with unsaved definition U
+  -> editable definition = U
+  -> savedDefinition = persisted selected definition P
+  -> U14 frozen while dirty
+  -> processingDirty compares against P, not U
+```
+
+Do not change COMMERCE-030 publication validation or backend publication semantics.
+
+#### A7-R2 — IN local validation must reject non-scalars and reconcile stale local drafts
+
+Files:
+`src/studio/external-http/editor.tsx`,
+`tests/external-tools-ui.test.tsx`.
+
+Attempt 7 improved the same-type check, but the current helper still does:
+
+```ts
+const kind = (value: unknown):
+  "string" | "number" | "boolean" | "null" =>
+  value === null
+    ? "null"
+    : (typeof value as "string" | "number" | "boolean");
+```
+
+For JSON objects/arrays, `typeof value === "object"` is merely cast into the scalar
+union. Therefore values such as:
+
+```json
+{"a":1}, {"b":2}
+```
+
+can pass the local same-kind test and only fail later when the strict Shared schema
+rejects the attempted `setVisual(...)`. That is not the exact A5-R2 scalar check and
+does not produce the required row-local IN error.
+
+Use one exact scalar-kind helper:
+
+```ts
+type ScalarKind = "string" | "number" | "boolean" | "null";
+
+function scalarKind(value: unknown): ScalarKind | null {
+  if (value === null) return "null";
+  if (typeof value === "string") return "string";
+  if (typeof value === "number") return "number";
+  if (typeof value === "boolean") return "boolean";
+  return null;
+}
+```
+
+Require:
+- 1..20 values;
+- every value has a non-null supported scalar kind;
+- every value has exactly the same kind as the first;
+- numbers are finite;
+- strings satisfy the existing 2048-byte bound.
+
+On failure:
+- preserve the exact entered text in `inDrafts[index]`;
+- set the bounded row error in `inErrors[index]`;
+- do not call `setVisual(...)`;
+- do not mutate saved `ResponseProcessing`.
+
+Also finish the existing A5-R2 reconciliation rule: if the canonical saved/current
+filter changes externally (for example through valid Advanced JSON, mode reset or
+loaded saved state), stale local IN draft/error state for that row must be replaced
+with the canonical filter values. An invalid local draft should persist only while
+the underlying canonical IN filter itself has not changed.
+
+Required focused proof:
+
+```text
+IN ["one","two"]   -> accepted
+IN [1,2]           -> accepted
+IN [null,null]     -> accepted
+
+IN ["one",null]    -> row error; exact text retained; processing unchanged
+IN [1,"2"]         -> row error; exact text retained; processing unchanged
+IN {"a":1},{"b":2} -> row error; exact text retained; processing unchanged
+IN [1],[2]         -> row error; exact text retained; processing unchanged
+IN 21 values       -> row error; processing unchanged
+
+invalid local IN text
+-> canonical filter changed through another accepted editor path
+-> local IN text/error reconciles to the new canonical filter
+```
+
+Do not widen Shared filter values.
+
+#### A7-R3 — reconcile the canonical Completion Report with the submitted final commits
+
+File:
+this task record only.
+
+The canonical Completion Report now correctly identifies Attempt 7, but its Git/VCS
+block still says:
+
+```text
+implementation commit pending push
+parent claim commit d3d4c609
+```
+
+The actual submitted handoff is:
+
+```text
+implementation: ba75d1f
+parent report: 4d89113e
+both branches pushed and clean
+status: review
+claim cleared
+```
+
+Update the canonical Completion Report to record those final facts. Retain historical
+claim commits/reviews if useful, but do not leave the current report saying the final
+implementation commit is pending.
+
+No additional broad XN02 test matrix is requested in Attempt 8. Preserve the existing
+7 focused tests and add only the regressions necessary for A7-R1 and A7-R2.
+
+### Attempt 7 Validation Reviewed
+
+Submitted evidence:
+
+```text
+npm run test:arch020-external-tools-ui
+  PASS — 7/7
+
+npx vitest run tests/studio-workspace.test.tsx
+  PASS — 18/18
+
+targeted ESLint
+  PASS with one unrelated existing warning
+
+git diff --check
+  PASS
+
+repository typecheck/build
+  NON-ZERO only on the documented unrelated repository baseline
+```
+
+Static architect inspection confirms the saved-definition refresh and IN draft-retention
+changes are present, but A7-R1 and A7-R2 above remain observable in production source.
+
+### Architecture Conformance
+
+The U06/U14 design is now close to acceptance. No architecture redesign is required.
+The remaining work is limited to:
+- correct validation preservation across Save/persisted refresh;
+- exact scalar-only IN validation and draft reconciliation;
+- current Completion Report metadata.
+
+No U15/U16, provider HTTP, credential, Shared, publication backend or production-factory
+ownership moves into COMMERCE-023.
+
+### Attempt 8 Validation and Stop Condition
+
+Run:
+
+```bash
+npm run test:arch020-external-tools-ui
+npx vitest run tests/studio-workspace.test.tsx
+
+npx eslint \
+  src/studio/external-http \
+  components/studio-workspace.tsx \
+  tests/external-tools-ui.test.tsx
+
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If repository-wide commands retain only the documented unrelated baseline, record it
+accurately and do not repair unrelated files.
+
+Before handoff:
+1. complete only A7-R1 through A7-R3;
+2. update the canonical Completion Report truthfully;
+3. set `status: review`;
+4. after the next normal launcher claim the task is Attempt 8;
+5. clear `executor` and `claimed_at`;
+6. push both mirrored task branches;
+7. STOP.
+
+Do not begin COMMERCE-024 or COMMERCE-012.
+
+### Follow-up
+
+Return the same task through:
+
+```text
+/moda-task ARCH-020-COMMERCE-023
+```
+
+The next claim becomes **Attempt 8** exactly once.

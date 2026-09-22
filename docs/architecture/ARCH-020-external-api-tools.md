@@ -1237,3 +1237,12 @@ Focused lifecycle tests pass 11/11 and the disposable-PostgreSQL regression prov
 both accepted BEARER input forms persist NULL. COMMERCE-024 retains COMMERCE-036 as a
 dependency but remains Pending because other prerequisites are incomplete. No
 downstream task is started automatically.
+
+## COMMERCE-023 Attempt 7 architect review — 2026-09-22
+
+`ARCH-020-COMMERCE-023` remains **Ready / Changes Requested, Attempt 7**. The saved
+revision/U14 separation and typed IN draft handling are materially improved. Final
+acceptance is bounded to preserving validation across Save only for an already
+validated exact persisted candidate, using the persisted selected definition rather
+than composer-unsaved content as `savedDefinition`, and making IN validation
+scalar-only with canonical-draft reconciliation. COMMERCE-024 remains gated.
