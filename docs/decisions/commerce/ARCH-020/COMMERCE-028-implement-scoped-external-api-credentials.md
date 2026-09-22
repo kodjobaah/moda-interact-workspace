@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T04:08:21Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -92,7 +92,7 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 ## Acceptance Criteria
 
 - [x] CR01: PLATFORM and two PER_SHOP credentials roundtrip through real service; correct decrypted value reaches a recording internal consumer, never a public DTO.
-- [ ] CR02: same-command duplicate yields one credential effect/audit; changed replay and stale credential version reject; NULL-platform uniqueness exercised on PostgreSQL. Developer PostgreSQL validation remains required.
+- [x] CR02: same-command duplicate yields one credential effect/audit; changed replay and stale credential version reject; NULL-platform uniqueness exercised on PostgreSQL.
 - [x] CR03: wrong shop, absent credential, disabled connection, invalid key/AAD/tag and removed credential deny/unavailable exactly; old revision remains fixed while secret rotation affects future calls.
 
 ## Validation
@@ -206,6 +206,59 @@ Physical worktree isolation:
 The launcher claimed Attempt 1 as `3b610c19076630439b454a1c23175e39f62cda10` and
 verified the recursive database submodule at the recorded commit. This parent
 report update is the review handoff commit.
+
+## Completion Report Attempt 2
+
+### Status
+
+Review-ready, Attempt 2 implementation submitted to `moda_architect`.
+
+### Files Changed
+
+- `moda-interact-commerce/tests/external-credentials.test.ts`
+- `moda-interact-commerce/tests/external-credentials-postgres.test.ts`
+- `moda-interact-commerce/package.json`
+
+### Work Completed
+
+Added the required dedicated PostgreSQL rehearsal using two independent `PrismaClient`
+instances, the real connection lifecycle, the accepted command kernel, and the real
+credential service. The fast fixture now represents BEARER persistence as
+`authHeader: null`, while the resolver still derives the `Authorization` header.
+The existing in-memory race is explicitly labelled as a serialized fake-kernel
+fixture and is not presented as two-client PostgreSQL evidence.
+
+### Validation Results
+
+| Criterion | Committed test | Command | Observable result |
+| --- | --- | --- | --- |
+| CR01 | `external credentials > CR01 ...`; `external-credentials-postgres.test.ts > CR02-PG-01 ...` | `npm run test:arch020-external-credentials`; `npm run test:arch020-external-credentials:postgres` | Focused suite passed 5/5; real PostgreSQL rehearsal passed 5/5 and verified encrypted storage plus NULL-platform uniqueness. |
+| CR02 | `CR02-PG-01` through `CR02-PG-05` in `tests/external-credentials-postgres.test.ts` | `npm run test:arch020-external-credentials:postgres` | Passed 5/5: duplicate platform insert rejected, exact replay/conflicting replay produced one audit effect, two real clients produced one stale-CAS loser, injected audit failure rolled back credential and audit, and plaintext was absent from persisted ciphertext/audit JSON. |
+| CR03 | `external credentials > CR03 ...` | `npm run test:arch020-external-credentials` | Passed; wrong scope, disabled/missing/removed credentials, invalid key/AAD/tag, and rotation behavior remained bounded and fail-closed. |
+
+Additional focused validation:
+
+- `npm run test:arch020-external-connection-lifecycle`: passed, 1 file and 9 tests.
+- `npx eslint src/commerce/connections/credentials tests/external-credentials.test.ts tests/external-credentials-postgres.test.ts`: passed.
+- `git diff --check`: passed.
+
+Repository validation was run and recorded accurately:
+
+- `npm run lint`: non-zero on the existing `src/studio/connections/connections-ui.tsx:235` hook-rule error; six unrelated warnings also remain. No credential diagnostic was reported.
+- `npm run typecheck`: non-zero on 15 diagnostics, including accepted COMMERCE-020 typing errors, unrelated integration/studio errors, and a test schema typing error. No credential-service diagnostic was reported.
+- `npm run build`: packaging, smoke, Prisma generation, and Next compilation passed; the build then stopped on the same typecheck diagnostics.
+
+### Deviations
+
+No production source or accepted dependency source was changed. The real rehearsal
+uses `API_KEY` for its persisted revision because the deployed DATABASE-003 check
+constraint requires `authHeader IS NULL` for BEARER/NONE; the fast BEARER fixture
+separately verifies the resolver-owned `Authorization` derivation.
+
+### Git / VCS
+
+Implementation commit `7384f81` is pushed to `task/ARCH-020-COMMERCE-028`.
+The recursive database submodule remains at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 
 ## Architect Review
 
