@@ -767,11 +767,23 @@ Types reference generated Prisma.TransactionClient; no invented parallel ORM mod
 checkConnectionAvailability({connectionRevisionId,shopId}) returns
 {kind:'available'} or {kind:'excluded',reason:'CONNECTION_DISABLED'|
 'CONNECTION_REVISION_MISSING'|'CREDENTIAL_MISSING'|'CREDENTIAL_KEY_UNAVAILABLE'} or
-{kind:'unavailable'}. Uses metadata and key IDs without returning/decrypting secrets.
-It never substitutes a different revision/shop. Execution still calls resolveConnection
-to decrypt and recheck; corrupted ciphertext can fail even if status looked available.
-032 receives this status port. Distinguish missing configuration from falsely saying
-no feature exists.020 never supplies a placeholder configured=true status.
+{kind:'unavailable'}. In this availability port, `shopId` is the trusted non-null
+merchant identity supplied by the server-owned caller. After loading the immutable
+connection revision, the credential-row selector is derived from revision scope:
+
+```text
+PLATFORM -> credential shopId = null
+PER_SHOP -> credential shopId = trusted merchant shopId
+```
+
+The port uses metadata and key IDs without returning/decrypting secrets and never
+falls back to a different revision, PLATFORM credential or another merchant shop.
+Existing `getCredentialStatus` / `setCredential` / `removeCredential` /
+`resolveConnection` contracts keep their nullable `shopId` credential-scope meaning.
+Execution still calls resolveConnection to decrypt and recheck; corrupted ciphertext
+can fail even if status looked available.032 receives this status port. Distinguish
+missing configuration from falsely saying no feature exists.020 never supplies a
+placeholder configured=true status.
 
 ### 9.3. HTTP evidence before assembly
 
@@ -1116,20 +1128,15 @@ Two C21 mismatches remain: definition identity must use the canonical
 must validate current non-secret connection/revision auth shape without requiring a
 live PER_SHOP credential. No dependant is promoted until COMMERCE-030 is Complete.
 
-## COMMERCE-022 Attempt 2 architect review — 2026-09-22
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
-`ARCH-020-COMMERCE-022` remains **Ready / Changes Requested, Attempt 2**. The core
-U15/U16 correction direction is preserved, including Shared result envelopes,
-search/cursor return state, authorized PER_SHOP selection and independent selected
-revision context. Final X05/XN01 acceptance is bounded to route syntax, complete
-same-operation replay lifecycle, credential dirty/unknown tab locking, exact
-credential-status context/CAS and terminal connection-read states. No backend or
-credential implementation moves into this task.
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
 
-## COMMERCE-022 Attempt 3 architect review — 2026-09-22
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
 
-`ARCH-020-COMMERCE-022` remains **Ready / Changes Requested, Attempt 3**. Route syntax
-and repeatable same-operation reconciliation are now corrected. Final X05/XN01
-acceptance is bounded to the still-outstanding credential dirty/unknown navigation
-guard, exact revision/shop status-CAS ownership and terminal connection-detail read
-states. No backend or credential implementation moves into this task.
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.

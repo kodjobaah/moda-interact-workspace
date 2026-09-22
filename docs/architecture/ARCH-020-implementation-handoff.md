@@ -1300,17 +1300,15 @@ bounded to canonical tool-definition hashing via Shared `toolHashInput` and
 credential-independent connection/revision publication admission. COMMERCE-031,
 COMMERCE-024 and COMMERCE-012 remain gated; no automatic launch.
 
-## COMMERCE-022 Attempt 2 review — 2026-09-22
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
-`ARCH-020-COMMERCE-022` is **Ready / Changes Requested, Attempt 2**. Preserve the
-accepted A0 route-wrapper/result/list-state/shop-selection/latest-revision work.
-Attempt 3 must close only the latest task review A2-R1..A2-R5 before COMMERCE-024 may
-consume the Connections frontend. COMMERCE-024 and COMMERCE-012 remain gated; nothing
-is auto-started.
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
 
-## COMMERCE-022 Attempt 3 review — 2026-09-22
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
 
-`ARCH-020-COMMERCE-022` is **Ready / Changes Requested, Attempt 3**. Preserve the
-accepted route/replay/list-state/shop-selection/latest-revision work. Attempt 4 must
-close only A3-R1..A3-R3 from the latest task review before COMMERCE-024 consumes U15/U16.
-COMMERCE-024 and COMMERCE-012 remain gated; nothing is auto-started.
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.

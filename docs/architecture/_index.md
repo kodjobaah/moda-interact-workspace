@@ -628,3 +628,16 @@ resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-0
 `DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
 `COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
 their other authoritative dependencies.
+
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
+
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
+
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.

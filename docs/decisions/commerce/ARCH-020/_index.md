@@ -39,7 +39,8 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
-| [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-037, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-037](COMMERCE-037-normalize-availability-shop-scope.md) | Normalize external availability merchant shop scope | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-028 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
@@ -893,20 +894,15 @@ from synthetic sample/publication admission while validating only persisted
 connection/revision auth shape. COMMERCE-031/024/012 remain gated and no task is
 auto-started.
 
-## COMMERCE-022 Attempt 2 architect review — 2026-09-22
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
-**Changes Requested; Ready, Attempt 2 retained; claim clear.** Most A0 corrections are
-preserved, including serializable route composition, Shared result envelopes,
-list-state propagation, authorized shop lookup and independent latest/selected
-revisions. Attempt 3 is limited to five remaining runtime defects: invalid bare
-`use server` route syntax, replay pending/create-unknown reconciliation, credential
-dirty/unknown tab guarding, exact revision/shop credential-status CAS ownership, and
-terminal detail-read states. COMMERCE-024/012 remain gated; no automatic launch.
+COMMERCE-037 is **Accepted / Complete, Attempt 1** at implementation `021dcf7`
+(parent report `15d9588b`).
 
-## COMMERCE-022 Attempt 3 architect review — 2026-09-22
+The accepted availability port now treats `shopId` as trusted merchant identity and
+derives the credential-row selector from immutable connection revision scope:
+PLATFORM -> null, PER_SHOP -> merchant shop ID. Existing nullable credential-scope
+contracts for status/mutation/resolution remain unchanged.
 
-**Changes Requested; Ready, Attempt 3 retained; claim clear.** Attempt 3 closes route
-syntax and same-operation replay/Create reconciliation. Attempt 4 is limited to the
-three still-unimplemented prior corrections: parent-owned credential dirty/unknown
-navigation guarding, exact revision/shop credential-status CAS ownership, and terminal
-U16 detail-read states. COMMERCE-024/012 remain gated; no automatic launch.
+COMMERCE-032 remains Ready and now explicitly depends on COMMERCE-037. No task is
+claimed or launched automatically.

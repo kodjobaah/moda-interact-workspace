@@ -1400,18 +1400,15 @@ The next claim is Attempt 3 and must correct only canonical tool revision hashin
 remove credential existence from publication/sample gating while retaining current
 non-secret connection auth-shape checks. Dependants remain gated.
 
-## COMMERCE-022 Attempt 2 architect review — 2026-09-22
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
 
-COMMERCE-022 is **Ready / Attempt 2 retained / claim clear**. Submitted focused tests
-pass, but exact source review still finds five bounded U15/U16 runtime defects in route
-syntax, unknown reconciliation, credential navigation guarding, credential
-status/CAS freshness and terminal detail reads. The next claim is Attempt 3.
-COMMERCE-024/012 remain dependency-gated.
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
 
-## COMMERCE-022 Attempt 3 architect review — 2026-09-22
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
 
-COMMERCE-022 is **Ready / Attempt 3 retained / claim clear**. Focused 13/13 tests and
-task-local diagnostics pass, but exact source review confirms three prior runtime
-corrections remain: parent-owned credential navigation state, exact credential
-status/CAS context and terminal U16 read states. The next claim is Attempt 4.
-COMMERCE-024/012 remain dependency-gated.
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.
