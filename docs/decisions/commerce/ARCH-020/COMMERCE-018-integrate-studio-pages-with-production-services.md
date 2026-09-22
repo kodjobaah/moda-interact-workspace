@@ -156,7 +156,7 @@ Agent-executed:
 - `npm run test:arch020-studio-integration` — passed, 1 file and 9 tests.
 - `npx eslint tests/studio-integration-c20.test.ts` — passed.
 - `git diff --check` — passed.
-- `npm run lint` — blocked by one C20-test lint error before the fix; rerun of the touched file passed. Repository lint otherwise reported only warnings.
+- `npm run lint` — passed after the C20-test fix, with four pre-existing warnings and no errors.
 - `npm run typecheck` — blocked by 18 existing errors in shared-commerce contract consumers; no errors remain in `tests/studio-integration-c20.test.ts` after the fix.
 - `npm run build` — blocked after successful compile/runtime packaging and Prisma generation by the same 18 type errors.
 
