@@ -1075,3 +1075,13 @@ sample-MIME plus production-renderer reuse, bounded schema issues, and complete
 PV02/PV03 runtime-revalidation evidence.
 
 No dependency is promoted and no downstream task is launched automatically.
+
+## COMMERCE-030 Attempt 2 architect review — 2026-09-22
+
+`ARCH-020-COMMERCE-030` remains **Ready / Changes Requested, Attempt 2**. The receipt
+and sample-validation implementation now satisfies the staff-liveness, fixed TTL,
+MIME, production rendering, bounded schema-error and runtime-revalidation portions.
+Two C21 mismatches remain: definition identity must use the canonical
+`toolHashInput(definition)` content hash already used by the lifecycle, and publication
+must validate current non-secret connection/revision auth shape without requiring a
+live PER_SHOP credential. No dependant is promoted until COMMERCE-030 is Complete.

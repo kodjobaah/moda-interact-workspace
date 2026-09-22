@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -647,3 +647,315 @@ reconcile the Completion Report/checklists, set the task to review, clear the cl
 handoff, push both mirrored task branches and STOP.
 
 Do not start COMMERCE-031, COMMERCE-024 or COMMERCE-012. They remain dependency-gated.
+
+### Attempt 2 — Changes Requested (2026-09-22)
+
+Reviewer: `moda_architect`.
+
+**Changes Requested; Ready, Attempt 2 retained; executor/claimed_at remain null.
+Not accepted.**
+
+Reviewed the exact submitted Attempt 2 archive. The current remote parent task branch
+resolves to `2f65bc460b8682d897017c68abeae14bc5dcd20c` (`docs(ARCH-020-COMMERCE-030):
+submit attempt 2 for review`). The task records implementation commit `13463e5`
+(`fix(ARCH-020-COMMERCE-030): tighten external publication validation`). The Commerce
+implementation remote is not readable through the current review connector, so source
+review is grounded in the exact submitted archive.
+
+Attempt 2 materially closes the earlier receipt/liveness/rendering corrections and
+those changes must be preserved:
+
+- sample authors and publishers are role/liveness checked;
+- a receipt from another active tester is allowed while a deactivated tester invalidates
+  it;
+- Redis receipt JSON is strictly bounded/validated with fixed 24-hour TTL;
+- receipt-write failure fails closed;
+- sample MIME is normalized/checked;
+- successful output is schema-parsed, wrapped with `ExternalHttpResultDataSchema`,
+  rendered through the production `renderDefinitionResult(...)` path and revalidated;
+- schema failures expose bounded JSON-pointer/rule information without rejected values;
+- valid LIST rendering is exercised;
+- a later real external response is revalidated at runtime rather than trusting the
+  publication receipt.
+
+Submitted focused evidence reports **9/9 passed**, focused ESLint passed and
+`git diff --check` passed. Repository-wide lint/typecheck/build remain blocked by
+recorded unrelated baseline diagnostics and are not treated as task-owned regressions.
+
+Two production-contract mismatches remain. These are the complete Attempt 2 correction
+contract; do not broaden the task beyond them.
+
+#### A2-R1 — use the canonical accepted tool-definition content hash
+
+Files:
+`src/commerce/external-publication/index.ts`,
+`tests/external-publication.test.ts`.
+
+The current saved-identity comparison still recomputes:
+
+```ts
+digest(canonicalJson(input.definition))
+```
+
+but the accepted ARCH-020 tool revision `contentHash` is produced by the existing
+Commerce lifecycle/publication path as:
+
+```ts
+digest(canonicalJson(toolHashInput(definition)))
+```
+
+See the already accepted repository helper:
+
+```ts
+src/commerce/publication/validation.ts
+
+export function toolContentHash(definition) {
+  return digest(canonicalJson(toolHashInput(definition)));
+}
+```
+
+Therefore a real persisted revision with the correct accepted `contentHash` can be
+rejected by COMMERCE-030 even when its definition is byte-for-byte the same.
+
+The current focused harness reproduces the same wrong raw-definition hash and therefore
+cannot expose this mismatch.
+
+Correction:
+
+1. import `toolHashInput` from `@modainteract/moda-interact-shared/commerce`;
+2. in the current-definition check compute exactly:
+
+```ts
+const expectedDefinitionHash =
+  digest(canonicalJson(toolHashInput(input.definition)));
+```
+
+3. compare the saved `definitionHash` to that value;
+4. use the persisted/canonical saved hash for the receipt key exactly as today;
+5. do not introduce another hash shape and do not change the accepted lifecycle
+   `toolContentHash(...)` contract.
+
+Update the focused test helper so its saved revision hash and receipt hash are created
+from `toolHashInput(definition)`, not raw `canonicalJson(definition)`.
+
+Required focused proof:
+
+```text
+canonical lifecycle hash from toolHashInput(definition)
+  -> sample succeeds
+  -> receipt recorded
+  -> publication admission succeeds
+
+raw SHA256(canonicalJson(definition))
+  -> is not accepted as the persisted canonical tool revision contentHash
+
+change execution / responseProcessing / responseTemplate
+  -> canonical definition hash changes
+  -> old receipt cannot admit the changed definition
+```
+
+Use the real SHA-256 digest in these cases; do not mask identity behavior with a
+constant digest.
+
+#### A2-R2 — remove live credential existence from synthetic sample/publication admission
+
+Files:
+`src/commerce/external-publication/contracts.ts`,
+`src/commerce/external-publication/index.ts`,
+`tests/external-publication.test.ts`.
+
+C21 states:
+
+```text
+Publication verifies known enabled revision/auth shape/result schema/template paths
+without live HTTP.
+
+PER_SHOP credentials need not exist for every shop at publish.
+```
+
+The current publication boundary still exposes:
+
+```ts
+type ConnectionMetadata = {
+  enabled: boolean;
+  revisionPresent: boolean;
+  credentialAvailable: boolean;
+};
+```
+
+and both sample and publication validation reject when
+`credentialAvailable === false`.
+
+That incorrectly makes a synthetic sample/publication dependent on current secret
+provisioning and prevents legitimate PER_SHOP tools from being published before every
+merchant configures a credential.
+
+Replace the publication-only metadata contract with the persisted non-secret revision
+shape:
+
+```ts
+type ConnectionMetadata = {
+  enabled: boolean;
+  revisionPresent: boolean;
+  scope: 'PLATFORM' | 'PER_SHOP';
+  authMode: 'NONE' | 'BEARER' | 'API_KEY';
+  authHeader: string | null;
+};
+```
+
+Use one local validation helper for both `validateSampleAndRecord()` and
+`validateForPublication()`.
+
+Required semantics:
+
+```text
+enabled !== true
+  -> invalid
+
+revisionPresent !== true
+  -> invalid
+
+PER_SHOP + NONE
+  -> invalid
+
+API_KEY
+  -> authHeader must be a trimmed nonblank header name
+
+BEARER
+  -> authHeader must be null
+
+NONE
+  -> authHeader must be null
+
+credential row exists / does not exist
+  -> not queried
+  -> not represented in this port
+  -> not part of sample/publication admission
+```
+
+Do not add `shopId`, secret material, credential status, decrypt access or provider
+HTTP to COMMERCE-030.
+
+COMMERCE-024 will adapt the accepted connection/revision read facade into this
+non-secret metadata port. Credential existence remains COMMERCE-028/032/live execution
+ownership.
+
+Required focused proof:
+
+```text
+PLATFORM + NONE, no credential concept
+  -> sample/publication allowed when every other check passes
+
+PER_SHOP + BEARER, no merchant credential
+  -> sample/publication allowed
+
+PER_SHOP + API_KEY + nonblank authHeader, no merchant credential
+  -> sample/publication allowed
+
+disabled or missing revision
+  -> rejected
+
+PER_SHOP + NONE
+  -> rejected
+
+API_KEY + null/blank authHeader
+  -> rejected
+
+BEARER/NONE + non-null authHeader
+  -> rejected
+```
+
+The test harness must no longer contain `credentialAvailable`.
+
+#### Attempt 3 validation and stop condition
+
+Preserve all accepted Attempt 2 behavior and regressions. Do not rework receipt TTL,
+staff liveness, MIME normalization, production rendering, schema diagnostics or runtime
+revalidation unless one of these two changes directly requires a test-fixture update.
+
+Run:
+
+```bash
+npm run test:arch020-external-publication
+
+npx eslint \
+  src/commerce/external-publication/*.ts \
+  tests/external-publication.test.ts
+
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If repository-wide lint/typecheck/build remain non-zero solely on the documented
+unchanged baseline outside the task-owned files, record the exact diagnostics and
+demonstrate no `external-publication` diagnostic was introduced.
+
+Before handoff:
+1. update Work Items / Acceptance Criteria / Completion Report truthfully;
+2. record exact focused test names/results for A2-R1 and A2-R2;
+3. set `status: review`;
+4. keep `attempt: 3` after the next normal claim;
+5. clear `executor` and `claimed_at`;
+6. push both task branches;
+7. STOP.
+
+Do not begin COMMERCE-031, COMMERCE-024 or COMMERCE-012.
+
+### Review Status
+
+Changes Requested.
+
+### Reviewed Files
+
+- `src/commerce/external-publication/contracts.ts`
+- `src/commerce/external-publication/index.ts`
+- `src/commerce/external-publication/receipt-store.ts`
+- `tests/external-publication.test.ts`
+- `src/commerce/publication/validation.ts` canonical `toolContentHash(...)`
+- C21 publication/sample credential semantics
+- Attempt 2 Completion Report
+
+### Validation Reviewed
+
+Submitted Attempt 2 evidence:
+
+```text
+npm run test:arch020-external-publication
+  PASS — 9/9 focused scenarios
+
+npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts
+  PASS
+
+git diff --check
+  PASS
+
+repository lint/typecheck/build
+  NON-ZERO only on documented unrelated baseline diagnostics per Completion Report
+```
+
+Static architect inspection confirms the receipt/liveness/MIME/renderer/runtime
+revalidation corrections are present. A2-R1 and A2-R2 above remain independently
+observable in the production source and focused harness.
+
+### Architecture Conformance
+
+Repository ownership remains correct and the publication validator is now close to
+C21 conformance. Acceptance is blocked only by:
+1. incompatibility with the accepted canonical tool revision content hash; and
+2. incorrect coupling of synthetic sample/publication admission to credential
+   existence.
+
+No new architecture task or dependency is required.
+
+### Follow-up
+
+Return the same task through:
+
+```text
+/moda-task ARCH-020-COMMERCE-030
+```
+
+The next claim becomes **Attempt 3** exactly once. Dependants remain gated until
+COMMERCE-030 is architect-accepted Complete.

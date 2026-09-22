@@ -37,7 +37,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | Complete | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | pending | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
-| [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 1) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
+| [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
@@ -835,3 +835,13 @@ revalidation.
 No downstream promotion occurs. COMMERCE-031, COMMERCE-024 and COMMERCE-012 remain
 gated. Applying this review transitions COMMERCE-030 from Review to Ready; the next
 normal `/moda-task ARCH-020-COMMERCE-030` claim creates Attempt 2 exactly once.
+
+## COMMERCE-030 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 2 retained; claim clear.** Attempt 2 closes the
+staff/receipt TTL, MIME, production-renderer, safe schema-error and runtime-revalidation
+work. Attempt 3 is limited to two remaining publication-contract corrections: use the
+accepted `toolHashInput` definition content hash and remove live credential existence
+from synthetic sample/publication admission while validating only persisted
+connection/revision auth shape. COMMERCE-031/024/012 remain gated and no task is
+auto-started.

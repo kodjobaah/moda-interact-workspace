@@ -1250,3 +1250,11 @@ sample-MIME plus production-renderer reuse, bounded schema issues, and complete
 PV02/PV03 runtime-revalidation evidence.
 
 No dependency is promoted and no downstream task is launched automatically.
+
+## COMMERCE-030 Attempt 2 review — 2026-09-22
+
+`ARCH-020-COMMERCE-030` is **Ready / Changes Requested, Attempt 2**. Preserve the
+completed receipt/liveness/MIME/renderer/runtime-revalidation work. Attempt 3 is
+bounded to canonical tool-definition hashing via Shared `toolHashInput` and
+credential-independent connection/revision publication admission. COMMERCE-031,
+COMMERCE-024 and COMMERCE-012 remain gated; no automatic launch.

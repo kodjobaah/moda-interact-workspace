@@ -1350,3 +1350,11 @@ sample-MIME plus production-renderer reuse, bounded schema issues, and complete
 PV02/PV03 runtime-revalidation evidence.
 
 No dependency is promoted and no downstream task is launched automatically.
+
+## COMMERCE-030 Attempt 2 architect review — 2026-09-22
+
+COMMERCE-030 is **Ready / Attempt 2 retained / claim clear**. Attempt 2 passed its
+focused 9-scenario suite and closes the receipt/liveness/MIME/renderer/runtime proof.
+The next claim is Attempt 3 and must correct only canonical tool revision hashing and
+remove credential existence from publication/sample gating while retaining current
+non-secret connection auth-shape checks. Dependants remain gated.
