@@ -333,7 +333,14 @@ not the merchant's live inventory. Back returns U13.
 ## U14: tool tests and conversation traversal (COMMERCE-009)
 
 Landing has **Tool test** and **Conversation** modes. Source context preselects
-saved draft/revision/release; direct navigation requires explicit selection.
+saved draft/revision/release; direct navigation requires explicit selection. A saved
+tool revision is a **Tool test source only**. Entering from U06 therefore opens Tool
+test with that revision preselected; switching to Conversation does not convert the
+tool into a behaviour source. Conversation Start stays disabled until a real saved
+release or behaviour draft with authored capability revisions is selected. Never
+fabricate `conversation_core`, a generic prompt or a synthetic capability revision to
+make a tool-only Conversation manifest valid. COMMERCE-034 owns this bounded U14
+correction; COMMERCE-019 consumes it.
 
 Tool test: choose saved tool revision, synthetic scenario (success, empty, missing
 fact, provider failure), enter schema-driven input, Run -> same page with mapped
