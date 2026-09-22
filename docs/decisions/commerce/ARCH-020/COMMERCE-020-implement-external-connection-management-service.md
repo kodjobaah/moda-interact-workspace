@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -595,3 +595,108 @@ for behavior actually satisfied, update the Completion Report with exact changed
 exact Shared package version and command results, set the task back to `review`, clear
 `executor`/`claimed_at`, push both mirrored task branches, return control to
 `moda_architect`, and **STOP**.
+
+## Architect Review — Attempt 2 — 2026-09-22
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Reviewed the submitted implementation identified by the Completion Report as
+`d2b7154` and parent report `a6d09e32` against the exact Attempt-1 A1-R1..A1-R4
+correction contract and C21 sections 4 and 9.2.
+
+Attempt 2 resolves the functional contract gaps from Attempt 1:
+
+- Commerce consumes exact `@modainteract/moda-interact-shared@0.14.2`;
+- Shared owns/re-exports the canonical connection command/revision/view/result
+  schemas and types; the local duplicate wire contracts are removed;
+- lifecycle results use the strict Shared envelopes without invented public
+  `message` fields;
+- the reusable command kernel exposes the exact six accepted actions, including
+  `SET_CREDENTIAL` and `REMOVE_CREDENTIAL`, and uses the required
+  `.execute({principal,action,input,connectionId,mutate})` shape;
+- non-create commands acquire an actual parameterized PostgreSQL
+  `SELECT ... FOR UPDATE` lock on the exact connection before mutation;
+- development bypass calls the accepted `ensureDevelopmentStudioAdmin(...)`
+  helper inside the same transaction before replay/FK-backed writes;
+- hosted authorization is repeated inside the transaction before replay;
+- lifecycle create/update/revision/enabled inputs are strict and bounded;
+- invalid list limits reject instead of clamp;
+- default HTTPS port canonicalization stores/returns
+  `https://api.example.com` without trailing slash or explicit `:443`;
+- revision allocation remains behind the same-connection lock and published
+  references are not migrated;
+- credential storage/resolution, HTTP execution, OAuth, UI and final-factory work
+  remain outside COMMERCE-020 ownership.
+
+The implementation therefore satisfies the bounded connection lifecycle and reusable
+command-kernel producer contract required by COMMERCE-028.
+
+### Reviewed Files
+
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/package-lock.json`
+- `moda-interact-commerce/src/commerce/connections/command-kernel.ts`
+- `moda-interact-commerce/src/commerce/connections/lifecycle/index.ts`
+- `moda-interact-commerce/src/commerce/connections/lifecycle/types.ts`
+- `moda-interact-commerce/tests/connection-lifecycle.test.ts`
+- `moda-interact-commerce/lib/auth/development-platform-admin.ts`
+- `moda-interact-commerce/database/prisma/schema.prisma`
+
+### Validation Reviewed
+
+Submitted evidence:
+
+```text
+npm run test:arch020-external-connection-lifecycle    PASS (9/9)
+focused ESLint                                        PASS
+git diff --check                                      PASS
+npm run typecheck                                     non-zero only in unrelated
+                                                      src/commerce/integration/**
+npm run build                                         same unrelated baseline
+```
+
+Architect source inspection confirmed no remaining A1-R1..A1-R4 functional defect in
+the task-owned implementation. The uploaded review archive does not include installed
+`node_modules`, so the architect did not manufacture another dependency-backed run.
+
+Real PostgreSQL/container validation was not claimed and is not required to accept
+this bounded producer task; later credential/integration/system-test work owns the
+assembled database scenarios. This acceptance does not convert the in-memory focused
+test into evidence of PostgreSQL rollback semantics beyond the production transaction
+structure actually inspected.
+
+### Architecture Conformance
+
+Conformant for COMMERCE-020.
+
+Accepted invariants include:
+
+```text
+Shared 0.14.2 canonical contract
+SUPER_ADMIN mutation authorization before replay
+development principal materialization before FK-backed writes
+HMAC-SHA256 canonical {action,input} replay digest
+same-operation replay / changed-input conflict
+READ COMMITTED transaction
+same-connection FOR UPDATE lock
+business mutation + audit in one transaction
+immutable connection revisions
+strict lifecycle request bounds
+canonical HTTPS origins
+no credentials or outbound HTTP in COMMERCE-020
+```
+
+### Follow-up
+
+`ARCH-020-COMMERCE-020` is Complete at Attempt 2.
+
+`ARCH-020-COMMERCE-028` is promoted from Pending to Ready because its other declared
+dependencies (`DATABASE-003` and `SHARED-002`) are already Complete.
+
+Do not automatically launch COMMERCE-028. `COMMERCE-024`, `GATEWAY-003`,
+`COMMERCE-012` and later system-test work remain gated by their other declared
+dependencies.

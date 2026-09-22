@@ -584,3 +584,18 @@ acceptance alone.
 ## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
 `ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.
+
+## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
+connection-lifecycle producer now uses exact Shared `0.14.2` DTOs/results, implements
+the six-action reusable command kernel, authorizes before replay, materializes the
+development PlatformAdmin inside the transaction, acquires a parameterized
+same-connection PostgreSQL `FOR UPDATE` lock, keeps mutation/audit atomic, validates
+bounded lifecycle inputs and stores canonical HTTPS origins. Credential persistence,
+resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-021.
+
+`COMMERCE-028` is now **Ready** because its other declared prerequisites
+`DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
+`COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
+their other authoritative dependencies.

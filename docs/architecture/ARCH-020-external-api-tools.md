@@ -1040,3 +1040,18 @@ production DNS/global-address classification, pinned TLS socket, independent sta
 bounds, decoded-byte limit, raw JSON safety validation, one provider-budget
 reservation and no-retry/no-redirect behavior remain intact. No downstream task is
 newly Ready from this acceptance alone.
+
+## COMMERCE-020 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`d2b7154`; parent report `a6d09e32`). The C21
+connection-lifecycle producer now uses exact Shared `0.14.2` DTOs/results, implements
+the six-action reusable command kernel, authorizes before replay, materializes the
+development PlatformAdmin inside the transaction, acquires a parameterized
+same-connection PostgreSQL `FOR UPDATE` lock, keeps mutation/audit atomic, validates
+bounded lifecycle inputs and stores canonical HTTPS origins. Credential persistence,
+resolution and encryption remain COMMERCE-028 ownership; HTTP remains COMMERCE-021.
+
+`COMMERCE-028` is now **Ready** because its other declared prerequisites
+`DATABASE-003` and `SHARED-002` are Complete. It is not automatically launched.
+`COMMERCE-024`, `GATEWAY-003`, `COMMERCE-012` and system-test work remain gated by
+their other authoritative dependencies.
