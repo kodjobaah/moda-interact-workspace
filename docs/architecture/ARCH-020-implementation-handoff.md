@@ -1468,3 +1468,11 @@ Preserve the accepted BEARER database/runtime normalization. Attempt 2 must only
 preprocess missing/undefined/empty NONE/BEARER `authHeader` values to canonical null
 before the strict Shared revision parse; API_KEY missing/blank remains invalid.
 COMMERCE-024 remains gated and nothing is auto-started.
+
+## COMMERCE-036 Attempt 2 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-036` is **Complete / Accepted, Attempt 2**. Consumers may rely on
+the final producer contract: compatible NONE/BEARER callers may omit or send blank
+`authHeader`; the lifecycle canonicalizes to null before strict Shared validation and
+persistence. API_KEY still requires a valid explicit custom header. DATABASE-003 and
+COMMERCE-028 remain unchanged. COMMERCE-024 is still gated by other dependencies.

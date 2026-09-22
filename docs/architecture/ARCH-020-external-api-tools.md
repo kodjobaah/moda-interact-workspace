@@ -1229,3 +1229,12 @@ apply strict Shared `RevisionInputSchema` before normalization, so omitted/undef
 and empty-string NONE/BEARER headers do not yet satisfy the task's compatibility
 contract. COMMERCE-036 returns to Ready for that one service-local preprocess;
 COMMERCE-024 remains gated.
+
+## COMMERCE-036 Attempt 2 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-036` is **Accepted / Complete, Attempt 2**. The lifecycle producer
+now canonicalizes omitted/undefined/empty/whitespace NONE or BEARER `authHeader` to
+null before the strict Shared revision parse at both create boundaries, while API_KEY
+missing/blank remains invalid. Canonical BEARER persistence stays null and runtime
+Authorization derivation remains COMMERCE-028-owned. COMMERCE-024 retains other
+incomplete prerequisites.

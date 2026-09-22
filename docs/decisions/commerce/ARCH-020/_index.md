@@ -44,7 +44,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
-| [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | ready (Acceptance superseded; Changes Requested, Attempt 1) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-036](COMMERCE-036-correct-bearer-revision-auth-header-normalization.md) | Correct BEARER revision auth-header normalization | Complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -1061,3 +1061,16 @@ lifecycle request still uses the strict Shared `RevisionInputSchema`, so omitted
 normalization. COMMERCE-036 is returned to **Ready, Attempt 1 retained, claim clear**
 for the single service-local pre-parse compatibility correction. COMMERCE-024 remains
 gated; no task is auto-started.
+
+## COMMERCE-036 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`e8bee54`; parent report `25557d80`).
+
+The superseding compatibility correction is closed: missing/undefined/empty/
+whitespace NONE and BEARER headers are canonicalized to null before strict Shared
+revision parsing at both create-connection and create-revision boundaries. API_KEY
+missing/blank remains invalid. The accepted PostgreSQL BEARER-null proof and
+COMMERCE-028 runtime Authorization derivation remain unchanged.
+
+COMMERCE-024 remains Pending because other prerequisites, including COMMERCE-023 and
+COMMERCE-031 in this snapshot, are still not Complete. No task is auto-started.

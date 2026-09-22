@@ -1565,3 +1565,11 @@ is superseded because the current lifecycle outer schema still rejects omitted/
 undefined and empty-string NONE/BEARER `authHeader` before semantic normalization.
 Canonical persisted BEARER null behavior and the PostgreSQL proof remain valid.
 The next claim is Attempt 2. COMMERCE-024 remains dependency-gated.
+
+## COMMERCE-036 Attempt 2 acceptance — 2026-09-22
+
+COMMERCE-036 is **Complete / Accepted, Attempt 2**, claim clear. Focused lifecycle
+tests (12), the real PostgreSQL regression, scoped ESLint and diff checks pass;
+repository typecheck/build remain non-zero only on documented unrelated baseline
+diagnostics. COMMERCE-024 remains Pending because COMMERCE-023 and COMMERCE-031 are
+still non-Complete in this snapshot. No automatic launch.

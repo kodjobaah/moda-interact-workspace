@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 145
 executor: null
 claimed_at: null
@@ -767,3 +767,187 @@ acceptance disposition: canonical BEARER persistence/runtime behavior is sound, 
 the task's required raw input compatibility is not complete until A1-R1 is applied.
 
 COMMERCE-024 therefore remains gated on COMMERCE-036.
+
+## Architect Review — Attempt 2 — 2026-09-22
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+**Accepted / Complete, Attempt 2.**
+
+Reviewed by `moda_architect` against the exact submitted Attempt 2 archive and parent
+handoff `25557d8051f79f79100964633610e0976ab602e4`. The current remote
+`task/ARCH-020-COMMERCE-036` parent branch matches that handoff commit. The task
+records implementation commit `e8bee54`; the Commerce implementation remote is not
+readable through the current review connector, so implementation acceptance is
+grounded in the exact submitted archive.
+
+Attempt 2 closes the single bounded correction that superseded the earlier Attempt 1
+acceptance.
+
+The lifecycle now defines a service-local compatibility schema:
+
+```ts
+const CompatibleRevisionInputSchema = z.preprocess((raw) => {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+
+  const value = raw as Record<string, unknown>;
+  const authHeader = value.authHeader;
+
+  const blankOrMissing =
+    authHeader === undefined ||
+    (typeof authHeader === 'string' && authHeader.trim() === '');
+
+  if (
+    blankOrMissing &&
+    (value.authMode === 'BEARER' || value.authMode === 'NONE')
+  ) {
+    return { ...value, authHeader: null };
+  }
+
+  return raw;
+}, RevisionInputSchema);
+```
+
+and uses it at both lifecycle entry points:
+
+```text
+CreateConnectionSchema.revision
+CreateRevisionSchema.revision
+```
+
+The canonical Shared `RevisionInputSchema` remains the final strict parser. Unknown
+revision fields therefore remain rejected and the public Shared contract is not
+weakened.
+
+The resulting accepted input behavior is:
+
+```text
+BEARER
+  null
+  omitted / undefined
+  ""
+  whitespace-only
+  legacy "Authorization"
+    -> accepted
+    -> canonical persisted/view authHeader:null
+
+NONE
+  null
+  omitted / undefined
+  ""
+  whitespace-only
+    -> accepted for valid NONE scope
+    -> canonical persisted/view authHeader:null
+
+API_KEY
+  omitted / blank
+    -> invalid
+
+API_KEY
+  valid custom HTTP-token header
+    -> preserved
+```
+
+The existing semantic rules remain intact:
+
+- another nonblank BEARER header is rejected;
+- `PER_SHOP + NONE` is rejected;
+- API_KEY forbidden names / `Sec-` / `Proxy-` checks remain unchanged;
+- canonical origin normalization remains unchanged;
+- COMMERCE-028 still owns runtime BEARER derivation:
+  `Authorization: Bearer <secret>`;
+- DATABASE-003 remains unchanged and continues to require persisted BEARER
+  `authHeader IS NULL`.
+
+The compatibility preprocess runs before the command kernel, so a genuinely missing
+or blank API_KEY header is rejected before business/audit writes.
+
+The submitted focused unit test contains one non-blocking coverage imperfection:
+its case labelled `api-key-omitted` inherits the fixture's `Authorization` header
+rather than literally omitting the field. This does not expose a production defect:
+the production schema path statically leaves API_KEY missing input untouched, the
+strict Shared schema rejects the missing required `authHeader`, and the parse occurs
+before `kernel.execute(...)`. The real blank API_KEY case is exercised and rejected.
+No further implementation round is warranted for that test-fixture detail.
+
+### Preserved Attempt 1 Evidence
+
+The earlier canonical producer/database correction remains accepted:
+
+```text
+BEARER + null
+  -> persisted/view null
+
+BEARER + "Authorization"
+  -> persisted/view null
+
+BEARER + alternate nonblank header
+  -> INVALID_INPUT before write
+
+API_KEY + valid custom header
+  -> preserved
+
+NONE + null
+  -> persisted/view null
+```
+
+The dedicated PostgreSQL regression still exercises the actual lifecycle against the
+migrated DATABASE-003 CHECK and passes with canonical BEARER `authHeader = NULL`.
+
+### Validation Reviewed
+
+Submitted Attempt 2 evidence:
+
+```text
+npm run test:arch020-external-connection-lifecycle
+  PASS — 12 tests
+
+DATABASE_URL=<isolated PostgreSQL> \
+  npm run test:arch020-external-connection-lifecycle:postgres
+  PASS — 1 PostgreSQL regression
+
+scoped ESLint
+  PASS
+
+npm run lint
+  PASS — warnings only
+
+git diff --check
+  PASS
+
+npm run typecheck / npm run build
+  NON-ZERO only on the documented unrelated repository baseline
+```
+
+Task-owned lifecycle diagnostics are clean.
+
+### Architecture Conformance
+
+Conformant.
+
+The final implementation keeps the backwards-compatibility shim local to the
+COMMERCE-020 lifecycle producer. It does not modify Shared, DATABASE-003,
+COMMERCE-028 credential resolution, Studio UI, HTTP execution, Gateway or final
+composition.
+
+The prior Attempt 1 acceptance remains superseded in history; this Attempt 2
+acceptance is the final disposition for COMMERCE-036.
+
+### Dependency Frontier
+
+COMMERCE-036 is Complete.
+
+`ARCH-020-COMMERCE-024` remains Pending because not all of its declared prerequisites
+are Complete in this exact snapshot; at least `ARCH-020-COMMERCE-023` and
+`ARCH-020-COMMERCE-031` are still non-Complete.
+
+No downstream task becomes Ready solely from this acceptance and nothing is
+auto-started.
+
+### Follow-up
+
+None for COMMERCE-036.

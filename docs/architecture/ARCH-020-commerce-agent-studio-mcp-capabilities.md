@@ -1959,3 +1959,12 @@ Persisted BEARER metadata remains correctly null and runtime Authorization deriv
 remains COMMERCE-028-owned. Before COMMERCE-024 composition, the lifecycle must also
 accept omitted/undefined/empty NONE/BEARER headers via the bounded local pre-parse
 normalization defined in the task's latest Architect Review.
+
+## COMMERCE-036 Attempt 2 acceptance — 2026-09-22
+
+The BEARER revision producer correction is **Accepted / Complete** at Attempt 2. The
+raw compatibility seam is now closed locally before Shared parsing without weakening
+Shared itself: omitted/blank NONE/BEARER input becomes canonical null, API_KEY
+missing/blank remains invalid, persisted BEARER metadata remains null and runtime
+Authorization remains COMMERCE-028-owned. Production composition remains gated by the
+rest of COMMERCE-024's dependency set.
