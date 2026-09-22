@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 170
-executor: copilot
-claimed_at: 2026-09-22T20:10:50Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -309,6 +309,28 @@ for this review at:
 ```
 
 Both implementation and parent worktrees were reported clean after synchronization.
+
+### Attempt 5 Blocked Update
+
+Attempt 5 cannot implement A4-R2 because the required disposable integration
+targets are unavailable in the launcher-resolved environment. The following
+variables are unset:
+
+```text
+COMMERCE_TEST_DATABASE_URL
+COMMERCE_TEST_REDIS_URL
+COMMERCE_C20_REDIS_NAMESPACE
+```
+
+Only a generic `DATABASE_URL` is present. The architect instructions prohibit
+using a developer/shared PostgreSQL or Redis target and prohibit replacing the
+persisted lifecycle and signed MCP proof with fabricated in-memory grant or
+manifest state. No Attempt-5 source changes were made; the implementation
+worktree remains clean at `9158889fc5eead41b3cc610893de68613f350d6e`.
+
+Return this task to `ready` only after disposable ARCH-020 database and Redis
+targets are provisioned, then rerun `/moda-task ARCH-020-COMMERCE-024` to create
+the next deterministic attempt.
 
 ### Attempt 4 Completion Update
 
