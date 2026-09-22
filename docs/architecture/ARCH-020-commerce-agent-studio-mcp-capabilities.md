@@ -1586,6 +1586,20 @@ system-test work remains dependency-gated. No dependent task is automatically
 started and no implementation/main merge or gitlink update is performed by this
 review.
 
+## COMMERCE-022 pre-claim implementation review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 0 retained; executor/claim null.** Reviewed
+submitted implementation `dd0164b` and parent reports `330a355` / `b74842df`.
+The U15/U16 visual skeleton and Shared `0.14.2` usage are preserved, but C21 X05/XN01
+is not yet satisfied: server routes pass a function-valued fixture port into a Client
+Component, mutation ports bypass the canonical result/unknown-replay contract,
+search/cursor return state and dirty/unknown navigation are not preserved, PER_SHOP
+credentials use a free-form shop ID instead of authorized shop search/status rows,
+and Overview conflates selected with latest revision. The task was implemented before
+a successful launcher claim, so no Attempt 1 is invented retroactively. The next
+successful `/moda-task ARCH-020-COMMERCE-022` claim creates Attempt 1 from the
+already-pushed implementation branch and executes exact A0-R1–A0-R5 in the task
+Architect Review. No downstream promotion or automatic launch.
 ### COMMERCE-020 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -1808,3 +1822,49 @@ retain invalid IN text; and complete the exact XN02 proof/current Completion Rep
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
 automatically.
+## COMMERCE-032 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
+preserves original grant tool/revision/provenance and current exclusion identities,
+but cannot be accepted against the current COMMERCE-028 availability port: 032 passes
+trusted merchant `shopId` for all candidates, while 028 currently requires null for
+PLATFORM credential availability and therefore falsely returns `CREDENTIAL_MISSING`.
+
+C21 now makes the intended boundary explicit and
+**ARCH-020-COMMERCE-037 is Ready, Attempt 0** to normalize only the producer's
+read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
+accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
+COMMERCE-012 remain gated. No task is started automatically.
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
+
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
+
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.
+
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+The Connections U15/U16 frontend is **Accepted / Complete** at Attempt 4. Final
+credential dirty/unknown navigation, exact shop/revision status ownership and terminal
+read-state gaps are closed. Production external-tool/Connections composition remains
+with COMMERCE-024; no downstream execution is implied by this acceptance.
+## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
+
+The read-only external availability consumer is now proven against the accepted
+COMMERCE-037 producer semantics: trusted merchant identity is passed unchanged into
+`checkConnectionAvailability`, PLATFORM credentials are selected at null scope by
+the producer, and PER_SHOP isolation remains merchant-specific. Existing resolver
+behavior preserves original grant pinning, exact tool/revision/capability identity,
+explicit current exclusions and typed lookup outage without provider calls, secret
+access, grant writes or cross-call caching.
+
+No downstream task becomes Ready solely from this acceptance. COMMERCE-024 and
+COMMERCE-012 remain behind their other authoritative dependencies.

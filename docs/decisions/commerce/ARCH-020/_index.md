@@ -39,7 +39,8 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
-| [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-037, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-037](COMMERCE-037-normalize-availability-shop-scope.md) | Normalize external availability merchant shop scope | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-028 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
@@ -605,6 +606,20 @@ No task is claimed or launched by this reconciliation. `COMMERCE-028`, `030`, `0
 `032`, `024`, `GATEWAY-003`, `COMMERCE-012` and the system-test tasks retain their
 remaining dependency gates.
 
+## COMMERCE-022 pre-claim implementation review — 2026-09-21
+
+**Changes Requested; Ready, Attempt 0 retained; executor/claim null.** Reviewed
+submitted implementation `dd0164b` and parent reports `330a355` / `b74842df`.
+The U15/U16 visual skeleton and Shared `0.14.2` usage are preserved, but C21 X05/XN01
+is not yet satisfied: server routes pass a function-valued fixture port into a Client
+Component, mutation ports bypass the canonical result/unknown-replay contract,
+search/cursor return state and dirty/unknown navigation are not preserved, PER_SHOP
+credentials use a free-form shop ID instead of authorized shop search/status rows,
+and Overview conflates selected with latest revision. The task was implemented before
+a successful launcher claim, so no Attempt 1 is invented retroactively. The next
+successful `/moda-task ARCH-020-COMMERCE-022` claim creates Attempt 1 from the
+already-pushed implementation branch and executes exact A0-R1–A0-R5 in the task
+Architect Review. No downstream promotion or automatic launch.
 ### COMMERCE-020 Attempt 1 architect review — 2026-09-21
 
 **Changes Requested; Ready, Attempt 1 retained; executor/claim null.** Reviewed
@@ -918,3 +933,54 @@ duplicate-guard assertions required by the prior reviews.
 
 No downstream promotion occurs. COMMERCE-024 and COMMERCE-012 remain gated. The next
 normal claim creates Attempt 6.
+## COMMERCE-032 Attempt 1 architect review — 2026-09-22
+
+**Blocked, Attempt 1 retained; claim clear.** Implementation `10639c7` is
+provisionally conformant at the external-availability resolver boundary: exact
+tool/revision grant pinning, capability-provenance overlap, exclusion identity,
+shop-scoped calls, per-call revision caching and typed unavailable behavior are
+present.
+
+Review exposed a producer/consumer mismatch in accepted COMMERCE-028:
+`checkConnectionAvailability` currently treats `shopId` as the credential-row scope
+key, while C21/COMMERCE-032 passes the trusted merchant shop identity. A real PLATFORM
+candidate is therefore falsely excluded as `CREDENTIAL_MISSING`.
+
+The producer correction is materialized as **COMMERCE-037 Ready, Attempt 0**.
+COMMERCE-032 now depends on it and remains Blocked until 037 is accepted. No 032 source
+change is presently required; its next attempt is validation/reconciliation unless
+the corrected producer exposes a new 032-owned defect. No downstream task is launched.
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
+
+COMMERCE-037 is **Accepted / Complete, Attempt 1** at implementation `021dcf7`
+(parent report `15d9588b`).
+
+The accepted availability port now treats `shopId` as trusted merchant identity and
+derives the credential-row selector from immutable connection revision scope:
+PLATFORM -> null, PER_SHOP -> merchant shop ID. Existing nullable credential-scope
+contracts for status/mutation/resolution remain unchanged.
+
+COMMERCE-032 remains Ready and now explicitly depends on COMMERCE-037. No task is
+claimed or launched automatically.
+
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 4.** The U15/U16 Connections frontend now closes its
+final credential parent-navigation, exact revision/shop status-CAS and terminal
+detail-read corrections while preserving same-operation replay, list return state,
+authorized shop selection and latest-vs-selected revision behavior. Focused 20/20
+tests and task-local diagnostics pass. COMMERCE-024/012 retain other dependency gates;
+nothing is auto-started.
+## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
+
+COMMERCE-032 is **Accepted / Complete, Attempt 2** at implementation `b8d8ccd`
+(parent report `99f4b90c`).
+
+The validation-only attempt composes the real accepted credential availability
+producer and proves merchant `shop-A` correctly reaches the PLATFORM null-scope
+credential row. Existing AV02/AV03 evidence retains exact merchant isolation,
+old-grant pinning, revocation and typed lookup-outage behavior.
+
+The duplicate COMMERCE-037 dependency and stale duplicate 032/037 index rows are
+reconciled. No downstream promotion occurs because COMMERCE-024 and COMMERCE-012
+retain other incomplete prerequisites.

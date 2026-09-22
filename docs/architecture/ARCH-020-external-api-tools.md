@@ -764,14 +764,41 @@ not from input; repeat active-role lookup inside transaction. Same replay return
 saved value without mutate. Unexpected exceptions rollback; no false success audit.
 Types reference generated Prisma.TransactionClient; no invented parallel ORM model.
 
+checkConnectionAvailability({connectionRevisionId,shopId}) receives the trusted
+merchant shop identity used by032; `shopId` is non-null in this read-only availability
+port. After loading the immutable revision,028 maps credential scope internally:
+PLATFORM reads the null-scope credential row and PER_SHOP reads the exact supplied
+merchant shop row. It returns {kind:'available'} or
+{kind:'excluded',reason:'CONNECTION_DISABLED'|'CONNECTION_REVISION_MISSING'|
+'CREDENTIAL_MISSING'|'CREDENTIAL_KEY_UNAVAILABLE'} or {kind:'unavailable'}.
+Uses metadata and key IDs without returning/decrypting secrets. It never substitutes
+a different revision, another merchant's credential or a platform credential for a
+missing PER_SHOP credential. `getCredentialStatus`, credential mutation and
+`resolveConnection` retain their existing nullable scope-key shopId contracts.
+Execution still calls resolveConnection to decrypt and recheck; corrupted ciphertext
+can fail even if status looked available.032 receives this availability port.
+Distinguish missing configuration from falsely saying no feature exists.020 never
+supplies a placeholder configured=true status.
 checkConnectionAvailability({connectionRevisionId,shopId}) returns
 {kind:'available'} or {kind:'excluded',reason:'CONNECTION_DISABLED'|
 'CONNECTION_REVISION_MISSING'|'CREDENTIAL_MISSING'|'CREDENTIAL_KEY_UNAVAILABLE'} or
-{kind:'unavailable'}. Uses metadata and key IDs without returning/decrypting secrets.
-It never substitutes a different revision/shop. Execution still calls resolveConnection
-to decrypt and recheck; corrupted ciphertext can fail even if status looked available.
-032 receives this status port. Distinguish missing configuration from falsely saying
-no feature exists.020 never supplies a placeholder configured=true status.
+{kind:'unavailable'}. In this availability port, `shopId` is the trusted non-null
+merchant identity supplied by the server-owned caller. After loading the immutable
+connection revision, the credential-row selector is derived from revision scope:
+
+```text
+PLATFORM -> credential shopId = null
+PER_SHOP -> credential shopId = trusted merchant shopId
+```
+
+The port uses metadata and key IDs without returning/decrypting secrets and never
+falls back to a different revision, PLATFORM credential or another merchant shop.
+Existing `getCredentialStatus` / `setCredential` / `removeCredential` /
+`resolveConnection` contracts keep their nullable `shopId` credential-scope meaning.
+Execution still calls resolveConnection to decrypt and recheck; corrupted ciphertext
+can fail even if status looked available.032 receives this status port. Distinguish
+missing configuration from falsely saying no feature exists.020 never supplies a
+placeholder configured=true status.
 
 ### 9.3. HTTP evidence before assembly
 
@@ -1134,3 +1161,51 @@ retain invalid IN text; and complete the exact XN02 proof/current Completion Rep
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is started
 automatically.
+## COMMERCE-032 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
+preserves original grant tool/revision/provenance and current exclusion identities,
+but cannot be accepted against the current COMMERCE-028 availability port: 032 passes
+trusted merchant `shopId` for all candidates, while 028 currently requires null for
+PLATFORM credential availability and therefore falsely returns `CREDENTIAL_MISSING`.
+
+C21 now makes the intended boundary explicit and
+**ARCH-020-COMMERCE-037 is Ready, Attempt 0** to normalize only the producer's
+read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
+accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
+COMMERCE-012 remain gated. No task is started automatically.
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
+
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
+
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.
+
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-022` is **Accepted / Complete, Attempt 4**. The C21 U15/U16
+frontend now has one parent-owned dirty/unknown navigation boundary, credential status
+and CAS scoped to the exact revision/shop context with stale-read protection, and
+bounded terminal not-found/forbidden/unavailable detail states. Earlier Shared result,
+same-operation replay, authorized shop-selection and latest-vs-selected revision
+corrections remain intact. Production wiring remains COMMERCE-024 ownership.
+## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
+
+The read-only external availability consumer is now proven against the accepted
+COMMERCE-037 producer semantics: trusted merchant identity is passed unchanged into
+`checkConnectionAvailability`, PLATFORM credentials are selected at null scope by
+the producer, and PER_SHOP isolation remains merchant-specific. Existing resolver
+behavior preserves original grant pinning, exact tool/revision/capability identity,
+explicit current exclusions and typed lookup outage without provider calls, secret
+access, grant writes or cross-call caching.
+
+No downstream task becomes Ready solely from this acceptance. COMMERCE-024 and
+COMMERCE-012 remain behind their other authoritative dependencies.
