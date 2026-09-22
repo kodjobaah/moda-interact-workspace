@@ -34,7 +34,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | ready | ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | pending | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
-| [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
+| [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | ready (Changes Requested, Attempt 1) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | pending | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | pending | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
@@ -688,3 +688,21 @@ dispatcher/transport tests pass 26/26; lint and diff checks pass. Repository-wid
 typecheck/build remain blocked only by the recorded unrelated baseline diagnostics.
 No enabled task is newly Ready from this acceptance alone; all remaining dependency
 gates stay authoritative and nothing is launched automatically.
+
+## COMMERCE-027 Attempt 1 architect review — 2026-09-22
+
+**Changes Requested; Ready, Attempt 1 retained; claim clear.** Reviewed submitted
+implementation `771c1ff` and reported parent handoff `6a7ff5ea`. The exported panel
+boundary and no-browser-execution direction are valid, but C21 X12/XN04 remains
+incomplete.
+
+The authoritative task review requires: canonical Shared `TransformSample` usage with
+saved response mode; real content-hash/generation stale-result guards; save-before-run
+against the returned saved revision; retained preview identity for unknown/replay;
+RUNNING cancel/read and cooldown state that does not deadlock; published-source and
+ADMIN/SUPER_ADMIN role enforcement with source comparison/reason for publish; the
+mandated locally bundled CodeMirror 6 JavaScript editor; bounded typed sample failure
+presentation; and the exact focused regressions written in the task.
+
+No downstream promotion occurs. COMMERCE-024 and COMMERCE-012 remain gated. The next
+normal claim creates Attempt 2; no task is launched automatically.

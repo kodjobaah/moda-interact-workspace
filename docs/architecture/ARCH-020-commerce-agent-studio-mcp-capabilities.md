@@ -1632,3 +1632,16 @@ validation owned by COMMERCE-030.
 No dependent is newly Ready from this acceptance alone: COMMERCE-030 still awaits
 COMMERCE-025, and the later preview/assembly/gateway/system-test frontier retains its
 other prerequisites. No downstream task is launched automatically.
+
+## COMMERCE-027 Attempt 1 architect review — 2026-09-22
+
+ARCH-020-COMMERCE-027 is **Changes Requested / Ready, Attempt 1**, claim clear.
+Submitted implementation `771c1ff` establishes the isolated U17/raw-sample component
+boundary but does not yet satisfy C21 X12/XN04. The task's latest Architect Review is
+the complete deterministic correction contract covering Shared sample shape, content
+hash/stale-result guards, saved-revision run identity, cancel/cooldown/replay behavior,
+published/role/publish review rules, CodeMirror 6 local editor requirements, bounded
+failure presentation and focused evidence.
+
+No dependency is promoted. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
+gated. No downstream task is launched automatically.
