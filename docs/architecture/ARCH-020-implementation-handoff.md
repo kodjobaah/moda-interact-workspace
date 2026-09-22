@@ -1178,3 +1178,11 @@ pre-dispatch save-failure plus serialized read/cancel reconciliation semantics.
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched
 automatically.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-027` is **Complete / Accepted, Attempt 3**. Consume the exported
+`CodeResponsePanel` / `RawResponseSamplePanel` as the accepted C21 frontend boundary;
+do not reopen its editor, role, typed-failure or retained-run-identity mechanics during
+COMMERCE-024 composition. COMMERCE-024 and the final COMMERCE-012 checkpoint remain
+dependency-gated; no task is auto-started.

@@ -1278,3 +1278,12 @@ pre-dispatch save-failure plus serialized read/cancel reconciliation semantics.
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched
 automatically.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-027` is **Complete / Accepted, Attempt 3**, claim clear. The
+code-editor/raw-response frontend closes its final SUPER_ADMIN publication, typed
+failure and save/run/reconciliation corrections. Submitted 14/14 focused tests, scoped
+ESLint and diff checks pass; repository-wide failures remain the unchanged documented
+baseline outside this task. COMMERCE-024 and COMMERCE-012 retain additional
+dependencies and receive no automatic promotion from this acceptance.

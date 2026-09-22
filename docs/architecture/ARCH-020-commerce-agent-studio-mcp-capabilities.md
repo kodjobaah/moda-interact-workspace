@@ -1692,3 +1692,13 @@ pre-dispatch save-failure plus serialized read/cancel reconciliation semantics.
 
 COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched
 automatically.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-027` is **Accepted / Complete, Attempt 3**. The C21 code-response
+frontend now has a reachable SUPER_ADMIN draft/test/publish path while published source
+remains immutable, preserves typed MIME/code/output/schema failures, and distinguishes
+pre-dispatch save failure from retained-ID UNKNOWN reconciliation with serialized
+read/cancel operations. Existing CodeMirror/raw-sample/content-hash corrections remain
+intact. COMMERCE-024 and COMMERCE-012 retain other dependency gates; no automatic
+launch.

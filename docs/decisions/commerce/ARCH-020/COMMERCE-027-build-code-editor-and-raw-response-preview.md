@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -1342,3 +1342,77 @@ the bounded validation, update the Completion Report/checklists, set the task to
 review, clear the claim on handoff, push both mirrored task branches and STOP.
 
 Do not start COMMERCE-024 or COMMERCE-012. They remain dependency-gated.
+
+### Attempt 3 — Accepted (2026-09-22)
+
+Reviewed by `moda_architect` against the exact submitted Attempt 3 snapshot and
+parent handoff `98dfc630bbc6e40807f8ce6eb2d265244b609449`. The parent remote
+`task/ARCH-020-COMMERCE-027` branch matches that handoff commit. The submitted
+implementation commit is `61d6310`; the Commerce implementation remote is not
+readable through the current review connector, so implementation review is grounded
+in the exact submitted archive.
+
+**Accepted / Complete, Attempt 3.** The A2-R1 through A2-R3 correction contract is
+satisfied without expanding ownership beyond the frontend code-response boundary.
+
+Functional acceptance:
+
+- unpublished `SUPER_ADMIN` inherits the same author/test controls as `ADMIN`, while
+  publication remains SUPER_ADMIN-only;
+- published source stays read-only for every role and exposes only Create draft when
+  that injected action is available;
+- publication review is rendered only for an unpublished SUPER_ADMIN draft and remains
+  gated on the current saved content hash, current validation, current COMPLETED
+  sample and a trimmed nonblank reason;
+- failed sample results now preserve typed `MIME_OR_UTF8`, `CODE`, `OUTPUT` and
+  `SCHEMA` categories, including schema path/expected/message, without exposing a
+  rejected raw value;
+- pre-dispatch save failure allocates no preview run ID, calls no run port and reports
+  that no sample run started;
+- once a run is admitted, the original preview ID is retained across dispatch
+  uncertainty/read/cancel reconciliation;
+- read and cancel reconciliation are mutually serialized and do not create replacement
+  operation IDs;
+- the accepted Shared `TransformSample`, `ExternalResponseFormat` and canonical
+  content-hash behavior, locally bundled CodeMirror editor, browser-execution
+  prohibition, saved-revision dispatch and raw-response safety corrections from prior
+  attempts remain intact.
+
+Submitted validation reviewed:
+
+```text
+npm run test:arch020-code-editor
+  PASS — 14/14 focused tests
+
+npx eslint src/studio/code-response tests/code-editor.test.tsx
+  PASS
+
+git diff --check
+  PASS
+
+npm run lint
+  NON-ZERO only on the unchanged documented baseline error in
+  src/studio/connections/connections-ui.tsx plus unrelated warnings
+
+npm run typecheck
+  NON-ZERO only on the three unchanged documented baseline diagnostics in
+  src/commerce/integration/backend/executors.ts and
+  tests/code-response-processor.test.ts
+
+npm run build
+  QuickJS packaging/smoke, Prisma generation and application compilation PASS;
+  subsequent type checking stops on the same three unrelated baseline diagnostics
+```
+
+Those repository-wide baseline diagnostics are not regressions introduced by
+COMMERCE-027 and do not block acceptance. No live provider, sandbox, database or
+assembled host-flow proof is required from this frontend-only task; those remain
+COMMERCE-024 / SYSTEM-TEST-002 ownership.
+
+Architecture conformance: **conformant** with the C21 section 6 / X12-XN04 frontend
+boundary. No host-page/sidebar, sandbox implementation, publication-receipt, live HTTP,
+credential, database or production-composition ownership moved into this task.
+
+No dependant is promoted solely by this acceptance. COMMERCE-024 still has multiple
+incomplete dependencies and COMMERCE-012 remains the final implementation checkpoint.
+No downstream task is launched automatically.

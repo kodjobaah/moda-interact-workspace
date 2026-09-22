@@ -1027,3 +1027,12 @@ production DNS/global-address classification, pinned TLS socket, independent sta
 bounds, decoded-byte limit, raw JSON safety validation, one provider-budget
 reservation and no-retry/no-redirect behavior remain intact. No downstream task is
 newly Ready from this acceptance alone.
+
+## COMMERCE-027 Attempt 3 acceptance — 2026-09-22
+
+The C21 section 6 / X12-XN04 frontend implementation is **Accepted / Complete** at
+Attempt 3. Published source is immutable, unpublished SUPER_ADMIN drafts can be
+validated/saved/tested before SUPER_ADMIN-only publication, typed sample failures and
+schema expected-details are preserved, and run admission/reconciliation retains one
+operation identity. Final host installation and assembled engine/provider flow remain
+COMMERCE-024 / SYSTEM-TEST-002 scope.
