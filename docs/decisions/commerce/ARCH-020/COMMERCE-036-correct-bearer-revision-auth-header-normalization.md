@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 145
-executor: copilot
-claimed_at: 2026-09-22T12:05:48Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -711,6 +711,40 @@ git diff --check
 
 If repository-wide commands remain non-zero solely on the already documented unrelated
 baseline, record those exact diagnostics and continue. Do not repair unrelated source.
+
+## Attempt 2 Completion Report
+
+### Status
+
+Implementation complete; returned to `moda_architect` review.
+
+### Implementation
+
+Commit `e8bee54` adds a service-local `z.preprocess` compatibility shim before the
+Shared `RevisionInputSchema` for both connection creation and revision creation.
+BEARER and PLATFORM/NONE omitted, empty, and whitespace-only headers are converted
+to canonical `null` before strict Shared parsing. API_KEY omitted or blank headers
+remain invalid. Existing BEARER null/legacy `Authorization` normalization,
+alternate-header rejection, API_KEY custom-header preservation, and NONE scope rules
+remain unchanged.
+
+### Validation Results
+
+Passed: `npm run test:arch020-external-connection-lifecycle` (12 tests).
+Passed: `DATABASE_URL=<isolated-arch020-database> npm run test:arch020-external-connection-lifecycle:postgres` (1 test).
+Passed: scoped ESLint for lifecycle and both focused tests.
+Passed: `git diff --check`.
+Repository-wide `npm run lint` completed with four pre-existing warnings and no
+errors. Repository-wide `npm run typecheck` and `npm run build` retain the documented
+11 unrelated baseline TypeScript errors in `command-kernel.ts`, the pre-existing
+Prisma transaction typing in `lifecycle/index.ts`, backend executors, and
+`tests/code-response-processor.test.ts`; no task-owned diagnostics were introduced.
+
+### Scope
+
+Only `src/commerce/connections/lifecycle/index.ts` and
+`tests/connection-lifecycle.test.ts` changed in Attempt 2. No Shared, database,
+credential-service, UI, HTTP execution, gateway, or COMMERCE-024 files changed.
 
 ### Stop condition
 
