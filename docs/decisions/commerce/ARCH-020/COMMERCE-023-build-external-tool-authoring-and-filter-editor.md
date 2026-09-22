@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 155
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-22T01:27:04Z
+attempt: 1
 depends_on:
   - ARCH-020-SHARED-002
   - ARCH-020-COMMERCE-008
@@ -22,7 +22,7 @@ enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-024
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Build external tool authoring and response-filter editor
