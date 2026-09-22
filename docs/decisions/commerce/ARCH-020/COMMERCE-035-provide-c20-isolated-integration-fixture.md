@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 130
 executor: null
 claimed_at: null
@@ -497,20 +497,18 @@ when either required test URL is absent.
 
 Required execution sequence for the repository agent:
 
+The latest Architect Review below explicitly authorises this task to provision its
+own **local disposable** PostgreSQL/Redis Docker targets for the real-client proof.
+That task-specific authorisation overrides the normal developer-owned
+multi-container-validation default for this task only. Do not wait for the developer
+to supply URLs when a local Unix-socket Docker engine is available.
+
+The agent must use the exact provisioning/run/cleanup procedure in the latest
+Architect Review, then execute:
+
 ```bash
-# 1. The developer/test harness supplies disposable targets.
-export COMMERCE_TEST_DATABASE_URL='postgresql://.../arch020_c20_<unique_name>'
-export COMMERCE_TEST_REDIS_URL='redis://...'
-export COMMERCE_C20_REDIS_NAMESPACE='arch020:c20:<unique_name>'
-export DEPLOYMENT_ENVIRONMENT_NAME='test'
-
-# 2. Reset only those targets.
 npm run c20-fixture:reset
-
-# 3. Run the real fixture proof.
 npm run test:arch020-c20-integration-fixture
-
-# 4. Repository checks.
 npm run typecheck
 npm run lint -- --quiet
 npm run build
@@ -522,9 +520,14 @@ mock `PrismaClient`, `PrismaPublicationStorage`, `CommerceLifecycle` or Redis. E
 query/policy/model transports may be deterministic in-process fixtures because C20
 explicitly permits substitution of external providers, not Moda application services.
 
-If disposable PostgreSQL or Redis is unavailable, record the exact command and failure
-and return the task `blocked`; do not mark F02/F03/F05/F06 or the focused validation
-complete.
+For the next validation-only attempt, "unavailable" means the agent has first tried
+the architect-authorised local Docker provisioning procedure below. Do not block
+merely because `COMMERCE_TEST_DATABASE_URL` / `COMMERCE_TEST_REDIS_URL` were absent
+before provisioning. If Docker itself is unavailable, the selected Docker context is
+not a local Unix socket, an approved image cannot be started, or a disposable
+container never becomes healthy, record that exact infrastructure condition and
+return the task `blocked`. Do not mark F02/F03/F05/F06 complete without the real
+proof.
 
 ## Stop Condition
 
@@ -944,3 +947,273 @@ evidence. Do not start COMMERCE-018 or COMMERCE-019 from this task.
 
 If A1-R1/A1-R2 are committed but disposable targets are unavailable, return this same
 task `blocked` exactly as A1-R3 specifies and STOP.
+
+## Architect Review — Attempt 3 infrastructure unblock — 2026-09-22
+
+### Review Status
+
+Changes Requested — validation-only resumption.
+
+`ARCH-020-COMMERCE-035` is returned to **Ready**, Attempt 3 retained, with
+`executor: null` and `claimed_at: null`. The next authorised `/moda-task` claim
+becomes Attempt 4.
+
+No source correction is currently requested. The Attempt 3 source already contains
+A1-R1/A1-R2 proof coverage. The only remaining acceptance gate is execution of the
+real disposable PostgreSQL/Redis proof.
+
+### Explicit validation-policy override for Attempt 4
+
+For **ARCH-020-COMMERCE-035 Attempt 4 only**, `moda_architect` explicitly authorises
+the repository agent to create, use and destroy its own local Docker PostgreSQL and
+Redis containers for the required C20 validation.
+
+This is the specific override contemplated by
+`docs/agent-validation-execution-policy.md`.
+
+The agent MUST NOT wait for developer-supplied
+`COMMERCE_TEST_DATABASE_URL` / `COMMERCE_TEST_REDIS_URL` when a usable local Docker
+engine exists.
+
+The authorisation is limited to:
+
+- local Docker through a Unix-socket Docker context;
+- two task-owned disposable containers;
+- loopback-only dynamically allocated host ports;
+- no persistent Docker volumes;
+- no shared/deployed PostgreSQL or Redis;
+- no Render, managed database, managed Redis, production or developer database;
+- no `FLUSHALL` / `FLUSHDB`;
+- cleanup of only resources carrying this attempt's run label.
+
+Do not inspect deployment secrets or `.env` files to find infrastructure.
+
+### Exact disposable target contract
+
+Use these already accepted Commerce local-infrastructure image versions:
+
+```text
+PostgreSQL: postgres:16.4-alpine
+Redis:      redis:7.4.0-alpine
+```
+
+Use exactly:
+
+```text
+database name:   arch020_c20_commerce035_a4
+Redis namespace: arch020:c20:commerce035-a4
+Postgres user:   fixture
+Postgres password: fixture-only
+environment:     test
+```
+
+The password is a synthetic local fixture value, not a platform secret.
+
+Container names must be run-scoped and carry:
+
+```text
+label key: moda.arch020.c20.run
+```
+
+No fixed host port is permitted; let Docker allocate loopback ports.
+
+### Exact provisioning and validation procedure
+
+Run the following from the dedicated COMMERCE-035 implementation worktree.
+
+```bash
+set -euo pipefail
+
+command -v docker >/dev/null 2>&1 || {
+  echo "C20_LOCAL_DOCKER_UNAVAILABLE: docker command not found" >&2
+  exit 1
+}
+
+DOCKER_ENDPOINT="$(
+  docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null
+)"
+
+case "$DOCKER_ENDPOINT" in
+  unix://*) ;;
+  *)
+    echo "C20_LOCAL_DOCKER_UNAVAILABLE: local Unix-socket Docker context required" >&2
+    exit 1
+    ;;
+esac
+
+docker version --format '{{.Server.Version}}' >/dev/null
+
+RUN_ID="arch020-c20-commerce035-a4-$$"
+LABEL_KEY="moda.arch020.c20.run"
+PG_CONTAINER="${RUN_ID}-postgres"
+REDIS_CONTAINER="${RUN_ID}-redis"
+
+DB_NAME="arch020_c20_commerce035_a4"
+PG_USER="fixture"
+PG_PASSWORD="fixture-only"
+REDIS_NAMESPACE="arch020:c20:commerce035-a4"
+
+cleanup_c20_targets() {
+  for container in "$PG_CONTAINER" "$REDIS_CONTAINER"; do
+    if docker container inspect "$container" >/dev/null 2>&1; then
+      owner="$(
+        docker container inspect \
+          --format '{{index .Config.Labels "moda.arch020.c20.run"}}' \
+          "$container"
+      )"
+      if [ "$owner" = "$RUN_ID" ]; then
+        docker rm -f -v "$container" >/dev/null
+      else
+        echo "C20 cleanup ownership mismatch for $container" >&2
+        return 1
+      fi
+    fi
+  done
+}
+
+trap cleanup_c20_targets EXIT INT TERM
+
+docker pull postgres:16.4-alpine >/dev/null
+docker pull redis:7.4.0-alpine >/dev/null
+
+docker run -d \
+  --name "$PG_CONTAINER" \
+  --label "${LABEL_KEY}=${RUN_ID}" \
+  --publish 127.0.0.1::5432 \
+  --tmpfs /var/lib/postgresql/data \
+  --env "POSTGRES_USER=${PG_USER}" \
+  --env "POSTGRES_PASSWORD=${PG_PASSWORD}" \
+  --env "POSTGRES_DB=${DB_NAME}" \
+  postgres:16.4-alpine >/dev/null
+
+docker run -d \
+  --name "$REDIS_CONTAINER" \
+  --label "${LABEL_KEY}=${RUN_ID}" \
+  --publish 127.0.0.1::6379 \
+  --tmpfs /data \
+  redis:7.4.0-alpine \
+  redis-server --save "" --appendonly no >/dev/null
+
+pg_ready=0
+for _ in $(seq 1 100); do
+  if docker exec "$PG_CONTAINER" \
+      pg_isready -h 127.0.0.1 -U "$PG_USER" -d "$DB_NAME" >/dev/null 2>&1; then
+    pg_ready=1
+    break
+  fi
+  sleep 0.2
+done
+[ "$pg_ready" -eq 1 ] || {
+  echo "C20_LOCAL_POSTGRES_UNAVAILABLE: disposable PostgreSQL did not become ready" >&2
+  exit 1
+}
+
+redis_ready=0
+for _ in $(seq 1 100); do
+  if [ "$(docker exec "$REDIS_CONTAINER" redis-cli ping 2>/dev/null || true)" = "PONG" ]; then
+    redis_ready=1
+    break
+  fi
+  sleep 0.2
+done
+[ "$redis_ready" -eq 1 ] || {
+  echo "C20_LOCAL_REDIS_UNAVAILABLE: disposable Redis did not become ready" >&2
+  exit 1
+}
+
+PG_BIND="$(docker port "$PG_CONTAINER" 5432/tcp)"
+REDIS_BIND="$(docker port "$REDIS_CONTAINER" 6379/tcp)"
+
+case "$PG_BIND" in
+  127.0.0.1:*) ;;
+  *) echo "C20_LOCAL_POSTGRES_UNSAFE_BIND: expected loopback binding" >&2; exit 1 ;;
+esac
+
+case "$REDIS_BIND" in
+  127.0.0.1:*) ;;
+  *) echo "C20_LOCAL_REDIS_UNSAFE_BIND: expected loopback binding" >&2; exit 1 ;;
+esac
+
+PG_PORT="${PG_BIND##*:}"
+REDIS_PORT="${REDIS_BIND##*:}"
+
+export COMMERCE_TEST_DATABASE_URL="postgresql://${PG_USER}:${PG_PASSWORD}@127.0.0.1:${PG_PORT}/${DB_NAME}"
+export COMMERCE_TEST_REDIS_URL="redis://127.0.0.1:${REDIS_PORT}"
+export COMMERCE_C20_REDIS_NAMESPACE="$REDIS_NAMESPACE"
+export DEPLOYMENT_ENVIRONMENT_NAME="test"
+
+# Do not echo the full URLs or fixture password.
+echo "C20 local targets ready: database=${DB_NAME} namespace=${REDIS_NAMESPACE}"
+
+npm run c20-fixture:reset
+npm run test:arch020-c20-integration-fixture
+
+npm run typecheck
+npm run lint -- --quiet
+npm run build
+git diff --check
+```
+
+The `EXIT` trap owns cleanup. Do not manually remove any container whose
+`moda.arch020.c20.run` label does not equal this invocation's `RUN_ID`.
+
+### Required evidence
+
+Record in the Attempt 4 Completion Report:
+
+- selected Docker context endpoint class (`unix://...`; do not record unrelated
+  environment variables);
+- Docker server version;
+- the two approved image tags and their `RepoDigests` from `docker image inspect`;
+- run-scoped container names;
+- database name and Redis namespace, but **not** the full URLs/password;
+- PostgreSQL and Redis health success;
+- `npm run c20-fixture:reset` exit/result;
+- `npm run test:arch020-c20-integration-fixture` exit/result and F01-F08 outcome;
+- cleanup success for both labelled containers.
+
+### Known repository baseline checks
+
+Attempt 3 already recorded unrelated repository failures:
+
+- lint: existing `src/studio/connections/connections-ui.tsx:235`
+  `react-hooks/set-state-in-effect`;
+- typecheck/build: existing shared-commerce/code-response/integration diagnostics.
+
+Attempt 4 must rerun the commands because the task requires them, but if the observed
+failures are materially identical to those recorded Attempt 3 baselines and no
+COMMERCE-035-owned file is implicated, record them as baseline and **continue to
+`review` once the C20 reset/proof passes**.
+
+Do not return the task to `blocked` merely because those unchanged unrelated
+repository diagnostics remain.
+
+### Failure handling
+
+Return to `blocked` only if one of these occurs:
+
+1. Docker command/server is unavailable;
+2. selected Docker context is not local `unix://`;
+3. an approved task-owned container cannot start/become healthy;
+4. reset/proof fails because of a real COMMERCE-035 fixture defect;
+5. cleanup ownership cannot be proven.
+
+If reset/proof exposes a real task-owned fixture defect, fix only that bounded defect,
+rerun the affected proof once, and report it.
+
+Do not ask the developer for PostgreSQL/Redis URLs as the next step.
+
+### Stop condition
+
+When the disposable reset/proof passes:
+
+1. check F01-F08;
+2. update Completion Report with the real-client evidence;
+3. set `status: review`;
+4. set `executor: null`;
+5. set `claimed_at: null`;
+6. push implementation and parent task branches;
+7. return control to `moda_architect`;
+8. **STOP**.
+
+Do not begin COMMERCE-018, COMMERCE-019 or any other task.

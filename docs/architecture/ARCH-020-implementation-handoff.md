@@ -1151,3 +1151,13 @@ Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
 because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
+
+
+## COMMERCE-035 validation-only unblock — 2026-09-22
+
+`ARCH-020-COMMERCE-035` is Ready for validation-only Attempt 4. The architect has
+explicitly authorised autonomous **local** Docker provisioning for its disposable C20
+PostgreSQL/Redis proof, using the exact procedure in the task's latest Architect
+Review. The agent must not wait for developer-supplied test URLs when a local
+Unix-socket Docker engine is available. This authorisation is task-specific and does
+not authorise deployed/shared infrastructure access.

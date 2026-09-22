@@ -42,6 +42,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | pending | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
+| [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | ready | ARCH-020-COMMERCE-013 |
 
 2026-09-21: COMMERCE-003/008 promoted Ready for C17 interface-based parallel work.
 Component acceptance uses C17 fixtures;013 separately owns real integration. This
@@ -724,3 +725,14 @@ All declared prerequisites of COMMERCE-030 are now Complete, so
 **ARCH-020-COMMERCE-030 is promoted Ready, Attempt 0, claim clear**. COMMERCE-031,
 COMMERCE-024, COMMERCE-012 and terminal system-test work retain additional
 dependencies. No task is automatically launched.
+
+
+## COMMERCE-035 Attempt 3 infrastructure unblock — 2026-09-22
+
+COMMERCE-035 is **Ready, Attempt 3 retained, claim clear** for a validation-only
+Attempt 4. The source proof corrections are already present. The architect explicitly
+authorises the task agent to provision its own local loopback Docker PostgreSQL
+(`postgres:16.4-alpine`) and Redis (`redis:7.4.0-alpine`) targets, run the guarded
+C20 reset/proof, and clean only its labelled containers. Missing pre-supplied test
+URLs are no longer a blocker. Unchanged unrelated repository lint/typecheck/build
+baselines do not prevent return to review once the C20 real-client proof passes.

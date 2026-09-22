@@ -1251,3 +1251,12 @@ Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
 because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
 all Complete. Later preview, assembly, cache, gateway and system-test work retains
 its remaining dependencies. No downstream task is started automatically.
+
+
+## COMMERCE-035 validation-only unblock — 2026-09-22
+
+COMMERCE-035: **Ready / Attempt 3 retained / claim clear**. Next claim is Attempt 4.
+No source correction is currently requested. Attempt 4 is explicitly authorised to
+create its own loopback-only disposable Docker PostgreSQL/Redis targets and execute
+the C20 reset/proof. Missing pre-supplied URLs are not a blocker. Dependants are not
+auto-launched.
