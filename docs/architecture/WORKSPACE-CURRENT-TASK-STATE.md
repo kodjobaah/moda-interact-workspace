@@ -1352,3 +1352,17 @@ The developer must execute that committed scenario before CR02 may be checked.
 No dependency is promoted. COMMERCE-032, GATEWAY-003, COMMERCE-024, COMMERCE-012
 and terminal system-test work retain their dependencies. No downstream task is
 started automatically.
+
+## COMMERCE-028 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-028 is **Accepted / Complete, Attempt 2** (`7384f81`; report
+`f5214dc1`). CR01–CR03 are established, including the dedicated real PostgreSQL
+CR02-PG-01..05 rehearsal with two Prisma clients, actual command-kernel replay/CAS,
+NULL-platform uniqueness, rollback and no-plaintext persistence.
+
+COMMERCE-032 is **Ready, Attempt 0**. Review separately identified a pre-existing
+COMMERCE-020/database contradiction for BEARER revision `authHeader`. C21 now makes
+the canonical boundary explicit: BEARER persists `authHeader:null`; runtime
+credential resolution derives `Authorization`. The bounded producer correction is
+materialized as **ARCH-020-COMMERCE-036 Ready, Attempt 0**, and COMMERCE-024 depends
+on it before final production composition. No task is started automatically.

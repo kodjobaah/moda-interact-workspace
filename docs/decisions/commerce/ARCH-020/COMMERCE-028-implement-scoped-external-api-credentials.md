@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -702,3 +702,138 @@ both mirrored task branches and STOP.
 
 Do not start COMMERCE-032, GATEWAY-003, COMMERCE-024 or COMMERCE-012. They remain
 dependency-gated.
+
+## Architect Review — Attempt 2 — 2026-09-22
+
+### Review Status
+
+Accepted.
+
+### Review Notes
+
+Reviewed the exact submitted Attempt 2 snapshot identified by the Completion Report
+as implementation `7384f81` and parent report `f5214dc1`.
+
+Attempt 2 closes the complete COMMERCE-028 correction contract and establishes CR01,
+CR02 and CR03 for the credential-service owner.
+
+Source and committed evidence confirm:
+
+- the fast credential suite now models persisted BEARER revisions with
+  `authHeader: null`, while `resolveConnection()` derives the runtime
+  `Authorization` header and `Bearer <secret>` value;
+- `tests/external-credentials-postgres.test.ts` uses two independent
+  `PrismaClient` instances plus the accepted real COMMERCE-020 command kernel and
+  real `createCredentialService`;
+- CR02-PG-01 proves one NULL-platform credential is permitted and a second direct
+  valid NULL-platform row for the same revision is rejected by the PostgreSQL
+  unique arbiter; nonce/tag lengths and encrypted storage are inspected;
+- CR02-PG-02 proves exact same-operation replay returns the saved result, changed
+  replay returns `CONFLICTING_REPLAY`, and only one credential effect/audit is
+  persisted;
+- CR02-PG-03 proves two independent clients racing the same credential editVersion
+  produce exactly one success and one `STALE_CAS` loser, with one editVersion
+  increment and no losing success audit;
+- CR02-PG-04 injects an audit-write failure through a test-only real-transaction
+  proxy and proves both the credential mutation and audit are rolled back;
+- CR02-PG-05 proves the synthetic plaintext does not occur in persisted ciphertext
+  or audit result JSON;
+- the developer-owned disposable PostgreSQL rehearsal passed all five CR02-PG
+  cases;
+- the fast credential suite passes 5/5 and adjacent lifecycle suite 9/9;
+- focused ESLint and `git diff --check` pass;
+- repository-wide lint/typecheck/build remain non-zero only on the documented
+  unrelated baseline; the credential-service files are not implicated.
+
+The real PostgreSQL rehearsal intentionally uses an API_KEY connection for its
+credential-row/database invariants. That does not weaken CR02: platform partial
+uniqueness, replay, stale-CAS, atomic audit rollback and plaintext isolation are
+credential-table/command-kernel invariants independent of whether the credential is
+later emitted as API_KEY or BEARER authentication.
+
+During review, however, that deviation exposed a separate accepted-producer
+contradiction:
+
+```text
+DATABASE-003:
+  persisted authHeader is NULL unless authMode = API_KEY
+
+COMMERCE-028 resolver:
+  BEARER revision authHeader is NULL
+  runtime headerName is derived as Authorization
+
+accepted COMMERCE-020 lifecycle:
+  currently requires and persists authHeader = "Authorization" for BEARER
+```
+
+The database constraint therefore rejects a real BEARER revision created through the
+accepted lifecycle. This defect is not owned by COMMERCE-028 and does not invalidate
+the CR01–CR03 credential implementation/evidence. It is materialized separately as
+`ARCH-020-COMMERCE-036`, and final COMMERCE-024 production composition is gated on
+that correction.
+
+### Reviewed Files
+
+- `src/commerce/connections/credentials/index.ts`
+- `tests/external-credentials.test.ts`
+- `tests/external-credentials-postgres.test.ts`
+- `src/commerce/connections/command-kernel.ts` (accepted dependency inspection only)
+- `src/commerce/connections/lifecycle/index.ts` (dependency contradiction inspection only)
+- `database/prisma/migrations/20260921160000_arch020_external_connections/migration.sql`
+- `package.json`
+- this task Completion Report
+- C21 sections 3, 4, 8 and 9.1–9.2
+
+### Validation Reviewed
+
+Submitted Attempt 2 evidence:
+
+```text
+npm run test:arch020-external-credentials
+  PASS — 5/5
+
+npm run test:arch020-external-connection-lifecycle
+  PASS — 9/9
+
+DATABASE_URL=<disposable PostgreSQL> \
+  npm run test:arch020-external-credentials:postgres
+  PASS — CR02-PG-01 through CR02-PG-05, 5/5
+
+npx eslint \
+  src/commerce/connections/credentials \
+  tests/external-credentials.test.ts \
+  tests/external-credentials-postgres.test.ts
+  PASS
+
+git diff --check
+  PASS
+
+npm run lint / typecheck / build
+  retain only the Completion Report's documented unrelated repository baseline;
+  QuickJS packaging/smoke, Prisma generation and Next compilation reached/passed
+  as recorded before the unrelated type-check failures.
+```
+
+The archive contains no Git remote metadata or installed dependency tree, so remote
+heads and dependency-backed commands were not falsely claimed as independently
+re-executed by the architect.
+
+### Architecture Conformance
+
+Accepted for COMMERCE-028.
+
+The service remains within `connections/credentials/**`, reuses the accepted
+COMMERCE-020 command kernel, preserves exact scope/no-fallback, AES-256-GCM/AAD/key
+rotation, bounded availability/status, no secret in public DTOs and fail-closed
+decryption semantics.
+
+### Follow-up
+
+Set `ARCH-020-COMMERCE-028` **Complete / Accepted, Attempt 2**, claim clear.
+
+`ARCH-020-COMMERCE-032` becomes **Ready, Attempt 0** because COMMERCE-013,
+COMMERCE-028 and SHARED-002 are Complete.
+
+Materialize `ARCH-020-COMMERCE-036` **Ready, Attempt 0** for the discovered BEARER
+lifecycle/database normalization defect. COMMERCE-024 must depend on COMMERCE-036.
+Do not automatically launch COMMERCE-032, COMMERCE-036 or any downstream task.
