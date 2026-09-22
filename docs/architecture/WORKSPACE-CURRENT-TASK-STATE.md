@@ -1237,3 +1237,17 @@ dependency gates. No downstream task is automatically launched.
 ## ARCH-020 COMMERCE-019 Attempt 4 acceptance — 2026-09-22
 
 `ARCH-020-COMMERCE-019` is **Complete / Accepted, Attempt 4**. Production preview composition now consumes the accepted COMMERCE-033 preview configuration/provider transport and COMMERCE-034 U14 source-gating contracts: enabled MODEL mode injects the dedicated OpenAI/Groq preview adapter, disabled preview leaves FIXTURE provider-free, and tool-only U14 entry cannot fabricate Conversation capability state. Redis-frozen preview snapshots and replica/restart semantics from the earlier accepted corrections remain intact. No downstream task becomes Ready solely from this acceptance; GATEWAY-001 still waits on COMMERCE-018, COMMERCE-031 still waits on COMMERCE-025/030, and later integration/system gates retain their broader dependency sets.
+## COMMERCE-025 Attempt 2 architect acceptance — 2026-09-22
+
+ARCH-020-COMMERCE-025 is **Accepted / Complete, Attempt 2** (`8b281cf`; report
+`04f10b0e`). The C21 visual response processor now preserves null/missing-last
+ordering in both sort directions with stable ties and is protected by the required
+server-only module boundary. Focused tests pass 6/6 and diff validation passes.
+Repository-wide lint/typecheck/build remain non-zero only on reported unrelated
+baseline diagnostics; the production Next compilation completed before the
+unrelated TypeScript phase failed, and no task-owned diagnostic was reported.
+
+Dependency reconciliation promotes **ARCH-020-COMMERCE-030 to Ready, Attempt 0**
+because SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026 are
+all Complete. Later preview, assembly, cache, gateway and system-test work retains
+its remaining dependencies. No downstream task is started automatically.
