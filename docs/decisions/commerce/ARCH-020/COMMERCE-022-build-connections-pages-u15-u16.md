@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 155
-executor: copilot
-claimed_at: 2026-09-22T11:08:58Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-SHARED-002
@@ -1657,3 +1657,81 @@ Return the same task through:
 
 The next claim becomes **Attempt 4** exactly once. COMMERCE-024 and COMMERCE-012
 remain gated until COMMERCE-022 is architect-accepted Complete.
+
+## Completion Report: Attempt 4
+
+### Status
+
+Ready for Architect Review. Attempt 4 was prepared and claimed by the deterministic
+launcher; claim metadata is cleared for handoff.
+
+### Work Completed
+
+- Preserved the server-authenticated serializable route composition and removed the
+  remaining invalid route/state behavior from the accepted implementation.
+- Completed A3-R1 parent-owned U16 credential dirty/locked navigation state. The
+  parent blocker now combines metadata, revision, enabled and credential state;
+  locked credential operations expose Stay only, and discard resets the credential
+  form through the reset generation.
+- Completed A3-R2 exact credential revision/shop context. PER_SHOP status is not
+  read before shop selection, stale status/CAS is not exposed across contexts, and
+  unavailable/forbidden/not-found reads expose no mutation controls.
+- Completed A3-R3 terminal detail read states for loading, not-found, forbidden and
+  unavailable results with return-state-preserving Back navigation.
+- Preserved A2-R1/A2-R2 replay semantics, including one operation ID and exact
+  admitted payload replay for every mutation and Create reconciliation.
+
+### Files Changed
+
+- `src/studio/connections/connections-ui.tsx`
+- `tests/connections-ui.test.tsx`
+
+The previously accepted route, wrapper, contract and fixture changes remain in the
+implementation branch unchanged. Shared remains pinned to `0.14.2`.
+
+### Architect Correction Disposition
+
+- A3-R1: focused tests cover credential dirty navigation, Stay/Discard behavior,
+  parent-owned blocker state and locked unknown-operation navigation.
+- A3-R2: focused tests cover no initial PER_SHOP status read, exact selected shop
+  IDs/CAS, unavailable status handling and late result protection.
+- A3-R3: focused tests cover not-found, `ok(null)`, forbidden and unavailable
+  terminal detail states without infinite loading.
+
+### Validation Results
+
+- `npm run test:arch020-connections-ui`: passed, 1 file and 20 tests.
+- `npm run lint`: passed with 0 errors and 2 existing warnings outside the task
+  boundary (`scripts/code-runtime-manifest.mjs` and
+  `src/commerce/code-response/runtime/kernel.ts`).
+- `git diff --check`: passed.
+- `npm run typecheck`: route type generation passed; 15 diagnostics remain in
+  unchanged connection backend, integration backend, CodeMirror and
+  response-processor files. No task-owned Connections diagnostic remains.
+- `npm run build`: runtime packaging, smoke validation, Prisma generation and Next
+  compilation passed; the command stopped at the same 15 unrelated repository
+  TypeScript diagnostics.
+- VS Code diagnostics: no errors in the Connections routes, UI, contracts,
+  fixtures or focused tests.
+
+No live, database, deployment, backend, network or secret-bearing validation was
+run. No backend or provider implementation was added.
+
+### Git / VCS
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-022`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-022`.
+- Both branches are `task/ARCH-020-COMMERCE-022`.
+- Launcher claim: Attempt 4, dependency gate passed, parent and implementation
+  synchronization passed, recursive database submodule ready at
+  `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+- Implementation commit: `e6cfd73`, pushed to
+  `origin/task/ARCH-020-COMMERCE-022`.
+- No main merge, service gitlink update, downstream task launch or deployment was
+  performed.
+
+### Deviations
+
+Repository-wide typecheck and build remain blocked by unchanged baseline
+diagnostics outside the task boundary. The architect review text was not edited.
