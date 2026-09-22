@@ -1358,3 +1358,19 @@ focused 9-scenario suite and closes the receipt/liveness/MIME/renderer/runtime p
 The next claim is Attempt 3 and must correct only canonical tool revision hashing and
 remove credential existence from publication/sample gating while retaining current
 non-secret connection auth-shape checks. Dependants remain gated.
+
+## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 3** (`d15d3f5`).
+
+The C21 external publication/sample validator now shares the lifecycle's canonical
+`toolHashInput(definition)` identity and admits synthetic samples/publication from
+persisted non-secret connection revision state (`enabled`, `revisionPresent`,
+`scope`, `authMode`, `authHeader`) without requiring live merchant credentials.
+Active-staff receipt semantics, strict 24-hour TTL, sample MIME/schema validation,
+production renderer reuse and later real-provider runtime validation remain intact.
+
+`ARCH-020-COMMERCE-031` is now **Ready** because COMMERCE-019, COMMERCE-009,
+SHARED-002, COMMERCE-025, COMMERCE-026 and COMMERCE-030 are Complete. It is not
+automatically launched. COMMERCE-024 and COMMERCE-012 remain Pending behind their
+other authoritative prerequisites.
