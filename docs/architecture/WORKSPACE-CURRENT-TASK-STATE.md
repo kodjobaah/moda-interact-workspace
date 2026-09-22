@@ -1606,3 +1606,21 @@ and implementation is `23b1c82`.
 
 No COMMERCE-024 promotion is made from this branch because this exact snapshot still
 contains other non-Complete prerequisites. No automatic launch.
+
+## COMMERCE-031 Attempt 3 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 3 retained.**
+
+The external-preview implementation is substantially conformant: saved definitions
+are server-owned/frozen, replay claims precede business side effects, tool tests
+support same-ID cancel/expiry state, and conversation external definitions/fixtures
+are frozen with a synthetic runner hook. Attempt 3 also adds successful visual and
+JavaScript sample paths.
+
+Remaining work is bounded to: normalize parameterized sample MIME before comparison;
+prove the external-preview replay/quota/cancel/expiry contract against the actual
+Redis preview store; exercise frozen conversation external fixtures through the
+synthetic runner with zero live provider/credential calls; and reconcile the
+unchecked Work Items/PR criteria only after that evidence exists.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched.

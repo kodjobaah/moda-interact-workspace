@@ -38,7 +38,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
-| [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | ready (Attempt 2 checkpoint; Attempt 2 retained) | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
+| [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | ready (Changes Requested; Attempt 3 retained) | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-037, ARCH-020-SHARED-002 |
 | [ARCH-020-COMMERCE-037](COMMERCE-037-normalize-availability-shop-scope.md) | Normalize external availability merchant shop scope | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-028 |
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
@@ -1115,3 +1115,17 @@ draft/error state when canonical filters change.
 This exact parent snapshot still contains other non-Complete COMMERCE-024
 prerequisites, so no downstream readiness is promoted here and nothing is
 auto-started.
+
+## COMMERCE-031 Attempt 3 architect review — 2026-09-22
+
+COMMERCE-031 is **Changes Requested / Ready, Attempt 3 retained, claim cleared**.
+
+Attempt 3 materially completes the saved-definition, claim-before-side-effects,
+cancel/expiry, fixture-bound and processor lifecycle implementation. One real C21
+source defect remains: external sample MIME comparison must strip parameters such as
+`; charset=utf-8`, matching the accepted COMMERCE-030 behavior.
+
+The task also still owes its explicit real-Redis cross-instance replay/quota/cancel
+proof and a service-level synthetic conversation fixture proof with zero live
+provider/credential paths. Attempt 4 is bounded to those corrections/evidence and
+durable task reconciliation. No downstream task is promoted.

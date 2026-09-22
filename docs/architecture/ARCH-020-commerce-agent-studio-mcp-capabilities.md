@@ -1992,3 +1992,21 @@ persisted saved-definition boundary, current validation gating, typed visual/que
 authoring, scalar-only IN reconciliation and injected saved-revision fixture flow are
 now accepted. Production external composition remains COMMERCE-024-owned and is not
 launched by this acceptance.
+
+## COMMERCE-031 Attempt 3 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 3 retained.**
+
+The external-preview implementation is substantially conformant: saved definitions
+are server-owned/frozen, replay claims precede business side effects, tool tests
+support same-ID cancel/expiry state, and conversation external definitions/fixtures
+are frozen with a synthetic runner hook. Attempt 3 also adds successful visual and
+JavaScript sample paths.
+
+Remaining work is bounded to: normalize parameterized sample MIME before comparison;
+prove the external-preview replay/quota/cancel/expiry contract against the actual
+Redis preview store; exercise frozen conversation external fixtures through the
+synthetic runner with zero live provider/credential calls; and reconcile the
+unchecked Work Items/PR criteria only after that evidence exists.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched.

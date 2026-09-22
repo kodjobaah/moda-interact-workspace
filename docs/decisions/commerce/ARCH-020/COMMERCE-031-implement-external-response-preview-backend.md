@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
 executor: null
 claimed_at: null
@@ -1207,3 +1207,470 @@ The next successful `/moda-task ARCH-020-COMMERCE-031` claim creates Attempt 3
 exactly once.
 
 Attempt 3 implements only A2-R1 through A2-R6, returns to Review and STOPs.
+
+## Architect Review — Attempt 3 — 2026-09-22
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+Attempt 3 materially completes the lifecycle source corrections requested after
+Attempt 1:
+
+```text
+server-owned saved definition authority                     accepted in substance
+claim-before-quota/receipt/processor ordering               accepted in substance
+cross-instance cancel state / AbortSignal propagation       accepted in substance
+same-ID tool-test expiry -> UNKNOWN                         accepted in substance
+conversation aggregate fixture byte bound                  accepted in substance
+frozen conversation external definitions                   accepted in substance
+synthetic conversation runner hook                         accepted in substance
+visual + JavaScript positive sample paths                  accepted in substance
+```
+
+Do not redesign or revert those paths.
+
+This review remains Changes Requested for one real C21 behavior defect and for the
+remaining producer-owned proof that the task itself explicitly requires.
+
+### A3-R1 — normalize MIME before saved-format comparison
+
+File:
+
+```text
+src/commerce/external-preview/service.ts
+```
+
+Current code compares:
+
+```ts
+execution.responseFormat.mediaTypes.includes(
+  sample.contentType.toLowerCase()
+)
+```
+
+This incorrectly rejects a valid C21 sample such as:
+
+```text
+saved accepted media:
+  application/json
+
+sample contentType:
+  application/json; charset=utf-8
+```
+
+C21 section 2.3 explicitly permits a charset parameter and requires comparison of the
+normalized MIME type. COMMERCE-030 already implements the canonical behavior.
+
+Replace the comparison input with exactly:
+
+```ts
+const sampleMime = sample.contentType
+  .split(';', 1)[0]
+  .trim()
+  .toLowerCase();
+
+if (!execution.responseFormat.mediaTypes.includes(sampleMime)) {
+  throw new PreviewError('INVALID_INPUT');
+}
+```
+
+Do not duplicate MIME parsing elsewhere and do not weaken the saved response-format
+allowlist.
+
+Add a focused regression using a saved JSON external definition whose mediaTypes are:
+
+```ts
+['application/json']
+```
+
+and a sample:
+
+```ts
+{
+  status: 200,
+  contentType: 'application/json; charset=utf-8',
+  bodyText: '{"name":"Moda"}',
+}
+```
+
+Require COMPLETED with the same processed result as the plain
+`application/json` adjacent case.
+
+### A3-R2 — prove PR02 against the actual Redis preview store and external quota
+
+The current cross-instance test shares an `InMemoryPreviewStateStore`; it does not
+prove the task Work Item:
+
+```text
+Provide actual Redis cross-instance replay/quota/cancel fixtures.
+```
+
+Files permitted:
+
+```text
+tests/external-preview.test.ts
+tests/preview-redis-lua.test.ts
+```
+
+Reuse the existing local `redis-server` + `ioredis` harness already committed in
+`tests/preview-redis-lua.test.ts`. Do not introduce Docker or a second Redis test
+framework.
+
+Add one real-Redis focused block, guarded by the same existing local-server
+availability rule, that constructs:
+
+```text
+one shared ioredis server
+two RedisPreviewStateStore instances with the same key prefix
+two PreviewService instances
+two ExternalPreviewService instances
+the same ioredis client/transport for the external-preview quota
+```
+
+Use unique prefixes so the test cannot collide with adjacent preview Redis tests.
+
+#### Same-operation race
+
+Run the same `previewRunId` + same complete payload concurrently through both
+ExternalPreviewService instances.
+
+Require:
+
+```text
+both callers observe the same previewRunId
+both callers observe the same terminal result
+COMMERCE-030 validator total calls == 1
+processor total calls == 1
+business quota acquisition succeeds only for the CREATED execution
+the REPLAY does not return QUOTA_EXCEEDED
+```
+
+Use counters shared by the two service instances.
+
+#### Changed-payload conflict
+
+After a completed run, reuse the same previewRunId with a changed fixture body.
+
+Require:
+
+```text
+ID_CONFLICT
+validator total does not increment
+processor total does not increment
+external business-quota acquisition does not increment
+```
+
+#### Cross-instance cancellation
+
+Use a processor that blocks until AbortSignal aborts.
+
+```text
+instance A starts the new run
+instance B calls cancelToolTest(same run ID)
+```
+
+Require:
+
+```text
+processor receives aborted signal
+stored Redis tool test becomes CANCELLED
+same previewRunId retained
+result == null
+later read through either instance remains CANCELLED
+quota released
+```
+
+#### Redis expiry
+
+Persist/start a RUNNING external tool-test owner in the real
+`RedisPreviewStateStore`, then read after `PREVIEW_SLOT_MS`.
+
+Require:
+
+```text
+status == UNKNOWN
+same previewRunId
+late completion with old owner token == false
+```
+
+#### Different-new-run quota
+
+For the same admin, block one newly CREATED external run after quota acquisition and
+start a second run with a different previewRunId.
+
+Require:
+
+```text
+second new run -> QUOTA_EXCEEDED
+first run remains the owner
+after first run terminates/cancels -> quota is released
+a later distinct run may acquire the quota
+```
+
+This is separate from same-operation replay.
+
+If the local `redis-server` prerequisite is unavailable in the execution environment,
+do not mark PR02 complete. Return the task `blocked` with that exact infrastructure
+condition; do not replace this proof with another in-memory mock.
+
+### A3-R3 — prove conversation external fixtures are actually consumed
+
+Current source correctly stores frozen fixture definitions and contains the
+`externalFixtureRunner` branch in `PreviewService.execute(...)`, but the submitted
+focused suite does not exercise that behavior.
+
+Primary file:
+
+```text
+tests/external-preview.test.ts
+```
+
+Add a focused scenario with this exact title:
+
+```text
+runs a frozen conversation external fixture without live provider or credential access
+```
+
+Construct a valid Preview bundle whose frozen manifest contains one exact external
+tool descriptor. Configure:
+
+```text
+savedTools.load:
+  returns the exact EXTERNAL_HTTP saved definition for that toolRevisionId
+
+externalResponseFixtures:
+  contains exactly that toolRevisionId
+
+externalFixtureRunner:
+  validates/records the exact:
+    toolRevisionId
+    frozen saved definition
+    frozen TransformSample
+    arguments
+  returns a valid CommerceToolResult
+```
+
+Also install explicit live-path traps/counters:
+
+```text
+PreviewToolExecutionPort.execute:
+  throws "unexpected live tool execution"
+
+provider HTTP:
+  throws "unexpected provider HTTP"
+
+credential resolution:
+  throws "unexpected credential resolution"
+
+credential decryption:
+  throws "unexpected credential decryption"
+```
+
+Where provider/credential traps exist at the composition seam, wire them directly;
+do not assert zero calls merely by omitting the dependency.
+
+Execute:
+
+```text
+startConversation(...)
+startRun(...)
+wait/read terminal run
+```
+
+Require:
+
+```text
+conversation fixture definition is server-loaded before storage
+externalFixtureRunner called exactly once
+normal/live PreviewToolExecutionPort.execute called 0
+provider HTTP calls == 0
+credential resolution calls == 0
+credential decryption calls == 0
+terminal preview run == COMPLETED
+normal CommerceToolResult reaches the runner/final response path
+```
+
+Then retry `startConversation(...)` with the same conversation ID but changed fixture
+content and require the existing frozen conversation identity to conflict or replay
+the already-frozen conversation according to the canonical C9 identity contract; it
+must never silently replace the stored fixture.
+
+Add adjacent rejection cases through `PreviewService.startConversation(...)`, not
+only `ConversationBodySchema.parse(...)`:
+
+```text
+fixture key not present in frozen selected manifest
+  -> INVALID_INPUT before conversation storage
+
+fixture key selected but saved tool definition is not EXTERNAL_HTTP
+  -> INVALID_INPUT before conversation storage
+```
+
+The existing aggregate >256KiB schema case may remain as the byte-bound proof.
+
+### A3-R4 — reconcile the focused PR03 fail-closed evidence
+
+The current combined test:
+
+```text
+fails closed for unsupported media, raw HTML, and invalid processor output
+```
+
+does not separately prove every required side-effect boundary.
+
+Strengthen it or split it so the report can state exactly:
+
+```text
+unsupported media:
+  INVALID_INPUT
+  validator calls == 0
+  processor calls == 0
+
+raw HTML incompatible with saved response mode:
+  INVALID_INPUT
+  no raw fallback result
+
+invalid processor output:
+  INVALID_INPUT
+  no raw body/result fallback
+```
+
+Add an oversize sample/request regression if it is not already directly exercised by
+the focused external-preview suite. The rejection must happen before processor work
+when the canonical request/schema bound can reject it.
+
+Preserve the existing caller-supplied-definition override test and make the report
+state that the extra caller field has no authority over the server-loaded definition.
+
+### A3-R5 — durable task reconciliation is mandatory
+
+The task is currently in Review while all four Work Items and PR01-PR03 Acceptance
+Criteria remain unchecked. The Completion Report also compresses required PR02/PR03
+evidence into broader suite claims.
+
+After A3-R1 through A3-R4 pass:
+
+1. check each Work Item only if its exact owned behavior is present;
+2. check PR01 only when both actual processor positive paths pass;
+3. check PR02 only when the **real Redis** replay/quota/cancel/expiry evidence above
+   passes;
+4. check PR03 only when service-level conversation ownership/type rejection,
+   media/size/output fail-closed behavior and zero-live-dependency evidence pass;
+5. check the required Validation items truthfully;
+6. replace/update the Attempt-3 Completion Report so each PR criterion maps to:
+   - committed test file;
+   - exact test name;
+   - exact command;
+   - observed result;
+7. record the final implementation commit and parent report commit;
+8. record launcher-resolved worktrees, synchronization evidence and clean/pushed
+   mirrored branches.
+
+Return metadata must be:
+
+```yaml
+status: review
+attempt: 4
+executor: null
+claimed_at: null
+```
+
+because the next authorized claim after this review creates Attempt 4 exactly once.
+
+Do not edit this Architect Review.
+
+### Required Validation
+
+After the correction, run exactly:
+
+```bash
+npm run test:arch020-external-preview
+
+npm run test:arch020-external-publication
+
+npm run test:arch020-code-processor
+
+npx vitest run \
+  tests/preview-service.test.ts \
+  tests/preview-store.test.ts \
+  tests/preview-redis-lua.test.ts \
+  tests/preview-routes.test.ts
+
+npx eslint \
+  src/commerce/external-preview \
+  src/commerce/preview \
+  tests/external-preview.test.ts \
+  tests/preview-redis-lua.test.ts
+
+npm run typecheck
+npm run build
+
+git diff --check
+```
+
+The external-preview/Redis output must identify the actual Redis-backed scenarios;
+an aggregate test count alone is not sufficient.
+
+Repository typecheck/build may remain non-zero only for materially unchanged baseline
+diagnostics and only when no diagnostic points at:
+
+```text
+src/commerce/external-preview/**
+src/commerce/preview/**
+tests/external-preview.test.ts
+tests/preview-redis-lua.test.ts
+```
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/external-preview/contracts.ts`
+- `moda-interact-commerce/src/commerce/external-preview/service.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/preview/store.ts`
+- `moda-interact-commerce/src/commerce/preview/redis-store.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/tests/external-preview.test.ts`
+- `moda-interact-commerce/tests/preview-service.test.ts`
+- `moda-interact-commerce/tests/preview-store.test.ts`
+- `moda-interact-commerce/tests/preview-redis-lua.test.ts`
+- this task's Attempt-3 Completion Report
+
+### Validation Reviewed
+
+Submitted Attempt-3 evidence:
+
+```text
+external preview focused:       9 PASS
+external publication adjacent: 11 PASS
+code processor adjacent:        6 PASS
+preview lifecycle adjacent:     34 PASS
+focused ESLint:                 PASS
+git diff --check:               PASS
+repository typecheck/build:     unrelated existing baseline
+```
+
+Those results establish substantial progress but do not satisfy the task's explicit
+real-Redis PR02 Work Item or the conversation synthetic-execution PR03 evidence.
+
+### Architecture Conformance
+
+Partial.
+
+The production lifecycle direction is substantially conformant. One C21 MIME
+normalization bug remains in `external-preview/service.ts`, and the required
+producer-owned Redis/conversation evidence is incomplete.
+
+No downstream task may be promoted from this review.
+
+### Follow-up
+
+Return the same task to `ready`, preserve `attempt: 3`, clear the claim.
+
+The next successful `/moda-task ARCH-020-COMMERCE-031` claim creates Attempt 4
+exactly once.
+
+Implement only A3-R1 through A3-R5, return to Review, push both mirrored branches and
+STOP. Do not begin COMMERCE-024, COMMERCE-012 or any system-test task.
