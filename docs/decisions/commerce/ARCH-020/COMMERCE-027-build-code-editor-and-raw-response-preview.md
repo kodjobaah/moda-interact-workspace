@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T01:52:09Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-SHARED-002
@@ -65,10 +65,10 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
-- [ ] Provide locally bundled editor, source/version docs, format-aware raw sample and processed JSON/template panels. HTML/XML stay escaped text; no innerHTML/eval or external editor CDN.
-- [ ] Implement typed compile/test/cancel/read ports from section2.3, content-hash stale checks, save-before-run, duplicate guards, error retention and unknown-run reconciliation.
-- [ ] Show schema diagnostics with JSON Pointer, expected type and bounded safe message; no provider source/secret echoed in generic error. Existing successful result is stale after edits.
-- [ ] Include illustrative plain-text, JSON, HTML, XML and simple CSV extraction examples; explain no DOM/imports/full parser libraries. Published code read-only; source diff on new draft.
+- [x] Provide locally bundled editor, source/version docs, format-aware raw sample and processed JSON/template panels. HTML/XML stay escaped text; no innerHTML/eval or external editor CDN.
+- [x] Implement typed compile/test/cancel/read ports from section2.3, content-hash stale checks, save-before-run, duplicate guards, error retention and unknown-run reconciliation.
+- [x] Show schema diagnostics with JSON Pointer, expected type and bounded safe message; no provider source/secret echoed in generic error. Existing successful result is stale after edits.
+- [x] Include illustrative plain-text, JSON, HTML, XML and simple CSV extraction examples; explain no DOM/imports/full parser libraries. Published code read-only; source diff on new draft.
 
 ## Interfaces / Contracts
 
@@ -90,9 +90,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] X12/XN04: Text ->Code->sample->compile->save->run->schema failure->correct->save/run->return/publish handoff; same flow works for JSON.
-- [ ] No browser execution or active HTML, role/pending/cooldown/abort states accessible on keyboard/narrow layout; late results cannot validate changed code.
-- [ ] Both panels build/test independently of023/026 using agreed fixtures;024 owns actual host installation and engine calls.
+- [x] X12/XN04: Text ->Code->sample->compile->save->run->schema failure->correct->save/run->return/publish handoff; same flow works for JSON.
+- [x] No browser execution or active HTML, role/pending/cooldown/abort states accessible on keyboard/narrow layout; late results cannot validate changed code.
+- [x] Both panels build/test independently of023/026 using agreed fixtures;024 owns actual host installation and engine calls.
 
 ## Validation
 
@@ -205,6 +205,38 @@ database at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
 Implementation commits: `221c913`, `771c1ff`, pushed to the task branch.
 Parent report claim commit: `fa865434fa888bf7bb33c241bc04dabd2158c042`;
 this report update is the next mirrored parent commit.
+
+### Attempt 2 Completion Evidence
+
+Attempt 2 implements only the architect-requested C21 corrections A1-R1 through
+A1-R7. It consumes Shared `TransformSample` and `ExternalResponseFormat` from
+`@modainteract/moda-interact-shared@0.14.2`; the browser computes lowercase
+SHA-256 over Shared `canonicalJson({ source, runtimeVersion })`; and the local
+CodeMirror 6 dependencies are pinned at state `6.7.5`, view `6.43.12`, and
+JavaScript `6.2.5`.
+
+The implementation adds local CodeMirror editing, explicit JSON/TEXT raw sample
+mode, saved-revision dispatch, retained UNKNOWN run identity, independent
+read/cancel controls, cooldown feedback, bounded schema/failure presentation,
+and the ADMIN/SUPER_ADMIN published-source and publication-review boundaries.
+It remains frontend-only with injected ports. No host installation, sandbox,
+live HTTP, credential, backend, receipt, or composition ownership moved into
+this task.
+
+Validation performed in the isolated implementation worktree:
+
+- `npm run test:arch020-code-editor`: passed, 1 file and 11 tests.
+- `npx eslint src/studio/code-response tests/code-editor.test.tsx`: passed.
+- `git diff --check`: passed.
+- `npm run lint`: non-zero only for pre-existing `src/studio/connections/connections-ui.tsx:235`; warnings also pre-exist in unrelated files. No touched C21 file diagnostic was reported.
+- `npm run typecheck`: non-zero only for `src/commerce/integration/backend/executors.ts:17` (two discriminated-union property errors) and `tests/code-response-processor.test.ts:58` (readonly schema array mismatch). No task-owned diagnostic remains.
+- `npm run build`: QuickJS packaging/smoke and application compilation passed; subsequent type checking stopped on the same three unrelated baseline diagnostics.
+
+No live provider, sandbox, database, or assembled host-flow validation was run;
+these remain COMMERCE-024/SYSTEM-TEST-002 scope.
+
+Attempt 2 implementation commits: `22619b5`, `0c92e5e`, pushed to
+`task/ARCH-020-COMMERCE-027`. The task is handed to `moda_architect` for review.
 
 ## Architect Review
 
