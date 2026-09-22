@@ -2151,3 +2151,19 @@ WI01's publish -> release -> grant -> assembled MCP execution path is still unpr
 Attempt 3 is bounded to those 024-owned corrections/evidence. Accepted connection and
 external producers must remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain
 gated.
+
+## COMMERCE-024 Attempt 3 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 3 retained; claim cleared.**
+
+The saved-DRAFT identity and fail-closed external publication binding are now accepted
+in substance. The remaining gate is final production composition evidence only.
+
+XN04 currently installs a prebuilt in-memory PreviewService rather than proving
+`productionService()` plus the real U14 POST/GET route identity. WI01 currently
+constructs manifest/grant state in test code, overrides assertion verification and
+calls the executor directly rather than persisting publication/release/grant state and
+calling the assembled `backend.mcp` JSON-RPC `tools/call` endpoint.
+
+Attempt 4 is bounded to those two proofs and report reconciliation. Accepted producer
+implementations remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain gated.
