@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
 executor: copilot
 claimed_at: 2026-09-22T01:39:41Z
@@ -121,41 +121,61 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Review; implementation committed and pushed for moda_architect review.
 
 ### Files Changed
 
-None; task definition only.
+- `moda-interact-commerce/src/commerce/external-publication/contracts.ts`
+- `moda-interact-commerce/src/commerce/external-publication/index.ts`
+- `moda-interact-commerce/src/commerce/external-publication/receipt-store.ts`
+- `moda-interact-commerce/tests/external-publication.test.ts`
+- `moda-interact-commerce/package.json`
 
 ### Work Completed
 
-None.
+- Added typed `createExternalPublicationValidation` ports for saved-definition identity, connection metadata, compiler, visual/code processors, staff authorization, clock and digest injection.
+- Implemented strict definition/sample bounds, visual and JavaScript sample processing, result-schema validation, semantic template validation, and no-network sample admission.
+- Implemented Redis receipt storage with environment/revision/definition/runtime key binding, 24-hour TTL, bounded receipt fields, inactive-staff rejection and fail-closed unavailable handling.
+- Added visual and code positive paths plus missing, unavailable, inactive, changed-hash, invalid-template and receipt-store regression scenarios.
 
 ### Validation Results
 
-No implementation validation performed.
+| Criterion | Test / command | Observable result |
+|---|---|---|
+| PV01 visual | `tests/external-publication.test.ts` / `records a real visual sample receipt and admits the matching definition`; `npm run test:arch020-external-publication` | Passed; receipt contains revision, runtime and tester binding and matching admission returns `ok: true`. |
+| PV01 code | `tests/external-publication.test.ts` / `records a code-mode sample receipt through the injected processor`; same command | Passed; injected code processor path records `quickjs-sync.v1` receipt. |
+| PV02 rejection | `tests/external-publication.test.ts` / `blocks missing, unavailable, inactive, and changed-hash receipts`; same command | Passed; missing/stale/inactive block and receipt outage returns `VALIDATOR_UNAVAILABLE`. |
+| PV02 invalid definition | `tests/external-publication.test.ts` / `rejects a semantically invalid template before writing a receipt`; same command | Passed; no receipt write occurs. |
+| Receipt bounds | `tests/external-publication.test.ts` / `stores only bounded receipt data under the environment and hash key with a TTL`; same command | Passed; environment/hash key, `86400` TTL and receipt-only payload verified. |
+| Focused lint | `npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts` | Passed with no warnings/errors. |
+| Task-local diagnostics | VS Code diagnostics for all changed implementation/test files | No errors. |
+| Repository typecheck | `npm run typecheck` | Still fails on unrelated existing Prisma/integration diagnostics; no `external-publication` diagnostics remain. |
+
+Developer-owned PostgreSQL/container checks were not run; this task owns Redis receipt/admission ports and has no migration scope.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+No scope deviation. The accepted Shared `validateDefinitionForPublication` helper is used for strict definition/template admission; provider HTTP, preview lifecycle, UI and final factories remain out of scope.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+C21 read-only scope; visual rules and generic JavaScript are executed by the injected accepted processors. The saved-definition and connection ports are supplied by their owning lifecycle/credential implementations.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+The full repository typecheck remains blocked by baseline Prisma generated-client and integration typing errors outside COMMERCE-030. Real Redis/PostgreSQL deployment checks remain developer-owned follow-up evidence.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+Receipt creation is intentionally limited to successful sample processing and schema/template validation. Publication admission never treats a receipt as a substitute for fresh definition, compiler, schema or connection checks.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-030. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-030`; physical isolation confirmed by launcher. Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-030`.
+
+Preparation packet: dependency gate passed for SHARED-002, COMMERCE-003, COMMERCE-021, COMMERCE-025 and COMMERCE-026; recursive database submodule sync/update passed at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`.
+
+Implementation commit: `59f0c34` (`feat(commerce): validate external publication samples`), pushed to `origin task/ARCH-020-COMMERCE-030`.
 
 ## Architect Review
 
