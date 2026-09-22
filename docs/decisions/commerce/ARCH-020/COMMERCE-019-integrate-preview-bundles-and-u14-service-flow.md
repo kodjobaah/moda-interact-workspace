@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 145
 executor:
 claimed_at:
@@ -74,7 +74,7 @@ that SHA in the mapping document; pending producer symbols must not be guessed.
 - [x] Own `src/commerce/integration/preview/` and minimal composition in `lib/preview/runtime.ts` plus U14 client injection. Do not edit018 Studio services/actions or013 backend factory.
 - [x] Implement PreviewBundleLoader, PreviewPromptLoader and PreviewToolExecutionPort from accepted009 types using013 read facade and authorized saved revisions. Do not replace authored prompts with generic strings.
 - [x] Freeze exact revision content, response definition and synthetic grant at start. After a saved draft changes, an existing conversation still executes its frozen definition; no reloading latest tool content during later turns.
-- [ ] Instantiate009 PreviewService/RedisPreviewStateStore and typed ports. Use014 actual interpreter with isolated fixture operation adapters; explicit MODEL mode uses separate model config, never production credentials. The accepted `PreviewModelPort` injection seam is preserved, but no accepted provider transport exists for `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY`; production composition remains fail-closed and this gap is reported below.
+- [ ] Instantiate009 PreviewService/RedisPreviewStateStore and typed ports. Use014 actual interpreter with isolated fixture operation adapters. For explicit MODEL mode, consume the architect-accepted COMMERCE-033 `readConfig().preview` contract and `createPreviewModel(...)`; never use Background/production credentials or `createUnavailableModel`. FIXTURE mode remains credential-free.
 - [x] Connect017 PreviewClient to exact C9.1 routes. Retain008 layout handoff and Back restoration using component fixture mounting where needed; no dependency on018 service adapters.
 - [x] Provide `docs/commerce-preview-integration.md` and `test:arch020-preview-integration` plus `test:arch020-preview-integration:redis`; preserve existing quotas/replay/cancel logic instead of duplicating it.
 
@@ -97,6 +97,7 @@ PreviewResult and body/error shapes remain009/C9.1, not UI-specific alternatives
 - ARCH-020-COMMERCE-017
 - ARCH-020-COMMERCE-008
 - ARCH-020-COMMERCE-002
+- ARCH-020-COMMERCE-033
 - ARCH-020-COMMERCE-034
 
 All dependencies must be Complete and architect-accepted before execution.
@@ -113,7 +114,7 @@ Readiness never launches a task; use the normal dedicated mirrored worktrees.
 ## Acceptance Criteria
 
 - [x] P01: real017 UI ->009 route -> real saved loader -> Shared runner/interpreter -> Redis -> reply/details flow; no fake preview service or constant EVAL response.
-- [ ] P02: N10/N11/N13 preview portion covers release/draft/tool entry, sidebar, Back and refresh loss. Tool-test entry is integrated; Conversation source gating is now owned by COMMERCE-034. Do not fabricate a capability or prompt in COMMERCE-019.
+- [ ] P02: N10/N11/N13 preview portion covers release/draft/tool entry, sidebar, Back and refresh loss. Tool-test entry is integrated; consume architect-accepted COMMERCE-034 Conversation source gating as-is. Do not fabricate a capability or prompt in COMMERCE-019.
 - [x] P03: repeated/concurrent Send, same-ID changed payload, cancel/complete race, expired/unknown state and quota boundaries preserve one reservation/model start per logical run across two service instances.
 - [x] P04: edit/publish saved content between turns; frozen prompts/tool definitions and language/history persist. New conversation sees new selection; no production grant/reset/write.
 - [x] P05: denied staff or foreign/missing revision fails before loading sensitive content; fixture/model credentials remain isolated and no WhatsApp/live-Shopify transport is constructed.
@@ -652,3 +653,104 @@ Preserve native-basic monetary discount profiles as UNSUPPORTED while provider
 rounding semantics are unproven; do not estimate savings or implement missing
 provider semantics in this composition task. PostgreSQL adapter timeout diagnosis
 and live infrastructure evidence remain separately developer-owned.
+
+### Readiness reconciliation after COMMERCE-033/034 acceptance — 2026-09-22
+
+Reviewer: `moda_architect`. **Ready; Attempt 2 retained; executor/claimed_at null.**
+
+The two Attempt-2 architectural blockers are resolved by accepted prerequisites:
+
+```text
+ARCH-020-COMMERCE-033  Complete / Accepted, Attempt 2
+  accepted implementation: 94d31ea
+  owns: strict preview config + OpenAI/Groq PreviewModelPort transport
+
+ARCH-020-COMMERCE-034  Complete / Accepted, Attempt 1
+  accepted implementation: 57bd7d6
+  owns: U14 tool-only Conversation source gating
+```
+
+All explicit COMMERCE-019 dependencies are now Complete. The next normal
+`/moda-task ARCH-020-COMMERCE-019` claim creates **Attempt 3 exactly once**.
+
+#### Attempt 3 deterministic source-availability gate
+
+After launcher preparation/synchronization and **before editing**, inspect the prepared
+Commerce implementation worktree. The accepted prerequisite source must be physically
+available there.
+
+Required COMMERCE-033 source facts:
+
+```text
+src/commerce/integration/preview/model-provider.ts exists
+exports createPreviewModel(config, fetchImpl?)
+lib/server/config.ts readConfig() returns:
+  preview: { enabled: false }
+    | { enabled: true; provider: 'openai'|'groq'; model: string; apiKey: string }
+```
+
+Required COMMERCE-034 source facts in `src/studio/preview/preview-screen.tsx`:
+
+```text
+tool-only entry remains Tool test
+Conversation Start requires a real persisted release or authored draft/behaviour source
+Conversation payload never falls back to selectedTool.toolRevisionId
+DRAFT Conversation toolRevisionIds is []
+```
+
+If either accepted prerequisite implementation is absent after normal launcher
+synchronization, **do not recreate it inside COMMERCE-019**. Return this task
+`blocked`, clear the claim, and record exactly which accepted producer source is
+missing from the prepared implementation baseline. The developer must integrate the
+accepted producer branch into `moda-interact-commerce` main (or explicitly approve
+exact dependency-commit consumption) before COMMERCE-019 resumes.
+
+#### Attempt 3 implementation contract
+
+When both prerequisite implementations are physically present, perform only this
+composition work:
+
+1. `lib/preview/runtime.ts`
+   - call the accepted `readConfig()` once for production composition;
+   - use `config.redisUrl` / `config.environment` rather than independently parsing
+     preview configuration;
+   - when `config.preview.enabled === true`, inject
+     `createPreviewModel(config.preview)` into `PreviewService`;
+   - when false, inject no model (`model: undefined`), so FIXTURE requires no provider
+     credentials or provider construction.
+2. Remove production use of `createUnavailableModel`; remove that helper from
+   `src/commerce/integration/preview/adapters.ts` only if it becomes unused.
+3. Consume COMMERCE-034's U14 source gating exactly as accepted. Do not edit
+   `preview-screen.tsx` unless a reproduced integration defect exists; do not add a
+   synthetic capability, prompt, or tool-to-capability mapping.
+4. Update `docs/commerce-preview-integration.md` so it records:
+   - config owner/export: `lib/server/config.ts: readConfig().preview`;
+   - model transport owner/export:
+     `src/commerce/integration/preview/model-provider.ts: createPreviewModel`;
+   - U14 Conversation source gating owner: `ARCH-020-COMMERCE-034`;
+   - FIXTURE remains provider-free.
+5. Add/retain only composition-level proof for:
+   - provider disabled + FIXTURE => zero provider fetches and successful fixture run;
+   - provider enabled + MODEL => accepted provider adapter invoked exactly once per
+     model step through the existing Shared runner;
+   - enabled preview with invalid/missing provider config => generic configuration
+     failure before provider dispatch;
+   - U14 tool-only entry => zero Conversation creation; real release/draft source =>
+     Conversation creation allowed.
+6. Rerun exactly the task-owned validation:
+
+```bash
+npm run test:arch020-preview-integration
+npm run test:arch020-preview-integration:redis
+npm run typecheck
+npm run lint
+npm run build
+git diff --check
+```
+
+Do not add live/paid OpenAI/Groq calls, production credentials, WhatsApp delivery,
+Shopify transport, U01-U13 service work, or a full-suite rerun merely for coverage.
+
+After the scoped work and validation, update the Completion Report, set this same task
+back to `review`, clear `executor`/`claimed_at`, push both mirrored branches and STOP.
+No enabled/downstream task is launched automatically.

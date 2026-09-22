@@ -533,3 +533,17 @@ ARCH-020 remains In Progress.
 SHARED-002 is Accepted / Complete at Attempt 5 (`95bab1d`, Shared `0.14.2`). The
 direct C21 component frontier `COMMERCE-020/021/022/023/025/026/027` is Ready;
 remaining extension/integration/gateway/system-test tasks stay dependency-gated.
+
+## ARCH-020 COMMERCE-019 Attempt 3 readiness reconciliation — 2026-09-22
+
+COMMERCE-019 is **Ready, Attempt 2 retained**, claim null. Architect-accepted
+COMMERCE-033 (OpenAI/Groq preview model transport/config) and COMMERCE-034 (U14
+Conversation source gating) resolve the two Attempt-2 blockers. All explicit 019
+dependencies are Complete; the next `/moda-task ARCH-020-COMMERCE-019` claim becomes
+Attempt 3.
+
+The prepared Commerce worktree must contain the accepted 033/034 implementation after
+normal synchronization. If either producer is absent, 019 returns `blocked` without
+reimplementation until developer integration or explicit exact dependency-commit
+consumption makes the accepted producer source available. No downstream task is
+started by this reconciliation.

@@ -26,7 +26,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-016](COMMERCE-016-evaluate-normalised-discount-rules-and-produce-evidence.md) | Evaluate normalised discount rules and produce evidence | complete | ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-015, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-017](COMMERCE-017-build-the-u14-preview-frontend.md) | Build the U14 preview frontend | complete | ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-SHARED-001 |
 | [ARCH-020-COMMERCE-018](COMMERCE-018-integrate-studio-pages-with-production-services.md) | Integrate Studio pages with production services | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-011 |
-| [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-033 |
+| [ARCH-020-COMMERCE-019](COMMERCE-019-integrate-preview-bundles-and-u14-service-flow.md) | Integrate preview bundles and the U14 service flow | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-033, ARCH-020-COMMERCE-034 |
 | [ARCH-020-COMMERCE-020](COMMERCE-020-implement-external-connection-management-service.md) | Implement external connection lifecycle and command kernel | ready | ARCH-020-DATABASE-003, ARCH-020-SHARED-002, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-021](COMMERCE-021-execute-read-only-external-http-tools.md) | Execute read-only external HTTP tools | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-014 |
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
@@ -651,3 +651,19 @@ integration/Prisma diagnostics reported outside the task files.
 No downstream task is newly Ready from this acceptance alone. COMMERCE-030 still
 requires COMMERCE-025; later preview, assembly, gateway and system-test work retain
 their remaining declared dependencies. No automatic task launch occurs.
+
+## COMMERCE-019 Attempt 3 readiness reconciliation — 2026-09-22
+
+COMMERCE-019 is **Ready, Attempt 2 retained, executor/claimed_at null**. The two
+Attempt-2 blockers are now satisfied by architect-accepted COMMERCE-033 and
+COMMERCE-034. The next normal launcher claim creates Attempt 3 exactly once.
+
+Attempt 3 is composition-only: consume `readConfig().preview` and
+`createPreviewModel(...)`, preserve FIXTURE as provider-free, and consume the accepted
+U14 source gating without reimplementing it. Before editing, the prepared Commerce
+worktree must physically contain the accepted 033/034 producer source. If normal
+synchronization does not materialise either producer, return 019 `blocked` and require
+normal developer integration or explicitly approved exact dependency-commit
+consumption; do not recreate producer code in 019.
+
+No downstream task is launched by this readiness reconciliation.
