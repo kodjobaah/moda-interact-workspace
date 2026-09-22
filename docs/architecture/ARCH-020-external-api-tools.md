@@ -779,6 +779,26 @@ Execution still calls resolveConnection to decrypt and recheck; corrupted cipher
 can fail even if status looked available.032 receives this availability port.
 Distinguish missing configuration from falsely saying no feature exists.020 never
 supplies a placeholder configured=true status.
+checkConnectionAvailability({connectionRevisionId,shopId}) returns
+{kind:'available'} or {kind:'excluded',reason:'CONNECTION_DISABLED'|
+'CONNECTION_REVISION_MISSING'|'CREDENTIAL_MISSING'|'CREDENTIAL_KEY_UNAVAILABLE'} or
+{kind:'unavailable'}. In this availability port, `shopId` is the trusted non-null
+merchant identity supplied by the server-owned caller. After loading the immutable
+connection revision, the credential-row selector is derived from revision scope:
+
+```text
+PLATFORM -> credential shopId = null
+PER_SHOP -> credential shopId = trusted merchant shopId
+```
+
+The port uses metadata and key IDs without returning/decrypting secrets and never
+falls back to a different revision, PLATFORM credential or another merchant shop.
+Existing `getCredentialStatus` / `setCredential` / `removeCredential` /
+`resolveConnection` contracts keep their nullable `shopId` credential-scope meaning.
+Execution still calls resolveConnection to decrypt and recheck; corrupted ciphertext
+can fail even if status looked available.032 receives this status port. Distinguish
+missing configuration from falsely saying no feature exists.020 never supplies a
+placeholder configured=true status.
 
 ### 9.3. HTTP evidence before assembly
 
@@ -1136,3 +1156,15 @@ C21 now makes the intended boundary explicit and
 read-only availability shop semantics. COMMERCE-032 depends on 037; after 037 is
 accepted it returns Ready for a validation/reconciliation Attempt 2. COMMERCE-024 and
 COMMERCE-012 remain gated. No task is started automatically.
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 1** (`021dcf7`; parent report `15d9588b`).
+
+The read-only credential availability boundary is normalized so `shopId` means
+trusted merchant identity. Immutable revision scope now selects the credential row:
+PLATFORM uses the null-scope row; PER_SHOP uses only that merchant's row. Credential
+status/mutation/resolution retain their existing nullable credential-scope semantics.
+No decryption, mutation or fallback is added to availability.
+
+COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
+No downstream task is launched automatically.

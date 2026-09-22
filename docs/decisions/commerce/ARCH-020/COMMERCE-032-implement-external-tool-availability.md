@@ -17,6 +17,7 @@ attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-013
   - ARCH-020-COMMERCE-028
+  - ARCH-020-COMMERCE-037
   - ARCH-020-SHARED-002
   - ARCH-020-COMMERCE-037
 enables:
@@ -92,6 +93,7 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 Repository-wide typecheck and lint remain blocked by pre-existing unrelated failures listed above. Architect review should confirm the exact success/unavailable result shape expected by the eventual COMMERCE-024 composition consumer.
 - ARCH-020-COMMERCE-013
 - ARCH-020-COMMERCE-028
+- ARCH-020-COMMERCE-037
 - ARCH-020-SHARED-002
 No cross-repository or contract conflict found. The implementation does not modify Shared, Background, connection services, HTTP execution or grant creation.
 ## Enables
@@ -391,3 +393,13 @@ new 032-owned defect:
 5. return to review and STOP.
 
 Do not start COMMERCE-024 or COMMERCE-012.
+Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+
+## Architect Dependency Reconciliation — COMMERCE-037 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-037` is now an explicit prerequisite because it defines the
+merchant-identity semantics of the `checkConnectionAvailability(...)` port consumed
+by this task.
+
+COMMERCE-032 remains **Ready** because COMMERCE-037 is Complete in the same
+reconciliation. No implementation claim is created by this documentation update.

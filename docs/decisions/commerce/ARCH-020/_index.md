@@ -39,7 +39,12 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-029](COMMERCE-029-prove-and-package-bounded-code-runtime.md) | Prove and package bounded code runtime | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-001 |
 | [ARCH-020-COMMERCE-030](COMMERCE-030-implement-external-tool-publication-validation.md) | Implement external tool publication validation | ready (Changes Requested, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026 |
 | [ARCH-020-COMMERCE-031](COMMERCE-031-implement-external-response-preview-backend.md) | Implement external response preview backend | pending | ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-009, ARCH-020-SHARED-002, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-030 |
+<<<<<<< HEAD
 | [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | blocked (Attempt 1; awaits COMMERCE-037) | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-SHARED-002, ARCH-020-COMMERCE-037 |
+=======
+| [ARCH-020-COMMERCE-032](COMMERCE-032-implement-external-tool-availability.md) | Implement external tool availability | ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-037, ARCH-020-SHARED-002 |
+| [ARCH-020-COMMERCE-037](COMMERCE-037-normalize-availability-shop-scope.md) | Normalize external availability merchant shop scope | complete (Accepted, Attempt 1) | ARCH-020-COMMERCE-028 |
+>>>>>>> origin/main
 | [ARCH-020-COMMERCE-033](COMMERCE-033-implement-openai-and-groq-preview-model-transport.md) | Implement OpenAI and Groq preview model transport | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-002 |
 | [ARCH-020-COMMERCE-034](COMMERCE-034-correct-u14-tool-entry-conversation-source-gating.md) | Correct U14 tool-entry conversation source gating | complete | ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-009 |
 | [ARCH-020-COMMERCE-035](COMMERCE-035-provide-c20-isolated-integration-fixture.md) | Provide the C20 isolated integration fixture boundary | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-013 |
@@ -897,3 +902,15 @@ The producer correction is materialized as **COMMERCE-037 Ready, Attempt 0**.
 COMMERCE-032 now depends on it and remains Blocked until 037 is accepted. No 032 source
 change is presently required; its next attempt is validation/reconciliation unless
 the corrected producer exposes a new 032-owned defect. No downstream task is launched.
+## COMMERCE-037 Attempt 1 architect acceptance — 2026-09-22
+
+COMMERCE-037 is **Accepted / Complete, Attempt 1** at implementation `021dcf7`
+(parent report `15d9588b`).
+
+The accepted availability port now treats `shopId` as trusted merchant identity and
+derives the credential-row selector from immutable connection revision scope:
+PLATFORM -> null, PER_SHOP -> merchant shop ID. Existing nullable credential-scope
+contracts for status/mutation/resolution remain unchanged.
+
+COMMERCE-032 remains Ready and now explicitly depends on COMMERCE-037. No task is
+claimed or launched automatically.
