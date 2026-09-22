@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 130
-executor: copilot
-claimed_at: 2026-09-22T02:37:35Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -554,8 +554,9 @@ constraint to `moda_architect`.
 
 ### Status
 
-Blocked: Attempt 3 proof-source corrections are present, but the required disposable
-PostgreSQL and Redis targets were not supplied in this execution environment.
+Blocked: Attempt 4 corrected the remaining task-owned fixture/proof defects and
+started the architect-authorized local Docker proof, but the disposable PostgreSQL
+target became unreachable before the corrected proof could complete.
 
 ### Files Changed
 
@@ -575,57 +576,57 @@ publication hashes, lifecycle audit IDs/reasons/actors, immutable published rows
 the grant relational guard, and unchanged state after rejected writes. No
 production route or startup registration was added.
 
-Attempt 3 verified that the focused proof already contains the requested exact
-persisted release/member/contract/hash assertions, lifecycle audit checks,
-immutability and grant-relational-guard checks, and reset/sentinel/second-seed
-coverage. No implementation source change was required in this attempt.
+Attempt 4 corrected the persisted grant tool-union derivation to sort capability
+keys in the database-enforced C collation order, and corrected the focused admin
+lookup and persisted union assertions. No production route or startup registration
+was added.
 
 ### Validation Results
 
-- `npm run prisma:generate` passed during `npm run build`.
-- `npm run lint -- --quiet` blocked by one unrelated existing error in
-  `src/studio/connections/connections-ui.tsx:235` (`react-hooks/set-state-in-effect`).
-- `git diff --check` passed.
-- `npm run c20-fixture:reset` failed closed with `C20_FIXTURE_UNSAFE_ENVIRONMENT:
-  C20 test targets are required` because no disposable URLs were supplied.
-- `npm run test:arch020-c20-integration-fixture` failed before tests with
-  `C20_FIXTURE_UNSAFE_ENVIRONMENT: disposable PostgreSQL, Redis, and namespace
-  variables are required` for the same reason.
-- `npm run typecheck` reached compilation but remains blocked by the known
-  unrelated shared-commerce contract/export baseline errors across code-response,
-  execution, external-http, external-response, studio-connections, and related
-  tests; no task-owned diagnostic was reported.
-- `npm run build` completed code-runtime packaging/smoke, Prisma generation, and
-  application compilation, then reached the same unrelated TypeScript baseline
-  errors before completion.
+- Architect-authorized Docker preflight passed on `unix:///var/run/docker.sock`;
+  Docker server `29.5.2`.
+- Approved images were pulled: `postgres:16.4-alpine`
+  (`sha256:5660c2cbfea50c7a9127d17dc4e48543eedd3d7a41a595a2dfa572471e37e64c`)
+  and `redis:7.4.0-alpine`
+  (`sha256:c35af3bbcef51a62c8bae5a9a563c6f1b60d7ebaea4cb5a3ccbcc157580ae098`).
+- Run-scoped containers `arch020-c20-commerce035-a4-49256-postgres` and
+  `arch020-c20-commerce035-a4-49256-redis` initially passed health checks on
+  loopback-only dynamic ports. Target database was `arch020_c20_commerce035_a4`
+  and namespace was `arch020:c20:commerce035-a4`.
+- `npm run c20-fixture:reset` passed against the disposable targets.
+- The first focused proof reached the real seed and exposed `ARCH020 grant shape`;
+  Attempt 4 corrected the derived C-sorted capability-key union.
+- The corrected proof then exposed and received a bounded test correction for an
+  incorrect admin suffix predicate and persisted union expectation.
+- The next reset/proof rerun failed because PostgreSQL at the disposable dynamic
+  port became unreachable. Subsequent scoped Docker health/removal commands also
+  stopped returning, so F02/F03/F05/F06 remain unverified.
+- Typecheck, lint, build and `git diff --check` were not rerun after Docker became
+  unresponsive. Attempt 3's unrelated baseline failures remain unchanged.
 
 ### Deviations
 
-F01 source-level guard coverage is present, but F02, F03, F05, and F06 remain
-unverified because the required real PostgreSQL and Redis targets were unavailable.
-The task is intentionally blocked rather than claiming integration evidence. No
-real-client test assertions ran.
+F01 source-level guard coverage is present. F02, F03, F05 and F06 remain
+unverified because the authorized disposable PostgreSQL target became unreachable
+and the local Docker engine stopped returning from scoped commands. The task is
+intentionally blocked rather than claiming integration evidence.
 
 ### Assumptions
 
-The developer/test harness will provide a fresh PostgreSQL database named
-`arch020_c20_<unique_name>`, a Redis URL, the matching C20 namespace, and
-`DEPLOYMENT_ENVIRONMENT_NAME=test` for the remaining validation.
+The next validation-only attempt will provision fresh architect-authorized local
+Docker targets after the Docker engine is healthy.
 
 ### Unresolved Issues
 
-Run `npm run c20-fixture:reset` and the focused proof with the four required
-environment values, then complete the reset -> seed/inspect -> reset -> seed
-cycle and review persisted graph, immutability, grant, audit, and Redis sentinel
-evidence. The implementation remains at the accepted source commit `57932ec`;
-Attempt 3 required no implementation source change.
+Provision fresh disposable targets, rerun the reset and focused proof, then execute
+the required typecheck, lint, build and diff checks. No downstream task may start.
 
 ### Architectural Concerns
 
-Disposable targets are required before the focused real PostgreSQL/Redis proof
-can establish the producer gate for COMMERCE-018 and COMMERCE-019. The exact
-missing values are `COMMERCE_TEST_DATABASE_URL`, `COMMERCE_TEST_REDIS_URL`,
-`COMMERCE_C20_REDIS_NAMESPACE`, and `DEPLOYMENT_ENVIRONMENT_NAME=test`.
+Disposable targets remain required before the focused real PostgreSQL/Redis proof
+can establish the producer gate for COMMERCE-018 and COMMERCE-019. The approved
+local Docker engine initially provisioned them but later stopped responding to
+scoped PostgreSQL/container operations.
 
 ### Git / VCS
 
