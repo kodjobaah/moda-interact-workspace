@@ -148,6 +148,44 @@ Implementation complete; submitted for Architect Review.
 ### Deviations
 
 No design deviations. Implementation remains within the task-owned connection lifecycle/kernel paths; credential storage, OAuth, network execution, UI, publication, preview, and final factories remain out of scope.
+Implemented; pending architect review.
+
+### Files Changed
+
+`moda-interact-commerce/src/commerce/connections/command-kernel.ts`,
+`src/commerce/connections/lifecycle/`,
+`tests/connection-lifecycle.test.ts`, and `package.json`.
+
+### Work Completed
+
+Implemented the reusable authorization-before-replay command kernel with
+HMAC request digests, atomic audit/mutation transactions, replay reconciliation,
+and unique-race handling. Implemented connection list/get/create, metadata
+update, immutable revision creation, and explicit enable/disable lifecycle
+operations with strict input/origin/auth validation and metadata-only DTOs.
+
+Acceptance mapping:
+
+- CL01 -> `tests/connection-lifecycle.test.ts`, “CL01 creates, updates, revises, disables, and re-enables a connection” -> `npm run test:arch020-external-connection-lifecycle` -> passed.
+- CL02 -> the two replay/CAS/rollback tests in `tests/connection-lifecycle.test.ts` -> same command -> passed.
+- CL03 -> invalid origin/auth/key and ADMIN/revoked authorization test -> same command -> passed.
+
+### Validation Results
+
+`npm run test:arch020-external-connection-lifecycle`: passed, 1 file and 6
+tests. Touched files have no VS Code diagnostics. Repository `npm run typecheck`
+was run but remains blocked by pre-existing Prisma/publication type errors
+outside this task. No live PostgreSQL/container check was run.
+
+### Deviations
+
+No backend integration or credential/network implementation was added. The
+focused lifecycle suite uses an in-memory transaction-shaped fixture; database
+rehearsal remains developer-owned and unrun.
+
+### Assumptions
+
+C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
 
 ### Unresolved Issues
 
@@ -161,7 +199,6 @@ Architect review should confirm the accepted C21 field/error contracts and the b
 
 Physical worktree isolation:
   canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
-  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-020`
   parent branch: `task/ARCH-020-COMMERCE-020`
   implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-020`
   implementation branch: `task/ARCH-020-COMMERCE-020`
@@ -185,7 +222,6 @@ Implementation commit/push: `d2b7154` on `task/ARCH-020-COMMERCE-020`.
 Parent claim commit/push: `bb2d70a` from launcher; claim cleared for review handoff.
 
 ## Architect Review
-
 ### Review Status
 
 Pending.

@@ -90,9 +90,9 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
-- [ ] X06: full authoring of C21 sample and list-filter example, including field rename/filter/sort/limit, produces exact stored execution JSON.
-- [ ] No lost edits on save/discard/return, duplicate Test/Publish guarded, modified response invalidates old validation; keyboard/narrow controls usable.
-- [ ] U14 external tests show processed fixtures and existing reply template with zero network calls; no U15 backend dependency for component acceptance.
+- [x] X06: full authoring of C21 sample and list-filter example, including field rename/filter/sort/limit, produces exact stored execution JSON.
+- [x] No lost edits on save/discard/return, duplicate Test/Publish guarded, modified response invalidates old validation; keyboard/narrow controls usable.
+- [x] U14 external tests show processed fixtures and existing reply template with zero network calls; no U15 backend dependency for component acceptance.
 
 ## Validation
 
@@ -122,19 +122,38 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Implemented in isolated worktree; pending architect review.
 
 ### Files Changed
 
-None; task definition only.
+`moda-interact-commerce/components/studio-workspace.tsx`,
+`moda-interact-commerce/src/studio/external-http/editor.tsx`,
+`moda-interact-commerce/src/studio/external-http/ports.ts`,
+`moda-interact-commerce/src/studio/external-http/processor.ts`,
+`moda-interact-commerce/tests/external-tools-ui.test.tsx`, and
+`moda-interact-commerce/package.json`.
 
 ### Work Completed
 
-None.
+Added the U06 external read-only editor for exact connection revision, fixed GET
+path, scalar query mappings, response format/media types, visual OBJECT/LIST
+processing, field rename/projection, filter, sort, limit, Advanced processing
+JSON, response shape JSON, supplied documentation, and synthetic source/processed
+sample panels. The editor uses an injected typed fixture port and never performs
+live requests or browser code execution; JavaScript is represented as the typed
+027-owned slot. Existing ToolEditor save/CAS, dirty navigation, and publication
+flow remain in control. Added fixture processing coverage for X06/U14 with zero
+`fetch` calls.
 
 ### Validation Results
 
-No implementation validation performed.
+`npm run test:arch020-external-tools-ui` passed 4 tests; neighboring
+`npx vitest run tests/studio-workspace.test.tsx` passed 18 tests. Changed-file
+diagnostics are clean and `git diff --check` passed. The external-tools files
+are lint-clean. Full `npm run lint` remains blocked by a pre-existing
+`react-hooks/set-state-in-effect` error in `src/studio/connections/connections-ui.tsx`
+plus baseline warnings outside this task. Full typecheck/build were not run;
+existing repository typecheck has unrelated database/publication diagnostics.
 
 ### Deviations
 
@@ -154,9 +173,9 @@ Return contradictory accepted source facts to moda_architect before weakening co
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-023. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Dedicated worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-023`.
+Branch: `task/ARCH-020-COMMERCE-023`. Commit and push are being prepared; no
+merge, service gitlink update, or downstream launch performed.
 
 ## Architect Review
 
