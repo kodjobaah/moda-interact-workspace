@@ -1143,6 +1143,21 @@ Two C21 mismatches remain: definition identity must use the canonical
 must validate current non-secret connection/revision auth shape without requiring a
 live PER_SHOP credential. No dependant is promoted until COMMERCE-030 is Complete.
 
+## COMMERCE-030 Attempt 3 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 3** (`d15d3f5`).
+
+The C21 external publication/sample validator now shares the lifecycle's canonical
+`toolHashInput(definition)` identity and admits synthetic samples/publication from
+persisted non-secret connection revision state (`enabled`, `revisionPresent`,
+`scope`, `authMode`, `authHeader`) without requiring live merchant credentials.
+Active-staff receipt semantics, strict 24-hour TTL, sample MIME/schema validation,
+production renderer reuse and later real-provider runtime validation remain intact.
+
+`ARCH-020-COMMERCE-031` is now **Ready** because COMMERCE-019, COMMERCE-009,
+SHARED-002, COMMERCE-025, COMMERCE-026 and COMMERCE-030 are Complete. It is not
+automatically launched. COMMERCE-024 and COMMERCE-012 remain Pending behind their
+other authoritative prerequisites.
 ## COMMERCE-032 Attempt 1 architect review — 2026-09-22
 
 ARCH-020-COMMERCE-032 is **Blocked, Attempt 1**, claim clear. The submitted resolver
@@ -1169,6 +1184,14 @@ No decryption, mutation or fallback is added to availability.
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
 
+## COMMERCE-022 Attempt 4 acceptance — 2026-09-22
+
+`ARCH-020-COMMERCE-022` is **Accepted / Complete, Attempt 4**. The C21 U15/U16
+frontend now has one parent-owned dirty/unknown navigation boundary, credential status
+and CAS scoped to the exact revision/shop context with stale-read protection, and
+bounded terminal not-found/forbidden/unavailable detail states. Earlier Shared result,
+same-operation replay, authorized shop-selection and latest-vs-selected revision
+corrections remain intact. Production wiring remains COMMERCE-024 ownership.
 ## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
