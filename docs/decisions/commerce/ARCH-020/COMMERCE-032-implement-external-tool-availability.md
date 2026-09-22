@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 150
 executor: null
 claimed_at: null
@@ -19,7 +19,6 @@ depends_on:
   - ARCH-020-COMMERCE-028
   - ARCH-020-COMMERCE-037
   - ARCH-020-SHARED-002
-  - ARCH-020-COMMERCE-037
 enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-COMMERCE-024
@@ -99,6 +98,7 @@ No cross-repository or contract conflict found. The implementation does not modi
 ## Enables
 
 - ARCH-020-COMMERCE-012
+- ARCH-020-COMMERCE-024
 Expected mirrored branch: `task/ARCH-020-COMMERCE-032`. Attempt1 claimed by `copilot` through the launcher. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-032`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-032`.
 
 Physical worktree isolation:
@@ -424,3 +424,146 @@ by this task.
 
 COMMERCE-032 remains **Ready** because COMMERCE-037 is Complete in the same
 reconciliation. No implementation claim is created by this documentation update.
+
+## Architect Review — Attempt 2 — 2026-09-22
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Reviewed the exact submitted Attempt 2 snapshot associated with implementation
+`b8d8ccd` and parent report `99f4b90c` against the validation-only correction
+contract from Attempt 1.
+
+The cross-task producer/consumer mismatch that blocked Attempt 1 is resolved by
+accepted `ARCH-020-COMMERCE-037`.
+
+Attempt 2 adds the required real-producer regression by composing:
+
+```text
+createExternalAvailabilityResolver(...)
+  with
+createCredentialService(...).checkConnectionAvailability
+```
+
+and passing trusted merchant identity:
+
+```text
+shopId = "shop-A"
+```
+
+for a PLATFORM connection revision whose stored credential exists at:
+
+```text
+credential shopId = null
+```
+
+The observed credential lookup is exactly:
+
+```text
+[null]
+```
+
+and the candidate remains available.
+
+This proves COMMERCE-032 consumes the accepted COMMERCE-037 normalization rather than
+repairing the producer locally.
+
+The existing AV02/AV03 coverage also remains intact:
+
+- inspection and live authorization preserve the trusted merchant shop identity;
+- disabled and missing-credential reasons remain explicit;
+- an old grant cannot acquire a newer tool revision;
+- the same originally granted revision remains pinned after credential rotation;
+- credential revocation removes current permission;
+- lookup outage returns typed `{kind:'unavailable'}`;
+- candidate identities/capability provenance are preserved;
+- no provider calls, secret disclosure, grant writes, credential decryption or
+  cross-call cache are introduced.
+
+The production resolver itself required no Attempt-2 source change, which is correct:
+the defect was entirely in the previously accepted producer semantics.
+
+The task frontmatter contained COMMERCE-037 twice in `depends_on`; this acceptance
+deduplicates the coordination record. The Commerce index also contained stale
+duplicate 032/037 rows from the blocked/unblock sequence; those are reconciled to
+one authoritative current row each.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/external-availability/index.ts`
+- `moda-interact-commerce/tests/external-availability.test.ts`
+- `moda-interact-commerce/src/commerce/connections/credentials/index.ts`
+- `moda-interact-commerce/package.json`
+- `docs/architecture/ARCH-020-external-api-tools.md`
+- this task's Attempt-1 Architect Review and Attempt-2 Completion Report
+
+### Validation Reviewed
+
+Submitted Attempt 2 evidence:
+
+```text
+npm run test:arch020-external-availability
+  PASS — 4 focused tests
+
+changed-file diagnostics
+  PASS
+
+npx eslint \
+  src/commerce/external-availability/index.ts \
+  tests/external-availability.test.ts
+  PASS
+
+git diff --check
+  PASS
+
+repository lint
+  NON-ZERO only on the existing unrelated Connections hook baseline
+
+repository typecheck
+  NON-ZERO only on existing unrelated command-kernel/lifecycle/integration/
+  code-response diagnostics
+
+repository build
+  application compilation succeeds before the same unrelated type baseline
+```
+
+The uploaded archive does not include installed `node_modules`, so architect review
+does not claim a second dependency-backed run. Acceptance is based on direct source
+inspection plus the durable focused validation evidence.
+
+### Architecture Conformance
+
+Conformant.
+
+The accepted external availability boundary is now:
+
+```text
+resolver input shopId
+  = trusted merchant identity
+
+checkConnectionAvailability(...)
+  receives that merchant identity
+
+inside accepted credential producer:
+  PLATFORM -> credential selector shopId = null
+  PER_SHOP -> credential selector shopId = merchant identity
+```
+
+COMMERCE-032 continues to own only the read-only candidate projection and original
+grant upper-bound filtering. It does not acquire connection scope metadata, retry
+alternate credential scopes or weaken exact-shop isolation.
+
+### Follow-up
+
+`ARCH-020-COMMERCE-032` is Complete at Attempt 2.
+
+No downstream task becomes Ready solely from this acceptance:
+
+- `ARCH-020-COMMERCE-024` remains Pending behind other incomplete dependencies;
+- `ARCH-020-COMMERCE-012` remains Pending behind the broader integration/gateway
+  frontier.
+
+Do not automatically launch COMMERCE-024, COMMERCE-012 or a system-test task.

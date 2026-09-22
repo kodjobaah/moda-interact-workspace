@@ -1411,3 +1411,18 @@ No decryption, mutation or fallback is added to availability.
 
 COMMERCE-032 remains Ready and explicitly records COMMERCE-037 as a prerequisite.
 No downstream task is launched automatically.
+
+## COMMERCE-032 Attempt 2 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 2** (`b8d8ccd`; parent report `99f4b90c`).
+
+The read-only external availability consumer is now proven against the accepted
+COMMERCE-037 producer semantics: trusted merchant identity is passed unchanged into
+`checkConnectionAvailability`, PLATFORM credentials are selected at null scope by
+the producer, and PER_SHOP isolation remains merchant-specific. Existing resolver
+behavior preserves original grant pinning, exact tool/revision/capability identity,
+explicit current exclusions and typed lookup outage without provider calls, secret
+access, grant writes or cross-call caching.
+
+No downstream task becomes Ready solely from this acceptance. COMMERCE-024 and
+COMMERCE-012 remain behind their other authoritative dependencies.
