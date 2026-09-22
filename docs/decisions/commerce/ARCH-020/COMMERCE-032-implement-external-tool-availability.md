@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T11:15:09Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -80,10 +80,10 @@ and never expose secrets or raw external response data in errors/logs.
 - `npm run lint` -> blocked by existing unrelated `react-hooks/set-state-in-effect` error in `src/studio/connections/connections-ui.tsx`; changed-file ESLint passed.
 - PostgreSQL/container and live-provider checks were not run; they are not required for this pure resolver and no live credentials were used.
 
-- [ ] Export section9 createExternalAvailabilityResolver over current connection status/credential availability and the accepted base eligibility result.
-- [ ] Keep original granted tool/revision set as the upper bound; new credentials/releases cannot expand old grants. Recheck exact scope/enabled/revision and key availability consistently.
+- [x] Export section9 createExternalAvailabilityResolver over current connection status/credential availability and the accepted base eligibility result.
+- [x] Keep original granted tool/revision set as the upper bound; new credentials/releases cannot expand old grants. Recheck exact scope/enabled/revision and key availability consistently.
 The first focused test invocation required `npm ci` because the prepared implementation worktree had no installed dependencies. The locked dependency install completed with existing peer/engine/audit warnings; no package lock changes were made.
-- [ ] Prove two merchants, pinned old/new revisions, changed credential configuration, disabled connection and missing-key paths with same resolver used by both consumers.
+- [x] Prove two merchants, pinned old/new revisions, changed credential configuration, disabled connection and missing-key paths with same resolver used by both consumers.
 
 ## Interfaces / Contracts
 C21 section9 supplies already accepted base-eligible external candidates and the connection availability port. Candidate descriptors are preserved unchanged, and the trusted caller supplies the shop identity.
@@ -123,9 +123,9 @@ Recursive implementation submodules:
 Implementation commit: `10639c7` (`feat(commerce): add external availability resolver`), pushed to `origin/task/ARCH-020-COMMERCE-032`. Parent report commit and push follow; no main merge or service gitlink update is performed.
 ## Acceptance Criteria
 
-- [ ] AV01: eligible PLATFORM and exact PER_SHOP cases return expected descriptors; missing credential excluded with real identities/reason, not a fabricated feature ID.
-- [ ] AV02: inspection and runtime availability agree for same facts; no provider calls, credential data or grant writes; expired/disabled contexts remain denied by base authorization.
-- [ ] AV03: credential addition never grants an unpinned tool to old conversation; rotation uses same pinned revision; revocation removes permission.
+- [x] AV01: eligible PLATFORM and exact PER_SHOP cases return expected descriptors; missing credential excluded with real identities/reason, not a fabricated feature ID.
+- [x] AV02: inspection and runtime availability agree for same facts; no provider calls, credential data or grant writes; expired/disabled contexts remain denied by base authorization.
+- [x] AV03: credential addition never grants an unpinned tool to old conversation; rotation uses same pinned revision; revocation removes permission.
 
 ## Validation
 
@@ -151,41 +151,62 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ### Status
 
-Not Started.
+Ready for Architect Review.
 
 ### Files Changed
 
-None; task definition only.
+- `tests/external-availability.test.ts`
 
 ### Work Completed
 
-None.
+- Revalidated the existing external availability resolver against the accepted COMMERCE-028 producer contract.
+- Added an AV01 regression using `createCredentialService.checkConnectionAvailability` directly: a trusted merchant `shop-A` resolves a PLATFORM credential stored at null scope.
+- Retained exact PER_SHOP isolation, grant pinning, disabled/missing/key-unavailable exclusions and typed lookup outage handling.
 
 ### Validation Results
 
-No implementation validation performed.
+- AV01, AV02 and AV03: `npm run test:arch020-external-availability` -> passed, 4 tests.
+- Changed-file diagnostics: `get_errors` -> no errors.
+- Changed-file ESLint: `npx eslint src/commerce/external-availability/index.ts tests/external-availability.test.ts` -> passed.
+- `git diff --check` -> passed.
+- `npm run lint` -> non-zero only for the existing `react-hooks/set-state-in-effect` error in `src/studio/connections/connections-ui.tsx`; changed files passed.
+- `npm run typecheck` -> non-zero only for existing errors in `src/commerce/connections/command-kernel.ts`, `src/commerce/connections/lifecycle/index.ts`, `src/commerce/integration/backend/executors.ts`, `src/commerce/integration/backend/publication-storage.ts` and `tests/code-response-processor.test.ts`; no changed-file errors.
+- `npm run build` -> application compilation succeeded, then failed on the same existing type errors; no changed-file errors.
+- PostgreSQL/container and live-provider checks were not run; this is a pure resolver regression and no live credentials were used.
 
 ### Deviations
 
-Definition authored on main under the user's existing instruction.
+- No source change was required after COMMERCE-037 acceptance; this attempt added the architect-requested producer/consumer regression only.
 
 ### Assumptions
 
-C21 read-only scope; visual rules and generic JavaScript only inside the specified sandbox.
+- COMMERCE-037's accepted availability normalization is the producer contract: PLATFORM uses null credential scope and PER_SHOP uses the trusted merchant shop ID.
 
 ### Unresolved Issues
 
-No implementation reported. Explicit dependencies gate execution.
+- Repository-wide lint, typecheck and build remain blocked by the pre-existing diagnostics listed above.
 
 ### Architectural Concerns
 
-Return contradictory accepted source facts to moda_architect before weakening contracts.
+- None introduced. The resolver continues to consume the accepted availability port without adding scope metadata, fallback lookup or credential decryption.
 
 ### Git / VCS
 
-Expected mirrored branch: task/ARCH-020-COMMERCE-032. Attempt0; no implementation worktree or
-commit claimed. At submission record physical isolation, dependency versions,
-recursive database submodule evidence where applicable, commits and pushes.
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-COMMERCE-032`
+  parent branch: `task/ARCH-020-COMMERCE-032`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-COMMERCE-032`
+  implementation branch: `task/ARCH-020-COMMERCE-032`
+  shared checkouts switched or mutated: no
+
+Attempt 2 launcher evidence:
+  parent origin/main incorporated: already-current
+  implementation origin/main incorporated: yes
+  recursive submodules: ready
+  database submodule commit: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+
+Implementation commit: pending commit and push after this report update. Parent report commit and push follow. No main merge or service gitlink update is performed.
 
 ## Architect Review
 
