@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 150
-executor: copilot
-claimed_at: 2026-09-22T01:39:41Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-SHARED-002
@@ -181,24 +181,471 @@ Implementation commit: `59f0c34` (`feat(commerce): validate external publication
 
 ### Review Status
 
-Pending.
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-Definition only; no implementation acceptance.
+Reviewed by `moda_architect` against the exact submitted snapshot. The task records
+implementation commit `59f0c34` (`feat(commerce): validate external publication
+samples`).
+
+The bounded C21 publication component exists and is directionally correct:
+`createExternalPublicationValidation(...)` exposes the required three ports, the
+definition/sample are parsed before processing, visual and JavaScript modes use the
+accepted injected processors, successful output is checked against `resultSchema`,
+the default digest is SHA-256, and the Redis store uses the required
+environment/revision/definition/runtime key dimensions with a 24-hour default TTL.
+The implementation also correctly keeps provider HTTP, credentials, preview lifecycle,
+UI and final publication writes outside COMMERCE-030.
+
+Attempt 1 is **not accepted** because four publication-safety gaps remain. They are
+within the original C21/PV01–PV03 task scope. The corrections below are the complete
+Attempt 1 rework contract; do not broaden the task beyond them.
+
+#### A1-R1 — enforce sample-author / publisher roles and recheck the receipt author
+
+**Source and focused-test changes required.**
+
+C21 section 2.3 requires:
+
+```text
+successful sample receipt:
+  written only by an authorized active staff author
+
+publication admission:
+  SUPER_ADMIN
+  current publisher active
+  matching receipt
+  receipt tester still active
+
+receipt from another active staff author:
+  allowed
+
+receipt from a deactivated tester:
+  invalid
+```
+
+The current implementation does not satisfy this:
+
+- `validateSampleAndRecord()` accepts an ADMIN/SUPER_ADMIN role without calling
+  `staff.isActive(principal.id)`;
+- `validateForPublication()` does not require `SUPER_ADMIN`;
+- `readReceipt()` checks the requesting principal, not
+  `receipt.testedByAdminId`;
+- the current `active:false` test makes the publisher inactive and therefore does
+  not prove the required cross-author tester-liveness behavior.
+
+Keep the existing result union; do not invent a new authorization result code.
+
+Implement these exact semantics:
+
+```text
+validateSampleAndRecord:
+  principal.role must be ADMIN or SUPER_ADMIN
+  staff.isActive(principal.id) must be true
+  staff lookup throw/unavailable => VALIDATOR_UNAVAILABLE
+  inactive/unauthorized => no processor call and no receipt write
+
+validateForPublication:
+  principal.role must be SUPER_ADMIN
+  staff.isActive(principal.id) must be true
+  staff lookup throw/unavailable => VALIDATOR_UNAVAILABLE
+
+readReceipt:
+  current requesting principal must be active
+  receipt store read
+  if found:
+    staff.isActive(receipt.testedByAdminId) must be true
+    false => treat receipt as missing/stale
+    lookup throw => unavailable
+```
+
+The receipt may have `testedByAdminId !== publishingSuperAdmin.id`; that is the normal
+cross-author case and must pass when both staff accounts remain active.
+
+Focused regressions:
+
+```text
+ADMIN A active
+  -> validateSampleAndRecord succeeds and writes receipt testedByAdminId=A
+
+SUPER_ADMIN B active + A active
+  -> validateForPublication succeeds using A's receipt
+
+SUPER_ADMIN B active + A inactive
+  -> publication rejected as missing/stale receipt
+  -> no publication success
+
+SUPER_ADMIN B inactive
+  -> VALIDATOR_UNAVAILABLE
+
+ADMIN A attempts validateForPublication
+  -> rejected; no publication success
+
+inactive ADMIN attempts validateSampleAndRecord
+  -> no processor call
+  -> no receipt write
+```
+
+No browser-supplied identity and no new role model.
+
+#### A1-R2 — make receipt age/storage fail closed and exact
+
+**Source and focused-test changes required.**
+
+C21 makes the receipt a **24-hour** bounded Redis fact. The current Redis store
+accepts an optional caller-supplied TTL, casts arbitrary JSON to `Receipt`, and the
+validator does not independently reject an over-age `sampledAt`. In addition,
+`receiptStore.write()` failures escape `validateSampleAndRecord()` as exceptions.
+
+Use these exact rules:
+
+```text
+TTL:
+  86_400 seconds exactly
+  no caller override in createRedisReceiptStore
+
+definitionHash/sampleHash/validatedOutputHash:
+  lowercase SHA-256
+  exactly 64 hex characters
+
+runtimeVersion:
+  visual.v1 | quickjs-sync.v1
+
+environment:
+  LOCAL | TEST | DEVELOPMENT | STAGING | PRODUCTION
+
+sampledAt:
+  valid UTC ISO timestamp
+  sampledAt <= clock.now
+  expired when clock.now - sampledAt >= 86_400_000 ms
+```
+
+Create one strict receipt parser for Redis/read-boundary data. It must accept only:
+
+```text
+environment
+toolRevisionId
+definitionHash
+runtimeVersion
+testedByAdminId
+sampledAt
+sampleHash
+validatedOutputHash
+```
+
+and reject extra fields. Bound tool/admin IDs to nonblank <=128 characters.
+
+`createRedisReceiptStore` behavior:
+
+```text
+write:
+  receipt.environment must equal the store environment
+  strict receipt validation before serialization
+  key uses the store environment
+  SET ... EX 86400
+
+read:
+  GET exact environment/revision/hash/runtime key
+  null => missing
+  malformed JSON / malformed receipt / wrong environment /
+  wrong revision / wrong hash / wrong runtime => unavailable
+  valid receipt => found
+  Redis exception => unavailable
+```
+
+`readReceipt()` in the validator applies the 24-hour age check even if a custom
+receipt store returns `found`; this prevents a non-Redis/test/store implementation
+from extending receipt validity beyond C21.
+
+`validateSampleAndRecord()` must catch receipt-write failure and return
+`VALIDATOR_UNAVAILABLE`. It must never return `{ok:true}` after a failed receipt write.
+
+Focused regressions:
+
+```text
+Redis SET
+  -> EX 86400 exactly
+
+caller cannot request a different TTL
+
+write outage
+  -> validateSampleAndRecord returns VALIDATOR_UNAVAILABLE
+  -> no false success
+
+read malformed JSON / extra rawBody field / wrong environment
+  -> unavailable
+
+receipt at 23h59m59s
+  -> usable
+
+receipt at exactly 24h
+  -> expired/rejected
+
+default digest path (do not inject constant digest)
+  -> definitionHash/sampleHash/validatedOutputHash are lowercase 64-hex
+  -> changed definition changes the definition hash/key
+  -> changed sample changes sampleHash
+  -> changed validated output changes validatedOutputHash
+```
+
+Receipt storage must still contain no source, sample body, processed output, provider
+body or credential.
+
+#### A1-R3 — validate sample MIME and reuse the real Commerce renderer/result boundary
+
+**Source and focused-test changes required.**
+
+C21 section 2.3 says sample mode comes from the saved definition and that sample
+`contentType` is compared by normalized MIME (charset may be present). Attempt 1
+never compares the sample MIME to `execution.responseFormat.mediaTypes`.
+
+Normalize exactly:
+
+```ts
+const mime = sample.contentType
+  .split(';', 1)[0]
+  .trim()
+  .toLowerCase();
+```
+
+and require `execution.responseFormat.mediaTypes.includes(mime)`. A mismatch is an
+invalid sample and writes zero receipt.
+
+The current local `renderTemplate()` duplicates production rendering and is not
+equivalent. In particular, for:
+
+```text
+responseTemplate.kind = "items"
+itemsPath = "values.items"
+item = "{{item.name}}"
+```
+
+it ignores `itemsPath` and checks `item.name` against `{values}`, so a valid C21 list
+sample cannot be admitted. It also does not exercise the production rendered-text
+bound.
+
+Delete the duplicate sample renderer and reuse the accepted Commerce rendering path.
+After the processor returns:
+
+1. validate the returned `values` with
+   `compileSubset(execution.resultSchema, 'details')`;
+2. use the **parsed** values to create the real external result data with
+   `ExternalHttpResultDataSchema`:
+
+```ts
+{
+  source: 'EXTERNAL_HTTP',
+  connectionRevisionId: execution.connectionRevisionId,
+  observedAt: new Date(now()).toISOString(),
+  values: parsedValues,
+}
+```
+
+3. construct the normal successful `CommerceToolResult`;
+4. call the existing `renderDefinitionResult(...)` with external
+   `maxSearchResults` capped at 20;
+5. validate the rendered result with the existing `CommerceToolResultSchema`;
+6. only after all five steps succeed may a receipt be written.
+
+Do not copy renderer logic into `external-publication/**`.
+
+Schema errors must satisfy the C21 error contract:
+
+```text
+path:
+  JSON Pointer into processed output, rooted under /values
+  e.g. /values/name or /values/items/0/price
+  escape "~" => "~0", "/" => "~1"
+
+message:
+  expected type/rule only
+  e.g. "Expected string"
+       "Expected maxLength <= 100"
+       "Unexpected field"
+
+never:
+  rejected raw value
+  sample body
+  source
+  provider payload
+  stack/host path
+```
+
+Use the Zod/subset issue metadata to produce a bounded safe rule message; do not echo
+the rejected value.
+
+`validatedOutputHash` must hash the schema-parsed values that were actually rendered,
+not a pre-validation object.
+
+Focused regressions:
+
+```text
+JSON definition allows application/json
+sample contentType "text/plain"
+  -> rejected before processor/receipt
+
+sample contentType "application/json; charset=utf-8"
+  -> normalized to application/json and allowed
+
+valid LIST result:
+  values = {items:[{name:"Moda"}]}
+  template itemsPath = "values.items"
+  item = "{{item.name}}"
+  -> receipt recorded
+
+rendered output exceeding the existing Commerce rendered-text bound
+  -> no receipt
+
+schema wrong type at name
+  -> issue path /values/name
+  -> message states expected string/rule
+  -> raw rejected value absent
+```
+
+Keep the existing valid OBJECT/text and JavaScript positive controls.
+
+#### A1-R4 — complete PV02/PV03 evidence and repository validation
+
+**Focused tests / Completion Report changes required. Source changes only where the
+new proofs expose a defect.**
+
+PV02/PV03 are task Acceptance Criteria, not work that may be silently moved to a
+later task.
+
+Add committed regressions for:
+
+```text
+MISSING / STALE
+- missing receipt -> "Run a sample test before publishing"
+- changed current definition hash -> old receipt rejected
+- expired receipt -> same bounded publication rejection
+- receipt-store outage -> VALIDATOR_UNAVAILABLE
+
+FRESH PUBLICATION CHECKS
+- matching receipt exists but current connection is now disabled/missing credential
+  -> publication rejected
+- matching receipt exists but current JavaScript compiler now rejects source
+  -> publication rejected
+- invalid visual projection/template
+  -> zero receipt write and publication rejection
+
+PV03 RUNTIME REVALIDATION
+- first record a valid sample receipt and obtain publication admission;
+- then execute the same accepted EXTERNAL_HTTP definition through the already-owned
+  `createExternalHttpExecutionPort` using controlled in-memory DNS/transport/
+  connection/processor fixtures and a later processor output that violates
+  `resultSchema`;
+- assert the runtime result is bounded `ERROR/UNAVAILABLE` even though the
+  publication receipt exists;
+- the runtime execution path must not receive/read the publication receipt at all.
+
+This is a focused integration regression only. Do not change COMMERCE-021 source and
+do not make a live network call.
+
+Also prove `validateForPublication()` performs **zero receipt writes**.
+
+After the corrections run exactly:
+
+```bash
+npm run test:arch020-external-publication
+npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts
+npm run lint
+npm run typecheck
+npm run build
+git diff --check
+```
+
+If repository-wide lint/typecheck/build remain blocked solely by unchanged documented
+baseline diagnostics outside:
+
+```text
+src/commerce/external-publication/**
+tests/external-publication.test.ts
+package.json
+```
+
+record the exact diagnostics and prove no task-owned diagnostic is present. Do not
+repair unrelated Prisma/integration/UI code in COMMERCE-030.
+
+Update Work Items, Acceptance Criteria and Validation checkboxes truthfully before
+returning to Review. Record criterion -> exact committed test name -> command ->
+observed result for PV01, PV02 and PV03.
 
 ### Reviewed Files
 
-Not applicable.
+- `src/commerce/external-publication/contracts.ts`
+- `src/commerce/external-publication/index.ts`
+- `src/commerce/external-publication/receipt-store.ts`
+- `tests/external-publication.test.ts`
+- `src/commerce/execution/renderer.ts` (existing production renderer inspected; no
+  modification authorized)
+- `src/commerce/external-http/index.ts` (existing runtime schema-validation path
+  inspected; no modification authorized)
+- `package.json`
+- C21 sections 2.3 and 9.5–9.6
+- this task Completion Report
 
 ### Validation Reviewed
 
-Not applicable.
+Submitted Attempt 1 evidence:
+
+```text
+npm run test:arch020-external-publication
+  reported positive/rejection/receipt scenarios in Completion Report
+
+npx eslint src/commerce/external-publication/*.ts tests/external-publication.test.ts
+  PASS per Completion Report
+
+task-local diagnostics
+  PASS per Completion Report
+
+npm run typecheck
+  NON-ZERO — reported unrelated existing Prisma/integration diagnostics
+```
+
+The Completion Report does not record repository `npm run lint`, `npm run build` or
+`git diff --check` for this attempt. Those checks are required on Attempt 2 as
+specified above.
+
+The uploaded archive contains no installed dependencies or Git remote metadata, so
+dependency-backed commands and remote heads were not falsely claimed as independently
+rerun from the review container. The functional defects above are established from
+the submitted source and are independent of the repository-wide baseline.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Not yet conformant with C21 PV01–PV03.
+
+The task remains correctly bounded to publication/sample validation and Redis receipt
+storage, but acceptance is blocked by missing receipt-author liveness/role checks,
+non-exact receipt expiry/storage behavior, sample MIME omission, duplicate/inaccurate
+rendering logic, and incomplete PV02/PV03 evidence. No provider HTTP implementation,
+credential service, UI, preview lifecycle, database schema, production publication
+write, final factory or gateway work is authorized by this correction.
 
 ### Follow-up
 
-Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+Return the same task to the normal execution path:
+
+```yaml
+status: ready
+attempt: 1
+executor: null
+claimed_at: null
+```
+
+The next:
+
+```text
+/moda-task ARCH-020-COMMERCE-030
+```
+
+must claim **Attempt 2 exactly once**.
+
+The implementing agent must read this complete Architect Review before source
+inspection, implement only A1-R1 through A1-R4, run the bounded validation above,
+reconcile the Completion Report/checklists, set the task to review, clear the claim on
+handoff, push both mirrored task branches and STOP.
+
+Do not start COMMERCE-031, COMMERCE-024 or COMMERCE-012. They remain dependency-gated.
