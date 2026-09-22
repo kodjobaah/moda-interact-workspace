@@ -729,7 +729,7 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-BACKGROUND-001](../decisions/background/ARCH-020/BACKGROUND-001-integrate-the-generic-mcp-commerceagent-host.md) | Integrate the generic MCP CommerceAgent host | moda_background | complete | ARCH-016-BACKGROUND-003, ARCH-020-SHARED-001, ARCH-020-DATABASE-001, ARCH-020-COMMERCE-001  |
 | [ARCH-020-BACKGROUND-002](../decisions/background/ARCH-020/BACKGROUND-002-preserve-turn-safeguards-and-validate-offer-replies.md) | Preserve turn safeguards and validate offer replies | moda_background | complete | ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-007 |
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
-| [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | ready (Changes Requested, Attempt 3) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
+| [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | pending | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | pending | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
 | [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md) | Add frequency-based tool-result caching | moda_commerce | pending | All other ARCH-020 implementation tasks; exact list in task |
 | [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-GATEWAY-002, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012  |
@@ -1888,10 +1888,10 @@ persisted non-secret connection revision state (`enabled`, `revisionPresent`,
 Active-staff receipt semantics, strict 24-hour TTL, sample MIME/schema validation,
 production renderer reuse and later real-provider runtime validation remain intact.
 
-`ARCH-020-COMMERCE-031` is now **Ready** because COMMERCE-019, COMMERCE-009,
-SHARED-002, COMMERCE-025, COMMERCE-026 and COMMERCE-030 are Complete. It is not
-automatically launched. COMMERCE-024 and COMMERCE-012 remain Pending behind their
-other authoritative prerequisites.
+`ARCH-020-COMMERCE-031` is **Review, Attempt 5**, with implementation `abb02d9`
+and executor/claimed_at null. Architect review is required before downstream
+promotion. COMMERCE-024 and COMMERCE-012 remain Pending behind their other
+authoritative prerequisites.
 ## COMMERCE-018 Attempt 7 architect review — 2026-09-22
 
 **Changes Requested / Ready, Attempt 7 retained.**
@@ -1993,13 +1993,51 @@ authoring, scalar-only IN reconciliation and injected saved-revision fixture flo
 now accepted. Production external composition remains COMMERCE-024-owned and is not
 launched by this acceptance.
 
-## GATEWAY-001 Attempt 3 architect review — 2026-09-22
+## COMMERCE-031 Attempt 3 architect review — 2026-09-22
 
-ARCH-020-GATEWAY-001 is **Changes Requested / Ready, Attempt 3**, claim clear.
-The Render/HAProxy implementation from `7bd5865` is preserved. Attempt 4 is
-documentation/evidence-only: hosted smoke commands must use valid C5/C9.1/C15 bodies,
-the required C15 schema apiVersion and concrete matching preview UUIDs rather than
-`{}`/placeholder IDs. The later C21 U15/U16 route extension remains assigned to
-GATEWAY-003.
+**Changes Requested / Ready, Attempt 3 retained.**
 
-No downstream task is promoted or started automatically.
+The external-preview implementation is substantially conformant: saved definitions
+are server-owned/frozen, replay claims precede business side effects, tool tests
+support same-ID cancel/expiry state, and conversation external definitions/fixtures
+are frozen with a synthetic runner hook. Attempt 3 also adds successful visual and
+JavaScript sample paths.
+
+Remaining work is bounded to: normalize parameterized sample MIME before comparison;
+prove the external-preview replay/quota/cancel/expiry contract against the actual
+Redis preview store; exercise frozen conversation external fixtures through the
+synthetic runner with zero live provider/credential calls; and reconcile the
+unchecked Work Items/PR criteria only after that evidence exists.
+
+COMMERCE-024 and COMMERCE-012 remain gated. No downstream task is launched.
+
+## COMMERCE-031 Attempt 4 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 4 retained.**
+
+The external-preview lifecycle implementation remains substantially correct and the
+new foreign fixture rejection is valid. Acceptance is still blocked by three
+task-owned items: normalize parameterized sample MIME before the saved allowlist
+comparison; prove replay/quota/cancel/expiry through the actual Redis preview store;
+and exercise the successful frozen conversation external-fixture path with explicit
+zero live provider/credential execution.
+
+Attempt 5 is bounded to those corrections/evidence and Completion Report
+reconciliation. COMMERCE-024/012 remain gated and no downstream task is launched.
+
+## COMMERCE-031 Attempt 5 architect acceptance — 2026-09-22
+
+**Accepted / Complete, Attempt 5** (`abb02d9`; parent report `5f334581`).
+
+The external response preview backend now satisfies PR01-PR03: actual visual and
+JavaScript processors run through the accepted preview/receipt lifecycle; saved
+definitions are server-owned and frozen; replay claims precede quota/receipt/processor
+side effects; Redis-backed cross-instance replay, conflict, cancellation, expiry and
+different-new-run quota behavior are proven; MIME parameters are normalized; and
+conversation external fixtures execute through the frozen synthetic path without
+normal live tool execution. Invalid foreign/non-external fixtures and malformed or
+oversize response samples fail closed.
+
+`ARCH-020-COMMERCE-024` is now **Ready** because every declared dependency is
+Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
+their remaining integration/gateway gates.
