@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 70
-executor: copilot
-claimed_at: 2026-09-23T17:38:35Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-006
@@ -215,46 +215,46 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 implementation `abc060b` / parent report `3668956f` establishes the intended Agent Configuration domain components and substantially preserves the COMMERCE-007 model-service boundary, but four task-scoped corrections are required before acceptance.
+Attempt 2 implementation `085ab44` materially corrects the four source defects identified in Attempt 1. Static review confirms that `StudioWorkspace` now consumes the `agentConfigurationActions` handoff, `/agent-configuration` accepts and server-resolves `shopId`, the shared `StudioShell` receives the resolved shop selection, the concrete trusted environment is derived from server configuration and displayed, and the model server-action adapter serializes forbidden, stale-CAS and conflicting-replay lifecycle failures into the accepted model mutation result contract. The client also preserves the exact original `operationId` when reconciling an `unknown` outcome.
 
-1. **The production handoff is currently broken in `StudioWorkspace`.** `agentConfigurationActions` is declared in the props type but is not destructured from the function argument, while the Agent Configuration render branch references `agentConfigurationActions`. Correct the handoff so the production route can actually render the accepted actions, and add a focused composition regression that would fail if the prop is declared but not consumed. This is a task-owned TypeScript/rendering defect and must not be recorded as an unrelated baseline diagnostic.
+The task is not yet acceptable because the mandatory focused validation requested by the Attempt 1 Architect Review was not added. The submitted 11 focused tests are the existing seven COMMERCE-007 model-service tests plus four Agent Configuration UI tests. The new fourth UI test proves only the `StudioWorkspace` handoff and injected environment display; it does not exercise the production route/composition or the production server-action failure adapter.
 
-2. **The new route drops the accepted Studio selected-shop context.** `app/agent-configuration/page.tsx` does not read/preserve `shopId`, and the `page === 'agent-configuration'` branch in `ProductionStudioPage` returns before `resolveStudioShopSelection(...)`. A selected shop therefore remains in navigation URL state but the Agent Configuration shell receives the empty fallback selector on refresh/direct entry. Preserve the existing Phase 1 invariant by accepting the URL `shopId`, resolving it through the accepted server-validated shop-context service, and passing the resulting `shopSelection` to `StudioShell`. Keep the platform-model controls platform-scoped; this correction only preserves shared Studio context for the later COMMERCE-012 extension.
+Attempt 3 is therefore validation-focused. Do not redesign the corrected implementation unless one of these regressions exposes a defect.
 
-3. **The concrete current environment is not shown.** The screen currently states only that the environment is server-resolved. The task requires the current environment to be displayed as server-derived context. Render the actual trusted environment (`LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING` or `PRODUCTION`) even when no platform model selection exists. Do not accept an environment value from browser/search parameters.
+1. **Add a production Agent Configuration route/composition regression.** Exercise the production composition boundary (not only `StudioWorkspace` directly) and prove that a URL `shopId` is forwarded/resolved into `StudioShell.shopSelection`, the environment comes from trusted server configuration rather than search/browser input, and the real COMMERCE-007 model server actions are handed to the Agent Configuration surface. This may use module mocks/fakes around the route/composition boundary; it must not require a live provider or external call.
 
-4. **Mutation failures do not yet use the accepted Studio presentation contract end to end.** `model-server-actions.ts` may return `{ kind: 'forbidden' }` via an unsafe cast even though `ModelMutationResult` contains only `ok | unknown`, and the client `run(...)` path treats every non-`unknown` returned value as success. CAS/conflicting-replay presentation also relies on reading a custom thrown `error.code` across the Server Action boundary rather than a serializable accepted Studio failure result. Reconcile the UI/server-action adapter with the existing Studio result/failure semantics so at minimum forbidden, stale-CAS, conflicting replay and unknown outcomes are represented and rendered explicitly; do not invent a second mutation-state model. Preserve exact original-operation reconciliation for `unknown`.
+2. **Add focused server-action failure serialization regressions.** Prove that the production model mutation boundary returns explicit serializable results for at least: unauthorized/forbidden mutation, stale CAS (`conflict` / `STALE_CAS`), and conflicting operation replay (`conflict` / `CONFLICTING_REPLAY`). The tests must exercise the server-action adapter or an extracted adapter helper used by those actions; service-only tests that assert thrown `LifecycleError` values are insufficient. Preserve the existing exact-original-operation `unknown` reconciliation regression.
 
-Attempt 2 must also reconcile the task Work Items, Acceptance Criteria and Validation checkboxes and record the launcher-prepared parent/implementation worktrees, synchronization evidence and recursive submodule evidence in the Completion Report. Do not redesign COMMERCE-007 service semantics, prompt/template UI, shop overrides or unrelated Studio domains.
+3. **Reconcile the durable task record on resubmission.** Check the completed Work Items, Acceptance Criteria and Validation items and record the Attempt 3 validation commands/results plus launcher-prepared parent/implementation worktree, synchronization and recursive-submodule evidence in the Completion Report. The supplied Attempt 2 ZIP still shows `status: in_progress`, `executor: copilot`, and the older 10-test Completion Report, so the architect cannot treat the claimed parent report `d127379b` as present in this snapshot.
+
+No changes are requested to COMMERCE-007 service semantics, prompt/template UI, shop override behavior, provider execution, or unrelated Studio domains.
 
 ### Reviewed Files
 
 - `app/agent-configuration/page.tsx`
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
 - `src/studio/agent-configuration/agent-configuration-screen.tsx`
 - `src/studio/agent-configuration/platform-model-configuration.tsx`
-- `src/studio/agent-configuration/model-server-actions.ts`
 - `src/studio/agent-configuration/model-contracts.ts`
-- `components/production-studio-page.tsx`
-- `components/studio-shell.tsx`
-- `components/studio-selected-shop-context.tsx`
-- `components/studio-composer-context.tsx`
-- `components/studio-workspace.tsx`
-- `src/studio/selected-shop.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
 - `tests/agent-configuration-model-ui.test.tsx`
-- parent ARCH-021 architecture and COMMERCE-007 accepted service contract
+- `tests/agent-configuration-model.test.ts`
+- Attempt 1 Architect Review correction contract
 
 ### Validation Reviewed
 
-- Submitted focused validation reports 10 passing tests, targeted ESLint, Next route type generation and `git diff --check`.
-- Static inspection confirms the focused UI tests exercise ADMIN read-only behavior, create/default operations and same-operation-id unknown reconciliation.
-- The submitted focused tests do not exercise the production Agent Configuration route/composition, selected-shop preservation, concrete server-derived environment presentation, or serializable conflict/forbidden mutation outcomes.
-- The `StudioWorkspace` missing-prop-destructure defect is task-owned and contradicts the submitted claim that task-owned composition diagnostics are clean.
-- The supplied review archive contains no installed `node_modules`, so the submitted Vitest/Next/ESLint commands were not independently rerun by the architect.
+- Submitted Attempt 2 report: 11 focused tests passed, targeted ESLint passed, Next type generation passed and `git diff --check` passed.
+- Attempt 1 -> Attempt 2 source diff is narrowly scoped to the requested Agent Configuration corrections plus the focused UI test; ignored `tsconfig.tsbuildinfo` is not treated as implementation scope.
+- Static inspection verifies the four requested source corrections described above.
+- Focused test inventory shows four Agent Configuration UI tests and seven model-service tests; no production route/composition regression exercises `shopId`/trusted environment/real action handoff.
+- No focused regression exercises `model-server-actions.ts` serialization of forbidden, stale-CAS or conflicting-replay outcomes.
+- The supplied archive contains no installed dependency tree suitable for independently rerunning the submitted test commands in this review environment.
 
 ### Architecture Conformance
 
-Changes required. The domain split, real COMMERCE-007 composition intent, ADMIN read-only controls, secret-safe catalogue DTOs and no-provider-call boundary are directionally conformant. Acceptance is blocked by the broken production action handoff, loss of the accepted Studio selected-shop context, missing concrete environment presentation, and incomplete conflict/forbidden result adaptation.
+Source implementation is now directionally conformant with the ARCH-021/COMMERCE-011 boundaries: the dedicated Agent Configuration domain remains outside unrelated Studio state, production uses COMMERCE-007, ADMIN remains read-only in the UI, selected-shop context is preserved, trusted environment context is server-derived, and secrets/provider execution remain out of scope. Acceptance is withheld only because the explicit production-boundary validation contract from Attempt 1 has not been satisfied and the durable task/report state in the supplied snapshot is unreconciled.
 
 ### Follow-up
 
-Return the same task to `ready` with `attempt: 1` preserved. The next authorized claim becomes Attempt 2. COMMERCE-012, COMMERCE-013 and COMMERCE-014 remain dependency-gated; do not begin them from this task.
+Return the same task to `ready` with `attempt: 2` preserved and no active claim. The next authorized claim becomes Attempt 3. COMMERCE-012, COMMERCE-013 and COMMERCE-014 remain dependency-gated until COMMERCE-011 is architect-accepted Complete.
