@@ -82,6 +82,28 @@ Templates are reusable authoring starting points. They are deliberately independ
 - New-authoring selectable lookup requires both the category and template to be enabled and the requested revision to be published; callers must not bypass disablement merely by supplying an exact revision id.
 - No operation may mutate prompts that were previously created from a template.
 
+### Deterministic persistence and file boundary
+
+Consume these accepted Prisma models exactly:
+
+```text
+CommercePromptTemplateCategory
+CommercePromptTemplate
+CommercePromptTemplateRevision
+CommerceAuditEvent
+```
+
+Primary implementation locations for this task are:
+
+```text
+src/commerce/agent-configuration/prompt-template-service.ts
+src/studio/agent-configuration/template-contracts.ts
+src/studio/agent-configuration/template-server-actions.ts
+tests/agent-configuration-templates.test.ts
+```
+
+A template category is `CommercePromptTemplateCategory`; a template identity is `CommercePromptTemplate`; a version is `CommercePromptTemplateRevision`. Do not replace the category FK with free-text classification or an enum. Do not create shop-owned template persistence in Phase 2.
+
 ## Work Items
 
 - [ ] Implement category/classification list/create/update/enable/disable service.

@@ -84,6 +84,22 @@ Phase 1 established server-validated `shopId` navigation context. Phase 2 now us
 - `StudioWorkspace` remains orchestration/navigation only for this surface; selected-shop authoring logic belongs to the Agent Configuration domain module.
 - Broken explicit override state must remain visible and fail closed through the resolver.
 
+### Deterministic file boundary
+
+Extend the Agent Configuration module created by COMMERCE-011; do not create a second shop-settings implementation elsewhere.
+
+Primary locations:
+
+```text
+src/studio/agent-configuration/agent-configuration-screen.tsx
+src/studio/agent-configuration/shop-agent-configuration.tsx
+app/agent-configuration/page.tsx
+components/studio-workspace.tsx          # navigation/shop-context handoff only
+tests/agent-configuration-shop-ui.test.tsx
+```
+
+Use the existing Phase 1 `shopId` query/navigation contract and `ShopExecutionContext`. Do not introduce another selected-shop store, cookie, localStorage key or database preference. Shop override editor state remains under `src/studio/agent-configuration/`.
+
 ## Work Items
 
 - [ ] Extend the dedicated Agent Configuration domain module with the selected-shop sub-surface.

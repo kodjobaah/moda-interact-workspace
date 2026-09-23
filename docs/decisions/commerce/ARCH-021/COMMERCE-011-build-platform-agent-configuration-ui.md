@@ -99,6 +99,22 @@ COMMERCE-006 remains an explicit dependency because it established the accepted 
 - Mutation UI must expose replay/conflict/unknown outcomes consistently with accepted Studio patterns.
 - No provider API key or access token is rendered.
 
+### Deterministic file boundary
+
+Create/use these primary UI locations:
+
+```text
+app/agent-configuration/page.tsx
+src/studio/agent-configuration/agent-configuration-screen.tsx
+src/studio/agent-configuration/platform-agent-configuration.tsx
+components/production-studio-page.tsx
+components/studio-shell.tsx
+components/studio-workspace.tsx
+tests/agent-configuration-ui.test.tsx
+```
+
+`components/studio-workspace.tsx` may only gain the `agent-configuration` surface discriminator/render handoff and shared navigation plumbing. Model/template/prompt editor state, mutation orchestration and dirty/CAS state must live under `src/studio/agent-configuration/`. Additional helper components are permitted only under that directory. Do not opportunistically extract unrelated Tools/Releases/Explore/Features code in this task.
+
 ## Work Items
 
 - [ ] Add production Agent Configuration route/navigation entry.

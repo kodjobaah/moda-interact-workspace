@@ -14,9 +14,7 @@ Coordinator:
 
 ## Phase 2 — durable CommerceAgent configuration
 
-Phase 2 database work is intentionally one cohesive task so model catalogue/selections,
-prompt-template taxonomy/versioning, prompt lineages/revisions and active pointers are designed
-and migrated together.
+Phase 2 database work is intentionally one cohesive deterministic task. `DATABASE-001` fixes the exact Prisma model names, fields, FKs, indexes, SQL guards, migration directory, validation scripts and audit actions for model catalogue/selections, prompt-template taxonomy/versioning, prompt lineages/revisions and active pointers. The implementing agent must not redesign that schema.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|

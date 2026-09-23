@@ -313,8 +313,22 @@ environments, but active pointers/selections are environment-specific.
 
 ## Data Model
 
-Exact Prisma names are deferred to the database task, but the architecture requires
-the following durable concepts.
+Phase 2 Prisma names are fixed by `ARCH-021-DATABASE-001`; later tasks must consume these exact durable models rather than inventing alternate persistence concepts:
+
+```text
+CommerceModelCatalogueEntry
+CommercePlatformModelSelection
+CommerceShopModelSelection
+CommercePromptTemplateCategory
+CommercePromptTemplate
+CommercePromptTemplateRevision
+CommerceAgentPrompt
+CommerceAgentPromptRevision
+CommercePlatformPromptPointer
+CommerceShopPromptPointer
+```
+
+The exact fields, indexes, FKs, audit extensions and migration guards are authoritative in `docs/decisions/database/ARCH-021/DATABASE-001-persist-agent-configuration-schema.md`. The architecture requires the following durable semantics.
 
 ### Model catalogue
 

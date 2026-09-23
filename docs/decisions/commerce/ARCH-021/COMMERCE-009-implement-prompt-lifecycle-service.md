@@ -85,6 +85,30 @@ Phase 2 only authors and selects prompts; existing ARCH-020 per-capability promp
 - Clearing a shop prompt override means inheritance and must not alter shop model selection.
 - Pointer mutations use CAS/editVersion and distinguish replay/conflict/unknown outcomes consistently with existing Studio commands.
 
+### Deterministic persistence and file boundary
+
+Consume these accepted Prisma models exactly:
+
+```text
+CommerceAgentPrompt
+CommerceAgentPromptRevision
+CommercePlatformPromptPointer
+CommerceShopPromptPointer
+CommercePromptTemplateRevision   # provenance source only
+CommerceAuditEvent
+```
+
+Primary implementation locations for this task are:
+
+```text
+src/commerce/agent-configuration/prompt-service.ts
+src/studio/agent-configuration/prompt-contracts.ts
+src/studio/agent-configuration/prompt-server-actions.ts
+tests/agent-configuration-prompts.test.ts
+```
+
+`CommerceAgentPrompt` is the only platform/shop configurable prompt lineage. Do not create a second platform-prompt table, a per-feature prompt table or a model-specific prompt table. `sourceTemplateRevisionId` must be written only when copying an exact published `CommercePromptTemplateRevision`; copied `promptText` becomes independent content.
+
 ## Work Items
 
 - [ ] Implement platform/shop prompt lineage read/create operations.

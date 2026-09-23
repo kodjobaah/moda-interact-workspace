@@ -80,6 +80,28 @@ Phase 2 makes model selection platform/shop configuration instead of an environm
 - No browser response includes provider API credentials or secret configuration.
 - In Phase 2, model `disabled`/`unavailable` state is configuration state only. This service must not probe provider credentials, network reachability, quota or provider health.
 
+### Deterministic persistence and file boundary
+
+Consume these accepted Prisma models exactly; do not create an alternate table, JSON persistence shape or local Prisma model:
+
+```text
+CommerceModelCatalogueEntry
+CommercePlatformModelSelection
+CommerceShopModelSelection
+CommerceAuditEvent
+```
+
+Primary implementation locations for this task are:
+
+```text
+src/commerce/agent-configuration/model-service.ts
+src/studio/agent-configuration/model-contracts.ts
+src/studio/agent-configuration/model-server-actions.ts
+tests/agent-configuration-model.test.ts
+```
+
+`src/commerce/agent-configuration/` and `src/studio/agent-configuration/` may be created if absent. Small helper files may be added only under those two directories when directly required by this bounded capability. Do not place model configuration state into `components/studio-workspace.tsx`; UI composition belongs to COMMERCE-011/012. Do not modify provider adapters or Background.
+
 ## Work Items
 
 - [ ] Add model catalogue query/lifecycle service over the accepted Prisma schema.

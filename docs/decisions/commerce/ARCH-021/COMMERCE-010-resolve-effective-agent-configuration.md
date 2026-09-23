@@ -80,6 +80,34 @@ Model and prompt ownership are independent. Phase 2 UI needs to show both the ef
 - The resolver's model selection, prompt selection and referenced immutable records must be observed through one coherent database read snapshot; do not compose independently committed reads that can return a model/prompt combination that never existed together.
 - The resolver must not mutate defaults while resolving.
 
+### Deterministic persistence and file boundary
+
+The resolver must compose the exact Phase 2 rows below in one coherent database snapshot:
+
+```text
+model:
+  CommerceShopModelSelection
+    ?? CommercePlatformModelSelection
+  -> CommerceModelCatalogueEntry
+
+prompt:
+  CommerceShopPromptPointer
+    ?? CommercePlatformPromptPointer
+  -> CommerceAgentPromptRevision
+  -> CommerceAgentPrompt
+```
+
+Primary implementation locations for this task are:
+
+```text
+src/commerce/agent-configuration/effective-configuration.ts
+src/studio/agent-configuration/effective-contracts.ts
+src/studio/agent-configuration/effective-server-actions.ts
+tests/agent-configuration-effective.test.ts
+```
+
+Absence of the shop selection/pointer is the only inheritance signal. Do not infer inheritance from disabled rows, invalid FKs, missing revisions or provider availability. Do not create a new persistence table for the computed effective configuration.
+
 ## Work Items
 
 - [ ] Define Commerce-local effective agent-configuration DTO/result types.
