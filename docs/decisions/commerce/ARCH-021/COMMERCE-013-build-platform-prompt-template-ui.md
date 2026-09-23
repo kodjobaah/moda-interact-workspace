@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 72
 executor: null
 claimed_at: null
@@ -377,3 +377,28 @@ Two bounded UI correctness issues remain:
 2. **Revision history must reconcile successful revision mutations.** `replaceRevision(...)` currently changes only `selected.revision`; `selected.revisions` remains stale. After create/update/publish, the visible revision-history list and published revision/hash summary can therefore disagree with the successful durable result until the template is reopened. Attempt 3 must upsert the returned revision into the selected revision collection (or deterministically reload that history) so the screen immediately reflects the committed revision state.
 
 Focused regressions are sufficient: cover mixed metadata+draft dirty state through a partial save and block stale-text publication, and cover create/update/publish reconciliation into the rendered revision history/published hash. Do not redesign COMMERCE-008/015 service contracts, add direct Prisma reads, or begin COMMERCE-014.
+
+### Attempt 3 Architect Review — Changes Requested
+
+Attempt 3 resolves the two corrections from the Attempt 2 review in substance: independently persisted template metadata and draft text now retain dirty state across partial/unrelated successful mutations; publishing is blocked while visible DRAFT text differs from the persisted DRAFT; and successful revision mutations are merged immediately into local history. Those corrections are accepted and MUST be preserved.
+
+Two bounded state-reconciliation defects remain:
+
+1. **Preserve canonical revision ordering and the latest-published summary after local reconciliation.** COMMERCE-015 defines revision history as `revisionNumber DESC, id ASC`. `replaceRevision(...)` currently re-sorts the locally reconciled collection by `revisionNumber` ascending. Once more than one published revision exists, `publishedRevision = selected.revisions.find(status === 'PUBLISHED')` can therefore identify an older published revision after a successful create/update/publish even though the newly published hash is visible elsewhere in the history. Attempt 4 MUST keep the locally reconciled collection in the canonical COMMERCE-015 order (or compute the latest published revision independently by highest revision number) so the singular Published revision/hash summary immediately identifies the newest published revision. Add a focused regression with an older published revision plus a newly published higher revision and assert the summary itself reports the higher revision/id/hash, not merely that the hash appears somewhere in history.
+
+2. **Carry success reconciliation through the unknown-operation retry path.** The stored `Operation` currently retains only `operationId` and `invoke`. If a selected-template metadata or revision mutation returns `unknown`, the `Check original operation` retry calls `run(...)` without the original `onSuccess` reconciler. A later durable `ok` result therefore says `Saved.` and reloads only category/template lists while leaving the selected template/revision/edit-version/history/dirty baseline stale. Attempt 4 MUST preserve the original success reconciler with the unknown operation (or deterministically reload the selected template plus revision history after a reconciled `ok`) so successful exact-operation reconciliation produces the same selected-editor state as an immediate `ok`. Add a focused revision-mutation regression: first call returns `unknown`, retry with the exact same operation id returns `ok`, and the returned revision/history/hash plus dirty baseline are reconciled without reopening the template. Preserve the existing exact-operation-id assertion.
+
+The Attempt 3 Completion Report also still lacks the mandatory launcher-prepared execution evidence. Attempt 4 MUST record the exact launcher-resolved parent and implementation worktree paths, matching task branches, start-of-attempt synchronization/claim evidence and recursive implementation-submodule/database evidence. Do not invent these values and do not create unrelated implementation churn solely for evidence.
+
+No COMMERCE-008/015 service contract, Prisma query, schema, provider execution, COMMERCE-014 behavior or `StudioWorkspace` domain state change is authorized. This is the same COMMERCE-013 task; preserve `attempt: 3`, clear any claim and return it to `ready`. The next authorized claim becomes Attempt 4.
+
+#### Attempt 4 correction contract
+
+- preserve COMMERCE-015 `revisionNumber DESC, id ASC` history ordering after local revision upsert/reconciliation;
+- ensure the singular published-revision summary resolves the newest published revision immediately after publish;
+- preserve/apply the original success reconciler when an `unknown` operation later resolves `ok` using the exact same `operationId`;
+- add focused regressions for latest-published summary correctness and unknown->ok selected-editor reconciliation;
+- retain all accepted Attempt 2/3 dirty-state, durable-history, ADMIN/read-only, production composition and no-provider-execution behavior;
+- record the mandatory prepared-worktree/synchronization/claim/submodule evidence in the Completion Report;
+- rerun the focused template UI and production composition validation, targeted ESLint and `git diff --check`;
+- set the task to `review`, clear `executor`/`claimed_at`, return to `moda_architect` and STOP.
