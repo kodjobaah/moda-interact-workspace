@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 implementation in progress; COMMERCE-001 through COMMERCE-005 accepted Complete.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 intentionally unmaterialised.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -542,23 +542,19 @@ Phase 1 tasks:
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
 | ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
-| ARCH-021-COMMERCE-006 | moda_commerce | Ready | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+| ARCH-021-COMMERCE-006 | moda_commerce | Complete | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
 Current executable frontier:
 
 ```text
-ARCH-021-COMMERCE-006   install the production JavaScript response-panel composition
+None — Phase 1 implementation set is architect-accepted Complete.
 ```
 
-COMMERCE-001 through COMMERCE-005 are now Complete. COMMERCE-006 remains the sole
-remaining Phase 1 implementation task. Attempt 3 correctly persists the current top-level Input
-JSON Schema and Response template together with JavaScript source and preserves the accepted
-edit-version/publication handoff. Architect re-review found one remaining saved-vs-unsaved
-identity defect in the same U06 boundary: invalid `ExternalHttpEditor` Advanced response-processing
-or Response-shape JSON can remain visibly buffered while JavaScript Save persists the previous
-execution value and clears the shared dirty guard. Its prerequisites remain Complete, so
-COMMERCE-006 is Ready for Attempt 4.
-Phase 2 remains intentionally unmaterialised until Phase 1 reconciliation.
+COMMERCE-001 through COMMERCE-006 are Complete. Attempt 4 closes the final U06
+saved-vs-unsaved/publication-integrity gap by preventing JavaScript saves and enclosing
+full-draft saves from bypassing invalid visible execution-definition JSON buffers. The
+Phase 1 exit criteria below are satisfied. Phase 2 remains intentionally unmaterialised
+until its bounded task set is explicitly defined.
 
 Phase 1 exit criteria:
 
@@ -623,7 +619,7 @@ Phase 1 is materialised as six Commerce tasks under:
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
 | ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
-| ARCH-021-COMMERCE-006 | moda_commerce | Ready | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+| ARCH-021-COMMERCE-006 | moda_commerce | Complete | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
 Later phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -651,6 +647,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-006 Attempt 4 accepted; Phase 1 complete
+
+- Accepted implementation `39824714febb6198645a5f4e151f8acc33bb8c70` with submitted parent report `ad00499156b587bf10513033e719b5a4f5030113`.
+- Confirmed the JavaScript save composition now preflights both visible `ExternalHttpEditor` execution-definition buffers (`advanced` and `schemaText`) before persistence, so invalid buffered JSON cannot be bypassed or falsely marked clean.
+- Confirmed the enclosing full-draft save also respects execution-definition validity, while the previously accepted CAS/edit-version, complete top-level candidate persistence and JavaScript validation/publication handoff remain intact.
+- Accepted the submitted functionality-focused evidence: 13 U06 tests, 105 focused response/preview tests, targeted ESLint and `git diff --check` passed; the documented repository typecheck baseline remains non-blocking.
+- Marked COMMERCE-006 Complete. COMMERCE-001 through COMMERCE-006 now satisfy the Phase 1 exit criteria; Phase 1 is complete and Phase 2 remains intentionally unmaterialised.
 
 ### 2026-09-23 — COMMERCE-006 Attempt 3 changes requested
 

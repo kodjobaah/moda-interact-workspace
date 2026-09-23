@@ -24,25 +24,19 @@ Shared contracts, Background changes or live provider execution.
 | [COMMERCE-003](COMMERCE-003-expose-studio-shop-execution-context.md) | Expose server-validated selected-shop execution context | Complete | ARCH-020-COMMERCE-013, 018 |
 | [COMMERCE-004](COMMERCE-004-add-studio-selected-shop-context.md) | Add Studio-wide selected-shop URL/navigation context | Complete | COMMERCE-003 |
 | [COMMERCE-005](COMMERCE-005-wire-real-connections-into-tool-authoring.md) | Wire persisted connection revisions into U06 Tool authoring | Complete | COMMERCE-001, COMMERCE-004, ARCH-020-COMMERCE-023 |
-| [COMMERCE-006](COMMERCE-006-install-javascript-response-panel-production-composition.md) | Install production JavaScript response-panel composition | Ready | COMMERCE-005, ARCH-020-COMMERCE-026, 027, 031 |
+| [COMMERCE-006](COMMERCE-006-install-javascript-response-panel-production-composition.md) | Install production JavaScript response-panel composition | Complete | COMMERCE-005, ARCH-020-COMMERCE-026, 027, 031 |
 
 ## Execution frontier
 
-COMMERCE-001 through COMMERCE-005 are architect-accepted Complete. The sole remaining
-Phase 1 implementation task is now Ready:
+COMMERCE-001 through COMMERCE-006 are architect-accepted Complete. Phase 1 has no
+remaining executable implementation task.
 
 ```text
-ARCH-021-COMMERCE-006   install the production JavaScript response-panel composition
+Phase 1 frontier: none — implementation set complete
 ```
 
-COMMERCE-006 Attempt 3 correctly persists the current top-level Input JSON Schema and
-Response template with JavaScript saves and preserves the accepted CAS/publication fixes.
-Architect re-review identified one remaining bounded saved-vs-unsaved defect in the same U06
-boundary: invalid `ExternalHttpEditor` Advanced response-processing or Response-shape JSON can
-remain visibly buffered while JavaScript Save persists the previous execution value and clears
-the shared dirty guard. COMMERCE-006 is Ready for Attempt 4 to close that final visible-definition
-publication-integrity gap. Phase 2 remains intentionally unmaterialised until Phase 1 is
-reconciled.
+The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 remains intentionally
+unmaterialised; no later-phase task becomes Ready merely because Phase 1 is complete.
 
 ## Phase 1 dependency graph
 
@@ -57,6 +51,6 @@ ARCH-021-COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005 -> COMMERCE-006
                               COMMERCE-001+
 ```
 
-Phase 1 is complete only when COMMERCE-001 through COMMERCE-006 are architect-accepted
-Complete and the parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is not
-materialised by this index.
+Phase 1 is architect-accepted Complete: COMMERCE-001 through COMMERCE-006 are Complete
+and the parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is not materialised
+by this index.

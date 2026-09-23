@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 3
+attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-005
   - ARCH-020-COMMERCE-026
@@ -148,7 +148,7 @@ Phase 4 will replace the human-facing synthetic tool-test data source; keep that
 
 ### Status
 
-Ready for Review (Attempt 3 corrections complete)
+Ready for Review (Attempt 4 corrections complete)
 
 ### Files Changed
 
@@ -226,74 +226,83 @@ Attempt 3 correction:
 
 None
 
+### Attempt 4 Correction Report
+
+#### Correction Mapping
+
+- Preserved the accepted Attempt 2 edit-version/CAS/publication fixes and Attempt 3 complete top-level Input JSON Schema / Response template persistence unchanged in [components/studio-workspace.tsx](../../../../../moda-interact-commerce/components/studio-workspace.tsx).
+- Added an editor-owned preflight for the visible Advanced response processing and Response shape / resultSchema buffers. Invalid JSON now reports invalid execution state, prevents JavaScript draft persistence, and leaves the shared U06 dirty/navigation/publication guard active in [src/studio/external-http/editor.tsx](../../../../../moda-interact-commerce/src/studio/external-http/editor.tsx), [src/studio/external-http/ports.ts](../../../../../moda-interact-commerce/src/studio/external-http/ports.ts), and [src/studio/code-response/production-panel.tsx](../../../../../moda-interact-commerce/src/studio/code-response/production-panel.tsx).
+- Prevented the parent full-draft save from clearing dirty state while a visible execution buffer is invalid, preserving exact persisted-definition publication semantics in [components/studio-workspace.tsx](../../../../../moda-interact-commerce/components/studio-workspace.tsx).
+- Added focused regression coverage for JavaScript edit -> invalid Response shape JSON -> JavaScript Save draft, proving no draft write and retained discard protection in [tests/external-tools-ui.test.tsx](../../../../../moda-interact-commerce/tests/external-tools-ui.test.tsx).
+- Preserved server-side QuickJS/external-preview execution, cancellation/reconciliation, ADMIN/SUPER_ADMIN boundaries, and no-provider-network/credential behavior.
+
+#### Attempt 4 Validation Results
+
+- `npm exec vitest run tests/external-tools-ui.test.tsx`: passed, 13 tests.
+- `npm exec vitest run tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/response-processing.test.ts tests/external-http-executor.test.ts tests/external-preview.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/external-wiring.test.ts tests/external-tools-ui.test.tsx`: passed, 9 files, 105 tests.
+- Targeted ESLint over all five changed files: passed with no reported errors or warnings.
+- `git diff --check`: passed.
+- `npm run typecheck`: remains blocked by the existing repository baseline, reporting 234 errors in 14 files, including pre-existing diagnostics in the touched workspace/test files; no new production-panel, external-editor, external-port, or regression behavior failure was observed in focused validation.
+- No live provider calls, provider credentials, or network-backed execution were used.
+
+#### Attempt 4 Publication
+
+- Implementation commit: `3982471`, pushed to `origin/task/ARCH-021-COMMERCE-006`.
+- Parent report commit: pending after this metadata/report update.
+- Final task metadata: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 4`.
+
 ## Architect Review
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 3 correctly resolves the specific top-level sibling-buffer defect from the Attempt 2 correction contract and preserves the accepted Attempt 2 CAS/publication fixes.
+Attempt 4 resolves the final saved-vs-unsaved/publication-integrity defect identified in Attempt 3 without reopening the accepted CAS, publication, QuickJS or preview mechanics.
 
-The JavaScript draft-save path now parses and schema-validates the current `inputSchemaText` and `responseTemplateText`, persists those values together with the current JavaScript source in the same `updateToolDraft(...)`, refreshes the authoritative returned definition/buffers/edit version, and only then clears the shared U06 dirty state. Invalid top-level sibling JSON performs no write and retains the navigation guard. The focused U06 regression proves that path, and the submitted functionality-focused suites are sufficient.
+`ExternalHttpEditor` now owns a `canSaveDraft()` preflight for the JavaScript composition slot. Before a JavaScript-panel save can reach the durable `updateToolDraft(...)` path, the preflight parses and schema-validates both visible execution-definition buffers that can otherwise remain local while invalid: `Advanced response processing JSON` (`advanced`) and `Response shape / resultSchema JSON` (`schemaText`). `ProductionCodeResponsePanel` enforces that preflight immediately before invoking the existing `onSaveDraft` callback. If either visible buffer is invalid, no Tool draft write occurs and the shared U06 dirty/navigation guard remains active.
 
-One remaining production-functional saved-vs-unsaved defect exists in the same U06 JavaScript save boundary.
+`StudioWorkspace` also tracks the editor's execution-definition validity for the enclosing full-draft save. This preserves the same exact-definition publication invariant outside the JavaScript-panel save path: a visibly invalid execution buffer cannot be silently bypassed by the parent save operation.
 
-`ExternalHttpEditor` also owns independently buffered JSON editors that are visibly part of the U06 Tool definition:
+The focused regression demonstrates the required JavaScript edit -> invalid Response-shape JSON -> JavaScript Save path: no `updateToolDraft` command is issued and Manage Connections remains behind the unsaved-changes guard. The same preflight parses the Advanced response-processing buffer, so separate exhaustive duplication is not required for this functionality-focused acceptance.
 
-- `Advanced response processing JSON` (`advanced`)
-- `Response shape / resultSchema JSON` (`schemaText`)
+The accepted Attempt 2/3 behavior remains intact: authoritative `editVersion` continuity, complete top-level Input JSON Schema / Response template persistence, current JavaScript validation/sample publication handoff, server-only QuickJS execution, preview cancellation/reconciliation, ADMIN/SUPER_ADMIN boundaries, and the Phase 1 no-provider-network/no-credential-access rule.
 
-When either editor contains invalid JSON, its local buffer is retained and the shared U06 dirty state is set, but the invalid value is intentionally not copied into `definition`. A user can therefore:
-
-```text
-edit JavaScript source
--> enter invalid Advanced response processing JSON or Response shape JSON
--> JavaScript panel Save draft
--> saveCodeDraft(...) persists the previous valid execution value
--> setDirty(false)
-```
-
-The invalid editor text remains visibly displayed even though the persisted Tool revision contains the previous value. A subsequent validate/sample cycle can make `externalValidated` current again and enable SUPER_ADMIN publication against the persisted revision while U06 still visibly shows an unpersisted invalid execution value.
-
-This is the same saved-vs-unsaved/publication-integrity invariant as the Attempt 2 correction, not an exhaustive-test concern.
-
-The Attempt 3 implementation commit is `5991dde`; the submitted parent report commit is `2b37c7b`.
+Implementation handoff: `39824714febb6198645a5f4e151f8acc33bb8c70`. Submitted parent report handoff: `ad00499156b587bf10513033e719b5a4f5030113`.
 
 ### Reviewed Files
 
 - `components/studio-workspace.tsx`
 - `src/studio/external-http/editor.tsx`
-- `src/studio/code-response/code-response-panel.tsx`
+- `src/studio/external-http/ports.ts`
 - `src/studio/code-response/production-panel.tsx`
+- `src/studio/code-response/code-response-panel.tsx`
 - `tests/external-tools-ui.test.tsx`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-006-install-javascript-response-panel-production-composition.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-The submitted functionality-focused validation is sufficient: the U06 suite reports 12 passing tests; the focused composition/preview set reports 104 passing tests; the response/preview integration subset reports 76 passing tests; targeted ESLint and `git diff --check` passed. The documented QuickJS runtime-proof failure and repository-wide typecheck baseline remain unrelated and are not blockers.
-
-No exhaustive test expansion is requested. The next correction needs only focused proof for the remaining editor-buffer publication-integrity path.
+- Submitted U06 focused suite: 13 passed.
+- Submitted focused response/preview suite: 105 passed.
+- Submitted targeted ESLint: passed.
+- Submitted `git diff --check`: passed.
+- Submitted repository typecheck remains non-zero on the documented baseline (`234 errors in 14 files`); the functionality-focused review found no task-owned regression requiring another attempt.
+- Static comparison with Attempt 3 confirms the correction is narrowly scoped to the visible execution-definition validity/preflight boundary plus its focused regression.
+- The supplied review archive contains no `node_modules`, so the architect did not rerun the submitted Node/Vitest commands in the review container.
 
 ### Architecture Conformance
 
-Partial.
+Conformant.
 
-The production JavaScript response-panel composition, authoritative edit-version continuity, JavaScript validation/publication handoff, complete top-level U06 schema/template persistence, server-only QuickJS/external-preview execution, cancellation/reconciliation and Phase 1 no-provider-network/credential boundaries conform.
+COMMERCE-006 now satisfies the production JavaScript response-panel composition contract and the saved-vs-unsaved identity requirements discovered during review. Publication eligibility corresponds to the exact persisted Tool definition under review, invalid visible definition buffers retain navigation/publication protection, and no parallel durable state or publication mechanism was introduced.
 
-Phase 1 cannot close while a JavaScript save can clear the shared U06 dirty/navigation/publication guard although another visible Tool-definition JSON editor still contains an unpersisted invalid value.
+With COMMERCE-001 through COMMERCE-006 architect-accepted Complete, the ARCH-021 Phase 1 exit criteria are satisfied. The parent architecture remains `Agreed`, not `Implemented`, because Phases 2-9 are intentionally not yet materialised or completed.
 
 ### Follow-up
 
-Attempt 4 correction contract:
+No implementation correction is required for COMMERCE-006. The task is Complete and the Phase 1 implementation set is closed.
 
-1. Preserve the accepted Attempt 2 CAS/publication fixes and the Attempt 3 complete top-level `Input JSON Schema` / `Response template` persistence unchanged.
-2. Before any JavaScript-panel save may clear the shared U06 dirty state, account for the visible `ExternalHttpEditor` definition buffers as well. In particular, invalid `Advanced response processing JSON` or invalid `Response shape / resultSchema JSON` must remain dirty and must not be silently bypassed by saving JavaScript.
-3. Publication must continue to represent the exact persisted Tool definition visibly under review. If a visible execution-definition buffer is invalid/unpersisted, navigation/publication protection must remain active until that state is corrected, discarded through an accepted guard, or successfully persisted.
-4. Use the smallest coherent correction. Do not create a second durable Tool definition, a second publication path, provider networking, credential access, or a new response-processing engine.
-5. Add only focused functional regression proof for this path. For example: edit JavaScript -> make Response shape JSON invalid -> JavaScript Save draft -> no false-clean state/no publication eligibility; equivalent coverage for the shared preflight mechanism is sufficient. Exhaustive editor testing is not required.
-6. Preserve all accepted server-side QuickJS/external-preview, cancellation/reconciliation, ADMIN/SUPER_ADMIN and no-provider-network/credential boundaries.
-
-Return this same task through the normal launcher. Preserve `attempt: 3`; the next authorized claim increments it to Attempt 4.
+Phase 2 remains intentionally unmaterialised. No Phase 2 task is implicitly Ready or launched by this acceptance; the next architecture step is to define the bounded Phase 2 task set when the developer chooses to proceed.
