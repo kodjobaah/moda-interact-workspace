@@ -221,6 +221,13 @@ The review also found two local UI correctness defects that remain in COMMERCE-0
 2. Dirty-state protection covers only draft prompt text and only Studio route navigation. Clicking another template calls `open(...)` directly and then clears dirty state, silently discarding an unsaved draft. Template metadata edits are not registered as dirty either. Internal template switching must use an explicit discard/stay guard and selected-template metadata edits must participate in the same dirty contract.
 
 The production wiring itself is otherwise appropriately bounded: Agent Configuration receives the COMMERCE-008 server actions, ADMIN mutation controls are absent, no provider/tool execution is introduced, and replay/conflict/unknown results reuse the accepted operation-result model.
+Changes Requested
+
+### Review Notes
+
+Attempt 1 was initially blocked because the accepted COMMERCE-008 read contract could not enumerate durable template revision history. COMMERCE-015 now supplies that bounded read contract and is architect-accepted Complete, so the dependency block is resolved and this same task is returned to `ready` with `attempt: 1` retained.
+
+The earlier implementation review also identified three UI corrections that remain part of the next COMMERCE-013 attempt after unblocking: selected-template metadata state must not leak across template selection; unsaved template changes must participate in the internal template-switch dirty/discard guard; and production composition must have a focused regression proving the real template server actions are supplied to Agent Configuration.
 
 ### Reviewed Files
 
@@ -259,3 +266,24 @@ After `ARCH-021-COMMERCE-015` is architect-accepted Complete, return this same t
 7. reconcile Work Items, Acceptance Criteria, Validation and Completion Report/worktree evidence before returning to review.
 
 Do not add direct database reads to the UI, do not change template mutation semantics in COMMERCE-013, and do not begin COMMERCE-014.
+- `moda-interact-commerce/components/production-studio-page.tsx`
+- `moda-interact-commerce/tests/agent-configuration-template-ui.test.tsx`
+
+### Validation Reviewed
+
+Attempt 1 focused UI/service/auth validation was reviewed. The implementation could not prove refresh/reopen DRAFT recovery because the required history read contract did not exist.
+
+### Architecture Conformance
+
+The explicit COMMERCE-015 service dependency is now satisfied. The remaining work is limited to the bounded UI corrections above; COMMERCE-013 must consume the accepted COMMERCE-015 read boundary and must not bypass it with direct Prisma reads.
+
+### Follow-up
+
+COMMERCE-015 is architect-accepted Complete and this task is now `ready` with `attempt: 1` retained. Attempt 2 must:
+
+- consume `listPromptTemplateRevisions({ templateId })`;
+- resume/display durable DRAFT and PUBLISHED revision history after refresh/reopen;
+- reset/synchronise local display-name/description editor state when the selected template identity changes;
+- protect dirty internal template switching with discard/stay behavior and include metadata edits in dirty state;
+- add focused production composition coverage for the real prompt-template server-action handoff;
+- retain the accepted COMMERCE-008/015 mutation/read boundaries and ADMIN read-only behavior.
