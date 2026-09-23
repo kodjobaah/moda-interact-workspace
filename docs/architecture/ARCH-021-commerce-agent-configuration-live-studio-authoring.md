@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation plus COMMERCE-007/008/009/010/011/012/014/015 are architect-accepted Complete; COMMERCE-013 is Ready on this branch.
+Agreed — Phase 0 contract accepted; Phase 1 and Phase 2 are architect-accepted Complete. Phase 3 is materialised; `ARCH-021-COMMERCE-016` is the initial Ready frontier.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -729,17 +729,11 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 
-The current Phase 2 execution frontier is:
+Phase 2 is architect-accepted Complete. The individual task YAML is authoritative: DATABASE-001 and COMMERCE-007 through COMMERCE-015 are Complete.
 
 ```text
-ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
+Phase 2 frontier: none — implementation set complete
 ```
-
-DATABASE-001 and COMMERCE-007/008/009/010/011/012/014/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-014 closes platform prompt authoring with exact template-revision copy-on-use, dirty-editor mutation safety, canonical revision-history wiring and authenticated singleton platform-lineage reads. COMMERCE-012 Attempt 3 closes the selected-shop UI boundary with stale-load isolation, dirty-state protection, single-DRAFT resume, publish/activation reconciliation and preserved resolver errors. COMMERCE-013 remains Ready on this branch; preserve its newer separately accepted Attempt 5 state during parent-branch reconciliation.
-ARCH-021-COMMERCE-012   Ready — selected-shop model/prompt override surface
-```
-
-DATABASE-001 and COMMERCE-007/008/009/010/011/013/014/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-013 closes the platform prompt-template library UI with canonical revision ordering, immediate latest-published hash presentation and exact-operation unknown-result reconciliation. COMMERCE-014 closes platform prompt authoring with exact template-revision copy-on-use, dirty-editor mutation safety, canonical revision-history wiring and authenticated singleton platform-lineage reads. COMMERCE-012 remains Ready.
 
 Phase 2 exit criteria:
 
@@ -764,8 +758,63 @@ Phase 2 exit criteria:
 
 ### Phase 3 — complete tool authoring
 
-Finish real Shopify/external execution definitions and direct/visual/JavaScript
-request/response authoring.
+Phase 3 completes the immutable Tool authoring contract without making a real Shopify or external provider request. It is a pre-production breaking contract change: there is one canonical `EXTERNAL_HTTP` shape, not an `EXTERNAL_HTTP v2` compatibility layer.
+
+Phase 3 invariants:
+
+1. The persisted Tool `inputSchema` remains the contract presented to the CommerceAgent; the CommerceAgent generates actual argument values per invocation. Phase 3 does not persist invocation values.
+2. External HTTP remains generic read-only GET in Phase 3. A Tool pins one immutable connection revision; origin/auth credentials remain server-owned connection state and never enter request JavaScript or browser state.
+3. EXTERNAL_HTTP request construction is exactly one of:
+   - `DECLARATIVE`: relative path + bounded query mappings + static safe headers;
+   - `JAVASCRIPT`: bounded QuickJS `buildRequest({ args })` returning only relative path/query/safe headers.
+4. Request JavaScript describes a request; it never calls `fetch`, chooses an origin/method, accesses credentials, reads environment/process/filesystem or performs I/O.
+5. EXTERNAL_HTTP response processing is exactly DIRECT, Visual (OBJECT/LIST), or JavaScript `transform(response)`. DIRECT validates selected JSON directly against `resultSchema`.
+6. Shopify authoring uses `SHOPIFY_ADMIN_GRAPHQL` pinned to Admin API `2026-07`, not a new Storefront authoring flow. The definition contains the query document, operation name, input-variable mappings, result path/schema and pinned schema hash; it contains no shop/session/token.
+7. Authored Shopify Admin documents are query-only. Mutations/subscriptions are rejected before publication/live testing.
+8. Commerce validates Shopify Admin drafts locally against a committed schema derived from pinned `@shopify/dev-mcp@1.15.4`. Shopify Dev MCP / AI Toolkit `validate_graphql_codeblocks` is development conformance evidence only; normal Studio validation does not send merchant-authored GraphQL to the toolkit.
+9. Existing `SHOPIFY_STOREFRONT_QUERY` runtime support remains transitional while Phase 4 Admin execution is absent, but the Phase 3 Studio does not offer Storefront for new Tool creation.
+10. New Phase 3 definitions are authorable/structurally valid but cannot publish until Phase 4 records a successful real live Tool test for the exact saved revision. Synthetic fixtures remain automated-test assets and do not satisfy that publication gate.
+11. Phase 3 continues incremental Studio decomposition: the Tools domain is extracted from `StudioWorkspace`; unrelated Studio surfaces are not rewritten.
+12. Phase 3 introduces no live provider/model call, no Background change, no database migration and no conversation tool-call-history persistence.
+
+Phase 3 tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-016 | moda_commerce | Ready | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Pending | ARCH-021-COMMERCE-016, 017, 018, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-017, 019, 020, ARCH-021-COMMERCE-005, 006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-018, 019, 020, ARCH-020-COMMERCE-011 |
+
+Dependency graph:
+
+```text
+COMMERCE-016
+    |
+    +--> COMMERCE-017 ----+
+    |                      |
+    +--> COMMERCE-018 ----+----> COMMERCE-019 ----+--> COMMERCE-021
+    |                      |                       |
+    +--> COMMERCE-020 -----+-----------------------+--> COMMERCE-022
+
+COMMERCE-020 also consumes the already-accepted Phase 1 Tool composition (COMMERCE-005/006).
+```
+
+Phase 3 exit criteria:
+
+- Commerce owns the accepted request/response/Admin Tool-definition contracts under `src/commerce/tool-definition/`; Shared remains unchanged at 0.14.2;
+- Commerce is fully migrated to the canonical EXTERNAL_HTTP request shape with no compatibility parser;
+- `buildRequest({args})` uses the same bounded QuickJS runtime and can produce only a safe request descriptor;
+- Admin 2026-07 GraphQL drafts are validated locally/query-only with toolkit conformance evidence;
+- server-side authoring validation is authoritative and performs zero provider I/O;
+- new Phase 3 definitions fail publication with `LIVE_TEST_REQUIRED` until Phase 4;
+- production Studio authors External HTTP declarative/JS request + DIRECT/Visual/JS response definitions;
+- production Studio authors Shopify Admin GraphQL definitions and no longer offers Storefront for new Tool creation;
+- Tool-specific state/actions are outside `StudioWorkspace`;
+- all Phase 3 tasks are architect-accepted Complete.
 
 ### Phase 4 — live single-tool testing
 
@@ -823,6 +872,13 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-013 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
+| ARCH-021-COMMERCE-016 | moda_commerce | Ready | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-018, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-020-COMMERCE-011 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1106,3 +1162,12 @@ independent of features.
 - Defined conversation/preview freezing of resolved immutable identities.
 - Defined platform-admin authoring of both application-wide and shop-specific prompts
   and the future merchant shop-prompt boundary.
+
+### 2026-09-23 — Phase 3 task set defined
+
+- Confirmed Phase 2 authoritative task files are Complete and reconciled stale Ready prose in the parent/index.
+- Confirmed the full persisted Tool authoring definition is Commerce-only; removed Phase 3 Shared/package-publication work and established `src/commerce/tool-definition/` as the canonical owner while retaining only true cross-service descriptor/result/manifest/runner contracts in Shared 0.14.2.
+- Kept generic external HTTP GET-only; request JavaScript is a pure `buildRequest({args})` descriptor builder and cannot perform I/O or select origin/method/credentials.
+- Reused pinned Shopify Dev MCP/Admin 2026-07 schema as development validation evidence while keeping normal Studio validation local/offline.
+- Deferred all real provider calls and publication proof to Phase 4; Phase 3 new definitions fail closed with LIVE_TEST_REQUIRED.
+- Continued incremental Studio decomposition by extracting the Tool domain from StudioWorkspace.
