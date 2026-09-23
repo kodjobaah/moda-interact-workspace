@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 implementation in progress; COMMERCE-001, COMMERCE-002 and COMMERCE-003 accepted Complete.
+Agreed — Phase 0 contract accepted; Phase 1 implementation in progress; COMMERCE-001 through COMMERCE-005 accepted Complete.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -541,20 +541,19 @@ Phase 1 tasks:
 | ARCH-021-COMMERCE-002 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
 | ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
-| ARCH-021-COMMERCE-005 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
-| ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+| ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
+| ARCH-021-COMMERCE-006 | moda_commerce | Ready | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
 Current executable frontier:
 
 ```text
-ARCH-021-COMMERCE-002   install the production ConnectionPort into U15/U16 routes
-ARCH-021-COMMERCE-005   wire persisted connection revisions into U06 Tool authoring
+ARCH-021-COMMERCE-006   install the production JavaScript response-panel composition
 ```
 
-COMMERCE-002 is now Complete: production Connections composition uses the accepted
-server-backed port and the pre-existing U06 `returnTo` producer has a validated,
-blocker-aware U15/U16 consumer. COMMERCE-005 remains Pending until COMMERCE-004 is
-architect-accepted Complete. No task is automatically launched merely because it is Ready.
+COMMERCE-001 through COMMERCE-005 are now Complete. COMMERCE-006 is Ready because its
+COMMERCE-005 and ARCH-020-COMMERCE-026/027/031 prerequisites are Complete. It is the sole
+remaining Phase 1 implementation task. No task is automatically launched merely because
+it is Ready, and Phase 2 remains intentionally unmaterialised until Phase 1 reconciliation.
 
 Phase 1 exit criteria:
 
@@ -618,8 +617,8 @@ Phase 1 is materialised as six Commerce tasks under:
 | ARCH-021-COMMERCE-002 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
 | ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
-| ARCH-021-COMMERCE-005 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
-| ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+| ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
+| ARCH-021-COMMERCE-006 | moda_commerce | Ready | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
 Later phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -647,6 +646,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-005 Attempt 2 accepted
+
+- Accepted production U06 persisted connection/revision authoring at implementation `9033069` with parent report `1131be5` after the merged U15/U16 route correction.
+- Confirmed Tool -> Connections -> Tool navigation preserves the exact Tool revision, selected `shopId`, validated internal `returnTo`, and independent Connections list/detail state with one production route client.
+- Confirmed synthetic sample processing remains test/authoring-only and no live provider call or credential decryption was introduced.
+- Marked COMMERCE-005 Complete and promoted COMMERCE-006 to Ready; COMMERCE-006 is the sole remaining Phase 1 implementation task.
 
 ### 2026-09-23 — COMMERCE-002 Attempt 2 accepted
 

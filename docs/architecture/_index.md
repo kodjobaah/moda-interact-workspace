@@ -968,8 +968,8 @@ resolved model/prompt identities without making them release-owned.
 
 Phase 1 is defined as six Commerce-only tasks for real Connections composition,
 server-validated `shopId` context, production external connection selection and the
-JavaScript response-panel installation. ARCH-021-COMMERCE-001, COMMERCE-003 and
-COMMERCE-004 are architect-accepted Complete. ARCH-021-COMMERCE-002 and COMMERCE-005
-are the current independent Ready frontier. Later phases are not yet materialised.
+JavaScript response-panel installation. ARCH-021-COMMERCE-001 through COMMERCE-005 are
+architect-accepted Complete. ARCH-021-COMMERCE-006 is the sole remaining Ready Phase 1
+implementation task. Later phases are not yet materialised.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
