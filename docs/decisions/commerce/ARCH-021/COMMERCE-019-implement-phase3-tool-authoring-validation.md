@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-COMMERCE-019
 architecture_id: ARCH-021
-title: Implement Phase 3 server-side tool-authoring validation
+title: Establish Phase 3 authoring validation contract and publication gate
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -10,23 +10,21 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 40
+priority: 34
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-021-COMMERCE-016
-  - ARCH-021-COMMERCE-017
-  - ARCH-021-COMMERCE-018
   - ARCH-020-COMMERCE-030
 enables:
-  - ARCH-021-COMMERCE-021
-  - ARCH-021-COMMERCE-022
+  - ARCH-021-COMMERCE-023
+  - ARCH-021-COMMERCE-024
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
-# Implement Phase 3 server-side tool-authoring validation
+# Establish Phase 3 authoring validation contract and publication gate
 
 ## Architecture
 
@@ -38,29 +36,33 @@ Coordinator: moda_architect
 
 ## Objective
 
-Create one authenticated server-side authoring validator for new EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL drafts, compile all authored JavaScript/GraphQL locally, and explicitly prevent Phase 3 definitions from being published until Phase 4 supplies a real live-test receipt.
+Define one common server-side validation result/authentication contract for Phase 3 Tool authoring and install the fail-closed `LIVE_TEST_REQUIRED` publication gate, without coupling External HTTP validation to Shopify Admin compiler work.
 
 ## Context
 
-The existing ARCH-020 external publication validator uses synthetic response samples/receipts. ARCH-021's product contract requires a real selected-shop/provider test before a newly authored tool is publishable. Phase 3 therefore validates authoring completely but does not pretend fixture validation is deployment evidence.
+The existing ARCH-020 external publication validator uses synthetic response samples/receipts. ARCH-021 requires a successful real selected-shop/provider test for the exact saved revision before a newly authored Phase 3 Tool can publish.
+
+External HTTP and Shopify Admin authoring are independently useful capabilities with different compiler dependencies. This task therefore owns only their common validation/publication semantics. COMMERCE-023 owns External HTTP authoring validation; COMMERCE-024 owns Shopify Admin authoring validation.
 
 ## Scope
 
 Primary files:
 
 ```text
-src/commerce/tool-authoring/validation.ts
 src/commerce/tool-authoring/contracts.ts
-src/studio/tools/validation-server-actions.ts
+src/commerce/tool-authoring/auth.ts              # only if a shared helper is required
 src/commerce/external-publication/index.ts
 src/commerce/external-publication/contracts.ts
-src/commerce/publication/validation.ts        # only if central dispatch needs exact new kind handling
-tests/tool-authoring-validation.test.ts
+src/commerce/publication/validation.ts            # only if central dispatch needs exact new-kind handling
+tests/tool-authoring-common-validation.test.ts
 package.json
 ```
 
 ## Out of Scope
 
+- Compiling or previewing request JavaScript (COMMERCE-023).
+- Validating connection revisions (COMMERCE-023).
+- Compiling Shopify Admin GraphQL (COMMERCE-024).
 - Real Shopify/external requests.
 - Live-test receipt implementation (Phase 4).
 - Tool editor UI.
@@ -69,54 +71,40 @@ package.json
 
 ## Requirements
 
-### R1 — exact authoring validator result
+### R1 — exact common validation result
 
-Expose one server-side port returning:
+Expose the canonical result consumed by both domain validators and both Phase 3 editors:
 
 ```ts
 type ToolAuthoringValidation =
   | { valid: true; schemaHash: string | null; issues: [] }
-  | { valid: false; schemaHash: string | null; issues: Array<{ path: string; code: string; message: string; line?: number | null; column?: number | null }> };
+  | {
+      valid: false;
+      schemaHash: string | null;
+      issues: Array<{
+        path: string;
+        code: string;
+        message: string;
+        line?: number | null;
+        column?: number | null;
+      }>;
+    };
 ```
 
-Maximum 32 issues; messages must not contain raw credentials/provider response payloads.
+Maximum 32 issues. Messages MUST NOT contain raw credentials, tokens or provider response payloads.
 
-### R2 — EXTERNAL_HTTP draft validation
+### R2 — common authenticated server boundary
 
-For every External draft:
+Provide/reuse one server-side ADMIN/SUPER_ADMIN authorization helper for Phase 3 authoring actions. Preserve the accepted development rule:
 
-1. parse full `CommerceToolDefinitionSchema`;
-2. confirm exact connection revision exists and connection is enabled;
-3. for DECLARATIVE request, validate mappings/static headers only; perform no network request;
-4. for JAVASCRIPT request, compile through COMMERCE-017; optional manual argument preview may execute the sandbox only, never transport;
-5. validate response mode:
-   - DIRECT: JSON + resultPath/resultSchema structural contract;
-   - OBJECT/LIST: existing visual publication-shape compatibility;
-   - JAVASCRIPT: compile existing response processor;
-6. validate responseTemplate against resulting resultSchema;
-7. return deterministic issue paths under `/execution/...`.
-
-### R3 — SHOPIFY_ADMIN_GRAPHQL draft validation
-
-For Admin drafts:
-
-1. parse full tool definition;
-2. invoke COMMERCE-018 local compiler with exact `inputSchema`;
-3. require compiler's pinned `schemaHash` to equal definition.schemaHash;
-4. validate responseTemplate against declared resultSchema;
-5. perform no Dev MCP/network/session request in the normal server action.
-
-### R4 — request JavaScript preview contract
-
-Expose an authenticated ADMIN/SUPER_ADMIN action that accepts:
-
-```ts
-{ source: string; arguments: unknown; inputSchema: unknown }
+```text
+developmentBypass === true
+    -> trusted development path is sufficient
 ```
 
-It MUST validate arguments through `compileSubset(inputSchema, 'input')` before calling `buildRequest`. Return only a COMMERCE-016-valid request descriptor or bounded diagnostics. This preview performs no connection lookup/HTTP call.
+Do not reintroduce ID/role cross-validation under bypass. Domain validators may compose this helper but remain separate server actions/ports.
 
-### R5 — Phase 3 publication gate
+### R3 — Phase 3 publication gate
 
 For a DRAFT using either canonical Phase 3 kind:
 
@@ -125,7 +113,7 @@ EXTERNAL_HTTP             (new request-based contract)
 SHOPIFY_ADMIN_GRAPHQL
 ```
 
-`validateForPublication` MUST return a stable non-success result:
+`validateForPublication` MUST return exactly the stable non-success result:
 
 ```text
 code: LIVE_TEST_REQUIRED
@@ -133,75 +121,71 @@ path: /liveTest
 message: Run a successful live tool test for the current saved revision before publishing.
 ```
 
-Synthetic fixture/sample validation MUST NOT create a receipt that satisfies this gate.
+This gate applies only after the definition is otherwise structurally valid according to its owning domain validator. Phase 4 will replace the fail-closed gate with exact live-test receipt validation.
 
-Already-published historical revisions are read-only history; this task does not retroactively unpublish them.
+### R4 — synthetic evidence cannot satisfy publication
 
-Phase 4 will replace this fail-closed gate with exact live-test receipt validation.
+Synthetic fixture/sample validation MUST NOT create, translate into or reuse a receipt that satisfies the Phase 3 publication gate. Existing automated fixture utilities remain test assets only.
 
-### R6 — development bypass
+Already-published historical revisions are read-only history; this task MUST NOT retroactively unpublish them.
 
-Use the already accepted auth rule: `developmentBypass === true` is sufficient for the trusted development path. Do not reintroduce ID/role cross-validation under bypass.
+### R5 — domain-validator contract
 
-### R7 — exact focused validation
+COMMERCE-023 and COMMERCE-024 MUST return `ToolAuthoringValidation` and use the common authorization convention. This task MUST NOT import or invoke either domain compiler and MUST perform zero provider I/O.
 
-Add `test:arch021-tool-authoring-validation` proving:
+### R6 — exact focused validation
 
-- external declarative draft valid without network;
-- request JS syntax/entrypoint/descriptor errors surfaced;
-- DIRECT/visual/response JS validation branches;
-- missing/disabled connection rejected;
-- valid Admin query accepted locally;
-- Admin mutation/wrong hash rejected;
-- request preview validates CommerceAgent arguments before JS;
-- provider transport is never called;
-- Phase 3 publication returns LIVE_TEST_REQUIRED;
-- development bypass path does not consult PlatformAdmin authorization.
+Add `test:arch021-tool-authoring-common` proving:
+
+- exact common validation result is bounded to 32 safe issues;
+- canonical EXTERNAL_HTTP publication returns `LIVE_TEST_REQUIRED`;
+- canonical SHOPIFY_ADMIN_GRAPHQL publication returns `LIVE_TEST_REQUIRED`;
+- synthetic ARCH-020 sample evidence cannot satisfy either new Phase 3 gate;
+- already-published historical revisions are not retroactively invalidated;
+- development bypass does not consult PlatformAdmin authorization;
+- no request-JS/Admin compiler/provider transport is invoked by this common layer.
 
 ## Work Items
 
-- [ ] Add one server authoring-validation port/action.
-- [ ] Integrate request/response JS and visual/DIRECT structural validation.
-- [ ] Integrate Admin compiler.
-- [ ] Add request-descriptor preview action.
-- [ ] Install fail-closed live-test publication gate.
-- [ ] Add focused tests.
+- [ ] Add the common authoring-validation result contract.
+- [ ] Centralize/reuse the Phase 3 authorization helper where needed.
+- [ ] Install the fail-closed live-test publication gate for both canonical Phase 3 kinds.
+- [ ] Ensure synthetic evidence cannot satisfy the new gate.
+- [ ] Add focused common-contract/publication tests.
 
 ## Interfaces / Contracts
 
-Consumes COMMERCE-016 baseline, COMMERCE-017 request processor and COMMERCE-018 Admin compiler.
+Consumes the COMMERCE-016 canonical Tool-definition contract and accepted ARCH-020 publication lifecycle.
 
-Produces the validation API consumed by both Phase 3 Tool editors and the publication lifecycle.
+Produces the common validation/auth/publication contract consumed by COMMERCE-023 and COMMERCE-024 and surfaced by COMMERCE-021/022.
 
 ## Dependencies
 
 - ARCH-021-COMMERCE-016
-- ARCH-021-COMMERCE-017
-- ARCH-021-COMMERCE-018
 - ARCH-020-COMMERCE-030
 
 ## Enables
 
-- ARCH-021-COMMERCE-021
-- ARCH-021-COMMERCE-022
+- ARCH-021-COMMERCE-023
+- ARCH-021-COMMERCE-024
 
 ## Acceptance Criteria
 
-- [ ] Full draft validation is server authoritative and zero-provider-I/O.
-- [ ] New definitions cannot publish from synthetic evidence.
-- [ ] Request JavaScript preview receives only schema-validated arguments.
-- [ ] Admin validation uses only pinned local schema in normal Studio requests.
+- [ ] External and Admin validators can evolve independently behind one validation result contract.
+- [ ] Both canonical Phase 3 kinds fail publication with exact `LIVE_TEST_REQUIRED` until Phase 4.
+- [ ] Synthetic evidence cannot satisfy the Phase 3 publication gate.
+- [ ] Common validation/publication code performs zero provider I/O.
 
 ## Validation
 
-- [ ] `npm run test:arch021-tool-authoring-validation`
+- [ ] `npm run test:arch021-tool-authoring-common`
 - [ ] `npm run test:arch020-external-publication`
 - [ ] targeted lint/typecheck
 - [ ] `git diff --check`
 
 ## Stop Condition
 
-Set to `review`, return Completion Report and STOP. Do not build Tool UI or live tests.
+Set to `review`, return Completion Report and STOP. Do not implement either domain validator, Tool UI or live tests.
 
 ## Implementation Notes
 

@@ -15,14 +15,14 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-021-COMMERCE-017
   - ARCH-021-COMMERCE-019
   - ARCH-021-COMMERCE-020
+  - ARCH-021-COMMERCE-023
   - ARCH-021-COMMERCE-005
   - ARCH-021-COMMERCE-006
 enables: []
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Complete External HTTP request and response authoring UI
@@ -152,13 +152,31 @@ JavaScript preserves existing raw-response/code editor and `transform(response)`
 
 Switching modes must not silently copy stale incompatible configuration into the newly selected mode. A dirty-editor confirmation is required before destructive mode resets.
 
-### R5 — draft validation and save
+### R5 — draft save, validation and publication handoff
 
-Before Save/Publish handoff, use COMMERCE-019 authoritative validation. Browser-only validation is advisory.
+`Save draft` and `Validate` are intentionally different lifecycle operations:
 
-Save persists the exact COMMERCE-016 Commerce-owned definition. No compatibility conversion is allowed.
+```text
+Save draft
+  -> parse/bound through COMMERCE-016 CommerceToolDraftDefinitionSchema
+  -> preserve storage/security bounds
+  -> incomplete authoring state may persist
+  -> no live test required
 
-Publication action may remain visible but COMMERCE-019 `LIVE_TEST_REQUIRED` must be shown clearly rather than treated as generic failure.
+Validate
+  -> COMMERCE-023 authoritative full-definition validation
+  -> request JavaScript/response processing/connection checks as applicable
+  -> still no provider I/O
+
+Publish
+  -> definition must first pass COMMERCE-023 full validation
+  -> common COMMERCE-019 publication gate applies
+  -> Phase 3 returns LIVE_TEST_REQUIRED
+```
+
+Browser-only validation remains advisory. Save MUST NOT require the draft to satisfy the complete `CommerceToolDefinitionSchema`; otherwise partially authored JavaScript/request/response work could not be saved.
+
+Save persists the exact Commerce-owned draft representation. No compatibility conversion is allowed. `LIVE_TEST_REQUIRED` must be shown clearly rather than treated as a generic failure.
 
 ### R6 — no fixture-led human test
 
@@ -175,13 +193,13 @@ The production Tool editor must no longer present synthetic external response fi
 
 ## Interfaces / Contracts
 
-Consumes the COMMERCE-016 Commerce-owned Tool contract, COMMERCE-017 request processor preview and COMMERCE-019 validator.
+Consumes the COMMERCE-016 Commerce-owned Tool contract, COMMERCE-023 External HTTP validation/preview boundary and COMMERCE-019 common publication gate.
 
 ## Dependencies
 
-- ARCH-021-COMMERCE-017
 - ARCH-021-COMMERCE-019
 - ARCH-021-COMMERCE-020
+- ARCH-021-COMMERCE-023
 - ARCH-021-COMMERCE-005
 - ARCH-021-COMMERCE-006
 
@@ -195,6 +213,7 @@ None in Phase 3. Phase 4 live-test tasks will depend on this completed authoring
 - [ ] Request JS sees only tool arguments and produces only a safe descriptor.
 - [ ] Request preview performs zero provider I/O.
 - [ ] Direct/Visual/JavaScript response modes persist losslessly.
+- [ ] Incomplete drafts can be saved without full-definition validation or a live test.
 - [ ] Production UI communicates that live testing is required before publication.
 
 ## Validation

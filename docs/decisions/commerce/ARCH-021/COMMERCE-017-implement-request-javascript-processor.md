@@ -19,10 +19,9 @@ depends_on:
   - ARCH-020-COMMERCE-029
   - ARCH-020-COMMERCE-026
 enables:
-  - ARCH-021-COMMERCE-019
-  - ARCH-021-COMMERCE-021
+  - ARCH-021-COMMERCE-023
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Implement bounded external request JavaScript processor
@@ -187,7 +186,7 @@ using the same packaged WASM artifact/hash and memory ceiling.
 
 Consumes COMMERCE-016 `ExternalRequestConstruction`, `ExternalRequestDescriptor` and local Tool-definition contracts.
 
-Produces a server-only processor used by COMMERCE-019 and COMMERCE-021.
+Produces a server-only processor consumed by COMMERCE-023. The External HTTP UI reaches request preview through the COMMERCE-023 server validation/preview boundary.
 
 ## Dependencies
 
@@ -197,8 +196,7 @@ Produces a server-only processor used by COMMERCE-019 and COMMERCE-021.
 
 ## Enables
 
-- ARCH-021-COMMERCE-019
-- ARCH-021-COMMERCE-021
+- ARCH-021-COMMERCE-023
 
 ## Acceptance Criteria
 

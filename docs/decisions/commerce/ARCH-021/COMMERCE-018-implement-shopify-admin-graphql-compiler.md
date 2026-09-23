@@ -18,10 +18,9 @@ depends_on:
   - ARCH-021-COMMERCE-016
   - ARCH-020-COMMERCE-011
 enables:
-  - ARCH-021-COMMERCE-019
-  - ARCH-021-COMMERCE-022
+  - ARCH-021-COMMERCE-024
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Implement pinned Shopify Admin GraphQL authoring compiler
@@ -112,6 +111,7 @@ operation has a non-empty name equal to execution.operationName
 no mutation or subscription exists
 GraphQL validate(adminSchema, document) returns zero errors
 every variable used by the operation is defined
+every declared variable is used
 every non-null variable without a GraphQL default has a mapping
 all mapping.input names exist as top-level inputSchema properties
 mapped input/literal types are compatible with the GraphQL variable type
@@ -121,11 +121,30 @@ selected resultPath resolves to object/array/object-derived data compatible with
 
 Unknown or ambiguous output shape fails closed; do not use `z.unknown()` as proof.
 
-### R3 — query-only read contract
+### R3 — bounded query structure
+
+Reuse the accepted Storefront compiler's structural admission limits for Admin queries rather than inventing a new unbounded GraphQL policy. In addition to R2:
+
+```text
+fragments and inline fragments are rejected
+operation directives and field directives are rejected
+selected field count <= 100
+maximum selection depth <= 8, counting the root selection as depth 1
+estimated query cost <= 500 using the existing multiplier rule
+schema-backed connections require a literal `first` from 1 through 20
+`last` pagination is rejected
+unbounded list traversal is rejected
+```
+
+The cost algorithm MUST match the existing Storefront compiler convention: each selected field contributes the current multiplier; descending through a schema-backed connection multiplies descendant cost by that connection's literal `first` value. Do not substitute a materially different scoring model inside this task.
+
+These are structural safety limits only. Storefront-specific token-required-field and forbidden-root rules do not apply to the Admin schema unless separately required by this task.
+
+### R4 — query-only read contract
 
 The compiler MUST reject `mutation` and `subscription`, regardless of Shopify scope. This is the authoring safety gate that permits later offline-session execution without exposing write-capable authored tools.
 
-### R4 — discovery route contract
+### R5 — discovery route contract
 
 Extend the existing discovery validation input with an explicit API surface:
 
@@ -138,7 +157,7 @@ For `admin-graphql`, version is fixed to `2026-07`; the server invokes the local
 
 Existing Storefront discovery behavior remains unchanged.
 
-### R5 — Shopify Dev MCP conformance oracle
+### R6 — Shopify Dev MCP conformance oracle
 
 Extend the pinned upstream only as needed for a developer validation script to call the already allowlisted:
 
@@ -161,11 +180,11 @@ wrong variable type                 both invalid/local type guard
 
 This oracle is development validation only. Normal Studio requests MUST NOT spawn Dev MCP to validate a draft and MUST NOT transmit merchant-authored GraphQL to Shopify tooling.
 
-### R6 — no telemetry leakage
+### R7 — no telemetry leakage
 
 Continue spawning Shopify Dev MCP with `SHOPIFY_DEV_MCP_TELEMETRY=0`. The committed/runtime local compiler has no telemetry/network dependency.
 
-### R7 — exact validation commands
+### R8 — exact validation commands
 
 Add:
 
@@ -188,7 +207,7 @@ The first is normal deterministic/offline validation. The second is explicit dev
 
 Consumes the COMMERCE-016 Commerce-owned `SHOPIFY_ADMIN_GRAPHQL` execution contract.
 
-Produces a local compiler/validation port for COMMERCE-019 and COMMERCE-022.
+Produces a local compiler/validation port for COMMERCE-024.
 
 ## Dependencies
 
@@ -197,13 +216,13 @@ Produces a local compiler/validation port for COMMERCE-019 and COMMERCE-022.
 
 ## Enables
 
-- ARCH-021-COMMERCE-019
-- ARCH-021-COMMERCE-022
+- ARCH-021-COMMERCE-024
 
 ## Acceptance Criteria
 
 - [ ] Admin tool drafts are validated locally against pinned Admin 2026-07 schema.
 - [ ] Only named GraphQL queries are accepted.
+- [ ] Admin queries enforce the existing bounded GraphQL structure: no fragments/directives, <=100 selected fields, depth <=8, estimated cost <=500 and literal `first` pagination <=20.
 - [ ] No shop credential/session is required for authoring validation.
 - [ ] Dev MCP acts only as explicit development conformance evidence.
 - [ ] Existing Storefront discovery remains functional.
@@ -211,6 +230,7 @@ Produces a local compiler/validation port for COMMERCE-019 and COMMERCE-022.
 ## Validation
 
 - [ ] `npm run test:arch021-shopify-admin-compiler`
+- [ ] focused regressions reject fragments, directives, >100 selections, depth >8, cost >500, `last`, non-literal/unbounded pagination and `first > 20`
 - [ ] `npm run test` for affected discovery/compiler suites
 - [ ] `npm run validate:arch021-shopify-admin-oracle` when developer environment supports pinned Dev MCP
 - [ ] targeted lint/typecheck

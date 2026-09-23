@@ -784,23 +784,27 @@ Phase 3 tasks:
 | ARCH-021-COMMERCE-016 | moda_commerce | Ready | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-017 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
 | ARCH-021-COMMERCE-018 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Pending | ARCH-021-COMMERCE-016, 017, 018, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
-| ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-017, 019, 020, ARCH-021-COMMERCE-005, 006 |
-| ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-018, 019, 020, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-019, 020, 023, ARCH-021-COMMERCE-005, 006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-019, 020, 024 |
+| ARCH-021-COMMERCE-023 | moda_commerce | Pending | ARCH-021-COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-024 | moda_commerce | Pending | ARCH-021-COMMERCE-016, 018, 019 |
 
 Dependency graph:
 
 ```text
 COMMERCE-016
     |
-    +--> COMMERCE-017 ----+
-    |                      |
-    +--> COMMERCE-018 ----+----> COMMERCE-019 ----+--> COMMERCE-021
-    |                      |                       |
-    +--> COMMERCE-020 -----+-----------------------+--> COMMERCE-022
+    +--> COMMERCE-017 ----+----------------> COMMERCE-023 ----+--> COMMERCE-021
+    |                     |                                   |
+    +--> COMMERCE-018 ----|----------------> COMMERCE-024 ----+--> COMMERCE-022
+    |                     |                                   |
+    +--> COMMERCE-019 ----+---- common validation/publication +
+    |
+    +--> COMMERCE-020 -------- Tool UI extraction ------------+
 
-COMMERCE-020 also consumes the already-accepted Phase 1 Tool composition (COMMERCE-005/006).
+After COMMERCE-016 is accepted, COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020 are independent and may execute in parallel. COMMERCE-023 is the External HTTP validator/preview boundary; COMMERCE-024 is the Shopify Admin validator boundary. COMMERCE-020 also consumes the already-accepted Phase 1 Tool composition (COMMERCE-005/006).
 ```
 
 Phase 3 exit criteria:
@@ -808,8 +812,8 @@ Phase 3 exit criteria:
 - Commerce owns the accepted request/response/Admin Tool-definition contracts under `src/commerce/tool-definition/`; Shared remains unchanged at 0.14.2;
 - Commerce is fully migrated to the canonical EXTERNAL_HTTP request shape with no compatibility parser;
 - `buildRequest({args})` uses the same bounded QuickJS runtime and can produce only a safe request descriptor;
-- Admin 2026-07 GraphQL drafts are validated locally/query-only with toolkit conformance evidence;
-- server-side authoring validation is authoritative and performs zero provider I/O;
+- Admin 2026-07 GraphQL drafts are validated locally/query-only with the accepted bounded GraphQL structure (no fragments/directives, <=100 selections, depth <=8, estimated cost <=500, literal `first` <=20) and toolkit conformance evidence;
+- common publication policy plus independent External HTTP and Shopify Admin server-side authoring validators are authoritative and perform zero provider I/O;
 - new Phase 3 definitions fail publication with `LIVE_TEST_REQUIRED` until Phase 4;
 - production Studio authors External HTTP declarative/JS request + DIRECT/Visual/JS response definitions;
 - production Studio authors Shopify Admin GraphQL definitions and no longer offers Storefront for new Tool creation;

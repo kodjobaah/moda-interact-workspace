@@ -15,13 +15,12 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-021-COMMERCE-018
   - ARCH-021-COMMERCE-019
   - ARCH-021-COMMERCE-020
-  - ARCH-020-COMMERCE-011
+  - ARCH-021-COMMERCE-024
 enables: []
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Build Shopify Admin GraphQL tool-authoring UI
@@ -97,15 +96,17 @@ The Tool's `name`, `description`, `definitionVersion`, `inputSchema` and `respon
 ### R3 — GraphQL authoring behavior
 
 - Code editor may use GraphQL/plain text editor already available or a bounded textarea if no GraphQL editor exists; do not add a second large editor framework in this task.
-- `Validate` calls COMMERCE-019/018 server validation.
+- `Validate` calls the COMMERCE-024 Shopify Admin authoring-validation action, which uses COMMERCE-018 internally.
 - Show bounded compiler issues with path/message and never raw session/token data.
 - Only a named `query` can become valid. Mutation/subscription errors must be explicit.
 - Variable mappings must be selectable only from current top-level `inputSchema` properties plus bounded literal input.
 - Changing inputSchema must mark mappings requiring revalidation rather than silently retaining invalid mappings.
 
-### R4 — Shopify developer discovery assistance
+### R4 — Explore/discovery UI remains out of scope
 
-The existing Explore/discovery UI may expose `admin-graphql` as an API surface for docs/schema browsing using COMMERCE-018's pinned metadata. Normal validation uses the local committed schema. Do not call `validate_graphql_codeblocks` from browser/server request handling.
+Do not modify the existing Explore/discovery UI in this task. COMMERCE-018 may expose/extend server-side discovery metadata required by its compiler and development oracle, but adding Admin API browsing to the Explore surface is a separate independently reviewable UI capability.
+
+Normal Tool validation uses COMMERCE-024 and the local committed schema. Do not call `validate_graphql_codeblocks` from browser/server request handling.
 
 ### R5 — no live shop requirement
 
@@ -133,20 +134,18 @@ Prove:
 - [ ] Add Admin authoring kind/editor.
 - [ ] Add inputSchema-to-variable mapping UI.
 - [ ] Wire local server validation and schemaHash.
-- [ ] Extend discovery surface to Admin docs/schema where applicable.
 - [ ] Remove Storefront from new-tool choice while preserving history rendering.
 - [ ] Add focused UI regressions.
 
 ## Interfaces / Contracts
 
-Consumes COMMERCE-018 compiler and COMMERCE-019 authoring validator.
+Consumes COMMERCE-024 Shopify Admin authoring validation and the COMMERCE-019 common publication gate. COMMERCE-024 owns the direct dependency on the COMMERCE-018 compiler.
 
 ## Dependencies
 
-- ARCH-021-COMMERCE-018
 - ARCH-021-COMMERCE-019
 - ARCH-021-COMMERCE-020
-- ARCH-020-COMMERCE-011
+- ARCH-021-COMMERCE-024
 
 ## Enables
 
@@ -158,6 +157,7 @@ None in Phase 3. Phase 4 live Shopify Tool testing will depend on this task.
 - [ ] CommerceAgent argument contract remains the persisted inputSchema/variable mapping.
 - [ ] Authoring requires no shop token/session/provider I/O.
 - [ ] New Storefront authoring is removed without hiding historical definitions.
+- [ ] Explore/discovery UI is unchanged by this task.
 
 ## Validation
 
