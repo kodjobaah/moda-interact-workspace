@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 72
 executor: null
 claimed_at: null
@@ -429,3 +429,22 @@ No COMMERCE-008/015 service contract, Prisma query, schema, provider execution, 
 - record the mandatory prepared-worktree/synchronization/claim/submodule evidence in the Completion Report;
 - rerun the focused template UI and production composition validation, targeted ESLint and `git diff --check`;
 - set the task to `review`, clear `executor`/`claimed_at`, return to `moda_architect` and STOP.
+
+### Attempt 4 Architect Review — Changes Requested
+
+Attempt 4 supplies the launcher/worktree/synchronization/submodule evidence missing from Attempt 3 and re-runs the focused validation successfully. That procedural correction is accepted. However, Attempt 4 explicitly left the implementation unchanged at `5344181`, so it does not execute the substantive Attempt 3 correction contract. Static inspection confirms both previously identified defects remain in `prompt-template-library.tsx`.
+
+1. **Canonical revision ordering / latest-published summary remains incorrect.** `replaceRevision(...)` still re-sorts the locally reconciled collection using `left.revisionNumber - right.revisionNumber`, while COMMERCE-015 defines revision history as `revisionNumber DESC, id ASC`. The singular `publishedRevision = selected.revisions.find(status === 'PUBLISHED')` can therefore resolve an older published revision after a newer publication. Attempt 5 MUST preserve the canonical descending revision order after local upsert (including deterministic `id ASC` tie-breaking where relevant), or independently compute the newest published revision by revision number. Add a focused regression containing an older published revision and a newly published higher revision, then assert the **Published revision summary itself** reports the newer revision number/id/hash.
+
+2. **Unknown-operation reconciliation still drops the original success reconciler.** `Operation` still stores only `operationId` and `invoke`; when a selected-template metadata or revision mutation returns `unknown`, the later `Check original operation` path calls `run(...)` without the original `onSuccess` callback. A subsequent durable `ok` can therefore display `Saved.` while leaving selected template/revision/history/edit-version/dirty baseline stale. Attempt 5 MUST preserve and apply the original success reconciler through the exact-operation retry path, or deterministically reload the selected template plus revision history after reconciled `ok`. Add a focused selected-revision mutation regression where the first call returns `unknown`, retry uses the **same operationId**, retry returns `ok`, and the selected editor/history/published hash/dirty baseline reflect the durable result without reopening the template.
+
+The existing Attempt 4 launcher evidence is sufficient and should be preserved. No new evidence-only revalidation is required after the source/test corrections beyond recording the new Attempt 5 prepared-execution packet and validation results. No COMMERCE-008/015 service changes, Prisma/schema changes, provider execution, COMMERCE-014 behavior or `StudioWorkspace` domain state changes are authorized.
+
+#### Attempt 5 correction contract
+
+- fix local revision upsert ordering to conform to COMMERCE-015 `revisionNumber DESC, id ASC` semantics and ensure the latest-published summary resolves the newest revision immediately;
+- carry the original success reconciliation behavior through `unknown -> ok` exact-operation retry, or deterministically reload the selected editor/history after successful reconciliation;
+- add focused regressions that prove the singular published summary uses the newer revision and that an unknown revision mutation reconciles selected editor/history/dirty state on retry using the exact same operation id;
+- preserve all accepted Attempt 2/3 behavior: durable history/DRAFT resume, metadata isolation, dirty switch guard, independent dirty state, stale-text publish blocking, ADMIN read-only behavior, production composition and no provider execution;
+- rerun focused template UI + production composition validation, targeted ESLint and `git diff --check`;
+- record the Attempt 5 prepared-execution packet in the Completion Report, set the task to `review`, clear `executor`/`claimed_at`, return to `moda_architect` and STOP.
