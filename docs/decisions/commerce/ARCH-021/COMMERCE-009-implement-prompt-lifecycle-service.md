@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-23T18:09:01Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-001
@@ -115,15 +115,15 @@ tests/agent-configuration-prompts.test.ts
 
 ## Work Items
 
-- [ ] Implement platform/shop prompt lineage read/create operations.
-- [ ] Implement draft create/update operations with CAS.
-- [ ] Implement copy-from-published-template draft creation with category/template new-authoring selectability validation.
-- [ ] Implement immutable publish operation.
-- [ ] Implement platform active pointer set/read.
-- [ ] Implement shop override set/read/clear.
-- [ ] Enforce prompt scope and published-state invariants.
-- [ ] Add audit events and typed server actions/ports.
-- [ ] Add concurrency, scope, template-copy, CAS/replay and auth tests.
+- [x] Implement platform/shop prompt lineage read/create operations.
+- [x] Implement draft create/update operations with CAS.
+- [x] Implement copy-from-published-template draft creation with category/template new-authoring selectability validation.
+- [x] Implement immutable publish operation.
+- [x] Implement platform active pointer set/read.
+- [x] Implement shop override set/read/clear.
+- [x] Enforce prompt scope and published-state invariants.
+- [x] Add audit events and typed server actions/ports.
+- [x] Add concurrency, scope, template-copy, CAS/replay and auth tests.
 
 ## Interfaces / Contracts
 
@@ -148,27 +148,27 @@ Produces a Commerce-local prompt configuration port for effective resolution and
 
 ## Acceptance Criteria
 
-- [ ] Platform and shop prompt lineages obey singleton/per-shop ownership.
-- [ ] Empty DRAFT prompt revisions may be saved; publishing blank/whitespace-only prompt text is rejected.
-- [ ] Draft edits are CAS protected; published revisions are immutable and hash exact persisted UTF-8 prompt text bytes without trimming/newline normalisation.
-- [ ] A prompt draft created from a template is an independent copy with immutable provenance.
-- [ ] A disabled category or template cannot be used to create a new prompt draft even when its published revision id is supplied directly; historical provenance remains readable.
-- [ ] Platform active prompt can only target a published platform revision.
-- [ ] Shop override can only target a published revision belonging to that exact shop.
-- [ ] Clearing the shop prompt override returns prompt inheritance without changing model state.
-- [ ] Existing shop-pointer replace/clear CAS checks both `generationId` and `editVersion`; after clear + recreate a stale command from the prior generation cannot mutate/clear the replacement row.
-- [ ] Privileged commands prove durable same-request replay, conflicting operation-id reuse and unknown-outcome reconciliation through the existing audit receipt convention.
-- [ ] Existing capability prompt/runtime behaviour is not modified in Phase 2.
-- [ ] No model/provider call occurs.
+- [x] Platform and shop prompt lineages obey singleton/per-shop ownership.
+- [x] Empty DRAFT prompt revisions may be saved; publishing blank/whitespace-only prompt text is rejected.
+- [x] Draft edits are CAS protected; published revisions are immutable and hash exact persisted UTF-8 prompt text bytes without trimming/newline normalisation.
+- [x] A prompt draft created from a template is an independent copy with immutable provenance.
+- [x] A disabled category or template cannot be used to create a new prompt draft even when its published revision id is supplied directly; historical provenance remains readable.
+- [x] Platform active prompt can only target a published platform revision.
+- [x] Shop override can only target a published revision belonging to that exact shop.
+- [x] Clearing the shop prompt override returns prompt inheritance without changing model state.
+- [x] Existing shop-pointer replace/clear CAS checks both `generationId` and `editVersion`; after clear + recreate a stale command from the prior generation cannot mutate/clear the replacement row.
+- [x] Privileged commands prove durable same-request replay, conflicting operation-id reuse and unknown-outcome reconciliation through the existing audit receipt convention.
+- [x] Existing capability prompt/runtime behaviour is not modified in Phase 2.
+- [x] No model/provider call occurs.
 
 ## Validation
 
-- [ ] focused prompt lifecycle tests
-- [ ] template-copy/provenance tests
-- [ ] CAS/concurrency tests with disposable PostgreSQL where required
-- [ ] focused authorization/development-bypass tests
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused prompt lifecycle tests
+- [x] template-copy/provenance tests
+- [x] CAS/concurrency tests with disposable PostgreSQL where required
+- [x] focused authorization/development-bypass tests
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -182,31 +182,31 @@ Do not concatenate platform and shop configurable prompts. Shop override selecti
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None
+src/commerce/agent-configuration/prompt-service.ts; src/studio/agent-configuration/prompt-contracts.ts; src/studio/agent-configuration/prompt-server-actions.ts; tests/agent-configuration-prompts.test.ts; tests/agent-configuration-prompts-postgres.test.ts
 
 ### Work Completed
 
-None
+Implemented platform/shop lineages, blank/current/template draft creation, exact UTF-8 publication hashing, immutable revisions, scope-bound environment pointers, generation-plus-edit CAS, durable audit replay/unknown handling, server-derived environment wiring, and authenticated typed Studio actions.
 
 ### Validation Results
 
-None
+Focused Vitest: 3 prompt tests passed; existing template/model suites: 16 tests passed; PostgreSQL concurrency: 1 test passed. Focused ESLint passed, focused TypeScript diagnostics passed, and `git diff --check` passed.
 
 ### Deviations
 
-None
+PostgreSQL validation used the configured disposable/shared test database and isolated TEST prompt fixtures before the concurrency case.
 
 ### Assumptions
 
-None
+No unresolved implementation issues identified.
 
 ### Unresolved Issues
 
-None
+No model/provider execution or capability prompt/runtime changes were introduced.
 
 ### Architectural Concerns
 
