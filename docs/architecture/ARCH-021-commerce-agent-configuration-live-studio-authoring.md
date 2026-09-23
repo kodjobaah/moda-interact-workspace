@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation architect-accepted Complete; COMMERCE-007 and COMMERCE-008 are Ready.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation and model-configuration service architect-accepted Complete; COMMERCE-008 and COMMERCE-011 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -719,23 +719,23 @@ Phase 2 tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
-| ARCH-021-COMMERCE-007 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-007 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-008 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
-| ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Ready | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
 
-The current Phase 2 execution frontier is two independent Commerce service tasks:
+The current Phase 2 execution frontier is:
 
 ```text
-ARCH-021-COMMERCE-007   model catalogue/default/shop-override service
-ARCH-021-COMMERCE-008   category-organised prompt-template service
+ARCH-021-COMMERCE-008   Ready — category-organised prompt-template service rework
+ARCH-021-COMMERCE-011   Ready — Agent Configuration shell + platform model UI
 ```
 
-DATABASE-001 is architect-accepted Complete and provides the shared durable model catalogue/selections, template categories/templates/revisions, prompt lineages/revisions and active prompt pointers. COMMERCE-007 and COMMERCE-008 may therefore proceed independently against the same accepted schema. COMMERCE-009 becomes eligible only after COMMERCE-008 is also architect-accepted because prompt copy-on-use consumes the template service. COMMERCE-011 then establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) are independently reviewable UI capabilities and may execute in parallel whenever their own dependency sets are Complete. Phase 1 is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2 dependencies above.
+DATABASE-001 and COMMERCE-007 are architect-accepted Complete. COMMERCE-007 closes the model-selection boundary with atomic write CAS, generation-aware shop ABA protection, durable receipt replay and stale-token rejection when a selection row is absent. COMMERCE-011 is now independently executable because COMMERCE-006 and COMMERCE-007 are Complete. COMMERCE-008 retains its separately reviewed state. COMMERCE-009 becomes eligible only after COMMERCE-008 is architect-accepted because prompt copy-on-use consumes the template service; COMMERCE-010 remains gated on COMMERCE-009. COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) remain governed by their own explicit dependency sets. Phase 1 is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2 dependencies above.
 
 Phase 2 exit criteria:
 
@@ -810,11 +810,11 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
 | ARCH-021-COMMERCE-006 | moda_commerce | Complete | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 | ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
-| ARCH-021-COMMERCE-007 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-007 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-008 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
-| ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Ready | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
@@ -846,6 +846,29 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-007 Attempt 3 accepted
+
+- Reviewed implementation `2f1ed58` with submitted parent report `f6ce4272`.
+- Accepted the narrow absent-row CAS correction: platform creation now requires `expectedEditVersion: null`, and shop creation requires both `expectedGenerationId: null` and `expectedEditVersion: null`; stale tokens from cleared/removed state return `CAS_CONFLICT`.
+- Preserved the accepted Attempt 2 atomic write-boundary CAS, first-write race handling and durable concurrent `CommerceAuditEvent` receipt reconciliation.
+- Treated the intermittent PostgreSQL `unknown` outcome envelope as non-blocking because the contract explicitly permits `unknown` for indeterminate storage/transaction outcomes, the broader concurrency implementation was unchanged in Attempt 3, and its prior submitted run passed 3/3.
+- Marked COMMERCE-007 Complete and promoted COMMERCE-011 to Ready. COMMERCE-010 remains Pending on COMMERCE-009; COMMERCE-008 remains independent and its separately reviewed state must be preserved.
+
+### 2026-09-23 — COMMERCE-007 Attempt 2 changes requested
+
+- Reviewed implementation `b79fc72` with submitted parent report `8ae46735`.
+- Accepted the Attempt 1 corrections for atomic catalogue/platform/shop CAS, first-write race handling and concurrent durable `CommerceAuditEvent` receipt reconciliation; submitted PostgreSQL concurrency tests passed 3/3.
+- Identified one remaining generation/CAS edge: an absent platform/shop selection currently permits stale non-null expected tokens to be reinterpreted as a create. A create is valid only from the explicit absence tokens (`expectedEditVersion: null` for platform; both `expectedGenerationId: null` and `expectedEditVersion: null` for shop).
+- Returned COMMERCE-007 to Ready at `attempt: 2`; the next claim becomes Attempt 3. COMMERCE-010/011 remain gated and COMMERCE-008 retains its separately reviewed state.
+
+### 2026-09-23 — COMMERCE-007 Attempt 1 changes requested
+
+- Reviewed implementation `d3252e0` with submitted parent report `bfe2b7b4`.
+- Confirmed the bounded model catalogue/platform/shop service, authorization, trusted environment derivation, disabled-pointer preservation, durable audit storage and no-provider-call boundary are substantially present.
+- Identified non-atomic read-then-write CAS for catalogue/platform/shop mutations; concurrent callers can both pass the same token and succeed, including first-time `upsert` races that can overwrite a newly-created platform/shop selection instead of returning stale CAS.
+- Identified concurrent `operationId` replay drift: Prisma unique-receipt races are mapped to generic conflict before reconciling the winning `CommerceAuditEvent`, so identical concurrent commands do not guarantee replay of the durable result.
+- Returned COMMERCE-007 to Ready at `attempt: 1`; COMMERCE-010/011 remain gated. COMMERCE-008 remains independently Ready.
 
 ### 2026-09-23 — DATABASE-001 Attempt 3 accepted
 
