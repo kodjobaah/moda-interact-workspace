@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation plus COMMERCE-007/008/009/010/011/013/014/015 are architect-accepted Complete; COMMERCE-012 is Ready.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation plus COMMERCE-007/008/009/010/011/012/014/015 are architect-accepted Complete; COMMERCE-013 is Ready on this branch.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -724,7 +724,7 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-009 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Complete | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
-| ARCH-021-COMMERCE-012 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Complete | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
@@ -732,6 +732,10 @@ Phase 2 tasks:
 The current Phase 2 execution frontier is:
 
 ```text
+ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
+```
+
+DATABASE-001 and COMMERCE-007/008/009/010/011/012/014/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-014 closes platform prompt authoring with exact template-revision copy-on-use, dirty-editor mutation safety, canonical revision-history wiring and authenticated singleton platform-lineage reads. COMMERCE-012 Attempt 3 closes the selected-shop UI boundary with stale-load isolation, dirty-state protection, single-DRAFT resume, publish/activation reconciliation and preserved resolver errors. COMMERCE-013 remains Ready on this branch; preserve its newer separately accepted Attempt 5 state during parent-branch reconciliation.
 ARCH-021-COMMERCE-012   Ready — selected-shop model/prompt override surface
 ```
 
@@ -815,7 +819,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-009 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Complete | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
-| ARCH-021-COMMERCE-012 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Complete | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
@@ -848,6 +852,7 @@ independent of features.
 
 ## Change History
 
+### 2026-09-23 — COMMERCE-012 Attempt 3 accepted
 ### 2026-09-23 - COMMERCE-013 Attempt 5 accepted
 
 - Reviewed implementation `8ebff4ee8e5a8bf21a44be95daf2be75f8475c76` with parent report `174b729ca4a0862c9779e156bb324a14c14944d4` and metadata update `3ac0679561a2efee4dd413bbe5e68b89c692d2e2`.
@@ -858,23 +863,28 @@ independent of features.
 
 ### 2026-09-23 - COMMERCE-014 Attempt 2 accepted
 
-- Accepted exact published template-revision selection/revalidation with category context and persisted copy provenance.
-- Accepted dirty-editor guards for publish, new/copy/template draft creation and pointer activation.
-- Accepted canonical COMMERCE-015 revision-history wiring, PLATFORM-only singleton lineage rediscovery, ADMIN-authenticated reads and real production prompt-action handoff.
-- Marked COMMERCE-014 Complete. COMMERCE-012 and COMMERCE-013 remain the executable Phase 2 Commerce frontier.
+- Marked COMMERCE-012 Complete after direct source review confirmed stale-shop load isolation, dirty prompt mutation protection, durable single-DRAFT resume, publish-success/activation-failure reconciliation and visible effective-resolution error preservation.
+- Accepted 11 focused shop UI tests and the 5-file / 27-test combined focused suite plus targeted ESLint, changed-file diagnostics and `git diff --check`.
+- Preserved the accepted COMMERCE-007/009 CAS/replay boundaries and server-validated selected-shop contract; COMMERCE-012 has no dependants to promote.
+- COMMERCE-013 remains Ready on this branch; its newer separately accepted Attempt 5 state must be preserved when the parallel parent branches are reconciled.
 
-### 2026-09-23 - COMMERCE-014 Attempt 1 changes requested
+### 2026-09-23 — COMMERCE-012 Attempt 2 changes requested
 
-- Accepted the overall Agent Configuration ownership boundary, real COMMERCE-009 lifecycle wiring, read-only ADMIN presentation, immutable revision metadata/provenance presentation and absence of live provider/model/tool execution.
-- Identified a dirty-editor correctness defect: successful publish/draft/template/activation mutations reload the lineage and can silently discard unsaved prompt text; publish can act on stale persisted content while newer unsaved text is visible.
-- Identified drift from the exact copy-on-use contract: the UI selects only a template and silently resolves its latest published revision rather than selecting/revalidating one exact published revision. Added the already-Complete COMMERCE-015 revision-history read as an explicit COMMERCE-014 dependency for deterministic revision selection.
-- Required removal of the unused duplicate `PromptTemplateReader`, focused proof for the bounded `getPlatformPrompt()` singleton read/auth extension, production prompt-action composition coverage, and canonical launcher/worktree evidence.
-- Returned COMMERCE-014 to Ready at `attempt: 1`; the next claim becomes Attempt 2.
+- Accepted the Attempt 1 corrections for server-validated shop handoff, raw broken-override recovery, durable unactivated shop-lineage discovery, separate lineage/draft operation receipts, returned-revision publication/activation, Composer dirty integration and ADMIN read-only behavior.
+- Identified an asynchronous selected-shop isolation race: an older shop load can resolve after a newer selection and repopulate stale model/prompt/draft state under the new shop surface.
+- Identified remaining dirty-state independence defects: successful model/prompt controls that reload the surface can silently discard unsaved prompt text, and the UI can create a second DRAFT while one already exists.
+- Identified incomplete partial-success recovery: when publication commits but pointer activation loses CAS, the UI keeps the old DRAFT representation instead of reconciling the immutable published revision and current pointer.
+- Required preservation of the effective-resolver configuration-error message while raw broken override state remains visible/clearable.
+- Returned COMMERCE-012 to Ready at `attempt: 2`; parallel COMMERCE-013/014 coordination state must be preserved from their newer branches during reconciliation.
 
-### 2026-09-23 - COMMERCE-010 Attempt 2 accepted
+### 2026-09-23 — COMMERCE-012 Attempt 1 changes requested
 
-- Accepted mandatory platform-baseline validation before shop overrides, independent model/prompt fallback, repeatable-read snapshot composition and selected-shop short-circuit validation.
-- Marked COMMERCE-010 Complete and promoted COMMERCE-012 to Ready; COMMERCE-013 and COMMERCE-014 remain independently Ready.
+- Accepted in substance the dedicated selected-shop Agent Configuration module, independent model control and service-provided model `generationId` + `editVersion` handoff.
+- Identified that production composition validates `shopSelection` but still hands the raw query-string `shopId` to the authoring surface; Attempt 2 must consume only the validated selected-shop id.
+- Identified fail-closed recovery drift: an effective-resolution failure currently prevents raw model/prompt override state from loading, so a broken explicit override can be hidden and become uncleareable.
+- Identified incomplete durable shop prompt authoring: one operation id is reused across lineage+draft commands, unactivated drafts are not discoverable after refresh, shop switches can retain stale lineage/draft state, and the activation button targets the already-active revision instead of the newly published revision.
+- Required exact visible-state publication and Studio Composer dirty-navigation protection; ADMIN prompt controls must be genuinely read-only.
+- Returned COMMERCE-012 to Ready at `attempt: 1`; COMMERCE-013 and COMMERCE-014 remain independently Ready.
 
 ### 2026-09-23 — COMMERCE-010 Attempt 2 accepted
 
