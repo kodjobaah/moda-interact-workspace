@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-23T11:07:31Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-001
@@ -85,9 +85,9 @@ The U15/U16 frontend is already implemented and well covered through injected fi
 - [x] Add route/composition tests proving production list/detail reads come from the production adapter.
 - [x] Add a regression that fails if production route code imports/instantiates the fixture factory.
 - [x] Re-run existing U15/U16 frontend tests against fixture injection to prove no component behaviour regressed.
-- [ ] Parse, validate and propagate the optional Connections `returnTo` through both route pages, `ConnectionsRouteClient` and `ConnectionsPage`.
-- [ ] Preserve `returnTo` across U15/U16 navigation without dropping `search`, `cursor` or `enabled`, and add the guarded return-to-origin action.
-- [ ] Add focused regressions for U06-style U15/U16 return handoff and rejection/fallback of non-internal return destinations.
+- [x] Parse, validate and propagate the optional Connections `returnTo` through both route pages, `ConnectionsRouteClient` and `ConnectionsPage`.
+- [x] Preserve `returnTo` across U15/U16 navigation without dropping `search`, `cursor` or `enabled`, and add the guarded return-to-origin action.
+- [x] Add focused regressions for U06-style U15/U16 return handoff and rejection/fallback of non-internal return destinations.
 
 ## Interfaces / Contracts
 
@@ -114,22 +114,22 @@ None within Phase 1. This task may execute in parallel with the shop-context bra
 
 ## Acceptance Criteria
 
-- [ ] `/connections` lists real persisted connections through the production port.
-- [ ] `/connections/[id]` reads and mutates the selected persisted connection through the production port.
-- [ ] PER_SHOP credential search/status/set/remove operates against real shop/credential services while exposing no secret values.
-- [ ] `createConnectionFixtures()` is absent from production route composition and remains available to tests.
-- [ ] Existing U15/U16 role, CAS, unknown-result and navigation behaviours remain passing.
-- [ ] `/connections?returnTo=<encoded internal Studio route>` and `/connections/[id]?returnTo=<encoded internal Studio route>` both retain and can return to the exact validated origin through the Studio navigation blocker.
-- [ ] U15 -> U16 -> U15 round trips preserve `returnTo` together with exact `search`, `cursor` and `enabled` state.
-- [ ] Absolute, schemed or protocol-relative `returnTo` values are not used as navigation destinations.
+- [x] `/connections` lists real persisted connections through the production port.
+- [x] `/connections/[id]` reads and mutates the selected persisted connection through the production port.
+- [x] PER_SHOP credential search/status/set/remove operates against real shop/credential services while exposing no secret values.
+- [x] `createConnectionFixtures()` is absent from production route composition and remains available to tests.
+- [x] Existing U15/U16 role, CAS, unknown-result and navigation behaviours remain passing.
+- [x] `/connections?returnTo=<encoded internal Studio route>` and `/connections/[id]?returnTo=<encoded internal Studio route>` both retain and can return to the exact validated origin through the Studio navigation blocker.
+- [x] U15 -> U16 -> U15 round trips preserve `returnTo` together with exact `search`, `cursor` and `enabled` state.
+- [x] Absolute, schemed or protocol-relative `returnTo` values are not used as navigation destinations.
 
 ## Validation
 
-- [ ] existing `test:arch020-connections-ui` or current equivalent
-- [ ] focused production route/composition test
-- [ ] focused `returnTo` navigation/round-trip regression
-- [ ] targeted lint/typecheck for changed files
-- [ ] `git diff --check`
+- [x] existing `test:arch020-connections-ui` or current equivalent
+- [x] focused production route/composition test
+- [x] focused `returnTo` navigation/round-trip regression
+- [x] targeted lint/typecheck for changed files
+- [x] `git diff --check`
 
 No live provider network call is required.
 
@@ -147,13 +147,18 @@ ARCH-020 established the producer side of the Tool -> Connections handoff but di
 
 ### Status
 
-Ready for architect review
+Ready for architect review (Attempt 2 correction)
 
 ### Files Changed
 
 - `src/studio/connections/connections-route-client.tsx`
+- `app/connections/page.tsx`
+- `app/connections/[id]/page.tsx`
+- `src/studio/connections/navigation.ts`
+- `src/studio/connections/connections-ui.tsx`
 - `tests/connections-route-composition.test.tsx`
 - `tests/connections-ui.test.tsx`
+- `tests/connections-navigation.test.ts`
 
 ### Work Completed
 
@@ -161,12 +166,15 @@ Ready for architect review
 - Preserved the `ConnectionsPage` port injection boundary used by fixture-based component tests.
 - Added composition coverage for production list/detail delegation and a source regression excluding `createConnectionFixtures()` from the production route module.
 - Kept fixture factories available to existing component tests and preserved U15/U16 behavior.
+- Added validated internal `returnTo` parsing and propagation through both routes, the route client and U15/U16.
+- Preserved `returnTo` independently from `search`, `cursor` and `enabled` across Open, detail, tabs, Back and error navigation.
+- Added blocker-aware Return to tool actions for U15 and both loaded/error U16 states; loaded U16 Back now preserves list state and return context.
+- Rejected protocol-relative, schemed and backslash-containing destinations and covered the U06-style round trip with focused tests.
 
 ### Validation Results
 
-- `npm run test:arch020-connections-ui`: PASS, 20 tests.
-- `npx vitest run tests/connections-production.test.ts tests/connections-route-composition.test.tsx`: PASS, 6 tests.
-- `npx eslint src/studio/connections/connections-route-client.tsx tests/connections-route-composition.test.tsx tests/connections-ui.test.tsx src/studio/connections/production.ts`: PASS.
+- `npx vitest run tests/connections-ui.test.tsx tests/connections-navigation.test.ts tests/connections-route-composition.test.tsx tests/connections-production.test.ts`: PASS, 31 tests.
+- `npx eslint app/connections/page.tsx 'app/connections/[id]/page.tsx' src/studio/connections/navigation.ts src/studio/connections/connections-route-client.tsx src/studio/connections/connections-ui.tsx tests/connections-ui.test.tsx tests/connections-navigation.test.ts`: PASS.
 - `git diff --check`: PASS.
 - Changed-file diagnostics: no errors.
 - `npm run typecheck`: existing repository failures remain in unrelated Prisma/backend/studio files; no errors were reported for the changed route or tests.
@@ -183,6 +191,22 @@ Physical worktree isolation:
 - shared implementation checkout switched/mutated for task work: no
 - another task worktree reused: no
 
+Attempt 2 correction checklist:
+
+- [x] Both route pages validate and pass `returnTo`.
+- [x] `ConnectionsRouteClient`, U15 and U16 retain the validated destination.
+- [x] U15 Open/create and U16 Back/tab/error transitions preserve list state and `returnTo`.
+- [x] U15 and U16 expose blocker-aware Return to tool actions.
+- [x] Invalid absolute, schemed, protocol-relative and backslash-containing values fall back safely.
+- [x] Focused regressions cover direct U16, U15/U16 round trip, tab propagation and validator rejection.
+
+Attempt 2 launcher evidence:
+
+- parent head at claim: `46efc7c457b5ac1646856c0cf7f0b7568d12d499`
+- implementation reused head: `267f3bd4e6bf23dbc03aac75b11a7c11a8127e82`
+- claim commit: `cd0c14c0354db91d7e0e3636e18d68550f230eaa`
+- recursive submodule `database`: `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+
 Start-of-attempt synchronization:
 
 - parent remote task branch fast-forwarded: not-needed
@@ -198,7 +222,8 @@ Recursive implementation submodules:
 
 Published commits:
 
-- implementation: `267f3bd` (`Switch connections routes to production port`)
+- implementation base reused: `267f3bd` (`Switch connections routes to production port`)
+- Attempt 2 launcher claim: `cd0c14c0354db91d7e0e3636e18d68550f230eaa`
 
 ### Deviations
 
