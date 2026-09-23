@@ -77,7 +77,7 @@ ARCH-021-COMMERCE-007
 ARCH-021-COMMERCE-008
 ```
 
-They may execute independently against the architect-accepted DATABASE-001 schema. COMMERCE-007 and COMMERCE-008 are currently Ready for bounded concurrency/replay corrections after architect review. COMMERCE-009 remains gated on architect acceptance of COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
+They may execute independently against the architect-accepted DATABASE-001 schema. COMMERCE-007 and COMMERCE-008 are currently Ready for bounded concurrency/replay corrections after architect review. For COMMERCE-008, the per-template `FOR UPDATE` revision-number allocation is accepted; the remaining correction is durable receipt-first reconciliation when an identical concurrent CAS-bound command loses after another caller has already committed the same operation receipt. COMMERCE-009 remains gated on architect acceptance of COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain

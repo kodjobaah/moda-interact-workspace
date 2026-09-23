@@ -847,6 +847,12 @@ independent of features.
 
 ## Change History
 
+### 2026-09-23 — COMMERCE-008 Attempt 2 changes requested
+
+- Reviewed implementation `7a90a03` with submitted parent report `6ca2b49b`; accepted the per-template `FOR UPDATE` draft revision allocation and the generic post-failure durable-receipt reconciliation path.
+- Identified one remaining same-command replay gap: known CAS/domain errors are returned before receipt reconciliation, so an identical concurrent CAS-bound mutation can return `CAS_CONFLICT` even after the winning transaction durably committed the same operation/result.
+- Returned COMMERCE-008 to Ready at `attempt: 2`; Attempt 3 is limited to receipt-first reconciliation of failed concurrent commands plus focused disposable-PostgreSQL proof. COMMERCE-009/013/014 remain gated until COMMERCE-008 is Complete.
+
 ### 2026-09-23 — COMMERCE-008 Attempt 1 changes requested
 
 - Reviewed implementation `ddb03c1` with submitted parent report `23d9224`; accepted in substance the data-driven category/template lifecycle, atomic existing-row edit-version CAS, exact UTF-8 publication hashing, immutable published revision boundary, disabled-selection/historical-read semantics, authorization and no-provider-execution boundary.
