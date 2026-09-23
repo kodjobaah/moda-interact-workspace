@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-23T17:05:57Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-DATABASE-001
@@ -177,7 +177,7 @@ Ready for Review
 
 ### Files Changed
 
-Implementation commit `7a90a03` on `task/ARCH-021-COMMERCE-008`.
+Implementation commits `7a90a03` and `b0ff825` on `task/ARCH-021-COMMERCE-008`.
 
 - `src/commerce/agent-configuration/prompt-template-service.ts`
 - `tests/agent-configuration-templates-postgres.test.ts`
@@ -191,19 +191,20 @@ Implemented the two requested Attempt 2 corrections without changing the accepte
 - Failed or commit-ambiguous transactions now reconcile the durable `CommerceAuditEvent` by actor, action, and exact `operationHash` payload. A matching receipt replays its result, a mismatched receipt returns `CONFLICTING_REPLAY`, and an unestablished outcome returns the existing `unknown` result. Known CAS, validation, not-found, forbidden, and replay errors remain known outcomes.
 - Draft creation locks the owning `CommercePromptTemplate` row with `FOR UPDATE` before counting and allocating `revisionNumber`, serializing only concurrent drafts for the same template while preserving the accepted unique constraint.
 - Added an explicit-opt-in disposable-PostgreSQL regression suite for concurrent same-operation receipt reconciliation and concurrent draft numbering. It does not delete immutable audit/template fixture rows.
+- Known CAS/domain failures now reconcile the durable receipt before returning. A matching receipt replays its result, a conflicting receipt returns `CONFLICTING_REPLAY`, and no receipt preserves the original known failure.
+- Added the focused PostgreSQL regression for two identical concurrent CAS-bound category updates sharing one `operationId`.
 
 ### Validation Results
 
-- `npm test -- --run tests/agent-configuration-templates.test.ts tests/agent-configuration-templates-postgres.test.ts tests/auth-permissions.test.ts`: PASS, 2 files and 9 tests; 2 PostgreSQL tests skipped without explicit opt-in.
+- `npm test -- --run tests/agent-configuration-templates.test.ts tests/agent-configuration-templates-postgres.test.ts`: PASS, 1 file and 6 tests; 1 PostgreSQL file with 3 tests skipped without explicit opt-in.
 - `npx eslint src/commerce/agent-configuration/prompt-template-service.ts src/studio/agent-configuration/template-contracts.ts src/studio/agent-configuration/template-server-actions.ts tests/agent-configuration-templates.test.ts tests/agent-configuration-templates-postgres.test.ts`: PASS.
-- `npm run prisma:generate`: PASS; accepted Prisma client generated successfully.
 - `git diff --check`: PASS.
+- `COMMERCE_PROMPT_TEMPLATE_POSTGRES=1 npm test -- --run tests/agent-configuration-templates-postgres.test.ts`: BLOCKED before concurrency cases; category fixture creation returned `unknown`, leaving all 3 PostgreSQL tests skipped. No live CAS or draft-number evidence was accepted.
 - `npm run typecheck -- --pretty false`: exits `2` on existing repository-wide failures outside task-owned files, including missing preview modules, duplicate `productionCodePanel`, existing Studio union/property errors, and unrelated implicit-`any`/generated-client diagnostics. No final diagnostics reference the task-owned files.
-- `COMMERCE_PROMPT_TEMPLATE_POSTGRES=1 npm test -- --run tests/agent-configuration-templates-postgres.test.ts`: BLOCKED, not passed. The configured database returned `unknown` during category fixture setup, and cleanup confirmed the target enforces the immutable `CommerceAuditEvent` trigger (`ARCH020 immutable CommerceAuditEvent`). No concurrency assertion was accepted as PostgreSQL evidence.
 
 ### Deviations
 
-The required PostgreSQL concurrency evidence remains pending because the configured database target was not a usable disposable ARCH-021 fixture. The regression file is present and opt-in, but the attempt is recorded as blocked rather than passed. No migration, schema, alternate operation table, or provider/runtime call was added.
+The required PostgreSQL concurrency evidence remains pending because the configured database target returned `unknown` during ARCH-021 category fixture setup. The regression file is present and opt-in, but the attempt is recorded as blocked rather than passed. No migration, schema, alternate operation table, or provider/runtime call was added.
 
 ### Assumptions
 
