@@ -732,12 +732,12 @@ Phase 2 tasks:
 The current Phase 2 execution frontier is:
 
 ```text
-ARCH-021-COMMERCE-012   Ready — Attempt 1 rework: selected-shop/prompt lifecycle corrections
+ARCH-021-COMMERCE-012   Ready — Attempt 2 rework: shop-state isolation / dirty-state / publish-recovery corrections
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-DATABASE-001 and COMMERCE-007/008/009/010/011/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-012 Attempt 1 is returned to Ready for bounded selected-shop validation, broken-override recovery and durable shop-prompt lifecycle corrections; COMMERCE-013 and COMMERCE-014 remain independently Ready.
+DATABASE-001 and COMMERCE-007/008/009/010/011/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-012 Attempt 2 is returned to Ready for bounded shop-load isolation, dirty-state preservation, single-draft and publish/activation recovery corrections; parallel COMMERCE-013/014 state must be preserved from their newer branches when coordination is reconciled.
 
 Phase 2 exit criteria:
 
@@ -849,6 +849,15 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-012 Attempt 2 changes requested
+
+- Accepted the Attempt 1 corrections for server-validated shop handoff, raw broken-override recovery, durable unactivated shop-lineage discovery, separate lineage/draft operation receipts, returned-revision publication/activation, Composer dirty integration and ADMIN read-only behavior.
+- Identified an asynchronous selected-shop isolation race: an older shop load can resolve after a newer selection and repopulate stale model/prompt/draft state under the new shop surface.
+- Identified remaining dirty-state independence defects: successful model/prompt controls that reload the surface can silently discard unsaved prompt text, and the UI can create a second DRAFT while one already exists.
+- Identified incomplete partial-success recovery: when publication commits but pointer activation loses CAS, the UI keeps the old DRAFT representation instead of reconciling the immutable published revision and current pointer.
+- Required preservation of the effective-resolver configuration-error message while raw broken override state remains visible/clearable.
+- Returned COMMERCE-012 to Ready at `attempt: 2`; parallel COMMERCE-013/014 coordination state must be preserved from their newer branches during reconciliation.
 
 ### 2026-09-23 — COMMERCE-012 Attempt 1 changes requested
 

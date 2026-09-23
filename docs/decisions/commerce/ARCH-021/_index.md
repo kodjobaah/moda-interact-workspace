@@ -74,7 +74,7 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 The current Phase 2 Commerce execution frontier on this task branch is:
 
 ```text
-ARCH-021-COMMERCE-012   Ready — Attempt 1 rework: selected-shop/prompt lifecycle corrections
+ARCH-021-COMMERCE-012   Ready — Attempt 2 rework: shop-state isolation / dirty-state / publish-recovery corrections
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
