@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-23T10:07:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-013
@@ -154,35 +154,59 @@ Reuse the existing shop/session schema. Do not create a new durable `selectedSho
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/studio/contracts.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/shop-execution-context.test.ts`
+- `tests/shop-execution-context-action.test.ts`
 
 ### Work Completed
 
-None
+- Added the distinct `ShopExecutionContext` contract with bounded shop identity, plan, and `shopifyOfflineSessionAvailable` metadata.
+- Added authenticated `listShopExecutionContexts` and exact-id `getShopExecutionContext` service methods and server-action exports.
+- Reused existing Commerce inspection authorization and development-bypass principal flow. The selected shop domain and plan are read from the persisted shop row; caller input contains only the shop id.
+- Resolved offline-session availability with an existence-only Prisma projection for `{ shop, isOnline: false }` selecting `{ id: true }`; no access token or session payload is returned or serialized.
+- Added in-memory service support and focused tests for found, missing, unavailable, forbidden, development bypass, no offline session, exact persisted domain, and access-token non-disclosure behavior.
+
+Acceptance mapping:
+- persisted search and exact resolution: `src/commerce/integration/studio/services.ts`, `tests/shop-execution-context.test.ts`
+- caller domain cannot override persisted domain: `tests/shop-execution-context.test.ts`
+- boolean offline availability and no-session selectability: `src/commerce/integration/studio/services.ts`, `tests/shop-execution-context.test.ts`
+- bounded missing/forbidden/unavailable semantics: `src/commerce/integration/studio/services.ts`, `tests/shop-execution-context.test.ts`
+- server-only action boundary: `src/studio/server-actions.ts`, `tests/shop-execution-context-action.test.ts`
 
 ### Validation Results
 
-None
+Agent-executed validation:
+- `npm ci` — completed; installed the locked dependencies. npm reported the repository's existing Node engine mismatch (`required 24.19.0`, current `24.21.0`) and audit warnings.
+- `npm test -- --run tests/shop-execution-context.test.ts tests/shop-execution-context-action.test.ts` — passed, 2 files / 6 tests.
+- `npm test -- --run tests/studio-integration.test.ts tests/studio-services.test.ts` — passed, 2 files / 15 tests.
+- `npx eslint src/studio/contracts.ts src/studio/server-services.ts src/studio/server-actions.ts src/studio/testing/in-memory-studio-services.ts src/commerce/integration/studio/services.ts tests/shop-execution-context.test.ts tests/shop-execution-context-action.test.ts` — passed with no errors or warnings.
+- `git diff --check` — passed.
+- `npm run typecheck` — failed on the existing generated-Prisma typing baseline, including pre-existing errors in `src/commerce/integration/backend.ts`, `src/commerce/integration/backend/publication-storage.ts`, existing feature/list code in `src/commerce/integration/studio/services.ts`, and `tests/c20-integration-fixture.test.ts`; no new context-specific errors remained after the implementation fixes.
+- No Shopify or other third-party network call was made.
 
 ### Deviations
 
-None
+- Full repository typecheck remains blocked by the documented existing Prisma-client/type-generation baseline. Focused runtime tests and changed-file lint pass.
 
 ### Assumptions
 
-None
+- An offline Shopify session is available when an existing non-online `Session` row matches the persisted shop domain, consistent with existing Commerce provider resolution.
 
 ### Unresolved Issues
 
-None
+Full repository typecheck requires the existing generated Prisma typing/publication baseline to be repaired outside this task scope.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
