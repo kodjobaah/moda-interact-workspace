@@ -1,7 +1,7 @@
 ---
 id: ARCH-021
 title: CommerceAgent configuration and live Studio authoring
-status: proposed
+status: agreed
 coordinator: moda_architect
 created: 2026-09-23
 updated: 2026-09-23
@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Proposed — Phase 0 architecture contract.
+Agreed — Phase 0 contract accepted; Phase 1 implementation tasks defined.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -495,7 +495,74 @@ Exit criteria:
 ### Phase 1 — real Studio service wiring and shop execution context
 
 Replace fixture-backed production Studio composition and establish the selected-shop
-execution context.
+execution context. Phase 1 is deliberately Commerce-only: it reuses accepted ARCH-020
+connection, credential, Studio, shop-inspection, code-response and preview producers and
+introduces no new Database/Shared/Background contract.
+
+Phase 1 establishes these invariants:
+
+1. `/connections` and `/connections/[id]` use the real connection lifecycle and
+   credential services; fixture ports remain test-only.
+2. Studio has one explicit selected-shop context identified by `shopId` URL/navigation
+   state and resolved server-side from the persisted Commerce shop.
+3. The selected-shop context reports offline Shopify-session availability without ever
+   exposing the access token. Absence of an offline session is explicit; the Studio does
+   not silently select another shop.
+4. U06 external Tool authoring lists/binds real persisted immutable connection revisions.
+   Synthetic response samples remain temporary deterministic authoring/test inputs until
+   Phase 4; they are no longer the source of production connection metadata.
+5. The accepted bounded JavaScript response panel is actually installed in production
+   Tool authoring. Its Phase 1 sample execution remains synthetic/server-side; live
+   provider execution remains Phase 4.
+6. Phase 1 performs no model/prompt persistence, no feature-prompt migration and no
+   Background behaviour change.
+
+The platform-admin selected-shop representation for Phase 1 is:
+
+```text
+/tools?...&shopId=<Commerce Shop.id>
+/connections?...&shopId=<Commerce Shop.id>
+/preview?...&shopId=<Commerce Shop.id>
+...
+```
+
+The URL carries only the shop id. Domain/label/plan/offline-session availability are
+resolved from the server. Selection is navigation context, not durable business state. A
+later merchant-facing Studio may derive the shop from merchant authentication while
+reusing the same server-validated downstream shop context.
+
+Phase 1 tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-001 | moda_commerce | Ready | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
+| ARCH-021-COMMERCE-002 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
+| ARCH-021-COMMERCE-003 | moda_commerce | Ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Pending | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
+| ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+
+Initial executable frontier:
+
+```text
+ARCH-021-COMMERCE-001   production Connections server boundary
+ARCH-021-COMMERCE-003   server-validated shop execution context
+```
+
+Those tasks are independent and may execute in parallel. No task is automatically
+launched merely because it is Ready.
+
+Phase 1 exit criteria:
+
+- production Connections routes contain no fixture-port composition;
+- production U06 connection selection uses persisted connection revisions;
+- production JavaScript response authoring is composed instead of showing the
+  unavailable placeholder;
+- selected shop is explicit, server-validated and preserved across Studio navigation;
+- offline Shopify-session availability is known without exposing the token;
+- no live provider call has been introduced prematurely;
+- deterministic fixtures remain available for automated tests;
+- all six Phase 1 tasks are architect-accepted Complete.
 
 ### Phase 2 — model catalogue and platform/shop agent configuration
 
@@ -537,16 +604,26 @@ fixture/per-capability-prompt behaviour while retaining deterministic test fixtu
 
 ## Decisions / Tasks
 
-No implementation task is materialised by Phase 0 itself.
+Phase 1 is materialised as six Commerce tasks under:
 
-After this architecture contract is accepted, implementation tasks will be decomposed
-by repository ownership. Expected owners include:
+`docs/decisions/commerce/ARCH-021/`
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-001 | moda_commerce | Ready | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
+| ARCH-021-COMMERCE-002 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
+| ARCH-021-COMMERCE-003 | moda_commerce | Ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Pending | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
+| ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+
+Later phases are intentionally not decomposed yet. Expected later owners still include:
 
 - `moda_database` for durable model/prompt configuration and grant fields;
 - `moda_shared` for grant/manifest/runner contract changes;
-- `moda_commerce` for Studio authoring, MCP resolution and preview;
+- `moda_commerce` for Agent Configuration, live Tool tests, MCP resolution and preview;
 - `moda_background` for pinned model/prompt consumption;
-- `moda_system_test` only after required implementation dependencies are Complete.
+- `moda_system_test` only after the required implementation dependencies are Complete.
 
 No implementation task may depend on a system-test task.
 
@@ -566,6 +643,19 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — Phase 1 task set defined
+
+- Accepted the Phase 0 ownership contract and moved ARCH-021 to Agreed.
+- Defined six Commerce-only Phase 1 tasks.
+- Made production Connections wiring and server-validated shop context independent
+  Ready workstreams.
+- Chose explicit `shopId` URL/navigation state for platform-admin Studio selection;
+  selection is not durable business state.
+- Kept synthetic response samples temporarily for deterministic authoring/tests while
+  requiring real connection metadata and production JavaScript panel composition.
+- Kept live provider execution, model/prompt persistence and Background changes outside
+  Phase 1.
 
 ### 2026-09-23 — Phase 0 created
 

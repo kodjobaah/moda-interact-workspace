@@ -959,12 +959,17 @@ is not Complete.
 
 ## ARCH-021 — CommerceAgent configuration and live Studio authoring (2026-09-23)
 
-Phase 0 proposed architecture contract. Model selection and the editable CommerceAgent
-behavioural prompt are platform/shop configuration with independent shop-override ->
-platform-default fallback. Features/releases do not own prompts or models. Platform
-admins author application-wide and shop-specific prompts; later merchant access reuses
-the shop-scoped prompt boundary. Production conversation grants and Studio preview
-sessions freeze the resolved model/prompt identities without making them release-owned.
-No ARCH-021 implementation task is materialised yet.
+Agreed architecture. Model selection and the editable CommerceAgent behavioural prompt
+are platform/shop configuration with independent shop-override -> platform-default
+fallback. Features/releases do not own prompts or models. Platform admins author
+application-wide and shop-specific prompts; later merchant access reuses the shop-scoped
+prompt boundary. Production conversation grants and Studio preview sessions freeze the
+resolved model/prompt identities without making them release-owned.
+
+Phase 1 is now defined as six Commerce-only tasks for real Connections composition,
+server-validated `shopId` context, production external connection selection and the
+JavaScript response-panel installation. ARCH-021-COMMERCE-001 and
+ARCH-021-COMMERCE-003 are the independent Ready frontier; later phases are not yet
+materialised.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
