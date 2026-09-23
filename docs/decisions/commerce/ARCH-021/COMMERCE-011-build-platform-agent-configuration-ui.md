@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
-executor: copilot
-claimed_at: 2026-09-23T17:14:41Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-006
@@ -161,35 +161,51 @@ Do not remove the legacy capability prompt field in this task; the current ARCH-
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None
+- `app/agent-configuration/page.tsx`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/platform-model-configuration.tsx`
+- `components/production-studio-page.tsx`
+- `components/studio-shell.tsx`
+- `components/studio-workspace.tsx`
+- `app/styles.css`
+- `tests/agent-configuration-model-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Added the production Agent Configuration route and navigation entry.
+- Added a dedicated Agent Configuration screen and platform model catalogue/default UI outside the legacy workspace state machine.
+- Composed the real COMMERCE-007 server actions for catalogue listing, creation, metadata updates, enablement and platform default selection.
+- Kept ADMIN read-only, preserved disabled current pointers, displayed stable provider/model identities, and rendered no credentials or secret configuration.
+- Added accepted unknown-outcome replay using the original operation ID and CAS conflict messaging.
+- Routed only the new surface discriminator through `StudioWorkspace`; unrelated Studio domains were left unchanged.
 
 ### Validation Results
 
-None
+- `npx vitest run tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-model.test.ts`: passed, 10 tests.
+- Targeted ESLint over all changed TypeScript/TSX files: passed with no errors or warnings.
+- `npx next typegen`: passed.
+- Task-owned TypeScript diagnostics: no diagnostics in Agent Configuration files, route, composition files or focused UI test; unrelated pre-existing StudioWorkspace diagnostics remain outside this task's changed behavior.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+The implementation worktree initially required `npm ci` because dependencies were not installed; the lockfile install completed without changing tracked dependency files. The repository reports npm audit vulnerabilities from the existing dependency graph.
 
 ### Assumptions
 
-None
+The production route uses the server action module directly, so authorization and environment derivation remain server-side. The existing accepted model service and Prisma schema are treated as the source of mutation/CAS semantics.
 
 ### Unresolved Issues
 
-None
+No task-owned unresolved issues.
 
 ### Architectural Concerns
 
-None
+None identified.
 
 ## Architect Review
 
