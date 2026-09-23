@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-23T15:06:42Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-DATABASE-001
@@ -825,35 +825,57 @@ No Phase 2 row is seeded by this task. Platform defaults and authoring content a
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `prisma/schema.prisma`
+- `prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`
+- `scripts/fixtures/arch021-agent-configuration-schema-contract.mjs`
+- `scripts/fixtures/arch021-agent-configuration-cases.mjs`
+- `scripts/validate-arch021-agent-configuration-schema.mjs`
+- `scripts/validate-arch021-agent-configuration-migration.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
 
 ### Work Completed
 
-None
+- Added the exact three enums, ten Phase 2 CommerceAgent models, audit vocabulary/FKs/indexes, and required Shop/PlatformAdmin reverse relations.
+- Added one additive migration with all required constraints, immutable identity/revision guards, lineage uniqueness indexes, scope/published pointer guards, source-template provenance validation, and immutable generation-token protection.
+- Extended the ARCH-020 audit target constraint to admit the exact ARCH-021 audit actions while preserving all existing ARCH-020 target cases; reused the existing ARCH-020 audit immutability trigger.
+- Added the static schema/migration/ERD contract validator, isolated fresh/upgrade rehearsal validator, and behavioral fixtures including concurrency and ABA cases.
+- Regenerated the Prisma PlantUML ERD and added the two exact npm validation scripts.
 
 ### Validation Results
 
-None
+- PASS: `npm run prisma:validate`
+- PASS: `npm run prisma:generate`
+- PASS: `npm run erd:puml`
+- PASS: `npm run test:arch021-agent-configuration-schema`
+- PASS: `node --check scripts/fixtures/arch021-agent-configuration-cases.mjs scripts/validate-arch021-agent-configuration-schema.mjs scripts/validate-arch021-agent-configuration-migration.mjs`
+- PASS: `git diff --check`
+- BLOCKED by unavailable prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_fresh npm run test:arch021-agent-configuration-migration -- --mode fresh`; `pg_isready -h localhost -p 5432` returned `no response`, and the validator failed before migration with `Can't reach database server at localhost:5432`.
+- BLOCKED by the same unavailable loopback PostgreSQL prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_upgrade npm run test:arch021-agent-configuration-migration -- --mode upgrade`; no database connection or migration was attempted beyond the validator's initial connection.
+- NOT RERUN: `npm run test:arch020-commerce-capability-migration`, because its isolated PostgreSQL prerequisite was unavailable.
+- FAIL: existing `npm run test:arch020-commerce-capability-schema` asserts the pre-ARCH-021 17-value `CommerceAuditAction` enum exactly and therefore rejects the required appended ARCH-021 audit vocabulary. No ARCH-020 source or migration was changed.
 
 ### Deviations
 
-None
+- Live fresh/upgrade database rehearsals remain unexecuted because local PostgreSQL is not listening on loopback port 5432.
+- The existing ARCH-020 static validator is stale for the required additive enum extension; updating that separate validator is outside this task's allowed file scope.
 
 ### Assumptions
 
-None
+- The developer/architect will rerun both isolated rehearsals with local PostgreSQL available before acceptance.
+- The existing ARCH-020 `arch020_audit_immutable` trigger remains authoritative for the extended `CommerceAuditEvent` table.
 
 ### Unresolved Issues
 
-None
+- Acceptance still needs live fresh and upgrade rehearsal evidence after loopback PostgreSQL is started.
 
 ### Architectural Concerns
 
-None
+- The ARCH-020 schema validator should be revised by its owning task/domain to compare its historical action subset or explicitly include ARCH-021 extensions; it currently fails on any required additive audit enum value.
 
 ## Architect Review
 
