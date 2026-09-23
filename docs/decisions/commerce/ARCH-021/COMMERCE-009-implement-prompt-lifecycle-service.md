@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
-executor: null
-claimed_at: null
-attempt: 0
+executor:
+claimed_at:
+attempt: 2
 depends_on:
   - ARCH-021-DATABASE-001
   - ARCH-021-COMMERCE-008
@@ -115,15 +115,15 @@ tests/agent-configuration-prompts.test.ts
 
 ## Work Items
 
-- [ ] Implement platform/shop prompt lineage read/create operations.
-- [ ] Implement draft create/update operations with CAS.
-- [ ] Implement copy-from-published-template draft creation with category/template new-authoring selectability validation.
-- [ ] Implement immutable publish operation.
-- [ ] Implement platform active pointer set/read.
-- [ ] Implement shop override set/read/clear.
-- [ ] Enforce prompt scope and published-state invariants.
-- [ ] Add audit events and typed server actions/ports.
-- [ ] Add concurrency, scope, template-copy, CAS/replay and auth tests.
+- [x] Implement platform/shop prompt lineage read/create operations.
+- [x] Implement draft create/update operations with CAS.
+- [x] Implement copy-from-published-template draft creation with category/template new-authoring selectability validation.
+- [x] Implement immutable publish operation.
+- [x] Implement platform active pointer set/read.
+- [x] Implement shop override set/read/clear.
+- [x] Enforce prompt scope and published-state invariants.
+- [x] Add audit events and typed server actions/ports.
+- [x] Add concurrency, scope, template-copy, CAS/replay and auth tests.
 
 ## Interfaces / Contracts
 
@@ -148,27 +148,27 @@ Produces a Commerce-local prompt configuration port for effective resolution and
 
 ## Acceptance Criteria
 
-- [ ] Platform and shop prompt lineages obey singleton/per-shop ownership.
-- [ ] Empty DRAFT prompt revisions may be saved; publishing blank/whitespace-only prompt text is rejected.
-- [ ] Draft edits are CAS protected; published revisions are immutable and hash exact persisted UTF-8 prompt text bytes without trimming/newline normalisation.
-- [ ] A prompt draft created from a template is an independent copy with immutable provenance.
-- [ ] A disabled category or template cannot be used to create a new prompt draft even when its published revision id is supplied directly; historical provenance remains readable.
-- [ ] Platform active prompt can only target a published platform revision.
-- [ ] Shop override can only target a published revision belonging to that exact shop.
-- [ ] Clearing the shop prompt override returns prompt inheritance without changing model state.
-- [ ] Existing shop-pointer replace/clear CAS checks both `generationId` and `editVersion`; after clear + recreate a stale command from the prior generation cannot mutate/clear the replacement row.
-- [ ] Privileged commands prove durable same-request replay, conflicting operation-id reuse and unknown-outcome reconciliation through the existing audit receipt convention.
-- [ ] Existing capability prompt/runtime behaviour is not modified in Phase 2.
-- [ ] No model/provider call occurs.
+- [x] Platform and shop prompt lineages obey singleton/per-shop ownership.
+- [x] Empty DRAFT prompt revisions may be saved; publishing blank/whitespace-only prompt text is rejected.
+- [x] Draft edits are CAS protected; published revisions are immutable and hash exact persisted UTF-8 prompt text bytes without trimming/newline normalisation.
+- [x] A prompt draft created from a template is an independent copy with immutable provenance.
+- [x] A disabled category or template cannot be used to create a new prompt draft even when its published revision id is supplied directly; historical provenance remains readable.
+- [x] Platform active prompt can only target a published platform revision.
+- [x] Shop override can only target a published revision belonging to that exact shop.
+- [x] Clearing the shop prompt override returns prompt inheritance without changing model state.
+- [x] Existing shop-pointer replace/clear CAS checks both `generationId` and `editVersion`; after clear + recreate a stale command from the prior generation cannot mutate/clear the replacement row.
+- [x] Privileged commands prove durable same-request replay, conflicting operation-id reuse and unknown-outcome reconciliation through the existing audit receipt convention.
+- [x] Existing capability prompt/runtime behaviour is not modified in Phase 2.
+- [x] No model/provider call occurs.
 
 ## Validation
 
-- [ ] focused prompt lifecycle tests
-- [ ] template-copy/provenance tests
-- [ ] CAS/concurrency tests with disposable PostgreSQL where required
-- [ ] focused authorization/development-bypass tests
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused prompt lifecycle tests
+- [x] template-copy/provenance tests
+- [x] CAS/concurrency tests with disposable PostgreSQL where required
+- [x] focused authorization/development-bypass tests
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -182,31 +182,31 @@ Do not concatenate platform and shop configurable prompts. Shop override selecti
 
 ### Status
 
-Not Started
+Ready for architect review after Attempt 2 corrections
 
 ### Files Changed
 
-None
+src/commerce/agent-configuration/prompt-service.ts; src/studio/agent-configuration/prompt-contracts.ts; src/studio/agent-configuration/prompt-server-actions.ts; tests/agent-configuration-prompts.test.ts; tests/agent-configuration-prompts-postgres.test.ts
 
 ### Work Completed
 
-None
+Implemented platform/shop lineages, blank/current/template draft creation, exact UTF-8 publication hashing, immutable revisions, scope-bound environment pointers, generation-plus-edit CAS, receipt-first durable replay reconciliation, explicit pointer audit targets including clear snapshots, exact template revision selection, server-derived environment wiring, and authenticated typed Studio actions.
 
 ### Validation Results
 
-None
+Focused Vitest: 16 prompt/template/model tests passed; PostgreSQL lifecycle coverage: 6 tests passed, including draft/pointer CAS races, same-operation replay with one receipt, platform pointer audit targets, exact template revision copying, and shop generation ABA protection. Focused ESLint and TypeScript diagnostics for the changed prompt files passed, and `git diff --check` passed. The repository-wide TypeScript check still reports unrelated pre-existing errors outside this task.
 
 ### Deviations
 
-None
+PostgreSQL validation used the configured TEST database. The fixture now respects the schema immutability trigger by reusing an existing platform lineage when present; only TEST platform pointers are cleared during setup.
 
 ### Assumptions
 
-None
+No unresolved implementation issues identified in the changed prompt lifecycle files.
 
 ### Unresolved Issues
 
-None
+No model/provider execution or capability prompt/runtime changes were introduced.
 
 ### Architectural Concerns
 
@@ -216,24 +216,45 @@ None
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 is accepted. The requested CAS/replay corrections are present and conform to the Phase 2 prompt-lifecycle contract. Draft update/publish mutations retain atomic `status + editVersion` CAS predicates; platform pointer replacement CAS-matches `environment + editVersion`; shop pointer replace/clear CAS-matches `environment + shopId + generationId + editVersion`; and absent-row creates require the explicit null creation tokens so stale generations cannot be reinterpreted as creates.
+
+Receipt reconciliation now occurs before finalising transaction/CAS/domain failures: a matching durable `CommerceAuditEvent` replays the stored result, conflicting reuse returns `CONFLICTING_REPLAY`, genuine known errors are preserved when no receipt exists, and genuinely indeterminate outcomes retain the existing `unknown` envelope.
+
+Pointer mutations now carry explicit audit targets. Platform/shop SET receipts record the selected prompt and prompt-revision ids, and CLEAR snapshots the current row inside the same transaction before the exact generation/edit CAS delete so the immutable audit event retains the cleared prompt/revision/shop/environment targets.
+
+Template-copy authoring now requires one exact published `sourceTemplateRevisionId`; an optional template id is only an ownership cross-check. The copied prompt text and immutable provenance remain independent of later template changes.
+
+The submitted PostgreSQL suite passed six focused lifecycle/concurrency cases covering distinct-operation CAS races, same-operation replay with one receipt, pointer audit targets, exact template-revision copying and shop-generation ABA protection. Focused Vitest, ESLint, TypeScript diagnostics and `git diff --check` also passed. Repository-wide TypeScript diagnostics remain the documented unrelated baseline.
+
+The executor returned the YAML task state as `ready` rather than `review`, while the Completion Report explicitly states Ready for architect review and the implementation/report branches were handed off for review. This is recorded as workflow metadata drift only; no implementation rework is required. The architect reconciles the task directly to `complete` in this acceptance patch.
 
 ### Reviewed Files
 
-None
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
+- `tests/agent-configuration-prompts.test.ts`
+- `tests/agent-configuration-prompts-postgres.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-009-implement-prompt-lifecycle-service.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Focused Vitest: 16 tests passed.
+- PostgreSQL prompt lifecycle/concurrency: 6 tests passed.
+- Focused ESLint: passed.
+- Focused TypeScript diagnostics: passed.
+- `git diff --check`: passed.
+- Repository-wide TypeScript retains unrelated pre-existing diagnostics outside this task.
 
 ### Architecture Conformance
 
-Pending
+Accepted. The implementation now satisfies the Phase 2 prompt-lineage, exact-template-copy, immutable publication, pointer scope, atomic CAS, generation-aware shop ABA, durable replay, explicit audit-target and trusted server-action boundaries without changing legacy capability prompt/runtime behaviour or performing model/provider execution.
 
 ### Follow-up
 
-None
+Mark ARCH-021-COMMERCE-009 Complete. Promote ARCH-021-COMMERCE-010 and ARCH-021-COMMERCE-014 to Ready because all of their dependencies are now Complete. ARCH-021-COMMERCE-012 remains Pending until COMMERCE-010 is Complete. ARCH-021-COMMERCE-013 remains independently Ready.
