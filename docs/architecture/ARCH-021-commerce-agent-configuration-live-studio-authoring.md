@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 implementation in progress; COMMERCE-001 accepted Complete.
+Agreed — Phase 0 contract accepted; Phase 1 implementation in progress; COMMERCE-001, COMMERCE-002 and COMMERCE-003 accepted Complete.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -502,7 +502,9 @@ introduces no new Database/Shared/Background contract.
 Phase 1 establishes these invariants:
 
 1. `/connections` and `/connections/[id]` use the real connection lifecycle and
-   credential services; fixture ports remain test-only.
+   credential services; fixture ports remain test-only. They also consume the existing
+   ARCH-020 U06 `returnTo` handoff as validated internal Studio navigation context, while
+   preserving the independent U15 `search`/`cursor`/`enabled` return state.
 2. Studio has one explicit selected-shop context identified by `shopId` URL/navigation
    state and resolved server-side from the persisted Commerce shop.
 3. The selected-shop context reports offline Shopify-session availability without ever
@@ -536,7 +538,7 @@ Phase 1 tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
-| ARCH-021-COMMERCE-002 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
+| ARCH-021-COMMERCE-002 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
 | ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
@@ -549,8 +551,10 @@ ARCH-021-COMMERCE-002   install the production ConnectionPort into U15/U16 route
 ARCH-021-COMMERCE-005   wire persisted connection revisions into U06 Tool authoring
 ```
 
-Those tasks are independent and may execute in parallel. No task is automatically
-launched merely because it is Ready.
+COMMERCE-002 is now Complete: production Connections composition uses the accepted
+server-backed port and the pre-existing U06 `returnTo` producer has a validated,
+blocker-aware U15/U16 consumer. COMMERCE-005 remains Pending until COMMERCE-004 is
+architect-accepted Complete. No task is automatically launched merely because it is Ready.
 
 Phase 1 exit criteria:
 
@@ -611,7 +615,7 @@ Phase 1 is materialised as six Commerce tasks under:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
-| ARCH-021-COMMERCE-002 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
+| ARCH-021-COMMERCE-002 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
 | ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
@@ -644,6 +648,19 @@ independent of features.
 
 ## Change History
 
+### 2026-09-23 — COMMERCE-002 Attempt 2 accepted
+
+- Accepted the production U15/U16 `ConnectionPort` composition and completed the existing ARCH-020 U06 `returnTo` consumer handoff.
+- Confirmed validated internal return destinations propagate through U15/U16 while preserving independent `search`/`cursor`/`enabled` list state and Studio navigation blockers.
+- Marked COMMERCE-002 Complete. COMMERCE-004 is the remaining Ready Phase 1 frontier; COMMERCE-005 stays Pending on COMMERCE-004.
+- Recorded a non-blocking route-prop type-annotation cleanup for `returnTo`; no additional implementation attempt is required for the functionality-focused acceptance.
+
+### 2026-09-23 — COMMERCE-002 Attempt 1 changes requested
+
+- Confirmed the production U15/U16 wrapper now uses the accepted COMMERCE-001 server-backed `ConnectionPort` and no longer composes fixtures.
+- Identified an ARCH-020 navigation-contract gap: COMMERCE-023 emits `returnTo` from U06, but U15/U16 never implemented the consumer required for XN02 return-to-source behaviour.
+- Corrected COMMERCE-002 to own validated internal `returnTo` parsing, U15/U16 propagation, guarded return-to-origin navigation and focused regression proof.
+- Returned COMMERCE-002 to Ready at `attempt: 1`; COMMERCE-004 remains independently Ready.
 ### 2026-09-23 — COMMERCE-004 accepted
 
 - Accepted the Studio-wide selected-shop URL/navigation context at implementation `b67177d` after Attempt 2.
