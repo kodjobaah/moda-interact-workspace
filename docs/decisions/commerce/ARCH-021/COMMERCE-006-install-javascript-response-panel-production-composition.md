@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-23T12:45:35Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-005
@@ -148,7 +148,7 @@ Phase 4 will replace the human-facing synthetic tool-test data source; keep that
 
 ### Status
 
-Ready for Review (Attempt 2 corrections complete)
+Ready for Review (Attempt 3 corrections complete)
 
 ### Files Changed
 
@@ -187,11 +187,21 @@ Attempt 2 corrections:
 - Extended the typed JavaScript slot and response panel callback so only a saved, validated, completed current synthetic sample marks the existing U06 publication gate current; source, sample, contract and failed/unknown/cancelled run changes revoke it in [src/studio/external-http/ports.ts](../../../../../moda-interact-commerce/src/studio/external-http/ports.ts), [src/studio/external-http/editor.tsx](../../../../../moda-interact-commerce/src/studio/external-http/editor.tsx), [src/studio/code-response/code-response-panel.tsx](../../../../../moda-interact-commerce/src/studio/code-response/code-response-panel.tsx), and [src/studio/code-response/production-panel.tsx](../../../../../moda-interact-commerce/src/studio/code-response/production-panel.tsx).
 - Added focused U06 regression coverage for the `[2, 3, 4]` draft CAS sequence and the canonical JavaScript publication handoff in [tests/external-tools-ui.test.tsx](../../../../../moda-interact-commerce/tests/external-tools-ui.test.tsx).
 
+Attempt 3 correction:
+
+- Updated [components/studio-workspace.tsx](../../../../../moda-interact-commerce/components/studio-workspace.tsx) so JavaScript draft saves parse and schema-validate the complete visible U06 candidate, including the current `inputSchemaText` and `responseTemplateText`, and persist that candidate in the same `updateToolDraft` operation. A successful complete save updates both sibling buffers from the authoritative returned definition before clearing dirty state; invalid sibling JSON/schema leaves the dirty/navigation/publication guard active and performs no write.
+- Added the focused U06 regression in [tests/external-tools-ui.test.tsx](../../../../../moda-interact-commerce/tests/external-tools-ui.test.tsx), proving invalid sibling JSON cannot be saved through the JavaScript panel and the existing Manage-connections discard guard remains active.
+- Implementation commit: `5991dde`, pushed to `origin/task/ARCH-021-COMMERCE-006`.
+
 ### Validation Results
 
 - `npm exec vitest run tests/external-tools-ui.test.tsx`: passed, 11 tests.
 - `npm exec vitest run tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/response-processing.test.ts tests/external-http-executor.test.ts tests/external-preview.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/external-wiring.test.ts tests/external-tools-ui.test.tsx`: passed, 9 files, 103 tests.
 - `npm exec vitest run tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/code-runtime-proof.test.ts`: 29 passed, 1 pre-existing baseline failure in `tests/code-runtime-proof.test.ts` (`EXECUTION_ERROR` received where the existing expectation requires `RESOURCE_LIMIT`).
+- `npm exec vitest run tests/external-tools-ui.test.tsx`: passed, 12 tests, including the Attempt 3 invalid-sibling dirty-state regression.
+- `npm exec vitest run tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/response-processing.test.ts tests/external-http-executor.test.ts tests/external-preview.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/external-wiring.test.ts tests/external-tools-ui.test.tsx`: passed, 9 files, 104 tests.
+- `npm exec vitest run tests/response-processing.test.ts tests/external-http-executor.test.ts tests/preview-integration.test.ts tests/preview-client.test.ts tests/external-preview.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts`: passed, 7 files, 76 tests.
+- Targeted `npx eslint components/studio-workspace.tsx tests/external-tools-ui.test.tsx`: passed with 0 errors and no warnings.
 - `npm exec vitest run tests/external-preview.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts`: passed, 49 tests.
 - `npm exec vitest run tests/external-wiring.test.ts`: passed, 4 tests.
 - `npm exec vitest run tests/response-processing.test.ts tests/external-http-executor.test.ts tests/preview-integration.test.ts tests/preview-client.test.ts`: passed, 27 tests.
