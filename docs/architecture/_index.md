@@ -971,5 +971,8 @@ server-validated `shopId` context, production external connection selection and 
 JavaScript response-panel installation. ARCH-021-COMMERCE-001 is accepted Complete;
 ARCH-021-COMMERCE-002 and ARCH-021-COMMERCE-003 are the current independent Ready
 frontier. Later phases are not yet materialised.
+JavaScript response-panel installation. ARCH-021-COMMERCE-003 is accepted Complete;
+ARCH-021-COMMERCE-004 is now Ready alongside the independent COMMERCE-001 correction
+path. Later phases are not yet materialised.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
