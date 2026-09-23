@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-23T21:33:18Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-004
@@ -103,14 +103,14 @@ Use the existing Phase 1 `shopId` query/navigation contract and `ShopExecutionCo
 
 ## Work Items
 
-- [ ] Extend the dedicated Agent Configuration domain module with the selected-shop sub-surface.
-- [ ] Add selected-shop effective configuration summary.
-- [ ] Add shop model override set/clear controls.
-- [ ] Add shop prompt lineage/draft/publish/activate controls.
-- [ ] Add create-from-template flow for shop prompt drafts.
-- [ ] Add independent inheritance/reset controls and source labels.
-- [ ] Preserve Phase 1 `shopId` navigation semantics.
-- [ ] Add focused authorization/isolation/inheritance/error-state UI tests.
+- [x] Extend the dedicated Agent Configuration domain module with the selected-shop sub-surface.
+- [x] Add selected-shop effective configuration summary.
+- [x] Add shop model override set/clear controls.
+- [x] Add shop prompt lineage/draft/publish/activate controls.
+- [x] Add create-from-template flow for shop prompt drafts.
+- [x] Add independent inheritance/reset controls and source labels.
+- [x] Preserve Phase 1 `shopId` navigation semantics.
+- [x] Add focused authorization/isolation/inheritance/error-state UI tests.
 
 ## Interfaces / Contracts
 
@@ -140,25 +140,25 @@ None. COMMERCE-013 and COMMERCE-014 are independent Phase 2 UI tasks and may sti
 
 ## Acceptance Criteria
 
-- [ ] Selected shop shows effective model and prompt with independent PLATFORM/SHOP source labels.
-- [ ] A shop may override only model, only prompt, both, or neither.
-- [ ] Clearing one override preserves the other.
-- [ ] Existing override replace/clear commands round-trip the service-provided `generationId` + `editVersion` CAS tokens, including a stale-generation conflict regression after clear/recreate.
-- [ ] Shop prompt authoring is isolated to the exact selected shop.
-- [ ] Shop prompt may start from a published platform template as an independent copy.
-- [ ] Broken explicit model/prompt overrides are displayed as configuration errors rather than silently inherited values.
-- [ ] ADMIN is read-only and no secret/session token is rendered.
-- [ ] Shop Agent Configuration logic does not re-accumulate inside `StudioWorkspace`.
-- [ ] No live model/provider execution occurs.
+- [x] Selected shop shows effective model and prompt with independent PLATFORM/SHOP source labels.
+- [x] A shop may override only model, only prompt, both, or neither.
+- [x] Clearing one override preserves the other.
+- [x] Existing override replace/clear commands round-trip the service-provided `generationId` + `editVersion` CAS tokens, including a stale-generation conflict regression after clear/recreate.
+- [x] Shop prompt authoring is isolated to the exact selected shop.
+- [x] Shop prompt may start from a published platform template as an independent copy.
+- [x] Broken explicit model/prompt overrides are displayed as configuration errors rather than silently inherited values.
+- [x] ADMIN is read-only and no secret/session token is rendered.
+- [x] Shop Agent Configuration logic does not re-accumulate inside `StudioWorkspace`.
+- [x] No live model/provider execution occurs.
 
 ## Validation
 
-- [ ] focused shop Agent Configuration UI tests
-- [ ] inheritance matrix UI tests
-- [ ] cross-shop isolation/auth tests
-- [ ] selected-shop navigation/refresh regressions
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused shop Agent Configuration UI tests
+- [x] inheritance matrix UI tests
+- [x] cross-shop isolation/auth tests
+- [x] selected-shop navigation/refresh regressions
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -232,6 +232,44 @@ Ready for Review
 ### Architectural Concerns
 
 None.
+
+### Attempt 3 Rework
+
+#### Status
+
+Ready for Review
+
+#### Corrections Completed
+
+- Added a monotonic load-generation guard so a slower prior-shop request cannot repopulate the selected shop's model, pointer, lineage, or draft state.
+- Blocked model mutations, prompt inheritance clearing, and new draft creation while visible prompt text is dirty; existing durable DRAFTs are resumed instead of duplicated.
+- Reconciled the lineage and pointer after publication succeeds but activation loses CAS, exposing the immutable published revision without republishing it.
+- Preserved effective-resolution error messages while raw broken override state remains loaded and clearable.
+- Added focused regressions for stale-shop loads, dirty independent mutations, duplicate-draft prevention, publish/activation recovery, and visible resolver errors.
+
+#### Launcher and VCS Evidence
+
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-012`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-012`
+- Branch: `task/ARCH-021-COMMERCE-012`
+- Attempt 3 claim commit: `e3bff01013e10f0c210025b76c9acbcc495b94c5`
+- Parent synchronization merge: `d81b725d`
+- Implementation synchronization merge: `72909d4`
+- Attempt 3 implementation correction commit: `2345baa`
+- Recursive database submodule: `98fdf715e54fe6df92ac6951facd104e410068f2`
+
+#### Validation Results
+
+- PASS: focused shop UI suite - 11 tests passed.
+- PASS: combined focused suite (`agent-configuration-shop-ui`, production composition, platform prompt UI, prompt service, and prompt server actions) - 5 files, 27 tests passed.
+- PASS: targeted ESLint over all task-touched implementation and test files.
+- PASS: changed-file diagnostics reported no errors.
+- PASS: `git diff --check`.
+- The implementation worktree dependencies were removed by a separate disk-cleanup command after validation; no tracked files were affected.
+
+#### Remaining Baseline
+
+The repository-wide typecheck and the previously documented unrelated Prisma mock/type diagnostics remain outside this bounded UI correction. No focused failures or changed-file diagnostics remain.
 
 ## Architect Review
 
