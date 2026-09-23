@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
-executor: copilot
-claimed_at: 2026-09-23T20:20:21Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-008
@@ -95,12 +95,12 @@ Small helper components may be added only under `src/studio/agent-configuration/
 
 ## Work Items
 
-- [ ] Add category list/create/display-metadata-update/enable/disable UI.
-- [ ] Add category-grouped/filterable template discovery.
-- [ ] Add template identity metadata/enablement controls.
-- [ ] Add template DRAFT editor/history/publish flow.
-- [ ] Add dirty/navigation and replay/conflict/unknown-outcome handling.
-- [ ] Add focused read-only/admin/auth/lifecycle UI tests.
+- [x] Add category list/create/display-metadata-update/enable/disable UI.
+- [x] Add category-grouped/filterable template discovery.
+- [x] Add template identity metadata/enablement controls.
+- [x] Add template DRAFT editor/history/publish flow.
+- [x] Add dirty/navigation and replay/conflict/unknown-outcome handling.
+- [x] Add focused read-only/admin/auth/lifecycle UI tests.
 
 ## Interfaces / Contracts
 
@@ -123,23 +123,23 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Platform admins can manage data-driven template categories without mutating stable category slug/identity.
-- [ ] Multiple templates can be browsed/authored within one category.
-- [ ] Empty DRAFT template content can be saved; blank/whitespace-only publication is rejected and shown to the user.
-- [ ] Published revision identity/hash/history is displayed without implying published content is editable.
-- [ ] Disabled category/template history remains visible while new selection is unavailable.
-- [ ] ADMIN is read-only and no secret/session token is rendered.
-- [ ] Template-library state/actions do not accumulate in `StudioWorkspace`.
-- [ ] No active prompt mutation or live model/provider execution occurs.
+- [x] Platform admins can manage data-driven template categories without mutating stable category slug/identity.
+- [x] Multiple templates can be browsed/authored within one category.
+- [x] Empty DRAFT template content can be saved; blank/whitespace-only publication is rejected and shown to the user.
+- [x] Published revision identity/hash/history is displayed without implying published content is editable.
+- [x] Disabled category/template history remains visible while new selection is unavailable.
+- [x] ADMIN is read-only and no secret/session token is rendered.
+- [x] Template-library state/actions do not accumulate in `StudioWorkspace`.
+- [x] No active prompt mutation or live model/provider execution occurs.
 
 ## Validation
 
-- [ ] focused template-library route/component tests
-- [ ] category/template lifecycle UI tests
-- [ ] empty-draft/publish-validation UI regression
-- [ ] authorization/development-bypass UI tests
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused template-library route/component tests
+- [x] category/template lifecycle UI tests
+- [x] empty-draft/publish-validation UI regression
+- [x] authorization/development-bypass UI tests
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -204,6 +204,44 @@ The four unrelated focused auth failures and the existing repository-wide typech
 ### Architectural Concerns
 
 None
+
+### Attempt 2 Rework
+
+#### Status
+
+Ready for Review
+
+#### Review Corrections
+
+- Implemented durable revision history through the accepted `listPromptTemplateRevisions({ templateId })` server action/port. Existing DRAFT revisions are selected for editing after reopen, and DRAFT/PUBLISHED history with immutable published hashes is rendered in `src/studio/agent-configuration/prompt-template-library.tsx`.
+- Reset editor-local display metadata on template identity changes by keying `TemplateEditor` by durable template id. Added a regression that switches between two templates after editing metadata.
+- Added one dirty-state contract for draft text and template metadata, including `beforeunload` and internal template-switch discard confirmation. Cancellation leaves the current template and editor unchanged; regression coverage verifies this.
+- Extended production composition coverage and wiring so `ProductionStudioPage` passes the real `listPromptTemplateRevisions` action with the other COMMERCE-008 actions.
+
+#### Files Changed
+
+- `moda-interact-commerce/src/studio/agent-configuration/prompt-template-library.tsx`
+- `moda-interact-commerce/components/production-studio-page.tsx`
+- `moda-interact-commerce/tests/agent-configuration-template-ui.test.tsx`
+- `moda-interact-commerce/tests/agent-configuration-production.test.tsx`
+
+#### Validation Results
+
+- PASS: `npm exec vitest run tests/agent-configuration-template-ui.test.tsx tests/agent-configuration-production.test.tsx` - 2 files, 6 tests passed, including durable DRAFT resume/history, dirty metadata switch cancellation, blank publication error, unknown-operation replay, ADMIN read-only behavior, and real production action handoff.
+- PASS: `npm exec eslint src/studio/agent-configuration/prompt-template-library.tsx components/production-studio-page.tsx tests/agent-configuration-template-ui.test.tsx tests/agent-configuration-production.test.tsx`.
+- PASS: `git diff --check`.
+- PASS for changed-file scope: `npm run typecheck` reports no diagnostics in the four changed files.
+- BASELINE: `npm run typecheck` still exits 1 on existing commerce/database and unrelated test diagnostics, including `src/commerce/integration/backend/c20-test-fixture.ts`, `src/commerce/integration/backend/publication-storage.ts`, `src/commerce/integration/studio/services.ts`, `tests/c20-integration-fixture.test.ts`, `tests/connections-production.test.ts`, and other pre-existing files.
+- PASS: focused authorization/lifecycle matrix returned 45 passed tests across 7 files.
+- BASELINE: that matrix retained 4 unrelated failures: `tests/auth-development-identity.test.ts` fails with `Prisma.sql is not a function`, and `tests/auth-entrypoints.test.ts` still expects `createMcpService` in the existing MCP route source.
+
+#### Deviations
+
+None. The accepted COMMERCE-008 mutation semantics and COMMERCE-015 read boundary remain unchanged; no direct database reads, provider execution, runtime changes, or `StudioWorkspace` domain state were added.
+
+#### Remaining Gaps
+
+The documented repository typecheck and four focused authorization baseline failures remain with their owning tasks. No new diagnostics or failures were introduced in the changed files.
 
 ## Architect Review
 
