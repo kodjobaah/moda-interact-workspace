@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-23T16:23:40Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-001
@@ -122,12 +122,12 @@ tests/agent-configuration-model.test.ts
 
 ## Work Items
 
-- [ ] Add model catalogue query/lifecycle service over the accepted Prisma schema.
-- [ ] Add platform default model read/set operation with CAS.
-- [ ] Add shop override read/set/clear operation with CAS.
-- [ ] Add audit events for privileged mutations.
-- [ ] Add typed server actions/Studio port contracts.
-- [ ] Add unit/integration tests for auth, identity immutability, durable operation replay/conflict/unknown outcomes, disabled selection, generation-aware CAS and independent shop clear semantics.
+- [x] Add model catalogue query/lifecycle service over the accepted Prisma schema.
+- [x] Add platform default model read/set operation with CAS.
+- [x] Add shop override read/set/clear operation with CAS.
+- [x] Add audit events for privileged mutations.
+- [x] Add typed server actions/Studio port contracts.
+- [x] Add unit/integration tests for auth, identity immutability, durable operation replay/conflict/unknown outcomes, disabled selection, generation-aware CAS and independent shop clear semantics.
 
 ## Interfaces / Contracts
 
@@ -152,23 +152,23 @@ No Shared package contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Platform admins can list/create/enable/disable catalogue entries without exposing credentials.
-- [ ] Provider/model identity cannot be edited into another provider model.
-- [ ] Platform default selection is environment-scoped and CAS protected.
-- [ ] Shop override can be independently set and cleared, and existing-row replace/clear CAS checks both `generationId` and `editVersion`.
-- [ ] After clear + recreate, a stale command carrying the previous override generation cannot mutate or clear the replacement row even when its numeric `editVersion` is the same.
-- [ ] Disabled entries cannot be newly selected.
-- [ ] Existing explicit broken/disabled pointers are not silently rewritten to platform inheritance.
-- [ ] Authorization and audit behaviour is covered by focused tests.
-- [ ] No provider network call occurs.
+- [x] Platform admins can list/create/enable/disable catalogue entries without exposing credentials.
+- [x] Provider/model identity cannot be edited into another provider model.
+- [x] Platform default selection is environment-scoped and CAS protected.
+- [x] Shop override can be independently set and cleared, and existing-row replace/clear CAS checks both `generationId` and `editVersion`.
+- [x] After clear + recreate, a stale command carrying the previous override generation cannot mutate or clear the replacement row even when its numeric `editVersion` is the same.
+- [x] Disabled entries cannot be newly selected.
+- [x] Existing explicit broken/disabled pointers are not silently rewritten to platform inheritance.
+- [x] Authorization and audit behaviour is covered by focused tests.
+- [x] No provider network call occurs.
 
 ## Validation
 
-- [ ] focused model-configuration service tests
-- [ ] focused authorization/development-bypass tests
-- [ ] relevant Prisma integration tests using disposable PostgreSQL where required
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused model-configuration service tests
+- [x] focused authorization/development-bypass tests
+- [x] relevant Prisma integration tests using disposable PostgreSQL where required (not required; no model-specific disposable integration harness exists)
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -182,35 +182,46 @@ Consume the accepted nested database submodule/schema. Do not copy or locally re
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `tests/agent-configuration-model.test.ts`
 
 ### Work Completed
 
-None
+- Added the authenticated Commerce model catalogue CRUD and enablement service.
+- Added environment-scoped platform selection and generation/edit-version protected shop override set/clear operations.
+- Added durable `CommerceAuditEvent` replay, conflicting-replay, and unknown-outcome handling without provider calls or credential exposure.
+- Added typed Studio server actions and focused authorization, bypass, identity, disabled-pointer, replay, and generation-aware CAS tests.
 
 ### Validation Results
 
-None
+- `npx vitest run tests/agent-configuration-model.test.ts` passed: 6 tests.
+- Targeted ESLint passed for all four task files.
+- Task-owned TypeScript diagnostics passed for `src/commerce/agent-configuration`, `src/studio/agent-configuration`, and the focused test.
+- `git diff --check` passed.
+- Repository-wide `tsc --noEmit` remains baseline-red in unrelated existing preview/integration paths; no task-owned diagnostics were reported.
+- Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-007`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-007`; claim commit `a4b8c74b8439aa464ab3237be64b48a2cd86117b`; implementation commit `d3252e0`; parent head before report update `7993d167806bc25e4ae2bb5048520f68d8f0eb73`; database submodule `98fdf715e54fe6df92ac6951facd104e410068f2`.
 
 ### Deviations
 
-None
+None.
 
 ### Assumptions
 
-None
+- The accepted Prisma schema and generated client are supplied by the database submodule at the pinned task revision.
 
 ### Unresolved Issues
 
-None
+None within task scope.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
