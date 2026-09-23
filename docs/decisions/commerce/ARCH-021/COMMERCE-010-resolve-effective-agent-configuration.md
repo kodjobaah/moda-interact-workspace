@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-003
   - ARCH-021-COMMERCE-007
@@ -144,24 +144,24 @@ Produces the Commerce-local effective configuration read model used by Phase 2 S
 
 ## Acceptance Criteria
 
-- [ ] No shop overrides -> platform model + platform prompt.
-- [ ] Shop model only -> shop model + platform prompt.
-- [ ] Shop prompt only -> platform model + shop prompt.
-- [ ] Both overrides -> shop model + shop prompt.
-- [ ] Missing platform model or prompt yields explicit unavailable state.
-- [ ] A disabled/broken platform default model yields explicit unavailable state; there is no fallback beyond the platform default.
-- [ ] An invalid/non-published/scope-invalid platform active prompt yields explicit unavailable state; there is no fallback beyond the platform prompt.
-- [ ] Disabled/broken explicit shop model override fails closed without model fallback.
-- [ ] Invalid explicit shop prompt pointer fails closed without prompt fallback.
-- [ ] No provider call, grant write or manifest mutation occurs.
+- [x] No shop overrides -> platform model + platform prompt.
+- [x] Shop model only -> shop model + platform prompt.
+- [x] Shop prompt only -> platform model + shop prompt.
+- [x] Both overrides -> shop model + shop prompt.
+- [x] Missing platform model or prompt yields explicit unavailable state.
+- [x] A disabled/broken platform default model yields explicit unavailable state; there is no fallback beyond the platform default.
+- [x] An invalid/non-published/scope-invalid platform active prompt yields explicit unavailable state; there is no fallback beyond the platform prompt.
+- [x] Disabled/broken explicit shop model override fails closed without model fallback.
+- [x] Invalid explicit shop prompt pointer fails closed without prompt fallback.
+- [x] No provider call, grant write or manifest mutation occurs.
 
 ## Validation
 
-- [ ] focused effective-configuration resolver tests
-- [ ] coherent-snapshot regression covering configuration mutation during effective resolution
-- [ ] selected-shop validation regression tests
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused effective-configuration resolver tests: 10 passed
+- [x] coherent-snapshot regression covering configuration mutation during effective resolution
+- [x] selected-shop validation regression: unavailable shop short-circuits before resolution
+- [x] targeted lint/typecheck: touched-file ESLint and diagnostics passed
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -175,58 +175,82 @@ Keep these DTOs Commerce-local until the later runtime phase defines the exact c
 
 ### Status
 
-Not Started
+Complete
 
 ### Files Changed
 
-None
+[src/commerce/agent-configuration/effective-configuration.ts](../../../../moda-interact-commerce/src/commerce/agent-configuration/effective-configuration.ts)
+[src/studio/agent-configuration/effective-contracts.ts](../../../../moda-interact-commerce/src/studio/agent-configuration/effective-contracts.ts)
+[src/studio/agent-configuration/effective-server-actions.ts](../../../../moda-interact-commerce/src/studio/agent-configuration/effective-server-actions.ts)
+[tests/agent-configuration-effective.test.ts](../../../../moda-interact-commerce/tests/agent-configuration-effective.test.ts)
 
 ### Work Completed
 
-None
+- Added Commerce-local effective model/prompt DTOs and authenticated server action.
+- Resolved model and prompt independently with shop override -> platform fallback.
+- Validated mandatory platform baselines before applying overrides; broken explicit overrides fail closed.
+- Used one Prisma `REPEATABLE READ` transaction for all model, prompt, and immutable record reads.
 
 ### Validation Results
 
-None
+- Focused Vitest suite: 10 tests passed.
+- Touched-file ESLint: passed.
+- Touched-file diagnostics: no errors.
+- `git diff --check`: passed.
+- Full repository typecheck was previously blocked by unrelated baseline errors in preview/UI/integration files.
 
 ### Deviations
 
-None
+No deviations from the task scope.
 
 ### Assumptions
 
-None
+The accepted Studio shop execution-context service remains the server-side source of truth for selected-shop validation.
 
 ### Unresolved Issues
 
-None
+No unresolved task-local issues.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 satisfies the bounded correction contract from Attempt 1. Mandatory platform model and prompt baselines are validated before any shop override is considered, so a shop override cannot mask an unconfigured environment. Model and prompt inheritance remain independent, and explicit broken shop overrides continue to fail closed rather than falling back.
+
+The resolver keeps all selection/pointer and referenced immutable-row reads inside one Prisma interactive transaction configured for `RepeatableRead`; the additional `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ` occurs before the participating reads and does not weaken that boundary. The authenticated Studio action validates the selected shop first and returns that failure without invoking the effective resolver.
 
 ### Reviewed Files
 
-None
+- `src/commerce/agent-configuration/effective-configuration.ts`
+- `src/studio/agent-configuration/effective-contracts.ts`
+- `src/studio/agent-configuration/effective-server-actions.ts`
+- `tests/agent-configuration-effective.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-010-resolve-effective-agent-configuration.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-012-build-shop-agent-configuration-ui.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Submitted focused effective-configuration suite: 10 tests passed.
+- Reviewed the controlled mutation regression proving all resolver reads are taken from one transaction snapshot.
+- Reviewed the selected-shop short-circuit regression.
+- Submitted touched-file ESLint and diagnostics: passed.
+- Submitted `git diff --check`: passed.
+- Repository-wide TypeScript failures remain documented unrelated baseline diagnostics.
 
 ### Architecture Conformance
 
-Pending
+Conforms. The resolver is side-effect free, derives environment server-side, requires a valid platform model default and platform active prompt, applies shop model/prompt overrides independently, fails closed on broken explicit overrides, exposes source/provenance fields, and performs no provider call, grant write or manifest mutation.
 
 ### Follow-up
 
-None
+Mark ARCH-021-COMMERCE-010 Complete. ARCH-021-COMMERCE-012 is now Ready because all of its dependencies are Complete. COMMERCE-013 and COMMERCE-014 remain independently Ready.
