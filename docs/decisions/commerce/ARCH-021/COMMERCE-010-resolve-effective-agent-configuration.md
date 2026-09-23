@@ -209,24 +209,49 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 source review confirms the resolver uses one `REPEATABLE READ` interactive transaction, reads platform/shop model and prompt state inside that snapshot, calculates model and prompt inheritance independently, and validates explicit broken shop overrides fail closed. The authenticated server action also derives the environment server-side and resolves the requested shop through the accepted Studio shop execution context.
+
+One functional fail-closed defect remains. ARCH-021 defines the platform model default and platform active prompt as mandatory environment state. The current resolver validates only the row selected by `shopOverride ?? platformDefault`, so a valid shop override can mask missing/disabled/invalid mandatory platform state. For example, a shop model override succeeds when the platform model selection is absent, and a shop prompt override succeeds when the platform prompt pointer is absent. That violates the parent architecture and this task's explicit acceptance criteria that missing/broken platform model or prompt state yields configuration unavailable.
+
+Attempt 2 must first validate the platform model selection and platform prompt pointer independently as valid mandatory environment baselines, then apply shop overrides independently. A shop override may replace the effective value only after the corresponding platform baseline is known valid. Preserve the existing rule that a broken explicit shop override fails closed rather than falling back.
+
+The submitted focused test only asserts that `RepeatableRead` was requested; it does not satisfy the task's required coherent-snapshot regression covering a concurrent configuration mutation. Attempt 2 must add focused proof, preferably against disposable PostgreSQL with two connections, that model/prompt values returned by one resolver call come from one repeatable-read snapshot and cannot form a combination that never coexisted. Also add the task-required selected-shop server-action regression proving an invalid/unavailable shop is returned without resolving effective configuration. These are bounded validation additions, not a request for broader/exhaustive testing.
+
+The supplied parent snapshot was still `in_progress` with an unfinalized Completion Report. Because the functional correction is required, the same task is returned to `ready`; the next authorized claim becomes Attempt 2 and must complete the normal Completion Report/review handoff.
 
 ### Reviewed Files
 
-None
+- `src/commerce/agent-configuration/effective-configuration.ts`
+- `src/studio/agent-configuration/effective-contracts.ts`
+- `src/studio/agent-configuration/effective-server-actions.ts`
+- `tests/agent-configuration-effective.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-010-resolve-effective-agent-configuration.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Submitted focused resolver result: 7 tests passed.
+- Submitted touched-file ESLint: passed.
+- Submitted `git diff --check`: passed.
+- Repository-wide TypeScript baseline remains unrelated/non-blocking.
+- Source inspection confirms the current unit test checks the requested transaction isolation but does not yet exercise the required concurrent-mutation snapshot behavior.
 
 ### Architecture Conformance
 
-Pending
+Changes Requested. The one-snapshot mechanism and independent override selection are structurally aligned, but mandatory platform baseline validation is incomplete and the explicit coherent-snapshot/selected-shop validation evidence required by the task is not yet present.
 
 ### Follow-up
 
-None
+Attempt 2 correction contract:
+
+1. Resolve and validate the platform model selection as mandatory state even when a shop model override exists. Missing selection, missing catalogue row, or disabled catalogue entry must return `UNAVAILABLE`.
+2. Resolve and validate the platform prompt pointer as mandatory state even when a shop prompt override exists. Missing pointer, non-published revision, or invalid platform scope must return `UNAVAILABLE`.
+3. After both platform baselines are valid, choose shop model and shop prompt overrides independently; a present but broken shop override must continue to fail closed with no fallback.
+4. Add focused regression cases where a valid shop model override cannot mask missing/disabled platform model state and a valid shop prompt override cannot mask missing/invalid platform prompt state.
+5. Add the required coherent-snapshot regression with a configuration mutation during resolution, using real snapshot semantics rather than merely asserting the `RepeatableRead` option.
+6. Add the required selected-shop server-action regression proving an invalid/unavailable requested shop is rejected before effective configuration resolution.
+7. Preserve the side-effect-free/no-provider-call/no-grant/no-manifest boundary and stop at architect review.

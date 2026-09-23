@@ -731,12 +731,12 @@ Phase 2 tasks:
 The current Phase 2 execution frontier is:
 
 ```text
-ARCH-021-COMMERCE-010   Ready — effective platform/shop configuration resolver
+ARCH-021-COMMERCE-010   Ready — mandatory platform-baseline/snapshot correction
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-DATABASE-001 and COMMERCE-007/008/009/011 are architect-accepted Complete. COMMERCE-009 closes the prompt-lifecycle boundary with exact published template-revision copying, immutable prompt publication, atomic draft/pointer CAS, durable receipt-first replay reconciliation, valid immutable pointer audit targets and generation-aware shop-pointer ABA protection. COMMERCE-010 is now executable because COMMERCE-003/007/009 are Complete; COMMERCE-014 is now executable because COMMERCE-008/009/011 are Complete; COMMERCE-013 remains independently Ready from COMMERCE-008/011. COMMERCE-012 remains Pending until COMMERCE-010 is Complete.
+DATABASE-001 and COMMERCE-007/008/009/011 are architect-accepted Complete. COMMERCE-009 closes the prompt-lifecycle boundary with exact published template-revision copying, immutable prompt publication, atomic draft/pointer CAS, durable receipt-first replay reconciliation, valid immutable pointer audit targets and generation-aware shop-pointer ABA protection. COMMERCE-010 Attempt 1 is back at Ready for a bounded mandatory-platform-baseline and coherent-snapshot correction; COMMERCE-014 remains independently Ready because COMMERCE-008/009/011 are Complete, and COMMERCE-013 remains independently Ready from COMMERCE-008/011. COMMERCE-012 remains Pending until COMMERCE-010 is Complete.
 
 Phase 2 exit criteria:
 
@@ -847,6 +847,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-010 Attempt 1 changes requested
+
+- Reviewed the effective model/prompt resolver with snapshot consistency and fail-closed inheritance as the primary focus.
+- Accepted in substance the `REPEATABLE READ` transaction boundary, independent shop/platform model and prompt lookup, explicit source provenance, and server-side selected-shop/environment derivation.
+- Identified a mandatory-baseline defect: valid shop overrides currently mask missing/disabled/invalid platform defaults because only `shopOverride ?? platformDefault` is validated; ARCH-021 requires a valid platform model default and platform active prompt for the environment even when a shop override exists.
+- Required focused coherent-snapshot proof under concurrent configuration mutation and a selected-shop server-action rejection regression, because the submitted unit test only asserts that `RepeatableRead` was requested.
+- Returned COMMERCE-010 to Ready at `attempt: 1`; COMMERCE-012 remains Pending while COMMERCE-013/014 remain independently Ready.
 
 ### 2026-09-23 — COMMERCE-011 Attempt 3 accepted
 

@@ -73,12 +73,12 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 The current Phase 2 Commerce execution frontier on this task branch is:
 
 ```text
-ARCH-021-COMMERCE-010   Ready — effective platform/shop configuration resolver
+ARCH-021-COMMERCE-010   Ready — mandatory platform-baseline/snapshot correction
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 is newly unblocked by COMMERCE-003/007/009 being Complete. COMMERCE-014 is newly unblocked by COMMERCE-008/009/011 being Complete. COMMERCE-013 remains independently Ready from COMMERCE-008/011. COMMERCE-012 remains Pending because it still depends on COMMERCE-010.
+COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 Attempt 1 has been returned to Ready for a bounded mandatory-platform-baseline and coherent-snapshot correction. COMMERCE-014 remains independently Ready from COMMERCE-008/009/011, and COMMERCE-013 remains independently Ready from COMMERCE-008/011. COMMERCE-012 remains Pending because it still depends on COMMERCE-010.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain
