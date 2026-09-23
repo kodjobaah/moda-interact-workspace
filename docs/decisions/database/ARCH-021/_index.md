@@ -18,7 +18,7 @@ Phase 2 database work is intentionally one cohesive deterministic task. `DATABAS
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [DATABASE-001](DATABASE-001-persist-agent-configuration-schema.md) | Persist complete Phase 2 model/prompt/template configuration schema | Ready | ARCH-020-DATABASE-001 |
+| [DATABASE-001](DATABASE-001-persist-agent-configuration-schema.md) | Persist complete Phase 2 model/prompt/template configuration schema | Complete | ARCH-020-DATABASE-001 |
 
 ## Template classification
 
@@ -29,12 +29,12 @@ Commerce service/UI without a database schema change; the stable category slug/i
 
 ## Execution frontier
 
-The single Phase 2 Database task is immediately executable:
+DATABASE-001 Attempt 3 is architect-accepted Complete after successful PostgreSQL 15 fresh/upgrade rehearsals for ARCH-021 and predecessor ARCH-020 compatibility. The single-migration SQLSTATE `55P04` correction is proven, all 24 ARCH-021 behavioral cases pass in both fresh and upgrade modes, and the predecessor ARCH-020 upgrade preserves 217 indexes unchanged while completing all 298 behavioral cases.
+
+The Database domain has no remaining executable Phase 2 task:
 
 ```text
-ARCH-021-DATABASE-001   complete Phase 2 CommerceAgent configuration schema
+ARCH-021-DATABASE-001   Complete
 ```
 
-After architect acceptance, COMMERCE-007 and COMMERCE-008 may proceed in parallel because their
-durable prerequisites will exist. COMMERCE-009 remains gated on architect acceptance of COMMERCE-008
-because prompt copy-on-use consumes the template service.
+COMMERCE-007 and COMMERCE-008 are now independently Ready because their durable prerequisite exists. COMMERCE-009 remains gated on architect acceptance of COMMERCE-008 because prompt copy-on-use consumes the template service.

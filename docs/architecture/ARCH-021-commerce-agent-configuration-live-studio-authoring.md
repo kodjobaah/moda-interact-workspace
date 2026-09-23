@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 task set defined; ARCH-021-DATABASE-001 is Ready.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation architect-accepted Complete; COMMERCE-007 and COMMERCE-008 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -718,9 +718,9 @@ Phase 2 tasks:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-DATABASE-001 | moda_database | Ready | ARCH-020-DATABASE-001 |
-| ARCH-021-COMMERCE-007 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-008 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
+| ARCH-021-COMMERCE-007 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-008 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
@@ -728,22 +728,14 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
 
-The initial Phase 2 execution frontier is one cohesive Database task:
+The current Phase 2 execution frontier is two independent Commerce service tasks:
 
 ```text
-ARCH-021-DATABASE-001   complete Phase 2 CommerceAgent configuration schema
+ARCH-021-COMMERCE-007   model catalogue/default/shop-override service
+ARCH-021-COMMERCE-008   category-organised prompt-template service
 ```
 
-It introduces model catalogue/selections, template categories/templates/revisions, prompt
-lineages/revisions and active prompt pointers in one coherent migration. After architect
-acceptance, COMMERCE-007 and COMMERCE-008 can proceed independently against the same accepted
-schema. COMMERCE-009 becomes eligible only after COMMERCE-008 is also architect-accepted because
-prompt copy-on-use consumes the template service. COMMERCE-011 then establishes only the shared
-Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013
-(template library) and COMMERCE-014 (platform prompt authoring) are independently reviewable UI
-capabilities and may execute in parallel whenever their own dependency sets are Complete. Phase 1
-is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2
-dependencies above.
+DATABASE-001 is architect-accepted Complete and provides the shared durable model catalogue/selections, template categories/templates/revisions, prompt lineages/revisions and active prompt pointers. COMMERCE-007 and COMMERCE-008 may therefore proceed independently against the same accepted schema. COMMERCE-009 becomes eligible only after COMMERCE-008 is also architect-accepted because prompt copy-on-use consumes the template service. COMMERCE-011 then establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) are independently reviewable UI capabilities and may execute in parallel whenever their own dependency sets are Complete. Phase 1 is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2 dependencies above.
 
 Phase 2 exit criteria:
 
@@ -817,9 +809,9 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
 | ARCH-021-COMMERCE-006 | moda_commerce | Complete | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
-| ARCH-021-DATABASE-001 | moda_database | Ready | ARCH-020-DATABASE-001 |
-| ARCH-021-COMMERCE-007 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-008 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
+| ARCH-021-COMMERCE-007 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-008 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
@@ -854,6 +846,31 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — DATABASE-001 Attempt 3 accepted
+
+- Accepted the exact Phase 2 durable CommerceAgent configuration schema and single migration after the SQLSTATE `55P04` correction retained the audit-target invariant using text comparison rather than uncommitted enum constants.
+- Developer live PostgreSQL 15 evidence passed ARCH-021 fresh and upgrade rehearsals with 24/24 behavioral cases in each mode; upgrade preservation passed.
+- Predecessor compatibility passed ARCH-020 fresh and upgrade rehearsals with 298/298 behavioral cases in each mode; upgrade preserved 217 predecessor indexes unchanged.
+- Rehearsal-only compatibility fixes made during review removed stale assumptions about a pre-existing platform lineage and about ARCH-020 being the final Commerce schema shape; they did not alter the accepted Prisma schema or ARCH-021 migration semantics.
+- Marked DATABASE-001 Complete and promoted COMMERCE-007 and COMMERCE-008 to Ready. COMMERCE-009 remains Pending on COMMERCE-008.
+
+### 2026-09-23 — DATABASE-001 Attempt 2 changes requested
+
+- Reviewed implementation `7ab7c27b56468af346df2f1ae92710b094779c7e` with submitted parent report `4c4684521aacaa8e03f1a2eeaa6467132e0e56dd`.
+- Confirmed every Attempt 1 fixture/static-validation correction is present: retained-DRAFT and exact-other-shop pointer cases, race-winner independence, catalogue-provider immutability, complete predecessor-index subset preservation, and ARCH-020 historical-action-prefix compatibility.
+- Developer live fresh-rehearsal evidence reached `20260923150000_arch021_agent_configuration` and failed with PostgreSQL SQLSTATE `55P04` because newly appended `CommerceAuditAction` values are referenced by `arch020_audit_targets` before the enum-addition transaction commits.
+- Required a bounded correction inside the existing single ARCH-021 migration directory: preserve the exact audit-target semantics while avoiding uncommitted enum-literal resolution (prefer `"action"::text` comparisons); do not split the migration or weaken the database invariant.
+- Returned DATABASE-001 to Ready at `attempt: 2`. COMMERCE-007 and COMMERCE-008 remain Pending until fresh/upgrade ARCH-021 and predecessor ARCH-020 live rehearsals pass and DATABASE-001 is architect-accepted.
+
+### 2026-09-23 — DATABASE-001 Attempt 1 changes requested
+
+- Reviewed implementation `e8f173be5dc9197bcdf5fdd68f35ce335c2e0174` with submitted parent report `bc043533bec160dffe19fb08f894a6cd1e3f67cf`.
+- Confirmed the exact Phase 2 schema/migration surface and ARCH-021 static contract are substantially present.
+- Identified deterministic rehearsal-fixture defects: the platform-DRAFT rejection uses an already-published revision, the other-shop rejection uses an exact-same-shop lineage, and the concurrency fixture assumes a particular winner.
+- Required the upgrade validator to prove preservation of all predecessor indexes (including existing `CommerceAuditEvent` indexes) by treating the pre-migration index set as a required subset after the additive migration.
+- Explicitly authorised the existing ARCH-020 static validator to become extension-aware for appended `CommerceAuditAction` values while continuing to require its historical 17-action prefix/order exactly.
+- Returned DATABASE-001 to Ready at `attempt: 1`. Fresh and upgrade rehearsal remain mandatory before acceptance; COMMERCE-007 and COMMERCE-008 remain Pending.
 
 ### 2026-09-23 — Phase 2 task set defined
 
