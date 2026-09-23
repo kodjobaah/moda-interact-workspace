@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -564,14 +564,183 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1.
+
 ### Review Notes
-None
+Reviewed the corrected submitted snapshot for implementation `98511ef` and parent
+report `9b7de4ad`. The new `src/commerce/tool-definition/` boundary is directionally
+correct, Shared remains pinned at exact `0.14.2`, the canonical nested
+`EXTERNAL_HTTP.request` shape exists, new runtime kinds fail closed in the executor,
+and the local MCP diagnostic evidence is useful. Attempt 1 is not accepted because
+the ownership migration and several exact contract semantics are incomplete.
+
+The correction items below are the complete Attempt 2 rework contract. Keep the
+work inside COMMERCE-016: do not implement request-JavaScript execution, the Admin
+GraphQL compiler, Phase 3 UI expansion, database work or a Shared publication.
+
+#### A1-R1 — finish the Commerce-owned definition migration
+
+Source/import and focused-test changes are required. The task requires the full
+persisted authoring definition to have one Commerce owner, but the submitted tree
+still consumes the old Shared full-definition contracts in production code. At
+minimum the review snapshot still contains:
+
+- `lib/discovery/schema.ts` importing Shared `validateDefinitionForPublication`;
+- `src/studio/contracts.ts` importing Shared `CommerceToolDefinition` /
+  `CommerceToolDraftDefinition`;
+- `src/commerce/mcp/ports.ts` importing Shared `CommerceToolDefinition`;
+- `src/commerce/publication/ports.ts` importing Shared Tool definition/draft types;
+- `src/commerce/preview/types.ts` and
+  `src/commerce/integration/preview/adapters.ts` importing Shared Tool definition
+  schema/types;
+- `src/studio/external-http/ports.ts`, `src/studio/external-http/editor.tsx` and
+  `components/studio-workspace.tsx` still consuming the old Shared full Tool /
+  EXTERNAL_HTTP definition contract; and
+- focused/adjacent tests such as `tests/query-execution.test.ts`,
+  `tests/recommendation-contract.test.ts`, `tests/commerce-lifecycle.test.ts`,
+  `tests/studio-services.test.ts`, `tests/external-wiring.test.ts` and
+  `tests/external-tools-ui.test.tsx` still importing the legacy definition helpers.
+
+`lib/discovery/schema.ts` is particularly important: calling the old Shared
+publication helper leaves a second canonical publication definition path after this
+task. Migrate the full-definition symbols to `src/commerce/tool-definition`; retain
+Shared imports only for genuinely cross-service primitives/results/descriptors,
+manifests, grants and runner contracts. Do not redesign the Studio UI here; make
+only the minimum contract/fixture changes needed to stop using the old full
+definition as canonical.
+
+Acceptance proof must include an exhaustive `rg` (or equivalent deterministic
+check) showing no production Commerce import of Shared
+`CommerceToolDefinitionSchema`, `CommerceToolDefinition`,
+`CommerceToolDraftDefinitionSchema`, `CommerceToolDraftDefinition`, the old full
+`ExternalHttpExecution` schema/type, Shared `validateDefinitionForPublication`,
+`definitionToMcpDescriptor`, `mapToolArguments` or `toolHashInput`. Migrate the
+focused/fixture consumers called out by the task as well.
+
+#### A1-R2 — enforce the exact request-JavaScript persisted/argument contract
+
+Source and focused-test changes are required. `mapToolArguments()` currently uses
+`JSON.parse(JSON.stringify(input))` for `EXTERNAL_HTTP + JAVASCRIPT`. That returns
+ordinary prototype-bearing objects and does not satisfy R10's required
+null-prototype deep/plain bounded copy of the already validated CommerceAgent
+arguments. Build the copy deterministically after `inputSchema` validation, with
+null prototypes for object nodes and no authority/credential injection. Add a
+regression that verifies the top-level and nested object prototypes and that invalid
+raw input is rejected before copying.
+
+The focused contract test also currently asserts that
+`export default async function buildRequest() {}` parses successfully. That is the
+opposite of R4, which defines a synchronous `function buildRequest({ args }) { ... }`
+persisted source contract and states that `export default`, imports, async functions
+and network operations are not part of it. Remove that positive assertion and make
+persisted-source admission deterministically reject those unsupported forms without
+executing JavaScript or performing network I/O. COMMERCE-017 remains the runtime
+owner.
+
+#### A1-R3 — restore accepted visual publication-shape compatibility
+
+Source and focused-test changes are required. The submitted local
+`validateDefinitionForPublication()` derives `{ values: resultSchema }` for every
+EXTERNAL_HTTP definition and does not statically compare OBJECT/LIST projections
+with the declared closed `resultSchema`. This reintroduces the publication hole that
+was already corrected in the accepted Shared contract: for example an OBJECT
+projection can produce `{ other: ... }` while `resultSchema` requires `title`, yet
+the current local helper can still accept a response template using
+`result.values.title`.
+
+Preserve the accepted semantics when moving ownership locally:
+
+- DIRECT -> wrapper output `{ values: resultSchema }`;
+- OBJECT/LIST -> deterministic static visual projection/result-schema compatibility,
+  including required names, LIST array/item shape, scalar projection compatibility,
+  undeclared output names and `omitIfMissing` versus required outputs;
+- JAVASCRIPT -> declared `resultSchema` wrapper; and
+- SHOPIFY_ADMIN_GRAPHQL -> delegate document/output proof to the supplied
+  `CommerceDefinitionCompiler`.
+
+Do not call the legacy Shared publication helper as the new canonical owner. Add at
+least valid OBJECT/LIST controls and focused negative regressions for incompatible
+projection names/shape. No live provider call belongs here.
+
+#### A1-R4 — complete the mandatory R14 migration/contract proof
+
+The new focused script reports 7 tests, but the submitted suite does not prove all
+mandatory R14 cases. Extend it (test count itself is irrelevant) so the required
+behaviours are actually demonstrated, including:
+
+- request descriptor rejection of extra `origin`, `method`, `body` and credential
+  fields plus lowercase reserved headers;
+- request-JS argument mapping returning only validated CommerceAgent arguments with
+  the R10 safe-copy semantics;
+- Admin GraphQL variable mapping through the persisted `inputSchema`;
+- tool-hash changes for request source, headers, response mode and Admin document;
+- policy and transitional Storefront definitions still parsing;
+- canonical JavaScript source acceptance and unsupported source-form rejection per
+  R4; and
+- the zero-legacy-full-definition-import migration check from A1-R1.
+
+Keep the existing DIRECT/JSON, JavaScript-response root, canonical/root-level HTTP
+shape, Admin pinned-version and MCP-projection checks.
+
+#### A1-R5 — reconcile validation and prepared-worktree evidence
+
+The Completion Report records the implementation branch/commit but omits the
+launcher-resolved parent worktree, implementation worktree, matching branch names,
+start-of-attempt synchronization and recursive submodule/database evidence required
+by the architect protocol. Record the exact preparation packet values; do not invent
+them. Replace the trailing placeholder `Files Changed/Work Completed/Validation
+Results/Deviations/...: None` block with the actual report rather than keeping two
+conflicting Completion Reports.
+
+After A1-R1, rerun the task-focused suites, targeted lint and `git diff --check`.
+Re-run typecheck and distinguish genuinely pre-existing diagnostics from
+Shared/local Tool-definition diagnostics: any diagnostic caused by the incomplete
+ownership migration is task-owned and must not be classified as baseline. The two
+backend singleton environment assertions may remain documented if they reproduce
+unchanged after the corrections and are not caused by the Tool-contract migration.
+
 ### Reviewed Files
-None
+
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-definition/mappings.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `src/commerce/tool-definition/storage.ts`
+- `src/commerce/tool-definition/index.ts`
+- `src/commerce/execution/executor.ts`
+- `src/commerce/external-http/index.ts`
+- `lib/discovery/schema.ts`
+- `src/commerce/publication/ports.ts`
+- `src/commerce/mcp/ports.ts`
+- `src/commerce/preview/types.ts`
+- `src/commerce/integration/preview/adapters.ts`
+- `src/studio/contracts.ts`
+- `src/studio/external-http/ports.ts`
+- `src/studio/external-http/editor.tsx`
+- `components/studio-workspace.tsx`
+- `tests/arch021-commerce-tool-contract.test.ts`
+- adjacent Tool-definition consumers identified by repository search
+
 ### Validation Reviewed
-None
+
+- Submitted `npm run test:arch021-commerce-tool-contract`: 7/7 reported pass.
+- Submitted `npm run test:arch020-external-http`: 13/13 reported pass.
+- Submitted external publication/preview/execution/wiring slices and local MCP
+  diagnostic reviewed as evidence.
+- Submitted backend integration result: 60/62 with two stated environment/baseline
+  singleton assertions.
+- Static source/import review independently identified A1-R1 through A1-R4.
+- The supplied archive does not contain `node_modules`, so Vitest/typecheck were not
+  independently rerun in the review environment.
+
 ### Architecture Conformance
-Pending
+
+Changes required. The ownership direction and fail-closed runtime baseline conform,
+but the submitted implementation still has dual Shared/Commerce canonical Tool
+definitions, does not meet R10 request-JS safe-copy semantics, regresses R12 visual
+publication compatibility, and does not yet provide the complete R14 proof.
+
 ### Follow-up
-None
+
+Return the same task through `/moda-task ARCH-021-COMMERCE-016`. Preserve
+`attempt: 1`; the next authorized claim increments to Attempt 2. Do not start
+COMMERCE-017/018/020 until COMMERCE-016 is architect-accepted Complete.
