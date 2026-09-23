@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -234,34 +234,37 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 2 correctly resolves both functional defects from the Attempt 1 correction contract and must preserve those fixes.
+Attempt 3 correctly resolves the specific top-level sibling-buffer defect from the Attempt 2 correction contract and preserves the accepted Attempt 2 CAS/publication fixes.
 
-1. The production U06 Tool editor now retains the authoritative `editVersion` returned by each successful `updateToolDraft(...)` and uses the live value for subsequent JavaScript saves, the enclosing full Tool save and `Publish validated revision`. The focused U06 regression proves the expected `2 -> 3 -> 4` compare-and-swap sequence.
+The JavaScript draft-save path now parses and schema-validates the current `inputSchemaText` and `responseTemplateText`, persists those values together with the current JavaScript source in the same `updateToolDraft(...)`, refreshes the authoritative returned definition/buffers/edit version, and only then clears the shared U06 dirty state. Invalid top-level sibling JSON performs no write and retains the navigation guard. The focused U06 regression proves that path, and the submitted functionality-focused suites are sufficient.
 
-2. The JavaScript panel now hands completed current synthetic-sample state through the existing typed composition boundary to the canonical outer `externalValidated` publication gate. Source/sample/definition invalidation clears that gate, ADMIN still cannot publish, and SUPER_ADMIN publication uses the latest retained edit version. The accepted server-only QuickJS/external-preview, cancellation/reconciliation and no-provider-network boundaries remain intact.
+One remaining production-functional saved-vs-unsaved defect exists in the same U06 JavaScript save boundary.
 
-One production-functional saved-vs-unsaved defect remains in the new JavaScript draft-save composition.
+`ExternalHttpEditor` also owns independently buffered JSON editors that are visibly part of the U06 Tool definition:
 
-`saveCodeDraft(...)` persists the current `definition` object and then unconditionally calls `setDirty(false)`. However, U06 keeps `Input JSON Schema` and `Response template` in independent text buffers (`inputSchemaText` and `responseTemplateText`) until the enclosing Tool `Save draft` parses and applies them. Therefore a user can:
+- `Advanced response processing JSON` (`advanced`)
+- `Response shape / resultSchema JSON` (`schemaText`)
+
+When either editor contains invalid JSON, its local buffer is retained and the shared U06 dirty state is set, but the invalid value is intentionally not copied into `definition`. A user can therefore:
 
 ```text
-edit Input JSON Schema or Response template
--> edit JavaScript
--> use the JavaScript panel Save draft
--> JavaScript save persists a definition that still contains the previous sibling value
--> shared U06 dirty state becomes false
+edit JavaScript source
+-> enter invalid Advanced response processing JSON or Response shape JSON
+-> JavaScript panel Save draft
+-> saveCodeDraft(...) persists the previous valid execution value
+-> setDirty(false)
 ```
 
-The screen can then display a sibling edit that is not present in the persisted Tool revision while navigation protection is cleared. After a new JavaScript validation/sample cycle, the outer publication gate can also become eligible against the persisted revision even though the screen still displays an unsaved sibling value. That violates the task requirement to preserve saved-vs-unsaved Tool-draft identity and can publish a revision different from the definition visibly being reviewed.
+The invalid editor text remains visibly displayed even though the persisted Tool revision contains the previous value. A subsequent validate/sample cycle can make `externalValidated` current again and enable SUPER_ADMIN publication against the persisted revision while U06 still visibly shows an unpersisted invalid execution value.
 
-The Attempt 2 implementation commit is `14c4c3e`; the submitted parent report commit is `f031e16`.
+This is the same saved-vs-unsaved/publication-integrity invariant as the Attempt 2 correction, not an exhaustive-test concern.
+
+The Attempt 3 implementation commit is `5991dde`; the submitted parent report commit is `2b37c7b`.
 
 ### Reviewed Files
 
 - `components/studio-workspace.tsx`
 - `src/studio/external-http/editor.tsx`
-- `src/studio/external-http/ports.ts`
-- `src/studio/code-response/contracts.ts`
 - `src/studio/code-response/code-response-panel.tsx`
 - `src/studio/code-response/production-panel.tsx`
 - `tests/external-tools-ui.test.tsx`
@@ -270,28 +273,27 @@ The Attempt 2 implementation commit is `14c4c3e`; the submitted parent report co
 
 ### Validation Reviewed
 
-The submitted functionality-focused evidence is sufficient for the Attempt 2 CAS/publication corrections: 103/103 focused tests passed; targeted ESLint reported no errors; `git diff --check` passed; and the repository-wide typecheck remains blocked by the documented pre-existing baseline diagnostics.
+The submitted functionality-focused validation is sufficient: the U06 suite reports 12 passing tests; the focused composition/preview set reports 104 passing tests; the response/preview integration subset reports 76 passing tests; targeted ESLint and `git diff --check` passed. The documented QuickJS runtime-proof failure and repository-wide typecheck baseline remain unrelated and are not blockers.
 
-No exhaustive test expansion is requested. The next correction needs only focused proof that JavaScript save cannot clear or bypass unsaved sibling Tool-definition state.
+No exhaustive test expansion is requested. The next correction needs only focused proof for the remaining editor-buffer publication-integrity path.
 
 ### Architecture Conformance
 
 Partial.
 
-The production JavaScript panel composition, authoritative edit-version continuity, canonical JavaScript validation/publication handoff, server-only execution boundary, cancellation/reconciliation behavior and Phase 1 no-provider-network constraint conform.
+The production JavaScript response-panel composition, authoritative edit-version continuity, JavaScript validation/publication handoff, complete top-level U06 schema/template persistence, server-only QuickJS/external-preview execution, cancellation/reconciliation and Phase 1 no-provider-network/credential boundaries conform.
 
-The JavaScript save path does not yet preserve the complete U06 saved-vs-unsaved identity because it may mark the whole Tool clean while sibling schema/template buffers remain unpersisted. Phase 1 therefore cannot close on Attempt 2.
+Phase 1 cannot close while a JavaScript save can clear the shared U06 dirty/navigation/publication guard although another visible Tool-definition JSON editor still contains an unpersisted invalid value.
 
 ### Follow-up
 
-Attempt 3 correction contract:
+Attempt 4 correction contract:
 
-1. Keep the accepted Attempt 2 edit-version and publication-gate fixes unchanged.
-2. Correct JavaScript draft-save semantics so a successful code-panel save cannot clear the shared U06 dirty/navigation/publication guard while any sibling Tool-definition state displayed by U06 remains unpersisted.
-3. The implementation may either persist the complete current valid U06 candidate atomically with the JavaScript source or retain the appropriate dirty state for sibling unsaved buffers. Do not create a second durable Tool definition or separate publication mechanism.
-4. Invalid sibling JSON must not be silently discarded or treated as saved merely because JavaScript source can be saved.
-5. Publication must continue to represent the exact persisted definition visibly under review. An unsaved sibling schema/template value must therefore either be persisted as part of the same valid draft save or continue to block publication/navigation as dirty.
-6. Add one focused U06 regression proving this behavior. Exhaustive editor testing is not required.
-7. Preserve all accepted server-side QuickJS/external-preview, cancellation/reconciliation, ADMIN/SUPER_ADMIN and no-provider-network/credential boundaries.
+1. Preserve the accepted Attempt 2 CAS/publication fixes and the Attempt 3 complete top-level `Input JSON Schema` / `Response template` persistence unchanged.
+2. Before any JavaScript-panel save may clear the shared U06 dirty state, account for the visible `ExternalHttpEditor` definition buffers as well. In particular, invalid `Advanced response processing JSON` or invalid `Response shape / resultSchema JSON` must remain dirty and must not be silently bypassed by saving JavaScript.
+3. Publication must continue to represent the exact persisted Tool definition visibly under review. If a visible execution-definition buffer is invalid/unpersisted, navigation/publication protection must remain active until that state is corrected, discarded through an accepted guard, or successfully persisted.
+4. Use the smallest coherent correction. Do not create a second durable Tool definition, a second publication path, provider networking, credential access, or a new response-processing engine.
+5. Add only focused functional regression proof for this path. For example: edit JavaScript -> make Response shape JSON invalid -> JavaScript Save draft -> no false-clean state/no publication eligibility; equivalent coverage for the shared preflight mechanism is sufficient. Exhaustive editor testing is not required.
+6. Preserve all accepted server-side QuickJS/external-preview, cancellation/reconciliation, ADMIN/SUPER_ADMIN and no-provider-network/credential boundaries.
 
-Return this same task through the normal launcher. Preserve `attempt: 2`; the next authorized claim increments it to Attempt 3.
+Return this same task through the normal launcher. Preserve `attempt: 3`; the next authorized claim increments it to Attempt 4.

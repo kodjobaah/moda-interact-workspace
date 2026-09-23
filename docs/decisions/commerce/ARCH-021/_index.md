@@ -35,13 +35,14 @@ Phase 1 implementation task is now Ready:
 ARCH-021-COMMERCE-006   install the production JavaScript response-panel composition
 ```
 
-COMMERCE-006 Attempt 2 resolved the previously requested Tool-draft edit-version/CAS
-continuity and JavaScript validation/publication handoff. Architect re-review identified one
-remaining bounded production-functional saved-vs-unsaved defect: the JavaScript panel save can
-clear the shared U06 dirty state while independently buffered Input JSON Schema or Response
-template edits remain unpersisted. COMMERCE-006 is Ready for Attempt 3; preserve the accepted
-Attempt 2 CAS/publication fixes and correct only this draft-identity boundary.
-Phase 2 remains intentionally unmaterialised until Phase 1 is reconciled.
+COMMERCE-006 Attempt 3 correctly persists the current top-level Input JSON Schema and
+Response template with JavaScript saves and preserves the accepted CAS/publication fixes.
+Architect re-review identified one remaining bounded saved-vs-unsaved defect in the same U06
+boundary: invalid `ExternalHttpEditor` Advanced response-processing or Response-shape JSON can
+remain visibly buffered while JavaScript Save persists the previous execution value and clears
+the shared dirty guard. COMMERCE-006 is Ready for Attempt 4 to close that final visible-definition
+publication-integrity gap. Phase 2 remains intentionally unmaterialised until Phase 1 is
+reconciled.
 
 ## Phase 1 dependency graph
 
