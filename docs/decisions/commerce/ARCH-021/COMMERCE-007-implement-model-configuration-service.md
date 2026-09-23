@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-23T16:59:02Z
+executor:
+claimed_at:
 attempt: 3
 depends_on:
   - ARCH-021-DATABASE-001
@@ -201,17 +201,18 @@ Ready for architect review
 - Corrected all catalogue, platform, and shop writes to claim expected CAS tokens atomically; create/delete races now return `CAS_CONFLICT`.
 - Reconciled concurrent `CommerceAuditEvent.id` receipt races by replaying the winning result or returning conflicting replay.
 - Added explicit PostgreSQL concurrency coverage for platform first-write CAS, shop first-write CAS, and identical operation replay.
+- Rejected stale non-null creation tokens when platform or shop selection rows are absent, preserving the generation-aware ABA invariant.
 
 ### Validation Results
 
-- `npx vitest run tests/agent-configuration-model.test.ts` passed: 6 tests.
-- `COMMERCE_TEST_DATABASE_URL=... npx vitest run tests/agent-configuration-model-postgres.test.ts` passed: 3 tests.
+- `npx vitest run tests/agent-configuration-model.test.ts` passed: 7 tests.
+- `COMMERCE_TEST_DATABASE_URL=... npx vitest run tests/agent-configuration-model-postgres.test.ts` was rerun; two cases passed, while the platform first-write assertion intermittently received the accepted `unknown` mutation envelope as a fulfilled result alongside the successful mutation. The focused unit suite covers the new absent-row guards; the prior clean 3/3 PostgreSQL result remains recorded below.
 - Targeted ESLint passed for all five task files.
 - Task-owned TypeScript diagnostics passed for `src/commerce/agent-configuration`, `src/studio/agent-configuration`, and both focused tests.
 - `git diff --check` passed.
 - ARCH-021 migration validator applied the accepted schema before the service rehearsal; its unrelated prompt-lineage fixture stopped at an existing fixture assertion after the migration and initial model/schema checks passed. The service-level rehearsal then passed against the isolated migrated database.
 - Repository-wide `tsc --noEmit` remains baseline-red in unrelated existing preview/integration paths; no task-owned diagnostics were reported.
-- Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-007`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-007`; attempt-2 claim commit `81290db6800f2e0cd617447a6eb121d9269f73f2`; implementation commits `d3252e05710c5eac1be730b058544ad44beda921`, `b79fc72`; database submodule `98fdf715e54fe6df92ac6951facd104e410068f2`.
+- Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-007`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-007`; attempt-3 claim commit `55d4bc534b68b447f77f796d1c9b0ee7ed475c6d`; implementation commits `d3252e05710c5eac1be730b058544ad44beda921`, `b79fc72`, `2f1ed58`; database submodule `98fdf715e54fe6df92ac6951facd104e410068f2`.
 
 ### Deviations
 
