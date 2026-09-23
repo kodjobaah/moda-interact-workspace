@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 70
 executor: null
 claimed_at: null
@@ -104,11 +104,11 @@ tests/agent-configuration-model-ui.test.tsx
 
 ## Work Items
 
-- [ ] Add production Agent Configuration route/navigation entry.
-- [ ] Establish the dedicated Agent Configuration page/domain component boundary outside `StudioWorkspace`.
-- [ ] Compose model catalogue/default UI against COMMERCE-007.
-- [ ] Add accepted replay/conflict/unknown-outcome presentation for model mutations.
-- [ ] Add focused route/UI/auth tests proving production ports rather than fixtures.
+- [x] Add production Agent Configuration route/navigation entry.
+- [x] Establish the dedicated Agent Configuration page/domain component boundary outside `StudioWorkspace`.
+- [x] Compose model catalogue/default UI against COMMERCE-007.
+- [x] Add accepted replay/conflict/unknown-outcome presentation for model mutations.
+- [x] Add focused route/UI/auth tests proving production ports rather than fixtures.
 
 ## Interfaces / Contracts
 
@@ -132,20 +132,20 @@ Produces the shared Agent Configuration UI/module shell and platform model surfa
 
 ## Acceptance Criteria
 
-- [ ] Production Studio exposes an Agent Configuration surface backed by the real COMMERCE-007 model service.
-- [ ] Platform admins can list/create/update/enable/disable catalogue entries and select the platform default model.
-- [ ] ADMIN is read-only and secrets are never rendered.
-- [ ] Model mutation replay/conflict/unknown outcomes use accepted Studio behaviour.
-- [ ] Agent Configuration state/actions are not implemented inline inside `StudioWorkspace`; unrelated Studio domains are not opportunistically rewritten.
-- [ ] No prompt/template authoring or model/provider execution is introduced.
+- [x] Production Studio exposes an Agent Configuration surface backed by the real COMMERCE-007 model service.
+- [x] Platform admins can list/create/update/enable/disable catalogue entries and select the platform default model.
+- [x] ADMIN is read-only and secrets are never rendered.
+- [x] Model mutation replay/conflict/unknown outcomes use accepted Studio behaviour.
+- [x] Agent Configuration state/actions are not implemented inline inside `StudioWorkspace`; unrelated Studio domains are not opportunistically rewritten.
+- [x] No prompt/template authoring or model/provider execution is introduced.
 
 ## Validation
 
-- [ ] focused Agent Configuration route/component tests
-- [ ] model/default mutation UI tests
-- [ ] production-port composition regression
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused Agent Configuration route/component tests
+- [x] model/default mutation UI tests
+- [x] production-port composition regression
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -172,6 +172,8 @@ Ready for architect review
 - `components/studio-shell.tsx`
 - `components/studio-workspace.tsx`
 - `app/styles.css`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
 - `tests/agent-configuration-model-ui.test.tsx`
 
 ### Work Completed
@@ -183,29 +185,35 @@ Ready for architect review
 - Added accepted unknown-outcome replay using the original operation ID and CAS conflict messaging.
 - Routed only the new surface discriminator through `StudioWorkspace`; unrelated Studio domains were left unchanged.
 
+- Corrected the production handoff so `ProductionStudioPage` passes the real model server actions and trusted server-derived environment through `StudioWorkspace` to the dedicated screen.
+- Preserved selected-shop context by accepting route `shopId`, resolving it through `resolveStudioShopSelection`, and passing `shopSelection` into the production shell.
+- Added concrete trusted environment display to Agent Configuration.
+- Reconciled serializable server-action failures and UI handling for forbidden, not-found, unavailable, stale-CAS, conflicting-replay, and unknown outcomes while preserving operation IDs for reconciliation.
+- Kept model state and mutation orchestration under `src/studio/agent-configuration/`; no unrelated Studio domain rewrite or provider execution was introduced.
+
 ### Validation Results
 
-- `npx vitest run tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-model.test.ts`: passed, 10 tests.
-- Targeted ESLint over all changed TypeScript/TSX files: passed with no errors or warnings.
+- `npx vitest run tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-model.test.ts`: 2 files, 11 tests passed.
+- Targeted ESLint over changed route, composition, Agent Configuration, and UI test files: passed.
 - `npx next typegen`: passed.
-- Task-owned TypeScript diagnostics: no diagnostics in Agent Configuration files, route, composition files or focused UI test; unrelated pre-existing StudioWorkspace diagnostics remain outside this task's changed behavior.
+- Task-owned TypeScript paths: no new Agent Configuration diagnostics. Full repository typecheck still reports the pre-existing legacy `StudioWorkspace` diagnostics for duplicate `productionCodePanel`, missing `responseProcessing`, and `StudioFailure.message`.
 - `git diff --check`: passed.
 
 ### Deviations
 
-The implementation worktree initially required `npm ci` because dependencies were not installed; the lockfile install completed without changing tracked dependency files. The repository reports npm audit vulnerabilities from the existing dependency graph.
+The full repository typecheck remains non-zero because of the existing legacy `StudioWorkspace` diagnostics listed above; they are outside the Attempt 2 correction path and were not changed.
 
 ### Assumptions
 
-The production route uses the server action module directly, so authorization and environment derivation remain server-side. The existing accepted model service and Prisma schema are treated as the source of mutation/CAS semantics.
+- The accepted COMMERCE-007 model service and Phase 1 shop-selection resolver remain the source of truth for server authorization, environment, and selected-shop context.
 
 ### Unresolved Issues
 
-No task-owned unresolved issues.
+Existing legacy `StudioWorkspace` typecheck diagnostics remain for a later cleanup task.
 
 ### Architectural Concerns
 
-None identified.
+None introduced by Attempt 2.
 
 ## Architect Review
 
