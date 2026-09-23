@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -222,17 +222,15 @@ None
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 correctly implements the per-template draft-number allocation correction: `createDraft` obtains a row-level `FOR UPDATE` lock on the owning `CommercePromptTemplate` before counting and inserting the next revision. This serialises only authors of the same template and preserves the accepted `(templateId, revisionNumber)` uniqueness constraint without global authoring serialization. The generic failed/ambiguous-transaction reconciliation path also correctly re-reads `CommerceAuditEvent` and can replay a matching durable winner.
+Attempt 3 satisfies the remaining durable-replay correction. Known CAS/domain failures now consult the durable `CommerceAuditEvent` receipt before finalising the fallback result, so a concurrent identical CAS-bound command replays the winning durable result instead of returning a stale CAS error. Conflicting receipt reuse remains `CONFLICTING_REPLAY`, and genuine no-receipt ambiguity may still return the existing Studio `unknown` envelope.
 
-One bounded durable-replay gap remains for commands whose concurrent loser fails with a known CAS/domain error before it reaches the audit insert. `command()` currently returns `CAS_CONFLICT` immediately from the transaction catch before consulting the durable receipt. For example, two identical concurrent `updateCategory` calls can both observe no receipt and carry the same `expectedEditVersion`; one update succeeds and commits its audit receipt, while the other waits on the same row, then its atomic `updateMany` affects zero rows and throws `CAS_CONFLICT`. The loser currently returns that CAS conflict even though the winning transaction has already durably recorded the same `operationId`, actor, action, payload hash and successful result. This violates the task invariant that the same privileged command replays the same durable result.
+The accepted per-template draft-number allocation is preserved. During live PostgreSQL review, two test/runtime issues were isolated and corrected without changing the Phase 2 persistence model: the PostgreSQL fixture key was changed from an invalid `concurrency.<uuid>` form to the accepted key grammar, and the row lock now uses Prisma's parameterised `Prisma.sql` query representation rather than a hand-built `{ text, values }` object. After those corrections, the disposable-PostgreSQL concurrency suite passed all three required cases.
 
-Attempt 3 must reconcile the durable receipt before finalising a failed concurrent command outcome. If the receipt exists and actor/action/payload hash match, return its stored successful result. If the receipt exists but differs, return `CONFLICTING_REPLAY`. If no matching durable receipt exists, preserve the original known error such as `CAS_CONFLICT`, `INVALID_INPUT`, `NOT_FOUND` or `FORBIDDEN`; do not turn ordinary domain errors into `unknown`. Genuine database/commit ambiguity with no establishable durable receipt may continue to return the existing Studio `unknown` result.
-
-Do not redesign category/template persistence, revision allocation, hashing, publication, authorization or selection semantics. The Attempt 2 `FOR UPDATE` numbering work is accepted and must be preserved.
+The implementation therefore conforms to the category/template lifecycle, exact UTF-8 publication hashing, immutable publication, authorization, new-authoring disablement, durable replay, per-template concurrent draft numbering, and no-provider-execution boundaries. The repository-wide unrelated TypeScript baseline remains non-blocking.
 
 ### Reviewed Files
 
@@ -240,24 +238,24 @@ Do not redesign category/template persistence, revision allocation, hashing, pub
 - `tests/agent-configuration-templates-postgres.test.ts`
 - `tests/agent-configuration-templates.test.ts`
 - `src/studio/agent-configuration/template-contracts.ts`
-- `src/commerce/connections/command-kernel.ts` (accepted durable-replay reference)
+- `src/studio/agent-configuration/template-server-actions.ts`
 
 ### Validation Reviewed
 
-- Submitted focused tests: 9 passed.
+- Submitted focused tests: 6 passed.
 - Submitted targeted ESLint: passed.
-- Submitted Prisma generation: passed.
 - Submitted `git diff --check`: passed.
-- Submitted task-owned TypeScript files remain clean; repository-wide baseline diagnostics are non-blocking.
-- The opt-in PostgreSQL suite was not accepted as live evidence because the configured target was non-disposable and immutable audit cleanup failed.
-- Attempt 3 needs only focused disposable-PostgreSQL evidence that two identical concurrent CAS-bound mutations with the same `operationId` both resolve to the same durable successful result with one receipt. The existing concurrent draft-number regression should remain green; exhaustive lifecycle testing is not required.
+- Submitted task-owned TypeScript files remain clean; repository-wide unrelated diagnostics remain non-blocking.
+- Live disposable PostgreSQL regression after review-time corrections: 3/3 passed:
+  - concurrent same-operation durable receipt replay;
+  - concurrent CAS loser durable receipt replay;
+  - concurrent same-template draft allocation produces distinct revisions.
+- Direct diagnostics confirmed the ARCH-021 migration, Prisma client, audit receipt transaction, service principal path and category service path were healthy before the fixture/row-lock corrections.
 
 ### Architecture Conformance
 
-Partial. Per-template concurrent draft numbering, immutable publication, authorization, hashing, category/template lifecycle and generic receipt reconciliation conform. The remaining gap is the durable same-command replay guarantee when the concurrent loser manifests first as a known CAS/domain error.
+Conformant. The implementation uses the accepted DATABASE-001 models, existing immutable `CommerceAuditEvent` receipt convention, atomic CAS semantics and per-template serialization boundary without introducing alternate persistence, provider/runtime execution or cross-service contracts.
 
 ### Follow-up
 
-Return the same task to Attempt 3 with `status: ready`, `attempt: 2`, `executor: null`, and `claimed_at: null`. Preserve the accepted Attempt 2 revision-allocation implementation and correct only the receipt-first reconciliation of failed concurrent commands plus one focused PostgreSQL CAS/replay regression.
-
-COMMERCE-009, COMMERCE-013 and COMMERCE-014 remain dependency-gated until COMMERCE-008 is architect-accepted Complete.
+Mark ARCH-021-COMMERCE-008 Complete. ARCH-021-COMMERCE-009 becomes Ready because DATABASE-001 and ARCH-020-COMMERCE-002 are already Complete. COMMERCE-013 remains gated on COMMERCE-011, and COMMERCE-014 remains gated on COMMERCE-009 and COMMERCE-011.
