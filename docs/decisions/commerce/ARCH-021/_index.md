@@ -67,21 +67,15 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Complete | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
 | [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Complete | COMMERCE-006, COMMERCE-007 |
 | [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Complete | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
-| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Ready | COMMERCE-008, COMMERCE-011, COMMERCE-015 |
+| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Complete | COMMERCE-008, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Complete | COMMERCE-008, COMMERCE-009, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-015](COMMERCE-015-expose-prompt-template-revision-history.md) | Expose prompt-template revision-history read contract | Complete | COMMERCE-008 |
 
-The current Phase 2 Commerce execution frontier on this task branch is:
+Phase 2 is architect-accepted Complete. The authoritative task files record COMMERCE-007 through COMMERCE-015 Complete; there is no remaining Phase 2 Commerce execution frontier.
 
 ```text
-ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
+Phase 2 frontier: none — implementation set complete
 ```
-
-COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 Attempt 2 is architect-accepted Complete after mandatory platform-baseline validation, independent model/prompt fallback, repeatable-read snapshot composition and selected-shop short-circuit validation. COMMERCE-014 Attempt 2 is architect-accepted Complete after exact template-revision selection, dirty-editor mutation guards, canonical revision-history wiring, singleton platform-lineage read/auth proof and production prompt-action handoff coverage. COMMERCE-012 Attempt 3 is architect-accepted Complete after shop-load isolation, dirty-state protection, single-DRAFT resume, publish/activation recovery and resolver-error preservation. COMMERCE-013 remains Ready on this branch; preserve its newer separately accepted Attempt 5 state during branch reconciliation.
-ARCH-021-COMMERCE-012   Ready — selected-shop model/prompt override surface
-```
-
-COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 Attempt 2 is architect-accepted Complete after mandatory platform-baseline validation, independent model/prompt fallback, repeatable-read snapshot composition and selected-shop short-circuit validation. COMMERCE-013 Attempt 5 is architect-accepted Complete after canonical revision ordering/latest-published summary reconciliation, exact-operation unknown-result success reconciliation and focused UI/production validation. COMMERCE-014 Attempt 2 is architect-accepted Complete after exact template-revision selection, dirty-editor mutation guards, canonical revision-history wiring, singleton platform-lineage read/auth proof and production prompt-action handoff coverage. COMMERCE-012 remains Ready.
 
 ### 2026-09-23 - COMMERCE-013 Attempt 5 accepted
 
@@ -114,6 +108,30 @@ Agent Configuration route/module and platform model UI. Once that shell exists, 
 authoring) are independently reviewable UI capabilities with their own service dependencies; they
 must not be artificially serialized. All Agent Configuration state/actions stay outside
 `StudioWorkspace`, and unrelated Studio domains are not rewritten merely to reduce file size.
+
+
+## Phase 3 — complete Tool authoring
+
+Phase 3 is contract/authoring only. It does not make a real Shopify or external provider call. The CommerceAgent's persisted `inputSchema` remains the argument contract; invocation values remain runtime-generated.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-016](COMMERCE-016-establish-commerce-tool-definition-contract.md) | Establish canonical Commerce-owned Tool-definition contract | Ready | ARCH-020-COMMERCE-021, 030 |
+| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Pending | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
+| [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Pending | COMMERCE-016, ARCH-020-COMMERCE-011 |
+| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth contract and `LIVE_TEST_REQUIRED` publication gate | Pending | COMMERCE-016, ARCH-020-COMMERCE-030 |
+| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring domain from StudioWorkspace | Pending | COMMERCE-016, COMMERCE-005, 006 |
+| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Pending | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
+| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Pending | COMMERCE-019, 020, 024 |
+| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Pending | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
+| [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Pending | COMMERCE-016, 018, 019 |
+
+Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
+
+```text
+Phase 3 entry task: ARCH-021-COMMERCE-016 (moda_commerce)
+After COMMERCE-016 acceptance: COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020 may execute independently.
+```
 
 ### COMMERCE-013 Attempt 1 architect review — 2026-09-23
 

@@ -546,20 +546,6 @@ Migrated Commerce runtime, publication, preview, external integration, compiler,
 ### Parent report state
 
 Task status is `review`, with `executor: null` and `claimed_at: null`. Control is returned to `moda_architect`; no request-JavaScript execution, Admin compiler implementation, or UI work was added.
-### Files Changed
-None
-### Work Completed
-None
-### Validation Results
-None
-### Deviations
-None
-### Assumptions
-None
-### Unresolved Issues
-None
-### Architectural Concerns
-None
 
 ## Architect Review
 
