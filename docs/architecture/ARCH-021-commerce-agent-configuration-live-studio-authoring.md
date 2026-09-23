@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 implementation in progress; COMMERCE-001 accepted Complete.
+Agreed — Phase 0 contract accepted; Phase 1 implementation in progress; COMMERCE-001, COMMERCE-002 and COMMERCE-003 accepted Complete.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -538,7 +538,7 @@ Phase 1 tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
-| ARCH-021-COMMERCE-002 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
+| ARCH-021-COMMERCE-002 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
 | ARCH-021-COMMERCE-004 | moda_commerce | Ready | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
@@ -547,14 +547,13 @@ Phase 1 tasks:
 Current executable frontier:
 
 ```text
-ARCH-021-COMMERCE-002   Attempt 2: complete Connections-side returnTo after production-port wiring
 ARCH-021-COMMERCE-004   Studio-wide selected-shop navigation context
 ```
 
-Those tasks are independent and may execute in parallel. COMMERCE-002's production-port
-composition passed architectural inspection in Attempt 1, but the task remains Ready
-because the pre-existing U06 `returnTo` producer has no Connections-side consumer. No
-task is automatically launched merely because it is Ready.
+COMMERCE-002 is now Complete: production Connections composition uses the accepted
+server-backed port and the pre-existing U06 `returnTo` producer has a validated,
+blocker-aware U15/U16 consumer. COMMERCE-005 remains Pending until COMMERCE-004 is
+architect-accepted Complete. No task is automatically launched merely because it is Ready.
 
 Phase 1 exit criteria:
 
@@ -615,7 +614,7 @@ Phase 1 is materialised as six Commerce tasks under:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
-| ARCH-021-COMMERCE-002 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
+| ARCH-021-COMMERCE-002 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
 | ARCH-021-COMMERCE-004 | moda_commerce | Ready | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
@@ -647,6 +646,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-002 Attempt 2 accepted
+
+- Accepted the production U15/U16 `ConnectionPort` composition and completed the existing ARCH-020 U06 `returnTo` consumer handoff.
+- Confirmed validated internal return destinations propagate through U15/U16 while preserving independent `search`/`cursor`/`enabled` list state and Studio navigation blockers.
+- Marked COMMERCE-002 Complete. COMMERCE-004 is the remaining Ready Phase 1 frontier; COMMERCE-005 stays Pending on COMMERCE-004.
+- Recorded a non-blocking route-prop type-annotation cleanup for `returnTo`; no additional implementation attempt is required for the functionality-focused acceptance.
 
 ### 2026-09-23 — COMMERCE-002 Attempt 1 changes requested
 

@@ -20,7 +20,7 @@ Shared contracts, Background changes or live provider execution.
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-001](COMMERCE-001-expose-production-connections-studio-port.md) | Expose production Connections through Studio server actions | Complete | ARCH-020-COMMERCE-020, 024, 028 |
-| [COMMERCE-002](COMMERCE-002-switch-connections-routes-to-production-port.md) | Switch U15/U16 routes from fixtures to production ConnectionPort | Ready | COMMERCE-001, ARCH-020-COMMERCE-022 |
+| [COMMERCE-002](COMMERCE-002-switch-connections-routes-to-production-port.md) | Switch U15/U16 routes from fixtures to production ConnectionPort | Complete | COMMERCE-001, ARCH-020-COMMERCE-022 |
 | [COMMERCE-003](COMMERCE-003-expose-studio-shop-execution-context.md) | Expose server-validated selected-shop execution context | Complete | ARCH-020-COMMERCE-013, 018 |
 | [COMMERCE-004](COMMERCE-004-add-studio-selected-shop-context.md) | Add Studio-wide selected-shop URL/navigation context | Ready | COMMERCE-003 |
 | [COMMERCE-005](COMMERCE-005-wire-real-connections-into-tool-authoring.md) | Wire persisted connection revisions into U06 Tool authoring | Pending | COMMERCE-001, COMMERCE-004, ARCH-020-COMMERCE-023 |
@@ -28,17 +28,16 @@ Shared contracts, Background changes or live provider execution.
 
 ## Execution frontier
 
-COMMERCE-001 and COMMERCE-003 are architect-accepted Complete. The current Ready
+COMMERCE-001, COMMERCE-002 and COMMERCE-003 are architect-accepted Complete. The current Ready
 frontier is:
 
 ```text
-ARCH-021-COMMERCE-002   Attempt 2: complete Connections-side returnTo handoff after production-port wiring
 ARCH-021-COMMERCE-004   Studio-wide selected-shop navigation context
 ```
 
-They are independent and may execute in parallel in separate canonical task worktrees.
-COMMERCE-002 remains the same task at `attempt: 1`; the next authorised claim creates
-Attempt 2. Readiness does not automatically launch either task.
+COMMERCE-004 may execute in its canonical task worktree. COMMERCE-005 remains Pending
+until COMMERCE-004 is architect-accepted Complete. Readiness does not automatically launch
+any task.
 
 ## Phase 1 dependency graph
 
