@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
-executor: copilot
-claimed_at: 2026-09-23T18:14:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-008
@@ -151,31 +151,53 @@ A template remains an authoring asset. Do not add UI wording or state that sugge
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-commerce/app/styles.css`
+- `moda-interact-commerce/components/production-studio-page.tsx`
+- `moda-interact-commerce/components/studio-workspace.tsx`
+- `moda-interact-commerce/src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `moda-interact-commerce/src/studio/agent-configuration/prompt-template-library.tsx`
+- `moda-interact-commerce/tests/agent-configuration-template-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Added the category-organised, filterable platform prompt-template library to Agent Configuration, including category metadata and enablement controls, multiple templates per category, template metadata and enablement controls, draft editing, publication validation, immutable published revision/hash display, historical disabled-state inspection, and dirty navigation protection.
+- Kept category/template state and mutation orchestration under `src/studio/agent-configuration/`; `StudioWorkspace` only receives the existing module composition and no template domain state.
+- Preserved mutation replay, conflict, and unknown-outcome handling through the COMMERCE-008 action port. ADMIN remains read-only; SUPER_ADMIN receives mutation controls outside development bypass.
+- Repaired focused test result mocks with typed `TemplateResult<T>` helpers and made the loader dependency explicit with a memoized loader callback.
+
+Requirements mapping:
+- Production composition uses the COMMERCE-008 server action/port wiring in `agent-configuration-screen.tsx` and `production-studio-page.tsx`; no fixture port is used.
+- Stable category slugs are displayed as identity while metadata update controls omit slug mutation.
+- Empty drafts can be saved and blank publication errors are surfaced from the service result.
+- Published revision number, immutable revision id, and SHA-256 content hash are displayed; published text is not presented as editable content.
+- Disabled category/template history remains inspectable while new-authoring controls use enabled categories only.
+- ADMIN controls are read-only and the UI renders no secret or session token.
+- Template state/actions remain in `src/studio/agent-configuration/`; no new template domain state was added to `StudioWorkspace`.
+- The implementation contains no active prompt mutation or live model/provider execution.
 
 ### Validation Results
 
-None
+- PASS: `npm exec vitest run tests/agent-configuration-template-ui.test.tsx tests/agent-configuration-templates.test.ts tests/auth-action-button.test.tsx tests/auth-permissions.test.ts tests/auth-entrypoints.test.ts tests/auth-origin.test.ts tests/auth-security-policy.test.ts tests/auth-platform-admin.test.ts tests/auth-environment.test.ts tests/auth-development-identity.test.ts` from the implementation worktree: the new template UI test, template service test, and six auth files passed (47 tests passed).
+- BASELINE: the same focused run retained 4 unrelated failures: `tests/auth-development-identity.test.ts` reports `Prisma.sql is not a function` in the existing development identity fixture, and `tests/auth-entrypoints.test.ts` expects the existing route source to contain `createMcpService`. These failures are outside the six changed files and were not altered.
+- PASS: `npm exec eslint src/studio/agent-configuration/prompt-template-library.tsx tests/agent-configuration-template-ui.test.tsx`.
+- BASELINE: `npm run typecheck` exits 1 on existing commerce/database typing diagnostics in files such as `src/commerce/integration/backend.ts`, `src/commerce/integration/backend/publication-storage.ts`, `src/commerce/integration/studio/services.ts`, and `tests/c20-integration-fixture.test.ts`; no diagnostic names either repaired file.
+- PASS: `git diff --check`.
 
 ### Deviations
 
-None
+The repository-wide typecheck and the full focused auth matrix are not green because of the documented unrelated baseline diagnostics above. No unrelated source was changed to mask or repair those failures.
 
 ### Assumptions
 
-None
+The existing COMMERCE-008 server-action wiring and current auth baseline are the accepted contracts for this task. The prior Attempt 1 implementation edits and user edits in the six listed files are all intentional and preserved.
 
 ### Unresolved Issues
 
-None
+The four unrelated focused auth failures and the existing repository-wide typecheck failures remain for their owning tasks/baseline tracking.
 
 ### Architectural Concerns
 
