@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 41
 executor: null
 claimed_at: null
@@ -112,10 +112,10 @@ A small additional focused test file is allowed if the existing service test bec
 
 ## Work Items
 
-- [ ] Add `TemplatePort.listRevisions({ templateId })`.
-- [ ] Implement deterministic read-only revision enumeration in `PromptTemplateService`.
-- [ ] Add ADMIN-authenticated `listPromptTemplateRevisions` server action.
-- [ ] Add focused revision-history/auth regressions.
+- [x] Add `TemplatePort.listRevisions({ templateId })`.
+- [x] Implement deterministic read-only revision enumeration in `PromptTemplateService`.
+- [x] Add ADMIN-authenticated `listPromptTemplateRevisions` server action.
+- [x] Add focused revision-history/auth regressions.
 
 ## Interfaces / Contracts
 
@@ -140,19 +140,19 @@ No mutation contract changes are produced.
 
 ## Acceptance Criteria
 
-- [ ] One template with multiple DRAFT/PUBLISHED revisions returns every revision in `revisionNumber DESC, id ASC` order.
-- [ ] Disabled category/template state does not hide historical revisions.
-- [ ] Unknown template ids return an empty array.
-- [ ] ADMIN can read revision history; no SUPER_ADMIN mutation privilege is required.
-- [ ] The read creates no `CommerceAuditEvent` and mutates no durable state.
-- [ ] Existing `getTemplate(...)`, create/update draft, publish, replay, CAS and selectability semantics are unchanged.
+- [x] One template with multiple DRAFT/PUBLISHED revisions returns every revision in `revisionNumber DESC, id ASC` order.
+- [x] Disabled category/template state does not hide historical revisions.
+- [x] Unknown template ids return an empty array.
+- [x] ADMIN can read revision history; no SUPER_ADMIN mutation privilege is required.
+- [x] The read creates no `CommerceAuditEvent` and mutates no durable state.
+- [x] Existing `getTemplate(...)`, create/update draft, publish, replay, CAS and selectability semantics are unchanged.
 
 ## Validation
 
-- [ ] focused prompt-template revision-history service tests
-- [ ] focused server-action/auth test
-- [ ] targeted lint/typecheck for changed files
-- [ ] `git diff --check`
+- [x] focused prompt-template revision-history service tests
+- [x] focused server-action/auth test
+- [x] targeted lint/typecheck for changed files
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -220,24 +220,46 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is substantively architecture-conformant. The implementation adds exactly the bounded read contract requested by the task: `TemplatePort.listRevisions({ templateId })`, one direct `CommercePromptTemplateRevision.findMany` query scoped by `templateId` and ordered by `revisionNumber DESC, id ASC`, and one `requireStudioAdmin` server action. It reuses `PromptTemplateRevision`, returns DRAFT and PUBLISHED history without enabled-state filtering, naturally returns `[]` for an unknown template id, creates no audit receipt, and does not change accepted COMMERCE-008 mutation/replay/CAS/publish/selectability behavior.
+
+Comparison with the pre-COMMERCE-015 snapshot shows the runtime change is limited to the new port method, service read, authenticated server action and focused regressions. No schema/UI/provider-execution work was introduced.
+
+The task cannot yet be accepted because the Completion Report does not record the prepared-execution evidence required by `docs/agent-worktree-isolation-policy.md`: launcher-resolved parent worktree, implementation worktree, matching task branches, start-of-attempt synchronization, and recursive submodule materialisation/evidence. The supplied review archive contains the parent task snapshot but does not provide those launcher packet values, so the architect must not invent them.
+
+No source or test changes are requested unless the missing evidence reveals execution outside the canonical task worktrees.
 
 ### Reviewed Files
 
-None
+- `moda-interact-commerce/src/studio/agent-configuration/template-contracts.ts`
+- `moda-interact-commerce/src/commerce/agent-configuration/prompt-template-service.ts`
+- `moda-interact-commerce/src/studio/agent-configuration/template-server-actions.ts`
+- `moda-interact-commerce/tests/agent-configuration-templates.test.ts`
+- `moda-interact-commerce/tests/agent-configuration-template-server-actions.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-015-expose-prompt-template-revision-history.md`
 
 ### Validation Reviewed
 
-None
+- Reported focused Vitest run: 2 files / 9 tests passed.
+- Reported targeted ESLint: passed.
+- Reported `git diff --check`: passed.
+- Repository typecheck remains non-green only on documented pre-existing diagnostics; no new revision-history diagnostic is reported.
+- The supplied archive does not include `node_modules`, so the architect did not independently rerun Vitest/ESLint.
 
 ### Architecture Conformance
 
-Pending
+Implementation: conformant.
+
+Workflow evidence: incomplete. Acceptance is withheld only until the canonical prepared-worktree/synchronization/submodule evidence is durably recorded.
 
 ### Follow-up
 
-None
+For Attempt 2, do not change implementation source merely to create a new code commit.
+
+1. If Attempt 1 already ran in the launcher-prepared canonical parent and implementation worktrees, copy the exact launcher-provided physical worktree, branch, synchronization and recursive-submodule evidence into the Completion Report.
+2. If Attempt 1 did not run in those canonical worktrees, restore/create the canonical task worktrees, check out the already-pushed `task/ARCH-021-COMMERCE-015` implementation there, rerun the task-required validation, and record the resulting evidence.
+3. Set the task back to `review` with the corrected Completion Report and no active executor claim.
+4. Do not begin COMMERCE-013 automatically. It remains blocked until COMMERCE-015 is architect-accepted Complete.

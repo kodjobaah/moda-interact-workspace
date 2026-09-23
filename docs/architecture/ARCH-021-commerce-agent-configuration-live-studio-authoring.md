@@ -725,8 +725,9 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
-| ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-013 | moda_commerce | Blocked | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-015 | moda_commerce | Ready | ARCH-021-COMMERCE-008 |
 
 The current Phase 2 execution frontier on this task branch is:
 
@@ -824,8 +825,9 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
-| ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-013 | moda_commerce | Blocked | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-015 | moda_commerce | Ready | ARCH-021-COMMERCE-008 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -854,6 +856,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-015 Attempt 1 implementation reviewed
+
+- Confirmed the bounded revision-history read contract is implementation-conformant.
+- Returned COMMERCE-015 to Ready only for missing launcher worktree/synchronization/submodule evidence; no source or test changes requested.
+- Kept COMMERCE-013 Blocked on COMMERCE-015 and durably recorded its remaining Attempt 2 UI correction contract.
+
 
 ### 2026-09-23 — COMMERCE-011 Attempt 3 accepted
 

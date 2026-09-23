@@ -970,14 +970,16 @@ Phase 1's six Commerce-only tasks for real Connections composition, server-valid
 `shopId` context, production external connection selection and JavaScript response-panel
 installation are architect-accepted Complete.
 
-Phase 2 is now materialised as one cohesive Database task and eight Commerce tasks covering
+Phase 2 is now materialised as one cohesive Database task and the Commerce task set covering
 the model catalogue/selections, data-driven prompt-template categories with multiple templates
 per category, immutable template/prompt revisions, independent platform/shop model/prompt
 resolution, the shared Agent Configuration shell/model UI, selected-shop overrides, the template
-library and platform prompt authoring. Shop override CAS uses immutable row-generation tokens plus
+library and platform prompt authoring. COMMERCE-015 is the bounded read-contract completion task
+for durable prompt-template revision history. Shop override CAS uses immutable row-generation tokens plus
 edit versions so clear/recreate cannot ABA-match stale mutations. DATABASE-001, COMMERCE-007 and
-COMMERCE-011 are architect-accepted Complete; COMMERCE-008 is the current Ready Phase 2 Commerce
-frontier, while COMMERCE-009/010/012/013/014 remain dependency-gated. The Phase 2 UI incrementally
+COMMERCE-011 are architect-accepted Complete; COMMERCE-008 is architect-accepted Complete. COMMERCE-015 is Ready only for execution-evidence
+reconciliation; COMMERCE-013 remains Blocked on COMMERCE-015, while the other Phase 2 tasks follow
+their explicit dependencies. The Phase 2 UI incrementally
 extracts Agent Configuration state from `StudioWorkspace` without rewriting unrelated Studio
 domains. Live model/tool execution and Shared/Background runtime changes remain deferred.
 

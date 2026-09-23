@@ -67,8 +67,9 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Pending | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
 | [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Complete | COMMERCE-006, COMMERCE-007 |
 | [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Pending | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
-| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Pending | COMMERCE-008, COMMERCE-011 |
+| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Blocked | COMMERCE-008, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Pending | COMMERCE-008, COMMERCE-009, COMMERCE-011 |
+| [COMMERCE-015](COMMERCE-015-expose-prompt-template-revision-history.md) | Expose read-only prompt-template revision history | Ready | COMMERCE-008 |
 
 The current Phase 2 Commerce execution frontier on this task branch is:
 
@@ -81,7 +82,7 @@ COMMERCE-008 is architect-accepted Complete after live disposable-PostgreSQL pro
 ARCH-021-COMMERCE-008   Ready — independent prompt-template service rework
 ```
 
-COMMERCE-007 and COMMERCE-011 are architect-accepted Complete. COMMERCE-011 establishes the production Agent Configuration shell/model surface, including selected-shop context, trusted environment display and serialized model mutation outcomes. COMMERCE-013 remains gated on COMMERCE-008; COMMERCE-014 remains gated on COMMERCE-008 and COMMERCE-009; COMMERCE-012 remains gated on COMMERCE-008, COMMERCE-009 and COMMERCE-010. COMMERCE-009 remains gated on COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
+COMMERCE-007 and COMMERCE-011 are architect-accepted Complete. COMMERCE-011 establishes the production Agent Configuration shell/model surface, including selected-shop context, trusted environment display and serialized model mutation outcomes. COMMERCE-013 is blocked on COMMERCE-015; COMMERCE-014 remains gated on COMMERCE-008 and COMMERCE-009; COMMERCE-012 remains gated on COMMERCE-008, COMMERCE-009 and COMMERCE-010. COMMERCE-009 remains gated on COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain
