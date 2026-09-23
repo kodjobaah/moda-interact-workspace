@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-23T20:36:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-004
@@ -172,35 +172,50 @@ Use the existing selected-shop context; do not introduce a second independent sh
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/shop-agent-configuration.tsx`
+- `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-shop-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Added the selected-shop Agent Configuration sub-surface under the dedicated domain module.
+- Preserved server-validated `shopId` through the production page and workspace handoff.
+- Added effective model/prompt/source/revision identity display, independent model and prompt inheritance controls, and ADMIN read-only behavior.
+- Carried service-provided model/prompt `generationId` and `editVersion` CAS tokens through replace/clear operations.
+- Added shop prompt draft creation, exact published-template revision copy, draft editing, publication and active-pointer clear/activate controls.
+- Added dirty navigation protection and focused shop isolation/CAS/read-only UI coverage.
 
 ### Validation Results
 
-None
+- Launcher evidence: prepared execution was supplied with canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-012`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-012`, synchronized task branch `task/ARCH-021-COMMERCE-012`, initialized database submodule at `98fdf715e54fe6df92ac6951facd104e410068f2`, claim commit `8d86cdd56be8eac6ec3a22d5d6135b3aa572e034`, and parent claim head `50ac184cbfe1259876299f4e8d8984cebc3a12b1`.
+- `npm run test -- tests/agent-configuration-shop-ui.test.tsx tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-production.test.tsx`: passed, 3 files and 8 tests.
+- `npx eslint` over all changed TypeScript/TSX files: passed with no warnings.
+- `git diff --check`: passed.
+- `npm run typecheck`: repository baseline remains failing with 250 errors across 19 files. No diagnostics remain in the new shop component or production composition; three pre-existing diagnostics remain in `components/studio-workspace.tsx` (duplicate `productionCodePanel`, `responseProcessing` union access, and `StudioFailure.message` union access).
 
 ### Deviations
 
-None
+- The launcher reported `architect_review_present=true`, but the complete current task file contains `Review Status: Pending`, no review notes, and no Changes Requested items. Therefore there was no review correction checklist to apply; implementation followed the current task acceptance criteria.
 
 ### Assumptions
 
-None
+- Existing prompt/template server actions and resolver contracts are authoritative; no new persistence, provider, or network path was introduced.
+- Template selection is resolved server-side with `selectable: true`, and only the returned published revision text/provenance is copied into a shop draft.
 
 ### Unresolved Issues
 
-None
+- Full repository typecheck remains blocked by the documented/pre-existing baseline diagnostics described above; this task did not alter those unrelated workspace errors.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
