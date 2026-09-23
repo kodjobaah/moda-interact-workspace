@@ -732,12 +732,12 @@ Phase 2 tasks:
 The current Phase 2 execution frontier is:
 
 ```text
-ARCH-021-COMMERCE-012   Ready — selected-shop model/prompt override surface
+ARCH-021-COMMERCE-012   Ready — Attempt 1 rework: selected-shop/prompt lifecycle corrections
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-DATABASE-001 and COMMERCE-007/008/009/010/011/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-012 is now Ready because all of its service/UI dependencies are Complete; COMMERCE-013 and COMMERCE-014 remain independently Ready.
+DATABASE-001 and COMMERCE-007/008/009/010/011/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-012 Attempt 1 is returned to Ready for bounded selected-shop validation, broken-override recovery and durable shop-prompt lifecycle corrections; COMMERCE-013 and COMMERCE-014 remain independently Ready.
 
 Phase 2 exit criteria:
 
@@ -849,6 +849,15 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-012 Attempt 1 changes requested
+
+- Accepted in substance the dedicated selected-shop Agent Configuration module, independent model control and service-provided model `generationId` + `editVersion` handoff.
+- Identified that production composition validates `shopSelection` but still hands the raw query-string `shopId` to the authoring surface; Attempt 2 must consume only the validated selected-shop id.
+- Identified fail-closed recovery drift: an effective-resolution failure currently prevents raw model/prompt override state from loading, so a broken explicit override can be hidden and become uncleareable.
+- Identified incomplete durable shop prompt authoring: one operation id is reused across lineage+draft commands, unactivated drafts are not discoverable after refresh, shop switches can retain stale lineage/draft state, and the activation button targets the already-active revision instead of the newly published revision.
+- Required exact visible-state publication and Studio Composer dirty-navigation protection; ADMIN prompt controls must be genuinely read-only.
+- Returned COMMERCE-012 to Ready at `attempt: 1`; COMMERCE-013 and COMMERCE-014 remain independently Ready.
 
 ### 2026-09-23 — COMMERCE-010 Attempt 2 accepted
 

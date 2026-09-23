@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 80
 executor: null
 claimed_at: null
@@ -222,24 +222,56 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 establishes the dedicated selected-shop Agent Configuration surface and correctly carries the current model override `generationId` + `editVersion` tokens into model replace/clear commands. The implementation also keeps the new authoring component outside `StudioWorkspace` and preserves ADMIN server-side mutation authorization.
+
+The shop prompt lifecycle and selected-shop boundary are not yet functionally complete:
+
+1. `ProductionStudioPage` resolves `shopSelection` server-side but passes the raw query-string `shopId` into `StudioWorkspace`. Only `shopSelection.selectedShop?.id` (or equivalent validated server result) may enter the shop authoring surface. An unavailable/invalid query-string shop must not render or execute shop actions for that raw id.
+2. `ShopAgentConfiguration.load()` returns as soon as effective resolution fails. That prevents the raw shop model selection and prompt pointer/lineage from loading, so a broken explicit override can appear as inheritance/empty state and cannot reliably be cleared. Load raw override state independently of effective resolution and render the broken explicit override as an error/recovery state rather than silently hiding it.
+3. Shop prompt authoring is discoverable only through the active pointer. A newly created but not-yet-active lineage/draft disappears after `load()`/refresh, and when a new shop has no pointer the previous shop's `lineage`/`draft`/text state is not cleared. Provide a durable read of the selected shop's prompt lineage independent of the active pointer (this review explicitly authorizes a bounded read-only `getShopPrompt(shopId)`-style extension to the prompt contract/service/server action if required), and clear all shop-local editor state when shop identity changes or no lineage exists. Do not change the accepted prompt mutation semantics.
+4. `createShopPrompt()` reuses one `operationId` for `CREATE_AGENT_PROMPT` and `CREATE_AGENT_PROMPT_DRAFT*`. Durable operation receipts are action/payload bound, so these must be two independently identified commands. The flow must also resume an existing shop lineage rather than attempting to recreate the one-per-shop lineage.
+5. Publishing/activation currently does not represent the visible durable state correctly. `Publish revision` may run while textarea text is dirty, publishing the previously persisted draft rather than what the user is reviewing. After publication the activation button targets `activeRevision` (the revision already referenced by the pointer) and is absent when there is no pointer, so a newly published revision cannot become the shop override. Prevent publication while visible draft text is unsaved (or persist that exact text first), reconcile the returned published revision, and activate the intended newly published/selected published revision with the current pointer CAS tokens.
+6. Dirty protection is only a browser `beforeunload` handler. Register the shop editor dirty state with the accepted Studio Composer navigation blocker so internal Studio/shop navigation prompts before discarding unsaved text. ADMIN must be genuinely read-only: do not leave the draft textarea editable when mutation controls are hidden.
 
 ### Reviewed Files
 
-None
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/shop-agent-configuration.tsx`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `tests/agent-configuration-shop-ui.test.tsx`
+- `tests/agent-configuration-production.test.tsx`
 
 ### Validation Reviewed
 
-None
+- Submitted focused Agent Configuration validation: 3 files / 8 tests passed.
+- Submitted changed-file ESLint: passed.
+- Submitted `git diff --check`: passed.
+- Repository-wide TypeScript baseline remains non-blocking; no new task-owned diagnostic was identified in the submitted completion report.
+- Direct source review confirmed the model CAS-token handoff but exposed the prompt lifecycle/shop-isolation defects above.
 
 ### Architecture Conformance
 
-Pending
+Partial. The dedicated Agent Configuration ownership boundary and independent model override controls conform, but selected-shop validation, broken-override recovery, durable shop prompt authoring, exact visible-state publication/activation, and internal navigation dirty protection do not yet satisfy ARCH-021 / COMMERCE-012.
 
 ### Follow-up
 
-None
+Attempt 2 must preserve the accepted model CAS work and correct only the bounded shop-context/prompt-authoring behaviors above. Add focused regressions proving:
+
+- invalid/unavailable raw `shopId` never enters the shop authoring surface;
+- a broken explicit model or prompt override remains visible and clearable even when effective resolution returns `UNAVAILABLE`;
+- a newly created unactivated shop prompt draft survives reload, while switching to another shop cannot retain or mutate the previous shop's draft;
+- lineage creation and draft creation use different durable operation ids and an existing lineage is resumed rather than recreated;
+- dirty visible draft text cannot be published as older persisted text, and the newly published revision can be activated when no pointer exists or can replace an existing pointer using its current `generationId` + `editVersion`;
+- internal Studio/shop navigation is blocked while the prompt editor is dirty;
+- ADMIN prompt editing controls are read-only;
+- model and prompt clear/replace continue to round-trip service-provided generation/version tokens, including the required stale-generation conflict after clear/recreate.
+
+Do not begin COMMERCE-013, COMMERCE-014 or Phase 3 from this task.
