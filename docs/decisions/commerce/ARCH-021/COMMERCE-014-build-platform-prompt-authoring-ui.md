@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
-executor: copilot
-claimed_at: 2026-09-23T20:54:40Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-008
@@ -106,6 +106,10 @@ Small helper components may be added only under `src/studio/agent-configuration/
 - [x] Add platform active-pointer mutation UI.
 - [x] Add provenance and stable revision/hash presentation.
 - [x] Add focused lifecycle/auth/replay UI tests.
+- [x] Consume exact published template revision history with category context and revalidation.
+- [x] Guard every refresh-causing mutation against unsaved editor text.
+- [x] Prove singleton platform-lineage rediscovery, platform-only scope and ADMIN read authentication.
+- [x] Prove production handoff of the real prompt lifecycle and template actions.
 
 ## Interfaces / Contracts
 
@@ -131,25 +135,25 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Platform admins can inspect platform prompt history and active revision.
-- [ ] A platform prompt DRAFT may start empty, from current lineage content or from one exact selectable published template revision.
-- [ ] Empty DRAFT content may be saved; blank/whitespace-only publication is rejected and shown without silent text normalisation.
-- [ ] Published revisions are immutable and their stable id/hash/status is visible.
-- [ ] Activating a platform prompt targets only a published platform revision and does not change model state.
-- [ ] Template provenance is visible as historical provenance only; no live template linkage is represented.
-- [ ] ADMIN is read-only and no secret/session token is rendered.
-- [ ] Platform prompt state/actions do not accumulate in `StudioWorkspace`.
-- [ ] No live model/provider execution occurs.
+- [x] Platform admins can inspect platform prompt history and active revision.
+- [x] A platform prompt DRAFT may start empty, from current lineage content or from one exact selectable published template revision.
+- [x] Empty DRAFT content may be saved; blank/whitespace-only publication is rejected and shown without silent text normalisation.
+- [x] Published revisions are immutable and their stable id/hash/status is visible.
+- [x] Activating a platform prompt targets only a published platform revision and does not change model state.
+- [x] Template provenance is visible as historical provenance only; no live template linkage is represented.
+- [x] ADMIN is read-only and no secret/session token is rendered.
+- [x] Platform prompt state/actions do not accumulate in `StudioWorkspace`.
+- [x] No live model/provider execution occurs.
 
 ## Validation
 
-- [ ] focused platform-prompt route/component tests
-- [ ] blank-draft/publish-validation tests
-- [ ] template-copy/provenance UI tests
-- [ ] pointer CAS/replay/conflict/unknown-outcome UI tests
-- [ ] authorization/development-bypass UI tests
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused platform-prompt route/component tests
+- [x] blank-draft/publish-validation tests
+- [x] template-copy/provenance UI tests
+- [x] pointer CAS/replay/conflict/unknown-outcome UI tests
+- [x] authorization/development-bypass UI tests
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -165,6 +169,23 @@ Do not concatenate platform and shop prompts and do not remove the legacy capabi
 
 Ready for Review
 
+### Physical Worktree Isolation
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-014`
+- Parent branch: `task/ARCH-021-COMMERCE-014`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-014`
+- Implementation branch: `task/ARCH-021-COMMERCE-014`
+- Shared workspace and shared implementation checkouts switched or mutated for task work: no
+- Another task worktree reused: no
+
+### Start-of-Attempt Synchronization
+
+- Parent task branch and implementation branch were prepared by the deterministic launcher with `origin/main` incorporated.
+- Recursive implementation submodule synchronization and initialization passed; recorded `database` commit: `98fdf715e54fe6df92ac6951facd104e410068f2`.
+- Parent claim commit: `d0898444`.
+- Implementation correction commit: `1612226`.
+
 ### Files Changed
 
 - `app/styles.css`
@@ -175,27 +196,33 @@ Ready for Review
 - `src/studio/agent-configuration/platform-prompt-configuration.tsx`
 - `src/studio/agent-configuration/prompt-contracts.ts`
 - `src/studio/agent-configuration/prompt-server-actions.ts`
+- `src/studio/agent-configuration/template-server-actions.ts`
 - `tests/agent-configuration-platform-prompt-ui.test.tsx`
+- `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-prompts.test.ts`
+- `tests/agent-configuration-server-actions.test.ts`
 
 ### Work Completed
 
 - Added a dedicated platform prompt module under `src/studio/agent-configuration/` with singleton lineage discovery, current-environment pointer display, immutable revision history, stable hash/id metadata, and historical template provenance.
-- Added empty/current/template copy-on-use draft creation. Template copy sends the exact selected published revision text and revision id; no dynamic template link is represented.
+- Added empty/current/template copy-on-use draft creation. Template copy presents category context, lets the administrator choose one exact published revision, revalidates that revision immediately before copying, and sends the same revision id to draft creation; no dynamic template link is represented.
 - Added exact-text draft editing and save, dirty/unload/navigation protection, CAS conflict messaging, unknown-outcome reconciliation using the original operation id, blank publication validation display, immutable publish, and published-only pointer activation.
-- Wired production server actions to COMMERCE-009 prompt operations and COMMERCE-008 selectable template reads. Added singleton platform-lineage read support for reloads before an active pointer exists.
+- Blocked publish, new-draft, active-copy, template-copy and activation actions while editor text is dirty, preventing silent discard or stale publication.
+- Wired production server actions to COMMERCE-009 prompt operations and COMMERCE-008/015 canonical template reads. Added singleton platform-lineage read support for reloads before an active pointer exists and removed the duplicate local template reader contract.
 - Kept model selection and `StudioWorkspace` prompt state unchanged; ADMIN renders read-only controls and no secrets/session credentials.
 
 ### Validation Results
 
-- `npm exec vitest run tests/agent-configuration-platform-prompt-ui.test.tsx tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-production.test.tsx tests/agent-configuration-server-actions.test.ts tests/agent-configuration-prompts.test.ts tests/agent-configuration-templates.test.ts --reporter=dot`: 6 files, 21 tests passed on the final focused run before the final lint-only rename; the isolated existing model handoff rerun also passed 4/4 after the rename. One combined rerun was order-sensitive and reported the pre-existing model handoff test once; it passes in isolation.
+- `npm exec vitest run tests/agent-configuration-platform-prompt-ui.test.tsx tests/agent-configuration-production.test.tsx tests/agent-configuration-prompts.test.ts tests/agent-configuration-server-actions.test.ts tests/agent-configuration-model-ui.test.tsx`: 5 files, 19 tests passed.
+- The UI suite includes dirty-action blocking and exact revision/category selection; service/server-action suites cover platform-only lineage rediscovery and ADMIN authentication.
 - `npm exec eslint` on all changed implementation/test files: passed.
 - `git diff --check`: passed.
-- Targeted `tsc --noEmit --pretty false` scan: no diagnostics in the new prompt component, prompt contracts/actions, or production prompt wiring. Full typecheck remains blocked by existing baseline diagnostics in `components/studio-workspace.tsx` (`productionCodePanel`, `responseProces[s]ing`, `StudioFailure.message`) and pre-existing Prisma generated-type diagnostics in `src/commerce/agent-configuration/prompt-service.ts` (`Prisma.sql`, implicit transaction typing, `Prisma.InputJsonValue`).
-- `npm ci`: completed using the committed lockfile; npm reported existing engine/peer/deprecation warnings and 9 audit vulnerabilities.
+- Changed-file diagnostics: no errors in production composition, prompt component/contracts, and focused tests.
+- PostgreSQL concurrency validation was not runnable in this worktree because `@prisma/client` is not generated (`Please run "prisma generate"`); six non-PostgreSQL focused suites passed with 19 tests and 6 PostgreSQL tests skipped by setup failure.
 
 ### Deviations
 
-- Added `PromptPort.getPlatformPrompt()` because the accepted read surface otherwise could not rediscover an existing singleton lineage when no environment active pointer had yet been created. This is a read-only extension of the COMMERCE-009 contract and does not add persistence.
+- Added `PromptPort.getPlatformPrompt()` because the accepted read surface otherwise could not rediscover an existing singleton lineage when no environment active pointer had yet been created. Focused service and authenticated server-action regressions cover platform-only scope and this read-only extension does not add persistence.
 
 ### Assumptions
 
@@ -204,7 +231,7 @@ Ready for Review
 
 ### Unresolved Issues
 
-- Full repository typecheck remains blocked by the baseline diagnostics listed above; no prompt-authoring-specific errors remain.
+- PostgreSQL concurrency tests remain environment-blocked until the generated Prisma client is available; no prompt-authoring-specific diagnostics remain in the changed-file check.
 
 ### Architectural Concerns
 
