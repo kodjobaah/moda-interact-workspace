@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-23T15:30:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-DATABASE-001
@@ -720,18 +720,18 @@ The upgrade mode MUST stage all predecessor migrations, seed/rehearse predecesso
 
 ## Work Items
 
-- [ ] Add the three exact enums in R1 to `prisma/schema.prisma`.
-- [ ] Add the ten exact models in R2-R7 to `prisma/schema.prisma`.
-- [ ] Extend `CommerceAuditAction` and `CommerceAuditEvent` exactly as R8.
-- [ ] Add `Shop` and `PlatformAdmin` reverse relations exactly as R9.
-- [ ] Create only `prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql` for this task.
-- [ ] Implement the checks, unique indexes, functions, triggers and FK behaviours in R2-R10.
-- [ ] Add `scripts/fixtures/arch021-agent-configuration-schema-contract.mjs` containing the exact expected table/enum/field/index/action contract used by the static validator.
-- [ ] Add `scripts/fixtures/arch021-agent-configuration-cases.mjs` containing the behavioural migration cases in R11.
-- [ ] Add both validation scripts in R11 and the two exact package scripts.
-- [ ] Keep the existing ARCH-020 static validator compatible with additive `CommerceAuditAction` extensions while preserving the original ARCH-020 action sequence exactly.
-- [ ] Regenerate `docs/generated/prisma-erd.puml` using the repository ERD generator.
-- [ ] Run the required validation and complete the task report.
+- [x] Add the three exact enums in R1 to `prisma/schema.prisma`.
+- [x] Add the ten exact models in R2-R7 to `prisma/schema.prisma`.
+- [x] Extend `CommerceAuditAction` and `CommerceAuditEvent` exactly as R8.
+- [x] Add `Shop` and `PlatformAdmin` reverse relations exactly as R9.
+- [x] Create only `prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql` for this task.
+- [x] Implement the checks, unique indexes, functions, triggers and FK behaviours in R2-R10.
+- [x] Add `scripts/fixtures/arch021-agent-configuration-schema-contract.mjs` containing the exact expected table/enum/field/index/action contract used by the static validator.
+- [x] Add `scripts/fixtures/arch021-agent-configuration-cases.mjs` containing the behavioural migration cases in R11.
+- [x] Add both validation scripts in R11 and the two exact package scripts.
+- [x] Keep the existing ARCH-020 static validator compatible with additive `CommerceAuditAction` extensions while preserving the original ARCH-020 action sequence exactly.
+- [x] Regenerate `docs/generated/prisma-erd.puml` using the repository ERD generator.
+- [x] Run the required validation and complete the task report.
 
 ## Interfaces / Contracts
 
@@ -792,22 +792,22 @@ No Shared package/runtime contract is created in Phase 2.
 - [ ] Model and prompt pointer tables maintain independent editVersion values and independent shop-override absence semantics.
 - [ ] Shop model selections and shop prompt pointers expose immutable `generationId` tokens so a clear/recreate cycle cannot make a stale CAS request valid again merely because `editVersion` restarted.
 - [ ] `CommerceAuditAction` and `CommerceAuditEvent` expose exactly the Phase 2 audit vocabulary/FKs in R8 without weakening the existing immutable audit-event contract.
-- [ ] Fresh and upgrade rehearsal prove all expected constraints and preserve pre-ARCH-021 data/index state.
-- [ ] Existing ARCH-020 Commerce schema and validation remain valid.
+- [ ] Fresh and upgrade rehearsal prove all expected constraints and preserve pre-ARCH-021 data/index state; blocked because loopback PostgreSQL is unavailable.
+- [x] Existing ARCH-020 Commerce schema and validation remain valid under the additive action extension (static validation passed; live migration rehearsal is blocked by the same unavailable loopback PostgreSQL prerequisite).
 
 ## Validation
 
 Run exactly the repository-declared commands below after checking `package.json`:
 
-- [ ] `npm run prisma:validate`
-- [ ] `npm run prisma:generate`
-- [ ] `npm run erd:puml`
-- [ ] `npm run test:arch021-agent-configuration-schema`
-- [ ] `DATABASE_URL=<isolated localhost arch021_test_fresh URL> npm run test:arch021-agent-configuration-migration -- --mode fresh`
-- [ ] `DATABASE_URL=<isolated localhost arch021_test_upgrade URL> npm run test:arch021-agent-configuration-migration -- --mode upgrade`
-- [ ] existing `npm run test:arch020-commerce-capability-schema`
-- [ ] existing `npm run test:arch020-commerce-capability-migration` only if its documented isolated prerequisites are available; otherwise record why it was not rerun and prove no ARCH-020 source/migration was changed
-- [ ] `git diff --check`
+- [x] `npm run prisma:validate` (PASS)
+- [x] `npm run prisma:generate` (PASS)
+- [x] `npm run erd:puml` (PASS)
+- [x] `npm run test:arch021-agent-configuration-schema` (PASS)
+- [ ] `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_fresh npm run test:arch021-agent-configuration-migration -- --mode fresh` (BLOCKED: `pg_isready -h localhost -p 5432` returned `no response`; Prisma could not reach `localhost:5432` before migration)
+- [ ] `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_upgrade npm run test:arch021-agent-configuration-migration -- --mode upgrade` (BLOCKED: `pg_isready -h localhost -p 5432` returned `no response`; Prisma could not reach `localhost:5432` before migration)
+- [x] existing `npm run test:arch020-commerce-capability-schema` (PASS after additive-prefix correction)
+- [ ] existing `npm run test:arch020-commerce-capability-migration` (BLOCKED: isolated `localhost:5432` PostgreSQL unavailable; validator reached the database connection and failed with `Can't reach database server at localhost:5432`)
+- [x] `git diff --check` (PASS)
 
 Do not connect the migration rehearsal to a shared/development/production PostgreSQL database. The validator MUST refuse non-loopback hosts, unexpected DB names and connection-parameter overrides before connecting, matching the ARCH-020 safety pattern.
 
@@ -839,6 +839,7 @@ Ready for Review
 - `scripts/fixtures/arch021-agent-configuration-cases.mjs`
 - `scripts/validate-arch021-agent-configuration-schema.mjs`
 - `scripts/validate-arch021-agent-configuration-migration.mjs`
+- `scripts/validate-arch020-commerce-capability-schema.mjs`
 - `package.json`
 - `docs/generated/prisma-erd.puml`
 
@@ -848,6 +849,8 @@ Ready for Review
 - Added one additive migration with all required constraints, immutable identity/revision guards, lineage uniqueness indexes, scope/published pointer guards, source-template provenance validation, and immutable generation-token protection.
 - Extended the ARCH-020 audit target constraint to admit the exact ARCH-021 audit actions while preserving all existing ARCH-020 target cases; reused the existing ARCH-020 audit immutability trigger.
 - Added the static schema/migration/ERD contract validator, isolated fresh/upgrade rehearsal validator, and behavioral fixtures including concurrency and ABA cases.
+- Corrected the reviewed behavioral cases: distinct retained DRAFT revisions are used for pointer rejection, the other-shop case uses the actual surviving race lineage, and both lineage races assert exactly one success and one failure with `Promise.allSettled`.
+- Added catalogue `provider` identity-mutation rejection coverage, broadened upgrade rehearsal predecessor-index comparison to all predecessor user indexes while allowing additive ARCH-021 indexes, and made the ARCH-020 action assertion prefix-compatible without changing its historical fixture contract or migration.
 - Regenerated the Prisma PlantUML ERD and added the two exact npm validation scripts.
 
 ### Validation Results
@@ -861,12 +864,13 @@ Ready for Review
 - BLOCKED by unavailable prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_fresh npm run test:arch021-agent-configuration-migration -- --mode fresh`; `pg_isready -h localhost -p 5432` returned `no response`, and the validator failed before migration with `Can't reach database server at localhost:5432`.
 - BLOCKED by the same unavailable loopback PostgreSQL prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_upgrade npm run test:arch021-agent-configuration-migration -- --mode upgrade`; no database connection or migration was attempted beyond the validator's initial connection.
 - NOT RERUN: `npm run test:arch020-commerce-capability-migration`, because its isolated PostgreSQL prerequisite was unavailable.
-- FAIL: existing `npm run test:arch020-commerce-capability-schema` asserts the pre-ARCH-021 17-value `CommerceAuditAction` enum exactly and therefore rejects the required appended ARCH-021 audit vocabulary. No ARCH-020 source or migration was changed.
+- PASS: existing `npm run test:arch020-commerce-capability-schema` now requires the original 17 actions in order and permits the required appended ARCH-021 actions.
+- BLOCKED: existing `npm run test:arch020-commerce-capability-migration` because isolated loopback PostgreSQL was unavailable; no ARCH-020 migration was changed.
 
 ### Deviations
 
 - Live fresh/upgrade database rehearsals remain unexecuted because local PostgreSQL is not listening on loopback port 5432.
-- The existing ARCH-020 static validator is stale for the required additive enum extension; updating that separate validator is outside this task's allowed file scope.
+- The ARCH-020 static validator was updated under the explicit Attempt 2 compatibility exception; its fixture contract and migration remain unchanged.
 
 ### Assumptions
 
@@ -875,7 +879,7 @@ Ready for Review
 
 ### Unresolved Issues
 
-- Acceptance still needs live fresh and upgrade rehearsal evidence after loopback PostgreSQL is started.
+- Acceptance still needs live ARCH-021 fresh and upgrade rehearsal evidence after loopback PostgreSQL is started; the static and safety-refusal coverage is complete.
 
 ### Architectural Concerns
 
