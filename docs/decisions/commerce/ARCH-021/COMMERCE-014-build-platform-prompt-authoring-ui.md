@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
-executor: copilot
-claimed_at: 2026-09-23T19:50:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-008
@@ -98,13 +98,13 @@ Small helper components may be added only under `src/studio/agent-configuration/
 
 ## Work Items
 
-- [ ] Add platform lineage/history/active-pointer presentation.
-- [ ] Add create-empty/create-from-current/create-from-template DRAFT actions.
-- [ ] Add DRAFT editing/saving with dirty/CAS handling.
-- [ ] Add immutable publish action and validation presentation.
-- [ ] Add platform active-pointer mutation UI.
-- [ ] Add provenance and stable revision/hash presentation.
-- [ ] Add focused lifecycle/auth/replay UI tests.
+- [x] Add platform lineage/history/active-pointer presentation.
+- [x] Add create-empty/create-from-current/create-from-template DRAFT actions.
+- [x] Add DRAFT editing/saving with dirty/CAS handling.
+- [x] Add immutable publish action and validation presentation.
+- [x] Add platform active-pointer mutation UI.
+- [x] Add provenance and stable revision/hash presentation.
+- [x] Add focused lifecycle/auth/replay UI tests.
 
 ## Interfaces / Contracts
 
@@ -160,31 +160,48 @@ Do not concatenate platform and shop prompts and do not remove the legacy capabi
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `app/styles.css`
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/platform-prompt-configuration.tsx`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
+- `tests/agent-configuration-platform-prompt-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Added a dedicated platform prompt module under `src/studio/agent-configuration/` with singleton lineage discovery, current-environment pointer display, immutable revision history, stable hash/id metadata, and historical template provenance.
+- Added empty/current/template copy-on-use draft creation. Template copy sends the exact selected published revision text and revision id; no dynamic template link is represented.
+- Added exact-text draft editing and save, dirty/unload/navigation protection, CAS conflict messaging, unknown-outcome reconciliation using the original operation id, blank publication validation display, immutable publish, and published-only pointer activation.
+- Wired production server actions to COMMERCE-009 prompt operations and COMMERCE-008 selectable template reads. Added singleton platform-lineage read support for reloads before an active pointer exists.
+- Kept model selection and `StudioWorkspace` prompt state unchanged; ADMIN renders read-only controls and no secrets/session credentials.
 
 ### Validation Results
 
-None
+- `npm exec vitest run tests/agent-configuration-platform-prompt-ui.test.tsx tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-production.test.tsx tests/agent-configuration-server-actions.test.ts tests/agent-configuration-prompts.test.ts tests/agent-configuration-templates.test.ts --reporter=dot`: 6 files, 21 tests passed on the final focused run before the final lint-only rename; the isolated existing model handoff rerun also passed 4/4 after the rename. One combined rerun was order-sensitive and reported the pre-existing model handoff test once; it passes in isolation.
+- `npm exec eslint` on all changed implementation/test files: passed.
+- `git diff --check`: passed.
+- Targeted `tsc --noEmit --pretty false` scan: no diagnostics in the new prompt component, prompt contracts/actions, or production prompt wiring. Full typecheck remains blocked by existing baseline diagnostics in `components/studio-workspace.tsx` (`productionCodePanel`, `responseProces[s]ing`, `StudioFailure.message`) and pre-existing Prisma generated-type diagnostics in `src/commerce/agent-configuration/prompt-service.ts` (`Prisma.sql`, implicit transaction typing, `Prisma.InputJsonValue`).
+- `npm ci`: completed using the committed lockfile; npm reported existing engine/peer/deprecation warnings and 9 audit vulnerabilities.
 
 ### Deviations
 
-None
+- Added `PromptPort.getPlatformPrompt()` because the accepted read surface otherwise could not rediscover an existing singleton lineage when no environment active pointer had yet been created. This is a read-only extension of the COMMERCE-009 contract and does not add persistence.
 
 ### Assumptions
 
-None
+- The existing server actions enforce origin, ADMIN reads, SUPER_ADMIN mutations, and development bypass; the UI therefore consumes only their browser-safe inputs and does not render principals or credentials.
+- A platform draft copied from the active pointer is the accepted interpretation of “current lineage content” for this phase.
 
 ### Unresolved Issues
 
-None
+- Full repository typecheck remains blocked by the baseline diagnostics listed above; no prompt-authoring-specific errors remain.
 
 ### Architectural Concerns
 
