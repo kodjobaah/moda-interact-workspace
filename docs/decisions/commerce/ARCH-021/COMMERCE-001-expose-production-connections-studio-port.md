@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -223,17 +223,19 @@ None
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 (`99ed15a`; parent report `c771deb`) establishes the intended thin production `ConnectionPort` adapter and guarded server-action boundary, but it is not yet acceptable. Three bounded corrections are required.
+Attempt 2 (`03ffcd0`; parent report `8770c93`) satisfies the complete Attempt 1 correction contract and the original COMMERCE-001 acceptance contract.
 
-1. `src/studio/connections/connections-route-client.tsx` was switched from `createConnectionFixtures()` to the production server-action port. That is explicitly owned by `ARCH-021-COMMERCE-002` and is Out of Scope for this task. Restore COMMERCE-001 to the pre-attempt production route composition; COMMERCE-002 remains responsible for installing the real port into `/connections` and `/connections/[id]`. No U15/U16 route-composition change should remain in the final COMMERCE-001 implementation diff.
-2. The existing `ConnectionPort.list` contract accepts `enabled?: boolean`, but the accepted lifecycle list input currently does not. Because the lifecycle uses strict validation, passing `enabled` through the new adapter is rejected instead of filtered. Apply the architect-authorised narrow lifecycle read extension documented above: accept `enabled?: boolean`, include the predicate in the database `where` clause before cursor/take pagination, preserve search composition, and add regressions for both enabled and disabled filtered pagination. Do not implement adapter-side post-page filtering and do not change mutation semantics.
-3. The Completion Report does not record the launcher-prepared physical-isolation/start-of-attempt evidence required by the task workflow. On Attempt 2, record the prepared parent worktree, implementation worktree, task branch, synchronization state and recursive submodule evidence from the launcher packet. This is evidence/report correction; do not create code churn solely for it.
+The production `ConnectionPort` remains a thin server-only adapter over the accepted external lifecycle and credential services. The production route-composition change introduced in Attempt 1 has been fully reverted: `ConnectionsRouteClient` is back to the pre-task fixture-backed composition, leaving installation of the production port exclusively to ARCH-021-COMMERCE-002.
 
-The reported existing lifecycle bypass failure is not treated as an Attempt 1 regression: the supplied baseline and review snapshot contain byte-identical `src/commerce/connections/lifecycle/index.ts` and `tests/connection-lifecycle.test.ts` for that failure.
+The authorised lifecycle read extension is bounded to `list`: `enabled?: boolean` is accepted by the strict list schema and incorporated into the Prisma `where` predicate before `cursor`/`take` pagination. Search and enabled predicates compose in the same query; no adapter-side post-page filtering was introduced and connection mutation semantics are unchanged. The production adapter forwards the `enabled` value unchanged.
+
+The new pagination regression covers both `enabled: false` and `enabled: true` across multiple pages and records the database `where.enabled` value for each query. The previously documented isolated development-bypass lifecycle fixture failure remains a known baseline condition and is not caused by the Attempt 2 list-read change.
+
+The Completion Report now records the launcher-prepared canonical workspace, dedicated parent and implementation worktrees, mirrored task branch, synchronization state, recursive submodule update and database submodule commit. No remaining workflow correction is required.
 
 ### Reviewed Files
 
@@ -241,35 +243,30 @@ The reported existing lifecycle bypass failure is not treated as an Attempt 1 re
 - `moda-interact-commerce/src/studio/connections/server-actions.ts`
 - `moda-interact-commerce/src/studio/connections/connections-route-client.tsx`
 - `moda-interact-commerce/src/studio/connections/contracts.ts`
-- `moda-interact-commerce/src/studio/connections/connections-ui.tsx`
-- `moda-interact-commerce/src/studio/connections/fixtures.ts`
 - `moda-interact-commerce/src/commerce/connections/lifecycle/index.ts`
 - `moda-interact-commerce/tests/connections-production.test.ts`
 - `moda-interact-commerce/tests/connections-server-actions.test.ts`
 - `moda-interact-commerce/tests/connection-lifecycle.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-001-expose-production-connections-studio-port.md`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-002-switch-connections-routes-to-production-port.md`
 
 ### Validation Reviewed
 
-- Reported focused adapter/server-action validation: 5 passed.
-- Reported lifecycle/credential/UI validation: 41 passed, 1 existing lifecycle bypass failure.
-- Baseline comparison confirms the lifecycle implementation and failing lifecycle test were unchanged by Attempt 1.
-- Reported targeted ESLint and `git diff --check`: passed.
-- Reported repository typecheck remains non-zero on unrelated existing diagnostics; no changed-file diagnostic was reported.
-- Review archive does not contain `node_modules`, so the architect did not independently rerun the Node test commands from this snapshot.
+- Reported production adapter/server-action validation: 5 passed.
+- Reported credential/UI validation: 29 passed.
+- Reported lifecycle validation: 13 passed with 1 documented pre-existing development-bypass fixture failure; the new enabled/disabled filtered-pagination regression passed.
+- Reported targeted ESLint and implementation `git diff --check`: passed.
+- Reported repository typecheck remains non-zero only on documented pre-existing diagnostics; no new changed-file diagnostic was reported.
+- Architect diff review confirms the production route client is byte-for-byte restored to the Phase 1 baseline fixture composition.
+- Architect diff review confirms the lifecycle correction is limited to the list schema/list query plus focused regression coverage; mutation paths are unchanged.
+- Architect comparison of Attempt 1 to Attempt 2 found only the requested source/test corrections plus ignored `tsconfig.tsbuildinfo`; `.gitignore` excludes `*.tsbuildinfo`.
+- Architect independently reconstructed the Attempt 1 -> Attempt 2 text diff and ran `git diff --check`: passed.
+- The supplied review archive does not contain `node_modules`, so Node test commands were not independently rerun in the review container.
 
 ### Architecture Conformance
 
-Partial. The new production adapter/server-action boundary conforms to the intended COMMERCE-001 ownership, authentication, origin-guard, secret non-disclosure and bounded-result design. Acceptance is withheld because production route composition crossed into COMMERCE-002 and the current lifecycle read contract cannot satisfy the `ConnectionPort` enabled-filter semantics.
+Conformant. COMMERCE-001 now provides only the production Connections server boundary owned by this task, preserves accepted lifecycle/credential semantics and secret handling, implements the required enabled-filter semantics before pagination, and leaves production route installation to COMMERCE-002.
 
 ### Follow-up
 
-Return the same task to Attempt 2. Required correction contract:
-
-- restore `ConnectionsRouteClient` production fixture composition so route switching remains entirely in COMMERCE-002;
-- extend only lifecycle `list` read input/query semantics for `enabled?: boolean`, with filtering before pagination;
-- add focused tests proving adapter forwarding plus correct enabled/disabled filtered pagination;
-- rerun the task-scoped validation and update the Completion Report;
-- record launcher worktree/synchronization/recursive-submodule evidence in the Completion Report.
-
-Keep `attempt: 1` until the authorized executor reclaims the task; the next claim increments it to Attempt 2. COMMERCE-002 and COMMERCE-005 remain dependency-gated.
+ARCH-021-COMMERCE-002 is now Ready because ARCH-021-COMMERCE-001 and ARCH-020-COMMERCE-022 are Complete. ARCH-021-COMMERCE-005 remains Pending until ARCH-021-COMMERCE-004 is also Complete. No further COMMERCE-001 rework is required.

@@ -966,10 +966,10 @@ application-wide and shop-specific prompts; later merchant access reuses the sho
 prompt boundary. Production conversation grants and Studio preview sessions freeze the
 resolved model/prompt identities without making them release-owned.
 
-Phase 1 is now defined as six Commerce-only tasks for real Connections composition,
+Phase 1 is defined as six Commerce-only tasks for real Connections composition,
 server-validated `shopId` context, production external connection selection and the
-JavaScript response-panel installation. ARCH-021-COMMERCE-001 and
-ARCH-021-COMMERCE-003 are the independent Ready frontier; later phases are not yet
-materialised.
+JavaScript response-panel installation. ARCH-021-COMMERCE-001 is accepted Complete;
+ARCH-021-COMMERCE-002 and ARCH-021-COMMERCE-003 are the current independent Ready
+frontier. Later phases are not yet materialised.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
