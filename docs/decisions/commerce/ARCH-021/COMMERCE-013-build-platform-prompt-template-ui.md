@@ -476,7 +476,7 @@ The repository-wide typecheck baseline remains failing in the existing commerce/
 #### Implementation Commit
 
 - Implementation commit pushed: `8ebff4e` (`fix(commerce): reconcile prompt template publication retries`).
-- Parent report commit: pending after this report update.
+- Parent report commit: `174b729ca4a0862c9779e156bb324a14c14944d4` (this report update).
 
 ### Attempt 4 Architect Review — Changes Requested
 
