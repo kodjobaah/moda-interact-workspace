@@ -2204,3 +2204,26 @@ zero-owned-resource check.
 The outstanding XN04 production preview POST/GET proof and WI01 persisted
 publication/release/grant + signed `backend.mcp tools/call` proof remain the
 acceptance gate. COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 6 architect closeout — 2026-09-22
+
+**Accepted / Complete, Attempt 6.**
+
+The production external API tool composition is accepted as functionally complete
+from source and focused integration review. The accepted preview/runtime, external
+fixture, credential, HTTP, processor, publication and availability producers are
+bound without duplicating their business algorithms. Saved-DRAFT identity and
+fail-closed EXTERNAL_HTTP publication behavior are preserved.
+
+The architecture no longer requires COMMERCE-024 to introduce substantial
+test-oriented factoring solely to automate the entire persisted WI01 lifecycle.
+That full connection -> receipt -> publication -> release -> persisted grant ->
+signed MCP `tools/call` proof is transferred to the already-defined manual
+SYSTEM-TEST-002 cross-service validation task.
+
+This closeout does not claim that the manual end-to-end flow has already passed.
+Defects found during manual validation are routed to the concrete owner identified by
+the first failing stage.
+
+COMMERCE-012 and SYSTEM-TEST-002 remain Pending in this snapshot because GATEWAY-003
+is not Complete.

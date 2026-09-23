@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-020-SYSTEM-TEST-001
 created: 2026-09-21
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Validate external API tools end to end
@@ -64,6 +64,7 @@ and never expose secrets or raw external response data in errors/logs.
 
 ## Work Items
 
+- [ ] Manually execute the COMMERCE-024 WI01 persisted path: create connection/revision, set a synthetic per-shop credential, create a saved external DRAFT, run a synthetic sample and confirm the COMMERCE-030 receipt, publish tool/capability, create and activate a release, persist the conversation grant, sign the accepted RS256 assertion, invoke the assembled MCP JSON-RPC `tools/call`, and confirm exactly one controlled external HTTP execution with the pinned tool/connection revisions.
 - [ ] Execute X09 with published external tool and unchanged Background discovery/tool-call/final-response flow; record exact Shared/Commerce/Background/database revisions.
 - [ ] Cover platform and per-shop connections, two simultaneous shops, disabled/missing/rotated credentials, old conversation pins and denial after revocation.
 - [ ] Exercise visual projection and JSON/plain-text/HTML/XML/CSV code samples, including schema errors, loop/allocation attacks and abort; discarded upstream fields never reach model input. Preview asserts zero provider calls/decrypts and processing is same pure engine.
@@ -88,6 +89,7 @@ contract contradictions with a source reproduction; do not weaken validation.
 
 ## Acceptance Criteria
 
+- [ ] The manually invoked persisted WI01 flow succeeds through the assembled production factories without fabricated manifest/grant state, without overriding assertion verification, and without calling the executor directly as a substitute for MCP `tools/call`.
 - [ ] X09 and XN01–03 pass on assembled services; Background has no external-service credentials or hard-coded operation handler.
 - [ ] No user-supplied identity changes credential selection, new releases cannot add tools to existing grants, unknown external facts refer rather than fabricate.
 - [ ] Evidence uses real HTTP execution boundary/isolated PostgreSQL and existing Redis where needed; build/fixtures alone do not claim end-to-end acceptance.
@@ -181,3 +183,16 @@ Awaiting implementation.
 ### Follow-up
 
 Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+
+## Architect Scope Reconciliation — COMMERCE-024 closeout — 2026-09-22
+
+COMMERCE-024's production composition is accepted Complete. The final persisted WI01
+success proof is intentionally transferred here because this task already owns manual
+cross-service validation with actual assembled services and isolated stores.
+
+The manual WI01 run must distinguish composition defects from producer defects. When
+it fails, record the first failing persisted stage and route the correction to the
+actual owner; do not automatically reopen COMMERCE-024.
+
+The validation remains gated by this task's declared dependencies. In the current
+snapshot `GATEWAY-003` is not yet Complete, so SYSTEM-TEST-002 remains Pending.

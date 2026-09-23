@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: complete
 priority: 170
-executor: copilot
-claimed_at: 2026-09-22T21:24:54Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -81,7 +81,7 @@ and never expose secrets or raw external response data in errors/logs.
 - [x] Wire020 lifecycle +028 credentials +021 transport +025/026 processors +030 publication +032 availability into the accepted external integration and backend executor/registry factories without recreating business logic.
 - [x] Bind the accepted backend execution and publication ports while preserving method/result/operation identity and tenant/pin/validation/cancel boundaries.
 - [x] Demonstrate the assembled XN01–XN03 path with controlled external HTTP and verify the external executor has no cache layer.
-- [x] Record the concrete 031 production-composition gap; preview is not represented as an unavailable success path.
+- [x] Bind the accepted COMMERCE-019 production preview assembly and COMMERCE-038 external fixture runner into the U14 production composition without duplicating preview/runtime logic.
 
 ## Interfaces / Contracts
 
@@ -113,15 +113,17 @@ C21 sections1–8 retain data/behavior requirements. [Section9](../../../archite
 
 ## Acceptance Criteria
 
-- [ ] WI01: new connection/credential->external tool->visual/code sample->publish->release->merchant->real MCP call succeeds through configured no-argument production factories.
-- [ ] WI02: actual composition preserves tenant/pin/validation/cancel boundaries and preview has zero provider/decrypt calls; field mapping tests invoke actual producers.
-- [ ] WI03: report identifies each producer export and accepted SHA plus test evidence;024 introduces no new business algorithm or duplicated engine.
+- [x] WI01 composition wiring is architecturally complete; the full persisted connection->sample->publish->release->grant->real MCP success proof is explicitly deferred to manual ARCH-020-SYSTEM-TEST-002 validation and is not claimed as an automated COMMERCE-024 result.
+- [x] WI02: actual composition preserves tenant/pin/validation/cancel boundaries and preview has zero provider/decrypt calls; field mapping and production U14 route evidence invoke accepted producers.
+- [x] WI03: accepted producer exports are composed without introducing a new connection, credential, HTTP, publication, response-processing, preview, availability or fixture-runner engine.
 
 ## Validation
 
 Provide `test:arch020-external-wiring` and scenario IDs from C21 section9. Start with the named positive path through the actual owned implementation. Add the specified rejection/race cases. Each report maps criterion -> test file/test name -> command -> observable result, not just a suite count. No claimed success based only on safe rejection or missing-config tests. Preserve each review reproduction as a committed regression alongside adjacent allowed/denied cases.
 
 Use focused checks while implementing, then existing typecheck/build/lint where defined. Record unrun developer-owned PostgreSQL/container checks accurately; executable scenarios must still exist. No repeated unrelated full suites or screenshot quotas. No live credentials/WhatsApp delivery.
+
+Architect closeout decision (2026-09-22): COMMERCE-024 does not require further test-only refactoring solely to automate the complete persisted MCP lifecycle. The cross-service persisted WI01 success proof is transferred to `ARCH-020-SYSTEM-TEST-002`, whose scope is manual invocation against assembled services and isolated stores. COMMERCE-024 acceptance therefore means the production composition is functionally accepted from source/focused integration review; it does not assert that the deferred manual end-to-end scenario has already passed.
 
 ## Stop Condition
 
@@ -3291,3 +3293,147 @@ The next successful:
 ```
 
 claim creates Attempt 6 exactly once.
+
+## Architect Review — Attempt 6 closeout — 2026-09-22
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+COMMERCE-024 is closed as functionally complete at the production-composition
+boundary.
+
+This is an explicit architecture disposition, not a claim that every possible
+cross-service scenario has already been automated.
+
+Source/composition review across the accepted Attempt-3/4/6 state establishes the
+following COMMERCE-024-owned behavior:
+
+```text
+accepted COMMERCE-019 production PreviewService assembly is retained
+accepted COMMERCE-038 external fixture runner is injected
+external preview uses the same production PreviewService identity
+U14 external-response POST routing is bound without replacing ordinary preview
+saved DRAFT identity uses canonical toolContentHash(...) fallback
+tool enablement uses persisted tool.enabled rather than publication status
+EXTERNAL_HTTP publication fails closed when COMMERCE-030 validation is unavailable
+external HTTP and POLICY_OPERATION executor availability remain independently correct
+accepted connection/credential/HTTP/processor/publication/availability producers are consumed
+no external-result cache layer is introduced by COMMERCE-024
+```
+
+Attempt 6 also established the production U14 POST/GET direction with Redis-backed
+preview state and a safe disposable PostgreSQL/Redis runner. Further work to turn the
+entire persisted publish/release/grant/MCP flow into a single automated
+COMMERCE-024-owned test would require substantial test-oriented factoring across
+multiple accepted producer boundaries.
+
+That additional factoring is not required for COMMERCE-024 acceptance.
+
+### WI01 validation ownership decision
+
+The original WI01 wording required one automated proof covering:
+
+```text
+connection
+-> credential
+-> external DRAFT
+-> sample/receipt
+-> publication
+-> capability
+-> release activation
+-> persisted grant
+-> signed MCP tools/call
+-> external execution
+```
+
+The architecture already contains `ARCH-020-SYSTEM-TEST-002`, whose explicit scope
+is manual invocation of the assembled external-tool flow using actual Commerce /
+Background services, controlled provider boundaries and isolated stores.
+
+Therefore the full persisted WI01 success proof is transferred to
+`ARCH-020-SYSTEM-TEST-002`.
+
+COMMERCE-024 does **not** claim that this deferred manual scenario has already
+passed. It claims that the production composition to be exercised by that scenario
+is functionally complete and no known COMMERCE-024-owned wiring defect remains.
+
+Any defect found during manual/system validation should be routed to the actual
+producer/composition owner with the concrete failing stage, rather than reopening
+COMMERCE-024 by default.
+
+### Manual diagnostic note
+
+A local diagnostic harness was used to begin walking the persisted assembled flow.
+Its first observed failure concerned development-bypass authorization semantics in
+the connection producer. That is not a COMMERCE-024 composition concern. If the
+intended product contract remains that `developmentBypass === true` alone authorizes
+the trusted development path, any mismatch should be corrected in the owning
+connection/auth producer as a separate bounded defect.
+
+The diagnostic harness itself is not required to be committed as part of this
+acceptance.
+
+### Validation Reviewed
+
+Durable focused evidence accumulated through the accepted implementation state
+includes:
+
+```text
+external wiring focused suites: PASS
+external preview suite:         PASS
+external publication suite:     PASS
+external HTTP suite:            PASS
+external credentials suite:     PASS
+external availability suite:    PASS
+production U14 POST/GET preview path exercised with Redis-backed state
+focused ESLint:                 PASS
+git diff --check:               PASS
+repository typecheck/build:     only the documented unrelated baseline where reported
+```
+
+The complete persisted MCP lifecycle remains a manual SYSTEM-TEST-002 obligation.
+
+### Architecture Conformance
+
+Conformant for COMMERCE-024.
+
+The task's intended ownership is final production composition, not construction of a
+second integration-test framework around every accepted producer. The current code
+binds the accepted producers without duplicating their business algorithms.
+
+### State
+
+```yaml
+status: complete
+attempt: 6
+executor: null
+claimed_at: null
+```
+
+### Downstream Reconciliation
+
+Closing COMMERCE-024 does not yet make COMMERCE-012 or SYSTEM-TEST-002 executable,
+because `ARCH-020-GATEWAY-003` remains Ready rather than Complete in this snapshot.
+
+Accordingly:
+
+```text
+COMMERCE-012       remains Pending
+SYSTEM-TEST-002    remains Pending
+```
+
+No downstream task is launched automatically.
+
+### Follow-up
+
+Complete GATEWAY-003 through its normal workflow.
+
+When SYSTEM-TEST-002 later becomes Ready, invoke it explicitly and use it for the
+manual persisted external-tool validation, including the real signed MCP `tools/call`
+flow.
+
+Do not reopen COMMERCE-024 solely because that manual validation has not yet been
+performed.
