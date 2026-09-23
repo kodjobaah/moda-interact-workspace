@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
-executor: copilot
-claimed_at: 2026-09-23T21:20:23Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-021-COMMERCE-008
@@ -429,6 +429,54 @@ No COMMERCE-008/015 service contract, Prisma query, schema, provider execution, 
 - record the mandatory prepared-worktree/synchronization/claim/submodule evidence in the Completion Report;
 - rerun the focused template UI and production composition validation, targeted ESLint and `git diff --check`;
 - set the task to `review`, clear `executor`/`claimed_at`, return to `moda_architect` and STOP.
+
+### Attempt 5 Completion Report
+
+#### Status
+
+Ready for Review
+
+#### Launcher Evidence
+
+- Prepared execution packet: `prepared_execution=true`, `execution_state=claimed`, `dependency_gate=passed`, `attempt=5`, executor `copilot`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-013`.
+- Parent branch: `task/ARCH-021-COMMERCE-013`; claim commit: `4b8264b54a9fc865418421219a08b3063afb0599`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-013`.
+- Implementation branch: `task/ARCH-021-COMMERCE-013`.
+- Start-of-attempt implementation head and synchronization merge: `6953014f302c80ff96e0b595952a628e31b12c3c`, explicitly synchronized with `origin/main` before the Attempt 5 source correction.
+- Recursive submodule evidence: `database` at `98fdf715e54fe6df92ac6951facd104e410068f2`.
+
+#### Correction Mapping
+
+- Canonical revision ordering and latest-published summary: `src/studio/agent-configuration/prompt-template-library.tsx` now reconciles revisions using `revisionNumber DESC, id ASC`, preserving the COMMERCE-015 order so the singular published summary reports the newest revision immediately.
+- Unknown-operation success reconciliation: the stored operation now retains its original `onSuccess` reconciler, and the exact-operation retry applies it when `unknown` resolves to `ok`.
+- Focused regressions: `tests/agent-configuration-template-ui.test.tsx` proves the newer published revision/hash is shown in the singular summary and that unknown-to-ok publication with the same operation id reconciles history, editor text, published hash, and dirty baseline without reopening.
+- Preserved accepted behavior: all existing durable draft/history, metadata isolation, dirty-state, stale-text publication, ADMIN read-only, production composition, and no-provider-execution tests remain in the focused run.
+
+#### Files Changed
+
+- `src/studio/agent-configuration/prompt-template-library.tsx`
+- `tests/agent-configuration-template-ui.test.tsx`
+
+#### Validation Results
+
+- PASS: `npm exec vitest run tests/agent-configuration-template-ui.test.tsx tests/agent-configuration-production.test.tsx --reporter=dot` — 2 files, 10 tests passed.
+- PASS: targeted ESLint for `src/studio/agent-configuration/prompt-template-library.tsx`, `tests/agent-configuration-template-ui.test.tsx`, `components/production-studio-page.tsx`, and `tests/agent-configuration-production.test.tsx`.
+- PASS: `git diff --check`.
+- BASELINE: `npm run typecheck` exits 1 on existing diagnostics in `src/commerce/integration/backend/c20-test-fixture.ts`, `src/commerce/integration/backend/publication-storage.ts`, `src/commerce/integration/studio/services.ts`, `tests/c20-integration-fixture.test.ts`, and existing duplicate-property diagnostics in `tests/agent-configuration-production.test.tsx`; no source diagnostic was reported for `prompt-template-library.tsx`, and the focused tests/lint passed.
+
+#### Deviations
+
+None. No COMMERCE-008/015 service contract, Prisma/schema, provider/network, COMMERCE-014, or `StudioWorkspace` domain-state changes were made.
+
+#### Unresolved Issues
+
+The repository-wide typecheck baseline remains failing in the existing commerce/database and integration/test files listed above. This is outside the bounded Attempt 5 source slice and introduced no focused test or lint failure.
+
+#### Implementation Commit
+
+- Implementation commit pushed: `8ebff4e` (`fix(commerce): reconcile prompt template publication retries`).
+- Parent report commit: pending after this report update.
 
 ### Attempt 4 Architect Review — Changes Requested
 
