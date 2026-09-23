@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-23T10:49:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-001
@@ -74,11 +74,11 @@ The U15/U16 frontend is already implemented and well covered through injected fi
 
 ## Work Items
 
-- [ ] Replace fixture-port construction in `ConnectionsRouteClient`/route composition with the production ConnectionPort.
-- [ ] Preserve dependency injection for `ConnectionsPage` component tests.
-- [ ] Add route/composition tests proving production list/detail reads come from the production adapter.
-- [ ] Add a regression that fails if production route code imports/instantiates the fixture factory.
-- [ ] Re-run existing U15/U16 frontend tests against fixture injection to prove no component behaviour regressed.
+- [x] Replace fixture-port construction in `ConnectionsRouteClient`/route composition with the production ConnectionPort.
+- [x] Preserve dependency injection for `ConnectionsPage` component tests.
+- [x] Add route/composition tests proving production list/detail reads come from the production adapter.
+- [x] Add a regression that fails if production route code imports/instantiates the fixture factory.
+- [x] Re-run existing U15/U16 frontend tests against fixture injection to prove no component behaviour regressed.
 
 ## Interfaces / Contracts
 
@@ -131,35 +131,75 @@ Do not collapse frontend fixture tests into database integration tests. Keep the
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None
+- `src/studio/connections/connections-route-client.tsx`
+- `tests/connections-route-composition.test.tsx`
+- `tests/connections-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Replaced production fixture construction with a stable client-safe `ConnectionPort` whose operations invoke the production server actions.
+- Preserved the `ConnectionsPage` port injection boundary used by fixture-based component tests.
+- Added composition coverage for production list/detail delegation and a source regression excluding `createConnectionFixtures()` from the production route module.
+- Kept fixture factories available to existing component tests and preserved U15/U16 behavior.
 
 ### Validation Results
 
-None
+- `npm run test:arch020-connections-ui`: PASS, 20 tests.
+- `npx vitest run tests/connections-production.test.ts tests/connections-route-composition.test.tsx`: PASS, 6 tests.
+- `npx eslint src/studio/connections/connections-route-client.tsx tests/connections-route-composition.test.tsx tests/connections-ui.test.tsx src/studio/connections/production.ts`: PASS.
+- `git diff --check`: PASS.
+- Changed-file diagnostics: no errors.
+- `npm run typecheck`: existing repository failures remain in unrelated Prisma/backend/studio files; no errors were reported for the changed route or tests.
+- `npm run test:arch020-external-connection-lifecycle`: 13/14 passed; the existing development-bypass test fails with `forbidden` in unrelated lifecycle code.
+
+Physical worktree isolation:
+
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-002`
+- parent branch: `task/ARCH-021-COMMERCE-002`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-002`
+- implementation branch: `task/ARCH-021-COMMERCE-002`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+
+- parent remote task branch fast-forwarded: not-needed
+- parent `origin/main` incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation `origin/main` incorporated: already-current
+
+Recursive implementation submodules:
+
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- recorded submodule commit: `database` at `7f920e8f2ad523e78e566f4dbdfbb1f68118b082`
+
+Published commits:
+
+- implementation: `267f3bd` (`Switch connections routes to production port`)
 
 ### Deviations
 
-None
+- Full repository typecheck is currently blocked by pre-existing type errors in backend/studio persistence code outside this task. The focused changed-file diagnostics and targeted lint pass.
+- The lifecycle validation retains one unrelated baseline failure in the development-bypass case.
 
 ### Assumptions
 
-None
+- Existing `src/studio/connections/server-actions.ts` is the ARCH-021-COMMERCE-001 production adapter bridge and remains the correct client/server boundary.
 
 ### Unresolved Issues
 
-None
+- None within this task scope.
 
 ### Architectural Concerns
 
-None
+- None. The route delegates authorization and persistence to the server-side production adapter; the browser receives only `ConnectionPort` results.
 
 ## Architect Review
 
