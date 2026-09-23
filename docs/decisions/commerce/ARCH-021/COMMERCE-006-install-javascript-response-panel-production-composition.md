@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-23T13:02:39Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-005
@@ -148,7 +148,7 @@ Phase 4 will replace the human-facing synthetic tool-test data source; keep that
 
 ### Status
 
-Ready for Review (Attempt 3 corrections complete)
+Ready for Review (Attempt 4 corrections complete)
 
 ### Files Changed
 
@@ -225,6 +225,31 @@ Attempt 3 correction:
 ### Architectural Concerns
 
 None
+
+### Attempt 4 Correction Report
+
+#### Correction Mapping
+
+- Preserved the accepted Attempt 2 edit-version/CAS/publication fixes and Attempt 3 complete top-level Input JSON Schema / Response template persistence unchanged in [components/studio-workspace.tsx](../../../../../moda-interact-commerce/components/studio-workspace.tsx).
+- Added an editor-owned preflight for the visible Advanced response processing and Response shape / resultSchema buffers. Invalid JSON now reports invalid execution state, prevents JavaScript draft persistence, and leaves the shared U06 dirty/navigation/publication guard active in [src/studio/external-http/editor.tsx](../../../../../moda-interact-commerce/src/studio/external-http/editor.tsx), [src/studio/external-http/ports.ts](../../../../../moda-interact-commerce/src/studio/external-http/ports.ts), and [src/studio/code-response/production-panel.tsx](../../../../../moda-interact-commerce/src/studio/code-response/production-panel.tsx).
+- Prevented the parent full-draft save from clearing dirty state while a visible execution buffer is invalid, preserving exact persisted-definition publication semantics in [components/studio-workspace.tsx](../../../../../moda-interact-commerce/components/studio-workspace.tsx).
+- Added focused regression coverage for JavaScript edit -> invalid Response shape JSON -> JavaScript Save draft, proving no draft write and retained discard protection in [tests/external-tools-ui.test.tsx](../../../../../moda-interact-commerce/tests/external-tools-ui.test.tsx).
+- Preserved server-side QuickJS/external-preview execution, cancellation/reconciliation, ADMIN/SUPER_ADMIN boundaries, and no-provider-network/credential behavior.
+
+#### Attempt 4 Validation Results
+
+- `npm exec vitest run tests/external-tools-ui.test.tsx`: passed, 13 tests.
+- `npm exec vitest run tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/response-processing.test.ts tests/external-http-executor.test.ts tests/external-preview.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/external-wiring.test.ts tests/external-tools-ui.test.tsx`: passed, 9 files, 105 tests.
+- Targeted ESLint over all five changed files: passed with no reported errors or warnings.
+- `git diff --check`: passed.
+- `npm run typecheck`: remains blocked by the existing repository baseline, reporting 234 errors in 14 files, including pre-existing diagnostics in the touched workspace/test files; no new production-panel, external-editor, external-port, or regression behavior failure was observed in focused validation.
+- No live provider calls, provider credentials, or network-backed execution were used.
+
+#### Attempt 4 Publication
+
+- Implementation commit: `3982471`, pushed to `origin/task/ARCH-021-COMMERCE-006`.
+- Parent report commit: pending after this metadata/report update.
+- Final task metadata: `status: review`, `executor: null`, `claimed_at: null`, `attempt: 4`.
 
 ## Architect Review
 
