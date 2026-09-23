@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 70
 executor:
 claimed_at:
@@ -211,24 +211,50 @@ None identified.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implementation `abc060b` / parent report `3668956f` establishes the intended Agent Configuration domain components and substantially preserves the COMMERCE-007 model-service boundary, but four task-scoped corrections are required before acceptance.
+
+1. **The production handoff is currently broken in `StudioWorkspace`.** `agentConfigurationActions` is declared in the props type but is not destructured from the function argument, while the Agent Configuration render branch references `agentConfigurationActions`. Correct the handoff so the production route can actually render the accepted actions, and add a focused composition regression that would fail if the prop is declared but not consumed. This is a task-owned TypeScript/rendering defect and must not be recorded as an unrelated baseline diagnostic.
+
+2. **The new route drops the accepted Studio selected-shop context.** `app/agent-configuration/page.tsx` does not read/preserve `shopId`, and the `page === 'agent-configuration'` branch in `ProductionStudioPage` returns before `resolveStudioShopSelection(...)`. A selected shop therefore remains in navigation URL state but the Agent Configuration shell receives the empty fallback selector on refresh/direct entry. Preserve the existing Phase 1 invariant by accepting the URL `shopId`, resolving it through the accepted server-validated shop-context service, and passing the resulting `shopSelection` to `StudioShell`. Keep the platform-model controls platform-scoped; this correction only preserves shared Studio context for the later COMMERCE-012 extension.
+
+3. **The concrete current environment is not shown.** The screen currently states only that the environment is server-resolved. The task requires the current environment to be displayed as server-derived context. Render the actual trusted environment (`LOCAL`, `TEST`, `DEVELOPMENT`, `STAGING` or `PRODUCTION`) even when no platform model selection exists. Do not accept an environment value from browser/search parameters.
+
+4. **Mutation failures do not yet use the accepted Studio presentation contract end to end.** `model-server-actions.ts` may return `{ kind: 'forbidden' }` via an unsafe cast even though `ModelMutationResult` contains only `ok | unknown`, and the client `run(...)` path treats every non-`unknown` returned value as success. CAS/conflicting-replay presentation also relies on reading a custom thrown `error.code` across the Server Action boundary rather than a serializable accepted Studio failure result. Reconcile the UI/server-action adapter with the existing Studio result/failure semantics so at minimum forbidden, stale-CAS, conflicting replay and unknown outcomes are represented and rendered explicitly; do not invent a second mutation-state model. Preserve exact original-operation reconciliation for `unknown`.
+
+Attempt 2 must also reconcile the task Work Items, Acceptance Criteria and Validation checkboxes and record the launcher-prepared parent/implementation worktrees, synchronization evidence and recursive submodule evidence in the Completion Report. Do not redesign COMMERCE-007 service semantics, prompt/template UI, shop overrides or unrelated Studio domains.
 
 ### Reviewed Files
 
-None
+- `app/agent-configuration/page.tsx`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/platform-model-configuration.tsx`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `components/production-studio-page.tsx`
+- `components/studio-shell.tsx`
+- `components/studio-selected-shop-context.tsx`
+- `components/studio-composer-context.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/selected-shop.ts`
+- `tests/agent-configuration-model-ui.test.tsx`
+- parent ARCH-021 architecture and COMMERCE-007 accepted service contract
 
 ### Validation Reviewed
 
-None
+- Submitted focused validation reports 10 passing tests, targeted ESLint, Next route type generation and `git diff --check`.
+- Static inspection confirms the focused UI tests exercise ADMIN read-only behavior, create/default operations and same-operation-id unknown reconciliation.
+- The submitted focused tests do not exercise the production Agent Configuration route/composition, selected-shop preservation, concrete server-derived environment presentation, or serializable conflict/forbidden mutation outcomes.
+- The `StudioWorkspace` missing-prop-destructure defect is task-owned and contradicts the submitted claim that task-owned composition diagnostics are clean.
+- The supplied review archive contains no installed `node_modules`, so the submitted Vitest/Next/ESLint commands were not independently rerun by the architect.
 
 ### Architecture Conformance
 
-Pending
+Changes required. The domain split, real COMMERCE-007 composition intent, ADMIN read-only controls, secret-safe catalogue DTOs and no-provider-call boundary are directionally conformant. Acceptance is blocked by the broken production action handoff, loss of the accepted Studio selected-shop context, missing concrete environment presentation, and incomplete conflict/forbidden result adaptation.
 
 ### Follow-up
 
-None
+Return the same task to `ready` with `attempt: 1` preserved. The next authorized claim becomes Attempt 2. COMMERCE-012, COMMERCE-013 and COMMERCE-014 remain dependency-gated; do not begin them from this task.
