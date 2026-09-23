@@ -74,10 +74,10 @@ The current Phase 2 Commerce execution frontier on this task branch is:
 
 ```text
 ARCH-021-COMMERCE-007
-ARCH-021-COMMERCE-009
+ARCH-021-COMMERCE-009   Attempt 2 CAS/replay + pointer-audit correction
 ```
 
-COMMERCE-008 is architect-accepted Complete after live disposable-PostgreSQL proof of durable replay and per-template concurrent draft allocation. COMMERCE-009 is therefore Ready and may implement platform/shop prompt lifecycle against the accepted template service. COMMERCE-007 is reconciled separately on its own parent branch; preserve its newer architect-review state when these coordination branches are combined.
+COMMERCE-008 is architect-accepted Complete after live disposable-PostgreSQL proof of durable replay and per-template concurrent draft allocation. COMMERCE-009 Attempt 1 reached review but requires a bounded Attempt 2 correction for receipt-first CAS replay, valid pointer audit targets and exact template-revision copy semantics. COMMERCE-010/012/014 remain gated on COMMERCE-009. COMMERCE-007 is reconciled separately on its own parent branch; preserve its newer architect-review state when these coordination branches are combined.
 ARCH-021-COMMERCE-008   Ready — independent prompt-template service rework
 ```
 

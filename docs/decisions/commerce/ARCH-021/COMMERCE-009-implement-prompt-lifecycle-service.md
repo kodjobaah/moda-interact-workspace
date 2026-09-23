@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor:
 claimed_at:
@@ -216,24 +216,50 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 substantially implements the Phase 2 prompt lineage, draft/publication and environment-scoped pointer boundaries, but it is not yet acceptable at the CAS/replay boundary. The write predicates themselves are largely correct and must be preserved: draft update/publish use `status + editVersion`, platform pointer replacement uses `environment + editVersion`, shop pointer replacement uses `environment + shopId + generationId + editVersion`, and shop clear uses the same generation/edit tokens in `deleteMany`.
+
+Three bounded corrections remain:
+
+1. **Receipt-first reconciliation after CAS/domain failures.** `command()` currently returns any `LifecycleError` immediately. Therefore an identical concurrent operation can lose an otherwise-correct atomic CAS (or observe the lineage/pointer created by the winning transaction) and return `CAS_CONFLICT`/`CONFLICT` even after the winning transaction has durably committed the same `operationId` receipt. After a transaction failure, first read `CommerceAuditEvent(id = operationId)`. A matching actor/action/payload hash MUST replay its stored result; a mismatched receipt MUST return `CONFLICTING_REPLAY`; only when no receipt exists should the original known domain/CAS error be returned. Preserve the existing `unknown` result only for genuinely indeterminate failures with no durable receipt.
+
+2. **Pointer audit targets must satisfy the accepted database constraint.** The generic audit mapper currently derives `agentPromptRevisionId` from `value.id`. `PlatformPromptPointer`/`ShopPromptPointer` expose `promptRevisionId`, not `id`, so SET pointer receipts omit the required revision target. CLEAR returns only `{ shopId, cleared }`, so it omits both required prompt targets. Under the accepted `arch020_audit_targets` constraint, SET/CLEAR pointer transactions therefore cannot durably commit their receipt. Carry explicit audit targets from the mutation: SET platform/shop must write the selected `promptId` + `promptRevisionId` (+ environment/shop where applicable); CLEAR must read the current pointer inside the same transaction, CAS-delete that exact generation/edit version, and write the cleared row's `promptId` + `promptRevisionId` + shop/environment into the audit receipt. Do not infer revision ids from a generic `id` field.
+
+3. **Template copy must identify one exact published template revision.** `sourceTemplateId` alone currently lets `findFirst()` choose an arbitrary published revision. The architecture requires copy-on-use from one exact published template revision. Require `sourceTemplateRevisionId` for template-copy authoring (an optional `sourceTemplateId` may only cross-check ownership), while preserving enabled category/template validation and immutable provenance.
 
 ### Reviewed Files
 
-None
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
+- `tests/agent-configuration-prompts.test.ts`
+- `tests/agent-configuration-prompts-postgres.test.ts`
+- `database/prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-009-implement-prompt-lifecycle-service.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Submitted focused validation: 20 tests reported passing across prompt/template/model coverage.
+- Submitted PostgreSQL concurrency coverage proves only the singleton platform-lineage race; it does not exercise draft/pointer CAS, same-operation replay after a CAS loser, shop-generation ABA, or pointer audit-target constraints.
+- Submitted targeted ESLint, focused TypeScript diagnostics and `git diff --check` are accepted as supporting evidence.
+- Attempt 2 requires focused disposable-PostgreSQL proof for the corrected CAS/audit paths; exhaustive coverage is not required.
 
 ### Architecture Conformance
 
-Pending
+Changes Requested. The basic persistence boundaries, exact-content publication hashing, immutable published revisions and atomic CAS predicates conform. Durable same-request replay and pointer audit receipt correctness do not yet satisfy the Phase 2 command/CAS contract, and template copy is not yet restricted to one exact published template revision.
 
 ### Follow-up
 
-None
+Return the same task for Attempt 2. Preserve the existing atomic CAS predicates and bounded scope. Add focused regressions proving at minimum:
+
+- two distinct operations using the same existing prompt-draft/pointer CAS token yield exactly one mutation winner and one `CAS_CONFLICT`;
+- two concurrent identical CAS-bound commands with the same `operationId` return the same durable successful result and only one audit receipt;
+- platform/shop SET pointer and shop CLEAR pointer commit valid audit receipts containing the required prompt/revision targets;
+- shop clear -> recreate produces a new `generationId`, and stale prior-generation replace/clear commands remain rejected;
+- template copy rejects `sourceTemplateId`-only ambiguity and copies the explicitly selected published revision exactly.
+
+Set task state to `ready`, clear `executor`/`claimed_at`, preserve `attempt: 1`, and STOP after returning Attempt 2 to Architect Review.

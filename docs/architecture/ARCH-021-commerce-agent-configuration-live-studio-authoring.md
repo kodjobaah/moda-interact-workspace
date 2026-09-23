@@ -732,10 +732,10 @@ The current Phase 2 execution frontier on this task branch is:
 
 ```text
 ARCH-021-COMMERCE-007   model catalogue/default/shop-override service
-ARCH-021-COMMERCE-009   platform/shop prompt lifecycle service
+ARCH-021-COMMERCE-009   Attempt 2 CAS/replay + pointer-audit correction
 ```
 
-DATABASE-001 and COMMERCE-008 are architect-accepted Complete. COMMERCE-009 is therefore Ready because its template-service dependency is now satisfied. COMMERCE-007 is reconciled separately on its own parent branch and its newer architect-review state must be preserved when the coordination branches are combined. COMMERCE-011 establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) remain independently reviewable UI capabilities and become executable only when their explicit dependency sets are Complete.
+DATABASE-001 and COMMERCE-008 are architect-accepted Complete. COMMERCE-009 Attempt 1 reached review but requires a bounded Attempt 2 correction for receipt-first CAS replay, valid pointer audit targets and exact template-revision copy semantics. COMMERCE-010/012/014 remain gated on COMMERCE-009. COMMERCE-007 is reconciled separately on its own parent branch and its newer architect-review state must be preserved when the coordination branches are combined. COMMERCE-011 establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) remain independently reviewable UI capabilities and become executable only when their explicit dependency sets are Complete.
 The current Phase 2 execution frontier is:
 
 ```text
@@ -862,6 +862,15 @@ independent of features.
 - Accepted production `/agent-configuration` composition with server-resolved `shopId`, trusted server-derived environment, real COMMERCE-007 action handoff, ADMIN read-only behavior and secret-safe rendering.
 - Accepted explicit serializable forbidden, stale-CAS and conflicting-replay server-action outcomes while retaining exact-original-operation reconciliation for `unknown` results.
 - Marked COMMERCE-011 Complete. COMMERCE-008 remains the sole Ready Phase 2 Commerce frontier; COMMERCE-012/013/014 retain their remaining service dependencies.
+
+### 2026-09-23 — COMMERCE-009 Attempt 1 changes requested
+
+- Reviewed the platform/shop prompt lifecycle service with CAS semantics as the primary focus.
+- Accepted the atomic draft/publish and platform/shop pointer write predicates in substance.
+- Identified receipt-first replay drift: known `LifecycleError` CAS/domain failures return before checking whether the winning transaction already durably committed the same `operationId`.
+- Identified invalid pointer audit-target mapping: SET pointer results expose `promptRevisionId`, not generic `id`, and CLEAR currently loses both prompt targets required by `arch020_audit_targets`.
+- Required template copy-on-use to identify one exact published `sourceTemplateRevisionId` rather than accepting template-id-only ambiguous selection.
+- Returned COMMERCE-009 to Ready at `attempt: 1`; COMMERCE-010/012/014 remain gated until COMMERCE-009 is Complete.
 
 ### 2026-09-23 — COMMERCE-008 Attempt 3 accepted
 
