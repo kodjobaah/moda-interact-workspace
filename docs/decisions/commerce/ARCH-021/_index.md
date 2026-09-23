@@ -35,7 +35,7 @@ remaining executable implementation task.
 Phase 1 frontier: none — implementation set complete
 ```
 
-The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is materialised below. DATABASE-001 and COMMERCE-007 are architect-accepted Complete; COMMERCE-011 is newly Ready, while COMMERCE-008 continues independently through its separately reviewed rework.
+The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is materialised below. DATABASE-001, COMMERCE-007 and COMMERCE-011 are architect-accepted Complete. COMMERCE-008 remains the current Ready Phase 2 Commerce frontier; the prompt-lifecycle/resolver and dependent UI tasks remain gated on their explicit service dependencies.
 
 ## Phase 1 dependency graph
 
@@ -65,7 +65,7 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-008](COMMERCE-008-implement-prompt-template-service.md) | Implement category-organised reusable prompt-template service | Ready | DATABASE-001, ARCH-020-COMMERCE-002 |
 | [COMMERCE-009](COMMERCE-009-implement-prompt-lifecycle-service.md) | Implement platform/shop prompt lifecycle and active pointers | Pending | DATABASE-001, COMMERCE-008, ARCH-020-COMMERCE-002 |
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Pending | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
-| [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Ready | COMMERCE-006, COMMERCE-007 |
+| [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Complete | COMMERCE-006, COMMERCE-007 |
 | [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Pending | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
 | [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Pending | COMMERCE-008, COMMERCE-011 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Pending | COMMERCE-008, COMMERCE-009, COMMERCE-011 |
@@ -74,10 +74,9 @@ The current Phase 2 Commerce execution frontier is:
 
 ```text
 ARCH-021-COMMERCE-008   Ready — independent prompt-template service rework
-ARCH-021-COMMERCE-011   Ready — Agent Configuration shell + platform model UI
 ```
 
-COMMERCE-007 is architect-accepted Complete after closing the absent-row stale-token ABA edge while preserving the accepted atomic CAS and durable-operation replay behavior. COMMERCE-011 is now independently executable because COMMERCE-006 and COMMERCE-007 are Complete. COMMERCE-010 remains gated on COMMERCE-009. COMMERCE-008 retains its separately reviewed state, and COMMERCE-009 remains gated on COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
+COMMERCE-007 and COMMERCE-011 are architect-accepted Complete. COMMERCE-011 establishes the production Agent Configuration shell/model surface, including selected-shop context, trusted environment display and serialized model mutation outcomes. COMMERCE-013 remains gated on COMMERCE-008; COMMERCE-014 remains gated on COMMERCE-008 and COMMERCE-009; COMMERCE-012 remains gated on COMMERCE-008, COMMERCE-009 and COMMERCE-010. COMMERCE-009 remains gated on COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain

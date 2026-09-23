@@ -723,7 +723,7 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-008 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
-| ARCH-021-COMMERCE-011 | moda_commerce | Ready | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
@@ -814,7 +814,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-008 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
-| ARCH-021-COMMERCE-011 | moda_commerce | Ready | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
@@ -846,6 +846,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-011 Attempt 3 accepted
+
+- Reviewed implementation `d2d67dd` with submitted parent report `b90718b`.
+- Confirmed Attempt 3 is validation-only relative to Attempt 2: no runtime source changed; the new production-composition and server-action regression files prove the previously requested boundaries.
+- Accepted production `/agent-configuration` composition with server-resolved `shopId`, trusted server-derived environment, real COMMERCE-007 action handoff, ADMIN read-only behavior and secret-safe rendering.
+- Accepted explicit serializable forbidden, stale-CAS and conflicting-replay server-action outcomes while retaining exact-original-operation reconciliation for `unknown` results.
+- Marked COMMERCE-011 Complete. COMMERCE-008 remains the sole Ready Phase 2 Commerce frontier; COMMERCE-012/013/014 retain their remaining service dependencies.
 
 ### 2026-09-23 — COMMERCE-007 Attempt 3 accepted
 
