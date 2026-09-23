@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
 executor: null
 claimed_at: null
@@ -275,21 +275,20 @@ The repository-wide typecheck and the previously documented unrelated Prisma moc
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 resolves the Attempt 1 selected-shop handoff and durable prompt-discovery defects: production composition forwards only `shopSelection.selectedShop?.id`; raw model/pointer/lineage reads are no longer suppressed by an unavailable effective resolver; `getShopPrompt(shopId)` makes an unactivated lineage/draft durable across refresh; lineage creation and draft creation use separate operation ids; publication activates the returned published revision using the current pointer CAS tokens; ADMIN prompt text is read-only; and the shared Studio Composer dirty blocker is wired through the Agent Configuration screen.
+Attempt 3 is architect-accepted. The bounded UI-state correction closes every item from the prior review while preserving the accepted COMMERCE-007/009 model/prompt CAS and durable replay boundaries.
 
-The underlying COMMERCE-007/009 CAS services remain accepted. The remaining issues are UI state-isolation/recovery problems inside this task:
+- Shop-context isolation now uses a monotonically increasing load generation. A slower response from a previously selected shop is ignored and cannot repopulate model, pointer, lineage, draft or editor state after the shop changes.
+- Dirty prompt text now blocks independent model changes, prompt inheritance clearing and new-draft/reload paths that would replace the editor. Successful unrelated mutations can no longer silently discard the visible prompt draft.
+- Existing durable DRAFT revisions are resumed instead of creating a second DRAFT for the same lineage.
+- Publish success followed by pointer activation failure reloads durable lineage and pointer state. The immutable PUBLISHED revision becomes visible for a later activation attempt and publication is not retried.
+- Effective-resolution failures remain visibly reported while raw model/prompt override state is still loaded and clearable.
+- The server-validated selected shop, ADMIN read-only boundary, exact template copy, separate durable operation ids, Composer navigation dirty guard and generation/edit CAS token round-trip remain intact.
 
-1. `ShopAgentConfiguration.load()` has no load-generation/token guard. If Shop A is still loading when the selected shop changes to Shop B, the slower Shop A Promise can resolve after the Shop B load and repopulate `model`/`pointer`/`lineage`/`draft` state while the component now renders Shop B. A later draft save uses only the stale revision id, so this can mutate Shop A from the Shop B surface. Attempt 3 must ignore stale asynchronous loads after `shopId` changes (for example, with a monotonically increasing load token or equivalent cancellation guard) and include a regression where the old-shop load resolves last.
-2. A dirty prompt draft can still be silently discarded by successful independent controls. Model replace/clear, `Create shop prompt draft`, and `Clear prompt override` can all invoke a mutation followed by `load()`, which resets text and clears the shared dirty blocker. Because model and prompt overrides are independent, a model mutation must not discard unsaved prompt text. While prompt text is dirty, actions that would reload/replace the prompt editor must be blocked or explicitly pass through a discard decision; they must never clear dirty state implicitly.
-3. `Create shop prompt draft` remains available when a DRAFT already exists. The service permits another DRAFT revision, while `load()` resumes the first DRAFT it finds, so a second draft can be created and immediately become non-visible/unmanageable. When a durable DRAFT already exists, the UI must resume it rather than create another. New draft creation is allowed only when the lineage has no DRAFT (for example after publication).
-4. Publish + activate is not reconciled when the publish succeeds but the pointer CAS fails. In that case the revision is durably PUBLISHED, but local state still presents it as the old DRAFT and the newly published revision is absent from the published-revision selector until a manual refresh. Attempt 3 must reload/reconcile lineage + current pointer after activation failure so the immutable published revision is visible and can be activated with refreshed CAS tokens; do not retry publication of the already-published revision.
-5. `load()` records the effective-resolver failure message and then unconditionally clears `message`. Preserve the configuration-error message while still loading/displaying the raw override state, so a broken explicit override is visibly an error rather than only an empty alert/status shell.
-
-Do not redesign the accepted model/prompt services, CAS tokens, selected-shop URL contract or Studio Composer blocker. This is a bounded final UI-state correction.
+No live provider/model execution, grant/manifest mutation or cross-service contract change is introduced by this task.
 
 ### Reviewed Files
 
@@ -302,28 +301,22 @@ Do not redesign the accepted model/prompt services, CAS tokens, selected-shop UR
 - `src/commerce/agent-configuration/prompt-service.ts`
 - `tests/agent-configuration-shop-ui.test.tsx`
 - `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-prompts.test.ts`
 
 ### Validation Reviewed
 
-- Submitted Attempt 2 focused validation: 3 files / 11 tests passed.
-- Submitted broader targeted validation: 30 tests passed; 9 documented pre-existing Prisma-mock failures remain outside the changed behavior.
-- Submitted changed-file ESLint: passed.
-- Submitted `git diff --check`: passed.
-- Repository-wide TypeScript baseline remains non-blocking; no new diagnostic was reported in the new Agent Configuration files/tests.
-- Direct source review confirms the Attempt 1 server-validated shop handoff, raw broken-override recovery, durable lineage read, separate operation ids, exact published-revision activation and Composer dirty integration, while exposing the remaining async-shop and dirty/reconciliation defects above.
+- Attempt 3 focused shop UI suite: 11 tests passed.
+- Attempt 3 combined focused suite: 5 files / 27 tests passed.
+- Targeted ESLint over task-touched implementation and test files: passed.
+- Changed-file diagnostics: passed.
+- `git diff --check`: passed.
+- Repository-wide TypeScript baseline remains non-blocking; no new task-owned diagnostic is reported.
+- Direct source review confirms the five Attempt 3 correction requirements are implemented and the accepted service-side CAS/replay semantics remain unchanged.
 
 ### Architecture Conformance
 
-Partial. Attempt 2 satisfies the original selected-shop validation, durable lineage discovery, exact publication target and ADMIN/navigation boundaries, but the selected-shop surface can still accept stale old-shop asynchronous state, independent mutations can discard unsaved prompt text, duplicate DRAFTs can be created, and a publish-success/activation-conflict outcome is not reconciled. Those defects violate shop isolation, independent override behavior and durable authoring recovery.
+Conforms. The selected-shop Agent Configuration surface now preserves the server-validated shop boundary across asynchronous loads, protects unsaved prompt state from independent mutations, resumes one durable DRAFT, reconciles publish/activation partial success, preserves resolver errors, round-trips opaque generation/edit CAS tokens and remains read-only for ADMIN. Model and prompt overrides remain independent and no execution/provider boundary is crossed.
 
 ### Follow-up
 
-Attempt 3 must preserve the accepted Attempt 2 work and correct only the bounded UI-state issues above. Add focused regressions proving:
-
-- Shop A load resolving after a Shop B selection cannot repopulate or mutate Shop A state from the Shop B surface;
-- dirty prompt text is not discarded by model mutations, prompt inheritance clear, or draft creation/reload paths;
-- an existing durable DRAFT is resumed and a second DRAFT is not created;
-- publish success followed by pointer CAS failure reconciles the now-PUBLISHED revision and refreshed pointer state without republishing it;
-- an effective-resolution failure remains visibly reported while raw broken overrides stay clearable.
-
-After these corrections, reconcile the executor-owned Work Items / Acceptance Criteria / Validation checkboxes with the final implementation evidence, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin another task from this branch.
+None for COMMERCE-012. The task is Complete. It has no dependants to promote. Preserve newer parallel-branch architect state for COMMERCE-013 when reconciling parent branches.

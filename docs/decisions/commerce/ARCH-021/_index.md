@@ -35,7 +35,7 @@ remaining executable implementation task.
 Phase 1 frontier: none — implementation set complete
 ```
 
-The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is materialised below. DATABASE-001 and COMMERCE-007/008/009/010/011/014/015 are architect-accepted Complete. The current executable Phase 2 Commerce frontier is COMMERCE-012 and COMMERCE-013.
+The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is materialised below. DATABASE-001 and COMMERCE-007/008/009/010/011/012/014/015 are architect-accepted Complete. The current executable Phase 2 Commerce frontier on this branch is COMMERCE-013.
 
 ## Phase 1 dependency graph
 
@@ -66,7 +66,7 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-009](COMMERCE-009-implement-prompt-lifecycle-service.md) | Implement platform/shop prompt lifecycle and active pointers | Complete | DATABASE-001, COMMERCE-008, ARCH-020-COMMERCE-002 |
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Complete | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
 | [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Complete | COMMERCE-006, COMMERCE-007 |
-| [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Ready | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
+| [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Complete | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
 | [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Ready | COMMERCE-008, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Complete | COMMERCE-008, COMMERCE-009, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-015](COMMERCE-015-expose-prompt-template-revision-history.md) | Expose prompt-template revision-history read contract | Complete | COMMERCE-008 |
@@ -74,11 +74,10 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 The current Phase 2 Commerce execution frontier on this task branch is:
 
 ```text
-ARCH-021-COMMERCE-012   Ready — Attempt 2 rework: shop-state isolation / dirty-state / publish-recovery corrections
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ```
 
-COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 Attempt 2 is architect-accepted Complete after mandatory platform-baseline validation, independent model/prompt fallback, repeatable-read snapshot composition and selected-shop short-circuit validation. COMMERCE-014 Attempt 2 is architect-accepted Complete after exact template-revision selection, dirty-editor mutation guards, canonical revision-history wiring, singleton platform-lineage read/auth proof and production prompt-action handoff coverage. COMMERCE-012 remains Ready for Attempt 2 rework and COMMERCE-013 remains Ready.
+COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 Attempt 2 is architect-accepted Complete after mandatory platform-baseline validation, independent model/prompt fallback, repeatable-read snapshot composition and selected-shop short-circuit validation. COMMERCE-014 Attempt 2 is architect-accepted Complete after exact template-revision selection, dirty-editor mutation guards, canonical revision-history wiring, singleton platform-lineage read/auth proof and production prompt-action handoff coverage. COMMERCE-012 Attempt 3 is architect-accepted Complete after shop-load isolation, dirty-state protection, single-DRAFT resume, publish/activation recovery and resolver-error preservation. COMMERCE-013 remains Ready on this branch; preserve its newer separately accepted Attempt 5 state during branch reconciliation.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain

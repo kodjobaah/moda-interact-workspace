@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation plus COMMERCE-007/008/009/010/011/015 are architect-accepted Complete; COMMERCE-012/013/014 are Ready.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation plus COMMERCE-007/008/009/010/011/012/014/015 are architect-accepted Complete; COMMERCE-013 is Ready on this branch.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -724,7 +724,7 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-009 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Complete | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
-| ARCH-021-COMMERCE-012 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Complete | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
@@ -732,11 +732,10 @@ Phase 2 tasks:
 The current Phase 2 execution frontier is:
 
 ```text
-ARCH-021-COMMERCE-012   Ready — Attempt 2 rework: shop-state isolation / dirty-state / publish-recovery corrections
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ```
 
-DATABASE-001 and COMMERCE-007/008/009/010/011/014/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-014 closes platform prompt authoring with exact template-revision copy-on-use, dirty-editor mutation safety, canonical revision-history wiring and authenticated singleton platform-lineage reads. COMMERCE-012 Attempt 2 is returned to Ready for bounded shop-load isolation, dirty-state preservation, single-draft and publish/activation recovery corrections; COMMERCE-013 remains Ready.
+DATABASE-001 and COMMERCE-007/008/009/010/011/012/014/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-014 closes platform prompt authoring with exact template-revision copy-on-use, dirty-editor mutation safety, canonical revision-history wiring and authenticated singleton platform-lineage reads. COMMERCE-012 Attempt 3 closes the selected-shop UI boundary with stale-load isolation, dirty-state protection, single-DRAFT resume, publish/activation reconciliation and preserved resolver errors. COMMERCE-013 remains Ready on this branch; preserve its newer separately accepted Attempt 5 state during parent-branch reconciliation.
 
 Phase 2 exit criteria:
 
@@ -816,7 +815,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-009 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Complete | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
-| ARCH-021-COMMERCE-012 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Complete | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
@@ -848,6 +847,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-012 Attempt 3 accepted
+
+- Marked COMMERCE-012 Complete after direct source review confirmed stale-shop load isolation, dirty prompt mutation protection, durable single-DRAFT resume, publish-success/activation-failure reconciliation and visible effective-resolution error preservation.
+- Accepted 11 focused shop UI tests and the 5-file / 27-test combined focused suite plus targeted ESLint, changed-file diagnostics and `git diff --check`.
+- Preserved the accepted COMMERCE-007/009 CAS/replay boundaries and server-validated selected-shop contract; COMMERCE-012 has no dependants to promote.
+- COMMERCE-013 remains Ready on this branch; its newer separately accepted Attempt 5 state must be preserved when the parallel parent branches are reconciled.
 
 ### 2026-09-23 — COMMERCE-012 Attempt 2 changes requested
 
