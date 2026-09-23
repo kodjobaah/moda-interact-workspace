@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
-executor: copilot
-claimed_at: 2026-09-23T21:06:42Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-008
@@ -377,6 +377,33 @@ Two bounded UI correctness issues remain:
 2. **Revision history must reconcile successful revision mutations.** `replaceRevision(...)` currently changes only `selected.revision`; `selected.revisions` remains stale. After create/update/publish, the visible revision-history list and published revision/hash summary can therefore disagree with the successful durable result until the template is reopened. Attempt 3 must upsert the returned revision into the selected revision collection (or deterministically reload that history) so the screen immediately reflects the committed revision state.
 
 Focused regressions are sufficient: cover mixed metadata+draft dirty state through a partial save and block stale-text publication, and cover create/update/publish reconciliation into the rendered revision history/published hash. Do not redesign COMMERCE-008/015 service contracts, add direct Prisma reads, or begin COMMERCE-014.
+
+### Attempt 4 Revalidation
+
+#### Status
+
+Ready for Review
+
+#### Launcher Evidence
+
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-013`
+- Parent branch: `task/ARCH-021-COMMERCE-013`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-013`
+- Implementation branch: `task/ARCH-021-COMMERCE-013`
+- Attempt 4 was claimed by the deterministic launcher with the dependency gate and synchronization preparation completed.
+- Recursive submodule evidence remains `database` at `98fdf715e54fe6df92ac6951facd104e410068f2`.
+
+#### Validation Results
+
+- PASS: `npm exec vitest run tests/agent-configuration-template-ui.test.tsx tests/agent-configuration-production.test.tsx --reporter=dot` - 2 files, 9 tests passed.
+- PASS: targeted ESLint for the prompt-template library, production composition, and focused test files.
+- PASS: `git diff --check`.
+- `npm ci` restored dependencies after the prior worktree cleanup; npm reported existing peer, engine, deprecation, and audit warnings.
+- No new source changes were required in Attempt 4; the published implementation remains at commit `5344181`.
+
+#### Remaining Baseline
+
+The repository-wide typecheck and unrelated authorization baseline failures documented in the prior completion report remain outside this task's bounded scope. No new focused test failures or changed-file diagnostics were observed.
 
 ### Attempt 3 Architect Review — Changes Requested
 
