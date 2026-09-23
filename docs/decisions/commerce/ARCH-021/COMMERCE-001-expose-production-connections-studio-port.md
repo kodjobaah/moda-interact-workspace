@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-23T09:49:55Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-020
@@ -89,11 +89,11 @@ This task is only the Studio-facing adapter/server-action boundary.
 
 ## Work Items
 
-- [ ] Implement a server-only production adapter covering `list`, `get`, `searchShops`, `getCredentialStatus`, `create`, `updateMetadata`, `createRevision`, `setEnabled`, `setCredential` and `removeCredential`.
-- [ ] Add callable Studio server actions/exports for that adapter using the existing mutation-origin guard for writes.
-- [ ] Reuse the accepted `backend.external.lifecycle` / `backend.external.credentials` composition or its canonical equivalent; do not instantiate competing engines.
-- [ ] Add focused adapter tests covering read delegation, mutation delegation, forbidden/unavailable translation, unknown outcome retention and secret non-disclosure.
-- [ ] Add one regression proving `developmentBypass: true` does not require a matching persisted caller id/role at this adapter boundary.
+- [x] Implement a server-only production adapter covering `list`, `get`, `searchShops`, `getCredentialStatus`, `create`, `updateMetadata`, `createRevision`, `setEnabled`, `setCredential` and `removeCredential`.
+- [x] Add callable Studio server actions/exports for that adapter using the existing mutation-origin guard for writes.
+- [x] Reuse the accepted `backend.external.lifecycle` / `backend.external.credentials` composition or its canonical equivalent; do not instantiate competing engines.
+- [x] Add focused adapter tests covering read delegation, mutation delegation, forbidden/unavailable translation, unknown outcome retention and secret non-disclosure.
+- [x] Add one regression proving `developmentBypass: true` does not require a matching persisted caller id/role at this adapter boundary.
 
 ## Interfaces / Contracts
 
@@ -126,19 +126,19 @@ All are Complete in the Phase 1 definition snapshot.
 
 ## Acceptance Criteria
 
-- [ ] Every `ConnectionPort` operation delegates to real Commerce services, not fixture state.
-- [ ] Connection and credential mutations retain existing operation-id/CAS/unknown-outcome behaviour.
-- [ ] Credential responses expose only configured/edit-version/timestamp status and never plaintext/ciphertext/key material.
-- [ ] `searchShops` reads real shops and returns no Shopify session token.
-- [ ] Non-bypass authorization remains enforced; development bypass short-circuits identity/role revalidation consistently with current Commerce auth.
-- [ ] Production adapter tests contain no `createConnectionFixtures()` dependency.
+- [x] Every `ConnectionPort` operation delegates to real Commerce services, not fixture state.
+- [x] Connection and credential mutations retain existing operation-id/CAS/unknown-outcome behaviour.
+- [x] Credential responses expose only configured/edit-version/timestamp status and never plaintext/ciphertext/key material.
+- [x] `searchShops` reads real shops and returns no Shopify session token.
+- [x] Non-bypass authorization remains enforced; development bypass short-circuits identity/role revalidation consistently with current Commerce auth.
+- [x] Production adapter tests contain no `createConnectionFixtures()` dependency.
 
 ## Validation
 
-- [ ] focused production connection-adapter/server-action tests
-- [ ] existing connection lifecycle/credential focused tests relevant to touched integration seams
-- [ ] targeted lint/typecheck for changed files
-- [ ] `git diff --check`
+- [x] focused production connection-adapter/server-action tests
+- [x] existing connection lifecycle/credential focused tests relevant to touched integration seams (credential and UI portions passed; one existing lifecycle bypass case remains failing as documented below)
+- [x] targeted lint/typecheck for changed files (targeted lint passed; repository typecheck reached the touched files with no new diagnostics but exits non-zero on unrelated existing errors)
+- [x] `git diff --check`
 
 Do not require live third-party API calls for this task.
 
@@ -156,31 +156,44 @@ Keep fixture factories available for focused component tests. This task removes 
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/studio/connections/production.ts`
+- `src/studio/connections/server-actions.ts`
+- `src/studio/connections/connections-route-client.tsx`
+- `tests/connections-production.test.ts`
+- `tests/connections-server-actions.test.ts`
 
 ### Work Completed
 
-None
+- Added a server-only `ConnectionPort` adapter that resolves the authenticated Studio principal for every operation and delegates to the accepted `backend.external.lifecycle` and `backend.external.credentials` services.
+- Added real shop search through Commerce inspection, returning bounded shop summaries without Shopify credentials or tokens.
+- Added ten callable server actions; mutations run `assertStudioMutationOrigin` before adapter dispatch.
+- Preserved service-returned CAS/replay results, translated auth/backend failures to bounded results, and retained `operationId` for unknown mutation outcomes.
+- Replaced production Connections route fixture construction with the server-action port while leaving fixture factories available to component tests.
+- Added adapter/action tests for delegation, forbidden/unavailable/unknown translation, bypass identity behavior, origin guarding, and credential secret non-disclosure.
 
 ### Validation Results
 
-None
+- `npm exec vitest run tests/connections-production.test.ts tests/connections-server-actions.test.ts` -> 2 files, 5 tests passed.
+- `npm exec vitest run tests/connection-lifecycle.test.ts tests/external-credentials.test.ts tests/connections-ui.test.tsx` -> 41 tests passed, 1 existing lifecycle bypass test failed at `tests/connection-lifecycle.test.ts:203` because its isolated fixture rejects the canonical development audit actor; the new adapter bypass regression passed.
+- `npm run typecheck` -> non-zero due existing unrelated diagnostics in `src/commerce/integration/backend.ts`, `src/commerce/integration/backend/publication-storage.ts`, `src/commerce/integration/studio/services.ts`, and existing integration tests; no diagnostics were reported for the changed adapter, server actions, route client, or focused tests.
+- `npm exec eslint src/studio/connections/production.ts src/studio/connections/server-actions.ts src/studio/connections/connections-route-client.tsx tests/connections-production.test.ts tests/connections-server-actions.test.ts` -> passed with no warnings/errors.
+- `git diff --check` -> passed.
 
 ### Deviations
 
-None
+- Broader lifecycle validation is not fully green because of the pre-existing isolated development-bypass fixture failure described above; producer lifecycle code was not changed.
 
 ### Assumptions
 
-None
+- The accepted external integration is unavailable when production connection key configuration is incomplete; the adapter returns bounded `unavailable` in that state.
 
 ### Unresolved Issues
 
-None
+- No live third-party calls were launched. No U15/U16 screens, schemas, encryption, external HTTP execution, publication algorithms, model/prompt configuration, or shared contracts were changed.
 
 ### Architectural Concerns
 
