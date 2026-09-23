@@ -847,6 +847,13 @@ independent of features.
 
 ## Change History
 
+### 2026-09-23 — COMMERCE-008 Attempt 1 changes requested
+
+- Reviewed implementation `ddb03c1` with submitted parent report `23d9224`; accepted in substance the data-driven category/template lifecycle, atomic existing-row edit-version CAS, exact UTF-8 publication hashing, immutable published revision boundary, disabled-selection/historical-read semantics, authorization and no-provider-execution boundary.
+- Identified a durable operation-receipt concurrency gap: simultaneous identical/conflicting `operationId` calls can race on `CommerceAuditEvent.id`, and the losing/ambiguous outcome is returned as a generic error rather than reconciling the winning receipt or the existing Studio `unknown` result.
+- Identified unsafe concurrent draft revision allocation: `count + 1` is not serialised per template, so independent concurrent draft creates can collide on `(templateId, revisionNumber)`.
+- Returned COMMERCE-008 to Ready at `attempt: 1`; COMMERCE-009/013/014 remain gated until COMMERCE-008 is Complete. COMMERCE-007 remains independently executable/correctable.
+
 ### 2026-09-23 — DATABASE-001 Attempt 3 accepted
 
 - Accepted the exact Phase 2 durable CommerceAgent configuration schema and single migration after the SQLSTATE `55P04` correction retained the audit-target invariant using text comparison rather than uncommitted enum constants.
