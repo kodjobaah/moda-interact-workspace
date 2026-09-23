@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation and COMMERCE-008 prompt-template service architect-accepted Complete; COMMERCE-009 is Ready.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation plus COMMERCE-007/008/009/011 are architect-accepted Complete; COMMERCE-010/013/014 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -721,29 +721,22 @@ Phase 2 tasks:
 | ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
 | ARCH-021-COMMERCE-007 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-008 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-009 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
+| ARCH-021-COMMERCE-009 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-010 | moda_commerce | Ready | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
-| ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
-| ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
 
-The current Phase 2 execution frontier on this task branch is:
-
-```text
-ARCH-021-COMMERCE-007   model catalogue/default/shop-override service
-ARCH-021-COMMERCE-009   Attempt 2 CAS/replay + pointer-audit correction
-```
-
-DATABASE-001 and COMMERCE-008 are architect-accepted Complete. COMMERCE-009 Attempt 1 reached review but requires a bounded Attempt 2 correction for receipt-first CAS replay, valid pointer audit targets and exact template-revision copy semantics. COMMERCE-010/012/014 remain gated on COMMERCE-009. COMMERCE-007 is reconciled separately on its own parent branch and its newer architect-review state must be preserved when the coordination branches are combined. COMMERCE-011 establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) remain independently reviewable UI capabilities and become executable only when their explicit dependency sets are Complete.
 The current Phase 2 execution frontier is:
 
 ```text
-ARCH-021-COMMERCE-008   Ready — category-organised prompt-template service rework
-ARCH-021-COMMERCE-011   Ready — Agent Configuration shell + platform model UI
+ARCH-021-COMMERCE-010   Ready — effective platform/shop configuration resolver
+ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
+ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-DATABASE-001 and COMMERCE-007 are architect-accepted Complete. COMMERCE-007 closes the model-selection boundary with atomic write CAS, generation-aware shop ABA protection, durable receipt replay and stale-token rejection when a selection row is absent. COMMERCE-011 is now independently executable because COMMERCE-006 and COMMERCE-007 are Complete. COMMERCE-008 retains its separately reviewed state. COMMERCE-009 becomes eligible only after COMMERCE-008 is architect-accepted because prompt copy-on-use consumes the template service; COMMERCE-010 remains gated on COMMERCE-009. COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) remain governed by their own explicit dependency sets. Phase 1 is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2 dependencies above.
+DATABASE-001 and COMMERCE-007/008/009/011 are architect-accepted Complete. COMMERCE-009 closes the prompt-lifecycle boundary with exact published template-revision copying, immutable prompt publication, atomic draft/pointer CAS, durable receipt-first replay reconciliation, valid immutable pointer audit targets and generation-aware shop-pointer ABA protection. COMMERCE-010 is now executable because COMMERCE-003/007/009 are Complete; COMMERCE-014 is now executable because COMMERCE-008/009/011 are Complete; COMMERCE-013 remains independently Ready from COMMERCE-008/011. COMMERCE-012 remains Pending until COMMERCE-010 is Complete.
 
 Phase 2 exit criteria:
 
@@ -820,12 +813,12 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
 | ARCH-021-COMMERCE-007 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-008 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-009 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
+| ARCH-021-COMMERCE-009 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-010 | moda_commerce | Ready | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
-| ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
-| ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -862,6 +855,16 @@ independent of features.
 - Accepted production `/agent-configuration` composition with server-resolved `shopId`, trusted server-derived environment, real COMMERCE-007 action handoff, ADMIN read-only behavior and secret-safe rendering.
 - Accepted explicit serializable forbidden, stale-CAS and conflicting-replay server-action outcomes while retaining exact-original-operation reconciliation for `unknown` results.
 - Marked COMMERCE-011 Complete. COMMERCE-008 remains the sole Ready Phase 2 Commerce frontier; COMMERCE-012/013/014 retain their remaining service dependencies.
+
+### 2026-09-23 — COMMERCE-009 Attempt 2 accepted
+
+- Reviewed implementation `9ee65b3` with submitted parent report `59ee628e`.
+- Accepted the CAS/replay correction: failed CAS/domain transactions now reconcile a matching durable `CommerceAuditEvent` before returning the known error; conflicting operation-id reuse remains `CONFLICTING_REPLAY` and genuinely indeterminate no-receipt outcomes remain `unknown`.
+- Accepted explicit SET/CLEAR prompt-pointer audit targets, including clear-time snapshots of the exact prompt/revision/shop/environment being removed.
+- Accepted exact published template-revision copy semantics and immutable copy provenance.
+- Reviewed focused validation: 16 Vitest tests, 6 PostgreSQL lifecycle/concurrency tests, focused ESLint/TypeScript diagnostics and `git diff --check` passed; repository-wide TypeScript retains unrelated baseline diagnostics.
+- Reconciled workflow metadata drift where the executor returned the YAML state as `ready` despite an explicit Ready-for-architect-review Completion Report; no implementation rework was required.
+- Marked COMMERCE-009 Complete and promoted COMMERCE-010 and COMMERCE-014 to Ready. COMMERCE-013 remains independently Ready; COMMERCE-012 remains Pending on COMMERCE-010.
 
 ### 2026-09-23 — COMMERCE-009 Attempt 1 changes requested
 
