@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-23T16:41:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-DATABASE-001
@@ -190,6 +190,7 @@ Ready for architect review
 - `src/studio/agent-configuration/model-contracts.ts`
 - `src/studio/agent-configuration/model-server-actions.ts`
 - `tests/agent-configuration-model.test.ts`
+- `tests/agent-configuration-model-postgres.test.ts`
 
 ### Work Completed
 
@@ -197,19 +198,24 @@ Ready for architect review
 - Added environment-scoped platform selection and generation/edit-version protected shop override set/clear operations.
 - Added durable `CommerceAuditEvent` replay, conflicting-replay, and unknown-outcome handling without provider calls or credential exposure.
 - Added typed Studio server actions and focused authorization, bypass, identity, disabled-pointer, replay, and generation-aware CAS tests.
+- Corrected all catalogue, platform, and shop writes to claim expected CAS tokens atomically; create/delete races now return `CAS_CONFLICT`.
+- Reconciled concurrent `CommerceAuditEvent.id` receipt races by replaying the winning result or returning conflicting replay.
+- Added explicit PostgreSQL concurrency coverage for platform first-write CAS, shop first-write CAS, and identical operation replay.
 
 ### Validation Results
 
 - `npx vitest run tests/agent-configuration-model.test.ts` passed: 6 tests.
-- Targeted ESLint passed for all four task files.
-- Task-owned TypeScript diagnostics passed for `src/commerce/agent-configuration`, `src/studio/agent-configuration`, and the focused test.
+- `COMMERCE_TEST_DATABASE_URL=... npx vitest run tests/agent-configuration-model-postgres.test.ts` passed: 3 tests.
+- Targeted ESLint passed for all five task files.
+- Task-owned TypeScript diagnostics passed for `src/commerce/agent-configuration`, `src/studio/agent-configuration`, and both focused tests.
 - `git diff --check` passed.
+- ARCH-021 migration validator applied the accepted schema before the service rehearsal; its unrelated prompt-lineage fixture stopped at an existing fixture assertion after the migration and initial model/schema checks passed. The service-level rehearsal then passed against the isolated migrated database.
 - Repository-wide `tsc --noEmit` remains baseline-red in unrelated existing preview/integration paths; no task-owned diagnostics were reported.
-- Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-007`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-007`; claim commit `a4b8c74b8439aa464ab3237be64b48a2cd86117b`; implementation commit `d3252e0`; parent head before report update `7993d167806bc25e4ae2bb5048520f68d8f0eb73`; database submodule `98fdf715e54fe6df92ac6951facd104e410068f2`.
+- Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-007`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-007`; attempt-2 claim commit `81290db6800f2e0cd617447a6eb121d9269f73f2`; implementation commits `d3252e05710c5eac1be730b058544ad44beda921`, `b79fc72`; database submodule `98fdf715e54fe6df92ac6951facd104e410068f2`.
 
 ### Deviations
 
-None.
+Architect-requested atomic CAS and concurrent receipt reconciliation are implemented and covered by the PostgreSQL rehearsal above.
 
 ### Assumptions
 
@@ -217,11 +223,11 @@ None.
 
 ### Unresolved Issues
 
-None within task scope.
+The migration validator's existing prompt-lineage fixture assertion is unrelated to this Commerce service and does not block the service-level PostgreSQL concurrency suite.
 
 ### Architectural Concerns
 
-None.
+None after the requested rework.
 
 ## Architect Review
 
