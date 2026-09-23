@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -93,11 +93,11 @@ A shop lacking an offline session is still a valid selectable shop context; late
 
 ## Work Items
 
-- [ ] Add the bounded Studio shop-execution-context contract.
-- [ ] Add authenticated list/search and exact-resolution service/action support, reusing current production shop inspection/search.
-- [ ] Add offline Shopify session availability lookup without selecting/serialising the token.
-- [ ] Add tests for found, missing, unavailable and no-offline-session states.
-- [ ] Add a data-safety regression proving no Shopify access token/session secret appears in the returned object or serialized test response.
+- [x] Add the bounded Studio shop-execution-context contract.
+- [x] Add authenticated list/search and exact-resolution service/action support, reusing current production shop inspection/search.
+- [x] Add offline Shopify session availability lookup without selecting/serialising the token.
+- [x] Add tests for found, missing, unavailable and no-offline-session states.
+- [x] Add a data-safety regression proving no Shopify access token/session secret appears in the returned object or serialized test response.
 
 ## Interfaces / Contracts
 
@@ -126,19 +126,19 @@ Both are Complete in the Phase 1 definition snapshot.
 
 ## Acceptance Criteria
 
-- [ ] A real persisted shop can be searched and resolved by exact shop id.
-- [ ] The resolved domain cannot be replaced by caller-supplied domain text.
-- [ ] The result reports whether an offline Shopify session exists without returning its token.
-- [ ] A shop without an offline session remains selectable and is marked unavailable for future Shopify execution rather than silently substituted.
-- [ ] Missing/forbidden/unavailable states use existing bounded Studio failure semantics.
+- [x] A real persisted shop can be searched and resolved by exact shop id.
+- [x] The resolved domain cannot be replaced by caller-supplied domain text.
+- [x] The result reports whether an offline Shopify session exists without returning its token.
+- [x] A shop without an offline session remains selectable and is marked unavailable for future Shopify execution rather than silently substituted.
+- [x] Missing/forbidden/unavailable states use existing bounded Studio failure semantics.
 
 ## Validation
 
-- [ ] focused shop-context service tests
-- [ ] focused server action/auth test
-- [ ] data-safety assertion for Session/accessToken non-disclosure
-- [ ] targeted lint/typecheck for changed files
-- [ ] `git diff --check`
+- [x] focused shop-context service tests
+- [x] focused server action/auth test
+- [x] data-safety assertion for Session/accessToken non-disclosure
+- [x] targeted lint/typecheck for changed files — changed-file ESLint passed; repository typecheck was executed and retained only the reported pre-existing Prisma/publication typing baseline, with no new shop-context diagnostic reported.
+- [x] `git diff --check`
 
 No Shopify network call is permitted in this task.
 
@@ -208,28 +208,52 @@ Full repository typecheck requires the existing generated Prisma typing/publicat
 
 None.
 
+### Architect Reconciliation
+
+- The architect reconciled the task checkboxes from the submitted implementation snapshot and validation evidence rather than requiring a documentation-only implementation attempt.
+- Submitted implementation commit: `ce8c8bc`; submitted parent report commit: `344f7fd`.
+- The supplied review archive is rooted at the dedicated parent task surface `moda-interact-workspace-task-ARCH-021-COMMERCE-003/` and contains the task Commerce implementation tree plus its recursively materialised nested `database/` contents.
+- The executor did not copy the launcher's exact parent/implementation path, synchronization SHA and recursive-submodule packet fields into the Completion Report. The architect has not invented those missing packet values. This is recorded as a procedural evidence omission; no implementation rework is required because the submitted review archive provides the isolated task surfaces needed for this review.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 was reviewed against the ARCH-021 Phase 1 contract, the submitted Commerce implementation `ce8c8bc`, the parent report `344f7fd`, and the supplied combined review snapshot.
+
+The implementation establishes a distinct server-validated shop execution context without introducing durable selected-shop state. Exact resolution accepts only the Commerce shop id, reuses the existing staff inspection authorization boundary, and re-reads domain/plan from persisted shop data. Offline Shopify availability is determined with an existence-only Session projection (`select: { id: true }`); no access token or Session payload crosses the Studio service/action boundary. A missing offline session remains a valid context with `shopifyOfflineSessionAvailable: false`.
+
+The list/search path reuses the bounded production shop inspection search. The exact path preserves existing not-found, forbidden, unavailable and development-bypass semantics. No Shopify/provider network call was introduced.
+
+No task-owned architecture or security defect was found. The missing launcher-packet details in the executor Completion Report are a documentation/evidence omission only and were reconciled above rather than creating a code-free Attempt 2. Future submissions should preserve those launcher fields in the Completion Report.
 
 ### Reviewed Files
 
-None
+- `src/studio/contracts.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/shop-execution-context.test.ts`
+- `tests/shop-execution-context-action.test.ts`
 
 ### Validation Reviewed
 
-None
+- focused shop execution-context/action tests: 6 passed
+- existing Studio regression tests: 15 passed
+- changed-file ESLint: passed
+- `git diff --check`: passed
+- repository typecheck: non-zero only on the executor-reported pre-existing Prisma/publication typing baseline; no new shop-context diagnostic reported
+- static architect comparison against the supplied ARCH-021 Phase 1 baseline: task-owned source/test changes are bounded to the declared scope
 
 ### Architecture Conformance
 
-Pending
+Conformant. COMMERCE-003 provides only the server-validated selected-shop execution context required by Phase 1. It does not persist selection, call Shopify, resolve external credentials, alter Session schema/token lifecycle, or introduce model/prompt configuration.
 
 ### Follow-up
 
-None
+`ARCH-021-COMMERCE-004` is now Ready. No implementation correction is required for COMMERCE-003.

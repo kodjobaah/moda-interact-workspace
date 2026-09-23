@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 implementation tasks defined.
+Agreed — Phase 0 contract accepted; Phase 1 implementation in progress; COMMERCE-003 accepted Complete.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -537,8 +537,8 @@ Phase 1 tasks:
 |---|---|---|---|
 | ARCH-021-COMMERCE-001 | moda_commerce | Ready | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
 | ARCH-021-COMMERCE-002 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
-| ARCH-021-COMMERCE-003 | moda_commerce | Ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
-| ARCH-021-COMMERCE-004 | moda_commerce | Pending | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Ready | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
 | ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
@@ -612,8 +612,8 @@ Phase 1 is materialised as six Commerce tasks under:
 |---|---|---|---|
 | ARCH-021-COMMERCE-001 | moda_commerce | Ready | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
 | ARCH-021-COMMERCE-002 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
-| ARCH-021-COMMERCE-003 | moda_commerce | Ready | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
-| ARCH-021-COMMERCE-004 | moda_commerce | Pending | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Ready | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
 | ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
@@ -643,6 +643,12 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-003 accepted
+
+- Accepted the server-validated Studio shop execution context at implementation `ce8c8bc`.
+- Confirmed persisted shop identity/domain/plan resolution and offline-session availability without Session/access-token disclosure.
+- Promoted ARCH-021-COMMERCE-004 to Ready.
 
 ### 2026-09-23 — Phase 1 task set defined
 
