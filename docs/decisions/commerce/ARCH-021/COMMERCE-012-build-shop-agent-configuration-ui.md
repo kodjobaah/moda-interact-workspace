@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-23T21:02:26Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-004
@@ -178,7 +178,10 @@ Ready for Review
 
 - `components/production-studio-page.tsx`
 - `components/studio-workspace.tsx`
+- `src/commerce/agent-configuration/prompt-service.ts`
 - `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
 - `src/studio/agent-configuration/shop-agent-configuration.tsx`
 - `tests/agent-configuration-production.test.tsx`
 - `tests/agent-configuration-shop-ui.test.tsx`
@@ -186,24 +189,35 @@ Ready for Review
 ### Work Completed
 
 - Added the selected-shop Agent Configuration sub-surface under the dedicated domain module.
-- Preserved server-validated `shopId` through the production page and workspace handoff.
-- Added effective model/prompt/source/revision identity display, independent model and prompt inheritance controls, and ADMIN read-only behavior.
-- Carried service-provided model/prompt `generationId` and `editVersion` CAS tokens through replace/clear operations.
-- Added shop prompt draft creation, exact published-template revision copy, draft editing, publication and active-pointer clear/activate controls.
-- Added dirty navigation protection and focused shop isolation/CAS/read-only UI coverage.
+- Preserved server-validated `shopId` by forwarding only `shopSelection.selectedShop?.id`; unavailable or invalid query-string shops never enter the authoring surface.
+- Loaded model/pointer/lineage raw state independently of effective resolution, keeping broken explicit overrides visible and clearable as configuration errors.
+- Added the durable `getShopPrompt(shopId)` read so unactivated shop lineages and drafts survive refresh and shop changes clear stale local editor state.
+- Resumed an existing shop lineage and allocated independent operation IDs for lineage creation and draft creation; template copies remain exact and independent.
+- Reconciled publish results and activated the returned published revision using current pointer generation/edit CAS tokens; publication is disabled while visible text is dirty.
+- Connected shop editor dirty state to the accepted Studio Composer navigation blocker, made ADMIN prompt text read-only, and retained model/prompt independent CAS replace/clear semantics.
 
 ### Validation Results
 
-- Launcher evidence: prepared execution was supplied with canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-012`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-012`, synchronized task branch `task/ARCH-021-COMMERCE-012`, initialized database submodule at `98fdf715e54fe6df92ac6951facd104e410068f2`, claim commit `8d86cdd56be8eac6ec3a22d5d6135b3aa572e034`, and parent claim head `50ac184cbfe1259876299f4e8d8984cebc3a12b1`.
-- VCS: implementation commit `fb5558a`; parent report commit `8507de52` before this report-only evidence update.
-- `npm run test -- tests/agent-configuration-shop-ui.test.tsx tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-production.test.tsx`: passed, 3 files and 8 tests.
+- Launcher evidence: prepared execution was supplied with canonical parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-012`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-012`, synchronized task branch `task/ARCH-021-COMMERCE-012`, initialized database submodule at `98fdf715e54fe6df92ac6951facd104e410068f2`, claim commit `3b642241d94ac77854d5a82904735d676883070c`, parent head `b0ce775f2d36f68c511336f9b0a9684324ae7bc2`, and implementation head `fb5558ab454070c879454a86d2f659e9e35c58ab` at handoff.
+- VCS: implementation correction commit `f252484` pushed to `origin/task/ARCH-021-COMMERCE-012`; parent report commit follows this update.
+- Focused Attempt 2 validation: `npm run test -- tests/agent-configuration-shop-ui.test.tsx tests/agent-configuration-production.test.tsx tests/agent-configuration-prompts.test.ts`: passed, 3 files and 11 tests.
+- Broader targeted validation: 7 of 8 selected files passed, 30 tests passed. The existing `tests/agent-configuration-effective.test.ts` mock path remains failing 9 tests because its Prisma mock exposes no `Prisma.TransactionIsolationLevel.RepeatableRead`; this is the documented baseline incompatibility and is outside the changed behavior.
 - `npx eslint` over all changed TypeScript/TSX files: passed with no warnings.
 - `git diff --check`: passed.
-- `npm run typecheck`: repository baseline remains failing with 250 errors across 19 files. No diagnostics remain in the new shop component or production composition; three pre-existing diagnostics remain in `components/studio-workspace.tsx` (duplicate `productionCodePanel`, `responseProcessing` union access, and `StudioFailure.message` union access).
+- `npm run typecheck`: exit 2 with 248 errors across 18 files. Changed-file diagnostics are limited to the pre-existing three `components/studio-workspace.tsx` errors (duplicate `productionCodePanel`, `responseProcessing` union access, and `StudioFailure.message` union access) plus four pre-existing generated-client/type diagnostics in `src/commerce/agent-configuration/prompt-service.ts`; no diagnostics remain in the new Agent Configuration screen/contracts or focused tests.
+
+### Correction Checklist
+
+- [x] Validated shop boundary: `components/production-studio-page.tsx` forwards only `shopSelection.selectedShop?.id`; `tests/agent-configuration-production.test.tsx` proves unavailable raw IDs are suppressed.
+- [x] Broken override recovery: `shop-agent-configuration.tsx` loads raw model/pointer/lineage state alongside effective resolution; focused UI coverage proves a disabled model remains clearable with its service CAS tokens.
+- [x] Durable lineage and isolation: `prompt-contracts.ts`, `prompt-server-actions.ts`, and `prompt-service.ts` add `getShopPrompt`; the component clears shop-local state on identity/load changes and resumes existing lineages; tests cover distinct operation IDs and no duplicate lineage creation.
+- [x] Publication/activation: the component blocks publication while visible text is dirty, publishes the current draft, and activates the returned revision with current pointer CAS; focused UI coverage proves the no-pointer activation path.
+- [x] Composer dirty guard and ADMIN read-only: `agent-configuration-screen.tsx`/`studio-workspace.tsx` pass accepted Composer dirty state; the editor is read-only for ADMIN and the focused UI test covers it.
+- [x] Accepted model CAS behavior preserved: existing model controls remain unchanged; focused UI coverage continues to verify generation/edit token round-trip.
 
 ### Deviations
 
-- The launcher reported `architect_review_present=true`, but the complete current task file contains `Review Status: Pending`, no review notes, and no Changes Requested items. Therefore there was no review correction checklist to apply; implementation followed the current task acceptance criteria.
+- The locked dependency tree was restored with `npm ci` because the prepared worktree had an incomplete `node_modules` tree and could not resolve the declared Vitest binary. The install emitted existing peer/engine/deprecation warnings and did not modify tracked files.
 
 ### Assumptions
 
@@ -212,7 +226,8 @@ Ready for Review
 
 ### Unresolved Issues
 
-- Full repository typecheck remains blocked by the documented/pre-existing baseline diagnostics described above; this task did not alter those unrelated workspace errors.
+- Full repository typecheck remains blocked by 248 documented/pre-existing baseline diagnostics described above; no new focused-file diagnostics remain.
+- The broader effective-configuration test mock still requires the generated Prisma enum surface and remains a baseline test-environment failure; it was not changed because it is outside this bounded UI correction.
 
 ### Architectural Concerns
 
