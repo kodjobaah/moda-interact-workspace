@@ -15,6 +15,7 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-021-COMMERCE-003
   - ARCH-021-COMMERCE-007
   - ARCH-021-COMMERCE-009
 enables:
@@ -56,7 +57,7 @@ Model and prompt ownership are independent. Phase 2 UI needs to show both the ef
 - Resolve prompt: explicit shop override when present, otherwise platform active prompt.
 - Return source (`SHOP` or `PLATFORM`) independently for model and prompt.
 - Return stable ids and safe presentation fields needed by Studio (catalogue entry/provider/model display; prompt lineage/revision/name/hash/content as appropriate for authorized Studio authoring).
-- Return explicit configuration-unavailable results when mandatory platform state is absent.
+- Return explicit configuration-unavailable results when mandatory platform state is absent or the selected platform model/prompt state is invalid/disabled.
 - If an explicit shop model override exists but references a disabled/unavailable entry, fail closed and do not fall back.
 - If an explicit prompt pointer is invalid/missing/non-published/scope-invalid, fail closed.
 - Add tests for all four inheritance combinations and failure states.
@@ -76,13 +77,15 @@ Model and prompt ownership are independent. Phase 2 UI needs to show both the ef
 - A broken explicit override must remain visible as a configuration error, not masquerade as inheritance.
 - The resolver must be side-effect free.
 - Browser/client input must not select an arbitrary environment.
-- The resolver's result must be deterministic for one transactionally observed database state; do not mutate defaults while resolving.
+- The resolver's model selection, prompt selection and referenced immutable records must be observed through one coherent database read snapshot; do not compose independently committed reads that can return a model/prompt combination that never existed together.
+- The resolver must not mutate defaults while resolving.
 
 ## Work Items
 
 - [ ] Define Commerce-local effective agent-configuration DTO/result types.
 - [ ] Implement server-side model resolution.
 - [ ] Implement server-side prompt resolution.
+- [ ] Ensure model/prompt selection and referenced immutable records are resolved through one coherent database snapshot.
 - [ ] Integrate selected-shop validation.
 - [ ] Add source/provenance fields required by Studio.
 - [ ] Add explicit unavailable/error mapping.
@@ -100,6 +103,7 @@ Produces the Commerce-local effective configuration read model used by Phase 2 S
 
 ## Dependencies
 
+- ARCH-021-COMMERCE-003
 - ARCH-021-COMMERCE-007
 - ARCH-021-COMMERCE-009
 
@@ -115,6 +119,8 @@ Produces the Commerce-local effective configuration read model used by Phase 2 S
 - [ ] Shop prompt only -> platform model + shop prompt.
 - [ ] Both overrides -> shop model + shop prompt.
 - [ ] Missing platform model or prompt yields explicit unavailable state.
+- [ ] A disabled/broken platform default model yields explicit unavailable state; there is no fallback beyond the platform default.
+- [ ] An invalid/non-published/scope-invalid platform active prompt yields explicit unavailable state; there is no fallback beyond the platform prompt.
 - [ ] Disabled/broken explicit shop model override fails closed without model fallback.
 - [ ] Invalid explicit shop prompt pointer fails closed without prompt fallback.
 - [ ] No provider call, grant write or manifest mutation occurs.
@@ -122,6 +128,7 @@ Produces the Commerce-local effective configuration read model used by Phase 2 S
 ## Validation
 
 - [ ] focused effective-configuration resolver tests
+- [ ] coherent-snapshot regression covering configuration mutation during effective resolution
 - [ ] selected-shop validation regression tests
 - [ ] targeted lint/typecheck
 - [ ] `git diff --check`
@@ -132,7 +139,7 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 ## Implementation Notes
 
-Keep these DTOs Commerce-local until the later runtime phase defines the exact cross-service frozen grant/manifest contract. Do not prematurely publish a Shared schema solely for the Phase 2 UI.
+Keep these DTOs Commerce-local until the later runtime phase defines the exact cross-service frozen grant/manifest contract. Do not prematurely publish a Shared schema solely for the Phase 2 UI. The implementation may use one transaction/snapshot-aware read composition rather than forcing separately committed model-service and prompt-service reads when that would violate the coherent-snapshot requirement.
 
 ## Completion Report
 

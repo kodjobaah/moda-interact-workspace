@@ -55,7 +55,7 @@ Phase 2 only authors and selects prompts; existing ARCH-020 per-capability promp
 
 - Read/create the singleton platform prompt lineage and per-shop prompt lineage.
 - Create/update prompt drafts with CAS/edit-version semantics.
-- Allow a new draft to start blank/from current lineage content or by copying one exact published template revision.
+- Allow a new draft to start blank/from current lineage content or by copying one exact published template revision that is currently selectable for new authoring.
 - Record `sourceTemplateRevisionId` provenance without dynamic linkage.
 - Publish immutable prompt revisions.
 - Read/set the current environment's platform active prompt pointer.
@@ -81,6 +81,7 @@ Phase 2 only authors and selects prompts; existing ARCH-020 per-capability promp
 - Only one platform lineage and at most one lineage per shop may exist; service handles concurrent create races using database constraints/idempotency.
 - Published revisions cannot be mutated.
 - Copy-from-template copies exact content into the new prompt draft and records provenance; subsequent template changes have no effect.
+- New copy-from-template authoring requires the owning category and template to be enabled at copy time and the revision to be published. Historical/provenance reads of a disabled template revision remain valid and do not invalidate prompts already copied from it.
 - Clearing a shop prompt override means inheritance and must not alter shop model selection.
 - Pointer mutations use CAS/editVersion and distinguish replay/conflict/unknown outcomes consistently with existing Studio commands.
 
@@ -88,7 +89,7 @@ Phase 2 only authors and selects prompts; existing ARCH-020 per-capability promp
 
 - [ ] Implement platform/shop prompt lineage read/create operations.
 - [ ] Implement draft create/update operations with CAS.
-- [ ] Implement copy-from-published-template draft creation.
+- [ ] Implement copy-from-published-template draft creation with category/template new-authoring selectability validation.
 - [ ] Implement immutable publish operation.
 - [ ] Implement platform active pointer set/read.
 - [ ] Implement shop override set/read/clear.
@@ -121,6 +122,7 @@ Produces a Commerce-local prompt configuration port for effective resolution and
 - [ ] Platform and shop prompt lineages obey singleton/per-shop ownership.
 - [ ] Draft edits are CAS protected and published revisions are immutable.
 - [ ] A prompt draft created from a template is an independent copy with immutable provenance.
+- [ ] A disabled category or template cannot be used to create a new prompt draft even when its published revision id is supplied directly; historical provenance remains readable.
 - [ ] Platform active prompt can only target a published platform revision.
 - [ ] Shop override can only target a published revision belonging to that exact shop.
 - [ ] Clearing the shop prompt override returns prompt inheritance without changing model state.

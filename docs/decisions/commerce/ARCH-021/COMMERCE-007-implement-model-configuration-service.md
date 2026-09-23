@@ -78,6 +78,7 @@ Phase 2 makes model selection platform/shop configuration instead of an environm
 - Clearing a shop override means inheritance and must not create a replacement platform copy in the shop record.
 - Disabling a catalogue entry does not rewrite any existing pointer.
 - No browser response includes provider API credentials or secret configuration.
+- In Phase 2, model `disabled`/`unavailable` state is configuration state only. This service must not probe provider credentials, network reachability, quota or provider health.
 
 ## Work Items
 
@@ -134,7 +135,7 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 ## Implementation Notes
 
-Consume the accepted nested database submodule/schema. Do not copy or locally redefine Prisma models. Keep provider execution adapters untouched.
+Consume the accepted nested database submodule/schema. Do not copy or locally redefine Prisma models. Keep provider execution adapters untouched. A catalogue entry is configuration-unavailable here only because durable catalogue/selection state is absent, invalid or disabled; provider/network/credential availability belongs to later execution phases.
 
 ## Completion Report
 

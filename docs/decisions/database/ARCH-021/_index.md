@@ -26,8 +26,8 @@ and migrated together.
 
 Prompt-template categories are data-driven platform records, not an enum. A category such as
 `Clothing & Fashion` can contain multiple templates; every template belongs to exactly one
-category. Platform admins may later create/rename/disable categories through the Commerce
-service/UI without a database schema change.
+category. Platform admins may later create/update display metadata/disable categories through the
+Commerce service/UI without a database schema change; the stable category slug/identity is not renamed.
 
 ## Execution frontier
 
@@ -37,5 +37,6 @@ The single Phase 2 Database task is immediately executable:
 ARCH-021-DATABASE-001   complete Phase 2 CommerceAgent configuration schema
 ```
 
-After architect acceptance, COMMERCE-007, COMMERCE-008 and COMMERCE-009 may proceed in
-parallel because their durable prerequisites will all exist.
+After architect acceptance, COMMERCE-007 and COMMERCE-008 may proceed in parallel because their
+durable prerequisites will exist. COMMERCE-009 remains gated on architect acceptance of COMMERCE-008
+because prompt copy-on-use consumes the template service.

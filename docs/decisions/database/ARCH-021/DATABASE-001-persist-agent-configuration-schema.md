@@ -19,7 +19,6 @@ depends_on:
 enables:
   - ARCH-021-COMMERCE-007
   - ARCH-021-COMMERCE-008
-  - ARCH-021-COMMERCE-009
 created: 2026-09-23
 updated: 2026-09-23
 ---
@@ -79,10 +78,10 @@ Prompt-template classification is data-driven rather than a code enum. A categor
 
 ## Requirements
 
-- Model catalogue provider + providerModelId is unique and cannot be repurposed to another provider model under the same stable id.
+- Model catalogue provider + providerModelId is unique and cannot be repurposed to another provider model under the same stable id; this durable identity immutability must be database-enforced rather than only a Commerce-service convention.
 - Disabling a model prevents normal new selection but does not delete historical identity or rewrite existing pointers.
 - Platform model default and shop model override are durable independent selections; clearing a shop override is represented by absence, not a copied platform row.
-- Prompt-template categories are durable data, not an enum. Category slug is unique/stable; display metadata may be changed without rewriting template revisions.
+- Prompt-template categories are durable data, not an enum. Category slug is unique/stable and must not be repurposed under the same category identity; display metadata may be changed without rewriting template revisions.
 - A category may contain multiple templates; each template must belong to one category.
 - Disabling a category or template must not delete historical template identities/revisions or invalidate prompt provenance.
 - Published template revisions and published prompt revisions are immutable.
@@ -102,7 +101,7 @@ Prompt-template classification is data-driven rather than a code enum. A categor
 - [ ] Add platform/shop prompt lineage and prompt-revision models with optional template provenance.
 - [ ] Add platform/shop prompt active-pointer models/constraints with independent edit versions.
 - [ ] Add required Commerce audit-action values.
-- [ ] Add uniqueness, scope-integrity and listing/resolution indexes.
+- [ ] Add uniqueness, durable-identity immutability guards, scope-integrity and listing/resolution indexes.
 - [ ] Create the Prisma migration.
 - [ ] Add focused ARCH-021 schema/migration validation covering the complete Phase 2 model.
 
@@ -130,14 +129,15 @@ No Shared package/runtime contract is created in Phase 2. Cross-service grant/ma
 
 - ARCH-021-COMMERCE-007
 - ARCH-021-COMMERCE-008
-- ARCH-021-COMMERCE-009
 
 ## Acceptance Criteria
 
 - [ ] One migration/schema coherently represents the complete Phase 2 model/prompt configuration domain.
 - [ ] An OpenAI or Groq catalogue entry can be stored without any credential.
+- [ ] Once created, a model catalogue entry's provider/providerModelId cannot be changed under the same catalogue-entry identity, while mutable presentation/enabled fields remain independently editable.
 - [ ] Platform/shop model selections are environment scoped, independently versioned and constrained to catalogue identities.
 - [ ] A data-driven category such as `Clothing & Fashion` can own multiple prompt templates without a code/schema change.
+- [ ] A category's stable slug/identity cannot be repurposed by a metadata update, while mutable display metadata remains editable.
 - [ ] Every prompt template belongs to exactly one category and category/template history survives disablement.
 - [ ] Template and prompt revision numbering is deterministic and published revision content is immutable.
 - [ ] Exactly one platform prompt lineage and at most one prompt lineage per shop are enforceable under concurrency.
@@ -151,6 +151,8 @@ No Shared package/runtime contract is created in Phase 2. Cross-service grant/ma
 - [ ] `npm run prisma:validate`
 - [ ] `npm run prisma:generate`
 - [ ] focused ARCH-021 Phase 2 schema validator
+- [ ] durable model provider/providerModelId identity-mutation rejection test
+- [ ] durable prompt-template category slug/identity mutation rejection test
 - [ ] migration rehearsal against disposable PostgreSQL where available/required by repository policy
 - [ ] concurrency/constraint rehearsal for platform/shop singleton and pointer scope where repository practice supports it
 - [ ] `git diff --check`

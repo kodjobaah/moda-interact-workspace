@@ -16,6 +16,9 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-021-COMMERCE-004
+  - ARCH-021-COMMERCE-007
+  - ARCH-021-COMMERCE-008
+  - ARCH-021-COMMERCE-009
   - ARCH-021-COMMERCE-010
   - ARCH-021-COMMERCE-011
 enables: []
@@ -97,14 +100,20 @@ Phase 1 established server-validated `shopId` navigation context. Phase 2 now us
 Consumes:
 
 - selected-shop context from ARCH-021-COMMERCE-004;
+- model configuration port from ARCH-021-COMMERCE-007 for shop model set/clear;
+- prompt-template port from ARCH-021-COMMERCE-008 for selectable template discovery;
+- prompt lifecycle port from ARCH-021-COMMERCE-009 for shop prompt draft/publish/active-pointer operations;
 - effective configuration resolver from ARCH-021-COMMERCE-010;
-- platform Agent Configuration surface/services from ARCH-021-COMMERCE-011 and its dependencies.
+- platform Agent Configuration domain surface from ARCH-021-COMMERCE-011 as the UI/module base.
 
 Produces the complete Phase 2 internal-admin Agent Configuration experience.
 
 ## Dependencies
 
 - ARCH-021-COMMERCE-004
+- ARCH-021-COMMERCE-007
+- ARCH-021-COMMERCE-008
+- ARCH-021-COMMERCE-009
 - ARCH-021-COMMERCE-010
 - ARCH-021-COMMERCE-011
 

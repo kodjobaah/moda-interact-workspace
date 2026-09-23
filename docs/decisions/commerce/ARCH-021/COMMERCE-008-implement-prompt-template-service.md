@@ -74,11 +74,12 @@ Templates are reusable authoring starting points. They are deliberately independ
 - ADMIN is read-only; mutations require SUPER_ADMIN outside development bypass.
 - Categories are data-driven records, not an enum or hard-coded application list.
 - Category slug/identity is stable; display metadata may be edited and audited.
-- Disabling a category prevents normal new assignment/selection while preserving existing template/history visibility.
+- Disabling a category prevents normal new-authoring assignment/selection while preserving existing template/history visibility.
 - A category may contain multiple templates; each template has exactly one category.
 - `developmentBypass === true` uses the accepted canonical development actor semantics.
 - Published revisions cannot be edited; a new revision is required.
-- Disabled templates remain readable by historical/provenance id and their published revisions remain valid provenance.
+- Historical/provenance exact-id reads may resolve disabled categories/templates and their published revisions so existing provenance remains inspectable.
+- New-authoring selectable lookup requires both the category and template to be enabled and the requested revision to be published; callers must not bypass disablement merely by supplying an exact revision id.
 - No operation may mutate prompts that were previously created from a template.
 
 ## Work Items
@@ -102,7 +103,7 @@ Consumes:
 Produces:
 
 - category/classification identities and category-grouped template discovery;
-- exact published template revision identity/content for COMMERCE-009 copy-on-use prompt creation;
+- exact published template revision identity/content plus new-authoring selectability semantics for COMMERCE-009 copy-on-use prompt creation;
 - template authoring port for COMMERCE-011 platform UI.
 
 ## Dependencies
@@ -120,7 +121,7 @@ Produces:
 - [ ] Platform admins can create/manage data-driven template categories and place multiple templates in one category.
 - [ ] Platform admins can create and version reusable prompt templates.
 - [ ] Published template revisions are immutable.
-- [ ] Disabling a category or template prevents normal new selection/assignment while preserving historical reads.
+- [ ] Disabling a category or template prevents normal new selection/assignment, including direct exact-id selection, while preserving historical/provenance reads.
 - [ ] Template edits never propagate into an existing prompt.
 - [ ] Authorization, CAS/replay and audit semantics are tested.
 - [ ] No runtime model/provider execution occurs.

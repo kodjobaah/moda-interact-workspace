@@ -63,7 +63,7 @@ COMMERCE-006 remains an explicit dependency because it established the accepted 
   - select/change the platform default model with unknown/conflict reconciliation.
 - Prompt-template library section:
   - list/filter/group templates and revisions by category/classification;
-  - create/rename/enable/disable data-driven categories such as `Clothing & Fashion`;
+  - create/update display metadata/enable/disable data-driven categories such as `Clothing & Fashion`;
   - create multiple templates within a category;
   - create/edit/publish template revisions;
   - enable/disable templates.
@@ -92,6 +92,7 @@ COMMERCE-006 remains an explicit dependency because it established the accepted 
 - Agent Configuration domain state, mutation orchestration and editor dirty/CAS handling must live outside `StudioWorkspace`; the workspace may select/render the domain surface and pass shared navigation/shop context only.
 - Refactoring is incremental: do not move unrelated existing Studio domain logic solely to reduce line count.
 - Template `Use` action creates/populates a prompt draft copy; the UI must not imply a live template link.
+- Category display metadata may be edited, but the stable category slug/identity must not be presented as a renameable field.
 - Changing model selection does not change prompt selection, and changing prompt selection does not change model selection.
 - Disabled models/templates remain identifiable in historical/current state but cannot be chosen for new normal selections where the service rejects them.
 - Dirty/navigation guards apply to unsaved prompt/template edits.
@@ -136,7 +137,7 @@ Produces the platform-wide Agent Configuration authoring UI used as the base for
 
 - [ ] Production Studio exposes an Agent Configuration surface backed by real Phase 2 services.
 - [ ] Platform admins can manage catalogue entries and select the platform default model.
-- [ ] Platform admins can manage data-driven template categories and author/version multiple templates within a category.
+- [ ] Platform admins can manage data-driven template categories, update their display metadata without changing stable slug/identity, and author/version multiple templates within a category.
 - [ ] Platform admins can author/publish/activate the single application-wide CommerceAgent prompt lineage.
 - [ ] Creating from a template copies one exact published revision and shows provenance without live linkage.
 - [ ] Model and prompt controls remain independent.

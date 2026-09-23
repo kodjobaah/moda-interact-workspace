@@ -659,15 +659,17 @@ Phase 2 invariants:
    category/template changes never mutate the copied prompt.
 7. Effective model and prompt are resolved independently as shop override -> platform
    default and expose their source as `SHOP` or `PLATFORM`.
-8. A missing override inherits. A broken explicit override fails closed and does not silently
+8. Effective model and prompt resolution observes one coherent database read snapshot so a
+   resolver cannot return a model/prompt combination that never existed together.
+9. A missing override inherits. A broken explicit override fails closed and does not silently
    inherit.
-9. Phase 2 introduces a dedicated Agent Configuration domain screen/module. New model/prompt/
+10. Phase 2 introduces a dedicated Agent Configuration domain screen/module. New model/prompt/
    category/template editor state must not be accumulated inside `StudioWorkspace`; unrelated
    Studio domains are not rewritten merely for file-size reduction.
-10. Phase 2 does not remove the legacy ARCH-020 capability prompt yet because the current
+11. Phase 2 does not remove the legacy ARCH-020 capability prompt yet because the current
     preview/runtime still consumes it. Runtime migration occurs in later phases.
-11. No Phase 2 task performs OpenAI/Groq execution or live Shopify/external tool execution.
-12. No Shared/Background contract is published in Phase 2; the exact frozen cross-service
+12. No Phase 2 task performs OpenAI/Groq execution or live Shopify/external tool execution.
+13. No Shared/Background contract is published in Phase 2; the exact frozen cross-service
     grant/manifest shape is deferred until runtime integration.
 
 Phase 2 tasks:
@@ -678,9 +680,9 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-007 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-008 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
+| ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010 |
-| ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 
 The initial Phase 2 execution frontier is one cohesive Database task:
 
@@ -690,9 +692,10 @@ ARCH-021-DATABASE-001   complete Phase 2 CommerceAgent configuration schema
 
 It introduces model catalogue/selections, template categories/templates/revisions, prompt
 lineages/revisions and active prompt pointers in one coherent migration. After architect
-acceptance, COMMERCE-007, COMMERCE-008 and COMMERCE-009 can proceed against the same accepted
-schema. Phase 1 is already architect-accepted Complete, so the remaining gates are only the
-explicit Phase 2 dependencies above.
+acceptance, COMMERCE-007 and COMMERCE-008 can proceed independently against the same accepted
+schema. COMMERCE-009 becomes eligible only after COMMERCE-008 is also architect-accepted because
+prompt copy-on-use consumes the template service. Phase 1 is already architect-accepted Complete,
+so the remaining gates are only the explicit Phase 2 dependencies above.
 
 Phase 2 exit criteria:
 
@@ -704,7 +707,7 @@ Phase 2 exit criteria:
 - one platform and at most one per-shop prompt lineage exist with immutable published
   revisions and optional copy-on-use template provenance;
 - environment-scoped platform/shop prompt pointers exist with independent CAS;
-- Commerce resolves effective model/prompt independently and reports source;
+- Commerce resolves effective model/prompt independently, reports source and observes one coherent database read snapshot;
 - explicit broken overrides fail closed;
 - production Studio exposes platform and selected-shop Agent Configuration backed by real
   services, including category-organised template browsing and template-based prompt drafts;
@@ -769,9 +772,9 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-007 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-008 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
+| ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010 |
-| ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
