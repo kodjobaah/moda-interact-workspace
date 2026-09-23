@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
-executor: copilot
-claimed_at: 2026-09-23T17:52:51Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-006
@@ -161,7 +161,7 @@ Do not remove the legacy capability prompt field in this task; the current ARCH-
 
 ### Status
 
-Ready for architect review
+Attempt 3 complete; returned to `moda_architect` for review.
 
 ### Files Changed
 
@@ -175,6 +175,8 @@ Ready for architect review
 - `src/studio/agent-configuration/model-contracts.ts`
 - `src/studio/agent-configuration/model-server-actions.ts`
 - `tests/agent-configuration-model-ui.test.tsx`
+- `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-server-actions.test.ts`
 
 ### Work Completed
 
@@ -190,18 +192,21 @@ Ready for architect review
 - Added concrete trusted environment display to Agent Configuration.
 - Reconciled serializable server-action failures and UI handling for forbidden, not-found, unavailable, stale-CAS, conflicting-replay, and unknown outcomes while preserving operation IDs for reconciliation.
 - Kept model state and mutation orchestration under `src/studio/agent-configuration/`; no unrelated Studio domain rewrite or provider execution was introduced.
+- Added a production route/composition regression proving URL `shopId` forwarding, server-validated shop selection, trusted environment derivation, and real action handoff.
+- Added server-action adapter regressions for forbidden, stale-CAS, and conflicting-replay outcomes, with JSON serialization assertions.
 
 ### Validation Results
 
-- `npx vitest run tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-model.test.ts`: 2 files, 11 tests passed.
+- `npx vitest run tests/agent-configuration-production.test.tsx tests/agent-configuration-server-actions.test.ts tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-model.test.ts`: 4 files, 15 tests passed.
 - Targeted ESLint over changed route, composition, Agent Configuration, and UI test files: passed.
 - `npx next typegen`: passed.
 - Task-owned TypeScript paths: no new Agent Configuration diagnostics. Full repository typecheck still reports the pre-existing legacy `StudioWorkspace` diagnostics for duplicate `productionCodePanel`, missing `responseProcessing`, and `StudioFailure.message`.
 - `git diff --check`: passed.
+- Launcher Attempt 3 preparation: claimed with commit `3a79cc5ea4b36528b1c2180d0b8f1b0e7c3c0fb7`; dependency gate passed; parent and implementation task worktrees synchronized; recursive submodule status ready at database commit `98fdf715e54fe6df92ac6951facd104e410068f2`.
 
 ### Deviations
 
-The full repository typecheck remains non-zero because of the existing legacy `StudioWorkspace` diagnostics listed above; they are outside the Attempt 2 correction path and were not changed.
+The full repository typecheck remains non-zero because of the existing legacy `StudioWorkspace` diagnostics listed above; they are outside the Attempt 3 validation path and were not changed.
 
 ### Assumptions
 
@@ -213,7 +218,7 @@ Existing legacy `StudioWorkspace` typecheck diagnostics remain for a later clean
 
 ### Architectural Concerns
 
-None introduced by Attempt 2.
+None introduced by Attempt 3.
 
 ## Architect Review
 
