@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -64,6 +64,7 @@ This task is only the Studio-facing adapter/server-action boundary.
 - Delegate credential status/set/remove to the accepted credential service.
 - Use the existing authenticated Studio principal resolution and mutation-origin protection.
 - Use the existing real shop search/inspection capability for `searchShops` rather than fixture shop data.
+- If the accepted lifecycle list surface lacks the enabled filter required by `ConnectionPort`, extend only the lifecycle read/list contract to accept `enabled?: boolean` and apply that predicate before cursor pagination.
 - Preserve existing `ConnectionResult` / unknown-outcome / CAS semantics.
 - Keep all secrets server-side and return status-only credential information.
 
@@ -75,6 +76,7 @@ This task is only the Studio-facing adapter/server-action boundary.
 - Adding live tool tests or provider calls.
 - Adding model or prompt configuration.
 - Adding a new cross-service/shared contract.
+- Changing connection mutation semantics while making the narrow lifecycle read/list extension permitted by this task.
 
 ## Requirements
 
@@ -86,6 +88,7 @@ This task is only the Studio-facing adapter/server-action boundary.
 - `searchShops` must return real Commerce shop summaries and never expose Shopify access tokens/session secrets.
 - Exceptions/errors are translated to existing bounded connection result kinds; raw provider/database errors and secrets are not returned.
 - Same-operation retries preserve the supplied `operationId` and payload.
+- `enabled=true` and `enabled=false` are applied by the lifecycle database query before cursor/take pagination; the production adapter must not post-filter a paginated page.
 
 ## Work Items
 
@@ -94,6 +97,7 @@ This task is only the Studio-facing adapter/server-action boundary.
 - [x] Reuse the accepted `backend.external.lifecycle` / `backend.external.credentials` composition or its canonical equivalent; do not instantiate competing engines.
 - [x] Add focused adapter tests covering read delegation, mutation delegation, forbidden/unavailable translation, unknown outcome retention and secret non-disclosure.
 - [x] Add one regression proving `developmentBypass: true` does not require a matching persisted caller id/role at this adapter boundary.
+- [ ] Extend only the lifecycle list read contract for `enabled?: boolean` if required, and add filtered-pagination regression coverage for both enabled and disabled connections.
 
 ## Interfaces / Contracts
 
@@ -132,11 +136,13 @@ All are Complete in the Phase 1 definition snapshot.
 - [x] `searchShops` reads real shops and returns no Shopify session token.
 - [x] Non-bypass authorization remains enforced; development bypass short-circuits identity/role revalidation consistently with current Commerce auth.
 - [x] Production adapter tests contain no `createConnectionFixtures()` dependency.
+- [ ] `enabled=true` and `enabled=false` are applied by the production connection query before pagination; filtered pagination does not produce sparse/incorrect pages.
 
 ## Validation
 
 - [x] focused production connection-adapter/server-action tests
 - [x] existing connection lifecycle/credential focused tests relevant to touched integration seams (credential and UI portions passed; one existing lifecycle bypass case remains failing as documented below)
+- [ ] focused lifecycle list regression proving enabled/disabled filtering occurs before pagination
 - [x] targeted lint/typecheck for changed files (targeted lint passed; repository typecheck reached the touched files with no new diagnostics but exits non-zero on unrelated existing errors)
 - [x] `git diff --check`
 
@@ -149,6 +155,8 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 ## Implementation Notes
 
 Prefer a thin adapter around the accepted external integration. If a required production export is genuinely missing from an accepted ARCH-020 producer, return that gap to `moda_architect`; do not duplicate the producer implementation in this task.
+
+For the specific `ConnectionPort.list` compatibility gap found during Attempt 1, the architect authorises only this producer-side extension: if the accepted lifecycle list surface lacks the enabled filter required by `ConnectionPort`, extend only the lifecycle read/list contract to accept `enabled?: boolean` and apply that predicate before cursor pagination. Do not change connection mutation semantics.
 
 Keep fixture factories available for focused component tests. This task removes no deterministic test fixture infrastructure.
 
@@ -203,24 +211,53 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 (`99ed15a`; parent report `c771deb`) establishes the intended thin production `ConnectionPort` adapter and guarded server-action boundary, but it is not yet acceptable. Three bounded corrections are required.
+
+1. `src/studio/connections/connections-route-client.tsx` was switched from `createConnectionFixtures()` to the production server-action port. That is explicitly owned by `ARCH-021-COMMERCE-002` and is Out of Scope for this task. Restore COMMERCE-001 to the pre-attempt production route composition; COMMERCE-002 remains responsible for installing the real port into `/connections` and `/connections/[id]`. No U15/U16 route-composition change should remain in the final COMMERCE-001 implementation diff.
+2. The existing `ConnectionPort.list` contract accepts `enabled?: boolean`, but the accepted lifecycle list input currently does not. Because the lifecycle uses strict validation, passing `enabled` through the new adapter is rejected instead of filtered. Apply the architect-authorised narrow lifecycle read extension documented above: accept `enabled?: boolean`, include the predicate in the database `where` clause before cursor/take pagination, preserve search composition, and add regressions for both enabled and disabled filtered pagination. Do not implement adapter-side post-page filtering and do not change mutation semantics.
+3. The Completion Report does not record the launcher-prepared physical-isolation/start-of-attempt evidence required by the task workflow. On Attempt 2, record the prepared parent worktree, implementation worktree, task branch, synchronization state and recursive submodule evidence from the launcher packet. This is evidence/report correction; do not create code churn solely for it.
+
+The reported existing lifecycle bypass failure is not treated as an Attempt 1 regression: the supplied baseline and review snapshot contain byte-identical `src/commerce/connections/lifecycle/index.ts` and `tests/connection-lifecycle.test.ts` for that failure.
 
 ### Reviewed Files
 
-None
+- `moda-interact-commerce/src/studio/connections/production.ts`
+- `moda-interact-commerce/src/studio/connections/server-actions.ts`
+- `moda-interact-commerce/src/studio/connections/connections-route-client.tsx`
+- `moda-interact-commerce/src/studio/connections/contracts.ts`
+- `moda-interact-commerce/src/studio/connections/connections-ui.tsx`
+- `moda-interact-commerce/src/studio/connections/fixtures.ts`
+- `moda-interact-commerce/src/commerce/connections/lifecycle/index.ts`
+- `moda-interact-commerce/tests/connections-production.test.ts`
+- `moda-interact-commerce/tests/connections-server-actions.test.ts`
+- `moda-interact-commerce/tests/connection-lifecycle.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-002-switch-connections-routes-to-production-port.md`
 
 ### Validation Reviewed
 
-None
+- Reported focused adapter/server-action validation: 5 passed.
+- Reported lifecycle/credential/UI validation: 41 passed, 1 existing lifecycle bypass failure.
+- Baseline comparison confirms the lifecycle implementation and failing lifecycle test were unchanged by Attempt 1.
+- Reported targeted ESLint and `git diff --check`: passed.
+- Reported repository typecheck remains non-zero on unrelated existing diagnostics; no changed-file diagnostic was reported.
+- Review archive does not contain `node_modules`, so the architect did not independently rerun the Node test commands from this snapshot.
 
 ### Architecture Conformance
 
-Pending
+Partial. The new production adapter/server-action boundary conforms to the intended COMMERCE-001 ownership, authentication, origin-guard, secret non-disclosure and bounded-result design. Acceptance is withheld because production route composition crossed into COMMERCE-002 and the current lifecycle read contract cannot satisfy the `ConnectionPort` enabled-filter semantics.
 
 ### Follow-up
 
-None
+Return the same task to Attempt 2. Required correction contract:
+
+- restore `ConnectionsRouteClient` production fixture composition so route switching remains entirely in COMMERCE-002;
+- extend only lifecycle `list` read input/query semantics for `enabled?: boolean`, with filtering before pagination;
+- add focused tests proving adapter forwarding plus correct enabled/disabled filtered pagination;
+- rerun the task-scoped validation and update the Completion Report;
+- record launcher worktree/synchronization/recursive-submodule evidence in the Completion Report.
+
+Keep `attempt: 1` until the authorized executor reclaims the task; the next claim increments it to Attempt 2. COMMERCE-002 and COMMERCE-005 remain dependency-gated.
