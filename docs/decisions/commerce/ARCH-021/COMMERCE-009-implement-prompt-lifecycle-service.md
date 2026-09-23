@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-09-23T19:04:28Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-021-DATABASE-001
@@ -182,7 +182,7 @@ Do not concatenate platform and shop configurable prompts. Shop override selecti
 
 ### Status
 
-Ready for architect review
+Ready for architect review after Attempt 2 corrections
 
 ### Files Changed
 
@@ -190,19 +190,19 @@ src/commerce/agent-configuration/prompt-service.ts; src/studio/agent-configurati
 
 ### Work Completed
 
-Implemented platform/shop lineages, blank/current/template draft creation, exact UTF-8 publication hashing, immutable revisions, scope-bound environment pointers, generation-plus-edit CAS, durable audit replay/unknown handling, server-derived environment wiring, and authenticated typed Studio actions.
+Implemented platform/shop lineages, blank/current/template draft creation, exact UTF-8 publication hashing, immutable revisions, scope-bound environment pointers, generation-plus-edit CAS, receipt-first durable replay reconciliation, explicit pointer audit targets including clear snapshots, exact template revision selection, server-derived environment wiring, and authenticated typed Studio actions.
 
 ### Validation Results
 
-Focused Vitest: 3 prompt tests passed; existing template/model suites: 16 tests passed; PostgreSQL concurrency: 1 test passed. Focused ESLint passed, focused TypeScript diagnostics passed, and `git diff --check` passed.
+Focused Vitest: 16 prompt/template/model tests passed; PostgreSQL lifecycle coverage: 6 tests passed, including draft/pointer CAS races, same-operation replay with one receipt, platform pointer audit targets, exact template revision copying, and shop generation ABA protection. Focused ESLint and TypeScript diagnostics for the changed prompt files passed, and `git diff --check` passed. The repository-wide TypeScript check still reports unrelated pre-existing errors outside this task.
 
 ### Deviations
 
-PostgreSQL validation used the configured disposable/shared test database and isolated TEST prompt fixtures before the concurrency case.
+PostgreSQL validation used the configured TEST database. The fixture now respects the schema immutability trigger by reusing an existing platform lineage when present; only TEST platform pointers are cleared during setup.
 
 ### Assumptions
 
-No unresolved implementation issues identified.
+No unresolved implementation issues identified in the changed prompt lifecycle files.
 
 ### Unresolved Issues
 
