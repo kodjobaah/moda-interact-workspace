@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -219,13 +219,13 @@ None.
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Attempt 2 addresses the requested mandatory platform-baseline validation and selected-shop/snapshot regressions. Ready for architect review.
+Attempt 2 satisfies the bounded correction contract from Attempt 1. Mandatory platform model and prompt baselines are validated before any shop override is considered, so a shop override cannot mask an unconfigured environment. Model and prompt inheritance remain independent, and explicit broken shop overrides continue to fail closed rather than falling back.
 
-Attempt 2 validates both mandatory platform baselines before applying independent shop overrides. It also adds focused coverage for live mutation snapshot behavior, platform-baseline masking failures, and selected-shop short-circuiting. Ready for architect review.
+The resolver keeps all selection/pointer and referenced immutable-row reads inside one Prisma interactive transaction configured for `RepeatableRead`; the additional `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ` occurs before the participating reads and does not weaken that boundary. The authenticated Studio action validates the selected shop first and returns that failure without invoking the effective resolver.
 
 ### Reviewed Files
 
@@ -234,20 +234,23 @@ Attempt 2 validates both mandatory platform baselines before applying independen
 - `src/studio/agent-configuration/effective-server-actions.ts`
 - `tests/agent-configuration-effective.test.ts`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-010-resolve-effective-agent-configuration.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-012-build-shop-agent-configuration-ui.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-- Submitted focused resolver result: 10 tests passed.
-- Submitted touched-file ESLint: passed.
+- Submitted focused effective-configuration suite: 10 tests passed.
+- Reviewed the controlled mutation regression proving all resolver reads are taken from one transaction snapshot.
+- Reviewed the selected-shop short-circuit regression.
+- Submitted touched-file ESLint and diagnostics: passed.
 - Submitted `git diff --check`: passed.
-- Submitted touched-file diagnostics: no errors.
-- Repository-wide TypeScript baseline remains unrelated/non-blocking.
+- Repository-wide TypeScript failures remain documented unrelated baseline diagnostics.
 
 ### Architecture Conformance
 
-Pending architect review. The resolver validates mandatory platform baselines, applies independent overrides only afterward, uses repeatable-read snapshot semantics, and preserves the selected-shop and side-effect boundaries.
+Conforms. The resolver is side-effect free, derives environment server-side, requires a valid platform model default and platform active prompt, applies shop model/prompt overrides independently, fails closed on broken explicit overrides, exposes source/provenance fields, and performs no provider call, grant write or manifest mutation.
 
 ### Follow-up
 
-Attempt 2 corrections are complete. Architect review should verify the platform-baseline validation, snapshot transaction, selected-shop short-circuit, and scoped Commerce-local DTO boundary.
+Mark ARCH-021-COMMERCE-010 Complete. ARCH-021-COMMERCE-012 is now Ready because all of its dependencies are Complete. COMMERCE-013 and COMMERCE-014 remain independently Ready.
