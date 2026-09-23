@@ -550,10 +550,11 @@ Current executable frontier:
 ARCH-021-COMMERCE-006   install the production JavaScript response-panel composition
 ```
 
-COMMERCE-001 through COMMERCE-005 are now Complete. COMMERCE-006 is Ready because its
-COMMERCE-005 and ARCH-020-COMMERCE-026/027/031 prerequisites are Complete. It is the sole
-remaining Phase 1 implementation task. No task is automatically launched merely because
-it is Ready, and Phase 2 remains intentionally unmaterialised until Phase 1 reconciliation.
+COMMERCE-001 through COMMERCE-005 are now Complete. COMMERCE-006 remains the sole
+remaining Phase 1 implementation task. Attempt 1 was returned Changes Requested for bounded
+production-functional corrections to Tool-draft edit-version continuity and the JavaScript
+validation/publication handoff. Its prerequisites remain Complete, so it is Ready for Attempt 2.
+Phase 2 remains intentionally unmaterialised until Phase 1 reconciliation.
 
 Phase 1 exit criteria:
 
@@ -646,6 +647,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-006 Attempt 1 changes requested
+
+- Accepted in substance the production JavaScript response-panel composition, server-only QuickJS validation/execution boundary, synthetic external-preview wiring and preserved visual/JavaScript discard guard at implementation `8d5ee07` / parent report `d3acb90`.
+- Identified a functional CAS continuity defect: JavaScript save, full Tool save and publication continue to use the original selected revision edit version after a successful mutation increments the authoritative version.
+- Identified a functional publication-handoff gap: JavaScript validation/sample success remains internal to the code panel and cannot make the canonical U06 publication gate current.
+- Returned COMMERCE-006 to Ready at `attempt: 1`; Phase 1 remains In Progress and Phase 2 remains unmaterialised.
 
 ### 2026-09-23 — COMMERCE-005 Attempt 2 accepted
 

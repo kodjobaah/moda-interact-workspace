@@ -35,8 +35,11 @@ Phase 1 implementation task is now Ready:
 ARCH-021-COMMERCE-006   install the production JavaScript response-panel composition
 ```
 
-COMMERCE-006 may execute in its canonical task worktree. Readiness does not automatically
-launch the task. Phase 2 remains intentionally unmaterialised until Phase 1 is reconciled.
+COMMERCE-006 Attempt 1 was reviewed and returned **Changes Requested** for two bounded
+production-functional corrections: preserve the latest Tool-draft edit-version/CAS token across
+JavaScript saves and connect successful JavaScript validation/sample execution to the canonical
+U06 publication gate. The task remains Ready for Attempt 2 in its canonical task worktree.
+Phase 2 remains intentionally unmaterialised until Phase 1 is reconciled.
 
 ## Phase 1 dependency graph
 
