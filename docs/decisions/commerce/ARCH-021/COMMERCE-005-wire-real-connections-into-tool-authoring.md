@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-23T11:59:24Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-001
@@ -82,13 +82,13 @@ The selected shop context from ARCH-021-COMMERCE-004 is carried through navigati
 
 ## Work Items
 
-- [ ] Separate real connection catalogue data from the synthetic external sample fixture factory/port as needed.
-- [ ] Load real Connection/Revision views for production Tool authoring through the ARCH-021-COMMERCE-001 server boundary.
-- [ ] Install the resulting external-authoring port/data in `ProductionStudioPage` / `StudioWorkspace`.
-- [ ] Preserve exact saved revision selection and missing/stale revision presentation.
-- [ ] Preserve `returnTo` plus selected `shopId` through “Manage connections” navigation.
-- [ ] Add regression tests proving production Tool authoring does not show `connection_fixture` and uses persisted connection ids/revision ids.
-- [ ] Keep existing fixture-based editor tests available by injection.
+- [x] Separate real connection catalogue data from the synthetic external sample fixture factory/port as needed.
+- [x] Load real Connection/Revision views for production Tool authoring through the ARCH-021-COMMERCE-001 server boundary.
+- [x] Install the resulting external-authoring port/data in `ProductionStudioPage` / `StudioWorkspace`.
+- [x] Preserve exact saved revision selection and missing/stale revision presentation.
+- [x] Preserve `returnTo` plus selected `shopId` through “Manage connections” navigation.
+- [x] Add regression tests proving production Tool authoring does not show `connection_fixture` and uses persisted connection ids/revision ids.
+- [x] Keep existing fixture-based editor tests available by injection.
 
 ## Interfaces / Contracts
 
@@ -117,20 +117,20 @@ No Shared/Database contract change is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Production external Tool authoring lists real persisted connections/revisions.
-- [ ] Saving a draft preserves the exact selected immutable `connectionRevisionId`.
-- [ ] Existing drafts never silently jump to the latest revision.
-- [ ] Production Tool authoring no longer depends on the synthetic connection/revision fixture records.
-- [ ] Connection-management round trip preserves the Tool return target and selected shop context.
-- [ ] No provider request or credential decryption occurs from merely opening/editing the Tool authoring screen.
+- [x] Production external Tool authoring lists real persisted connections/revisions.
+- [x] Saving a draft preserves the exact selected immutable `connectionRevisionId`.
+- [x] Existing drafts never silently jump to the latest revision.
+- [x] Production Tool authoring no longer depends on the synthetic connection/revision fixture records.
+- [x] Connection-management round trip preserves the Tool return target and selected shop context.
+- [x] No provider request or credential decryption occurs from merely opening/editing the Tool authoring screen.
 
 ## Validation
 
-- [ ] focused external Tool authoring composition tests with real/injected persisted connection data
-- [ ] existing external-tools UI tests
-- [ ] relevant Studio workspace/integration tests
-- [ ] targeted lint/typecheck for changed files
-- [ ] `git diff --check`
+- [x] focused external Tool authoring composition tests with real/injected persisted connection data
+- [x] existing external-tools UI tests
+- [x] relevant Studio workspace/integration tests
+- [x] targeted lint/typecheck for changed files
+- [x] `git diff --check`
 
 No live third-party request is permitted.
 
@@ -190,6 +190,35 @@ Implementation commit: `1370a87` (pushed to `task/ARCH-021-COMMERCE-005`)
 ### Architectural Concerns
 
 None. Phase 4 provider execution and credential decryption remain out of scope.
+
+### Attempt 2 Correction Report
+
+#### A1-R1 — implemented
+
+- `app/connections/page.tsx`: collapsed the merged composition to one `ConnectionsRouteClient`, retained server-validated `shopSelection`, preserved `search`, `cursor`, `enabled`, and passed validated `returnTo`; added `returnTo?: string` to `searchParams`.
+- `app/connections/[id]/page.tsx`: applied the same single-client composition for U16 while retaining `detailId`, all list state, validated `shopSelection`, and validated `returnTo`; added `returnTo?: string` to `searchParams`.
+- `tests/selected-shop-route.test.tsx`: now proves detail and list direct-entry composition each expose one route client, preserve selected-shop/query state, retain detail identity, and reject an unsafe return target.
+- Focused proof: `npm exec vitest run tests/selected-shop-route.test.tsx tests/connections-route-composition.test.tsx` -> 2 files, 4 tests passed.
+
+#### A1-R2 — implemented
+
+- Re-ran the reviewed Tool authoring and Connections integration set: 10 files, 49 tests total, 48 passed and 1 failed. The single failure is the unchanged lifecycle development-bypass fixture failure at `tests/connection-lifecycle.test.ts:215`, previously documented by ARCH-021-COMMERCE-001; the selected-shop route failure is resolved and is no longer classified as baseline.
+- Targeted ESLint over both corrected route files, the route regression, and all Attempt 1 changed files passed with no warnings/errors.
+- `npm run typecheck` remains non-zero only on pre-existing unrelated diagnostics in `src/commerce/integration/backend.ts`, `src/commerce/integration/backend/publication-storage.ts`, `src/commerce/integration/studio/services.ts`, and related integration tests; no diagnostic references the changed route or Tool-authoring files.
+- `git diff --check` passed.
+- No live third-party requests were launched; opening/editing Tool authoring still performs no provider request or credential decryption.
+
+#### Prepared workflow evidence
+
+- Launcher-prepared parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-005`.
+- Launcher-prepared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-005`.
+- Mirrored branch: `task/ARCH-021-COMMERCE-005` in both repositories.
+- The deterministic launcher completed branch synchronization/fast-forward preparation and recursive submodule initialization before this Attempt 2 handoff; no startup re-synchronization or submodule mutation was performed during implementation.
+
+#### Remaining gaps
+
+- The accepted lifecycle development-bypass fixture failure remains outside this task's changed path and is retained as the only focused-suite failure.
+- The repository-wide typecheck remains blocked by the pre-existing unrelated diagnostics listed above.
 
 ## Architect Review
 
