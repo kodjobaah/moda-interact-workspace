@@ -61,18 +61,23 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-007](COMMERCE-007-implement-model-configuration-service.md) | Implement model catalogue/default/shop-override service | Complete | DATABASE-001, ARCH-020-COMMERCE-002 |
-| [COMMERCE-008](COMMERCE-008-implement-prompt-template-service.md) | Implement category-organised reusable prompt-template service | Ready | DATABASE-001, ARCH-020-COMMERCE-002 |
-| [COMMERCE-009](COMMERCE-009-implement-prompt-lifecycle-service.md) | Implement platform/shop prompt lifecycle and active pointers | Pending | DATABASE-001, COMMERCE-008, ARCH-020-COMMERCE-002 |
+| [COMMERCE-007](COMMERCE-007-implement-model-configuration-service.md) | Implement model catalogue/default/shop-override service | Ready | DATABASE-001, ARCH-020-COMMERCE-002 |
+| [COMMERCE-008](COMMERCE-008-implement-prompt-template-service.md) | Implement category-organised reusable prompt-template service | Complete | DATABASE-001, ARCH-020-COMMERCE-002 |
+| [COMMERCE-009](COMMERCE-009-implement-prompt-lifecycle-service.md) | Implement platform/shop prompt lifecycle and active pointers | Ready | DATABASE-001, COMMERCE-008, ARCH-020-COMMERCE-002 |
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Pending | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
 | [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Complete | COMMERCE-006, COMMERCE-007 |
 | [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Pending | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
 | [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Pending | COMMERCE-008, COMMERCE-011 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Pending | COMMERCE-008, COMMERCE-009, COMMERCE-011 |
 
-The current Phase 2 Commerce execution frontier is:
+The current Phase 2 Commerce execution frontier on this task branch is:
 
 ```text
+ARCH-021-COMMERCE-007
+ARCH-021-COMMERCE-009
+```
+
+COMMERCE-008 is architect-accepted Complete after live disposable-PostgreSQL proof of durable replay and per-template concurrent draft allocation. COMMERCE-009 is therefore Ready and may implement platform/shop prompt lifecycle against the accepted template service. COMMERCE-007 is reconciled separately on its own parent branch; preserve its newer architect-review state when these coordination branches are combined.
 ARCH-021-COMMERCE-008   Ready — independent prompt-template service rework
 ```
 
