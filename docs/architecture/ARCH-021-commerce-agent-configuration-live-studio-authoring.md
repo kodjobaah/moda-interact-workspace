@@ -538,15 +538,15 @@ Phase 1 tasks:
 | ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
 | ARCH-021-COMMERCE-002 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
-| ARCH-021-COMMERCE-004 | moda_commerce | ready | ARCH-021-COMMERCE-003 |
-| ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-005 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
 | ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
 Current executable frontier:
 
 ```text
 ARCH-021-COMMERCE-002   install the production ConnectionPort into U15/U16 routes
-ARCH-021-COMMERCE-003   server-validated shop execution context
+ARCH-021-COMMERCE-005   wire persisted connection revisions into U06 Tool authoring
 ```
 
 Those tasks are independent and may execute in parallel. No task is automatically
@@ -613,8 +613,8 @@ Phase 1 is materialised as six Commerce tasks under:
 | ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
 | ARCH-021-COMMERCE-002 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
-| ARCH-021-COMMERCE-004 | moda_commerce | Ready | ARCH-021-COMMERCE-003 |
-| ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-005 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
 | ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
 Later phases are intentionally not decomposed yet. Expected later owners still include:
@@ -643,6 +643,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-004 accepted
+
+- Accepted the Studio-wide selected-shop URL/navigation context at implementation `b67177d` after Attempt 2.
+- Confirmed `/connections/[id]` restores the server-validated selected shop on refresh/direct entry while retaining Connections list state.
+- Confirmed an exact valid shop outside the bounded discovery list remains represented in the selector by durable-id merge/deduplication.
+- Promoted ARCH-021-COMMERCE-005 to Ready.
 
 ### 2026-09-23 — COMMERCE-001 accepted
 

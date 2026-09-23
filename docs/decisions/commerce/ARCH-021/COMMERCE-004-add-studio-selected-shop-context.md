@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -230,60 +230,49 @@ None.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 (`654141e`; parent report `5e12ea8`) establishes most of the intended selected-shop navigation model, but two task-scoped correctness gaps prevent acceptance.
+Attempt 2 (`b67177d`; parent report `ce5461f`) satisfies the complete Attempt 1 correction contract and the original COMMERCE-004 acceptance contract.
 
-1. `app/connections/[id]/page.tsx` is not wired to the selected-shop resolver. The list route accepts `shopId`, resolves it through `resolveStudioShopSelection(...)` and passes `shopSelection` into `StudioShell`; the detail route still accepts only `search`/`cursor`/`enabled` and renders `StudioShell` without `shopSelection`. Existing `StudioNavigationLink` handling correctly preserves `shopId` into the detail URL, but refreshing/directly entering that preserved URL causes the shell/provider to fall back to an empty selection. This breaks the refresh-stable Studio-wide context and the explicit Connections/detail-navigation requirement.
-2. Production shop discovery is bounded (`backend.inspection.listShops` takes at most 100 rows), while exact `shopId` resolution is independent. `resolveStudioShopSelection(...)` currently returns the exact `selectedShop` separately but does not ensure it is present in the selector's `shops` collection. A valid selected shop outside the bounded list can therefore resolve server-side while the controlled selector has no matching option. Merge the exact selected context into the option set by id when necessary. Do not widen/remove the accepted server list bound and do not redesign the selector for this correction.
+The Connections detail route now accepts `shopId`, resolves it through the accepted ARCH-021-COMMERCE-003 server service, and passes the resulting `shopSelection` to `StudioShell`. Existing connection `search`, `cursor` and `enabled` state continue to be forwarded unchanged to `ConnectionsRouteClient`, so direct entry/refresh restores the selected-shop shell context without disturbing Connections list state.
 
-The earlier apparent concern about raw detail links is not a defect: `components/studio-workspace.tsx` aliases `StudioNavigationLink` as `Link`, so those links already traverse the shop-preserving navigation path. Dirty/locked shop changes also reuse the accepted navigation blocker, and the selected-shop browser contract contains bounded metadata only.
+`resolveStudioShopSelection(...)` now merges the exact server-resolved selected shop into the bounded selector option set by durable shop id. This preserves the accepted 100-shop discovery bound while ensuring a valid exact selection outside that page remains representable by the controlled selector. Existing duplicate listed records are replaced by the exact server-derived context rather than producing duplicate option ids.
 
-The Completion Report again omits the launcher's exact prepared parent/implementation worktree, synchronization and recursive-submodule packet fields. Because source correction is already required, Attempt 2 should add those evidence fields rather than leaving them for architect reconciliation. Do not create code churn solely for the evidence update.
+The focused regressions prove direct-entry restoration and the outside-bounded-list case. The submitted Completion Report also records the launcher-prepared parent/implementation worktrees, task branch, synchronization and recursive-submodule preparation evidence requested after Attempt 1.
+
+The Attempt 2 snapshot contains the already architect-accepted COMMERCE-001 production Connections boundary work after launcher synchronization; those inherited changes are not treated as new COMMERCE-004 implementation scope. No live provider execution, durable selected-shop persistence, model/prompt configuration, or credential/session secret exposure was introduced.
 
 ### Reviewed Files
 
+- `moda-interact-commerce/app/connections/[id]/page.tsx`
 - `moda-interact-commerce/src/studio/selected-shop.ts`
-- `moda-interact-commerce/src/studio/contracts.ts`
 - `moda-interact-commerce/components/studio-selected-shop-context.tsx`
 - `moda-interact-commerce/components/studio-composer-context.tsx`
 - `moda-interact-commerce/components/studio-shell.tsx`
-- `moda-interact-commerce/components/production-studio-page.tsx`
-- `moda-interact-commerce/components/studio-screen.tsx`
-- `moda-interact-commerce/components/studio-workspace.tsx`
-- `moda-interact-commerce/app/connections/page.tsx`
-- `moda-interact-commerce/app/connections/[id]/page.tsx`
-- `moda-interact-commerce/app/preview/page.tsx`
-- primary/detail Studio route entry points under `app/features`, `app/tools`, `app/capabilities`, `app/releases`, `app/explore` and `app/shops`
-- `moda-interact-commerce/src/commerce/integration/backend.ts` (bounded shop-list behaviour)
+- `moda-interact-commerce/src/studio/contracts.ts`
+- `moda-interact-commerce/src/commerce/integration/studio/services.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
 - `moda-interact-commerce/tests/selected-shop-context.test.ts`
 - `moda-interact-commerce/tests/selected-shop-navigation.test.tsx`
+- `moda-interact-commerce/tests/selected-shop-route.test.tsx`
 
 ### Validation Reviewed
 
-- Reported focused selected-shop validation: 2 files / 7 tests passed.
-- Reported affected Studio regression validation: 3 files / 47 tests passed.
-- Reported changed-file ESLint: passed.
+- Reported focused selected-shop validation: 3 files / 9 tests passed.
+- Reported affected Studio/Connections regression validation: 44 passed / 1 unrelated existing auth-entrypoint baseline assertion failed.
+- Reported targeted ESLint: passed.
 - Reported `git diff --check`: passed.
-- Reported repository typecheck remains non-zero only on the documented pre-existing Prisma/publication typing baseline; no selected-shop diagnostic was reported.
+- Reported repository typecheck remains non-zero with 226 diagnostics in 11 pre-existing Prisma/publication typing files; no selected-shop or Connections detail-route diagnostic was reported.
 - Review archive contains no `node_modules`, so the architect did not independently rerun the Node/Vitest commands from this snapshot.
-- Static review confirms normal `StudioWorkspace` detail links already use `StudioNavigationLink` through its local `Link` alias; the blocking defect is specifically the missing server resolution/composition on `/connections/[id]`.
+- Static review confirms the direct-detail route forwards `search`, `cursor` and `enabled`, resolves `shopId` server-side and passes `shopSelection` into `StudioShell`.
+- Static review confirms exact selected-shop merging occurs by durable id without widening the accepted bounded discovery query.
 
 ### Architecture Conformance
 
-Partial. The URL-owned `shopId` model, server-derived metadata, primary navigation preservation, nested return-parameter preservation, dirty/locked transition protection and token/session non-disclosure conform to ARCH-021. Acceptance is withheld because the Connections detail route does not restore the validated context on refresh/direct entry and because an exact valid selection can fall outside the bounded selector option list.
+Conformant. COMMERCE-004 now provides one explicit URL-owned, server-validated selected-shop context across the Studio, including Connections detail refresh/direct entry. The selector represents valid exact selections outside the bounded list, shop changes remain guarded by the existing dirty/locked navigation blocker, and only bounded shop/session-availability metadata enters browser state. No durable selected-shop state or live provider execution was introduced.
 
 ### Follow-up
 
-Return the same task to Attempt 2. Required correction contract:
-
-- update `app/connections/[id]/page.tsx` to accept `shopId`, resolve it with the accepted ARCH-021-COMMERCE-003 service, and pass the resulting `shopSelection` to `StudioShell` while preserving existing connection list-state semantics;
-- ensure `resolveStudioShopSelection(...)` (or the equivalent bounded presentation layer) includes the exact selected context in the selector option set when the selected id is valid but absent from the bounded list result; deduplicate by durable shop id;
-- add a focused regression proving `/connections/[id]?shopId=<id>` restores the selected server context on refresh/direct entry;
-- add a focused regression where list results omit the exact selected shop but exact resolution succeeds, proving the selector model still represents that selected shop;
-- rerun the task-scoped selected-shop/Studio validation, lint/typecheck/diff checks and reconcile the Validation checklist;
-- record the launcher-prepared parent/implementation worktree, synchronization and recursive-submodule evidence in the Completion Report.
-
-Keep `attempt: 1` until the authorized executor reclaims the task; the next claim increments it to Attempt 2. COMMERCE-005 remains dependency-gated until this task and its other prerequisites are Complete.
+ARCH-021-COMMERCE-004 is accepted Complete. Because ARCH-021-COMMERCE-001 and ARCH-020-COMMERCE-023 are already Complete, ARCH-021-COMMERCE-005 is now Ready. ARCH-021-COMMERCE-002 remains independently Ready. Do not begin COMMERCE-006 until COMMERCE-005 is architect-accepted Complete.
