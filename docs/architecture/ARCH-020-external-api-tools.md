@@ -892,6 +892,34 @@ quota, eligibility, transport, persistence or sandbox logic. A missing producer
 is returned with concrete reproduction to its owner; the architect adjusts its
 status/task scope explicitly. Do not hide it behind unavailable or expand024 silently.
 
+
+
+### 9.5.1. COMMERCE-038 external preview fixture-runner correction
+
+COMMERCE-024 Attempt-1 integration review exposed one producer seam that is not
+available from accepted COMMERCE-031: production Conversation preview needs a
+`PreviewExternalFixtureRunner`, while 031 currently exposes the external tool-test
+service and only an injected conversation runner hook.
+
+`ARCH-020-COMMERCE-038` owns this bounded producer correction.
+
+It exports a reusable synthetic external fixture runner from
+`src/commerce/external-preview/**`. The runner reuses the same accepted visual/code
+sample-processing kernel as COMMERCE-031 tool-test execution, including MIME
+normalization, resultPath, schema validation and response rendering, but owns no
+preview replay/quota, publication receipt, provider HTTP, credentials or state writes.
+
+COMMERCE-024 consumes that runner during final production composition and injects it
+into the accepted COMMERCE-019 `PreviewService`.
+
+COMMERCE-024 remains composition-only. It must not copy the fixture-processing
+algorithm merely to complete final wiring.
+
+Separately, accepted COMMERCE-019 implementation `8850b55` must be present in the
+canonical implementation base before 024 resumes. A stale main/base that still has
+the unavailable preview loader is an integration-state blocker, not permission for
+024 to recreate COMMERCE-019.
+
 ### 9.6. Evidence and review rules
 
 Every narrowed/new task uses its named criteria CL/CR/HT/SB/CA/PV/PR/AV/WI. Before
@@ -1305,6 +1333,28 @@ oversize response samples fail closed.
 Complete. It is not automatically launched. COMMERCE-012 and system-test work retain
 their remaining integration/gateway gates.
 
+<!-- Preserved task-branch record. -->
+## COMMERCE-024 unblock reconciliation — 2026-09-22
+
+**Ready, Attempt 1 retained; claim cleared.**
+
+The two blockers recorded by COMMERCE-024 Attempt-1 review are now resolved in the
+canonical Commerce implementation base.
+
+Developer verification on main
+`4e01e20ea3f94e6125b8017340d869d5198db6d0` proves accepted COMMERCE-019
+implementation `8850b55` is an ancestor, the production preview adapters/runtime are
+present and `unavailableLoader` is absent. Accepted COMMERCE-038 implementation
+`16972af` is also an ancestor and `createExternalFixtureRunner` is present.
+
+COMMERCE-024 may therefore be reclaimed. The next launcher claim creates Attempt 2
+exactly once and is limited to the previously defined composition-only contract.
+COMMERCE-012 and SYSTEM-TEST-002 remain gated until 024 is accepted Complete.
+
+A local untracked `typescript` artifact was present in the developer main worktree;
+it is not part of the accepted source and should be moved/removed before launch rather
+than committed.
+<!-- Preserved mainline record. -->
 ## COMMERCE-038 Attempt 1 architect acceptance — 2026-09-22
 
 **Accepted / Complete, Attempt 1** (`16972af`; parent report `f107b817`).
@@ -1325,3 +1375,99 @@ COMMERCE-024 is **not** unblocked by this acceptance alone: the synchronized Com
 implementation base used for this review still lacks accepted COMMERCE-019
 implementation `8850b55`. That developer integration remains the only known 024
 unblock condition after COMMERCE-038 acceptance.
+
+## COMMERCE-024 Attempt 2 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 2 retained; claim cleared.**
+
+The former producer blockers are resolved: accepted COMMERCE-019 preview composition,
+COMMERCE-036 connection compatibility handling and COMMERCE-038 reusable fixture
+processing are present in the synchronized source.
+
+Attempt 2 successfully wires the external preview service/fixture runner into the
+accepted preview runtime direction, but final composition is not yet complete. The
+COMMERCE-030 identity adapter incorrectly treats saved DRAFT revisions as an empty
+definition hash/disabled revision; EXTERNAL_HTTP publication is fail-open if the
+external publication validator is absent; the submitted XN04 proof constructs an
+isolated in-memory PreviewService instead of traversing production composition; and
+WI01's publish -> release -> grant -> assembled MCP execution path is still unproven.
+
+Attempt 3 is bounded to those 024-owned corrections/evidence. Accepted connection and
+external producers must remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain
+gated.
+
+## COMMERCE-024 Attempt 3 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 3 retained; claim cleared.**
+
+The saved-DRAFT identity and fail-closed external publication binding are now accepted
+in substance. The remaining gate is final production composition evidence only.
+
+XN04 currently installs a prebuilt in-memory PreviewService rather than proving
+`productionService()` plus the real U14 POST/GET route identity. WI01 currently
+constructs manifest/grant state in test code, overrides assertion verification and
+calls the executor directly rather than persisting publication/release/grant state and
+calling the assembled `backend.mcp` JSON-RPC `tools/call` endpoint.
+
+Attempt 4 is bounded to those two proofs and report reconciliation. Accepted producer
+implementations remain unchanged. COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 4 architect review — 2026-09-22
+
+**Changes Requested / Ready, Attempt 4 retained; claim cleared.**
+
+The merge-conflict resolution preserving both EXTERNAL_HTTP and POLICY_OPERATION
+availability is accepted in substance. The already-accepted DRAFT identity and
+fail-closed publication fixes also remain intact.
+
+The outstanding gate is unchanged: XN04 must traverse the Redis-backed production
+preview runtime through the actual U14 POST/GET routes, and WI01 must persist the
+real publication/release/grant lifecycle and invoke a signed assembled
+`backend.mcp` JSON-RPC `tools/call`. The current 4/4 wiring suite still uses the
+in-memory/direct-executor substitutes rejected in Attempt 3.
+
+Attempt 5 is bounded to those proofs and report reconciliation. COMMERCE-012 and
+SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 5 infrastructure unblock — 2026-09-22
+
+**Ready, Attempt 5 retained; claim cleared.**
+
+Missing `COMMERCE_TEST_DATABASE_URL`, `COMMERCE_TEST_REDIS_URL` and
+`COMMERCE_C20_REDIS_NAMESPACE` no longer block the final COMMERCE-024 integration
+proof. They are optional complete-set overrides. Attempt 6 must create its own
+task-owned disposable PostgreSQL/Redis targets when absent.
+
+The self-provisioning runner must reuse the accepted local-Docker safety pattern from
+`moda-interact-commerce/scripts/readiness-docker.mjs`: local Unix-socket context,
+pinned PostgreSQL/Redis images, loopback-only random ports, tmpfs, generated
+credentials, task ownership labels, safe C20 database/Redis namespace naming, schema
+preparation only against the disposable database, signal-aware cleanup and a final
+zero-owned-resource check.
+
+The outstanding XN04 production preview POST/GET proof and WI01 persisted
+publication/release/grant + signed `backend.mcp tools/call` proof remain the
+acceptance gate. COMMERCE-012 and SYSTEM-TEST-002 remain gated.
+
+## COMMERCE-024 Attempt 6 architect closeout — 2026-09-22
+
+**Accepted / Complete, Attempt 6.**
+
+The production external API tool composition is accepted as functionally complete
+from source and focused integration review. The accepted preview/runtime, external
+fixture, credential, HTTP, processor, publication and availability producers are
+bound without duplicating their business algorithms. Saved-DRAFT identity and
+fail-closed EXTERNAL_HTTP publication behavior are preserved.
+
+The architecture no longer requires COMMERCE-024 to introduce substantial
+test-oriented factoring solely to automate the entire persisted WI01 lifecycle.
+That full connection -> receipt -> publication -> release -> persisted grant ->
+signed MCP `tools/call` proof is transferred to the already-defined manual
+SYSTEM-TEST-002 cross-service validation task.
+
+This closeout does not claim that the manual end-to-end flow has already passed.
+Defects found during manual validation are routed to the concrete owner identified by
+the first failing stage.
+
+COMMERCE-012 and SYSTEM-TEST-002 remain Pending in this snapshot because GATEWAY-003
+is not Complete.

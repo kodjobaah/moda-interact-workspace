@@ -32,7 +32,7 @@ COMMERCE-001 is architect-accepted Complete at Attempt 3 (`d7c1c65`). The descen
 | [ARCH-020-COMMERCE-022](COMMERCE-022-build-connections-pages-u15-u16.md) | Build Connections pages U15 and U16 | ready | ARCH-020-SHARED-002, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-008 |
 | [ARCH-020-COMMERCE-023](COMMERCE-023-build-external-tool-authoring-and-filter-editor.md) | Build external tool authoring and response-filter editor | Complete (Accepted, Attempt 8) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-025](COMMERCE-025-implement-bounded-response-filtering-and-projection.md) | Implement bounded response filtering and projection | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002 |
-| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | ready | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036 |
+| [ARCH-020-COMMERCE-024](COMMERCE-024-integrate-external-tools-connections-and-studio.md) | Wire accepted external API components into production factories | complete (Architect closeout, Attempt 6; persisted WI01 manual validation delegated to SYSTEM-TEST-002) | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-022, ARCH-020-COMMERCE-023, ARCH-020-COMMERCE-025, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-030, ARCH-020-COMMERCE-031, ARCH-020-COMMERCE-032, ARCH-020-COMMERCE-036, ARCH-020-COMMERCE-038 |
 | [ARCH-020-COMMERCE-026](COMMERCE-026-implement-isolated-javascript-response-processing.md) | Implement validated code-processing adapter over proven runtime | complete (Accepted, Attempt 2) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-029 |
 | [ARCH-020-COMMERCE-027](COMMERCE-027-build-code-editor-and-raw-response-preview.md) | Build code editor and raw-response preview | complete (Accepted, Attempt 3) | ARCH-020-SHARED-002, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-017 |
 | [ARCH-020-COMMERCE-028](COMMERCE-028-implement-scoped-external-api-credentials.md) | Implement scoped external API credentials | complete (Accepted, Attempt 2) | ARCH-020-COMMERCE-020, ARCH-020-DATABASE-003, ARCH-020-SHARED-002 |
@@ -1160,6 +1160,56 @@ normal live tool path.
 prerequisites are Complete. No task is launched automatically. `COMMERCE-012` and
 terminal system-test work remain behind their later integration/gateway gates.
 
+<!-- Preserved task-branch record. -->
+## COMMERCE-024 Attempt 1 architect review / COMMERCE-038 creation — 2026-09-22
+
+COMMERCE-024 is **Blocked, Attempt 1 retained, claim cleared**.
+
+Two independent unblock conditions were identified:
+
+1. the submitted 024 implementation base does not contain the already accepted
+   COMMERCE-019 implementation `8850b55` (`integration/preview/adapters.ts` is absent
+   and `lib/preview/runtime.ts` is still the obsolete unavailable-loader version);
+   developer integration of that accepted implementation into the canonical
+   Commerce implementation base is required;
+
+2. COMMERCE-031 lacks a reusable production `PreviewExternalFixtureRunner` export for
+   synthetic Conversation external responses. New bounded producer task
+   **COMMERCE-038 is Ready, Attempt 0** to export that seam without moving final
+   composition out of 024.
+
+Attempt-1 external integration/backend direction is retained in substance, but 024
+must not carry its current edits to accepted connection command/lifecycle producer
+files into the resumed attempt.
+
+No downstream task is promoted.
+
+## COMMERCE-024 unblock reconciliation — 2026-09-22
+
+COMMERCE-024 is **Ready, Attempt 1 retained, claim cleared**.
+
+Both Attempt-1 blockers are now satisfied:
+
+```text
+accepted COMMERCE-019 implementation 8850b55
+  integrated into canonical Commerce main
+  adapters.ts present
+  production preview runtime present
+  unavailableLoader absent
+
+COMMERCE-038
+  Accepted / Complete, Attempt 1
+  implementation 16972af
+  reusable createExternalFixtureRunner integrated into canonical Commerce main
+```
+
+Developer verification was performed on Commerce main
+`4e01e20ea3f94e6125b8017340d869d5198db6d0`.
+
+The next launcher claim creates COMMERCE-024 Attempt 2 exactly once and must follow
+the existing post-unblock composition contract. No downstream task is promoted or
+launched by this reconciliation.
+<!-- Preserved mainline record. -->
 ## COMMERCE-038 Attempt 1 architect acceptance — 2026-09-22
 
 COMMERCE-038 is **Accepted / Complete, Attempt 1** at implementation `16972af`
@@ -1186,3 +1236,92 @@ No downstream task is launched.
 ARCH-020-GATEWAY-002 is Superseded by the developer's decision to manage Grafana
 dashboards/alerts manually and has been removed from COMMERCE-012 dependencies.
 COMMERCE-012 remains Pending because COMMERCE-024 and GATEWAY-003 are not yet Complete.
+
+## COMMERCE-024 Attempt 2 architect review — 2026-09-22
+
+COMMERCE-024 is **Changes Requested / Ready, Attempt 2 retained, claim cleared**.
+
+The accepted COMMERCE-019, COMMERCE-036 and COMMERCE-038 producer prerequisites are
+now present in the synchronized implementation base. Attempt 2 correctly composes the
+external preview service/fixture runner and preserves ordinary U14 routing, but four
+024-owned gaps remain:
+
+```text
+saved DRAFT definition identity currently uses empty contentHash / PUBLISHED status
+EXTERNAL_HTTP publication validation is fail-open when validator is absent
+XN04 uses an isolated InMemoryPreviewStateStore rather than production preview composition
+WI01 assembled publish/release/grant/MCP execution path is not implemented
+```
+
+Attempt 3 is limited to those composition corrections/evidence and must not modify the
+accepted connection/external producer implementations. No downstream task is
+promoted.
+
+## COMMERCE-024 Attempt 3 architect review — 2026-09-22
+
+COMMERCE-024 is **Changes Requested / Ready, Attempt 3 retained, claim cleared**.
+
+Attempt 3 correctly fixes the saved-DRAFT definition identity and makes EXTERNAL_HTTP
+publication validation fail closed. Those source corrections are accepted in
+substance.
+
+Two final composition proofs remain incomplete. The submitted XN04 test installs a
+prebuilt `PreviewService` with `InMemoryPreviewStateStore` and calls the external
+service directly instead of traversing production `productionService()` plus the U14
+POST/GET routes. The submitted WI01 test fabricates its manifest/grant, overrides
+assertion verification and calls `backend.runtime.execution.execute(...)` directly;
+it does not create/publish/activate persisted state or call `backend.mcp` through
+`tools/call`.
+
+Attempt 4 is limited to those two real composition proofs and durable report
+reconciliation. No downstream task is promoted.
+
+## COMMERCE-024 Attempt 4 architect review — 2026-09-22
+
+COMMERCE-024 is **Changes Requested / Ready, Attempt 4 retained, claim cleared**.
+
+The `origin/main` merge resolution in backend `executors.ts` is accepted: EXTERNAL_HTTP
+availability remains tied to the installed external executor and POLICY_OPERATION
+availability remains backed by the accepted policy registry.
+
+Attempt 4 did not implement the two remaining final-composition requirements. XN04
+still installs an in-memory prebuilt PreviewService and bypasses production
+`productionService()` plus the U14 POST/GET routes. WI01 still fabricates
+manifest/grant/assertion state and calls `backend.runtime.execution.execute(...)`
+instead of persisting publication/release/grant state and invoking signed
+`backend.mcp` JSON-RPC `tools/call`.
+
+Attempt 5 is limited to those two proofs and durable report reconciliation. No
+downstream task is promoted.
+
+## COMMERCE-024 Attempt 5 infrastructure unblock — 2026-09-22
+
+COMMERCE-024 is **Ready, Attempt 5 retained, claim cleared**.
+
+The Attempt-5 block caused only by missing `COMMERCE_TEST_DATABASE_URL`,
+`COMMERCE_TEST_REDIS_URL` and `COMMERCE_C20_REDIS_NAMESPACE` is superseded.
+Those values are optional complete-set overrides, not prerequisites.
+
+The next claim creates Attempt 6. Attempt 6 must self-provision task-owned disposable
+PostgreSQL and Redis targets when the override set is absent, using the repository's
+existing `readiness-docker.mjs` safety model: local Unix-socket Docker only,
+loopback random ports, tmpfs, ownership labels, safe C20 database/namespace names,
+Prisma schema preparation and guaranteed verified cleanup.
+
+The existing XN04 and WI01 production-composition requirements remain unchanged.
+No downstream task is promoted.
+
+## COMMERCE-024 Attempt 6 architect closeout — 2026-09-22
+
+COMMERCE-024 is **Accepted / Complete, Attempt 6**.
+
+The production external-tool composition is accepted from source/focused integration
+review. The complete persisted connection -> publication -> release -> grant ->
+signed MCP `tools/call` success proof is no longer a COMMERCE-024 automation
+requirement; it is explicitly delegated to manual `ARCH-020-SYSTEM-TEST-002`
+validation.
+
+This is not a claim that the manual end-to-end scenario has already passed.
+
+`COMMERCE-012` remains Pending because `GATEWAY-003` is still not Complete. No
+downstream task is launched.
