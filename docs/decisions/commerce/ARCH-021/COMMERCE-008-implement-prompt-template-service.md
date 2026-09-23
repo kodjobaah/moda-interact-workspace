@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-23T16:48:06Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-DATABASE-001
@@ -28,9 +28,9 @@ updated: 2026-09-23
 # Implement category-organised prompt-template authoring service
 
 ## Architecture
-
-Architecture ID:
-
+  status: review
+  executor: null
+  claimed_at: null
 ARCH-021
 
 Architecture document:
@@ -110,14 +110,14 @@ A template category is `CommercePromptTemplateCategory`; a template identity is 
 
 ## Work Items
 
-- [ ] Implement category/classification list/create/update/enable/disable service.
-- [ ] Implement template list/detail/filter/group service by category.
-- [ ] Implement draft create/update with CAS/idempotent mutation behaviour.
-- [ ] Implement immutable publish operation.
-- [ ] Implement enable/disable operation.
-- [ ] Add durable audit writes.
-- [ ] Expose typed server actions/Studio port.
-- [ ] Add focused lifecycle/auth/replay tests.
+- [x] Implement category/classification list/create/update/enable/disable service.
+- [x] Implement template list/detail/filter/group service by category.
+- [x] Implement draft create/update with CAS/idempotent mutation behaviour.
+- [x] Implement immutable publish operation.
+- [x] Implement enable/disable operation.
+- [x] Add durable audit writes.
+- [x] Expose typed server actions/Studio port.
+- [x] Add focused lifecycle/auth/replay tests.
 
 ## Interfaces / Contracts
 
@@ -145,21 +145,21 @@ Produces:
 
 ## Acceptance Criteria
 
-- [ ] Platform admins can create/manage data-driven template categories and place multiple templates in one category.
-- [ ] Platform admins can create and version reusable prompt templates.
-- [ ] Empty DRAFT template revisions may be saved; publishing blank/whitespace-only prompt text is rejected.
-- [ ] Published template revisions are immutable and their `contentHash` is SHA-256 of the exact persisted UTF-8 prompt text bytes with no trimming/newline normalisation.
-- [ ] Disabling a category or template prevents normal new selection/assignment, including direct exact-id selection, while preserving historical/provenance reads.
-- [ ] Template edits never propagate into an existing prompt.
-- [ ] Authorization, CAS, durable operation replay/conflict/unknown-outcome and audit semantics are tested.
-- [ ] No runtime model/provider execution occurs.
+- [x] Platform admins can create/manage data-driven template categories and place multiple templates in one category.
+- [x] Platform admins can create and version reusable prompt templates.
+- [x] Empty DRAFT template revisions may be saved; publishing blank/whitespace-only prompt text is rejected.
+- [x] Published template revisions are immutable and their `contentHash` is SHA-256 of the exact persisted UTF-8 prompt text bytes with no trimming/newline normalisation.
+- [x] Disabling a category or template prevents normal new selection/assignment, including direct exact-id selection, while preserving historical/provenance reads.
+- [x] Template edits never propagate into an existing prompt.
+- [x] Authorization, CAS, durable operation replay/conflict/unknown-outcome and audit semantics are tested.
+- [x] No runtime model/provider execution occurs.
 
 ## Validation
 
-- [ ] focused prompt-template category + lifecycle tests
-- [ ] focused auth/development-bypass tests
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- focused prompt-template category + lifecycle tests
+- focused auth/development-bypass tests
+- targeted lint/typecheck
+- `git diff --check`
 
 ## Stop Condition
 
@@ -177,74 +177,41 @@ Ready for Review
 
 ### Files Changed
 
-Implementation commit `ddb03c1` on `task/ARCH-021-COMMERCE-008`.
+Implementation commit `7a90a03` on `task/ARCH-021-COMMERCE-008`.
 
 - `src/commerce/agent-configuration/prompt-template-service.ts`
-- `src/studio/agent-configuration/template-contracts.ts`
-- `src/studio/agent-configuration/template-server-actions.ts`
-- `tests/agent-configuration-templates.test.ts`
+- `tests/agent-configuration-templates-postgres.test.ts`
+
+The accepted Attempt 1 implementation remains in the four previously reviewed files: `src/studio/agent-configuration/template-contracts.ts`, `src/studio/agent-configuration/template-server-actions.ts`, and `tests/agent-configuration-templates.test.ts`, in addition to the service above.
 
 ### Work Completed
 
-Implemented category CRUD and enable/disable lifecycle using the accepted
-`CommercePromptTemplateCategory` model, with stable slug identity, CAS checks,
-and category-aware template assignment.
+Implemented the two requested Attempt 2 corrections without changing the accepted category/template model or ownership boundary.
 
-Implemented application-wide template identity CRUD, category filtering,
-search, enabled/historical listing, exact detail reads, and disabled-category
-or disabled-template selection rejection while preserving historical reads.
-
-Implemented draft creation/update with empty draft support, CAS checks,
-idempotent operation replay, conflicting operation-id detection, and copying
-exact text from a published source revision without linking future edits.
-
-Implemented immutable publication with blank-text rejection and exact UTF-8
-SHA-256 content hashing. Added template/category/revision audit foreign keys,
-`operationHash` payload receipts, replay results, and the existing unknown/
-conflicting replay result shapes without an alternate operation table.
-
-Added typed Studio read/mutation server actions with per-call admin or
-SUPER_ADMIN authorization and the canonical development bypass semantics.
-No provider, model, runtime, prompt execution, or alternate persistence calls
-were introduced.
+- Failed or commit-ambiguous transactions now reconcile the durable `CommerceAuditEvent` by actor, action, and exact `operationHash` payload. A matching receipt replays its result, a mismatched receipt returns `CONFLICTING_REPLAY`, and an unestablished outcome returns the existing `unknown` result. Known CAS, validation, not-found, forbidden, and replay errors remain known outcomes.
+- Draft creation locks the owning `CommercePromptTemplate` row with `FOR UPDATE` before counting and allocating `revisionNumber`, serializing only concurrent drafts for the same template while preserving the accepted unique constraint.
+- Added an explicit-opt-in disposable-PostgreSQL regression suite for concurrent same-operation receipt reconciliation and concurrent draft numbering. It does not delete immutable audit/template fixture rows.
 
 ### Validation Results
 
-Focused tests: PASS, `2` files and `9` tests (`tests/agent-configuration-templates.test.ts`, `tests/auth-permissions.test.ts`).
-
-Targeted lint: PASS for all four changed files.
-
-`git diff --check`: PASS.
-
-Repository `npm run typecheck -- --pretty false`: exits `2` because of
-pre-existing failures outside this task, including missing
-`lib/preview/http`, `lib/preview/runtime`, and `src/commerce/preview/types`
-imports; duplicate `productionCodePanel`; existing `studio-workspace.tsx`
-union/property errors; stale generated Prisma `Sql`, `sql`, and
-`InputJsonObject` API errors; and existing implicit-`any` diagnostics. No
-diagnostics reference the four task files after the repair.
-
-The broader auth-development-identity test file remains unavailable because
-the same baseline generated Prisma client lacks `Prisma.sql`; the focused
-prompt-template and auth-permission tests pass.
+- `npm test -- --run tests/agent-configuration-templates.test.ts tests/agent-configuration-templates-postgres.test.ts tests/auth-permissions.test.ts`: PASS, 2 files and 9 tests; 2 PostgreSQL tests skipped without explicit opt-in.
+- `npx eslint src/commerce/agent-configuration/prompt-template-service.ts src/studio/agent-configuration/template-contracts.ts src/studio/agent-configuration/template-server-actions.ts tests/agent-configuration-templates.test.ts tests/agent-configuration-templates-postgres.test.ts`: PASS.
+- `npm run prisma:generate`: PASS; accepted Prisma client generated successfully.
+- `git diff --check`: PASS.
+- `npm run typecheck -- --pretty false`: exits `2` on existing repository-wide failures outside task-owned files, including missing preview modules, duplicate `productionCodePanel`, existing Studio union/property errors, and unrelated implicit-`any`/generated-client diagnostics. No final diagnostics reference the task-owned files.
+- `COMMERCE_PROMPT_TEMPLATE_POSTGRES=1 npm test -- --run tests/agent-configuration-templates-postgres.test.ts`: BLOCKED, not passed. The configured database returned `unknown` during category fixture setup, and cleanup confirmed the target enforces the immutable `CommerceAuditEvent` trigger (`ARCH020 immutable CommerceAuditEvent`). No concurrency assertion was accepted as PostgreSQL evidence.
 
 ### Deviations
 
-No implementation deviation from the task contract. The repository-wide typecheck
-and broader auth-development-identity failures are documented baseline gaps and
-were not modified.
+The required PostgreSQL concurrency evidence remains pending because the configured database target was not a usable disposable ARCH-021 fixture. The regression file is present and opt-in, but the attempt is recorded as blocked rather than passed. No migration, schema, alternate operation table, or provider/runtime call was added.
 
 ### Assumptions
 
-The accepted Prisma client currently generated in this worktree does not expose
-the raw SQL helpers expected by existing authentication code. Re-generating or
-changing the database dependency is outside this task’s ownership and was not
-performed.
+The implementation consumes the accepted generated Prisma client and migration state. The PostgreSQL regression requires a disposable target with the ARCH-021 persistence migration applied and `COMMERCE_PROMPT_TEMPLATE_POSTGRES=1`.
 
 ### Unresolved Issues
 
-The implementation assumes the accepted database schema and generated client
-are available at deployment time; no migration or schema changes were made.
+Developer/architect must provide or validate a disposable PostgreSQL target before accepting the two live concurrency regressions.
 
 ### Architectural Concerns
 
