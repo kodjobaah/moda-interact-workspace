@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 72
 executor: null
 claimed_at: null
@@ -288,7 +288,7 @@ None.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
@@ -496,3 +496,42 @@ The existing Attempt 4 launcher evidence is sufficient and should be preserved. 
 - preserve all accepted Attempt 2/3 behavior: durable history/DRAFT resume, metadata isolation, dirty switch guard, independent dirty state, stale-text publish blocking, ADMIN read-only behavior, production composition and no provider execution;
 - rerun focused template UI + production composition validation, targeted ESLint and `git diff --check`;
 - record the Attempt 5 prepared-execution packet in the Completion Report, set the task to `review`, clear `executor`/`claimed_at`, return to `moda_architect` and STOP.
+
+### Attempt 5 Architect Review — Accepted
+
+Attempt 5 satisfies the complete correction contract from Attempt 4 and preserves the previously accepted COMMERCE-013 behavior.
+
+- `replaceRevision(...)` now reconciles local revision state using the canonical COMMERCE-015 ordering: `revisionNumber DESC, id ASC`.
+- The singular Published revision summary therefore resolves the newest published revision immediately after a successful publish, including the returned revision id and content hash, without requiring the template to be reopened.
+- The durable unknown-operation record now retains the original success reconciler. `Check original operation` reuses the exact original `operationId`; when the durable result resolves `ok`, the original selected-editor/history/hash/dirty-state reconciliation is applied just as it would be for an immediate success.
+- Focused regressions prove both the latest-published summary and `unknown -> ok` exact-operation reconciliation behavior.
+- The previously accepted durable DRAFT resume/history, selected-template metadata isolation, independent dirty-state handling, stale-text publication guard, ADMIN read-only behavior, production composition and no-provider-execution boundaries remain intact.
+- Attempt 5 records the required launcher-prepared parent/implementation worktrees, matching task branches, start-of-attempt synchronization/claim evidence and recursive database-submodule evidence.
+
+Implementation reviewed:
+
+- implementation commit `8ebff4ee8e5a8bf21a44be95daf2be75f8475c76`;
+- parent report commit `174b729ca4a0862c9779e156bb324a14c14944d4`;
+- metadata update `3ac0679561a2efee4dd413bbe5e68b89c692d2e2`.
+
+#### Reviewed Files
+
+- `moda-interact-commerce/src/studio/agent-configuration/prompt-template-library.tsx`
+- `moda-interact-commerce/tests/agent-configuration-template-ui.test.tsx`
+- `moda-interact-commerce/tests/agent-configuration-production.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-013-build-platform-prompt-template-ui.md`
+
+#### Validation Reviewed
+
+- Focused template UI + production composition: 10 tests passed.
+- Targeted ESLint: passed.
+- `git diff --check`: passed.
+- Repository-wide TypeScript retains the documented unrelated baseline diagnostics; no task-owned source diagnostic was introduced.
+
+#### Architecture Conformance
+
+Conformant. COMMERCE-013 remains a platform-wide copy-on-use prompt-template library inside the Agent Configuration domain module, consumes the accepted COMMERCE-008/015 contracts, preserves immutable published revision identity/history and dirty-state safety, keeps ADMIN read-only, and introduces no active prompt mutation or live provider/model/tool execution.
+
+#### Follow-up
+
+None. `ARCH-021-COMMERCE-013` is Complete. COMMERCE-012 remains the sole executable Phase 2 Commerce task on this branch.
