@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -227,24 +227,50 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implementation `d3252e0` with parent report `bfe2b7b4` is substantially aligned with the Phase 2 model-configuration boundary, but two concurrency-critical requirements are not yet satisfied.
+
+1. **The model-selection/catalogue CAS is not atomic.** The implementation reads the current row, compares `editVersion`/`generationId` in application code, and then performs an unconditional `update`, `upsert`, or `delete`. Under PostgreSQL `READ COMMITTED`, two concurrent commands can both observe the same token and both succeed. For first-time platform/shop selections, concurrent callers both carrying the required `null` creation token can race through `upsert`; the second command may update the row created by the first instead of returning `CAS_CONFLICT`. That violates the environment/platform CAS contract and the shop generation-aware ABA contract.
+
+   Attempt 2 must make the durable write itself claim the expected token:
+
+   - catalogue metadata/enablement updates: update only where `id + expectedEditVersion` match and require exactly one row;
+   - existing platform selection: update only where `environment + expectedEditVersion` match and require exactly one row;
+   - new platform selection (`expectedEditVersion: null`): create only when no row exists; a concurrent winner must make the loser return stale CAS rather than silently update it;
+   - existing shop selection: update only where `environment + shopId + generationId + expectedEditVersion` match and require exactly one row;
+   - new shop selection (`expectedGenerationId: null`, `expectedEditVersion: null`): create a new generation only when no row exists; a concurrent winner must make the loser return stale CAS;
+   - shop clear: delete only where `environment + shopId + generationId + expectedEditVersion` match and require exactly one row.
+
+   Preserve the accepted rule that disabling a catalogue entry does not rewrite an existing pointer. Do not replace the generation token with edit-version-only CAS.
+
+2. **Concurrent durable operation replay is not reconciled.** The sequential replay test passes, but `mutate()` currently maps any Prisma `P2002` to generic `CONFLICT` before checking whether the unique violation was the immutable `CommerceAuditEvent.id = operationId` receipt won by another concurrent transaction. For the same effective actor + action + canonical payload, a concurrent duplicate must return the winning stored result; a differing replay must return the existing `CONFLICTING_REPLAY` result/code. Reuse the accepted Studio/Connections reconciliation pattern: after a unique-violation race, read the winning receipt and compare actor/action/payload hash before deciding replay versus conflict. A genuine domain uniqueness collision with no matching receipt may remain a normal conflict.
+
+These are functional correctness issues, not requests for exhaustive test coverage. The existing authorization, environment derivation, disabled-pointer read behavior, no-provider-call boundary and immutable model identity should be preserved.
 
 ### Reviewed Files
 
-None
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `tests/agent-configuration-model.test.ts`
+- `src/commerce/connections/command-kernel.ts` (accepted durable replay/CAS reference)
+- `database/prisma/schema.prisma` and ARCH-021 migration guards relevant to model selections
 
 ### Validation Reviewed
 
-None
+- Submitted focused suite: 6/6 passed.
+- Submitted targeted ESLint, task-owned TypeScript diagnostics and `git diff --check`: passed.
+- The focused suite is in-memory and therefore cannot prove the PostgreSQL concurrency semantics above.
+
+Attempt 2 needs focused functional proof using disposable PostgreSQL for the concurrency-sensitive boundary. It is sufficient to cover a concurrent shop/platform CAS race and a concurrent identical `operationId` replay; exhaustive service testing is not required.
 
 ### Architecture Conformance
 
-Pending
+Partial. Repository ownership, authorization, environment scoping, audit storage and the no-provider-call boundary conform. Atomic CAS and durable concurrent replay do not yet conform to the explicit Phase 2 contract.
 
 ### Follow-up
 
-None
+Return the same task through `/moda-task ARCH-021-COMMERCE-007`. Preserve `attempt: 1`; the next claim becomes Attempt 2. COMMERCE-010 and COMMERCE-011 remain gated. COMMERCE-008 remains independently Ready and may proceed.

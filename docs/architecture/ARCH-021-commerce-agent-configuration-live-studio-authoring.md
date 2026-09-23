@@ -731,11 +731,11 @@ Phase 2 tasks:
 The current Phase 2 execution frontier is two independent Commerce service tasks:
 
 ```text
-ARCH-021-COMMERCE-007   model catalogue/default/shop-override service
-ARCH-021-COMMERCE-008   category-organised prompt-template service
+ARCH-021-COMMERCE-007   Ready — Attempt 1 Changes Requested; atomic CAS/replay correction
+ARCH-021-COMMERCE-008   Ready — category-organised prompt-template service
 ```
 
-DATABASE-001 is architect-accepted Complete and provides the shared durable model catalogue/selections, template categories/templates/revisions, prompt lineages/revisions and active prompt pointers. COMMERCE-007 and COMMERCE-008 may therefore proceed independently against the same accepted schema. COMMERCE-009 becomes eligible only after COMMERCE-008 is also architect-accepted because prompt copy-on-use consumes the template service. COMMERCE-011 then establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) are independently reviewable UI capabilities and may execute in parallel whenever their own dependency sets are Complete. Phase 1 is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2 dependencies above.
+DATABASE-001 is architect-accepted Complete and provides the shared durable model catalogue/selections, template categories/templates/revisions, prompt lineages/revisions and active prompt pointers. COMMERCE-007 and COMMERCE-008 remain independently executable against the same accepted schema; COMMERCE-007 is specifically reclaimable for its bounded Attempt 2 correction while COMMERCE-008 may proceed independently. COMMERCE-009 becomes eligible only after COMMERCE-008 is architect-accepted because prompt copy-on-use consumes the template service. COMMERCE-011 remains gated until COMMERCE-007 is Complete, then establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) are independently reviewable UI capabilities and may execute in parallel whenever their own dependency sets are Complete. Phase 1 is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2 dependencies above.
 
 Phase 2 exit criteria:
 
@@ -846,6 +846,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-007 Attempt 1 changes requested
+
+- Reviewed implementation `d3252e0` with submitted parent report `bfe2b7b4`.
+- Confirmed the bounded model catalogue/platform/shop service, authorization, trusted environment derivation, disabled-pointer preservation, durable audit storage and no-provider-call boundary are substantially present.
+- Identified non-atomic read-then-write CAS for catalogue/platform/shop mutations; concurrent callers can both pass the same token and succeed, including first-time `upsert` races that can overwrite a newly-created platform/shop selection instead of returning stale CAS.
+- Identified concurrent `operationId` replay drift: Prisma unique-receipt races are mapped to generic conflict before reconciling the winning `CommerceAuditEvent`, so identical concurrent commands do not guarantee replay of the durable result.
+- Returned COMMERCE-007 to Ready at `attempt: 1`; COMMERCE-010/011 remain gated. COMMERCE-008 remains independently Ready.
 
 ### 2026-09-23 — DATABASE-001 Attempt 3 accepted
 
