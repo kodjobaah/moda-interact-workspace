@@ -29,7 +29,7 @@ Commerce service/UI without a database schema change; the stable category slug/i
 
 ## Execution frontier
 
-DATABASE-001 Attempt 1 received **Changes Requested**. The task remains the sole Phase 2 Ready frontier for Attempt 2; COMMERCE-007 and COMMERCE-008 remain gated until architect acceptance. The correction is limited to rehearsal-fixture correctness, complete predecessor-index preservation proof, ARCH-020 static-validator compatibility with the required appended audit actions, and successful isolated fresh/upgrade rehearsal evidence.
+DATABASE-001 Attempt 2 received **Changes Requested** after live fresh-rehearsal evidence exposed PostgreSQL SQLSTATE `55P04`: the single ARCH-021 migration adds new `CommerceAuditAction` enum values and then references those uncommitted values in the replacement `arch020_audit_targets` CHECK. Attempt 3 is the sole Phase 2 Ready frontier. Preserve the exact one-migration-directory contract; correct the CHECK so it retains the same action-to-target semantics without resolving newly-added enum labels before commit, then rerun fresh/upgrade ARCH-021 and predecessor ARCH-020 migration rehearsals. COMMERCE-007 and COMMERCE-008 remain gated until architect acceptance.
 
 The single Phase 2 Database task is immediately executable:
 

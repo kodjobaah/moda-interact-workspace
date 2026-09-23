@@ -855,6 +855,14 @@ independent of features.
 
 ## Change History
 
+### 2026-09-23 — DATABASE-001 Attempt 2 changes requested
+
+- Reviewed implementation `7ab7c27b56468af346df2f1ae92710b094779c7e` with submitted parent report `4c4684521aacaa8e03f1a2eeaa6467132e0e56dd`.
+- Confirmed every Attempt 1 fixture/static-validation correction is present: retained-DRAFT and exact-other-shop pointer cases, race-winner independence, catalogue-provider immutability, complete predecessor-index subset preservation, and ARCH-020 historical-action-prefix compatibility.
+- Developer live fresh-rehearsal evidence reached `20260923150000_arch021_agent_configuration` and failed with PostgreSQL SQLSTATE `55P04` because newly appended `CommerceAuditAction` values are referenced by `arch020_audit_targets` before the enum-addition transaction commits.
+- Required a bounded correction inside the existing single ARCH-021 migration directory: preserve the exact audit-target semantics while avoiding uncommitted enum-literal resolution (prefer `"action"::text` comparisons); do not split the migration or weaken the database invariant.
+- Returned DATABASE-001 to Ready at `attempt: 2`. COMMERCE-007 and COMMERCE-008 remain Pending until fresh/upgrade ARCH-021 and predecessor ARCH-020 live rehearsals pass and DATABASE-001 is architect-accepted.
+
 ### 2026-09-23 — DATABASE-001 Attempt 1 changes requested
 
 - Reviewed implementation `e8f173be5dc9197bcdf5fdd68f35ce335c2e0174` with submitted parent report `bc043533bec160dffe19fb08f894a6cd1e3f67cf`.
