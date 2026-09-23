@@ -550,10 +550,15 @@ Current executable frontier:
 ARCH-021-COMMERCE-006   install the production JavaScript response-panel composition
 ```
 
-COMMERCE-001 through COMMERCE-005 are now Complete. COMMERCE-006 is Ready because its
-COMMERCE-005 and ARCH-020-COMMERCE-026/027/031 prerequisites are Complete. It is the sole
-remaining Phase 1 implementation task. No task is automatically launched merely because
-it is Ready, and Phase 2 remains intentionally unmaterialised until Phase 1 reconciliation.
+COMMERCE-001 through COMMERCE-005 are now Complete. COMMERCE-006 remains the sole
+remaining Phase 1 implementation task. Attempt 3 correctly persists the current top-level Input
+JSON Schema and Response template together with JavaScript source and preserves the accepted
+edit-version/publication handoff. Architect re-review found one remaining saved-vs-unsaved
+identity defect in the same U06 boundary: invalid `ExternalHttpEditor` Advanced response-processing
+or Response-shape JSON can remain visibly buffered while JavaScript Save persists the previous
+execution value and clears the shared dirty guard. Its prerequisites remain Complete, so
+COMMERCE-006 is Ready for Attempt 4.
+Phase 2 remains intentionally unmaterialised until Phase 1 reconciliation.
 
 Phase 1 exit criteria:
 
@@ -646,6 +651,27 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-006 Attempt 3 changes requested
+
+- Confirmed implementation `5991dde` / parent report `2b37c7b` correctly persists the current top-level Input JSON Schema and Response template with JavaScript saves, preserves the authoritative edit-version sequence, and retains the accepted JavaScript validation/publication handoff.
+- Confirmed invalid top-level sibling JSON performs no write and retains the shared navigation/publication guard; submitted focused validation reports 12 U06 tests, 104 focused composition/preview tests and 76 response/preview integration tests passing.
+- Identified one remaining functional saved-vs-unsaved gap in the same U06 boundary: invalid `ExternalHttpEditor` Advanced response-processing or Response-shape JSON is buffered locally outside `definition`, so JavaScript Save can persist the previous execution value and clear the shared dirty guard while the invalid value remains visibly displayed.
+- Returned COMMERCE-006 to Ready at `attempt: 3`; Phase 1 remains In Progress and Phase 2 remains unmaterialised.
+
+### 2026-09-23 — COMMERCE-006 Attempt 2 changes requested
+
+- Confirmed implementation `14c4c3e` / parent report `f031e16` resolves the Attempt 1 CAS continuity defect and connects completed current JavaScript sample proof to the canonical U06 SUPER_ADMIN publication gate.
+- Confirmed the accepted server-only QuickJS/external-preview, cancellation/reconciliation and no-provider-network/credential boundaries remain intact; submitted functionality-focused suites report 103/103 passing.
+- Identified one remaining functional saved-vs-unsaved identity defect: the JavaScript panel save unconditionally clears shared U06 dirty state even when independently buffered Input JSON Schema or Response template edits remain unpersisted.
+- Returned COMMERCE-006 to Ready at `attempt: 2`; Phase 1 remains In Progress and Phase 2 remains unmaterialised.
+
+### 2026-09-23 — COMMERCE-006 Attempt 1 changes requested
+
+- Accepted in substance the production JavaScript response-panel composition, server-only QuickJS validation/execution boundary, synthetic external-preview wiring and preserved visual/JavaScript discard guard at implementation `8d5ee07` / parent report `d3acb90`.
+- Identified a functional CAS continuity defect: JavaScript save, full Tool save and publication continue to use the original selected revision edit version after a successful mutation increments the authoritative version.
+- Identified a functional publication-handoff gap: JavaScript validation/sample success remains internal to the code panel and cannot make the canonical U06 publication gate current.
+- Returned COMMERCE-006 to Ready at `attempt: 1`; Phase 1 remains In Progress and Phase 2 remains unmaterialised.
 
 ### 2026-09-23 — COMMERCE-005 Attempt 2 accepted
 
