@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation plus COMMERCE-007/008/009/010/011/015 are architect-accepted Complete; COMMERCE-012/013/014 are Ready.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation plus COMMERCE-007/008/009/010/011/014/015 are architect-accepted Complete; COMMERCE-012/013 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -726,7 +726,7 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
-| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 
 The current Phase 2 execution frontier is:
@@ -734,10 +734,9 @@ The current Phase 2 execution frontier is:
 ```text
 ARCH-021-COMMERCE-012   Ready — selected-shop model/prompt override surface
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
-ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-DATABASE-001 and COMMERCE-007/008/009/010/011/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-012 is now Ready because all of its service/UI dependencies are Complete; COMMERCE-013 remains Ready from COMMERCE-008/011/015, and COMMERCE-014 remains Ready for Attempt 2 from COMMERCE-008/009/011/015.
+DATABASE-001 and COMMERCE-007/008/009/010/011/014/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-014 closes platform prompt authoring with exact template-revision copy-on-use, dirty-editor mutation safety, canonical revision-history wiring and authenticated singleton platform-lineage reads. COMMERCE-012 and COMMERCE-013 remain Ready.
 
 Phase 2 exit criteria:
 
@@ -819,7 +818,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
-| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
@@ -849,6 +848,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 - COMMERCE-014 Attempt 2 accepted
+
+- Accepted exact published template-revision selection/revalidation with category context and persisted copy provenance.
+- Accepted dirty-editor guards for publish, new/copy/template draft creation and pointer activation.
+- Accepted canonical COMMERCE-015 revision-history wiring, PLATFORM-only singleton lineage rediscovery, ADMIN-authenticated reads and real production prompt-action handoff.
+- Marked COMMERCE-014 Complete. COMMERCE-012 and COMMERCE-013 remain the executable Phase 2 Commerce frontier.
 
 ### 2026-09-23 - COMMERCE-014 Attempt 1 changes requested
 

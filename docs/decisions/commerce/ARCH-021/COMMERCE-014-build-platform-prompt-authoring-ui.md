@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 74
 executor: null
 claimed_at: null
@@ -241,25 +241,22 @@ None
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 establishes the correct high-level platform-prompt authoring boundary: the editor lives under `src/studio/agent-configuration/`, production composition uses the accepted prompt/template services, ADMIN is read-only, published revision identity/hash/provenance are visible, pointer mutation is environment-scoped, and no provider/model/tool execution is introduced.
+Attempt 2 satisfies the complete correction contract from Attempt 1.
 
-The following task-scoped corrections are required before acceptance:
+- The platform prompt editor now consumes the canonical COMMERCE-015 revision-history read and requires an explicit published `revisionId` before copy-on-use.
+- The exact selected revision is revalidated with `getPromptTemplate({ templateId, revisionId, selectable: true })` immediately before copying, and the same revision id is persisted as `sourceTemplateRevisionId`.
+- Template choices retain category context while only `PUBLISHED` revisions are selectable.
+- The duplicate local `PromptTemplateReader` contract has been removed; the UI consumes the canonical template contracts/actions.
+- Dirty prompt text blocks every lineage-refreshing mutation that could otherwise discard visible edits. Publication cannot execute until the visible draft text is saved.
+- The bounded `getPlatformPrompt()` read is PLATFORM-only, supports singleton lineage rediscovery before an active pointer exists, and remains behind authenticated ADMIN server actions.
+- Production composition supplies the real COMMERCE-009 prompt lifecycle actions plus the canonical COMMERCE-008/015 template read actions through `agentConfigurationPromptActions`.
+- ADMIN remains read-only; no provider/model/tool execution or secret/session-token exposure was introduced.
 
-1. **Unsaved DRAFT text can currently be discarded or stale content can be published.** `PlatformPromptConfiguration.run()` reloads the lineage after every successful mutation. While `draftText !== savedText`, `Publish revision`, `New empty draft`, `Copy active revision`, `Use template`, and published-revision `Activate` remain enabled. A successful action therefore calls `load()` and replaces the local editor text. Most seriously, `Publish revision` publishes the persisted pre-edit draft while the browser may visibly contain different unsaved text, then reloads and loses those edits. Attempt 2 must prevent every lineage-refreshing mutation from silently discarding dirty editor state. `Publish revision` MUST NOT execute while the editor is dirty; it may run only after the current text has been saved. Other refresh-causing prompt actions must either be disabled while dirty or use an explicit discard/stay guard before invoking any server action.
-
-2. **`Use template` does not let the administrator choose the exact published template revision required by the task.** The current selector stores only `templateId` and `handleUseTemplate()` calls `getPromptTemplate({ templateId, selectable: true })`, which silently resolves whichever published revision is latest at click time. Attempt 2 must consume the accepted `ARCH-021-COMMERCE-015` revision-history read contract, present the selectable template/category plus an explicit published revision identity, and revalidate the exact choice with `getPromptTemplate({ templateId, revisionId, selectable: true })` immediately before copying. `createDraft` must receive that same exact `sourceTemplateRevisionId`. The chooser must expose category context/grouping consistent with the parent architecture rather than presenting an unclassified flat list.
-
-3. **Do not duplicate the canonical template read contract inside prompt contracts.** The added `PromptTemplateReader` in `prompt-contracts.ts` is unused and structurally duplicates the COMMERCE-008/015 template contract. Remove it and consume the canonical template contracts/actions.
-
-4. **The new singleton-platform read extension needs focused proof.** `getPlatformPrompt()` is consistent with COMMERCE-009's original scope to read the singleton platform lineage and is acceptable as a bounded read-only completion of that contract, but Attempt 1 adds it without a focused service/server-action regression. Add proof that an existing platform lineage can be rediscovered when no environment pointer exists, that the read cannot return a SHOP lineage, and that the production server action retains ADMIN authentication. Do not change prompt mutation/CAS/replay semantics.
-
-5. **Production composition coverage must prove the prompt handoff.** Extend the existing Agent Configuration production-composition regression to assert that the real prompt lifecycle actions and canonical template read actions are supplied through `agentConfigurationPromptActions`; do not rely only on the existing model-action assertion.
-
-The submitted Completion Report also omits the launcher-prepared worktree/synchronization/submodule evidence required by the repository-task protocol. Attempt 2 must record the exact prepared parent and implementation worktrees, matching task branches, start-of-attempt synchronization and recursive submodule evidence rather than reconstructing or guessing values.
+The PostgreSQL concurrency suite reported as blocked is non-blocking for this UI task. COMMERCE-014 does not alter the accepted COMMERCE-009 mutation/CAS/replay implementation. Its only service extension is the read-only singleton platform-lineage lookup, which has focused service/server-action coverage. COMMERCE-009's mutation concurrency boundary was already architect-accepted with PostgreSQL evidence.
 
 ### Reviewed Files
 
@@ -273,33 +270,21 @@ The submitted Completion Report also omits the launcher-prepared worktree/synchr
 - `src/studio/agent-configuration/template-server-actions.ts`
 - `tests/agent-configuration-platform-prompt-ui.test.tsx`
 - `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-prompts.test.ts`
+- `tests/agent-configuration-server-actions.test.ts`
 
 ### Validation Reviewed
 
-- Reviewed the reported focused validation: 6 files / 21 tests passing on the final focused run, plus the isolated model-handoff rerun.
-- Reviewed the reported targeted ESLint and `git diff --check` passes.
-- Confirmed the supplied archive contains no `node_modules`, so Vitest was not independently rerun in architect review.
-- Existing repository-wide TypeScript baseline diagnostics are not treated as task regressions where they remain outside the changed behavior.
-- Additional regressions are mandatory for the dirty-mutation guard, exact template-revision selection, singleton-platform read/auth path and production prompt-action composition described above.
+- Reviewed the submitted focused validation: 19 tests passed.
+- Reviewed exact-revision/category selection, dirty-action blocking, unknown-operation replay, singleton-platform lineage rediscovery, ADMIN read authentication and production prompt-action handoff regressions.
+- Reviewed the submitted targeted ESLint/diagnostic and `git diff --check` passes.
+- Repository-wide TypeScript baseline diagnostics remain outside the task-owned behavior.
+- PostgreSQL concurrency execution is not required for acceptance of this UI/read-only completion because the task does not modify the already-accepted prompt mutation/CAS/replay boundary.
 
 ### Architecture Conformance
 
-Partial. The platform prompt surface is on the correct Agent Configuration boundary and reuses the accepted prompt lifecycle, but Attempt 1 does not yet preserve dirty-editor correctness or the exact copy-on-use template revision contract. The unused duplicate `PromptTemplateReader` also conflicts with canonical template-contract ownership.
+Conformant. Platform prompt authoring remains inside the Agent Configuration module, consumes the canonical COMMERCE-008/009/015 service boundaries, preserves exact copy-on-use revision identity and dirty-editor safety, keeps ADMIN read-only, and introduces no live provider/model/tool execution.
 
 ### Follow-up
 
-Return the same task for Attempt 2. No separate correction task is required. `ARCH-021-COMMERCE-015` is now an explicit prerequisite because its accepted revision-history read is required for deterministic exact-revision selection. It is already Complete, so the task remains executable.
-
-Attempt 2 correction contract:
-
-- [ ] Consume `listPromptTemplateRevisions({ templateId })` from the accepted COMMERCE-015 server action/contract.
-- [ ] Render an exact published revision choice with category context; retain only revisions that are `PUBLISHED` for selection.
-- [ ] Before copying, call `getPromptTemplate({ templateId, revisionId, selectable: true })` and pass the same exact revision id to `createDraft`.
-- [ ] Remove the unused local `PromptTemplateReader` duplicate from `prompt-contracts.ts`.
-- [ ] Prevent `Publish revision` from executing while `draftText !== savedText`.
-- [ ] Prevent `New empty draft`, `Copy active revision`, `Use template`, and `Activate` from silently discarding dirty prompt text; require save/revert or explicit discard/stay semantics before the server action runs.
-- [ ] Add focused UI regressions proving dirty actions perform no write until the dirty state is resolved and exact revision/category selection copies the chosen revision, not merely the latest revision.
-- [ ] Add focused `getPlatformPrompt()` service/server-action coverage for no-pointer lineage rediscovery, PLATFORM-only scope and ADMIN authentication.
-- [ ] Extend production composition coverage to assert the real `agentConfigurationPromptActions` handoff.
-- [ ] Re-run the focused prompt/model/production suites, targeted ESLint/type diagnostics and `git diff --check`.
-- [ ] Reconcile Work Items, Acceptance Criteria, Validation and the Completion Report, including exact launcher worktree/synchronization/submodule evidence.
+None. `ARCH-021-COMMERCE-014` is Complete. It enables no further materialised task directly; COMMERCE-012 and COMMERCE-013 remain the current Phase 2 Commerce frontier.
