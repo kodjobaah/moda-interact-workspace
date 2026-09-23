@@ -975,9 +975,10 @@ the model catalogue/selections, data-driven prompt-template categories with mult
 per category, immutable template/prompt revisions, independent platform/shop model/prompt
 resolution, the shared Agent Configuration shell/model UI, selected-shop overrides, the template
 library and platform prompt authoring. Shop override CAS uses immutable row-generation tokens plus
-edit versions so clear/recreate cannot ABA-match stale mutations. ARCH-021-DATABASE-001 is the
-initial Ready Phase 2 frontier. The Phase 2 UI incrementally extracts Agent Configuration state
-from `StudioWorkspace` without rewriting unrelated Studio domains. Live model/tool execution and
-Shared/Background runtime changes remain deferred.
+edit versions so clear/recreate cannot ABA-match stale mutations. DATABASE-001, COMMERCE-007 and
+COMMERCE-011 are architect-accepted Complete; COMMERCE-008 is the current Ready Phase 2 Commerce
+frontier, while COMMERCE-009/010/012/013/014 remain dependency-gated. The Phase 2 UI incrementally
+extracts Agent Configuration state from `StudioWorkspace` without rewriting unrelated Studio
+domains. Live model/tool execution and Shared/Background runtime changes remain deferred.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)

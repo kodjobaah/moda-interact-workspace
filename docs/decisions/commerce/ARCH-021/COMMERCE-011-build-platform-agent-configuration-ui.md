@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
 executor: null
 claimed_at: null
-attempt: 2
+attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-006
   - ARCH-021-COMMERCE-007
@@ -161,38 +161,52 @@ Do not remove the legacy capability prompt field in this task; the current ARCH-
 
 ### Status
 
-Attempt 2 complete; returned to `moda_architect` for review.
+Attempt 3 complete; returned to `moda_architect` for review.
 
 ### Files Changed
 
 - `app/agent-configuration/page.tsx`
-- `components/production-studio-page.tsx`
-- `components/studio-workspace.tsx`
 - `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/platform-model-configuration.tsx`
+- `components/production-studio-page.tsx`
+- `components/studio-shell.tsx`
+- `components/studio-workspace.tsx`
+- `app/styles.css`
 - `src/studio/agent-configuration/model-contracts.ts`
 - `src/studio/agent-configuration/model-server-actions.ts`
-- `src/studio/agent-configuration/platform-model-configuration.tsx`
 - `tests/agent-configuration-model-ui.test.tsx`
+- `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-server-actions.test.ts`
 
 ### Work Completed
+
+- Added the production Agent Configuration route and navigation entry.
+- Added a dedicated Agent Configuration screen and platform model catalogue/default UI outside the legacy workspace state machine.
+- Composed the real COMMERCE-007 server actions for catalogue listing, creation, metadata updates, enablement and platform default selection.
+- Kept ADMIN read-only, preserved disabled current pointers, displayed stable provider/model identities, and rendered no credentials or secret configuration.
+- Added accepted unknown-outcome replay using the original operation ID and CAS conflict messaging.
+- Routed only the new surface discriminator through `StudioWorkspace`; unrelated Studio domains were left unchanged.
 
 - Corrected the production handoff so `ProductionStudioPage` passes the real model server actions and trusted server-derived environment through `StudioWorkspace` to the dedicated screen.
 - Preserved selected-shop context by accepting route `shopId`, resolving it through `resolveStudioShopSelection`, and passing `shopSelection` into the production shell.
 - Added concrete trusted environment display to Agent Configuration.
 - Reconciled serializable server-action failures and UI handling for forbidden, not-found, unavailable, stale-CAS, conflicting-replay, and unknown outcomes while preserving operation IDs for reconciliation.
 - Kept model state and mutation orchestration under `src/studio/agent-configuration/`; no unrelated Studio domain rewrite or provider execution was introduced.
+- Added a production route/composition regression proving URL `shopId` forwarding, server-validated shop selection, trusted environment derivation, and real action handoff.
+- Added server-action adapter regressions for forbidden, stale-CAS, and conflicting-replay outcomes, with JSON serialization assertions.
 
 ### Validation Results
 
-- `npx vitest run tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-model.test.ts`: 2 files, 11 tests passed.
+- `npx vitest run tests/agent-configuration-production.test.tsx tests/agent-configuration-server-actions.test.ts tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-model.test.ts`: 4 files, 15 tests passed.
 - Targeted ESLint over changed route, composition, Agent Configuration, and UI test files: passed.
 - `npx next typegen`: passed.
 - Task-owned TypeScript paths: no new Agent Configuration diagnostics. Full repository typecheck still reports the pre-existing legacy `StudioWorkspace` diagnostics for duplicate `productionCodePanel`, missing `responseProcessing`, and `StudioFailure.message`.
 - `git diff --check`: passed.
+- Launcher Attempt 3 preparation: claimed with commit `3a79cc5ea4b36528b1c2180d0b8f1b0e7c3c0fb7`; dependency gate passed; parent and implementation task worktrees synchronized; recursive submodule status ready at database commit `98fdf715e54fe6df92ac6951facd104e410068f2`.
 
 ### Deviations
 
-The full repository typecheck remains non-zero because of the existing legacy `StudioWorkspace` diagnostics listed above; they are outside the Attempt 2 correction path and were not changed.
+The full repository typecheck remains non-zero because of the existing legacy `StudioWorkspace` diagnostics listed above; they are outside the Attempt 3 validation path and were not changed.
 
 ### Assumptions
 
@@ -204,30 +218,53 @@ Existing legacy `StudioWorkspace` typecheck diagnostics remain for a later clean
 
 ### Architectural Concerns
 
-None introduced by Attempt 2.
+None introduced by Attempt 3.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 3 implementation `d2d67dd` with parent report `b90718b` satisfies the validation-only correction contract from Attempt 2. No runtime implementation was changed between the submitted Attempt 2 and Attempt 3 snapshots; the Commerce diff adds only `tests/agent-configuration-production.test.tsx` and `tests/agent-configuration-server-actions.test.ts` plus ignored/generated `tsconfig.tsbuildinfo` state.
+
+The production composition regression exercises the real `/agent-configuration` page and `ProductionStudioPage` boundary. It proves URL `shopId` is forwarded to the accepted server-side shop resolver, the resolved selection reaches `StudioShell`, the environment comes from trusted server configuration and is normalized to `STAGING`, and the actual COMMERCE-007 model server-action exports are handed to the Agent Configuration surface.
+
+The server-action regressions exercise `model-server-actions.ts` directly with the production error types. They prove authorization failure serializes to `forbidden`, `CAS_CONFLICT` serializes to `conflict / STALE_CAS`, and `CONFLICTING_REPLAY` serializes to `conflict / CONFLICTING_REPLAY`; each result survives JSON serialization. The existing UI regression continues to prove that an `unknown` mutation is reconciled using the exact original `operationId`.
 
 ### Reviewed Files
 
-None
+- `app/agent-configuration/page.tsx`
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/platform-model-configuration.tsx`
+- `tests/agent-configuration-model-ui.test.tsx`
+- `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-server-actions.test.ts`
+- Attempt 2 Architect Review correction contract
 
 ### Validation Reviewed
 
-None
+- Attempt 3 focused validation: 4 files, 15 tests passed.
+- Production route/composition regression covers server-resolved `shopId`, trusted environment derivation and real action handoff.
+- Production server-action regressions cover forbidden, stale-CAS and conflicting-replay serialization, including JSON round-trip assertions.
+- Existing exact-original-operation `unknown` reconciliation regression remains present.
+- Targeted ESLint: passed.
+- `npx next typegen`: passed.
+- Task-owned TypeScript paths reported no new Agent Configuration diagnostics; repository-wide typecheck remains non-zero only for documented legacy `StudioWorkspace` diagnostics outside this task.
+- `git diff --check`: passed.
+- Attempt 3 Completion Report records launcher-prepared parent/implementation worktree synchronization, dependency gating and recursive submodule readiness.
+- The supplied archive has no installed `node_modules`, so the submitted test commands were not independently rerun in this review environment; source/test inspection and the Attempt 2 -> Attempt 3 diff support the reported results.
 
 ### Architecture Conformance
 
-Pending
+Conforms. Agent Configuration remains a dedicated production Studio domain outside unrelated `StudioWorkspace` state, uses the accepted COMMERCE-007 production model service, preserves the server-validated selected-shop context, displays trusted server-derived environment context, keeps ADMIN read-only, serializes the accepted mutation failure/reconciliation outcomes, renders no secrets, and introduces no provider execution or prompt/template/shop-override work owned by later tasks.
 
 ### Follow-up
 
-None
+Mark ARCH-021-COMMERCE-011 Complete. No dependant becomes Ready from this acceptance alone: COMMERCE-013 remains gated on COMMERCE-008; COMMERCE-014 remains gated on COMMERCE-008 and COMMERCE-009; COMMERCE-012 remains gated on COMMERCE-008, COMMERCE-009 and COMMERCE-010. COMMERCE-008 remains the current Ready Phase 2 Commerce frontier.
