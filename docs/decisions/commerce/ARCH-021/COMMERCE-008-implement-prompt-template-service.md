@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-23T16:23:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-001
@@ -173,31 +173,78 @@ The service may expose a helper that returns exact published template revision t
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+Implementation commit `ddb03c1` on `task/ARCH-021-COMMERCE-008`.
+
+- `src/commerce/agent-configuration/prompt-template-service.ts`
+- `src/studio/agent-configuration/template-contracts.ts`
+- `src/studio/agent-configuration/template-server-actions.ts`
+- `tests/agent-configuration-templates.test.ts`
 
 ### Work Completed
 
-None
+Implemented category CRUD and enable/disable lifecycle using the accepted
+`CommercePromptTemplateCategory` model, with stable slug identity, CAS checks,
+and category-aware template assignment.
+
+Implemented application-wide template identity CRUD, category filtering,
+search, enabled/historical listing, exact detail reads, and disabled-category
+or disabled-template selection rejection while preserving historical reads.
+
+Implemented draft creation/update with empty draft support, CAS checks,
+idempotent operation replay, conflicting operation-id detection, and copying
+exact text from a published source revision without linking future edits.
+
+Implemented immutable publication with blank-text rejection and exact UTF-8
+SHA-256 content hashing. Added template/category/revision audit foreign keys,
+`operationHash` payload receipts, replay results, and the existing unknown/
+conflicting replay result shapes without an alternate operation table.
+
+Added typed Studio read/mutation server actions with per-call admin or
+SUPER_ADMIN authorization and the canonical development bypass semantics.
+No provider, model, runtime, prompt execution, or alternate persistence calls
+were introduced.
 
 ### Validation Results
 
-None
+Focused tests: PASS, `2` files and `9` tests (`tests/agent-configuration-templates.test.ts`, `tests/auth-permissions.test.ts`).
+
+Targeted lint: PASS for all four changed files.
+
+`git diff --check`: PASS.
+
+Repository `npm run typecheck -- --pretty false`: exits `2` because of
+pre-existing failures outside this task, including missing
+`lib/preview/http`, `lib/preview/runtime`, and `src/commerce/preview/types`
+imports; duplicate `productionCodePanel`; existing `studio-workspace.tsx`
+union/property errors; stale generated Prisma `Sql`, `sql`, and
+`InputJsonObject` API errors; and existing implicit-`any` diagnostics. No
+diagnostics reference the four task files after the repair.
+
+The broader auth-development-identity test file remains unavailable because
+the same baseline generated Prisma client lacks `Prisma.sql`; the focused
+prompt-template and auth-permission tests pass.
 
 ### Deviations
 
-None
+No implementation deviation from the task contract. The repository-wide typecheck
+and broader auth-development-identity failures are documented baseline gaps and
+were not modified.
 
 ### Assumptions
 
-None
+The accepted Prisma client currently generated in this worktree does not expose
+the raw SQL helpers expected by existing authentication code. Re-generating or
+changing the database dependency is outside this task’s ownership and was not
+performed.
 
 ### Unresolved Issues
 
-None
+The implementation assumes the accepted database schema and generated client
+are available at deployment time; no migration or schema changes were made.
 
 ### Architectural Concerns
 
