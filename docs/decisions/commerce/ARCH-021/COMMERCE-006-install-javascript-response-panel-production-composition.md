@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-23T12:31:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-005
@@ -80,13 +80,13 @@ Phase 1 must make JavaScript authoring actually available in production Studio. 
 
 ## Work Items
 
-- [ ] Provide the production `CodeResponsePort` adapter over accepted code-validation/preview services.
-- [ ] Expand/adjust the typed code-panel composition boundary only as needed to supply the accepted `CodeResponsePanel` with its required draft/run context.
-- [ ] Install the panel in the production U06 external Tool editor JavaScript mode.
-- [ ] Bind source changes back to the current Tool draft response-processing definition without duplicate durable state.
-- [ ] Preserve server-only sandbox execution and existing cancellation/idempotency semantics.
-- [ ] Add a production-composition regression proving JavaScript mode renders the real panel and server adapter, not the unavailable placeholder.
-- [ ] Preserve existing independent code-editor tests and add one Tool-authoring integration path covering visual -> JavaScript -> edit/validate/sample -> visual switching with dirty-state protection.
+- [x] Provide the production `CodeResponsePort` adapter over accepted code-validation/preview services.
+- [x] Expand/adjust the typed code-panel composition boundary only as needed to supply the accepted `CodeResponsePanel` with its required draft/run context.
+- [x] Install the panel in the production U06 external Tool editor JavaScript mode.
+- [x] Bind source changes back to the current Tool draft response-processing definition without duplicate durable state.
+- [x] Preserve server-only sandbox execution and existing cancellation/idempotency semantics.
+- [x] Add a production-composition regression proving JavaScript mode renders the real panel and server adapter, not the unavailable placeholder.
+- [x] Preserve existing independent code-editor tests and add one Tool-authoring integration path covering visual -> JavaScript -> edit/validate/sample -> visual switching with dirty-state protection.
 
 ## Interfaces / Contracts
 
@@ -116,21 +116,21 @@ None. Completion of this task closes the Phase 1 implementation set.
 
 ## Acceptance Criteria
 
-- [ ] Production JavaScript response mode renders the accepted code-response panel rather than the unavailable placeholder.
-- [ ] Code validation/sample execution uses the accepted server-side sandbox/preview services and never browser execution.
-- [ ] Editing code updates the current Tool draft definition and stale validation/results are invalidated correctly.
-- [ ] Synthetic sample run/read/cancel continues to obey current idempotency/cancellation/unknown semantics.
-- [ ] No provider network request or credential decryption is introduced by this Phase 1 panel wiring.
-- [ ] Existing visual response authoring remains functional and switching modes retains the accepted dirty/discard guard.
+- [x] Production JavaScript response mode renders the accepted code-response panel rather than the unavailable placeholder.
+- [x] Code validation/sample execution uses the accepted server-side sandbox/preview services and never browser execution.
+- [x] Editing code updates the current Tool draft definition and stale validation/results are invalidated correctly.
+- [x] Synthetic sample run/read/cancel continues to obey current idempotency/cancellation/unknown semantics.
+- [x] No provider network request or credential decryption is introduced by this Phase 1 panel wiring.
+- [x] Existing visual response authoring remains functional and switching modes retains the accepted dirty/discard guard.
 
 ## Validation
 
-- [ ] existing code-editor focused suite
-- [ ] existing external Tool authoring focused suite
-- [ ] focused production code-panel composition test
-- [ ] relevant preview service/route tests for the adapter seam
-- [ ] targeted lint/typecheck for changed files
-- [ ] `git diff --check`
+- [x] existing code-editor focused suite
+- [x] existing external Tool authoring focused suite
+- [x] focused production code-panel composition test
+- [x] relevant preview service/route tests for the adapter seam
+- [x] targeted lint/typecheck for changed files
+- [x] `git diff --check`
 
 Do not require a live provider call.
 
@@ -148,7 +148,7 @@ Phase 4 will replace the human-facing synthetic tool-test data source; keep that
 
 ### Status
 
-Ready for Review
+Ready for Review (Attempt 2 corrections complete)
 
 ### Files Changed
 
@@ -163,6 +163,16 @@ Ready for Review
 - [app/api/studio/preview/tool-tests/[runId]/cancel/route.ts](../../../../../moda-interact-commerce/app/api/studio/preview/tool-tests/[runId]/cancel/route.ts)
 - [tests/external-tools-ui.test.tsx](../../../../../moda-interact-commerce/tests/external-tools-ui.test.tsx)
 
+Attempt 2 correction files:
+
+- [components/studio-workspace.tsx](../../../../../moda-interact-commerce/components/studio-workspace.tsx)
+- [src/studio/external-http/editor.tsx](../../../../../moda-interact-commerce/src/studio/external-http/editor.tsx)
+- [src/studio/external-http/ports.ts](../../../../../moda-interact-commerce/src/studio/external-http/ports.ts)
+- [src/studio/code-response/contracts.ts](../../../../../moda-interact-commerce/src/studio/code-response/contracts.ts)
+- [src/studio/code-response/code-response-panel.tsx](../../../../../moda-interact-commerce/src/studio/code-response/code-response-panel.tsx)
+- [src/studio/code-response/production-panel.tsx](../../../../../moda-interact-commerce/src/studio/code-response/production-panel.tsx)
+- [tests/external-tools-ui.test.tsx](../../../../../moda-interact-commerce/tests/external-tools-ui.test.tsx)
+
 ### Work Completed
 
 - Composed the production `CodeResponsePanel` in the real Tool detail JavaScript path, preserving the existing visual-to-JavaScript discard guard and selected-shop/connection context.
@@ -171,15 +181,22 @@ Ready for Review
 - Preserved the external editor disabled boundary and added a production composition regression proving the accepted panel replaces the unavailable placeholder.
 - Acceptance mapping: production panel composition is covered by `tests/external-tools-ui.test.tsx`; server sandbox and processor behavior by the existing code-editor/processor/runtime suites; preview idempotency/cancellation/unknown semantics by external-preview, preview-service/routes, and external-wiring suites; no provider request or credential decryption was added.
 
+Attempt 2 corrections:
+
+- Preserved the authoritative `editVersion` returned by each successful draft update and used the live value for JavaScript saves, full Tool saves and publication in [components/studio-workspace.tsx](../../../../../moda-interact-commerce/components/studio-workspace.tsx).
+- Extended the typed JavaScript slot and response panel callback so only a saved, validated, completed current synthetic sample marks the existing U06 publication gate current; source, sample, contract and failed/unknown/cancelled run changes revoke it in [src/studio/external-http/ports.ts](../../../../../moda-interact-commerce/src/studio/external-http/ports.ts), [src/studio/external-http/editor.tsx](../../../../../moda-interact-commerce/src/studio/external-http/editor.tsx), [src/studio/code-response/code-response-panel.tsx](../../../../../moda-interact-commerce/src/studio/code-response/code-response-panel.tsx), and [src/studio/code-response/production-panel.tsx](../../../../../moda-interact-commerce/src/studio/code-response/production-panel.tsx).
+- Added focused U06 regression coverage for the `[2, 3, 4]` draft CAS sequence and the canonical JavaScript publication handoff in [tests/external-tools-ui.test.tsx](../../../../../moda-interact-commerce/tests/external-tools-ui.test.tsx).
+
 ### Validation Results
 
-- `npm exec vitest run tests/external-tools-ui.test.tsx`: passed, 9 tests.
+- `npm exec vitest run tests/external-tools-ui.test.tsx`: passed, 11 tests.
+- `npm exec vitest run tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/response-processing.test.ts tests/external-http-executor.test.ts tests/external-preview.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/external-wiring.test.ts tests/external-tools-ui.test.tsx`: passed, 9 files, 103 tests.
 - `npm exec vitest run tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/code-runtime-proof.test.ts`: 29 passed, 1 pre-existing baseline failure in `tests/code-runtime-proof.test.ts` (`EXECUTION_ERROR` received where the existing expectation requires `RESOURCE_LIMIT`).
 - `npm exec vitest run tests/external-preview.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts`: passed, 49 tests.
 - `npm exec vitest run tests/external-wiring.test.ts`: passed, 4 tests.
 - `npm exec vitest run tests/response-processing.test.ts tests/external-http-executor.test.ts tests/preview-integration.test.ts tests/preview-client.test.ts`: passed, 27 tests.
-- Targeted ESLint over changed files: passed.
-- `npm run typecheck`: repository baseline failures remain in existing Prisma/publication-storage, studio-service and test fixture typing; no diagnostics were reported for changed production-panel, adapter, route, or regression files.
+- Targeted ESLint over changed files: passed with 0 errors and 2 existing `react-hooks/exhaustive-deps` warnings in `src/studio/code-response/code-response-panel.tsx`.
+- `npm run typecheck`: repository baseline failures remain, `234 errors in 14 files`, in existing Prisma/publication-storage, studio-service and test fixture typing; no diagnostics were reported for changed production-panel, adapter, slot, workspace or regression files.
 - `git diff --check`: passed.
 - No live third-party/provider calls were made.
 
