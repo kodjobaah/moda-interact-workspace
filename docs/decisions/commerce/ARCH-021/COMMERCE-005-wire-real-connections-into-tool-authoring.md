@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -195,24 +195,102 @@ None. Phase 4 provider execution and credential decryption remain out of scope.
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-None
+Reviewed by `moda_architect` against the ARCH-021-COMMERCE-005 task contract, ARCH-021 Phase 1, the supplied implementation snapshot, implementation handoff `1370a87`, and parent report handoff `351c064`.
+
+The COMMERCE-005 Tool-authoring implementation is directionally conformant: production Tool composition obtains persisted `ConnectionView` / `ConnectionRevisionView` metadata through the accepted COMMERCE-001 server boundary; the production external-authoring port no longer installs `connection_fixture` / `connection_revision_fixture`; synthetic response samples/processors remain separate and no live provider call or credential decryption was introduced; and the Tool-side Manage connections handoff carries the exact tool-revision return target plus selected-shop context.
+
+Attempt 1 is not accepted because the submitted integrated source contains a directly relevant U06 -> U15/U16 -> U06 navigation regression in the accepted Connections dependency. Both `app/connections/page.tsx` and `app/connections/[id]/page.tsx` currently render two `ConnectionsRouteClient` instances inside one `StudioShell`: one instance without `returnTo`, followed by another with validated `returnTo`. This is a merge/integration artifact, not an accepted baseline. It duplicates the Connections surface/read lifecycle and breaks the selected-shop route regression because `StudioShell.props.children` is now an array rather than the one accepted route client.
+
+The Completion Report itself records `tests/selected-shop-route.test.tsx` as an existing baseline failure. That classification is rejected. The accepted COMMERCE-004 source had one Connections route client and the selected-shop direct-entry contract was accepted on that basis. A newly merged failure in the same ARCH-021 navigation path cannot be waived as unrelated baseline debt. The existing lifecycle development-bypass failure may continue to be referenced separately if it remains byte-for-byte unchanged.
+
+The corrections below are the complete Attempt 2 contract. Keep the COMMERCE-005 Tool-authoring design intact unless a change is required to preserve these accepted navigation semantics.
+
+#### A1-R1 — collapse the merged Connections route composition to one client
+
+**Source and focused-test changes required.**
+
+Correct both:
+
+- `app/connections/page.tsx`
+- `app/connections/[id]/page.tsx`
+
+Each route must render exactly one `ConnectionsRouteClient` under the existing `StudioShell`. The merged result must preserve both accepted dependency behaviours simultaneously:
+
+```text
+StudioShell.shopSelection = server-validated selected-shop context
+ConnectionsRouteClient.returnTo = validateConnectionsReturnTo(query.returnTo)
+```
+
+The sole route client must also retain the existing `search`, `cursor`, `enabled` state and `detailId` on U16. Do not choose one dependency side wholesale and do not render two clients.
+
+Because these route annotations are now being corrected, add `returnTo?: string` to the local `searchParams` type for both pages so the runtime contract and TypeScript annotation agree. This is the narrow hygiene item already identified during COMMERCE-002 review; no broader typecheck cleanup is assigned.
+
+Required focused proof:
+
+```text
+/connections direct entry
+  -> exactly one ConnectionsRouteClient
+  -> validated shopSelection remains on StudioShell
+  -> validated returnTo reaches the sole client
+  -> search/cursor/enabled preserved
+
+/connections/<id> direct entry
+  -> exactly one ConnectionsRouteClient
+  -> validated shopSelection remains on StudioShell
+  -> validated returnTo reaches the sole client
+  -> detailId + search/cursor/enabled preserved
+```
+
+The existing `tests/selected-shop-route.test.tsx` must return green. Add or adjust a focused route-composition regression so both list and detail routes fail if duplicate route clients are reintroduced.
+
+#### A1-R2 — rerun the COMMERCE-005 navigation/integration proof and report baseline truthfully
+
+**Validation/report correction required; source changes only if the focused proof exposes another task-scoped defect.**
+
+After A1-R1, rerun the focused COMMERCE-005 authoring tests and the relevant Connections/selected-shop integration set. The Tool -> Connections -> Tool round trip must preserve the exact tool revision, validated `returnTo`, and selected `shopId` without duplicated Connections composition.
+
+Do not report the current selected-shop route failure as baseline. If the lifecycle development-bypass failure remains unchanged, identify it by its existing accepted/baseline context and keep it separate from task-scoped results.
+
+Reconcile the task Work Items, Acceptance Criteria and Validation checkboxes truthfully before returning to review. The Completion Report must also record the launcher-prepared parent/implementation worktrees, branch synchronization and recursive submodule evidence required by the task workflow. This evidence/reporting correction does not require artificial implementation churn.
 
 ### Reviewed Files
 
-None
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/external-http/ports.ts`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/connections/server-actions.ts`
+- `src/studio/connections/production.ts`
+- `src/studio/connections/navigation.ts`
+- `src/studio/connections/connections-route-client.tsx`
+- `src/studio/connections/connections-ui.tsx`
+- `app/connections/page.tsx`
+- `app/connections/[id]/page.tsx`
+- `tests/external-tools-production.test.ts`
+- `tests/external-tools-ui.test.tsx`
+- `tests/selected-shop-route.test.tsx`
+- `tests/connections-route-composition.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-002-switch-connections-routes-to-production-port.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-004-add-studio-selected-shop-context.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Submitted focused external Tool authoring suite: 9 passed.
+- Submitted integration set: 45 passed / 2 failed. The lifecycle development-bypass failure is previously known; the selected-shop route failure is directly explained by the duplicate route-client merge artifact and is blocking.
+- Submitted targeted ESLint: passed.
+- Submitted `git diff --check`: passed.
+- Submitted repository typecheck remains non-zero on existing broad diagnostics; architect source inspection additionally confirms the two Connections route annotations read `query.returnTo` without declaring `returnTo?: string`, the narrow hygiene item already noted in the accepted COMMERCE-002 review.
+- The supplied archive does not contain `node_modules`, so the architect did not rerun the Node test commands in the review container.
 
 ### Architecture Conformance
 
-Pending
+The COMMERCE-005 Tool-authoring changes are otherwise aligned with Phase 1, but the submitted integrated branch is not currently architecture-conformant because accepted U15/U16 and selected-shop route composition has regressed. Acceptance requires one composed production Connections client carrying both selected-shop and validated-return context.
 
 ### Follow-up
 
-None
+Return the same task through the normal `/moda-task ARCH-021-COMMERCE-005` path for Attempt 2. Preserve `attempt: 1` until the next authorized claim increments it. ARCH-021-COMMERCE-006 remains dependency-gated until COMMERCE-005 is architect-accepted Complete.
