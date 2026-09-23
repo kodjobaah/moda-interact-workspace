@@ -29,6 +29,8 @@ Commerce service/UI without a database schema change; the stable category slug/i
 
 ## Execution frontier
 
+DATABASE-001 Attempt 1 received **Changes Requested**. The task remains the sole Phase 2 Ready frontier for Attempt 2; COMMERCE-007 and COMMERCE-008 remain gated until architect acceptance. The correction is limited to rehearsal-fixture correctness, complete predecessor-index preservation proof, ARCH-020 static-validator compatibility with the required appended audit actions, and successful isolated fresh/upgrade rehearsal evidence.
+
 The single Phase 2 Database task is immediately executable:
 
 ```text

@@ -855,6 +855,15 @@ independent of features.
 
 ## Change History
 
+### 2026-09-23 — DATABASE-001 Attempt 1 changes requested
+
+- Reviewed implementation `e8f173be5dc9197bcdf5fdd68f35ce335c2e0174` with submitted parent report `bc043533bec160dffe19fb08f894a6cd1e3f67cf`.
+- Confirmed the exact Phase 2 schema/migration surface and ARCH-021 static contract are substantially present.
+- Identified deterministic rehearsal-fixture defects: the platform-DRAFT rejection uses an already-published revision, the other-shop rejection uses an exact-same-shop lineage, and the concurrency fixture assumes a particular winner.
+- Required the upgrade validator to prove preservation of all predecessor indexes (including existing `CommerceAuditEvent` indexes) by treating the pre-migration index set as a required subset after the additive migration.
+- Explicitly authorised the existing ARCH-020 static validator to become extension-aware for appended `CommerceAuditAction` values while continuing to require its historical 17-action prefix/order exactly.
+- Returned DATABASE-001 to Ready at `attempt: 1`. Fresh and upgrade rehearsal remain mandatory before acceptance; COMMERCE-007 and COMMERCE-008 remain Pending.
+
 ### 2026-09-23 — Phase 2 task set defined
 
 - Combined all Phase 2 Database schema work into one cohesive `ARCH-021-DATABASE-001` migration/task covering model catalogue/selections, prompt-template categories/templates/revisions, prompt lineages/revisions and active pointers.
