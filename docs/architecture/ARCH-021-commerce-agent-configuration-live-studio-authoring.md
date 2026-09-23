@@ -726,7 +726,7 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
-| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 
 The current Phase 2 execution frontier is:
@@ -737,7 +737,7 @@ ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-DATABASE-001 and COMMERCE-007/008/009/011/015 are architect-accepted Complete. COMMERCE-009 closes the prompt-lifecycle boundary with exact published template-revision copying, immutable prompt publication, atomic draft/pointer CAS, durable receipt-first replay reconciliation, valid immutable pointer audit targets and generation-aware shop-pointer ABA protection. COMMERCE-010 is now executable because COMMERCE-003/007/009 are Complete; COMMERCE-014 is now executable because COMMERCE-008/009/011 are Complete; COMMERCE-013 is Ready for Attempt 2 from COMMERCE-008/011/015. COMMERCE-012 remains Pending until COMMERCE-010 is Complete.
+DATABASE-001 and COMMERCE-007/008/009/011/015 are architect-accepted Complete. COMMERCE-009 closes the prompt-lifecycle boundary with exact published template-revision copying, immutable prompt publication, atomic draft/pointer CAS, durable receipt-first replay reconciliation, valid immutable pointer audit targets and generation-aware shop-pointer ABA protection. COMMERCE-010 is now executable because COMMERCE-003/007/009 are Complete; COMMERCE-014 remains executable for Attempt 2 because COMMERCE-008/009/011/015 are Complete; COMMERCE-013 is Ready for Attempt 2 from COMMERCE-008/011/015. COMMERCE-012 remains Pending until COMMERCE-010 is Complete.
 
 Phase 2 exit criteria:
 
@@ -819,7 +819,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
-| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
@@ -849,6 +849,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-014 Attempt 1 changes requested
+
+- Accepted the overall Agent Configuration ownership boundary, real COMMERCE-009 lifecycle wiring, read-only ADMIN presentation, immutable revision metadata/provenance presentation and absence of live provider/model/tool execution.
+- Identified a dirty-editor correctness defect: successful publish/draft/template/activation mutations reload the lineage and can silently discard unsaved prompt text; publish can act on stale persisted content while newer unsaved text is visible.
+- Identified drift from the exact copy-on-use contract: the UI selects only a template and silently resolves its latest published revision rather than selecting/revalidating one exact published revision. Added the already-Complete COMMERCE-015 revision-history read as an explicit COMMERCE-014 dependency for deterministic revision selection.
+- Required removal of the unused duplicate `PromptTemplateReader`, focused proof for the bounded `getPlatformPrompt()` singleton read/auth extension, production prompt-action composition coverage, and canonical launcher/worktree evidence.
+- Returned COMMERCE-014 to Ready at `attempt: 1`; the next claim becomes Attempt 2.
 
 ### 2026-09-23 — COMMERCE-015 Attempt 2 accepted
 
