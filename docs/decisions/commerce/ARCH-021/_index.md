@@ -79,7 +79,7 @@ ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 is newly unblocked by COMMERCE-003/007/009 being Complete. COMMERCE-014 is newly unblocked by COMMERCE-008/009/011 being Complete. COMMERCE-013 is Ready for Attempt 2 after COMMERCE-015 completed the required revision-history read contract; its dependencies are COMMERCE-008/011/015. COMMERCE-012 remains Pending because it still depends on COMMERCE-010.
+COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 is newly unblocked by COMMERCE-003/007/009 being Complete. COMMERCE-014 is newly unblocked by COMMERCE-008/009/011 being Complete. COMMERCE-013 is Ready for Attempt 3 after Attempt 2 accepted the COMMERCE-015 history integration, durable draft resume, keyed editor reset and production action handoff but found remaining partial-save dirty-state and in-place revision-history reconciliation defects. COMMERCE-012 remains Pending because it still depends on COMMERCE-010.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain
@@ -97,3 +97,7 @@ must not be artificially serialized. All Agent Configuration state/actions stay 
 ### COMMERCE-013 Attempt 1 architect review — 2026-09-23
 
 COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot enumerate durable template revisions, so an existing DRAFT cannot be rediscovered after refresh/reopen and the required revision-history UI cannot be implemented without bypassing the canonical service. `ARCH-021-COMMERCE-015` is added **Ready** as the bounded read-only contract completion. COMMERCE-013 also retains local correction items for selected-template metadata reset and dirty template-switch guarding; it returns to Ready only after COMMERCE-015 is Complete.
+
+### COMMERCE-013 Attempt 2 architect review — 2026-09-23
+
+Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.

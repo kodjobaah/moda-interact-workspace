@@ -737,7 +737,7 @@ ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-DATABASE-001 and COMMERCE-007/008/009/011/015 are architect-accepted Complete. COMMERCE-009 closes the prompt-lifecycle boundary with exact published template-revision copying, immutable prompt publication, atomic draft/pointer CAS, durable receipt-first replay reconciliation, valid immutable pointer audit targets and generation-aware shop-pointer ABA protection. COMMERCE-010 is now executable because COMMERCE-003/007/009 are Complete; COMMERCE-014 is now executable because COMMERCE-008/009/011 are Complete; COMMERCE-013 is Ready for Attempt 2 from COMMERCE-008/011/015. COMMERCE-012 remains Pending until COMMERCE-010 is Complete.
+DATABASE-001 and COMMERCE-007/008/009/011/015 are architect-accepted Complete. COMMERCE-009 closes the prompt-lifecycle boundary with exact published template-revision copying, immutable prompt publication, atomic draft/pointer CAS, durable receipt-first replay reconciliation, valid immutable pointer audit targets and generation-aware shop-pointer ABA protection. COMMERCE-010 is now executable because COMMERCE-003/007/009 are Complete; COMMERCE-014 is now executable because COMMERCE-008/009/011 are Complete; COMMERCE-013 is Ready for Attempt 3 after Attempt 2 accepted its history/resume/reset/production-wiring corrections but retained bounded dirty-state and revision-history reconciliation fixes. COMMERCE-012 remains Pending until COMMERCE-010 is Complete.
 
 Phase 2 exit criteria:
 
@@ -850,6 +850,7 @@ independent of features.
 
 ## Change History
 
+- 2026-09-23: COMMERCE-013 Attempt 2 accepted the COMMERCE-015 revision-history integration, durable DRAFT resume/history, keyed template-editor reset, internal discard/stay guard and real production action handoff. Returned COMMERCE-013 to Ready for Attempt 3 because successful partial/unrelated mutations can clear dirty state while another editor surface remains unsaved, and revision mutation results do not immediately reconcile the rendered revision-history/published-hash state.
 - 2026-09-23: COMMERCE-013 Attempt 1 review exposed a missing read-only template revision-history contract in accepted COMMERCE-008. Added COMMERCE-015 as a bounded prerequisite; COMMERCE-013 is Blocked until it is Complete.
 ### 2026-09-23 — COMMERCE-015 Attempt 2 accepted
 

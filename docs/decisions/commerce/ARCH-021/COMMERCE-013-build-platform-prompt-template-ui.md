@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 72
 executor: null
 claimed_at: null
@@ -247,7 +247,7 @@ The documented repository typecheck and four focused authorization baseline fail
 
 ### Review Status
 
-Blocked
+Changes Requested
 
 ### Review Notes
 
@@ -325,3 +325,14 @@ COMMERCE-015 is architect-accepted Complete and this task is now `ready` with `a
 - protect dirty internal template switching with discard/stay behavior and include metadata edits in dirty state;
 - add focused production composition coverage for the real prompt-template server-action handoff;
 - retain the accepted COMMERCE-008/015 mutation/read boundaries and ADMIN read-only behavior.
+
+### Attempt 2 Architect Review — Changes Requested
+
+Attempt 2 satisfies the previously blocked/rework items for the COMMERCE-015 revision-history dependency, durable DRAFT resume/history, selected-template editor reset, internal dirty switch confirmation, and production `listPromptTemplateRevisions` handoff. Those corrections are accepted and must be preserved.
+
+Two bounded UI correctness issues remain:
+
+1. **Dirty state must survive partial or unrelated successful mutations.** `run()` currently clears `editorDirty`/Studio dirty state after every successful mutation. If draft text and template metadata are both dirty, saving only one surface falsely marks the other unsaved surface clean. An unrelated successful category/template mutation can do the same. Attempt 3 must derive/restore dirty state from the independently persisted metadata and DRAFT baselines instead of globally clearing it. In particular, publishing an existing DRAFT must not proceed while the visible draft text differs from the persisted DRAFT unless that exact text is persisted first.
+2. **Revision history must reconcile successful revision mutations.** `replaceRevision(...)` currently changes only `selected.revision`; `selected.revisions` remains stale. After create/update/publish, the visible revision-history list and published revision/hash summary can therefore disagree with the successful durable result until the template is reopened. Attempt 3 must upsert the returned revision into the selected revision collection (or deterministically reload that history) so the screen immediately reflects the committed revision state.
+
+Focused regressions are sufficient: cover mixed metadata+draft dirty state through a partial save and block stale-text publication, and cover create/update/publish reconciliation into the rendered revision history/published hash. Do not redesign COMMERCE-008/015 service contracts, add direct Prisma reads, or begin COMMERCE-014.
