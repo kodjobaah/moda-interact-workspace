@@ -211,6 +211,7 @@ model CommerceShopModelSelection {
   environment      CommerceEnvironment
   shopId           String              @db.Text
   modelId          String              @db.Text
+  generationId     String              @default(cuid()) @db.Text
   editVersion      Int                 @default(1)
   updatedByAdminId String              @db.Text
   createdAt        DateTime            @default(now()) @db.Timestamptz(3)
@@ -227,7 +228,9 @@ model CommerceShopModelSelection {
 }
 ```
 
-Both `editVersion` values MUST be constrained to `> 0`. Absence of a `CommerceShopModelSelection` row means model inheritance. The database MUST NOT copy a platform selection into a shop row.
+Both `editVersion` values MUST be constrained to `> 0`. `CommerceShopModelSelection.generationId` is an immutable row-generation token: it is assigned on INSERT, must not change on UPDATE, and a row created after a clear/delete receives a different value. Absence of a `CommerceShopModelSelection` row means model inheritance. The database MUST NOT copy a platform selection into a shop row.
+
+The shop selection generation token exists specifically to prevent an ABA stale-write match across `present -> absent -> present`. Commerce mutation tasks must compare both `generationId` and `editVersion` when replacing or clearing an existing shop override.
 
 ### R4 — exact data-driven prompt-template category model
 
@@ -338,10 +341,10 @@ template id/key                            immutable after INSERT
 template DELETE                            forbidden; disable instead
 revisionNumber                             > 0
 revision editVersion                       > 0
-promptText                                 non-blank and <= 32000 characters
+promptText                                 <= 32000 characters; DRAFT may be empty
 contentHash when non-null                  ^[0-9a-f]{64}$
 DRAFT                                      contentHash/publishedByAdminId/publishedAt are NULL
-PUBLISHED                                  contentHash/publishedByAdminId/publishedAt are all NOT NULL
+PUBLISHED                                  promptText is non-blank and contentHash/publishedByAdminId/publishedAt are all NOT NULL
 revision id/templateId/revisionNumber      immutable after INSERT
 PUBLISHED revision UPDATE/DELETE           forbidden
 all revision DELETE                        forbidden
@@ -411,9 +414,9 @@ at most one SHOP lineage per shop    partial UNIQUE index on shopId WHERE scope=
 CommerceAgentPrompt UPDATE/DELETE    forbidden
 revisionNumber                       > 0
 revision editVersion                 > 0
-promptText                           non-blank and <= 32000 characters
+promptText                           <= 32000 characters; DRAFT may be empty
 contentHash when non-null            ^[0-9a-f]{64}$
-DRAFT/PUBLISHED shape                identical to R5
+DRAFT/PUBLISHED shape                identical to R5, including non-blank promptText only for PUBLISHED
 revision identity                    immutable after INSERT
 PUBLISHED revision UPDATE/DELETE     forbidden
 all revision DELETE                  forbidden
@@ -448,6 +451,7 @@ model CommerceShopPromptPointer {
   shopId           String              @db.Text
   promptId         String              @db.Text
   promptRevisionId String              @db.Text
+  generationId     String              @default(cuid()) @db.Text
   editVersion      Int                 @default(1)
   updatedByAdminId String              @db.Text
   createdAt        DateTime            @default(now()) @db.Timestamptz(3)
@@ -474,7 +478,9 @@ shop pointer -> PLATFORM lineage
 shop pointer -> lineage whose shopId != pointer.shopId
 ```
 
-Both pointer edit versions MUST be constrained to `> 0`. Absence of a `CommerceShopPromptPointer` row means prompt inheritance.
+Both pointer edit versions MUST be constrained to `> 0`. `CommerceShopPromptPointer.generationId` is an immutable row-generation token with the same `present -> absent -> present` ABA protection as `CommerceShopModelSelection.generationId`: it is assigned on INSERT, never changed on UPDATE, and recreated rows receive a different token. Absence of a `CommerceShopPromptPointer` row means prompt inheritance.
+
+Commerce mutation tasks must compare both `generationId` and `editVersion` when replacing or clearing an existing shop prompt override.
 
 ### R8 — exact Commerce audit extensions
 
@@ -545,6 +551,8 @@ Add indexes:
 
 The existing ARCH-020 immutable audit-event trigger remains authoritative; do not create a competing audit table.
 
+Phase 2 Commerce services reuse `CommerceAuditEvent` as the durable operation receipt for privileged commands. No new operation-receipt table is introduced by this database task. The service contract is: `CommerceAuditEvent.id = operationId`, with canonical request `payloadHash` and replayable `result` stored in `metadata`, following the accepted ARCH-020 publication-command convention.
+
 ### R9 — exact reverse relations on existing owners
 
 Add these relation collections to `Shop`:
@@ -586,6 +594,7 @@ Functions:
 
 ```text
 commerce.arch021_model_catalogue_guard
+commerce.arch021_shop_model_selection_guard
 commerce.arch021_prompt_template_category_guard
 commerce.arch021_prompt_template_guard
 commerce.arch021_prompt_template_revision_guard
@@ -599,6 +608,7 @@ Triggers:
 
 ```text
 arch021_model_catalogue_guard
+arch021_shop_model_selection_guard
 arch021_prompt_template_category_guard
 arch021_prompt_template_guard
 arch021_prompt_template_revision_guard
@@ -648,6 +658,8 @@ CommercePlatformPromptPointer_edit_version_check
 CommerceShopPromptPointer_edit_version_check
 ```
 
+`commerce.arch021_shop_model_selection_guard` / `arch021_shop_model_selection_guard` MUST reject UPDATE attempts that change `generationId`. The existing `commerce.arch021_shop_prompt_pointer_guard` / `arch021_shop_prompt_pointer_guard` MUST additionally reject UPDATE attempts that change `generationId` while retaining its scope/published-revision checks.
+
 The static schema validator must assert these names are present in the migration SQL.
 
 The migration MUST be additive. It MUST NOT contain application-data `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, destructive `DROP`, or rename operations. It must not seed a model, category, template, prompt or pointer.
@@ -667,7 +679,7 @@ Add these package scripts exactly:
 - all exact model/enum/field names above;
 - the 26 exact new `CommerceAuditAction` values above;
 - the required unique/index/partial-index names;
-- all eight required functions and triggers;
+- all nine required functions and triggers;
 - prompt length/hash/published-shape constraints;
 - migration contains no business-data DML or destructive operation;
 - ERD contains all ten new models.
@@ -689,15 +701,19 @@ The upgrade mode MUST stage all predecessor migrations, seed/rehearse predecesso
 4. one category with at least two templates (`Clothing & Fashion` display fixture is acceptable);
 5. rejection of category slug identity mutation and DELETE;
 6. template key identity mutation rejection;
-7. DRAFT -> PUBLISHED template revision and published immutability;
-8. concurrent platform-lineage creation where only one lineage survives;
-9. concurrent same-shop lineage creation where only one lineage survives;
-10. copy provenance rejected when `sourceTemplateRevisionId` points to a DRAFT template revision;
-11. PUBLISHED agent prompt revision immutability;
-12. platform pointer rejection for DRAFT or SHOP-scoped revisions;
-13. shop pointer rejection for DRAFT, PLATFORM-scoped, or other-shop revisions;
-14. independent model/prompt pointer rows and edit versions;
-15. deleting a shop override row restores representation of inheritance without deleting platform state.
+7. empty DRAFT template content is accepted, but publishing a blank/whitespace-only template revision is rejected;
+8. DRAFT -> PUBLISHED template revision and published immutability;
+9. concurrent platform-lineage creation where only one lineage survives;
+10. concurrent same-shop lineage creation where only one lineage survives;
+11. copy provenance rejected when `sourceTemplateRevisionId` points to a DRAFT template revision;
+12. empty DRAFT agent-prompt content is accepted, but publishing a blank/whitespace-only agent prompt revision is rejected;
+13. PUBLISHED agent prompt revision immutability;
+14. platform pointer rejection for DRAFT or SHOP-scoped revisions;
+15. shop pointer rejection for DRAFT, PLATFORM-scoped, or other-shop revisions;
+16. independent model/prompt pointer rows and edit versions;
+17. deleting a shop override row restores representation of inheritance without deleting platform state;
+18. shop model ABA protection: after clear + recreate, the replacement `generationId` differs and a stale `(old generationId, editVersion)` mutation cannot match it;
+19. shop prompt-pointer ABA protection: after clear + recreate, the replacement `generationId` differs and a stale `(old generationId, editVersion)` mutation cannot match it.
 
 ## Work Items
 
@@ -764,12 +780,13 @@ No Shared package/runtime contract is created in Phase 2.
 - [ ] Platform/shop model selections are environment scoped and independently versioned; absence of the shop row represents inheritance.
 - [ ] A data-driven category such as `Clothing & Fashion` can contain multiple template identities without a schema/enum change.
 - [ ] Category slug and template key are durable identities; categories/templates are disabled rather than deleted.
-- [ ] Template and agent prompt drafts can transition to PUBLISHED, and every PUBLISHED revision is immutable thereafter.
+- [ ] Template and agent prompt DRAFT revisions may persist empty prompt text, publication rejects blank/whitespace-only prompt text, and every PUBLISHED revision is immutable thereafter.
 - [ ] Prompt/template text is bounded to 32,000 characters and published hashes are lowercase SHA-256-shaped 64-character hex values.
 - [ ] Database concurrency enforces at most one platform prompt lineage and at most one prompt lineage per shop.
 - [ ] Template provenance can only reference a PUBLISHED template revision and remains a non-cascading historical reference.
 - [ ] Platform/shop prompt pointers can only reference PUBLISHED revisions of the correct PLATFORM/exact-SHOP lineage.
 - [ ] Model and prompt pointer tables maintain independent editVersion values and independent shop-override absence semantics.
+- [ ] Shop model selections and shop prompt pointers expose immutable `generationId` tokens so a clear/recreate cycle cannot make a stale CAS request valid again merely because `editVersion` restarted.
 - [ ] `CommerceAuditAction` and `CommerceAuditEvent` expose exactly the Phase 2 audit vocabulary/FKs in R8 without weakening the existing immutable audit-event contract.
 - [ ] Fresh and upgrade rehearsal prove all expected constraints and preserve pre-ARCH-021 data/index state.
 - [ ] Existing ARCH-020 Commerce schema and validation remain valid.

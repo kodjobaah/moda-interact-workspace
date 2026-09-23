@@ -250,8 +250,8 @@ Categories are durable data, not a code/Prisma enum. A category such as:
 Clothing & Fashion
 ```
 
-may contain multiple prompt templates. New categories, category renames and category
-disablement must not require an application/schema release. Category identity is stable;
+may contain multiple prompt templates. New categories, category display-name/metadata edits and
+category disablement must not require an application/schema release. Category identity/slug is stable;
 disabling a category affects normal new authoring selection but does not delete existing
 templates/revisions or invalidate prompt provenance.
 
@@ -358,7 +358,7 @@ platform default model selection   # mandatory
 shop model override                # optional per shop
 ```
 
-The shop override is removable, returning that shop to inheritance.
+The shop override is removable, returning that shop to inheritance. A persisted shop model override carries an immutable row `generationId` plus `editVersion`; replace/clear CAS uses both so a clear/recreate cycle cannot make a stale request valid again merely because a new row restarts its numeric edit version.
 
 ### Prompt-template categories and immutable template revisions
 
@@ -368,8 +368,11 @@ template identities. Every template belongs to exactly one category. Categories 
 enabled/disabled without deleting historical templates/revisions.
 
 Within a category, platform administrators may maintain reusable template identities with
-versioned draft/published revisions. Published template revision content is immutable.
-Templates may be enabled/disabled for new selection without deleting historical revisions.
+versioned draft/published revisions. DRAFT revisions may persist empty prompt text so authors can
+start from a blank editor; publication requires non-blank content. Published template revision
+content is immutable. Its `contentHash` is SHA-256 of the exact UTF-8 bytes of persisted
+`promptText`, with no trimming or line-ending normalisation for hashing. Templates may be
+enabled/disabled for new selection without deleting historical revisions.
 
 When a prompt draft is created from a template, the exact template revision content is
 copied and the resulting prompt revision may retain `sourceTemplateRevisionId` as audit
@@ -379,7 +382,9 @@ provenance. There is no live inheritance/linkage after the copy.
 
 There is one logical CommerceAgent behavioural-prompt lineage for platform scope and
 one optional lineage per shop. Each lineage supports drafts/history and immutable
-published revisions.
+published revisions. DRAFT prompt revisions may persist empty prompt text; publication
+requires non-blank content. Published `contentHash` is SHA-256 of the exact UTF-8 bytes of
+persisted `promptText`, with no trimming or line-ending normalisation for hashing.
 
 An environment-scoped active pointer selects:
 
@@ -388,7 +393,21 @@ platform active prompt revision    # mandatory
 shop active prompt revision        # optional per shop
 ```
 
-A shop pointer is removable, returning that shop to platform inheritance.
+A shop pointer is removable, returning that shop to platform inheritance. A persisted shop prompt pointer carries an immutable row `generationId` plus `editVersion`; replace/clear CAS compares both so `present -> absent -> present` cannot create an ABA stale-write match.
+
+### Phase 2 command replay and CAS
+
+Privileged model/template/prompt mutations reuse the accepted immutable `CommerceAuditEvent` command-receipt convention rather than creating another operation table:
+
+```text
+CommerceAuditEvent.id = operationId
+metadata.payloadHash  = canonical actor/action/input hash
+metadata.result       = replayable successful result
+```
+
+Reusing an operation id with the same actor/action/payload returns the recorded result without reapplying the mutation. Reusing it with different input is a conflicting replay. An exception whose durable outcome is unknown is surfaced through the existing Studio unknown-outcome reconciliation flow.
+
+`editVersion` alone is sufficient only for identities that cannot disappear and be recreated through the supported lifecycle. Shop model selections and shop prompt pointers deliberately represent inheritance by row absence, so existing-row replace/clear operations compare both immutable `generationId` and `editVersion`.
 
 ### Conversation grant snapshot
 
@@ -674,16 +693,25 @@ Phase 2 invariants:
 7. Effective model and prompt are resolved independently as shop override -> platform
    default and expose their source as `SHOP` or `PLATFORM`.
 8. Effective model and prompt resolution observes one coherent database read snapshot so a
-   resolver cannot return a model/prompt combination that never existed together.
+   resolver cannot return a model/prompt combination that never existed together; multi-statement
+   resolution therefore uses `REPEATABLE READ` or stronger snapshot semantics rather than ordinary
+   `READ COMMITTED`, unless one statement obtains the complete result.
 9. A missing override inherits. A broken explicit override fails closed and does not silently
    inherit.
-10. Phase 2 introduces a dedicated Agent Configuration domain screen/module. New model/prompt/
-   category/template editor state must not be accumulated inside `StudioWorkspace`; unrelated
-   Studio domains are not rewritten merely for file-size reduction.
-11. Phase 2 does not remove the legacy ARCH-020 capability prompt yet because the current
+10. Shop model/prompt override rows use immutable `generationId` plus `editVersion` for existing-row
+    replace/clear CAS so clear/recreate cannot ABA-match stale mutations.
+11. Privileged Phase 2 commands reuse `CommerceAuditEvent` as durable operation receipt with
+    `operationId`, canonical payload hash and replayable result; conflicting reuse and unknown
+    outcomes follow accepted Studio semantics.
+12. DRAFT template/prompt revisions may persist empty content; publication requires non-blank
+    content and hashes the exact persisted UTF-8 prompt bytes without trimming/newline normalisation.
+13. Phase 2 introduces a dedicated Agent Configuration domain screen/module. New model/prompt/
+    category/template editor state must not be accumulated inside `StudioWorkspace`; unrelated
+    Studio domains are not rewritten merely for file-size reduction.
+14. Phase 2 does not remove the legacy ARCH-020 capability prompt yet because the current
     preview/runtime still consumes it. Runtime migration occurs in later phases.
-12. No Phase 2 task performs OpenAI/Groq execution or live Shopify/external tool execution.
-13. No Shared/Background contract is published in Phase 2; the exact frozen cross-service
+15. No Phase 2 task performs OpenAI/Groq execution or live Shopify/external tool execution.
+16. No Shared/Background contract is published in Phase 2; the exact frozen cross-service
     grant/manifest shape is deferred until runtime integration.
 
 Phase 2 tasks:
@@ -695,8 +723,10 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-008 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
-| ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
 
 The initial Phase 2 execution frontier is one cohesive Database task:
 
@@ -708,23 +738,28 @@ It introduces model catalogue/selections, template categories/templates/revision
 lineages/revisions and active prompt pointers in one coherent migration. After architect
 acceptance, COMMERCE-007 and COMMERCE-008 can proceed independently against the same accepted
 schema. COMMERCE-009 becomes eligible only after COMMERCE-008 is also architect-accepted because
-prompt copy-on-use consumes the template service. Phase 1 is already architect-accepted Complete,
-so the remaining gates are only the explicit Phase 2 dependencies above.
+prompt copy-on-use consumes the template service. COMMERCE-011 then establishes only the shared
+Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013
+(template library) and COMMERCE-014 (platform prompt authoring) are independently reviewable UI
+capabilities and may execute in parallel whenever their own dependency sets are Complete. Phase 1
+is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2
+dependencies above.
 
 Phase 2 exit criteria:
 
 - durable model catalogue exists with no provider credentials;
-- environment-scoped platform/shop model selections exist with independent CAS;
+- environment-scoped platform/shop model selections exist with independent CAS and generation-aware shop-override ABA protection;
 - data-driven prompt-template categories/classifications exist and each can contain multiple
   reusable templates;
 - reusable application-wide prompt templates and immutable revisions exist;
 - one platform and at most one per-shop prompt lineage exist with immutable published
   revisions and optional copy-on-use template provenance;
-- environment-scoped platform/shop prompt pointers exist with independent CAS;
+- environment-scoped platform/shop prompt pointers exist with independent CAS and generation-aware shop-override ABA protection;
 - Commerce resolves effective model/prompt independently, reports source and observes one coherent database read snapshot;
 - explicit broken overrides fail closed;
-- production Studio exposes platform and selected-shop Agent Configuration backed by real
-  services, including category-organised template browsing and template-based prompt drafts;
+- production Studio exposes platform model configuration, category-organised template browsing,
+  platform prompt authoring and selected-shop Agent Configuration as independently reviewable
+  surfaces backed by real services, including template-based prompt drafts;
 - Agent Configuration domain state/actions live outside `StudioWorkspace`, while unrelated
   Studio domains are not opportunistically refactored;
 - legacy capability prompt/runtime behaviour remains untouched;
@@ -787,8 +822,10 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-008 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
-| ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -824,7 +861,10 @@ independent of features.
 - Added a data-driven prompt-template category/classification taxonomy: every template belongs to one category and a category such as `Clothing & Fashion` may contain multiple templates without code/schema enum changes.
 - Kept prompt templates as copy-on-use authoring assets independent of models/features and retained immutable template/prompt revision semantics.
 - Defined Commerce services for model lifecycle, category/template lifecycle, prompt lifecycle and effective configuration resolution.
-- Defined separate platform and selected-shop Agent Configuration UI tasks and made incremental `StudioWorkspace` decomposition an explicit Phase 2 requirement: Agent Configuration gets its own domain module while unrelated Studio domains remain untouched.
+- Split the former broad platform Agent Configuration UI task into independently reviewable model-shell (`COMMERCE-011`), selected-shop overrides (`COMMERCE-012`), template library (`COMMERCE-013`) and platform prompt authoring (`COMMERCE-014`) tasks while keeping one shared Agent Configuration domain module outside `StudioWorkspace`.
+- Added immutable shop-override `generationId` CAS tokens so clear/recreate cannot ABA-match stale model/prompt override mutations.
+- Clarified that prompt/template DRAFT revisions may persist empty content, publication requires non-blank content, and published hashes cover exact persisted UTF-8 prompt bytes without normalisation.
+- Standardised Phase 2 privileged command replay on the existing immutable `CommerceAuditEvent` operation-receipt convention and clarified coherent resolver reads require one statement or `REPEATABLE READ`/stronger semantics.
 - Kept Shared grant/manifest/runner changes, Background execution and all live provider/tool execution out of Phase 2.
 - Phase 1 is already architect-accepted Complete; `ARCH-021-DATABASE-001` is the sole initial Phase 2 Ready frontier.
 

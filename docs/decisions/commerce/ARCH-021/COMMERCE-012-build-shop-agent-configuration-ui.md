@@ -83,6 +83,7 @@ Phase 1 established server-validated `shopId` navigation context. Phase 2 now us
 - The UI must display effective ids/revisions/source so later preview work can prove what will be frozen.
 - `StudioWorkspace` remains orchestration/navigation only for this surface; selected-shop authoring logic belongs to the Agent Configuration domain module.
 - Broken explicit override state must remain visible and fail closed through the resolver.
+- When an explicit shop model/prompt override exists, the UI must carry the opaque `generationId` and `editVersion` returned by the owning service and submit both on replace/clear. It must never synthesise/reset generation tokens client-side.
 
 ### Deterministic file boundary
 
@@ -122,7 +123,7 @@ Consumes:
 - effective configuration resolver from ARCH-021-COMMERCE-010;
 - platform Agent Configuration domain surface from ARCH-021-COMMERCE-011 as the UI/module base.
 
-Produces the complete Phase 2 internal-admin Agent Configuration experience.
+Produces the selected-shop model/prompt override sub-surface within the shared Agent Configuration module. Platform template-library and platform prompt authoring remain independently owned by COMMERCE-013 and COMMERCE-014.
 
 ## Dependencies
 
@@ -135,13 +136,14 @@ Produces the complete Phase 2 internal-admin Agent Configuration experience.
 
 ## Enables
 
-None. Completion closes the Phase 2 implementation set; later phases are defined separately.
+None. COMMERCE-013 and COMMERCE-014 are independent Phase 2 UI tasks and may still be incomplete when this task finishes.
 
 ## Acceptance Criteria
 
 - [ ] Selected shop shows effective model and prompt with independent PLATFORM/SHOP source labels.
 - [ ] A shop may override only model, only prompt, both, or neither.
 - [ ] Clearing one override preserves the other.
+- [ ] Existing override replace/clear commands round-trip the service-provided `generationId` + `editVersion` CAS tokens, including a stale-generation conflict regression after clear/recreate.
 - [ ] Shop prompt authoring is isolated to the exact selected shop.
 - [ ] Shop prompt may start from a published platform template as an independent copy.
 - [ ] Broken explicit model/prompt overrides are displayed as configuration errors rather than silently inherited values.
@@ -160,7 +162,7 @@ None. Completion closes the Phase 2 implementation set; later phases are defined
 
 ## Stop Condition
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin Phase 3.
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin COMMERCE-013, COMMERCE-014 or Phase 3.
 
 ## Implementation Notes
 

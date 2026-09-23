@@ -74,11 +74,29 @@ Phase 2 makes model selection platform/shop configuration instead of an environm
 
 - `developmentBypass === true` follows the accepted canonical development authorization path; otherwise existing PlatformAdmin/SUPER_ADMIN authorization remains enforced.
 - ADMIN access is read-only; privileged catalogue/selection mutations require SUPER_ADMIN outside the trusted development bypass.
-- Mutation idempotency/CAS/unknown-outcome handling should follow existing Studio command patterns rather than inventing an incompatible mutation model.
+- Mutation idempotency/CAS/unknown-outcome handling MUST reuse the accepted Studio durable operation-receipt convention described below rather than inventing an incompatible mutation model.
 - Clearing a shop override means inheritance and must not create a replacement platform copy in the shop record.
+- Existing shop override replace/clear operations MUST CAS-match both the immutable `generationId` and `editVersion`. A newly-created override receives a new `generationId`; a stale command from a prior cleared generation must conflict even if the replacement row restarted at the same `editVersion`.
 - Disabling a catalogue entry does not rewrite any existing pointer.
 - No browser response includes provider API credentials or secret configuration.
 - In Phase 2, model `disabled`/`unavailable` state is configuration state only. This service must not probe provider credentials, network reachability, quota or provider health.
+
+### Canonical durable command-replay contract
+
+Every privileged Phase 2 model mutation MUST use the existing immutable `CommerceAuditEvent` row as its durable operation receipt:
+
+```text
+CommerceAuditEvent.id = operationId
+metadata.payloadHash  = the accepted publication `operationHash({ action, actorId, ...request })` canonical hash semantics
+metadata.result       = replayable successful result
+```
+
+For one `operationId`:
+
+- same effective actor + same action + same canonical payload returns the previously recorded result without applying the mutation twice;
+- different actor, action or canonical payload returns the existing Studio conflicting-replay result/code;
+- a transport/storage exception after the transaction outcome is not known maps to the existing Studio `unknown` result carrying the same `operationId` so the caller refreshes/reconciles before retrying;
+- do not create a second operation table or an in-memory-only replay mechanism.
 
 ### Deterministic persistence and file boundary
 
@@ -109,7 +127,7 @@ tests/agent-configuration-model.test.ts
 - [ ] Add shop override read/set/clear operation with CAS.
 - [ ] Add audit events for privileged mutations.
 - [ ] Add typed server actions/Studio port contracts.
-- [ ] Add unit/integration tests for auth, identity immutability, disabled selection, CAS replay/conflict and independent shop clear semantics.
+- [ ] Add unit/integration tests for auth, identity immutability, durable operation replay/conflict/unknown outcomes, disabled selection, generation-aware CAS and independent shop clear semantics.
 
 ## Interfaces / Contracts
 
@@ -118,7 +136,7 @@ Consumes:
 - ARCH-021-DATABASE-001 model catalogue and environment/shop model selections.
 - existing Commerce Studio authentication from ARCH-020-COMMERCE-002.
 
-Produces a Commerce-local model-configuration port for later Phase 2 UI and resolver tasks.
+Produces a Commerce-local model-configuration port for later Phase 2 UI and resolver tasks. When a shop override exists, its read DTO exposes opaque `generationId` plus `editVersion`; replace/clear commands for that existing row accept both as expected CAS tokens. Callers must not synthesize either token.
 
 No Shared package contract is introduced.
 
@@ -137,7 +155,8 @@ No Shared package contract is introduced.
 - [ ] Platform admins can list/create/enable/disable catalogue entries without exposing credentials.
 - [ ] Provider/model identity cannot be edited into another provider model.
 - [ ] Platform default selection is environment-scoped and CAS protected.
-- [ ] Shop override can be independently set and cleared.
+- [ ] Shop override can be independently set and cleared, and existing-row replace/clear CAS checks both `generationId` and `editVersion`.
+- [ ] After clear + recreate, a stale command carrying the previous override generation cannot mutate or clear the replacement row even when its numeric `editVersion` is the same.
 - [ ] Disabled entries cannot be newly selected.
 - [ ] Existing explicit broken/disabled pointers are not silently rewritten to platform inheritance.
 - [ ] Authorization and audit behaviour is covered by focused tests.

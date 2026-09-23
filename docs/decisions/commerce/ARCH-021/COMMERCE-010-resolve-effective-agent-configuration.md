@@ -19,7 +19,6 @@ depends_on:
   - ARCH-021-COMMERCE-007
   - ARCH-021-COMMERCE-009
 enables:
-  - ARCH-021-COMMERCE-011
   - ARCH-021-COMMERCE-012
 created: 2026-09-23
 updated: 2026-09-23
@@ -56,7 +55,7 @@ Model and prompt ownership are independent. Phase 2 UI needs to show both the ef
 - Resolve model: explicit shop override when present, otherwise platform default.
 - Resolve prompt: explicit shop override when present, otherwise platform active prompt.
 - Return source (`SHOP` or `PLATFORM`) independently for model and prompt.
-- Return stable ids and safe presentation fields needed by Studio (catalogue entry/provider/model display; prompt lineage/revision/name/hash/content as appropriate for authorized Studio authoring).
+- Return stable ids and safe presentation fields needed by Studio (catalogue entry/provider/model display; prompt lineage/revision/hash/content as appropriate for authorized Studio authoring). `CommerceAgentPrompt` has no separate prompt-name identity in Phase 2; do not invent one in the resolver DTO.
 - Return explicit configuration-unavailable results when mandatory platform state is absent or the selected platform model/prompt state is invalid/disabled.
 - If an explicit shop model override exists but references a disabled/unavailable entry, fail closed and do not fall back.
 - If an explicit prompt pointer is invalid/missing/non-published/scope-invalid, fail closed.
@@ -78,6 +77,7 @@ Model and prompt ownership are independent. Phase 2 UI needs to show both the ef
 - The resolver must be side-effect free.
 - Browser/client input must not select an arbitrary environment.
 - The resolver's model selection, prompt selection and referenced immutable records must be observed through one coherent database read snapshot; do not compose independently committed reads that can return a model/prompt combination that never existed together.
+- A normal multi-statement PostgreSQL `READ COMMITTED` transaction is not sufficient for this invariant. Use either one database statement/query that obtains the complete effective configuration or a transaction with snapshot semantics (`REPEATABLE READ` or stronger) for all participating reads.
 - The resolver must not mutate defaults while resolving.
 
 ### Deterministic persistence and file boundary
@@ -123,9 +123,12 @@ Absence of the shop selection/pointer is the only inheritance signal. Do not inf
 
 Consumes:
 
-- model configuration service from ARCH-021-COMMERCE-007;
-- prompt lifecycle/configuration service from ARCH-021-COMMERCE-009;
-- selected-shop server validation from ARCH-021-COMMERCE-003.
+- model configuration semantics/read contracts from ARCH-021-COMMERCE-007;
+- prompt lifecycle/configuration semantics/read contracts from ARCH-021-COMMERCE-009;
+- selected-shop server validation from ARCH-021-COMMERCE-003;
+- the accepted ARCH-021 Prisma rows when direct snapshot-aware composition is required to satisfy the one-snapshot invariant.
+
+Do not satisfy this interface by calling separately committed model-service and prompt-service reads and combining their results afterward.
 
 Produces the Commerce-local effective configuration read model used by Phase 2 Studio UI. The future grant/manifest Shared contract is intentionally not created here.
 
@@ -137,7 +140,6 @@ Produces the Commerce-local effective configuration read model used by Phase 2 S
 
 ## Enables
 
-- ARCH-021-COMMERCE-011
 - ARCH-021-COMMERCE-012
 
 ## Acceptance Criteria
@@ -167,7 +169,7 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 ## Implementation Notes
 
-Keep these DTOs Commerce-local until the later runtime phase defines the exact cross-service frozen grant/manifest contract. Do not prematurely publish a Shared schema solely for the Phase 2 UI. The implementation may use one transaction/snapshot-aware read composition rather than forcing separately committed model-service and prompt-service reads when that would violate the coherent-snapshot requirement.
+Keep these DTOs Commerce-local until the later runtime phase defines the exact cross-service frozen grant/manifest contract. Do not prematurely publish a Shared schema solely for the Phase 2 UI. Satisfy the coherent-snapshot requirement with either one complete database statement/query or a `REPEATABLE READ`/stronger transaction spanning all required reads; merely wrapping multiple queries in the repository's ordinary `ReadCommitted` transaction pattern does not satisfy this task.
 
 ## Completion Report
 

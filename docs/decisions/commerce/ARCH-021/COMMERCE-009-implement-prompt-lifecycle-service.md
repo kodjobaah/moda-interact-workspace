@@ -20,7 +20,8 @@ depends_on:
   - ARCH-020-COMMERCE-002
 enables:
   - ARCH-021-COMMERCE-010
-  - ARCH-021-COMMERCE-011
+  - ARCH-021-COMMERCE-012
+  - ARCH-021-COMMERCE-014
 created: 2026-09-23
 updated: 2026-09-23
 ---
@@ -79,11 +80,14 @@ Phase 2 only authors and selects prompts; existing ARCH-020 per-capability promp
 - ADMIN is read-only; mutations require SUPER_ADMIN outside development bypass.
 - Development bypass uses the canonical effective development actor.
 - Only one platform lineage and at most one lineage per shop may exist; service handles concurrent create races using database constraints/idempotency.
+- DRAFT prompt revisions may persist empty prompt text; publication MUST reject blank/whitespace-only text.
 - Published revisions cannot be mutated.
+- Published `contentHash` is SHA-256 over the exact UTF-8 bytes of the persisted `promptText`; do not trim, normalise line endings or otherwise transform text for hashing.
 - Copy-from-template copies exact content into the new prompt draft and records provenance; subsequent template changes have no effect.
 - New copy-from-template authoring requires the owning category and template to be enabled at copy time and the revision to be published. Historical/provenance reads of a disabled template revision remain valid and do not invalidate prompts already copied from it.
 - Clearing a shop prompt override means inheritance and must not alter shop model selection.
-- Pointer mutations use CAS/editVersion and distinguish replay/conflict/unknown outcomes consistently with existing Studio commands.
+- Platform pointer mutations use CAS/editVersion. Existing shop pointer replace/clear mutations MUST CAS-match both immutable `generationId` and `editVersion`; clear + recreate produces a new generation so a stale command cannot ABA-match the replacement row.
+- Every privileged prompt mutation MUST reuse the existing immutable `CommerceAuditEvent` operation-receipt convention: `id = operationId`, `metadata.payloadHash` using the accepted publication `operationHash({ action, actorId, ...request })` canonical semantics, and replayable `metadata.result`; same request replays, conflicting reuse returns `CONFLICTING_REPLAY`, and unknown outcomes return the existing Studio `unknown` result for reconciliation. Do not create another operation table or invent different JSON canonicalisation.
 
 ### Deterministic persistence and file boundary
 
@@ -128,7 +132,7 @@ Consumes:
 - ARCH-021-DATABASE-001 prompt lineages/revisions and environment-scoped active pointers.
 - ARCH-021-COMMERCE-008 exact template-revision reads for copy-on-use.
 
-Produces a Commerce-local prompt configuration port for effective resolution and Studio UI.
+Produces a Commerce-local prompt configuration port for effective resolution and Studio UI. When a shop prompt pointer exists, its read DTO exposes opaque `generationId` plus `editVersion`; replace/clear commands for that existing row accept both as expected CAS tokens. Callers must not synthesize either token.
 
 ## Dependencies
 
@@ -139,17 +143,21 @@ Produces a Commerce-local prompt configuration port for effective resolution and
 ## Enables
 
 - ARCH-021-COMMERCE-010
-- ARCH-021-COMMERCE-011
+- ARCH-021-COMMERCE-012
+- ARCH-021-COMMERCE-014
 
 ## Acceptance Criteria
 
 - [ ] Platform and shop prompt lineages obey singleton/per-shop ownership.
-- [ ] Draft edits are CAS protected and published revisions are immutable.
+- [ ] Empty DRAFT prompt revisions may be saved; publishing blank/whitespace-only prompt text is rejected.
+- [ ] Draft edits are CAS protected; published revisions are immutable and hash exact persisted UTF-8 prompt text bytes without trimming/newline normalisation.
 - [ ] A prompt draft created from a template is an independent copy with immutable provenance.
 - [ ] A disabled category or template cannot be used to create a new prompt draft even when its published revision id is supplied directly; historical provenance remains readable.
 - [ ] Platform active prompt can only target a published platform revision.
 - [ ] Shop override can only target a published revision belonging to that exact shop.
 - [ ] Clearing the shop prompt override returns prompt inheritance without changing model state.
+- [ ] Existing shop-pointer replace/clear CAS checks both `generationId` and `editVersion`; after clear + recreate a stale command from the prior generation cannot mutate/clear the replacement row.
+- [ ] Privileged commands prove durable same-request replay, conflicting operation-id reuse and unknown-outcome reconciliation through the existing audit receipt convention.
 - [ ] Existing capability prompt/runtime behaviour is not modified in Phase 2.
 - [ ] No model/provider call occurs.
 

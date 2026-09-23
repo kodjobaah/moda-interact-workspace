@@ -19,7 +19,8 @@ depends_on:
   - ARCH-020-COMMERCE-002
 enables:
   - ARCH-021-COMMERCE-009
-  - ARCH-021-COMMERCE-011
+  - ARCH-021-COMMERCE-013
+  - ARCH-021-COMMERCE-014
 created: 2026-09-23
 updated: 2026-09-23
 ---
@@ -77,10 +78,13 @@ Templates are reusable authoring starting points. They are deliberately independ
 - Disabling a category prevents normal new-authoring assignment/selection while preserving existing template/history visibility.
 - A category may contain multiple templates; each template has exactly one category.
 - `developmentBypass === true` uses the accepted canonical development actor semantics.
+- DRAFT template revisions may persist empty prompt text; publication MUST reject blank/whitespace-only text.
 - Published revisions cannot be edited; a new revision is required.
+- Published `contentHash` is SHA-256 over the exact UTF-8 bytes of the persisted `promptText`; do not trim, normalise line endings or otherwise transform text for hashing.
 - Historical/provenance exact-id reads may resolve disabled categories/templates and their published revisions so existing provenance remains inspectable.
 - New-authoring selectable lookup requires both the category and template to be enabled and the requested revision to be published; callers must not bypass disablement merely by supplying an exact revision id.
 - No operation may mutate prompts that were previously created from a template.
+- Every privileged category/template mutation MUST reuse the existing immutable `CommerceAuditEvent` operation-receipt convention: `id = operationId`, `metadata.payloadHash` using the accepted publication `operationHash({ action, actorId, ...request })` canonical semantics, and replayable `metadata.result`; same request replays, conflicting reuse returns `CONFLICTING_REPLAY`, and unknown outcomes return the existing Studio `unknown` result for reconciliation. Do not create another operation table or invent different JSON canonicalisation.
 
 ### Deterministic persistence and file boundary
 
@@ -126,7 +130,7 @@ Produces:
 
 - category/classification identities and category-grouped template discovery;
 - exact published template revision identity/content plus new-authoring selectability semantics for COMMERCE-009 copy-on-use prompt creation;
-- template authoring port for COMMERCE-011 platform UI.
+- template authoring port for COMMERCE-013 template-library UI and COMMERCE-014 platform-prompt template selection.
 
 ## Dependencies
 
@@ -136,16 +140,18 @@ Produces:
 ## Enables
 
 - ARCH-021-COMMERCE-009
-- ARCH-021-COMMERCE-011
+- ARCH-021-COMMERCE-013
+- ARCH-021-COMMERCE-014
 
 ## Acceptance Criteria
 
 - [ ] Platform admins can create/manage data-driven template categories and place multiple templates in one category.
 - [ ] Platform admins can create and version reusable prompt templates.
-- [ ] Published template revisions are immutable.
+- [ ] Empty DRAFT template revisions may be saved; publishing blank/whitespace-only prompt text is rejected.
+- [ ] Published template revisions are immutable and their `contentHash` is SHA-256 of the exact persisted UTF-8 prompt text bytes with no trimming/newline normalisation.
 - [ ] Disabling a category or template prevents normal new selection/assignment, including direct exact-id selection, while preserving historical/provenance reads.
 - [ ] Template edits never propagate into an existing prompt.
-- [ ] Authorization, CAS/replay and audit semantics are tested.
+- [ ] Authorization, CAS, durable operation replay/conflict/unknown-outcome and audit semantics are tested.
 - [ ] No runtime model/provider execution occurs.
 
 ## Validation

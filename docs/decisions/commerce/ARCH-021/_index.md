@@ -65,8 +65,10 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-008](COMMERCE-008-implement-prompt-template-service.md) | Implement category-organised reusable prompt-template service | Pending | DATABASE-001, ARCH-020-COMMERCE-002 |
 | [COMMERCE-009](COMMERCE-009-implement-prompt-lifecycle-service.md) | Implement platform/shop prompt lifecycle and active pointers | Pending | DATABASE-001, COMMERCE-008, ARCH-020-COMMERCE-002 |
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Pending | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
-| [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build platform Agent Configuration Studio domain surface | Pending | COMMERCE-006, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010 |
+| [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Pending | COMMERCE-006, COMMERCE-007 |
 | [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Pending | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
+| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Pending | COMMERCE-008, COMMERCE-011 |
+| [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Pending | COMMERCE-008, COMMERCE-009, COMMERCE-011 |
 
 The sole initial Phase 2 execution frontier is the Database foundation:
 
@@ -84,7 +86,9 @@ multiple templates. Categories are not a code enum. Using a published template r
 its exact text into a prompt draft and records provenance; later category/template changes do not
 mutate that prompt.
 
-Phase 2 also performs an incremental Studio decomposition: COMMERCE-011 creates a dedicated
-Agent Configuration domain screen/module and keeps its state/actions outside `StudioWorkspace`.
-COMMERCE-012 extends that module for selected-shop configuration. Unrelated Studio domains are
-not rewritten merely to reduce `StudioWorkspace` size.
+Phase 2 also performs an incremental Studio decomposition. COMMERCE-011 creates the dedicated
+Agent Configuration route/module and platform model UI. Once that shell exists, COMMERCE-012
+(selected-shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt
+authoring) are independently reviewable UI capabilities with their own service dependencies; they
+must not be artificially serialized. All Agent Configuration state/actions stay outside
+`StudioWorkspace`, and unrelated Studio domains are not rewritten merely to reduce file size.

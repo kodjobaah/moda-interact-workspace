@@ -970,12 +970,14 @@ Phase 1's six Commerce-only tasks for real Connections composition, server-valid
 `shopId` context, production external connection selection and JavaScript response-panel
 installation are architect-accepted Complete.
 
-Phase 2 is now materialised as one cohesive Database task and six Commerce tasks covering
+Phase 2 is now materialised as one cohesive Database task and eight Commerce tasks covering
 the model catalogue/selections, data-driven prompt-template categories with multiple templates
 per category, immutable template/prompt revisions, independent platform/shop model/prompt
-resolution and platform/shop Agent Configuration UI. ARCH-021-DATABASE-001 is the initial
-Ready Phase 2 frontier. The Phase 2 UI incrementally extracts Agent Configuration state from
-`StudioWorkspace` without rewriting unrelated Studio domains. Live model/tool execution and
+resolution, the shared Agent Configuration shell/model UI, selected-shop overrides, the template
+library and platform prompt authoring. Shop override CAS uses immutable row-generation tokens plus
+edit versions so clear/recreate cannot ABA-match stale mutations. ARCH-021-DATABASE-001 is the
+initial Ready Phase 2 frontier. The Phase 2 UI incrementally extracts Agent Configuration state
+from `StudioWorkspace` without rewriting unrelated Studio domains. Live model/tool execution and
 Shared/Background runtime changes remain deferred.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
