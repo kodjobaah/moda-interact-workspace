@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
-executor: copilot
-claimed_at: 2026-09-23T20:44:27Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-008
@@ -242,6 +242,47 @@ None. The accepted COMMERCE-008 mutation semantics and COMMERCE-015 read boundar
 #### Remaining Gaps
 
 The documented repository typecheck and four focused authorization baseline failures remain with their owning tasks. No new diagnostics or failures were introduced in the changed files.
+
+### Attempt 3 Rework
+
+#### Status
+
+Ready for Review
+
+#### Review Corrections
+
+- Preserved independent dirty surfaces by removing the shared mutation-success reset. Successful metadata, category, template, or revision mutations no longer clear unrelated unsaved draft or metadata edits; dirty state is recomputed against the returned persisted template/revision baselines.
+- Prevented stale visible draft text from publishing until the exact text is persisted through the accepted draft mutation boundary.
+- Reconciled successful draft/update/publish revision results into the selected template's revision history immediately, including the published revision/hash summary, and synchronized the visible editor text to the committed revision.
+
+#### Files Changed
+
+- `moda-interact-commerce/src/studio/agent-configuration/prompt-template-library.tsx`
+- `moda-interact-commerce/tests/agent-configuration-template-ui.test.tsx`
+
+#### Validation Results
+
+- PASS: `npm exec vitest run tests/agent-configuration-template-ui.test.tsx` - 1 file, 8 tests passed, including mixed dirty-state preservation, stale-text publication blocking, and immediate revision-history/hash reconciliation.
+- PASS: `npm exec vitest run tests/agent-configuration-production.test.tsx` - 1 file, 1 test passed.
+- PASS: `npm exec eslint src/studio/agent-configuration/prompt-template-library.tsx tests/agent-configuration-template-ui.test.tsx components/production-studio-page.tsx tests/agent-configuration-production.test.tsx`.
+- PASS: `git diff --check`.
+- BASELINE: `npm run typecheck` still exits 1 on existing commerce/database and integration/test diagnostics; no diagnostics were reported in the two Attempt 3 changed files.
+
+#### Deviations
+
+None. COMMERCE-008/015 contracts remain unchanged; no direct database reads, provider execution, runtime changes, COMMERCE-014 work, or `StudioWorkspace` domain state were added.
+
+#### Remaining Gaps
+
+The repository-wide typecheck baseline remains documented above. Focused Attempt 3 UI, production composition, lint, and patch-format validation are green.
+
+#### Unresolved Issues
+
+None within the bounded Attempt 3 scope.
+
+#### Architectural Concerns
+
+None.
 
 ## Architect Review
 
