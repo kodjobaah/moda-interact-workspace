@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -51,7 +51,7 @@ The U15/U16 frontend is already implemented and well covered through injected fi
 - Replace production use of `createConnectionFixtures()` in `/connections` and `/connections/[id]` with the production port from ARCH-021-COMMERCE-001.
 - Preserve the existing injectable `ConnectionsPage` component boundary so fixture-based component tests remain possible.
 - Preserve list search, enabled filtering, pagination, detail revision selection, credential status, mutation replay, dirty-state guards and role presentation.
-- Preserve route return state and `returnTo` behaviour already accepted under ARCH-020.
+- Implement the missing Connections-side `returnTo` handoff required by ARCH-020 XN02. `/connections` and `/connections/[id]` must accept a validated internal Studio return destination from U06, carry it across U15/U16 navigation together with list return state, and expose a navigation-blocker-aware return action to that exact destination.
 - Ensure fixture factories are imported only by tests/dev fixtures, not by production route composition.
 
 ## Out of Scope
@@ -61,6 +61,7 @@ The U15/U16 frontend is already implemented and well covered through injected fi
 - Tool editor connection selection.
 - Live external/Shopify requests.
 - Prompt/model configuration.
+- Changes to U06's existing `returnTo` producer; ARCH-020-COMMERCE-023 already owns and emits that handoff.
 - Redesigning U15/U16 styling or fields.
 
 ## Requirements
@@ -71,6 +72,11 @@ The U15/U16 frontend is already implemented and well covered through injected fi
 - Unknown mutation outcomes continue to retain the exact original operation/payload for reconciliation.
 - Credential secret values must never be loaded back into the browser after save.
 - Existing ADMIN read-only and SUPER_ADMIN mutation behaviour remains unchanged.
+- Both Connections routes accept an optional `returnTo` query value and pass only a validated internal Studio-relative destination into client navigation state.
+- A valid `returnTo` starts with exactly one `/`; protocol-relative (`//...`) and absolute/schemed destinations are not followed and fall back to normal Connections navigation.
+- `returnTo` is navigation context only: do not persist it in browser storage or durable state.
+- U15 -> U16 Open, successful Create -> U16, U16 -> U15, and U16 tab/navigation transitions must retain the exact validated `returnTo` while continuing to preserve `search`, `cursor` and `enabled` list state.
+- When `returnTo` is present, U15/U16 must expose a navigation-blocker-aware return action that routes to that exact origin. The existing U16 Back-to-U15 behaviour remains list-state-preserving rather than being replaced by the origin return.
 
 ## Work Items
 
@@ -79,6 +85,9 @@ The U15/U16 frontend is already implemented and well covered through injected fi
 - [x] Add route/composition tests proving production list/detail reads come from the production adapter.
 - [x] Add a regression that fails if production route code imports/instantiates the fixture factory.
 - [x] Re-run existing U15/U16 frontend tests against fixture injection to prove no component behaviour regressed.
+- [ ] Parse, validate and propagate the optional Connections `returnTo` through both route pages, `ConnectionsRouteClient` and `ConnectionsPage`.
+- [ ] Preserve `returnTo` across U15/U16 navigation without dropping `search`, `cursor` or `enabled`, and add the guarded return-to-origin action.
+- [ ] Add focused regressions for U06-style U15/U16 return handoff and rejection/fallback of non-internal return destinations.
 
 ## Interfaces / Contracts
 
@@ -89,9 +98,10 @@ Consumes:
 
 Produces:
 
-- production-backed Connections routes.
+- production-backed Connections routes;
+- the Connections-side consumer of the existing ARCH-020 U06 `returnTo` route handoff.
 
-No new runtime contract is introduced.
+No new cross-service runtime contract is introduced. This task completes an existing Studio route/navigation contract that ARCH-020-COMMERCE-023 already produces.
 
 ## Dependencies
 
@@ -109,11 +119,15 @@ None within Phase 1. This task may execute in parallel with the shop-context bra
 - [ ] PER_SHOP credential search/status/set/remove operates against real shop/credential services while exposing no secret values.
 - [ ] `createConnectionFixtures()` is absent from production route composition and remains available to tests.
 - [ ] Existing U15/U16 role, CAS, unknown-result and navigation behaviours remain passing.
+- [ ] `/connections?returnTo=<encoded internal Studio route>` and `/connections/[id]?returnTo=<encoded internal Studio route>` both retain and can return to the exact validated origin through the Studio navigation blocker.
+- [ ] U15 -> U16 -> U15 round trips preserve `returnTo` together with exact `search`, `cursor` and `enabled` state.
+- [ ] Absolute, schemed or protocol-relative `returnTo` values are not used as navigation destinations.
 
 ## Validation
 
 - [ ] existing `test:arch020-connections-ui` or current equivalent
 - [ ] focused production route/composition test
+- [ ] focused `returnTo` navigation/round-trip regression
 - [ ] targeted lint/typecheck for changed files
 - [ ] `git diff --check`
 
@@ -126,6 +140,8 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 ## Implementation Notes
 
 Do not collapse frontend fixture tests into database integration tests. Keep the existing component port injection and add only the production composition proof needed by this task.
+
+ARCH-020 established the producer side of the Tool -> Connections handoff but did not implement the Connections consumer: COMMERCE-023 emits `/connections[/<id>]?returnTo=<encoded tool route>` and explicitly does not edit U15/U16 internals. Treat `returnTo` here as an internal navigation destination, not as arbitrary URL data. Preserve it independently from the U15 list-return tuple (`search`, `cursor`, `enabled`).
 
 ## Completion Report
 
@@ -205,24 +221,63 @@ Published commits:
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 was reviewed against ARCH-021 Phase 1, ARCH-020's C21 Connections/tool-authoring contract, implementation `267f3bd`, parent report `2e19a6f`, and the supplied combined review archive.
+
+The production-port composition is correct in substance: `ConnectionsRouteClient` no longer imports or instantiates `createConnectionFixtures()`, it supplies a stable `ConnectionPort` backed by the accepted COMMERCE-001 server actions, and `ConnectionsPage` remains directly injectable for fixture/component tests. The submitted focused composition coverage proves list/get delegation and fixture exclusion, and no task-owned regression was found in that wiring.
+
+The task cannot be accepted because the `returnTo` navigation contract is not implemented. The task text incorrectly said to preserve `returnTo` behaviour already accepted under ARCH-020. ARCH-020-COMMERCE-023 actually owns only the producer side: U06 constructs `/connections/<connectionId>?returnTo=<encoded exact tool revision>` (or `/connections?returnTo=...`) and explicitly does not edit U15/U16 internals. ARCH-020's C21 architecture nevertheless requires `U06 external -> U16 -> Return -> U06`. In the submitted source, both Connections pages parse only `search`, `cursor` and `enabled`; `ConnectionsRouteClient`/`ConnectionsPage` accept no `returnTo`; U15/U16 navigation therefore drops it and there is no return-to-origin action.
+
+The architect has corrected the task contract above rather than creating a new task. This is within COMMERCE-002's existing navigation scope and is the missing consumer half of the already-defined ARCH-020 route handoff.
+
+The submitted Acceptance Criteria and Validation checkboxes also remain unchecked. They are executor-owned evidence and must be reconciled in Attempt 2 after the correction is implemented; do not create a documentation-only attempt just to tick them.
+
+The reported broad typecheck baseline and unrelated lifecycle development-bypass failure do not block this review provided Attempt 2 does not worsen them.
 
 ### Reviewed Files
 
-None
+- `app/connections/page.tsx`
+- `app/connections/[id]/page.tsx`
+- `src/studio/connections/connections-route-client.tsx`
+- `src/studio/connections/connections-ui.tsx`
+- `src/studio/connections/server-actions.ts`
+- `src/studio/connections/production.ts`
+- `components/studio-composer-context.tsx`
+- `components/studio-workspace.tsx`
+- `tests/connections-route-composition.test.tsx`
+- `tests/connections-ui.test.tsx`
+- `tests/connections-production.test.ts`
+- `tests/external-tools-ui.test.tsx`
+- `docs/architecture/ARCH-020-external-api-tools.md`
+- `docs/decisions/commerce/ARCH-020/COMMERCE-022-build-connections-pages-u15-u16.md`
+- `docs/decisions/commerce/ARCH-020/COMMERCE-023-build-external-tool-authoring-and-filter-editor.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Submitted `npm run test:arch020-connections-ui`: 20 passed.
+- Submitted `npx vitest run tests/connections-production.test.ts tests/connections-route-composition.test.tsx`: 6 passed.
+- Submitted targeted ESLint: passed.
+- Submitted `git diff --check`: passed.
+- Submitted repository typecheck: retained unrelated existing diagnostics; no changed-route diagnostic reported.
+- Submitted lifecycle validation: 13/14 with the reported unrelated development-bypass baseline failure.
+- Static review of the supplied archive independently confirmed that production Connections route composition contains no `createConnectionFixtures()` import/use and that current U15/U16 pages/components contain no `returnTo` consumer.
+- The archive contains no `node_modules`, so the architect did not rerun the submitted Node test commands in the review container.
 
 ### Architecture Conformance
 
-Pending
+Changes required. The production ConnectionPort wiring conforms to COMMERCE-001 and the Phase 1 service-wiring boundary, but the current route/navigation composition does not conform to ARCH-020 XN02 because the existing U06 `returnTo` handoff has no Connections-side consumer.
 
 ### Follow-up
 
-None
+Attempt 2 must make only the bounded correction below, then return the same task to review:
+
+1. Parse optional `returnTo` in both `/connections` and `/connections/[id]` and pass it through the serializable route/client boundary.
+2. Accept only an internal Studio-relative destination (single leading `/`; reject/ignore `//...`, schemes and absolute URLs) before it can be supplied to `requestNavigation`.
+3. Carry the validated `returnTo` through U15 -> U16 Open, successful Create -> U16, U16 -> U15, and U16 tab/navigation transitions while preserving the exact independent `search`/`cursor`/`enabled` list-return tuple.
+4. Add a blocker-aware return-to-origin action on U15/U16 when `returnTo` is present. Do not replace U16's existing Back-to-U15 list-state behaviour with this action.
+5. Add focused tests proving the U06-style direct-U16 and U15 fallback handoffs return to the exact tool revision, U15/U16 round trips retain both `returnTo` and list state, and invalid external/protocol-relative destinations are not followed.
+6. Reconcile the executor-owned Acceptance Criteria, Validation checkboxes and Completion Report for Attempt 2. Preserve the already-correct production-port work; no unrelated refactor is requested.

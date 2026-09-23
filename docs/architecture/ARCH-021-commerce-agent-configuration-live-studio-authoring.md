@@ -502,7 +502,9 @@ introduces no new Database/Shared/Background contract.
 Phase 1 establishes these invariants:
 
 1. `/connections` and `/connections/[id]` use the real connection lifecycle and
-   credential services; fixture ports remain test-only.
+   credential services; fixture ports remain test-only. They also consume the existing
+   ARCH-020 U06 `returnTo` handoff as validated internal Studio navigation context, while
+   preserving the independent U15 `search`/`cursor`/`enabled` return state.
 2. Studio has one explicit selected-shop context identified by `shopId` URL/navigation
    state and resolved server-side from the persisted Commerce shop.
 3. The selected-shop context reports offline Shopify-session availability without ever
@@ -538,19 +540,21 @@ Phase 1 tasks:
 | ARCH-021-COMMERCE-001 | moda_commerce | Complete | ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-024, ARCH-020-COMMERCE-028 |
 | ARCH-021-COMMERCE-002 | moda_commerce | Ready | ARCH-021-COMMERCE-001, ARCH-020-COMMERCE-022 |
 | ARCH-021-COMMERCE-003 | moda_commerce | Complete | ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-018 |
-| ARCH-021-COMMERCE-004 | moda_commerce | ready | ARCH-021-COMMERCE-003 |
+| ARCH-021-COMMERCE-004 | moda_commerce | Ready | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Pending | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
 | ARCH-021-COMMERCE-006 | moda_commerce | Pending | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 
 Current executable frontier:
 
 ```text
-ARCH-021-COMMERCE-002   install the production ConnectionPort into U15/U16 routes
-ARCH-021-COMMERCE-003   server-validated shop execution context
+ARCH-021-COMMERCE-002   Attempt 2: complete Connections-side returnTo after production-port wiring
+ARCH-021-COMMERCE-004   Studio-wide selected-shop navigation context
 ```
 
-Those tasks are independent and may execute in parallel. No task is automatically
-launched merely because it is Ready.
+Those tasks are independent and may execute in parallel. COMMERCE-002's production-port
+composition passed architectural inspection in Attempt 1, but the task remains Ready
+because the pre-existing U06 `returnTo` producer has no Connections-side consumer. No
+task is automatically launched merely because it is Ready.
 
 Phase 1 exit criteria:
 
@@ -643,6 +647,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-002 Attempt 1 changes requested
+
+- Confirmed the production U15/U16 wrapper now uses the accepted COMMERCE-001 server-backed `ConnectionPort` and no longer composes fixtures.
+- Identified an ARCH-020 navigation-contract gap: COMMERCE-023 emits `returnTo` from U06, but U15/U16 never implemented the consumer required for XN02 return-to-source behaviour.
+- Corrected COMMERCE-002 to own validated internal `returnTo` parsing, U15/U16 propagation, guarded return-to-origin navigation and focused regression proof.
+- Returned COMMERCE-002 to Ready at `attempt: 1`; COMMERCE-004 remains independently Ready.
 
 ### 2026-09-23 — COMMERCE-001 accepted
 

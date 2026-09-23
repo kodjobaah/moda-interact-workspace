@@ -28,24 +28,17 @@ Shared contracts, Background changes or live provider execution.
 
 ## Execution frontier
 
-COMMERCE-001 is architect-accepted Complete. The current Ready frontier is:
+COMMERCE-001 and COMMERCE-003 are architect-accepted Complete. The current Ready
+frontier is:
 
 ```text
-ARCH-021-COMMERCE-002   install the production ConnectionPort into U15/U16 routes
-ARCH-021-COMMERCE-003   server-validated shop execution context
-```
-
-They are independent and may execute in parallel in separate canonical task worktrees.
-Readiness does not automatically launch either task.
-COMMERCE-003 is architect-accepted Complete. The current Ready frontier is:
-
-```text
-ARCH-021-COMMERCE-001   production Connections server-boundary correction/review path
+ARCH-021-COMMERCE-002   Attempt 2: complete Connections-side returnTo handoff after production-port wiring
 ARCH-021-COMMERCE-004   Studio-wide selected-shop navigation context
 ```
 
-They are independent at this point and may execute/rework in separate canonical task
-worktrees. Readiness does not automatically launch either task.
+They are independent and may execute in parallel in separate canonical task worktrees.
+COMMERCE-002 remains the same task at `attempt: 1`; the next authorised claim creates
+Attempt 2. Readiness does not automatically launch either task.
 
 ## Phase 1 dependency graph
 
