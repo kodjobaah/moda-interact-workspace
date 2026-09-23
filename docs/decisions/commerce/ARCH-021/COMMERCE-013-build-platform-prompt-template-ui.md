@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 72
 executor: null
 claimed_at: null
@@ -209,11 +209,11 @@ None
 
 ### Review Status
 
-Blocked
+Changes Requested
 
 ### Review Notes
 
-Attempt 1 established the platform template-library surface but cannot complete its required durable DRAFT/history behavior using the original COMMERCE-008 read contract. COMMERCE-015 was created to expose the missing read-only revision enumeration contract and remains the blocking dependency until architect-accepted Complete.
+Attempt 1 was initially blocked because the accepted COMMERCE-008 read contract could not enumerate durable template revision history. COMMERCE-015 now supplies that bounded read contract and is architect-accepted Complete, so the dependency block is resolved and this same task is returned to `ready` with `attempt: 1` retained.
 
 The earlier implementation review also identified three UI corrections that remain part of the next COMMERCE-013 attempt after unblocking: selected-template metadata state must not leak across template selection; unsaved template changes must participate in the internal template-switch dirty/discard guard; and production composition must have a focused regression proving the real template server actions are supplied to Agent Configuration.
 
@@ -230,11 +230,11 @@ Attempt 1 focused UI/service/auth validation was reviewed. The implementation co
 
 ### Architecture Conformance
 
-Blocked only on the explicit COMMERCE-015 service dependency and the bounded UI corrections above. COMMERCE-013 must not bypass the service boundary with direct Prisma reads.
+The explicit COMMERCE-015 service dependency is now satisfied. The remaining work is limited to the bounded UI corrections above; COMMERCE-013 must consume the accepted COMMERCE-015 read boundary and must not bypass it with direct Prisma reads.
 
 ### Follow-up
 
-After COMMERCE-015 is architect-accepted Complete, return this same task to `ready` with `attempt: 1` retained. Attempt 2 must:
+COMMERCE-015 is architect-accepted Complete and this task is now `ready` with `attempt: 1` retained. Attempt 2 must:
 
 - consume `listPromptTemplateRevisions({ templateId })`;
 - resume/display durable DRAFT and PUBLISHED revision history after refresh/reopen;

@@ -977,8 +977,7 @@ resolution, the shared Agent Configuration shell/model UI, selected-shop overrid
 library and platform prompt authoring. COMMERCE-015 is the bounded read-contract completion task
 for durable prompt-template revision history. Shop override CAS uses immutable row-generation tokens plus
 edit versions so clear/recreate cannot ABA-match stale mutations. DATABASE-001, COMMERCE-007 and
-COMMERCE-011 are architect-accepted Complete; COMMERCE-008 is architect-accepted Complete. COMMERCE-015 is Ready only for execution-evidence
-reconciliation; COMMERCE-013 remains Blocked on COMMERCE-015, while the other Phase 2 tasks follow
+COMMERCE-011 are architect-accepted Complete; COMMERCE-008 and COMMERCE-015 are architect-accepted Complete. COMMERCE-013 is Ready for Attempt 2 now that the bounded revision-history read dependency is satisfied, while the other Phase 2 tasks follow
 their explicit dependencies. The Phase 2 UI incrementally
 extracts Agent Configuration state from `StudioWorkspace` without rewriting unrelated Studio
 domains. Live model/tool execution and Shared/Background runtime changes remain deferred.

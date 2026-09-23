@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 41
 executor:
 claimed_at:
@@ -246,17 +246,15 @@ None
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 is substantively architecture-conformant. The implementation adds exactly the bounded read contract requested by the task: `TemplatePort.listRevisions({ templateId })`, one direct `CommercePromptTemplateRevision.findMany` query scoped by `templateId` and ordered by `revisionNumber DESC, id ASC`, and one `requireStudioAdmin` server action. It reuses `PromptTemplateRevision`, returns DRAFT and PUBLISHED history without enabled-state filtering, naturally returns `[]` for an unknown template id, creates no audit receipt, and does not change accepted COMMERCE-008 mutation/replay/CAS/publish/selectability behavior.
+Attempt 2 supplies the exact prepared-execution evidence requested after Attempt 1. The recorded launcher state shows canonical sibling parent and implementation worktrees, matching `task/ARCH-021-COMMERCE-015` branches, start-of-attempt synchronization, an Attempt 2 claim committed and pushed in the parent branch, and recursive implementation-submodule materialisation with `database` recorded at `98fdf715e54fe6df92ac6951facd104e410068f2`.
 
-Comparison with the pre-COMMERCE-015 snapshot shows the runtime change is limited to the new port method, service read, authenticated server action and focused regressions. No schema/UI/provider-execution work was introduced.
+The implementation remains substantively identical to the already-conformant Attempt 1 submission: the five task-owned implementation/test files are byte-identical between the Attempt 1 and Attempt 2 review archives. No source or test churn was introduced merely to satisfy the workflow correction.
 
-The task cannot yet be accepted because the Completion Report does not record the prepared-execution evidence required by `docs/agent-worktree-isolation-policy.md`: launcher-resolved parent worktree, implementation worktree, matching task branches, start-of-attempt synchronization, and recursive submodule materialisation/evidence. The supplied review archive contains the parent task snapshot but does not provide those launcher packet values, so the architect must not invent them.
-
-No source or test changes are requested unless the missing evidence reveals execution outside the canonical task worktrees.
+The accepted capability remains exactly the bounded COMMERCE-015 contract: `TemplatePort.listRevisions({ templateId })`, deterministic one-template revision enumeration ordered by `revisionNumber DESC, id ASC`, and one ADMIN-authenticated read action. It reuses `PromptTemplateRevision`, exposes DRAFT/PUBLISHED history regardless of enabled state, returns `[]` for an unknown template id, creates no audit receipt, and does not modify COMMERCE-008 mutation/replay/CAS/publish/selectability semantics.
 
 ### Reviewed Files
 
@@ -269,23 +267,17 @@ No source or test changes are requested unless the missing evidence reveals exec
 
 ### Validation Reviewed
 
-- Reported focused Vitest run: 2 files / 9 tests passed.
-- Reported targeted ESLint: passed.
-- Reported `git diff --check`: passed.
-- Repository typecheck remains non-green only on documented pre-existing diagnostics; no new revision-history diagnostic is reported.
+- Attempt 2 reported focused Vitest: 2 files / 9 tests passed.
+- Attempt 2 reported targeted ESLint: passed.
+- Attempt 2 reported `git diff --check`: passed.
+- Task-owned TypeScript filtering reports no new revision-history diagnostics; only the documented existing `prompt-template-service.ts` baseline diagnostics remain.
+- Prepared execution evidence reviewed: canonical parent/implementation worktrees, matching task branches, start-of-attempt synchronization, Attempt 2 claim commit `3564d819aa5b6e3d237096c80f3b0d96481f4b2f`, recursive submodule sync/update, and database submodule commit `98fdf715e54fe6df92ac6951facd104e410068f2`.
 - The supplied archive does not include `node_modules`, so the architect did not independently rerun Vitest/ESLint.
 
 ### Architecture Conformance
 
-Implementation: conformant.
-
-Workflow evidence: incomplete. Acceptance is withheld only until the canonical prepared-worktree/synchronization/submodule evidence is durably recorded.
+Conformant. The implementation and execution evidence now satisfy the task contract and the architect worktree-isolation protocol. No mutation semantics, schema, UI, provider execution or unrelated repository ownership were changed.
 
 ### Follow-up
 
-For Attempt 2, do not change implementation source merely to create a new code commit.
-
-1. If Attempt 1 already ran in the launcher-prepared canonical parent and implementation worktrees, copy the exact launcher-provided physical worktree, branch, synchronization and recursive-submodule evidence into the Completion Report.
-2. If Attempt 1 did not run in those canonical worktrees, restore/create the canonical task worktrees, check out the already-pushed `task/ARCH-021-COMMERCE-015` implementation there, rerun the task-required validation, and record the resulting evidence.
-3. Set the task back to `review` with the corrected Completion Report and no active executor claim.
-4. Do not begin COMMERCE-013 automatically. It remains blocked until COMMERCE-015 is architect-accepted Complete.
+COMMERCE-015 is Complete. Its dependency gate on ARCH-021-COMMERCE-013 is satisfied. Return COMMERCE-013 to `ready` with `attempt: 1` retained; its next claim becomes Attempt 2 and must execute the bounded UI correction contract already recorded in that task's Architect Review. Do not start COMMERCE-013 automatically from this acceptance.
