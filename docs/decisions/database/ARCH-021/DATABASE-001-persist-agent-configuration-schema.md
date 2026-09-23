@@ -863,7 +863,6 @@ Ready for Review
 - PASS: `git diff --check`
 - BLOCKED by unavailable prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_fresh npm run test:arch021-agent-configuration-migration -- --mode fresh`; `pg_isready -h localhost -p 5432` returned `no response`, and the validator failed before migration with `Can't reach database server at localhost:5432`.
 - BLOCKED by the same unavailable loopback PostgreSQL prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_upgrade npm run test:arch021-agent-configuration-migration -- --mode upgrade`; no database connection or migration was attempted beyond the validator's initial connection.
-- NOT RERUN: `npm run test:arch020-commerce-capability-migration`, because its isolated PostgreSQL prerequisite was unavailable.
 - PASS: existing `npm run test:arch020-commerce-capability-schema` now requires the original 17 actions in order and permits the required appended ARCH-021 actions.
 - BLOCKED: existing `npm run test:arch020-commerce-capability-migration` because isolated loopback PostgreSQL was unavailable; no ARCH-020 migration was changed.
 
@@ -883,7 +882,7 @@ Ready for Review
 
 ### Architectural Concerns
 
-- The ARCH-020 schema validator should be revised by its owning task/domain to compare its historical action subset or explicitly include ARCH-021 extensions; it currently fails on any required additive audit enum value.
+- None for Attempt 2. The explicitly authorized ARCH-020 static-validator compatibility correction is implemented; its fixture contract and migration remain unchanged.
 
 ## Architect Review
 
