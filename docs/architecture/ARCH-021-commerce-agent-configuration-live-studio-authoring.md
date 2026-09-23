@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 intentionally unmaterialised.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 task set defined; ARCH-021-DATABASE-001 is Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -215,6 +215,59 @@ New conversations use the newest effective configuration.
 
 This snapshotting does not make the release the owner of either setting.
 
+### D7 — prompt templates are authoring inputs, not runtime configuration
+
+Commerce Studio may provide reusable **application-wide prompt templates** maintained by
+platform administrators. A template is not itself an active CommerceAgent prompt and is
+not associated with a feature or model.
+
+Using a template means:
+
+```text
+published template revision
+        |
+        v
+copy exact text into a new prompt draft
+        |
+        +--> record sourceTemplateRevisionId for provenance
+```
+
+The resulting prompt draft/revision is independent. Publishing a newer template revision,
+editing the template or disabling it must not mutate any platform/shop prompt previously
+created from it. Active prompt pointers always reference published **prompt revisions**,
+never template revisions.
+
+Phase 2 supports platform-wide templates only. Merchant/shop-owned reusable template
+libraries are deferred to the merchant-access phase unless later product requirements make
+them necessary.
+
+### D8 — prompt templates use a data-driven category/classification taxonomy
+
+Each reusable prompt template belongs to one platform-managed category/classification.
+Categories are durable data, not a code/Prisma enum. A category such as:
+
+```text
+Clothing & Fashion
+```
+
+may contain multiple prompt templates. New categories, category renames and category
+disablement must not require an application/schema release. Category identity is stable;
+disabling a category affects normal new authoring selection but does not delete existing
+templates/revisions or invalidate prompt provenance.
+
+The Phase 2 template library must support listing/filtering/grouping templates by category.
+Merchant-owned categories/templates remain deferred with merchant access.
+
+### D9 — Studio refactoring is incremental and domain-driven
+
+Phase 2 must not turn `StudioWorkspace` into the owner of model, prompt, category or template
+editor state. The new Agent Configuration surface gets a dedicated domain screen/module and
+`StudioWorkspace` remains shell/navigation/orchestration for that surface.
+
+This is **not** a wholesale Studio rewrite. Only code touched by the Phase 2 Agent
+Configuration surface is extracted. Tools, Releases, Explore and other unrelated Studio
+domains remain in place until their own phase requires change.
+
 ## Resolution Semantics
 
 Model and prompt fallback are independent.
@@ -292,6 +345,21 @@ shop model override                # optional per shop
 ```
 
 The shop override is removable, returning that shop to inheritance.
+
+### Prompt-template categories and immutable template revisions
+
+Platform administrators may maintain data-driven application-wide prompt-template categories.
+Each category has a stable identity/slug plus display metadata and can contain multiple
+template identities. Every template belongs to exactly one category. Categories may be
+enabled/disabled without deleting historical templates/revisions.
+
+Within a category, platform administrators may maintain reusable template identities with
+versioned draft/published revisions. Published template revision content is immutable.
+Templates may be enabled/disabled for new selection without deleting historical revisions.
+
+When a prompt draft is created from a template, the exact template revision content is
+copied and the resulting prompt revision may retain `sourceTemplateRevisionId` as audit
+provenance. There is no live inheritance/linkage after the copy.
 
 ### Prompt lineage and immutable revisions
 
@@ -390,6 +458,10 @@ separate from Features.
 Platform administrators can:
 
 - view/edit/publish the platform CommerceAgent prompt;
+- create/rename/enable/disable prompt-template categories/classifications;
+- create/version/disable multiple reusable application-wide prompt templates within each category;
+- filter/group templates by category when creating a platform or shop prompt draft;
+- create a platform or shop prompt draft by copying one exact published template revision;
 - select the platform default model from enabled Moda catalogue entries;
 - see the currently active prompt/model and their revision/identity.
 
@@ -553,8 +625,7 @@ None — Phase 1 implementation set is architect-accepted Complete.
 COMMERCE-001 through COMMERCE-006 are Complete. Attempt 4 closes the final U06
 saved-vs-unsaved/publication-integrity gap by preventing JavaScript saves and enclosing
 full-draft saves from bypassing invalid visible execution-definition JSON buffers. The
-Phase 1 exit criteria below are satisfied. Phase 2 remains intentionally unmaterialised
-until its bounded task set is explicitly defined.
+Phase 1 exit criteria below are satisfied. Phase 2 is now materialised as the bounded task set defined below; `ARCH-021-DATABASE-001` is the initial executable frontier.
 
 Phase 1 exit criteria:
 
@@ -570,8 +641,78 @@ Phase 1 exit criteria:
 
 ### Phase 2 — model catalogue and platform/shop agent configuration
 
-Implement model catalogue, model selection, prompt lineage/revisions/pointers and the
-Agent Configuration Studio surface.
+Phase 2 persists and authors CommerceAgent model/prompt configuration without yet changing
+preview, manifest, grant, Shared runner or Background execution. It also introduces a
+category-organised application-wide prompt-template library as copy-on-use authoring input.
+
+Phase 2 invariants:
+
+1. Model catalogue identity is platform-owned and contains no provider credentials.
+2. Platform model default and shop model override are environment-scoped and independently
+   mutable from prompt configuration.
+3. There is one platform behavioural-prompt lineage and at most one lineage per shop.
+4. Published prompt revisions are immutable; active pointers are environment-scoped.
+5. Prompt-template categories are data-driven platform records, not enums. One category may
+   contain multiple templates and every template belongs to exactly one category.
+6. Platform admins may maintain reusable application-wide prompt templates with immutable
+   published revisions. `Use template` copies text into a prompt draft and records provenance;
+   category/template changes never mutate the copied prompt.
+7. Effective model and prompt are resolved independently as shop override -> platform
+   default and expose their source as `SHOP` or `PLATFORM`.
+8. A missing override inherits. A broken explicit override fails closed and does not silently
+   inherit.
+9. Phase 2 introduces a dedicated Agent Configuration domain screen/module. New model/prompt/
+   category/template editor state must not be accumulated inside `StudioWorkspace`; unrelated
+   Studio domains are not rewritten merely for file-size reduction.
+10. Phase 2 does not remove the legacy ARCH-020 capability prompt yet because the current
+    preview/runtime still consumes it. Runtime migration occurs in later phases.
+11. No Phase 2 task performs OpenAI/Groq execution or live Shopify/external tool execution.
+12. No Shared/Background contract is published in Phase 2; the exact frozen cross-service
+    grant/manifest shape is deferred until runtime integration.
+
+Phase 2 tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-DATABASE-001 | moda_database | Ready | ARCH-020-DATABASE-001 |
+| ARCH-021-COMMERCE-007 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-008 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
+
+The initial Phase 2 execution frontier is one cohesive Database task:
+
+```text
+ARCH-021-DATABASE-001   complete Phase 2 CommerceAgent configuration schema
+```
+
+It introduces model catalogue/selections, template categories/templates/revisions, prompt
+lineages/revisions and active prompt pointers in one coherent migration. After architect
+acceptance, COMMERCE-007, COMMERCE-008 and COMMERCE-009 can proceed against the same accepted
+schema. Phase 1 is already architect-accepted Complete, so the remaining gates are only the
+explicit Phase 2 dependencies above.
+
+Phase 2 exit criteria:
+
+- durable model catalogue exists with no provider credentials;
+- environment-scoped platform/shop model selections exist with independent CAS;
+- data-driven prompt-template categories/classifications exist and each can contain multiple
+  reusable templates;
+- reusable application-wide prompt templates and immutable revisions exist;
+- one platform and at most one per-shop prompt lineage exist with immutable published
+  revisions and optional copy-on-use template provenance;
+- environment-scoped platform/shop prompt pointers exist with independent CAS;
+- Commerce resolves effective model/prompt independently and reports source;
+- explicit broken overrides fail closed;
+- production Studio exposes platform and selected-shop Agent Configuration backed by real
+  services, including category-organised template browsing and template-based prompt drafts;
+- Agent Configuration domain state/actions live outside `StudioWorkspace`, while unrelated
+  Studio domains are not opportunistically refactored;
+- legacy capability prompt/runtime behaviour remains untouched;
+- no live provider/model/tool call is introduced;
+- all Phase 2 tasks are architect-accepted Complete.
 
 ### Phase 3 — complete tool authoring
 
@@ -608,9 +749,13 @@ fixture/per-capability-prompt behaviour while retaining deterministic test fixtu
 
 ## Decisions / Tasks
 
-Phase 1 is materialised as six Commerce tasks under:
+Phase 1 is materialised as six Commerce tasks under `docs/decisions/commerce/ARCH-021/`.
+Phase 2 is materialised across:
 
-`docs/decisions/commerce/ARCH-021/`
+```text
+docs/decisions/database/ARCH-021/
+docs/decisions/commerce/ARCH-021/
+```
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
@@ -620,12 +765,19 @@ Phase 1 is materialised as six Commerce tasks under:
 | ARCH-021-COMMERCE-004 | moda_commerce | Complete | ARCH-021-COMMERCE-003 |
 | ARCH-021-COMMERCE-005 | moda_commerce | Complete | ARCH-021-COMMERCE-001, ARCH-021-COMMERCE-004, ARCH-020-COMMERCE-023 |
 | ARCH-021-COMMERCE-006 | moda_commerce | Complete | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
+| ARCH-021-DATABASE-001 | moda_database | Ready | ARCH-020-DATABASE-001 |
+| ARCH-021-COMMERCE-007 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-008 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
+| ARCH-021-COMMERCE-011 | moda_commerce | Pending | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010 |
+| ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 
-Later phases are intentionally not decomposed yet. Expected later owners still include:
+Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
-- `moda_database` for durable model/prompt configuration and grant fields;
+- `moda_database` for conversation/preview frozen model/prompt fields;
 - `moda_shared` for grant/manifest/runner contract changes;
-- `moda_commerce` for Agent Configuration, live Tool tests, MCP resolution and preview;
+- `moda_commerce` for live Tool tests, MCP resolution and preview;
 - `moda_background` for pinned model/prompt consumption;
 - `moda_system_test` only after the required implementation dependencies are Complete.
 
@@ -637,6 +789,7 @@ The following are deliberately deferred beyond the Phase 0 ownership contract:
 
 - which exact OpenAI/Groq models Moda initially exposes in the catalogue;
 - whether merchants may select shop model overrides or only edit prompts;
+- whether merchants later receive shop-owned reusable prompt-template libraries;
 - catalogue entitlement/tier restrictions;
 - retention period for old prompt revisions;
 - whether preview conversation state remains Redis TTL state or gains durable preview
@@ -647,6 +800,16 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — Phase 2 task set defined
+
+- Combined all Phase 2 Database schema work into one cohesive `ARCH-021-DATABASE-001` migration/task covering model catalogue/selections, prompt-template categories/templates/revisions, prompt lineages/revisions and active pointers.
+- Added a data-driven prompt-template category/classification taxonomy: every template belongs to one category and a category such as `Clothing & Fashion` may contain multiple templates without code/schema enum changes.
+- Kept prompt templates as copy-on-use authoring assets independent of models/features and retained immutable template/prompt revision semantics.
+- Defined Commerce services for model lifecycle, category/template lifecycle, prompt lifecycle and effective configuration resolution.
+- Defined separate platform and selected-shop Agent Configuration UI tasks and made incremental `StudioWorkspace` decomposition an explicit Phase 2 requirement: Agent Configuration gets its own domain module while unrelated Studio domains remain untouched.
+- Kept Shared grant/manifest/runner changes, Background execution and all live provider/tool execution out of Phase 2.
+- Phase 1 is already architect-accepted Complete; `ARCH-021-DATABASE-001` is the sole initial Phase 2 Ready frontier.
 
 ### 2026-09-23 — COMMERCE-006 Attempt 4 accepted; Phase 1 complete
 

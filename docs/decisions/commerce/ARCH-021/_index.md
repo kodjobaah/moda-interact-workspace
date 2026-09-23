@@ -35,8 +35,7 @@ remaining executable implementation task.
 Phase 1 frontier: none — implementation set complete
 ```
 
-The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 remains intentionally
-unmaterialised; no later-phase task becomes Ready merely because Phase 1 is complete.
+The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is now materialised below. Its Commerce tasks remain dependency-gated; the initial executable frontier is the Database foundation `ARCH-021-DATABASE-001`.
 
 ## Phase 1 dependency graph
 
@@ -52,5 +51,40 @@ ARCH-021-COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005 -> COMMERCE-006
 ```
 
 Phase 1 is architect-accepted Complete: COMMERCE-001 through COMMERCE-006 are Complete
-and the parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is not materialised
-by this index.
+and the parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is materialised below
+with DATABASE-001 as the initial Ready frontier.
+
+## Phase 2 — model catalogue and platform/shop Agent Configuration
+
+Phase 1 is architect-accepted Complete. Phase 2 adds the new Agent Configuration domain without
+reopening the accepted Connections/shop-context/Tool-authoring composition.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-007](COMMERCE-007-implement-model-configuration-service.md) | Implement model catalogue/default/shop-override service | Pending | DATABASE-001, ARCH-020-COMMERCE-002 |
+| [COMMERCE-008](COMMERCE-008-implement-prompt-template-service.md) | Implement category-organised reusable prompt-template service | Pending | DATABASE-001, ARCH-020-COMMERCE-002 |
+| [COMMERCE-009](COMMERCE-009-implement-prompt-lifecycle-service.md) | Implement platform/shop prompt lifecycle and active pointers | Pending | DATABASE-001, COMMERCE-008, ARCH-020-COMMERCE-002 |
+| [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Pending | COMMERCE-007, COMMERCE-009 |
+| [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build platform Agent Configuration Studio domain surface | Pending | COMMERCE-006, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010 |
+| [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Pending | COMMERCE-004, COMMERCE-010, COMMERCE-011 |
+
+The sole initial Phase 2 execution frontier is the Database foundation:
+
+```text
+ARCH-021-DATABASE-001
+```
+
+After that task is architect-accepted Complete, COMMERCE-007 and COMMERCE-008 become
+independently executable; COMMERCE-009 also consumes the template service because prompt drafts
+may be created from exact published template revisions.
+
+Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
+under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain
+multiple templates. Categories are not a code enum. Using a published template revision copies
+its exact text into a prompt draft and records provenance; later category/template changes do not
+mutate that prompt.
+
+Phase 2 also performs an incremental Studio decomposition: COMMERCE-011 creates a dedicated
+Agent Configuration domain screen/module and keeps its state/actions outside `StudioWorkspace`.
+COMMERCE-012 extends that module for selected-shop configuration. Unrelated Studio domains are
+not rewritten merely to reduce `StudioWorkspace` size.
