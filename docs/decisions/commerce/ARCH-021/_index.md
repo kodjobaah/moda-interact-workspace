@@ -73,11 +73,11 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 The current Phase 2 Commerce execution frontier is:
 
 ```text
-ARCH-021-COMMERCE-007   Ready — Attempt 1 Changes Requested; atomic CAS/replay correction
+ARCH-021-COMMERCE-007   Ready — Attempt 2 Changes Requested; reject stale non-null creation tokens
 ARCH-021-COMMERCE-008   Ready — independent prompt-template service
 ```
 
-COMMERCE-007 and COMMERCE-008 remain independent against the architect-accepted DATABASE-001 schema. COMMERCE-007 must correct atomic database CAS and concurrent durable-operation replay before it can unblock COMMERCE-010/011. COMMERCE-008 may proceed independently. COMMERCE-009 remains gated on COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
+COMMERCE-007 and COMMERCE-008 remain independent against the architect-accepted DATABASE-001 schema. COMMERCE-007 Attempt 2 has accepted atomic database CAS and concurrent durable-operation replay; its remaining bounded correction is to reject stale non-null CAS tokens when a platform/shop selection row is absent, so a stale update cannot be reinterpreted as a create. COMMERCE-010/011 remain gated on COMMERCE-007. COMMERCE-008 retains its separately reviewed state and COMMERCE-009 remains gated on COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain

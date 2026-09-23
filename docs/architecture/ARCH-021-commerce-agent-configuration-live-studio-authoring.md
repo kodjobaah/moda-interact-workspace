@@ -731,11 +731,11 @@ Phase 2 tasks:
 The current Phase 2 execution frontier is two independent Commerce service tasks:
 
 ```text
-ARCH-021-COMMERCE-007   Ready — Attempt 1 Changes Requested; atomic CAS/replay correction
+ARCH-021-COMMERCE-007   Ready — Attempt 2 Changes Requested; reject stale non-null creation tokens
 ARCH-021-COMMERCE-008   Ready — category-organised prompt-template service
 ```
 
-DATABASE-001 is architect-accepted Complete and provides the shared durable model catalogue/selections, template categories/templates/revisions, prompt lineages/revisions and active prompt pointers. COMMERCE-007 and COMMERCE-008 remain independently executable against the same accepted schema; COMMERCE-007 is specifically reclaimable for its bounded Attempt 2 correction while COMMERCE-008 may proceed independently. COMMERCE-009 becomes eligible only after COMMERCE-008 is architect-accepted because prompt copy-on-use consumes the template service. COMMERCE-011 remains gated until COMMERCE-007 is Complete, then establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) are independently reviewable UI capabilities and may execute in parallel whenever their own dependency sets are Complete. Phase 1 is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2 dependencies above.
+DATABASE-001 is architect-accepted Complete and provides the shared durable model catalogue/selections, template categories/templates/revisions, prompt lineages/revisions and active prompt pointers. COMMERCE-007 and COMMERCE-008 remain independent against the same accepted schema. COMMERCE-007 Attempt 2 has accepted atomic write-boundary CAS and concurrent durable-receipt reconciliation; it is reclaimable only for the narrow absent-row rule that non-null stale CAS tokens must conflict rather than become an implicit create. COMMERCE-008 retains its separately reviewed state. COMMERCE-009 becomes eligible only after COMMERCE-008 is architect-accepted because prompt copy-on-use consumes the template service. COMMERCE-011 remains gated until COMMERCE-007 is Complete, then establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) are independently reviewable UI capabilities and may execute in parallel whenever their own dependency sets are Complete. Phase 1 is already architect-accepted Complete, so the remaining gates are only the explicit Phase 2 dependencies above.
 
 Phase 2 exit criteria:
 
@@ -846,6 +846,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-007 Attempt 2 changes requested
+
+- Reviewed implementation `b79fc72` with submitted parent report `8ae46735`.
+- Accepted the Attempt 1 corrections for atomic catalogue/platform/shop CAS, first-write race handling and concurrent durable `CommerceAuditEvent` receipt reconciliation; submitted PostgreSQL concurrency tests passed 3/3.
+- Identified one remaining generation/CAS edge: an absent platform/shop selection currently permits stale non-null expected tokens to be reinterpreted as a create. A create is valid only from the explicit absence tokens (`expectedEditVersion: null` for platform; both `expectedGenerationId: null` and `expectedEditVersion: null` for shop).
+- Returned COMMERCE-007 to Ready at `attempt: 2`; the next claim becomes Attempt 3. COMMERCE-010/011 remain gated and COMMERCE-008 retains its separately reviewed state.
 
 ### 2026-09-23 — COMMERCE-007 Attempt 1 changes requested
 
