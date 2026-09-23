@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 41
-executor: copilot
-claimed_at: 2026-09-23T19:28:58Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-008
@@ -166,35 +166,55 @@ This is a read-contract completion task, not a reopening of COMMERCE-008 lifecyc
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `moda-interact-commerce/src/studio/agent-configuration/template-contracts.ts`
+- `moda-interact-commerce/src/commerce/agent-configuration/prompt-template-service.ts`
+- `moda-interact-commerce/src/studio/agent-configuration/template-server-actions.ts`
+- `moda-interact-commerce/tests/agent-configuration-templates.test.ts`
+- `moda-interact-commerce/tests/agent-configuration-template-server-actions.test.ts`
 
 ### Work Completed
 
-None
+- Added exactly `TemplatePort.listRevisions({ templateId }): Promise<PromptTemplateRevision[]>`.
+- Implemented one-template Prisma `findMany` revision enumeration ordered by `revisionNumber DESC, id ASC`; the direct revision query includes DRAFT/PUBLISHED rows, does not inspect enabled state, and naturally returns `[]` for unknown IDs.
+- Exposed `listPromptTemplateRevisions` behind `requireStudioAdmin`, with no mutation, audit, or SUPER_ADMIN requirement.
+- Added service coverage for deterministic ordering, disabled-template history, unknown IDs, and no audit surface; added server-action coverage for ADMIN access and auth rejection.
+- Existing `getTemplate`, mutation, replay, CAS, publication, and selectability paths were not changed.
 
 ### Validation Results
 
-None
+- `npm exec vitest run tests/agent-configuration-templates.test.ts tests/agent-configuration-template-server-actions.test.ts`: passed, 2 files and 9 tests.
+- `npm exec eslint src/studio/agent-configuration/template-contracts.ts src/commerce/agent-configuration/prompt-template-service.ts src/studio/agent-configuration/template-server-actions.ts tests/agent-configuration-templates.test.ts tests/agent-configuration-template-server-actions.test.ts`: passed.
+- `git diff --check`: passed; staged diff check also passed before commit.
+- `npm run typecheck`: failed on the repository baseline with 237 errors across 16 files. The only touched-file entry is the pre-existing `createDraft` diagnostics at service line 81; no diagnostic points to the new revision-list method, server action, or focused tests.
 
 ### Deviations
 
-None
+- Full repository typecheck remains non-green due to the documented pre-existing baseline; no task-local typecheck regression was identified.
 
 ### Assumptions
 
-None
+- The existing Prisma-generated `commercePromptTemplateRevision.findMany` model surface is authoritative and returns all revision fields required by the existing `PromptTemplateRevision` mapper.
+- Read authentication is enforced at the server-action boundary, consistent with neighboring template reads; the service port remains reusable for already-authenticated callers.
 
 ### Unresolved Issues
 
-None
+ - None within task scope.
 
 ### Architectural Concerns
 
 None
+
+### Requirements Mapping
+
+- Revision-list port and exact DTO: `template-contracts.ts` and service implementation.
+- Deterministic one-template ordering and disabled/unknown behavior: service regression in `agent-configuration-templates.test.ts`.
+- ADMIN-authenticated read boundary with no SUPER_ADMIN privilege: `template-server-actions.ts` and `agent-configuration-template-server-actions.test.ts`.
+- No audit or durable mutation: direct non-transactional read plus regression assertion that the test database has no audit surface.
+- COMMERCE-008 semantics: no changes outside the new read method/action and focused regressions.
 
 ## Architect Review
 
