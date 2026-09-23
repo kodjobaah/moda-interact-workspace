@@ -726,7 +726,7 @@ Phase 2 tasks:
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
-| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 
 The current Phase 2 execution frontier is:
@@ -734,10 +734,9 @@ The current Phase 2 execution frontier is:
 ```text
 ARCH-021-COMMERCE-012   Ready — Attempt 2 rework: shop-state isolation / dirty-state / publish-recovery corrections
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
-ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-DATABASE-001 and COMMERCE-007/008/009/010/011/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-012 Attempt 2 is returned to Ready for bounded shop-load isolation, dirty-state preservation, single-draft and publish/activation recovery corrections; parallel COMMERCE-013/014 state must be preserved from their newer branches when coordination is reconciled.
+DATABASE-001 and COMMERCE-007/008/009/010/011/014/015 are architect-accepted Complete. COMMERCE-010 closes the effective configuration read boundary with mandatory platform-baseline validation, independent shop overrides and repeatable-read snapshot composition. COMMERCE-014 closes platform prompt authoring with exact template-revision copy-on-use, dirty-editor mutation safety, canonical revision-history wiring and authenticated singleton platform-lineage reads. COMMERCE-012 Attempt 2 is returned to Ready for bounded shop-load isolation, dirty-state preservation, single-draft and publish/activation recovery corrections; COMMERCE-013 remains Ready.
 
 Phase 2 exit criteria:
 
@@ -819,7 +818,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-011 | moda_commerce | Complete | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Ready | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
-| ARCH-021-COMMERCE-014 | moda_commerce | Ready | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
+| ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
