@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -891,41 +891,51 @@ Ready for Review
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 resolves every correction requested in Attempt 1: the pointer fixtures now use a retained DRAFT and an actual other-shop lineage, both lineage races prove exactly one winner without assuming identity, catalogue `provider` immutability is covered, upgrade validation treats the complete predecessor user-index set as a required subset, and the ARCH-020 static validator preserves its historical 17-action prefix while permitting the required ARCH-021 suffix. Static schema, syntax, Prisma/ERD and `git diff --check` evidence is satisfactory.
+Attempt 3 resolves the PostgreSQL SQLSTATE `55P04` migration defect while preserving the single ARCH-021 migration-directory contract and the exact audit-target semantics. The rebuilt `arch020_audit_targets` CHECK compares `CommerceAuditAction` through `"action"::text`, so appended enum labels are not resolved as uncommitted enum constants during the migration transaction.
 
-Developer-supplied live fresh-rehearsal evidence against the exact isolated loopback target `arch021_test_fresh` reached the ARCH-021 migration and exposed a genuine migration defect. PostgreSQL rejects `20260923150000_arch021_agent_configuration` with SQLSTATE `55P04`: `unsafe use of new value "CREATE_MODEL_CATALOGUE_ENTRY" of enum type commerce."CommerceAuditAction"`. The migration appends the 26 new `CommerceAuditAction` values and then recreates `arch020_audit_targets` in the same migration using those new labels as enum constants. PostgreSQL does not allow an enum value added to an existing enum inside a transaction to be used until that transaction commits.
+Developer-supplied live review evidence then exercised the migration against disposable PostgreSQL 15 databases. The first live pass exposed rehearsal-only fixture/compatibility assumptions rather than schema defects; those were corrected in the implementation worktree without changing the Prisma schema or ARCH-021 migration semantics: the PLATFORM lineage race now creates the sole platform lineage and reuses the actual winner, the draft-template provenance case no longer collides on revision identity, and the ARCH-020 predecessor rehearsals treat later compatible Commerce tables/columns/enums/FKs as additive while still requiring the historical ARCH-020 contract.
 
-The task contract deliberately requires one ARCH-021 migration directory, so do **not** create a second migration. Correct the existing migration so `arch020_audit_targets` preserves the exact action-to-target semantics without resolving the newly-added labels as uncommitted enum constants. The preferred bounded correction is to compare `"action"::text` to text literals throughout that CHECK expression. This keeps the single-migration contract and the same runtime target requirements while avoiding unsafe enum-literal resolution during migration application. Do not weaken the constraint or move target validation into service code.
+After those bounded rehearsal corrections, every required live migration path passed. ARCH-021 fresh and upgrade each completed all 24 behavioral cases, with upgrade preservation passing. ARCH-020 fresh and upgrade each completed all 298 behavioral cases against the current migration chain; the upgrade rehearsal preserved 217 predecessor indexes unchanged. The ARCH-020 upgrade staged exactly the 15 migrations preceding the ARCH-020 capability migration, then successfully applied ARCH-020, ARCH-020 external connections and ARCH-021.
 
-After correcting the migration, recreate the disposable rehearsal databases rather than attempting `migrate resolve` on the failed test database, then run the required fresh and upgrade rehearsals plus the predecessor ARCH-020 migration rehearsal. Do not resubmit while these live checks are still blocked or failing.
+The stale executor Completion Report still describes loopback PostgreSQL as unavailable because the live database evidence was supplied interactively during Architect Review after submission. The review-time evidence supersedes that environmental note; no unresolved migration or schema issue remains.
 
 ### Reviewed Files
 
+- `moda-interact-database/prisma/schema.prisma`
 - `moda-interact-database/prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`
+- `moda-interact-database/scripts/fixtures/arch021-agent-configuration-schema-contract.mjs`
 - `moda-interact-database/scripts/fixtures/arch021-agent-configuration-cases.mjs`
-- `moda-interact-database/scripts/validate-arch021-agent-configuration-migration.mjs`
 - `moda-interact-database/scripts/validate-arch021-agent-configuration-schema.mjs`
+- `moda-interact-database/scripts/validate-arch021-agent-configuration-migration.mjs`
 - `moda-interact-database/scripts/validate-arch020-commerce-capability-schema.mjs`
+- `moda-interact-database/scripts/validate-arch020-commerce-capability-migration.mjs`
+- `moda-interact-database/scripts/fixtures/arch020-commerce-capability-cases.mjs`
+- `moda-interact-database/package.json`
+- `moda-interact-database/docs/generated/prisma-erd.puml`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 - `docs/decisions/database/ARCH-021/DATABASE-001-persist-agent-configuration-schema.md`
 
 ### Validation Reviewed
 
-- PASS: Attempt 2 static ARCH-021 schema validation.
-- PASS: Attempt 2 ARCH-020 extension-aware static validation.
-- PASS: Attempt 2 syntax, Prisma validation/generation, ERD generation and `git diff --check` evidence.
-- PASS: safety-refusal coverage for invalid migration rehearsal targets.
-- FAIL (developer live evidence): fresh rehearsal on `arch021_test_fresh` reaches `20260923150000_arch021_agent_configuration` and PostgreSQL returns SQLSTATE `55P04` because a newly-added `CommerceAuditAction` value is referenced before the enum-addition transaction commits.
-- NOT RUN after the genuine migration failure: ARCH-021 upgrade and ARCH-020 live migration rehearsals. They should be rerun only after the migration correction.
+- PASS: `npm run prisma:validate`.
+- PASS: `npm run prisma:generate`.
+- PASS: `npm run erd:puml`.
+- PASS: `npm run test:arch021-agent-configuration-schema`.
+- PASS: existing ARCH-020 static schema validation with the historical 17-action prefix preserved and later appended audit actions permitted.
+- PASS: syntax/safety-refusal checks and `git diff --check`.
+- PASS (developer live evidence): ARCH-021 fresh rehearsal — 24 behavioral cases; isolated target preserved.
+- PASS (developer live evidence): ARCH-021 upgrade rehearsal — `UPGRADE_PRESERVATION passed`; 24 behavioral cases; isolated target preserved.
+- PASS (developer live evidence): ARCH-020 fresh rehearsal — 298 behavioral cases; no shared data touched.
+- PASS (developer live evidence): ARCH-020 upgrade rehearsal — 217 predecessor indexes unchanged; 298 behavioral cases; no shared data touched.
 
 ### Architecture Conformance
 
-The durable schema design remains aligned with ARCH-021 Phase 2, and the Attempt 1 validation-fixture defects are corrected. The migration is not yet deployable, however, so DATABASE-001 cannot be accepted and COMMERCE-007/008 remain gated. Preserve the exact one-migration-directory contract and all existing database invariants while correcting the enum/check-constraint transaction incompatibility.
+Conforms. DATABASE-001 now provides the exact Phase 2 durable model/prompt/template configuration contract, database invariants, audit extensions and one-migration rollout required by ARCH-021. Fresh deployment, predecessor upgrade preservation, concurrency/ABA guards and ARCH-020 compatibility have all been exercised against live PostgreSQL 15. No provider credentials, provider calls, Shared/Background contract changes or out-of-scope runtime behavior were introduced.
 
 ### Follow-up
 
-Return the same task to `ready` with `attempt: 2`, `executor: null`, and `claimed_at: null`; the next authorised claim becomes Attempt 3. Make only the bounded migration/validation changes required by the SQLSTATE `55P04` defect, recreate the disposable rehearsal databases, and return to review only after fresh ARCH-021, upgrade ARCH-021 and predecessor ARCH-020 migration rehearsals pass.
+Mark ARCH-021-DATABASE-001 Complete. Its dependency is now satisfied, so ARCH-021-COMMERCE-007 and ARCH-021-COMMERCE-008 become Ready in parallel. ARCH-021-COMMERCE-009 remains Pending until COMMERCE-008 is architect-accepted Complete.

@@ -35,7 +35,7 @@ remaining executable implementation task.
 Phase 1 frontier: none — implementation set complete
 ```
 
-The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is now materialised below. Its Commerce tasks remain dependency-gated; the initial executable frontier is the Database foundation `ARCH-021-DATABASE-001`.
+The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is materialised below. DATABASE-001 is architect-accepted Complete, so COMMERCE-007 and COMMERCE-008 are the current independently executable Commerce frontier.
 
 ## Phase 1 dependency graph
 
@@ -61,8 +61,8 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-007](COMMERCE-007-implement-model-configuration-service.md) | Implement model catalogue/default/shop-override service | Pending | DATABASE-001, ARCH-020-COMMERCE-002 |
-| [COMMERCE-008](COMMERCE-008-implement-prompt-template-service.md) | Implement category-organised reusable prompt-template service | Pending | DATABASE-001, ARCH-020-COMMERCE-002 |
+| [COMMERCE-007](COMMERCE-007-implement-model-configuration-service.md) | Implement model catalogue/default/shop-override service | Ready | DATABASE-001, ARCH-020-COMMERCE-002 |
+| [COMMERCE-008](COMMERCE-008-implement-prompt-template-service.md) | Implement category-organised reusable prompt-template service | Ready | DATABASE-001, ARCH-020-COMMERCE-002 |
 | [COMMERCE-009](COMMERCE-009-implement-prompt-lifecycle-service.md) | Implement platform/shop prompt lifecycle and active pointers | Pending | DATABASE-001, COMMERCE-008, ARCH-020-COMMERCE-002 |
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Pending | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
 | [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Pending | COMMERCE-006, COMMERCE-007 |
@@ -70,15 +70,14 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Pending | COMMERCE-008, COMMERCE-011 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Pending | COMMERCE-008, COMMERCE-009, COMMERCE-011 |
 
-The sole initial Phase 2 execution frontier is the Database foundation:
+The current Phase 2 Commerce execution frontier is:
 
 ```text
-ARCH-021-DATABASE-001
+ARCH-021-COMMERCE-007
+ARCH-021-COMMERCE-008
 ```
 
-After that task is architect-accepted Complete, COMMERCE-007 and COMMERCE-008 become
-independently executable. COMMERCE-009 remains gated on COMMERCE-008 because prompt drafts may
-be created only from exact published template revisions accepted by the template service.
+They may execute independently against the architect-accepted DATABASE-001 schema. COMMERCE-009 remains gated on COMMERCE-008 because prompt drafts may be created only from exact published template revisions accepted by the template service.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain
