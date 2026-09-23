@@ -67,8 +67,9 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Pending | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
 | [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Complete | COMMERCE-006, COMMERCE-007 |
 | [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Pending | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
-| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Pending | COMMERCE-008, COMMERCE-011 |
+| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Blocked | COMMERCE-008, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Pending | COMMERCE-008, COMMERCE-009, COMMERCE-011 |
+| [COMMERCE-015](COMMERCE-015-expose-prompt-template-revision-history.md) | Expose read-only prompt-template revision history for Studio | Ready | COMMERCE-008 |
 
 The current Phase 2 Commerce execution frontier on this task branch is:
 
@@ -95,3 +96,7 @@ Agent Configuration route/module and platform model UI. Once that shell exists, 
 authoring) are independently reviewable UI capabilities with their own service dependencies; they
 must not be artificially serialized. All Agent Configuration state/actions stay outside
 `StudioWorkspace`, and unrelated Studio domains are not rewritten merely to reduce file size.
+
+### COMMERCE-013 Attempt 1 architect review — 2026-09-23
+
+COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot enumerate durable template revisions, so an existing DRAFT cannot be rediscovered after refresh/reopen and the required revision-history UI cannot be implemented without bypassing the canonical service. `ARCH-021-COMMERCE-015` is added **Ready** as the bounded read-only contract completion. COMMERCE-013 also retains local correction items for selected-template metadata reset and dirty template-switch guarding; it returns to Ready only after COMMERCE-015 is Complete.

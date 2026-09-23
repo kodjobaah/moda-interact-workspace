@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: blocked
 priority: 72
 executor: null
 claimed_at: null
@@ -17,6 +17,7 @@ attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-008
   - ARCH-021-COMMERCE-011
+  - ARCH-021-COMMERCE-015
 enables: []
 created: 2026-09-23
 updated: 2026-09-23
@@ -114,6 +115,7 @@ Produces the platform prompt-template library UI used by administrators for reus
 
 - ARCH-021-COMMERCE-008
 - ARCH-021-COMMERCE-011
+- ARCH-021-COMMERCE-015
 
 ## Enables
 
@@ -207,24 +209,53 @@ None
 
 ### Review Status
 
-Pending
+Blocked
 
 ### Review Notes
 
-None
+Attempt 1 establishes the correct production ownership boundary and most of the platform template-library UI, but it cannot satisfy the durable DRAFT/history contract against the currently accepted COMMERCE-008 read port. The accepted `TemplatePort.getTemplate(...)` returns at most one revision and, without an explicit `revisionId`, resolves the latest `PUBLISHED` revision only. It exposes no revision enumeration operation. Consequently a pre-existing DRAFT becomes undiscoverable after refresh/reopen and the UI cannot render the required revision history without bypassing the accepted service boundary.
+
+The review also found two local UI correctness defects that remain in COMMERCE-013 after the dependency is supplied:
+
+1. `TemplateEditor` initialises `displayName` and `description` from the first selected template but is not keyed/synchronised when `selected.template.id` changes. Selecting another template therefore retains the previous template's editable metadata and can write those stale values into the newly selected template.
+2. Dirty-state protection covers only draft prompt text and only Studio route navigation. Clicking another template calls `open(...)` directly and then clears dirty state, silently discarding an unsaved draft. Template metadata edits are not registered as dirty either. Internal template switching must use an explicit discard/stay guard and selected-template metadata edits must participate in the same dirty contract.
+
+The production wiring itself is otherwise appropriately bounded: Agent Configuration receives the COMMERCE-008 server actions, ADMIN mutation controls are absent, no provider/tool execution is introduced, and replay/conflict/unknown results reuse the accepted operation-result model.
 
 ### Reviewed Files
 
-None
+- `moda-interact-commerce/src/studio/agent-configuration/prompt-template-library.tsx`
+- `moda-interact-commerce/src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `moda-interact-commerce/src/studio/agent-configuration/template-contracts.ts`
+- `moda-interact-commerce/src/studio/agent-configuration/template-server-actions.ts`
+- `moda-interact-commerce/src/commerce/agent-configuration/prompt-template-service.ts`
+- `moda-interact-commerce/components/production-studio-page.tsx`
+- `moda-interact-commerce/components/studio-workspace.tsx`
+- `moda-interact-commerce/tests/agent-configuration-template-ui.test.tsx`
+- `moda-interact-commerce/tests/agent-configuration-production.test.tsx`
 
 ### Validation Reviewed
 
-None
+- Submitted focused template UI/service/auth validation: reported 47 passes with four documented unrelated auth baseline failures.
+- Targeted ESLint: reported PASS.
+- `git diff --check`: reported PASS.
+- Repository-wide typecheck: reported existing unrelated diagnostics.
+- Static review confirmed the revision-history read gap and selected-template/dirty-state defects above.
 
 ### Architecture Conformance
 
-Pending
+Blocked on `ARCH-021-COMMERCE-015`. COMMERCE-013 must continue to consume the canonical prompt-template service rather than querying Prisma directly or redefining revision lifecycle semantics in the UI.
 
 ### Follow-up
 
-None
+After `ARCH-021-COMMERCE-015` is architect-accepted Complete, return this same task to Ready for Attempt 2. Attempt 2 must:
+
+1. consume the new read-only revision-history action/port and render durable DRAFT/PUBLISHED revision history for the selected template;
+2. make an existing DRAFT discoverable and resumable after refresh/reopen, while keeping published revisions immutable;
+3. reset/synchronise template metadata editor state when the selected template identity changes (for example by keying the editor by durable template id) and add a regression that switches between two templates before saving;
+4. include selected-template metadata changes as dirty state and prevent template-to-template switching from silently discarding dirty draft/metadata state; cancellation must keep the current template/editor unchanged;
+5. extend focused production composition coverage so `ProductionStudioPage` is proven to hand the real template server actions into Agent Configuration;
+6. add focused regressions for durable draft resume/history and the dirty template-switch guard;
+7. reconcile Work Items, Acceptance Criteria, Validation and Completion Report/worktree evidence before returning to review.
+
+Do not add direct database reads to the UI, do not change template mutation semantics in COMMERCE-013, and do not begin COMMERCE-014.
