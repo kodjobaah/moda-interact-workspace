@@ -956,3 +956,15 @@ the first failing stage.
 
 COMMERCE-012 and SYSTEM-TEST-002 remain Pending in this snapshot because GATEWAY-003
 is not Complete.
+
+## ARCH-021 — CommerceAgent configuration and live Studio authoring (2026-09-23)
+
+Phase 0 proposed architecture contract. Model selection and the editable CommerceAgent
+behavioural prompt are platform/shop configuration with independent shop-override ->
+platform-default fallback. Features/releases do not own prompts or models. Platform
+admins author application-wide and shop-specific prompts; later merchant access reuses
+the shop-scoped prompt boundary. Production conversation grants and Studio preview
+sessions freeze the resolved model/prompt identities without making them release-owned.
+No ARCH-021 implementation task is materialised yet.
+
+[Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
