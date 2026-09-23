@@ -64,9 +64,9 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-007](COMMERCE-007-implement-model-configuration-service.md) | Implement model catalogue/default/shop-override service | Complete | DATABASE-001, ARCH-020-COMMERCE-002 |
 | [COMMERCE-008](COMMERCE-008-implement-prompt-template-service.md) | Implement category-organised reusable prompt-template service | Complete | DATABASE-001, ARCH-020-COMMERCE-002 |
 | [COMMERCE-009](COMMERCE-009-implement-prompt-lifecycle-service.md) | Implement platform/shop prompt lifecycle and active pointers | Complete | DATABASE-001, COMMERCE-008, ARCH-020-COMMERCE-002 |
-| [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Ready | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
+| [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Complete | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
 | [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Complete | COMMERCE-006, COMMERCE-007 |
-| [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Pending | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
+| [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Ready | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
 | [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Ready | COMMERCE-008, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Ready | COMMERCE-008, COMMERCE-009, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-015](COMMERCE-015-expose-prompt-template-revision-history.md) | Expose prompt-template revision-history read contract | Complete | COMMERCE-008 |
@@ -74,12 +74,17 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 The current Phase 2 Commerce execution frontier on this task branch is:
 
 ```text
-ARCH-021-COMMERCE-010   Ready — effective platform/shop configuration resolver
+ARCH-021-COMMERCE-012   Ready — selected-shop model/prompt override surface
 ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ARCH-021-COMMERCE-014   Ready — platform prompt authoring UI
 ```
 
-COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 is newly unblocked by COMMERCE-003/007/009 being Complete. COMMERCE-014 remains Ready for Attempt 2 after architect review added the already-Complete COMMERCE-015 exact-revision-history dependency; its dependencies are COMMERCE-008/009/011/015. COMMERCE-013 is Ready for Attempt 2 after COMMERCE-015 completed the required revision-history read contract; its dependencies are COMMERCE-008/011/015. COMMERCE-012 remains Pending because it still depends on COMMERCE-010.
+COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 Attempt 2 is architect-accepted Complete after mandatory platform-baseline validation, independent model/prompt fallback, repeatable-read snapshot composition and selected-shop short-circuit validation. COMMERCE-012 is now Ready because its remaining COMMERCE-010 dependency is Complete. COMMERCE-013 remains Ready from COMMERCE-008/011/015, and COMMERCE-014 remains Ready for Attempt 2 from COMMERCE-008/009/011/015.
+
+### 2026-09-23 - COMMERCE-014 Attempt 1 changes requested
+
+- Added the already-Complete COMMERCE-015 revision-history read as an explicit dependency for deterministic exact-revision selection.
+- Returned COMMERCE-014 to Ready for Attempt 2 after architect review identified dirty-editor mutation safety, exact revision selection and focused validation requirements.
 
 Prompt templates are platform-wide copy-on-use authoring assets in Phase 2. They are organised
 under data-driven categories/classifications such as `Clothing & Fashion`; a category may contain
