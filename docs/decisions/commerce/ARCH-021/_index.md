@@ -35,7 +35,7 @@ remaining executable implementation task.
 Phase 1 frontier: none — implementation set complete
 ```
 
-The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is materialised below. DATABASE-001 and COMMERCE-007/008/009/010/011/014/015 are architect-accepted Complete. The current executable Phase 2 Commerce frontier is COMMERCE-012 and COMMERCE-013.
+The parent ARCH-021 Phase 1 exit criteria are reconciled. Phase 2 is materialised below. DATABASE-001 and COMMERCE-007/008/009/010/011/013/014/015 are architect-accepted Complete. The current executable Phase 2 Commerce frontier is COMMERCE-012.
 
 ## Phase 1 dependency graph
 
@@ -67,7 +67,7 @@ reopening the accepted Connections/shop-context/Tool-authoring composition.
 | [COMMERCE-010](COMMERCE-010-resolve-effective-agent-configuration.md) | Resolve effective shop/platform model + prompt independently | Complete | COMMERCE-003, COMMERCE-007, COMMERCE-009 |
 | [COMMERCE-011](COMMERCE-011-build-platform-agent-configuration-ui.md) | Build Agent Configuration shell + platform model UI | Complete | COMMERCE-006, COMMERCE-007 |
 | [COMMERCE-012](COMMERCE-012-build-shop-agent-configuration-ui.md) | Build selected-shop model/prompt override surface | Ready | COMMERCE-004, COMMERCE-007, COMMERCE-008, COMMERCE-009, COMMERCE-010, COMMERCE-011 |
-| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Ready | COMMERCE-008, COMMERCE-011, COMMERCE-015 |
+| [COMMERCE-013](COMMERCE-013-build-platform-prompt-template-ui.md) | Build category-organised platform prompt-template library UI | Complete | COMMERCE-008, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-014](COMMERCE-014-build-platform-prompt-authoring-ui.md) | Build application-wide CommerceAgent prompt authoring UI | Complete | COMMERCE-008, COMMERCE-009, COMMERCE-011, COMMERCE-015 |
 | [COMMERCE-015](COMMERCE-015-expose-prompt-template-revision-history.md) | Expose prompt-template revision-history read contract | Complete | COMMERCE-008 |
 
@@ -75,10 +75,16 @@ The current Phase 2 Commerce execution frontier on this task branch is:
 
 ```text
 ARCH-021-COMMERCE-012   Ready — selected-shop model/prompt override surface
-ARCH-021-COMMERCE-013   Ready — platform prompt-template library UI
 ```
 
-COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 Attempt 2 is architect-accepted Complete after mandatory platform-baseline validation, independent model/prompt fallback, repeatable-read snapshot composition and selected-shop short-circuit validation. COMMERCE-014 Attempt 2 is architect-accepted Complete after exact template-revision selection, dirty-editor mutation guards, canonical revision-history wiring, singleton platform-lineage read/auth proof and production prompt-action handoff coverage. COMMERCE-012 and COMMERCE-013 remain Ready.
+COMMERCE-009 is architect-accepted Complete after focused PostgreSQL proof of prompt draft/pointer CAS, durable same-operation replay, explicit pointer audit targets, exact template-revision copying and generation-aware shop ABA protection. COMMERCE-010 Attempt 2 is architect-accepted Complete after mandatory platform-baseline validation, independent model/prompt fallback, repeatable-read snapshot composition and selected-shop short-circuit validation. COMMERCE-013 Attempt 5 is architect-accepted Complete after canonical revision ordering/latest-published summary reconciliation, exact-operation unknown-result success reconciliation and focused UI/production validation. COMMERCE-014 Attempt 2 is architect-accepted Complete after exact template-revision selection, dirty-editor mutation guards, canonical revision-history wiring, singleton platform-lineage read/auth proof and production prompt-action handoff coverage. COMMERCE-012 remains Ready.
+
+### 2026-09-23 - COMMERCE-013 Attempt 5 accepted
+
+- Accepted canonical local revision reconciliation using COMMERCE-015 `revisionNumber DESC, id ASC` ordering and immediate newest-published revision/hash presentation.
+- Accepted exact-operation `unknown -> ok` reconciliation with preservation of the original success reconciler and exact original `operationId`.
+- Accepted the Attempt 5 launcher/worktree/synchronization/submodule evidence and focused 10-test UI/production validation.
+- Marked COMMERCE-013 Complete. COMMERCE-012 remains the sole executable Phase 2 Commerce frontier.
 
 ### 2026-09-23 - COMMERCE-014 Attempt 2 accepted
 
@@ -104,3 +110,11 @@ Agent Configuration route/module and platform model UI. Once that shell exists, 
 authoring) are independently reviewable UI capabilities with their own service dependencies; they
 must not be artificially serialized. All Agent Configuration state/actions stay outside
 `StudioWorkspace`, and unrelated Studio domains are not rewritten merely to reduce file size.
+
+### COMMERCE-013 Attempt 1 architect review — 2026-09-23
+
+COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot enumerate durable template revisions, so an existing DRAFT cannot be rediscovered after refresh/reopen and the required revision-history UI cannot be implemented without bypassing the canonical service. `ARCH-021-COMMERCE-015` is added **Ready** as the bounded read-only contract completion. COMMERCE-013 also retains local correction items for selected-template metadata reset and dirty template-switch guarding; it returns to Ready only after COMMERCE-015 is Complete.
+
+### COMMERCE-013 Attempt 2 architect review — 2026-09-23
+
+Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
