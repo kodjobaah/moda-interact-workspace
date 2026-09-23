@@ -11,7 +11,7 @@ updated: 2026-09-23
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation and model-configuration service architect-accepted Complete; COMMERCE-008 and COMMERCE-011 are Ready.
+Agreed — Phase 0 contract accepted; Phase 1 architect-accepted Complete; Phase 2 database foundation and COMMERCE-008 prompt-template service architect-accepted Complete; COMMERCE-009 is Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -720,14 +720,22 @@ Phase 2 tasks:
 |---|---|---|---|
 | ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
 | ARCH-021-COMMERCE-007 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-008 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-008 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-009 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Ready | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-013 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Pending | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011 |
 
+The current Phase 2 execution frontier on this task branch is:
+
+```text
+ARCH-021-COMMERCE-007   model catalogue/default/shop-override service
+ARCH-021-COMMERCE-009   platform/shop prompt lifecycle service
+```
+
+DATABASE-001 and COMMERCE-008 are architect-accepted Complete. COMMERCE-009 is therefore Ready because its template-service dependency is now satisfied. COMMERCE-007 is reconciled separately on its own parent branch and its newer architect-review state must be preserved when the coordination branches are combined. COMMERCE-011 establishes only the shared Agent Configuration shell plus platform model UI; COMMERCE-012 (shop overrides), COMMERCE-013 (template library) and COMMERCE-014 (platform prompt authoring) remain independently reviewable UI capabilities and become executable only when their explicit dependency sets are Complete.
 The current Phase 2 execution frontier is:
 
 ```text
@@ -811,8 +819,8 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-006 | moda_commerce | Complete | ARCH-021-COMMERCE-005, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-027, ARCH-020-COMMERCE-031 |
 | ARCH-021-DATABASE-001 | moda_database | Complete | ARCH-020-DATABASE-001 |
 | ARCH-021-COMMERCE-007 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-008 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
-| ARCH-021-COMMERCE-009 | moda_commerce | Pending | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-008 | moda_commerce | Complete | ARCH-021-DATABASE-001, ARCH-020-COMMERCE-002 |
+| ARCH-021-COMMERCE-009 | moda_commerce | Ready | ARCH-021-DATABASE-001, ARCH-021-COMMERCE-008, ARCH-020-COMMERCE-002 |
 | ARCH-021-COMMERCE-010 | moda_commerce | Pending | ARCH-021-COMMERCE-003, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-009 |
 | ARCH-021-COMMERCE-011 | moda_commerce | Ready | ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-007 |
 | ARCH-021-COMMERCE-012 | moda_commerce | Pending | ARCH-021-COMMERCE-004, ARCH-021-COMMERCE-007, ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-011 |
@@ -847,6 +855,25 @@ independent of features.
 
 ## Change History
 
+### 2026-09-23 — COMMERCE-008 Attempt 3 accepted
+
+- Accepted receipt-first reconciliation for known CAS/domain failures after live PostgreSQL proof that identical concurrent CAS-bound commands replay one durable `CommerceAuditEvent` result.
+- Accepted per-template concurrent draft numbering after correcting the Prisma row-lock query to use parameterised `Prisma.sql`; live PostgreSQL regression proved two concurrent drafts receive distinct revisions.
+- Corrected the PostgreSQL regression fixture to use the accepted prompt-template key grammar; no production schema or validation rule was weakened.
+- Marked COMMERCE-008 Complete and promoted COMMERCE-009 to Ready. COMMERCE-013 remains gated on COMMERCE-011; COMMERCE-014 remains gated on COMMERCE-009 and COMMERCE-011.
+
+### 2026-09-23 — COMMERCE-008 Attempt 2 changes requested
+
+- Reviewed implementation `7a90a03` with submitted parent report `6ca2b49b`; accepted the per-template `FOR UPDATE` draft revision allocation and the generic post-failure durable-receipt reconciliation path.
+- Identified one remaining same-command replay gap: known CAS/domain errors are returned before receipt reconciliation, so an identical concurrent CAS-bound mutation can return `CAS_CONFLICT` even after the winning transaction durably committed the same operation/result.
+- Returned COMMERCE-008 to Ready at `attempt: 2`; Attempt 3 is limited to receipt-first reconciliation of failed concurrent commands plus focused disposable-PostgreSQL proof. COMMERCE-009/013/014 remain gated until COMMERCE-008 is Complete.
+
+### 2026-09-23 — COMMERCE-008 Attempt 1 changes requested
+
+- Reviewed implementation `ddb03c1` with submitted parent report `23d9224`; accepted in substance the data-driven category/template lifecycle, atomic existing-row edit-version CAS, exact UTF-8 publication hashing, immutable published revision boundary, disabled-selection/historical-read semantics, authorization and no-provider-execution boundary.
+- Identified a durable operation-receipt concurrency gap: simultaneous identical/conflicting `operationId` calls can race on `CommerceAuditEvent.id`, and the losing/ambiguous outcome is returned as a generic error rather than reconciling the winning receipt or the existing Studio `unknown` result.
+- Identified unsafe concurrent draft revision allocation: `count + 1` is not serialised per template, so independent concurrent draft creates can collide on `(templateId, revisionNumber)`.
+- Returned COMMERCE-008 to Ready at `attempt: 1`; COMMERCE-009/013/014 remain gated until COMMERCE-008 is Complete. COMMERCE-007 remains independently executable/correctable.
 ### 2026-09-23 — COMMERCE-007 Attempt 3 accepted
 
 - Reviewed implementation `2f1ed58` with submitted parent report `f6ce4272`.
