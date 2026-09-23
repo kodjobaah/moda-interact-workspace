@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-23T23:17:56Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-COMMERCE-021
@@ -22,7 +22,7 @@ enables:
   - ARCH-021-COMMERCE-018
   - ARCH-021-COMMERCE-020
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Establish the canonical Commerce-owned Tool definition contract
@@ -453,13 +453,13 @@ The focused suite MUST prove at least:
 
 ## Work Items
 
-- [ ] Create the exact `src/commerce/tool-definition/*` module boundary.
-- [ ] Define the canonical local Tool schemas/types/helpers above.
-- [ ] Migrate Commerce production imports from Shared full Tool-definition ownership.
-- [ ] Migrate development fixtures/tests to the canonical EXTERNAL_HTTP request shape.
-- [ ] Keep cross-service ToolDescriptor/result/manifest/runner contracts in Shared.
-- [ ] Make new Phase 3 execution branches fail closed before provider I/O.
-- [ ] Add focused contract/migration regression.
+- [x] Create the exact `src/commerce/tool-definition/*` module boundary.
+- [x] Define the canonical local Tool schemas/types/helpers above.
+- [x] Migrate Commerce production imports from Shared full Tool-definition ownership.
+- [x] Migrate development fixtures/tests to the canonical EXTERNAL_HTTP request shape.
+- [x] Keep cross-service ToolDescriptor/result/manifest/runner contracts in Shared.
+- [x] Make new Phase 3 execution branches fail closed before provider I/O.
+- [x] Add focused contract/migration regression.
 
 ## Interfaces / Contracts
 
@@ -489,22 +489,22 @@ Both are already Complete in the Phase 3 baseline.
 
 ## Acceptance Criteria
 
-- [ ] Full persisted Tool authoring definition is Commerce-owned.
-- [ ] Shared remains exact 0.14.2 and is not modified/published.
-- [ ] There is one canonical EXTERNAL_HTTP shape and no compatibility parser.
-- [ ] `SHOPIFY_ADMIN_GRAPHQL` is structurally authorable but not live-executable.
-- [ ] Request JavaScript can describe only a bounded relative GET request.
-- [ ] DIRECT/Visual/JavaScript response semantics are deterministic.
-- [ ] Existing policy and transitional Storefront behavior remains readable/executable.
-- [ ] Cross-service descriptor/result contracts remain Shared and unchanged.
+- [x] Full persisted Tool authoring definition is Commerce-owned.
+- [x] Shared remains exact 0.14.2 and is not modified/published.
+- [x] There is one canonical EXTERNAL_HTTP shape and no compatibility parser.
+- [x] `SHOPIFY_ADMIN_GRAPHQL` is structurally authorable but not live-executable.
+- [x] Request JavaScript can describe only a bounded relative GET request.
+- [x] DIRECT/Visual/JavaScript response semantics are deterministic.
+- [x] Existing policy and transitional Storefront behavior remains readable/executable.
+- [x] Cross-service descriptor/result contracts remain Shared and unchanged.
 
 ## Validation
 
-- [ ] `npm run test:arch021-commerce-tool-contract`
-- [ ] `npm run test:arch020-external-http`
-- [ ] `npm run test:arch020-backend-integration`
-- [ ] targeted lint/typecheck for changed files
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-commerce-tool-contract` (7/7)
+- [x] `npm run test:arch020-external-http` (13/13)
+- [ ] `npm run test:arch020-backend-integration` (60/62; 2 existing backend singleton environment assertions fail)
+- [x] targeted lint; full typecheck attempted, with existing Shared/Prisma baseline diagnostics remaining
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -517,7 +517,35 @@ This task may update/reseed development fixtures. It MUST NOT perform production
 ## Completion Report
 
 ### Status
-Not Started
+Ready for architect review.
+
+### Implementation
+
+Created the Commerce-owned contract boundary in `src/commerce/tool-definition/` with local contracts, mappings, publication validation, storage accounting, and MCP projection. The canonical `EXTERNAL_HTTP` shape now uses nested `request`, supports declarative and bounded JavaScript request descriptions, preserves visual/direct/JavaScript response semantics, pins Admin GraphQL to `2026-07`, and fails closed for request JavaScript, direct response execution, and Admin GraphQL runtime branches.
+
+Migrated Commerce runtime, publication, preview, external integration, compiler, and focused fixture consumers. Shared remains untouched and the package dependency remains exactly `@modainteract/moda-interact-shared: 0.14.2`.
+
+### Evidence
+
+- Launcher claim: attempt 1, executor `copilot`, implementation branch `task/ARCH-021-COMMERCE-016`.
+- Implementation commit pushed: `98511ef`.
+- Focused contract: 7/7.
+- External HTTP executor: 13/13.
+- External publication: 12/12.
+- External preview: 19/19.
+- Execution, wiring, and lifecycle slice: 17/17.
+- Legacy studio UI regression: 13/13; UI remains out of scope for this task.
+- Local disposable PostgreSQL/Redis MCP diagnostic: end-to-end PASS; persisted lifecycle, signed `tools/list`, signed `tools/call`, and cleanup all passed.
+- Targeted ESLint and `git diff --check`: pass.
+
+### Limitations
+
+- The backend integration command reports 60/62 passing because two pre-existing singleton tests expect unavailable production dependencies while this environment resolves them; no contract-specific failure was reported.
+- Full repository typecheck remains non-clean due existing Shared/local Storefront type-boundary diagnostics and Prisma/generated-client baseline diagnostics. The changed focused suites and targeted lint pass.
+
+### Parent report state
+
+Task status is `review`, with `executor: null` and `claimed_at: null`. Control is returned to `moda_architect`; no request-JavaScript execution, Admin compiler implementation, or UI work was added.
 ### Files Changed
 None
 ### Work Completed
