@@ -551,9 +551,11 @@ ARCH-021-COMMERCE-006   install the production JavaScript response-panel composi
 ```
 
 COMMERCE-001 through COMMERCE-005 are now Complete. COMMERCE-006 remains the sole
-remaining Phase 1 implementation task. Attempt 1 was returned Changes Requested for bounded
-production-functional corrections to Tool-draft edit-version continuity and the JavaScript
-validation/publication handoff. Its prerequisites remain Complete, so it is Ready for Attempt 2.
+remaining Phase 1 implementation task. Attempt 2 resolved the requested Tool-draft edit-version
+continuity and JavaScript validation/publication handoff, but architect re-review found one
+remaining saved-vs-unsaved identity defect: JavaScript save can clear U06 dirty state while
+independently buffered schema/template edits remain unpersisted. Its prerequisites remain
+Complete, so COMMERCE-006 is Ready for Attempt 3.
 Phase 2 remains intentionally unmaterialised until Phase 1 reconciliation.
 
 Phase 1 exit criteria:
@@ -647,6 +649,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-23 — COMMERCE-006 Attempt 2 changes requested
+
+- Confirmed implementation `14c4c3e` / parent report `f031e16` resolves the Attempt 1 CAS continuity defect and connects completed current JavaScript sample proof to the canonical U06 SUPER_ADMIN publication gate.
+- Confirmed the accepted server-only QuickJS/external-preview, cancellation/reconciliation and no-provider-network/credential boundaries remain intact; submitted functionality-focused suites report 103/103 passing.
+- Identified one remaining functional saved-vs-unsaved identity defect: the JavaScript panel save unconditionally clears shared U06 dirty state even when independently buffered Input JSON Schema or Response template edits remain unpersisted.
+- Returned COMMERCE-006 to Ready at `attempt: 2`; Phase 1 remains In Progress and Phase 2 remains unmaterialised.
 
 ### 2026-09-23 — COMMERCE-006 Attempt 1 changes requested
 

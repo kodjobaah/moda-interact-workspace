@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -224,54 +224,64 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 establishes the required production JavaScript panel composition in substance and must preserve that work. The real U06 JavaScript branch now renders `CodeResponsePanel`, validation and sample execution stay behind server routes/accepted QuickJS and external-preview services, the existing visual/JavaScript discard guard remains in place, and no provider HTTP or credential decryption was introduced.
+Attempt 2 correctly resolves both functional defects from the Attempt 1 correction contract and must preserve those fixes.
 
-Two production-functional defects remain in the composition and must be corrected on the same task. They are not requests for exhaustive tests or unrelated refactoring.
+1. The production U06 Tool editor now retains the authoritative `editVersion` returned by each successful `updateToolDraft(...)` and uses the live value for subsequent JavaScript saves, the enclosing full Tool save and `Publish validated revision`. The focused U06 regression proves the expected `2 -> 3 -> 4` compare-and-swap sequence.
 
-1. **Draft edit-version continuity is lost after the first save.** `saveCodeDraft(...)`, the enclosing full `Save draft` command and `Publish validated revision` all still use the original `selected.editVersion`. A successful `updateToolDraft(...)` increments the authoritative lifecycle edit version, but the composed editor does not retain that returned version as the next compare-and-swap token. Consequently, a JavaScript save followed by another JavaScript save, a full Tool save or publication can submit a stale `expectedEditVersion` and receive `CAS_CONFLICT`. This violates the task requirement that source edits update the current Tool draft while preserving saved-vs-unsaved identity.
+2. The JavaScript panel now hands completed current synthetic-sample state through the existing typed composition boundary to the canonical outer `externalValidated` publication gate. Source/sample/definition invalidation clears that gate, ADMIN still cannot publish, and SUPER_ADMIN publication uses the latest retained edit version. The accepted server-only QuickJS/external-preview, cancellation/reconciliation and no-provider-network boundaries remain intact.
 
-2. **JavaScript validation/sample success is not connected to the production U06 publication-valid state.** Switching/editing JavaScript correctly invalidates `externalValidated`, but `ProductionCodeResponsePanel` keeps code validation/sample completion internal and supplies neither a validation-state handoff to `ToolEditor` nor the accepted publication handoff. The outer `Publish validated revision` button therefore cannot become eligible from a JavaScript validate/save/sample cycle. The production composition must provide one canonical publication path for the current JavaScript revision while retaining the existing ADMIN/SUPER_ADMIN boundary and invalidating that eligibility after relevant edits.
+One production-functional saved-vs-unsaved defect remains in the new JavaScript draft-save composition.
 
-The Attempt 1 implementation commit is `8d5ee07`; the submitted parent report commit is `d3acb90`.
+`saveCodeDraft(...)` persists the current `definition` object and then unconditionally calls `setDirty(false)`. However, U06 keeps `Input JSON Schema` and `Response template` in independent text buffers (`inputSchemaText` and `responseTemplateText`) until the enclosing Tool `Save draft` parses and applies them. Therefore a user can:
+
+```text
+edit Input JSON Schema or Response template
+-> edit JavaScript
+-> use the JavaScript panel Save draft
+-> JavaScript save persists a definition that still contains the previous sibling value
+-> shared U06 dirty state becomes false
+```
+
+The screen can then display a sibling edit that is not present in the persisted Tool revision while navigation protection is cleared. After a new JavaScript validation/sample cycle, the outer publication gate can also become eligible against the persisted revision even though the screen still displays an unsaved sibling value. That violates the task requirement to preserve saved-vs-unsaved Tool-draft identity and can publish a revision different from the definition visibly being reviewed.
+
+The Attempt 2 implementation commit is `14c4c3e`; the submitted parent report commit is `f031e16`.
 
 ### Reviewed Files
 
-- `components/production-studio-page.tsx`
 - `components/studio-workspace.tsx`
 - `src/studio/external-http/editor.tsx`
 - `src/studio/external-http/ports.ts`
 - `src/studio/code-response/contracts.ts`
 - `src/studio/code-response/code-response-panel.tsx`
 - `src/studio/code-response/production-panel.tsx`
-- `src/studio/code-response/production-port.ts`
-- `app/api/studio/code-response/validate/route.ts`
-- `app/api/studio/preview/tool-tests/route.ts`
-- `app/api/studio/preview/tool-tests/[runId]/route.ts`
-- `app/api/studio/preview/tool-tests/[runId]/cancel/route.ts`
-- `src/commerce/publication/lifecycle.ts`
 - `tests/external-tools-ui.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-006-install-javascript-response-panel-production-composition.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-The submitted focused evidence is sufficient for the already-working production composition and server-only boundaries: 9/9 focused UI, 49/49 preview/service/routes, 4/4 wiring, 27/27 response/preview integration, targeted ESLint and `git diff --check` passed. The reported unrelated QuickJS runtime-proof failure and repository-wide baseline typecheck diagnostics are not the reason for this review outcome.
+The submitted functionality-focused evidence is sufficient for the Attempt 2 CAS/publication corrections: 103/103 focused tests passed; targeted ESLint reported no errors; `git diff --check` passed; and the repository-wide typecheck remains blocked by the documented pre-existing baseline diagnostics.
 
-The correction validation should remain functionality-focused. Add only focused proof for the two defects below; do not broaden this into exhaustive route/editor testing.
+No exhaustive test expansion is requested. The next correction needs only focused proof that JavaScript save cannot clear or bypass unsaved sibling Tool-definition state.
 
 ### Architecture Conformance
 
 Partial.
 
-The production slot, sandbox boundary, synthetic-preview boundary, dirty/discard behavior and no-provider-network Phase 1 constraint conform. The composition does not yet preserve authoritative draft CAS identity across repeated saves, and JavaScript validation/sample success cannot currently satisfy the existing U06 publication gate. Those two defects prevent Phase 1 functional completion.
+The production JavaScript panel composition, authoritative edit-version continuity, canonical JavaScript validation/publication handoff, server-only execution boundary, cancellation/reconciliation behavior and Phase 1 no-provider-network constraint conform.
+
+The JavaScript save path does not yet preserve the complete U06 saved-vs-unsaved identity because it may mark the whole Tool clean while sibling schema/template buffers remain unpersisted. Phase 1 therefore cannot close on Attempt 2.
 
 ### Follow-up
 
-Attempt 2 correction contract:
+Attempt 3 correction contract:
 
-1. Preserve the latest authoritative draft `editVersion` returned by every successful Tool draft update and use that value for the next JavaScript save, full `Save draft`, and `Publish validated revision`. Do not continue reading the initial `selected.editVersion` after a successful mutation.
-2. Prove the normal same-mounted-editor flow can save JavaScript, edit again, save again, and then perform another Tool mutation/publication without a stale CAS token. A focused regression around the actual U06 composition is sufficient.
-3. Complete the JavaScript validation/publication handoff. After the **current** JavaScript source is saved, validated and its synthetic sample completes successfully, the canonical U06 publication path must be eligible for SUPER_ADMIN. Any source/sample/schema/other definition change that makes the proof stale must revoke eligibility. ADMIN may author/test but must not gain publication authority.
-4. Use one publication path/state source; do not add a second durable validation or publication mechanism merely to connect the panel. Extending the existing typed slot/panel callback boundary is acceptable.
-5. Preserve the accepted server-side QuickJS/external-preview adapter, same-run reconciliation/cancellation behavior, no browser guest-code execution, and the Phase 1 prohibition on provider networking/credential decryption.
-6. Reconcile the task Work Items, Acceptance Criteria and Validation checkboxes with the completed Attempt 2 evidence before returning to `review`.
+1. Keep the accepted Attempt 2 edit-version and publication-gate fixes unchanged.
+2. Correct JavaScript draft-save semantics so a successful code-panel save cannot clear the shared U06 dirty/navigation/publication guard while any sibling Tool-definition state displayed by U06 remains unpersisted.
+3. The implementation may either persist the complete current valid U06 candidate atomically with the JavaScript source or retain the appropriate dirty state for sibling unsaved buffers. Do not create a second durable Tool definition or separate publication mechanism.
+4. Invalid sibling JSON must not be silently discarded or treated as saved merely because JavaScript source can be saved.
+5. Publication must continue to represent the exact persisted definition visibly under review. An unsaved sibling schema/template value must therefore either be persisted as part of the same valid draft save or continue to block publication/navigation as dirty.
+6. Add one focused U06 regression proving this behavior. Exhaustive editor testing is not required.
+7. Preserve all accepted server-side QuickJS/external-preview, cancellation/reconciliation, ADMIN/SUPER_ADMIN and no-provider-network/credential boundaries.
 
-Return this same task through the normal launcher. The next claim increments `attempt: 1` to Attempt 2.
+Return this same task through the normal launcher. Preserve `attempt: 2`; the next authorized claim increments it to Attempt 3.
