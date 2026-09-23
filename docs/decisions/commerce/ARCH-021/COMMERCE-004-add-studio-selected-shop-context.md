@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-23T11:06:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-003
@@ -82,11 +82,11 @@ A later merchant-facing Studio can derive/fix the shop from merchant authenticat
 
 - [x] Add typed selected-shop context/provider consuming the server contract from ARCH-021-COMMERCE-003.
 - [x] Add a searchable/usable shop selector to the Studio shell or equivalent global authoring chrome.
-- [ ] Preserve `shopId` through sidebar links, detail links, Connections return navigation and Tool/Preview handoffs touched by this task.
+- [x] Preserve `shopId` through sidebar links, detail links, Connections return navigation and Tool/Preview handoffs touched by this task.
 - [x] Integrate shop changes with the existing navigation blocker/unknown-operation lock.
 - [x] Add focused tests for no selection, valid selection, invalid selection, preservation across navigation and guarded shop changes.
 - [x] Add narrow-layout/keyboard coverage consistent with current Studio navigation conventions.
-- [ ] Ensure an exactly resolved selected shop remains represented by the selector when it is outside the bounded list result.
+- [x] Ensure an exactly resolved selected shop remains represented by the selector when it is outside the bounded list result.
 
 ## Interfaces / Contracts
 
@@ -112,22 +112,22 @@ No server/business-state persistence is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Platform admin can select a real shop and the selected shop survives refresh/back/forward through `shopId` URL state.
+- [x] Platform admin can select a real shop and the selected shop survives refresh/back/forward through `shopId` URL state.
 - [x] Primary Studio navigation preserves the selected shop.
 - [x] No shop is selected implicitly when `shopId` is absent or invalid.
 - [x] Displayed shop/domain metadata always comes from the validated server context.
 - [x] Changing shops while an editor is dirty/locked triggers the existing navigation protection rather than discarding state.
 - [x] No Shopify token/session secret enters browser state.
-- [ ] A valid exact selected shop remains represented in the selector even when it is absent from the bounded list result.
+- [x] A valid exact selected shop remains represented in the selector even when it is absent from the bounded list result.
 
 ## Validation
 
-- [ ] focused selected-shop context/navigation tests
-- [ ] focused `/connections/[id]` direct-entry/refresh regression with `shopId`
-- [ ] focused exact-selected-shop-outside-bounded-list regression
-- [ ] existing Studio shell/composer navigation tests affected by the change
-- [ ] targeted lint/typecheck for changed files
-- [ ] `git diff --check`
+- [x] focused selected-shop context/navigation tests
+- [x] focused `/connections/[id]` direct-entry/refresh regression with `shopId`
+- [x] focused exact-selected-shop-outside-bounded-list regression
+- [x] existing Studio shell/composer navigation tests affected by the change (44 passed; one unrelated auth-entrypoint baseline assertion failed)
+- [x] targeted lint/typecheck for changed files (lint passed; repository typecheck remains on the documented baseline)
+- [x] `git diff --check`
 
 No live provider call is required.
 
@@ -166,10 +166,12 @@ Ready for Review
 - `app/shops/page.tsx`
 - `app/shops/[id]/page.tsx`
 - `app/connections/page.tsx`
+- `app/connections/[id]/page.tsx`
 - `app/preview/page.tsx`
 - `app/styles.css`
 - `tests/selected-shop-context.test.ts`
 - `tests/selected-shop-navigation.test.tsx`
+- `tests/selected-shop-route.test.tsx`
 
 ### Work Completed
 
@@ -177,6 +179,9 @@ Ready for Review
 - Added server-side `shopId` resolution for primary/detail Studio routes, Connections and Preview. Invalid ids remain unselected and show an explicit error; no first-shop fallback exists.
 - Centralized `shopId` preservation in guarded composer navigation, including nested `returnTo`/`return` handoffs. Shop changes opt out only after constructing their explicit URL, so dirty and unknown-operation blockers remain authoritative.
 - Added focused resolver and browser navigation tests covering absent, valid and invalid ids, query preservation, keyboard selection, dirty protection and locked-operation protection.
+- Attempt 2 correction: `/connections/[id]` now accepts `shopId`, resolves the server-validated context through `getStudioServices()`, and passes `shopSelection` to `StudioShell` while preserving connection search, cursor and enabled state.
+- Attempt 2 correction: exact selected shop context is merged into the bounded selector options by durable id, replacing any duplicate listed record with the exact server result; the accepted list bound is unchanged.
+- Added direct-entry/refresh route coverage and an outside-bounded-list resolver regression.
 
 Acceptance mapping:
 - real selection and refresh/navigation state: `components/studio-selected-shop-context.tsx`, `components/studio-composer-context.tsx`, `tests/selected-shop-navigation.test.tsx`
@@ -185,20 +190,29 @@ Acceptance mapping:
 - server-derived metadata and session availability: `src/studio/contracts.ts`, ARCH-021-COMMERCE-003 services consumed by `resolveStudioShopSelection`
 - dirty/locked navigation protection: existing `StudioComposerContext` blocker path plus `tests/selected-shop-navigation.test.tsx`
 - browser secret boundary: only bounded `ShopExecutionContext` metadata is passed to the provider; no session token/session payload is read by this task
+- Attempt 2 review correction 1: `app/connections/[id]/page.tsx`, `tests/selected-shop-route.test.tsx`; focused route test passed and confirmed server resolution plus preserved connection list state.
+- Attempt 2 review correction 2: `src/studio/selected-shop.ts`, `tests/selected-shop-context.test.ts`; focused resolver test passed and confirmed exact selected-shop representation and durable-id deduplication.
+
+Prepared execution evidence:
+- `prepared_execution=true`, `dependency_gate=passed`, `execution_state=claimed`, `attempt=2`, `executor=copilot` at handoff.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-004`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-004`.
+- Branch: `task/ARCH-021-COMMERCE-004`.
+- The deterministic launcher completed the required task-branch synchronization and recursive submodule initialization before this handoff; no startup resynchronization or submodule mutation was performed during Attempt 2.
 
 ### Validation Results
 
 - `npm ci` — completed; npm reported the existing Node engine mismatch (required 24.19.0, current 24.21.0), peer-dependency warnings and audit warnings.
-- `npm test -- --run tests/selected-shop-context.test.ts tests/selected-shop-navigation.test.tsx` — passed, 2 files / 7 tests.
-- `npm test -- --run tests/studio-workspace.test.tsx tests/connections-ui.test.tsx tests/studio-integration.test.ts` — passed, 3 files / 47 tests.
-- targeted `npx eslint` over all changed TypeScript/TSX files — passed with no errors or warnings. CSS was excluded because the repository ESLint configuration has no CSS matcher.
-- `npm run typecheck` — non-zero on the existing generated-Prisma/publication typing baseline across pre-existing files; no selected-shop or route-file diagnostic remained after the local shell fix.
+- `npm test -- --run tests/selected-shop-context.test.ts tests/selected-shop-navigation.test.tsx tests/selected-shop-route.test.tsx` — passed, 3 files / 9 tests.
+- `npm test -- --run tests/studio-shell.test.tsx tests/studio-workspace.test.tsx tests/connections-ui.test.tsx tests/auth-entrypoints.test.ts` — 44 passed / 1 failed across 4 files; the unrelated existing auth-entrypoint assertion expects `createMcpService` while the current route contains `getCommerceBackend`.
+- targeted `npx eslint app/connections/'[id]'/page.tsx src/studio/selected-shop.ts tests/selected-shop-context.test.ts tests/selected-shop-navigation.test.tsx tests/selected-shop-route.test.tsx` — passed with no errors or warnings.
+- `npm run typecheck` — non-zero with 226 errors in 11 pre-existing Prisma/publication typing files; no selected-shop, Connections detail route, or focused test diagnostic was reported.
 - `git diff --check` — passed.
 - No Shopify, live provider or other third-party network call was made.
 
 ### Deviations
 
-Repository typecheck remains blocked by the pre-existing Prisma/publication typing baseline; this task introduced no diagnostic in its changed TypeScript files.
+Repository typecheck remains blocked by the pre-existing Prisma/publication typing baseline; this task introduced no diagnostic in its changed TypeScript files. The affected Studio regression command retains one unrelated auth-entrypoint baseline failure described above.
 
 ### Assumptions
 
