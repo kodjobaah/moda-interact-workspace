@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-23T15:48:54Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-DATABASE-001
@@ -851,6 +851,7 @@ Ready for Review
 - Added the static schema/migration/ERD contract validator, isolated fresh/upgrade rehearsal validator, and behavioral fixtures including concurrency and ABA cases.
 - Corrected the reviewed behavioral cases: distinct retained DRAFT revisions are used for pointer rejection, the other-shop case uses the actual surviving race lineage, and both lineage races assert exactly one success and one failure with `Promise.allSettled`.
 - Added catalogue `provider` identity-mutation rejection coverage, broadened upgrade rehearsal predecessor-index comparison to all predecessor user indexes while allowing additive ARCH-021 indexes, and made the ARCH-020 action assertion prefix-compatible without changing its historical fixture contract or migration.
+- Attempt 3 corrected the reviewed SQLSTATE 55P04 migration defect by comparing `CommerceAuditAction` as text in the rebuilt `arch020_audit_targets` check, preserving the exact target semantics without resolving newly added enum labels before transaction commit.
 - Regenerated the Prisma PlantUML ERD and added the two exact npm validation scripts.
 
 ### Validation Results
@@ -859,12 +860,14 @@ Ready for Review
 - PASS: `npm run prisma:generate`
 - PASS: `npm run erd:puml`
 - PASS: `npm run test:arch021-agent-configuration-schema`
+- PASS: focused post-fix static validation confirms the single migration still contains the required audit-target check and all ARCH-021 names/guards.
 - PASS: `node --check scripts/fixtures/arch021-agent-configuration-cases.mjs scripts/validate-arch021-agent-configuration-schema.mjs scripts/validate-arch021-agent-configuration-migration.mjs`
 - PASS: `git diff --check`
+- PASS: safety refusal coverage: running the ARCH-021 rehearsal without an explicit target was rejected before connecting with `Local isolated target required`.
 - BLOCKED by unavailable prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_fresh npm run test:arch021-agent-configuration-migration -- --mode fresh`; `pg_isready -h localhost -p 5432` returned `no response`, and the validator failed before migration with `Can't reach database server at localhost:5432`.
-- BLOCKED by the same unavailable loopback PostgreSQL prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_upgrade npm run test:arch021-agent-configuration-migration -- --mode upgrade`; no database connection or migration was attempted beyond the validator's initial connection.
+- BLOCKED by the same unavailable loopback PostgreSQL prerequisite: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch021_test_upgrade npm run test:arch021-agent-configuration-migration -- --mode upgrade`; the validator reached its initial connection and failed with `Can't reach database server at localhost:5432`, so no migration was applied.
 - PASS: existing `npm run test:arch020-commerce-capability-schema` now requires the original 17 actions in order and permits the required appended ARCH-021 actions.
-- BLOCKED: existing `npm run test:arch020-commerce-capability-migration` because isolated loopback PostgreSQL was unavailable; no ARCH-020 migration was changed.
+- BLOCKED: `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/arch020_test_fresh npm run test:arch020-commerce-capability-migration -- --mode fresh` because isolated loopback PostgreSQL was unavailable; no ARCH-020 migration was changed or applied.
 
 ### Deviations
 
@@ -882,7 +885,7 @@ Ready for Review
 
 ### Architectural Concerns
 
-- None for Attempt 2. The explicitly authorized ARCH-020 static-validator compatibility correction is implemented; its fixture contract and migration remain unchanged.
+- None for Attempt 3. The requested migration-only SQLSTATE correction is implemented; all accepted schema, fixtures, validators and the single migration directory remain unchanged apart from the text-cast fix.
 
 ## Architect Review
 
