@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T13:12:09Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-DATABASE-002
@@ -366,6 +366,54 @@ Implementation commit `256dbef112ae9f7c7d4301f6603b4ec892972067` contains exactl
 ### Architectural Concerns
 
 - None identified for the bounded task. Prompt-template replay remains owned by COMMERCE-026 and was not altered.
+
+## Attempt 3 Completion Report
+
+### Status
+
+Ready for Review
+
+### Correction Mapping
+
+- R1-R4: retained direct reduced persistence services and explicit mutation error
+  handling in `model-service.ts` and `prompt-service.ts`; no replay/hash result
+  storage path was reintroduced.
+- R5-R6: updated model and prompt service behavior and focused unit/PostgreSQL
+  fixtures for the reduced configuration contract, including independent CAS and
+  retained configuration rows when clearing overrides.
+- R8: updated effective-configuration coverage for the current model/prompt
+  resolution contract.
+- Attempt 2 correction: the change set is limited to the two services and the
+  effective/model/prompt unit and PostgreSQL tests listed below.
+
+### Files Changed
+
+Implementation commit `d1e884c` (`fix(commerce): simplify agent configuration
+services`) contains exactly:
+
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `tests/agent-configuration-effective.test.ts`
+- `tests/agent-configuration-model-postgres.test.ts`
+- `tests/agent-configuration-model.test.ts`
+- `tests/agent-configuration-prompts-postgres.test.ts`
+- `tests/agent-configuration-prompts.test.ts`
+
+### Validation
+
+- `pnpm exec vitest run tests/agent-configuration-effective.test.ts tests/agent-configuration-model-postgres.test.ts tests/agent-configuration-model.test.ts tests/agent-configuration-prompts-postgres.test.ts tests/agent-configuration-prompts.test.ts` was attempted, but dependency installation was blocked before test execution by `ERR_PNPM_IGNORED_BUILDS`. pnpm reported ignored build scripts for `@prisma/client@6.19.3`, `@prisma/engines@6.19.3`, `esbuild`, `msgpackr-extract`, `prisma@6.19.3`, `protobufjs`, and `unrs-resolver`, and requested `pnpm approve-builds`.
+- `git diff --check`: passed with exit 0 before commit.
+- PostgreSQL tests could not execute in this attempt; no disposable database validation was launched.
+
+### Baseline Blockers and Unresolved Issues
+
+- Focused tests remain blocked by the repository's pnpm build-script approval requirement; the exact command and error are recorded above.
+- Live PostgreSQL evidence and shared logger regression results were not launched because dependency installation was blocked. Implementation publication and branch parity are recorded below.
+
+### Publication
+
+- Implementation repository: `moda-interact-commerce`, branch `task/ARCH-021-COMMERCE-025`, commit `d1e884c`, pushed to `origin/task/ARCH-021-COMMERCE-025`.
+- Parent report repository: branch `task/ARCH-021-COMMERCE-025`; this report update will be committed and pushed to `origin/task/ARCH-021-COMMERCE-025`.
 
 ## Attempt 2 Publication
 
