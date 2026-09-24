@@ -892,14 +892,15 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
-| ARCH-021-COMMERCE-028 | moda_commerce | Ready | COMMERCE-025, 026, 027, 011..014 |
+| ARCH-021-COMMERCE-028 | moda_commerce | Blocked | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
+| ARCH-021-COMMERCE-031 | moda_commerce | Ready | COMMERCE-025 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Ready | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-028` and `ARCH-021-GATEWAY-001`. All COMMERCE-028 dependencies are Complete; BACKGROUND-001 acceptance also satisfies the remaining GATEWAY-001 dependency.
+Current checkpoint frontier: `ARCH-021-COMMERCE-031` and `ARCH-021-GATEWAY-001`. COMMERCE-028 remains Blocked at Attempt 2 until COMMERCE-031 is architect-accepted Complete; COMMERCE-029 remains Pending. BACKGROUND-001 acceptance satisfies the remaining GATEWAY-001 dependency.
 
 ### Phase 4 — live single-tool testing
 

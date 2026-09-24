@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -379,24 +379,198 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+#### Attempt 1 review — 2026-09-24
+
+The runtime read-contract implementation is directionally correct and must be preserved. Review confirms:
+
+- `AgentConfigurationState` exposes the retained nullable configuration fields and both persisted CAS versions;
+- `getPlatformAgentConfiguration()` / `getShopAgentConfiguration(shopId)` query the retained `CommerceAgentConfiguration` row directly rather than reconstructing it through nullable selection/pointer DTOs;
+- `getShopPrompt(shopId)` resolves an exact SHOP-scoped durable lineage independently of the active prompt pointer;
+- the named model reads flow through the existing ADMIN authorization boundary;
+- the named prompt-lineage Server Action calls `requireStudioAdmin()`;
+- no mutation, audit, schema, CAS increment or reconciliation implementation changed.
+
+Attempt 1 is not accepted because the task's required deterministic cross-service CAS proof was not executed and the Completion Report does not contain the mandatory prepared-execution/worktree packet. The two new focused tests prove only the retained model read and durable shop lineage in isolation.
+
+The following is the complete Attempt 2 correction contract. Do not redesign the service or modify runtime source unless the required regression exposes a defect.
+
+##### A1-R1 — add one exact shared-row model+prompt CAS regression
+
+Create:
+
+```text
+tests/agent-configuration-retained-read.test.ts
+```
+
+The test MUST use one shared mutable `CommerceAgentConfiguration` row for both:
+
+```text
+ModelConfigurationService
+PromptConfigurationService
+```
+
+Do not merely run separate model and prompt fixtures and do not manually assign the expected edit versions between assertions.
+
+The test must execute this exact sequence through the real service methods:
+
+```text
+initial retained state:
+  modelId = null
+  activePromptRevisionId = null
+  modelEditVersion = 1
+  promptEditVersion = 1
+
+1. setShopModel(... expectedEditVersion=1)
+2. getShopAgentConfiguration(shopId)
+   => modelId=<selected model>
+   => modelEditVersion=2
+   => promptEditVersion=1
+
+3. clearShopModel(... expectedEditVersion=2)
+4. getShopAgentConfiguration(shopId)
+   => modelId=null
+   => modelEditVersion=3
+   => promptEditVersion=1
+
+5. setShopPointer(... expectedEditVersion=1)
+6. getShopAgentConfiguration(shopId)
+   => activePromptRevisionId=<selected published shop revision>
+   => promptEditVersion=2
+   => modelEditVersion=3
+
+7. clearShopPointer(... expectedEditVersion=2)
+8. getShopAgentConfiguration(shopId)
+   => activePromptRevisionId=null
+   => promptEditVersion=3
+   => modelEditVersion=3
+```
+
+Mandatory assertions:
+
+```text
+clearing model does not change promptEditVersion
+setting/clearing prompt does not change modelEditVersion
+nullable override never resets an existing retained-row version to 1
+the final retained row is still present
+```
+
+The prompt revision used by step 5 must be a PUBLISHED revision belonging to the exact SHOP / exact shopId lineage, so the existing pointer-scope validation is exercised rather than bypassed.
+
+The shared fake/database may be minimal, but it must support the actual service calls; do not mock `getShopAgentConfiguration()` itself and do not fake the expected DTO.
+
+##### A1-R2 — retain the existing shop-lineage isolation proof
+
+Keep the existing regression that proves:
+
+```text
+getShopPrompt('shop-1') -> exact SHOP shop-1 lineage
+getShopPrompt('shop-2') -> null
+```
+
+Also keep the existing retained-null model read regression. No runtime source change is required for this item unless either regression fails.
+
+##### A1-R3 — reconcile all acceptance criteria and focused validation
+
+After A1-R1 passes, update every satisfied checkbox under `## Acceptance Criteria` from `[ ]` to `[x]`.
+
+Run exactly:
+
+```bash
+npx vitest run \
+  tests/agent-configuration-retained-read.test.ts \
+  tests/agent-configuration-model.test.ts \
+  tests/agent-configuration-prompts.test.ts
+```
+
+The new retained-read test MUST execute and pass. Do not use a test-name filter that skips the cross-service sequence.
+
+The pre-existing template-copy failure in `tests/agent-configuration-prompts.test.ts` may remain documented only if it reproduces unchanged and is unrelated to the read-contract changes. Record the exact test name and result.
+
+Then run targeted ESLint over the new retained-read test, the two existing focused tests, and any runtime file changed during Attempt 2. Run:
+
+```bash
+npm run typecheck
+git diff --check
+```
+
+The existing `Prisma.sql` diagnostic in `src/commerce/agent-configuration/prompt-service.ts` may remain documented only if it matches the known sibling/baseline state. No new diagnostic in the retained-read test or the new Agent Configuration read symbols is permitted.
+
+##### A1-R4 — record the exact Attempt 2 prepared-execution packet
+
+The Completion Report must record the exact launcher-provided values for:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-031
+implementation branch = task/ARCH-021-COMMERCE-031
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 2 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not reuse Attempt 1 values and do not infer missing values.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+##### Attempt 2 stop condition
+
+Return to architect review only when:
+
+```text
+A1-R1 exact shared-row sequence passes
+AND the existing retained-null + exact-shop lineage regressions pass
+AND all Acceptance Criteria are reconciled
+AND required lint/typecheck/diff validation is recorded
+AND the exact Attempt 2 launcher/worktree packet is recorded
+```
+
+Then push implementation and parent task branches, return control to `moda_architect`, and STOP. Do not start or modify COMMERCE-028 or COMMERCE-029.
 
 ### Reviewed Files
 
-None.
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
+- `tests/agent-configuration-model.test.ts`
+- `tests/agent-configuration-prompts.test.ts`
+- submitted `tsconfig.tsbuildinfo`
+- Completion Report
 
 ### Validation Reviewed
 
-None.
+- Submitted new focused regressions: 2 passed.
+- Submitted model/prompt focused packet: 15 passed with one reported pre-existing template-copy failure.
+- Submitted targeted ESLint: zero errors; two existing warnings.
+- Submitted `git diff --check`: passed.
+- Submitted full typecheck: non-zero; current artifact retains the documented `prompt-service.ts` Prisma-generated-client diagnostic and unrelated baseline diagnostics.
+- Static review confirms the exact required cross-service retained-row sequence was not exercised by the submitted two new tests.
 
 ### Architecture Conformance
 
-Pending.
+Implementation direction conforms. Acceptance is deferred only because the task's required shared-row model/prompt CAS proof and mandatory prepared-execution evidence are incomplete. No architecture redesign is requested.
 
 ### Follow-up
 
-Return to `moda_architect` for review and STOP.
+Return this same task through `/moda-task ARCH-021-COMMERCE-031` for Attempt 2. COMMERCE-028 remains Blocked and COMMERCE-029 remains Pending until COMMERCE-031 is architect-accepted Complete.
