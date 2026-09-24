@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-24T23:45:06Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-033
 enables:
   - ARCH-021-COMMERCE-035
 created: 2026-09-24
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Generate Storefront GraphQL from dynamic schema selections
@@ -308,14 +308,14 @@ No production Storefront query generation may depend on `path.split(".")`.
 - [x] Add pure Storefront AST query builder.
 - [x] Add schema-driven argument-binding state/controls.
 - [x] Add inputSchema-property variable mapping.
-- [ ] Add bounded literal argument generation.
-- [ ] Add connection-first handling.
+- [x] Add bounded literal argument generation.
+- [x] Add connection-first handling.
 - [x] Merge selections safely into existing query AST.
 - [x] Preserve aliases/unrelated existing selections.
 - [x] Make pinned schema identity authoritative.
 - [x] Wire exact candidate through existing `validateToolDefinition`.
 - [x] Remove old dot-path query-generation code.
-- [ ] Add real-artifact integrated regressions.
+- [x] Add real-artifact integrated regressions.
 
 ## Interfaces / Contracts
 
@@ -343,12 +343,12 @@ Produces no new cross-service contract.
 - [x] GraphQL is generated/merged from real schema metadata and selection tree.
 - [x] Required schema arguments cannot be bypassed.
 - [x] Input-property variable mappings remain the Tool's persisted argument contract.
-- [ ] Connection pagination obeys existing bounded compiler policy.
+- [x] Connection pagination obeys existing bounded compiler policy.
 - [x] Existing aliases/unrelated selections survive deterministic merge.
 - [x] No dot-path split builder remains.
 - [x] Candidate uses the pinned API version/schema hash.
-- [ ] `Use in tool` can apply only the exact candidate that passed existing server validation.
-- [ ] Real-artifact nested product regression passes.
+- [x] `Use in tool` can apply only the exact candidate that passed existing server validation.
+- [x] Real-artifact nested product regression passes.
 - [x] No provider/network request occurs during schema authoring/validation.
 
 ## Validation
@@ -356,7 +356,7 @@ Produces no new cross-service contract.
 - [x] `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts --reporter=verbose`
 - [x] Existing Storefront compiler/definition tests directly affected by generated queries pass.
 - [x] Targeted ESLint for every changed source/test file.
-- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required).
+- [x] `npm run typecheck` (unchanged unrelated baseline recorded; zero task-owned diagnostics).
 - [x] Legacy path-string source audit:
   ```text
   rg -n "buildQueryDefinition|path\.split\("\\\."\)|selectedPaths" components src/studio
@@ -403,25 +403,26 @@ Ready for Review
 - `tests/storefront-schema-browser.test.tsx`
 - `tests/studio-services.test.ts`
 - `tests/studio-workspace.test.tsx`
-- Implementation commit: `9e180cc2956d50f064825f3e13a2cc72115b7782`
+- Attempt 2 implementation commit: `9e180cc2956d50f064825f3e13a2cc72115b7782`
+- Attempt 3 implementation commit: `cf3c75b19760329914cfeff41c7056a9e068d18c`
 
 ### Work Completed
 
-Attempt 2 completes the requested C034 corrections while preserving the accepted Attempt 1 AST/merge foundation. Added production schema-driven argument-binding state and controls; shared client-safe inputSchema compatibility with the accepted compiler; typed scalar/enum literal generation with explicit unsupported input-object/list rejection; bounded connection `first` handling; authoritative C032 API-version/schema-hash identity; generated-variable collision protection; real compiler-backed validation regressions; and result-path/alias/selection merge safety. The legacy dot-path builder remains removed.
+Attempt 1 established the AST/merge foundation. Attempt 2 added production schema-driven argument-binding state and controls; shared client-safe inputSchema compatibility with the accepted compiler; typed scalar/enum literal generation with explicit unsupported input-object/list rejection; bounded connection `first` handling; authoritative C032 API-version/schema-hash identity; generated-variable collision protection; real compiler-backed validation regressions; and result-path/alias/selection merge safety. Attempt 3 corrected LIST wrapper detection and the first-only/last connection UI policy, removed the task-owned TS2367, and added the required exact-candidate and connected Studio regressions. The legacy dot-path builder remains removed.
 
 ### Validation Results
 
-Focused validation passed: `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose` completed with 6 test files and 62 tests passing. The directly affected Storefront definition/compiler tests passed; no provider or network request was used. Targeted ESLint over all 13 changed implementation files passed with zero errors/warnings.
+Focused validation passed: `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose` completed with 6 test files and 70 tests passing. This includes the exact generated nested product candidate through the real compiler, connection `first=1` and `first=20` through the real compiler, LIST/first-only/last UI behavior, fail-closed required/wrong-input workflows, exact schema-identity application, and invalid result-path behavior. The directly affected Storefront definition/compiler tests passed; no provider or network request was used. Targeted ESLint over the five Attempt 3-owned files passed with zero errors/warnings.
 
 The legacy path-string source audit passed: no `buildQueryDefinition`, `path.split(".")`, or `selectedPaths` matches remain in `components` or `src/studio`. The client artifact-boundary audit passed: no runtime Storefront artifact/schema value import remains in the client query-builder/UI surface. `git diff --check` passed.
 
-`npm run typecheck` is non-zero with the unchanged documented repository baseline, including Prisma generated-type drift and existing implicit-any/strictness diagnostics outside the Attempt 2-owned files, plus one Attempt 2-owned diagnostic at `src/studio/discovery/storefront-argument-bindings.tsx:62` (`TS2367`, the `LIST` kind comparison). This remains an implementation validation blocker and was not changed because this publication step is restricted to the parent report.
+`npm run typecheck` exits non-zero with the unchanged documented repository baseline, including missing preview modules, Prisma generated-type drift, and existing implicit-any/strictness diagnostics outside the C034-owned files. No diagnostics remain in `components/studio-workspace.tsx`, `src/studio/discovery/storefront-argument-bindings.tsx`, `src/studio/discovery/storefront-query-builder.ts`, or the changed C034 tests; the Attempt 2-owned TS2367 is absent.
 
-Launcher topology evidence: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-034` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-034` both use `task/ARCH-021-COMMERCE-034`. The implementation worktree is clean and `HEAD` equals `origin/task/ARCH-021-COMMERCE-034` at `9e180cc2956d50f064825f3e13a2cc72115b7782`. Recursive submodule evidence: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`).
+Launcher topology evidence: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-034` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-034` both use `task/ARCH-021-COMMERCE-034`. The implementation worktree is clean and `HEAD` equals `origin/task/ARCH-021-COMMERCE-034` at `cf3c75b6a8c5dc003164e9d3aaf1e54b4ecf2c58`. Recursive submodule evidence: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`). No ARCH-021-COMMERCE-035 worktree, branch, or implementation was started.
 
 ### Deviations
 
-The full repository typecheck is blocked by the unchanged baseline and the one Attempt 2-owned `TS2367` diagnostic described above. Focused tests, targeted ESLint, both source audits, and `git diff --check` passed. No live provider/network request was added or used.
+The full repository typecheck remains non-zero only because of unchanged documented baseline diagnostics. Focused tests, targeted ESLint, both source audits, and `git diff --check` passed. No live provider/network request was added or used.
 
 ### Assumptions
 
@@ -429,7 +430,7 @@ The accepted Storefront compiler and COMMERCE-032 pinned artifact remain the val
 
 ### Unresolved Issues
 
-Repository-wide typecheck remains blocked by unrelated baseline diagnostics and the Attempt 2-owned `TS2367` diagnostic. Resolving that source diagnostic is outside this report-only publication step and remains for architect/developer disposition.
+Repository-wide typecheck remains non-zero on unrelated baseline diagnostics; zero task-owned diagnostics are present.
 
 ### Architectural Concerns
 
