@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 5
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-DATABASE-001
 enables:
@@ -451,12 +451,12 @@ The upgrade fixture must prove all mapped IDs/text/edit versions and audit `oper
 
 ## Work Items
 
-- [ ] Implement R1-R14 exactly.
-- [ ] Generate Prisma client and validate schema.
-- [ ] Prove fresh migration.
-- [ ] Prove seeded Phase-2 upgrade migration.
-- [ ] Prove prompt-scope and merchant-identity DB guards.
-- [ ] Prove obsolete five tables no longer exist after migration.
+- [x] Implement R1-R14 exactly.
+- [x] Generate Prisma client and validate schema.
+- [x] Prove fresh migration.
+- [x] Prove seeded Phase-2 upgrade migration.
+- [x] Prove prompt-scope and merchant-identity DB guards.
+- [x] Prove obsolete five tables no longer exist after migration.
 
 ## Interfaces / Contracts
 
@@ -484,26 +484,26 @@ No Shared-package contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Exactly one Agent Configuration table replaces the four selection/pointer tables.
-- [ ] Model and prompt CAS remain independent through separate version fields.
-- [ ] Existing Phase-2 model/prompt selections resolve identically after migration.
-- [ ] `CommercePromptTemplateCategory` remains first-class.
-- [ ] Template text is preserved without `CommercePromptTemplateRevision`.
-- [ ] Published Agent Prompt revisions remain immutable.
-- [ ] Merchant Studio access supports multiple shop rows for one Auth.js identity.
-- [ ] Bound merchant provider subjects cannot be reassigned.
-- [ ] Commerce audit events support platform and merchant actors.
-- [ ] `operationId` can prove transaction commit without storing mutation results/payload hashes.
-- [ ] No unrelated Commerce domain schema is changed.
+- [x] Exactly one Agent Configuration table replaces the four selection/pointer tables.
+- [x] Model and prompt CAS remain independent through separate version fields.
+- [x] Existing Phase-2 model/prompt selections resolve identically after migration.
+- [x] `CommercePromptTemplateCategory` remains first-class.
+- [x] Template text is preserved without `CommercePromptTemplateRevision`.
+- [x] Published Agent Prompt revisions remain immutable.
+- [x] Merchant Studio access supports multiple shop rows for one Auth.js identity.
+- [x] Bound merchant provider subjects cannot be reassigned.
+- [x] Commerce audit events support platform and merchant actors.
+- [x] `operationId` can prove transaction commit without storing mutation results/payload hashes.
+- [x] No unrelated Commerce domain schema is changed.
 
 ## Validation
 
-- [ ] `npx prisma format --schema prisma/schema.prisma`
-- [ ] `npx prisma validate --schema prisma/schema.prisma`
-- [ ] `npm run test:arch021-simplification-schema`
-- [ ] `npm run test:arch021-simplification-migration`
-- [ ] repository-declared focused database tests for changed models
-- [ ] `git diff --check`
+- [x] `npx prisma format --schema prisma/schema.prisma`
+- [x] `npx prisma validate --schema prisma/schema.prisma`
+- [x] `npm run test:arch021-simplification-schema`
+- [x] `npm run test:arch021-simplification-migration`
+- [x] Repository-declared focused database tests for changed models: executable fresh and upgrade rehearsals passed with explicit isolated PostgreSQL targets.
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -518,58 +518,122 @@ Do not retain old selection/pointer/template-revision models behind compatibilit
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None
+- `prisma/schema.prisma`
+- `prisma/migrations/20260924103000_arch021_simplify_agent_configuration/migration.sql`
+- `scripts/validate-arch021-simplification-schema.mjs`
+- `scripts/validate-arch021-simplification-migration.mjs`
+- `package.json`
 
 ### Work Completed
 
-None
+- Replaced the four Phase-2 model/prompt selection and pointer persistence paths with `CommerceAgentConfiguration`, preserving independent model and prompt edit versions and deterministic platform/shop backfills.
+- Added prompt-template content persistence, source-template lineage migration, merchant Studio access with normalized email and immutable provider-subject guards, actor-compatible audit events, operation reconciliation IDs, and required audit actions.
+- Added database prompt-scope and merchant-identity guard functions/triggers and dropped the five obsolete persistence tables after backfill.
+- Added deterministic ARCH-021 simplification schema and migration validator scripts and package commands.
+- Attempt 1 implementation commit: `6078927` on `task/ARCH-021-DATABASE-002`.
+- Attempt 2 correction commit: `f2629f1` on `task/ARCH-021-DATABASE-002`.
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-DATABASE-002`
+  parent branch: `task/ARCH-021-DATABASE-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-DATABASE-002`
+  implementation branch: `task/ARCH-021-DATABASE-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recorded submodule commits: none
 
 ### Validation Results
 
-None
+- `npx prisma format --schema prisma/schema.prisma`: passed.
+- `npx prisma validate --schema prisma/schema.prisma`: passed.
+- `npm run prisma:generate`: passed.
+- `npm run test:arch021-simplification-schema`: passed.
+- `npm run test:arch021-simplification-migration`: passed structural ordering/backfill checks.
+- `DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/arch021_simplification_test_fresh npm run test:arch021-simplification-migration -- --mode fresh`: passed executable fresh rehearsal, including final schema and guard assertions.
+- `DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/arch021_simplification_test_upgrade npm run test:arch021-simplification-migration -- --mode upgrade`: passed executable seeded Phase-2 upgrade rehearsal, including pre/post audit immutability and exact backfill assertions.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+- None. The validator retains structural preflight checks and now executes both required disposable PostgreSQL modes with fail-closed target validation.
 
 ### Assumptions
 
-None
+- The existing ARCH-021 baseline migration is the upgrade source for the new simplification migration.
+- Existing audit rows have a platform-admin actor, so the new actor check is valid after the actor-type backfill.
 
 ### Unresolved Issues
 
-None
+- None.
 
 ### Architectural Concerns
 
-None
+The implementation is bounded to the database repository and preserves the required pre-production breaking simplification. The migration-execution validation gap should be resolved before treating the task as complete.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 resolves every blocking item from the Attempt 1 review. Reviewed implementation `f2629f1` with submitted task report `dde2e33`.
+
+- The one-time `CommerceAuditEvent` backfill is migration-local: `arch020_audit_immutable` is disabled only around the bounded backfill and re-enabled before migration completion. The executable upgrade rehearsal proves the predecessor trigger rejects UPDATE/DELETE before the simplification migration and the final trigger again rejects UPDATE/DELETE afterwards.
+- The prompt-revision backfill applies the same bounded migration-local handling for the published-revision immutability trigger while migrating `sourceTemplateId`; runtime revision immutability is restored before completion.
+- The redundant actor-admin foreign key addition identified in Attempt 1 is removed; the predecessor `CommerceAuditEvent_actorAdminId_fkey` remains the single actor-admin FK.
+- `scripts/validate-arch021-simplification-migration.mjs` now provides the required fail-closed executable `fresh` and `upgrade` modes with exact loopback/database-name checks, non-empty-target refusal, seeded Phase-2 upgrade state, pre/post audit-immutability proof, final guard checks and obsolete-table assertions.
+- The final schema conforms to the simplification contract: one `CommerceAgentConfiguration` with independent model/prompt edit versions, retained template categories with current `promptText`, prompt `sourceTemplateId`, merchant Studio access, actor-compatible audits and operation IDs, with the five superseded persistence tables removed only after backfill.
+- Work Items, Acceptance Criteria and Validation checklists are reconciled to the successful Attempt 2 evidence.
+
+The Completion Report's final Architectural Concerns sentence refers to the migration-execution gap from Attempt 1; that concern is superseded by the executable Attempt 2 evidence recorded in the same report and is non-blocking.
 
 ### Reviewed Files
 
-None
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260924103000_arch021_simplify_agent_configuration/migration.sql`
+- `moda-interact-database/scripts/validate-arch021-simplification-schema.mjs`
+- `moda-interact-database/scripts/validate-arch021-simplification-migration.mjs`
+- `moda-interact-database/package.json`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `docs/decisions/database/ARCH-021/DATABASE-002-collapse-agent-configuration-and-add-merchant-studio-access.md`
 
 ### Validation Reviewed
 
-None
+Accepted repository-agent evidence:
+
+- `npx prisma format --schema prisma/schema.prisma`: PASS.
+- `npx prisma validate --schema prisma/schema.prisma`: PASS.
+- `npm run prisma:generate`: PASS.
+- `npm run test:arch021-simplification-schema`: PASS.
+- `npm run test:arch021-simplification-migration`: PASS structural preflight.
+- `DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/arch021_simplification_test_fresh npm run test:arch021-simplification-migration -- --mode fresh`: PASS executable fresh rehearsal.
+- `DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/arch021_simplification_test_upgrade npm run test:arch021-simplification-migration -- --mode upgrade`: PASS seeded predecessor upgrade rehearsal.
+- `git diff --check`: PASS.
+
+Review-environment source checks also confirmed the migration-local trigger handling, exact final guards, predecessor-only upgrade staging and deterministic validator safety gates. The supplied review archive does not contain the installed Prisma dependency tree, so live PostgreSQL execution was reviewed from the durable Completion Report evidence rather than rerun inside the archive.
 
 ### Architecture Conformance
 
-Pending
+Conforms. The implementation satisfies the pre-Phase-3 simplification checkpoint without introducing compatibility views or retaining the superseded platform/shop selection-pointer/template-revision persistence. Durable data is backfilled before destructive drops, runtime prompt/audit immutability is preserved, and subsequent Commerce tasks can consume the simplified schema.
 
 ### Follow-up
 
-None
+Mark `ARCH-021-DATABASE-002` Complete. Promote `ARCH-021-COMMERCE-025`, `ARCH-021-COMMERCE-026` and `ARCH-021-COMMERCE-027` to Ready because all of their other prerequisites are already Complete. `ARCH-021-COMMERCE-028` remains Pending until 025/026/027 are architect-accepted Complete.

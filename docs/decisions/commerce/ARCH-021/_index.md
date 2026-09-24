@@ -141,9 +141,9 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-025](COMMERCE-025-simplify-agent-configuration-services.md) | Simplify Agent Configuration services and reconciliation | Pending | DATABASE-002, COMMERCE-007, 009, 010 |
-| [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Pending | DATABASE-002, COMMERCE-008, 015 |
-| [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Pending | DATABASE-002 |
+| [COMMERCE-025](COMMERCE-025-simplify-agent-configuration-services.md) | Simplify Agent Configuration services and reconciliation | Ready | DATABASE-002, COMMERCE-007, 009, 010 |
+| [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Ready | DATABASE-002, COMMERCE-008, 015 |
+| [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Ready | DATABASE-002 |
 | [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Pending | COMMERCE-025, 026, 027, 011..014 |
 | [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Pending | COMMERCE-028, COMMERCE-001..006 |
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
@@ -155,6 +155,7 @@ ARCH-021-DATABASE-002
 ARCH-021-BACKGROUND-001
 ```
 
+DATABASE-002 Attempt 2 is architect-accepted Complete. The simplified durable schema is now available, so COMMERCE-025, COMMERCE-026 and COMMERCE-027 are independently Ready; COMMERCE-028 remains Pending until all three are Complete.
 ### COMMERCE-030 Attempt 2 accepted — 2026-09-24
 
 COMMERCE-030 is **Complete**. Attempt 2 removes secret-bearing configuration logging, preserves typed MCP authorization-domain failures through the production adapter, keeps unexpected storage/runtime failures fail-closed as `UNAVAILABLE`, reconciles Commerce-owned RSA/signed-context operational guidance, and records the required launcher/worktree/commit/push evidence. The private MCP remains context-only over the private service link with PostgreSQL shop/turn/grant/release/tool authorization intact. `ARCH-021-BACKGROUND-001` is promoted to **Ready**; GATEWAY-001 remains Pending on BACKGROUND-001.
