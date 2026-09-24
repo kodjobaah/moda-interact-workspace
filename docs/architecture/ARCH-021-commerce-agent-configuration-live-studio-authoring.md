@@ -889,7 +889,7 @@ Checkpoint tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-DATABASE-002 | moda_database | Complete | DATABASE-001 |
-| ARCH-021-COMMERCE-025 | moda_commerce | Ready | DATABASE-002, COMMERCE-007, 009, 010 |
+| ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
@@ -899,7 +899,7 @@ Checkpoint tasks:
 | ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-025` and `ARCH-021-BACKGROUND-001`. COMMERCE-026 and COMMERCE-027 are Complete; COMMERCE-028 remains Pending until COMMERCE-025 is Complete.
+Current checkpoint frontier: `ARCH-021-COMMERCE-027` and `ARCH-021-BACKGROUND-001`. COMMERCE-025 and COMMERCE-026 are Complete; COMMERCE-028 remains Pending until COMMERCE-027 is Complete.
 
 ### Phase 4 — live single-tool testing
 
@@ -993,6 +993,34 @@ independent of features.
 
 ## Change History
 
+### 2026-09-24 — COMMERCE-025 Attempt 4 accepted
+
+- Accepted final implementation `3a64581b0987a8fa0e790cff8a7c1d79264f4cba`; mandatory platform baselines, reduced DATABASE-002 state, independent model/prompt CAS, retained nullable overrides, prompt-lineage identity, template provenance, operation receipts/reconciliation and shared structured database-unavailable logging conform.
+- Architect-completed validation passed 30/30 focused tests with zero skips, 3/3 model PostgreSQL concurrency cases and 5/5 prompt PostgreSQL concurrency cases. Model and prompt PostgreSQL suites used separate freshly migrated disposable DATABASE-002 databases because immutable audit receipts correctly prevent destructive cleanup between suites. Targeted ESLint has zero errors after the review-time fixture typing correction; `git diff --check` passes.
+- Marked COMMERCE-025 Complete. COMMERCE-028 remains Pending only on COMMERCE-027; the active checkpoint frontier is COMMERCE-027 plus BACKGROUND-001.
+
+### 2026-09-24 — COMMERCE-025 Attempt 3 changes requested
+
+- Reviewed implementation `d1e884c` with parent report `cb0486b3`.
+- Confirmed the reduced services now include most Attempt 2 corrections, including active unit suites, shop-correlated shared logging, first-write CAS, retained nullable override rows, real prompt lineage identity and operation-receipt reconciliation.
+- Returned COMMERCE-025 to Ready because the effective resolver regressed the mandatory platform-baseline rule, the prompt unit suite remains incomplete, the prompt PostgreSQL test is syntactically invalid, and none of the required npm-based unit/PostgreSQL validation actually executed.
+- Attempt 4 must use npm (not pnpm), repair/migrate the task-owned suites, execute both PostgreSQL suites against a disposable DATABASE-002 database, and return to review only after all required validation passes. COMMERCE-028 remains Pending.
+
+### 2026-09-24 — COMMERCE-025 Attempt 2 changes requested
+
+- Reviewed implementation `e5c6ed2` with parent report `edd22c18`.
+- Confirmed the reduced DATABASE-002 service implementation now contains most requested semantics: nullable model inheritance reads, deterministic first-write `1 -> 2` CAS creation, real prompt lineage ids, current-template `sourceTemplateId` provenance, parameterized prompt-lineage locking, concurrent operation-receipt reconciliation and the canonical shared logger path.
+- Acceptance remains blocked because the required model/prompt/effective suites are still disabled (`21` skipped tests), both PostgreSQL suites still contain dropped Phase-2 fixtures/fields and were not executed, and the database-unavailable event omits already-known shop correlation on shop-scoped failures.
+- Returned COMMERCE-025 to Ready at `attempt: 2`; COMMERCE-028 remains Pending.
+
+### 2026-09-24 — COMMERCE-025 Attempt 1 changes requested
+
+- Reviewed implementation `256dbef112ae9f7c7d4301f6603b4ec892972067` with parent report `19e4c3d05ebdd319de2884f4fe4eed4206dfeb5d`.
+- Accepted the direction toward direct `CommerceAgentConfiguration` transactions plus read-only audit reconciliation, but identified reduced-contract drift: synthetic generation/template-revision fields remain, nullable cleared overrides cannot be read as inheritance, prompt pointers expose configuration ids as prompt ids, and first configuration writes return `NOT_FOUND` instead of creating the DATABASE-002 row.
+- Identified concurrent receipt/draft-allocation gaps: an operation-id unique race can become `INTERNAL_ERROR`, and prompt draft numbering uses unsafe `count + 1` without a per-lineage lock.
+- Required Prisma connection/initialization failures to normalize publicly to `DATABASE_UNAVAILABLE` while preserving the original root cause through the canonical `@modainteract/moda-interact-shared/logging` logger using the repository's existing `createLogger` contract; no local logger or secret-bearing fields are permitted.
+- Attempt 1 validation is incomplete because the model, prompt and effective suites are disabled with `describe.skip`; Attempt 2 must migrate and activate them plus the reduced PostgreSQL model/prompt suites.
+- Returned COMMERCE-025 to Ready at `attempt: 1`; COMMERCE-028 remains Pending.
 ### 2026-09-24 — COMMERCE-027 Attempt 5 accepted
 
 - Accepted the hierarchical Auth.js Studio authorization implementation and final SUPER_ADMIN-only global merchant-access administration boundary.
