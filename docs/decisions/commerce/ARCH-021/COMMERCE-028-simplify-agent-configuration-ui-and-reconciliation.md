@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-24T16:00:53Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-025
@@ -164,12 +164,12 @@ server-validated selected shop
 
 ## Work Items
 
-- [ ] Remove Agent Configuration action-object props.
-- [ ] Import named actions directly in Agent Configuration domain components.
-- [ ] Replace replay/unknown UI with explicit errors + R3/R4 reconciliation.
-- [ ] Update UI to reduced config/template DTOs.
-- [ ] Preserve existing dirty/stale/CAS protections.
-- [ ] Update focused UI tests.
+- [x] Remove Agent Configuration action-object props.
+- [x] Import named actions directly in Agent Configuration domain components.
+- [x] Replace replay/unknown UI with explicit errors + R3/R4 reconciliation.
+- [x] Update UI to reduced config/template DTOs.
+- [x] Preserve existing dirty/stale/CAS protections.
+- [x] Update focused UI tests.
 
 ## Interfaces / Contracts
 
@@ -191,23 +191,23 @@ Consumes COMMERCE-025/026 mutation/reconciliation contracts and COMMERCE-027 pla
 
 ## Acceptance Criteria
 
-- [ ] No production Agent Configuration function bundle crosses Server -> Client.
-- [ ] Known errors are visible with their real codes.
-- [ ] Transport-level uncertainty is visible and reconcilable.
-- [ ] Reconciliation never replays stored mutation results.
-- [ ] A database outage is not mislabeled as a committed/unknown operation.
-- [ ] Existing dirty/stale/CAS protections remain.
+- [x] No production Agent Configuration function bundle crosses Server -> Client.
+- [x] Known errors are visible with their real codes.
+- [x] Transport-level uncertainty is visible and reconcilable.
+- [x] Reconciliation never replays stored mutation results.
+- [x] A database outage is not mislabeled as a committed/unknown operation.
+- [x] Existing dirty/stale/CAS protections remain.
 
 ## Validation
 
-- [ ] model UI focused tests
-- [ ] prompt UI focused tests
-- [ ] template UI focused tests
-- [ ] rejected-Promise -> UNCONFIRMED -> reconcile committed test
-- [ ] reconcile not-committed -> retry-enabled test
-- [ ] DB unavailable visible error test
-- [ ] targeted ESLint/typecheck
-- [ ] `git diff --check`
+- [x] model UI focused tests
+- [x] prompt UI focused tests
+- [x] template UI focused tests
+- [x] rejected-Promise -> UNCONFIRMED -> reconcile committed test
+- [x] reconcile not-committed -> retry-enabled test
+- [x] DB unavailable visible error test
+- [x] targeted ESLint/typecheck (targeted ESLint passed; repository typecheck remains blocked by pre-existing unrelated errors)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -222,35 +222,59 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+Implementation commit `354c06b` on `task/ARCH-021-COMMERCE-028`:
+
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/platform-model-configuration.tsx`
+- `src/studio/agent-configuration/platform-prompt-configuration.tsx`
+- `src/studio/agent-configuration/prompt-template-library.tsx`
+- `src/studio/agent-configuration/shop-agent-configuration.tsx`
+- `tests/agent-configuration-model-ui.test.tsx`
+- `tests/agent-configuration-platform-prompt-ui.test.tsx`
+- `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-template-ui.test.tsx`
+- `tests/agent-configuration-screen-state.test.tsx`
+- `tests/agent-configuration-shop-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Direct named Server Actions are used by Agent Configuration client surfaces; function-valued action bundles, replay/unknown-result UI, and stored mutation closures are absent.
+- Platform and selected-shop surfaces use reduced model/prompt configuration DTOs, preserve configuration-row CAS tokens when clearing overrides, validate selected-shop forwarding, and show the bounded no-shop state.
+- Agent Configuration owns independent dirty and unconfirmed flags, reports aggregate state to StudioWorkspace, and locks navigation while an operation is unconfirmed.
+- Reconciliation uses the original operation receipt, reloads canonical state before the committed message, enables retry only after not-committed, retains reconciliation control on errors, and supports explicit abandonment.
+- Focused tests cover model, prompt, template, shop, production selected-shop validation, reconciliation state transitions, database errors, dirty aggregation, and navigation locking.
 
 ### Validation Results
 
-None
+- `npm test -- --run tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-platform-prompt-ui.test.tsx tests/agent-configuration-production.test.tsx tests/agent-configuration-template-ui.test.tsx tests/agent-configuration-screen-state.test.tsx tests/agent-configuration-shop-ui.test.tsx`: passed, 6 files / 14 tests.
+- Targeted `npx eslint` over all 13 changed files: passed.
+- `git diff --check`: passed before commit.
+- `npm run typecheck`: blocked by 18 existing errors in unrelated preview, integration, and older test files; no changed Agent Configuration file was reported.
+- `npm run build`: blocked before compilation because `@jitl/quickjs-wasmfile-release-sync/package.json` is missing from the worktree dependency state.
 
 ### Deviations
 
-None
+- Full repository typecheck and production build could not complete because of the unrelated baseline/dependency blockers listed above.
 
 ### Assumptions
 
-None
+- The prepared launcher evidence remains authoritative: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-028`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-028`, mirrored branch `task/ARCH-021-COMMERCE-028`.
+- The implementation repository has its recorded nested submodule state from launcher preparation; no submodule pin was changed by this task.
 
 ### Unresolved Issues
 
-None
+- Repository-wide typecheck remains blocked by the 18 unrelated errors reported above.
+- Production build remains blocked by the missing `@jitl/quickjs-wasmfile-release-sync` package metadata before Next.js compilation.
 
 ### Architectural Concerns
 
-None
+- None identified within the bounded Attempt 2 correction contract.
 
 ## Architect Review
 
