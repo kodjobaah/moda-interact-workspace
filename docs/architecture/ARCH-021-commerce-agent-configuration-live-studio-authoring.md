@@ -854,6 +854,36 @@ reconcile NOT_COMMITTED -> allow explicit retry with a new operationId
 
 Do not catch ordinary failures and silently return success, empty state or generic `unknown`.
 
+### Authorization hierarchy clarification — 2026-09-24
+
+Studio authorization is one ordered hierarchy with scope layered on top:
+
+```text
+PLATFORM_SUPER_ADMIN
+        >
+PLATFORM_ADMIN
+        >
+MERCHANT_ADMIN
+        >
+MERCHANT_EDITOR
+        >
+MERCHANT_VIEWER
+```
+
+Platform roles are global. Merchant roles are evaluated against the requested shop and may differ across shops for the same Auth.js identity. An active PlatformAdmin takes precedence over merchant-access rows and is never downgraded for a shop request.
+
+Shop minimum authority is:
+
+```text
+inspect / preview -> MERCHANT_VIEWER
+edit              -> MERCHANT_EDITOR
+publish           -> MERCHANT_ADMIN
+```
+
+Therefore both `PLATFORM_ADMIN` and `PLATFORM_SUPER_ADMIN` satisfy every shop minimum-authority check for every shop. Platform-only operations remain separate: platform catalogue/template/default administration requires at least `PLATFORM_ADMIN`; platform release activation/rollback, global sensitive capability enable/disable, PlatformAdmin membership/role administration and global merchant-access override require `PLATFORM_SUPER_ADMIN`.
+
+The authorization implementation must centralize minimum-role comparison. Compatibility helpers may delegate to that hierarchy but must not maintain a second platform-vs-merchant permission matrix. Authentication remains the normal Auth.js Google path; the hierarchy is authorization only and is not persisted as a new combined-role enum.
+
 Checkpoint tasks:
 
 | Task | Owner | Status | Depends On |
@@ -869,7 +899,7 @@ Checkpoint tasks:
 | ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-DATABASE-002` and `ARCH-021-BACKGROUND-001`.
+Current checkpoint frontier: `ARCH-021-COMMERCE-025`, `ARCH-021-COMMERCE-026`, `ARCH-021-COMMERCE-027` and `ARCH-021-BACKGROUND-001`.
 
 ### Phase 4 — live single-tool testing
 
@@ -962,6 +992,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — Authorization hierarchy clarified
+
+- Defined one ordered Studio authorization hierarchy: `PLATFORM_SUPER_ADMIN > PLATFORM_ADMIN > MERCHANT_ADMIN > MERCHANT_EDITOR > MERCHANT_VIEWER`.
+- Confirmed platform roles are global, merchant roles are exact-shop scoped, PlatformAdmin takes precedence, and platform `ADMIN` satisfies merchant-ADMIN shop operations including shop publication.
+- Kept explicitly platform-sensitive operations such as release activation/rollback and global-sensitive controls SUPER_ADMIN-only.
+
 
 ### 2026-09-24 — DATABASE-002 Attempt 2 accepted
 

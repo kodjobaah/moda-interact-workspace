@@ -151,11 +151,17 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 Current checkpoint frontier:
 
 ```text
-ARCH-021-DATABASE-002
+ARCH-021-COMMERCE-025
+ARCH-021-COMMERCE-026
+ARCH-021-COMMERCE-027
 ARCH-021-BACKGROUND-001
 ```
 
 DATABASE-002 Attempt 2 is architect-accepted Complete. The simplified durable schema is now available, so COMMERCE-025, COMMERCE-026 and COMMERCE-027 are independently Ready; COMMERCE-028 remains Pending until all three are Complete.
+
+### COMMERCE-027 authorization hierarchy clarification — 2026-09-24
+
+COMMERCE-027 Attempt 2 identity-binding and PostgreSQL corrections are retained, but the task remains **Ready** for Attempt 3 to make authorization explicitly hierarchical: `PLATFORM_SUPER_ADMIN > PLATFORM_ADMIN > MERCHANT_ADMIN > MERCHANT_EDITOR > MERCHANT_VIEWER`. Platform roles are global; merchant roles remain exact-shop scoped. Platform `ADMIN` therefore satisfies shop `publish`/merchant-ADMIN requirements for any shop, while platform-release activation/rollback and other explicitly global-sensitive operations remain SUPER_ADMIN-only. COMMERCE-028 remains Pending.
 ### COMMERCE-030 Attempt 2 accepted — 2026-09-24
 
 COMMERCE-030 is **Complete**. Attempt 2 removes secret-bearing configuration logging, preserves typed MCP authorization-domain failures through the production adapter, keeps unexpected storage/runtime failures fail-closed as `UNAVAILABLE`, reconciles Commerce-owned RSA/signed-context operational guidance, and records the required launcher/worktree/commit/push evidence. The private MCP remains context-only over the private service link with PostgreSQL shop/turn/grant/release/tool authorization intact. `ARCH-021-BACKGROUND-001` is promoted to **Ready**; GATEWAY-001 remains Pending on BACKGROUND-001.

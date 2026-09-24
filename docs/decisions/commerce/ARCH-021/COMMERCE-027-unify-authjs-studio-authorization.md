@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -145,36 +145,130 @@ Implement/export exactly:
 ```text
 getStudioPrincipal({ shopId? })
 requireStudioPrincipal({ shopId? })
+requireStudioPlatformRole(minimumRole)
 requireStudioPlatformAdmin()
 requireStudioSuperAdmin()
+requireStudioShopRole(shopId, minimumRole)
 requireStudioShopAccess(shopId, permission)
 ```
 
 Keep `requireStudioAdmin()` as a compatibility wrapper for `requireStudioPlatformAdmin()` so existing platform-only routes do not broaden accidentally.
 
-### R7. Permission matrix
+### R7. Hierarchical authorization model
 
-Shop-aware merchant permissions:
-
-```text
-VIEWER -> inspect, preview
-EDITOR -> inspect, preview, edit
-ADMIN  -> inspect, preview, edit, publish
-```
-
-A merchant principal is authorized only when `principal.shopId === requested shopId`.
-
-These remain platform-admin-only regardless of merchant role:
+Authorization is hierarchical. The canonical effective rank order is exactly:
 
 ```text
-platform model catalogue management
-platform Agent Configuration defaults
-platform prompt management
-prompt-template category/template administration
-release rollback
-global capability/tool enable/disable
-manual merchant-access grants
+PLATFORM_SUPER_ADMIN
+        >
+PLATFORM_ADMIN
+        >
+MERCHANT_ADMIN
+        >
+MERCHANT_EDITOR
+        >
+MERCHANT_VIEWER
 ```
+
+The persisted database roles remain unchanged:
+
+```text
+PlatformAdmin.role:                 ADMIN | SUPER_ADMIN
+CommerceStudioMerchantAccess.role:  VIEWER | EDITOR | ADMIN
+```
+
+Do **not** add a new persisted combined-role enum or another authorization table. The combined rank exists only in the authorization layer.
+
+The exact numeric levels used for comparison must be centralized in one module/helper and must be equivalent to:
+
+```text
+MERCHANT_VIEWER       = 10
+MERCHANT_EDITOR       = 20
+MERCHANT_ADMIN        = 30
+PLATFORM_ADMIN        = 40
+PLATFORM_SUPER_ADMIN  = 50
+```
+
+A higher role satisfies every lower minimum-role requirement subject to the scope rules below. Do not scatter direct role-equality checks through callers when a minimum-role helper expresses the requirement.
+
+#### R7.1 Platform scope
+
+Platform principals are global.
+
+```text
+requireStudioPlatformRole('ADMIN')
+    PLATFORM_ADMIN        -> allow
+    PLATFORM_SUPER_ADMIN  -> allow
+    MERCHANT_*            -> deny
+
+requireStudioPlatformRole('SUPER_ADMIN')
+    PLATFORM_SUPER_ADMIN  -> allow
+    PLATFORM_ADMIN        -> deny
+    MERCHANT_*            -> deny
+```
+
+Keep these compatibility wrappers and make them delegate to the canonical hierarchy:
+
+```text
+requireStudioPlatformAdmin() -> requireStudioPlatformRole('ADMIN')
+requireStudioSuperAdmin()    -> requireStudioPlatformRole('SUPER_ADMIN')
+requireStudioAdmin()         -> requireStudioPlatformAdmin() compatibility path
+```
+
+#### R7.2 Shop scope
+
+Shop actions use a minimum merchant authority:
+
+```text
+inspect  -> VIEWER
+preview  -> VIEWER
+edit     -> EDITOR
+publish  -> ADMIN
+```
+
+Implement/export exactly:
+
+```text
+requireStudioShopRole(shopId, minimumRole)
+```
+
+with these semantics:
+
+```text
+PLATFORM_SUPER_ADMIN -> allow for every shop and every merchant minimum role
+PLATFORM_ADMIN       -> allow for every shop and every merchant minimum role
+MERCHANT_ADMIN       -> allow only for its requested shop; satisfies VIEWER/EDITOR/ADMIN
+MERCHANT_EDITOR      -> allow only for its requested shop; satisfies VIEWER/EDITOR only
+MERCHANT_VIEWER      -> allow only for its requested shop; satisfies VIEWER only
+```
+
+`requireStudioShopAccess(shopId, permission)` remains a compatibility API, but it must map the permission to the minimum merchant role above and delegate to `requireStudioShopRole`. It must not contain a separate PlatformAdmin permission matrix.
+
+Therefore a platform `ADMIN` **does** satisfy shop `publish` because shop publish requires `MERCHANT_ADMIN`, which is below `PLATFORM_ADMIN`.
+
+#### R7.3 Platform-only operations
+
+The hierarchy does **not** mean every operation becomes a shop operation. The following remain platform-scoped and must use a platform-role requirement:
+
+```text
+platform model catalogue                         -> minimum PLATFORM_ADMIN
+platform prompt-template/category administration -> minimum PLATFORM_ADMIN
+platform default model/prompt                     -> minimum PLATFORM_ADMIN
+platform release activation/rollback              -> PLATFORM_SUPER_ADMIN
+globally sensitive capability/tool enable/disable -> PLATFORM_SUPER_ADMIN
+PlatformAdmin membership/role administration      -> PLATFORM_SUPER_ADMIN
+global merchant-access override/administration    -> PLATFORM_SUPER_ADMIN
+```
+
+`requireStudioPermission()` is a legacy **platform-action** compatibility helper. If retained, it must delegate to the same centralized platform-role comparison and must not be used for shop publication. Do not use its generic `publish` permission to decide `requireStudioShopAccess(..., 'publish')`.
+
+#### R7.4 Platform precedence
+
+If an authenticated identity has both an active `PlatformAdmin` row and merchant-access rows, resolve the platform principal and stop. Do not downgrade it to a merchant role for a requested shop.
+
+#### R7.5 Multiple merchant shops
+
+Do not make one merchant `shopId` or role authoritative session state. Authentication proves identity; each shop authorization is evaluated against the requested `shopId`. The same identity may therefore be `ADMIN` for one shop, `EDITOR` for another and `VIEWER` for a third.
 
 ### R8. Manual step-up command
 
@@ -222,6 +316,12 @@ Do not log access tokens, session tokens or provider credentials.
 - [x] Preserve platform-only compatibility wrappers.
 - [x] Add manual step-up CLI and audit.
 - [x] Add focused auth/security tests.
+- [ ] Centralize role levels and minimum-role comparison for platform and merchant roles.
+- [ ] Add `requireStudioPlatformRole(minimumRole)` and `requireStudioShopRole(shopId, minimumRole)`.
+- [ ] Make `requireStudioPlatformAdmin`, `requireStudioSuperAdmin`, `requireStudioShopAccess` and `requireStudioAdmin` delegate to the canonical hierarchy.
+- [ ] Remove the separate `studioPlatformPermissionAllowed()` shop-publish rule; no parallel platform-vs-shop permission matrix may remain.
+- [ ] Update focused authorization regressions for hierarchy, platform precedence and multi-shop scope.
+- [ ] Verify no task-owned caller still implements an exact-role check where the new minimum-role helper is required.
 
 ## Interfaces / Contracts
 
@@ -244,6 +344,13 @@ Consumes `CommerceStudioMerchantAccess` from DATABASE-002. No new external auth 
 - [x] Provider subject binds once and cannot be reassigned.
 - [x] Development bypass remains sufficient by itself.
 - [x] No merchant self-service escalation exists.
+- [ ] Platform `SUPER_ADMIN` satisfies every lower platform/shop requirement.
+- [ ] Platform `ADMIN` satisfies every merchant shop requirement, including shop `publish`, for any shop.
+- [ ] Platform `ADMIN` does not satisfy `PLATFORM_SUPER_ADMIN` requirements.
+- [ ] Merchant `ADMIN`/`EDITOR`/`VIEWER` inherit downward only within an authorized requested shop.
+- [ ] PlatformAdmin precedence prevents an identity from being downgraded by merchant-access rows.
+- [ ] Shop authorization is request-scoped; no single shop role is stored as authoritative Auth.js session state.
+- [ ] Existing one-time subject binding, mixed-subject rejection and CLI provisioning behaviour remain unchanged.
 
 ## Validation
 
@@ -256,6 +363,16 @@ Consumes `CommerceStudioMerchantAccess` from DATABASE-002. No new external auth 
 - [x] manual CLI focused integration test against disposable PostgreSQL
 - [x] targeted ESLint; full typecheck has documented baseline failures
 - [x] `git diff --check`
+- [ ] hierarchy unit matrix: all five effective levels against platform and shop minimum roles
+- [ ] `requireStudioShopRole`: platform ADMIN and SUPER_ADMIN publish any shop; merchant ADMIN publishes exact shop only
+- [ ] `requireStudioPlatformRole`: platform ADMIN satisfies ADMIN but not SUPER_ADMIN; merchants satisfy neither
+- [ ] compatibility-wrapper tests prove `requireStudioShopAccess` and existing platform wrappers delegate to canonical hierarchy
+- [ ] regression search: no `studioPlatformPermissionAllowed` implementation/export/call remains unless retained solely as a thin delegating compatibility alias
+- [ ] targeted auth Vitest suite passes
+- [ ] disposable PostgreSQL auth/binding tests from Attempt 2 still pass unchanged
+- [ ] targeted ESLint passes
+- [ ] full typecheck run; any nonzero result must contain no task-owned auth diagnostics
+- [ ] `git diff --check` after Attempt 3 changes
 
 ## Stop Condition
 
@@ -340,55 +457,222 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 is not accepted. The overall direction is correct — one Auth.js/Google identity path, platform-admin precedence, shop-scoped merchant principals and a manual merchant-access command — but the submitted implementation has security/correctness gaps in the merchant subject-binding and authorization paths, and required PostgreSQL validation is incomplete.
+Attempt 2 resolved the previously requested merchant subject-binding race, mixed-subject rejection, compatibility-wrapper drift and PostgreSQL validation. Those corrections are retained. The task is returned to Ready because the authoritative authorization model has now been clarified: Studio roles are hierarchical, with platform roles above merchant roles and merchant scope enforced per requested shop.
 
-1. **Merchant first-login subject binding is not race-safe.** In `auth.ts`, `bindMerchantSubjects` reads the active rows, conditionally updates `providerSubject=NULL`, then returns the *pre-update* `rows.length` without checking the `updateMany` count or re-reading the durable subjects. Two concurrent first logins with different Google subjects can both read unbound rows; after one subject wins, the losing `updateMany` may update zero rows but the loser still returns a positive count and `authorizeGoogleProfile()` treats that login as authorized. This violates R5 and the acceptance criterion that provider subject binds once and cannot be reassigned. Make the transaction prove that every active Google merchant-access row for the normalized email is durably bound to the current subject before it reports success. A losing/conflicting race must deny and must not refresh `lastLoginAt`.
+The next authorized claim is **Attempt 3**. This is a bounded authorization correction, not a redesign. Preserve all accepted Attempt 2 identity-binding and CLI behaviour.
 
-2. **Per-request merchant resolution does not reject a mixed-subject identity set.** `resolveStudioPrincipal()` filters to rows whose subject matches the current session and can authorize one shop even when another active row for the same normalized email is bound to a different subject. R5 establishes one deterministic Google identity across all active rows for that email. If any active Google row has a different non-null subject, resolution must deny with `merchant_identity_conflict` rather than authorize a matching subset.
+#### Attempt 3 deterministic correction contract
 
-3. **`requireStudioShopAccess()` broadens existing PlatformAdmin publish permissions.** It returns any `PLATFORM_ADMIN` immediately for every shop permission, including `publish`. Existing Studio authorization makes platform `ADMIN` inspect/edit/preview only and reserves publish/rollback/enable/disable for `SUPER_ADMIN`; changing PlatformAdmin permissions is explicitly out of scope. Preserve that existing platform permission matrix while applying the new merchant VIEWER/EDITOR/ADMIN matrix. Add regressions proving platform `ADMIN` cannot publish, platform `SUPER_ADMIN` can, and merchant `ADMIN` can publish only for its exact shop.
+Execute the following in order. Do not substitute a different authorization model.
 
-4. **R6's compatibility-wrapper requirement is not implemented.** `lib/auth/platform-admin.ts` still owns a separate `requireStudioAdmin()`/`resolveStudioAdminPrincipal()` authorization path, while `requireStudioPlatformAdmin()` uses the new unified resolver. `requireStudioAdmin()` must become a compatibility wrapper over the unified platform-admin guard (without broadening existing platform-only entry points), so there is one authoritative hosted authorization path rather than two implementations that can drift. Preserve legacy exports/types where needed by callers.
+1. **Read before editing**
 
-5. **Required validation is incomplete.** The task explicitly requires a focused manual-CLI integration test against disposable PostgreSQL, but the Completion Report states it was not run and every Validation checkbox remains unchecked. Attempt 2 must execute the real grant/update/disable/enable path against isolated PostgreSQL and verify durable merchant-access state plus same-transaction `CommerceAuditEvent` rows. It must also exercise the merchant binding race against the real persistence implementation (or an equivalently deterministic database-backed concurrency test), not only mock `bindMerchantSubjects`.
+   Re-read this entire task, the parent ARCH-021 authorization-hierarchy section, and these existing task-owned files before making source changes:
 
-6. **The Completion Report must be reconciled before resubmission.** Check each Validation item only when actually completed; record any baseline typecheck failures precisely; and add the launcher-resolved dedicated parent/implementation worktree, start-of-attempt synchronization and recursive-submodule evidence required by the task isolation policy.
+   ```text
+   lib/auth/merchant-access.ts
+   lib/auth/platform-admin.ts
+   lib/auth/permissions.ts
+   lib/auth/index.ts
+   tests/auth-merchant-access.test.ts
+   tests/auth-platform-admin.test.ts
+   tests/auth-permissions.test.ts
+   tests/auth-security-policy.test.ts
+   tests/auth-merchant-access-postgres.test.ts
+   ```
 
-No work on `ARCH-021-COMMERCE-028` is authorized while this task remains incomplete.
+   Do not modify Agent Configuration service/action files owned by COMMERCE-025/026 during this task. This task establishes the canonical authorization helpers those tasks must consume.
+
+2. **Centralize role comparison**
+
+   Add one canonical role-level representation in the auth layer equivalent to:
+
+   ```text
+   MERCHANT_VIEWER       10
+   MERCHANT_EDITOR       20
+   MERCHANT_ADMIN        30
+   PLATFORM_ADMIN        40
+   PLATFORM_SUPER_ADMIN  50
+   ```
+
+   The numeric values are comparison implementation details only. Do not add them to the database, Auth.js session, Prisma schema or merchant-access records.
+
+   Add pure comparison helpers so role ordering is not reimplemented by callers. Direct `role === ...` is allowed only where testing an identity kind or an operation explicitly requiring the exact top role is clearer than a minimum-role call; ordinary authorization must use the central minimum-role comparison.
+
+3. **Implement the canonical platform-role helper**
+
+   Export:
+
+   ```ts
+   requireStudioPlatformRole(minimumRole: 'ADMIN' | 'SUPER_ADMIN')
+   ```
+
+   Required outcomes:
+
+   ```text
+   actual PLATFORM_ADMIN, minimum ADMIN         -> allow
+   actual PLATFORM_SUPER_ADMIN, minimum ADMIN   -> allow
+   actual PLATFORM_ADMIN, minimum SUPER_ADMIN   -> deny
+   actual PLATFORM_SUPER_ADMIN, minimum SUPER_ADMIN -> allow
+   any MERCHANT principal                       -> deny
+   ```
+
+   `requireStudioPlatformAdmin()` must delegate to `requireStudioPlatformRole('ADMIN')`.
+   `requireStudioSuperAdmin()` must delegate to `requireStudioPlatformRole('SUPER_ADMIN')`.
+   `requireStudioAdmin()` remains the legacy shape adapter over `requireStudioPlatformAdmin()` and must not perform a second authorization lookup.
+
+4. **Implement the canonical shop-role helper**
+
+   Export:
+
+   ```ts
+   requireStudioShopRole(
+     shopId: string,
+     minimumRole: 'VIEWER' | 'EDITOR' | 'ADMIN',
+   )
+   ```
+
+   Required outcomes:
+
+   ```text
+   PLATFORM_SUPER_ADMIN -> allow any shop / VIEWER|EDITOR|ADMIN
+   PLATFORM_ADMIN       -> allow any shop / VIEWER|EDITOR|ADMIN
+
+   MERCHANT_ADMIN       -> allow exact shop / VIEWER|EDITOR|ADMIN
+   MERCHANT_EDITOR      -> allow exact shop / VIEWER|EDITOR; deny ADMIN
+   MERCHANT_VIEWER      -> allow exact shop / VIEWER; deny EDITOR|ADMIN
+
+   any merchant role on a different shop -> deny
+   ```
+
+   The resolver must continue to give an active PlatformAdmin precedence before merchant lookup. Do not query merchant access after a valid PlatformAdmin has resolved.
+
+5. **Make permission compatibility delegate; do not keep a parallel matrix**
+
+   `requireStudioShopAccess(shopId, permission)` remains for existing callers and must perform only this mapping:
+
+   ```text
+   inspect -> VIEWER
+   preview -> VIEWER
+   edit    -> EDITOR
+   publish -> ADMIN
+   ```
+
+   It must then call/delegate to `requireStudioShopRole`.
+
+   Remove the current rule that treats platform `ADMIN` as unable to perform shop `publish`. Platform `ADMIN` must satisfy `MERCHANT_ADMIN` shop authority globally.
+
+   Remove `studioPlatformPermissionAllowed()` as an independent authorization implementation. If a compatibility export is demonstrably required by an existing caller, it may remain only as a thin wrapper over the canonical role comparison; it must not contain a second permission matrix.
+
+6. **Keep platform-only privileged operations distinct from shop publication**
+
+   Do not interpret shop `publish` as platform release activation. Platform-only operations must continue to use platform-role checks. The authoritative minimum authority is:
+
+   ```text
+   platform catalogue/templates/default configuration -> PLATFORM_ADMIN
+   platform release activation/rollback                -> PLATFORM_SUPER_ADMIN
+   global sensitive capability enable/disable          -> PLATFORM_SUPER_ADMIN
+   PlatformAdmin membership/role administration        -> PLATFORM_SUPER_ADMIN
+   global merchant-access override                      -> PLATFORM_SUPER_ADMIN
+   ```
+
+   `requireStudioPermission()` is a legacy platform-action helper. If retained, make its role comparison use the same canonical hierarchy. Do not call it from `requireStudioShopAccess` and do not use its generic `publish` value to authorize shop publication.
+
+7. **Preserve accepted identity semantics exactly**
+
+   Do not alter the accepted Attempt 2 behaviour for:
+
+   ```text
+   one Auth.js Google path
+   development bypass -> PLATFORM_SUPER_ADMIN
+   PlatformAdmin precedence
+   merchant one-time providerSubject binding
+   concurrent first-login single-winner behaviour
+   mixed-subject rejection
+   lastLoginAt update ordering
+   multi-shop merchant access
+   manual grant/update/disable/enable CLI
+   audit durability
+   ```
+
+8. **Required tests — exact regressions**
+
+   Add/modify tests to prove at least:
+
+   ```text
+   platform SUPER_ADMIN + shop VIEWER requirement -> allow
+   platform SUPER_ADMIN + shop ADMIN requirement  -> allow
+   platform ADMIN + shop VIEWER requirement       -> allow
+   platform ADMIN + shop EDITOR requirement       -> allow
+   platform ADMIN + shop ADMIN requirement        -> allow
+   platform ADMIN + shop publish compatibility    -> allow
+
+   merchant ADMIN + own shop ADMIN requirement    -> allow
+   merchant ADMIN + other shop VIEWER requirement -> deny
+   merchant EDITOR + own shop EDITOR requirement  -> allow
+   merchant EDITOR + own shop ADMIN requirement   -> deny
+   merchant VIEWER + own shop VIEWER requirement  -> allow
+   merchant VIEWER + own shop EDITOR requirement  -> deny
+
+   platform ADMIN + platform ADMIN requirement       -> allow
+   platform SUPER_ADMIN + platform ADMIN requirement -> allow
+   platform ADMIN + platform SUPER_ADMIN requirement -> deny
+   merchant ADMIN + platform ADMIN requirement       -> deny
+   ```
+
+   Replace the existing regression that says `platform ADMIN cannot publish` with the correct shop-scoped assertion that platform `ADMIN` **can** satisfy shop `publish`.
+
+   Keep the Attempt 2 PostgreSQL binding/CLI tests and rerun them without weakening or skipping their explicit disposable-PostgreSQL proof.
+
+9. **Deterministic source audit before handoff**
+
+   Run repository searches and record the results in the Completion Report:
+
+   ```bash
+   rg -n "studioPlatformPermissionAllowed|studioShopPermissionAllowed|requireStudioShopAccess|requireStudioShopRole|requireStudioPlatformRole|role === 'SUPER_ADMIN'|role === 'ADMIN'" \
+     lib/auth tests/auth-*.test.ts
+   ```
+
+   Inspect every hit. There must be no second task-owned shop authorization matrix and no stale assertion that platform `ADMIN` is below merchant `ADMIN`. Exact-role comparisons retained for identity-shape/adaptation purposes must be listed and justified in the Completion Report.
+
+10. **Validation and stop condition**
+
+    Run the focused auth tests, explicit disposable-PostgreSQL auth tests, targeted ESLint, full typecheck, and `git diff --check`. A known unrelated typecheck baseline may remain nonzero only if no changed/task-owned auth file appears in the diagnostics.
+
+    Update every Work Item, Acceptance Criterion and Validation checkbox truthfully. Record the launcher-resolved parent/implementation worktrees, start-of-attempt synchronization, recursive submodule state, implementation commit and parent report commit.
+
+    Then set:
+
+    ```yaml
+    status: review
+    executor: null
+    claimed_at: null
+    ```
+
+    return the Completion Report to `moda_architect` and **STOP**. Do not start `ARCH-021-COMMERCE-028`.
 
 ### Reviewed Files
 
-- `auth.ts`
-- `lib/auth/index.ts`
 - `lib/auth/merchant-access.ts`
 - `lib/auth/platform-admin.ts`
 - `lib/auth/permissions.ts`
-- `lib/auth/security-policy.ts`
-- `lib/auth/audit.ts`
-- `scripts/merchant-studio-access.mjs`
+- `lib/auth/index.ts`
 - `tests/auth-merchant-access.test.ts`
-- `tests/auth-security-policy.test.ts`
 - `tests/auth-platform-admin.test.ts`
-- `tests/auth-entrypoints.test.ts`
-- `database/prisma/schema.prisma`
-- `database/prisma/migrations/20260924103000_arch021_simplify_agent_configuration/migration.sql`
+- `tests/auth-permissions.test.ts`
+- `tests/auth-security-policy.test.ts`
+- `tests/auth-merchant-access-postgres.test.ts`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
-- this task file and Completion Report
+- this task file and Attempt 2 Completion Report
 
 ### Validation Reviewed
 
-- Submitted focused result: `34` tests passed across `auth-merchant-access`, `auth-security-policy` and `auth-platform-admin`; source/tests were inspected, but the archive contains no `node_modules`, so Vitest was not independently rerun in this review environment.
-- Submitted targeted ESLint: passed; not independently rerun for the same dependency reason.
-- `node --check scripts/merchant-studio-access.mjs`: submitted as passed; source inspected.
-- `git diff --check`: submitted as passed.
-- Full typecheck: submitted with unrelated existing preview/generated-Prisma diagnostics and no task-owned diagnostics.
-- Required disposable-PostgreSQL CLI integration validation: **not run**.
-- Required durable merchant-binding concurrency behaviour: **not proven** by the submitted mocked tests.
+Attempt 2's 38 focused tests, two explicit disposable-PostgreSQL tests, ESLint, syntax and diff checks are accepted as evidence for the identity-binding/CLI corrections. They do not validate the newly clarified hierarchical authorization rule because the submitted tests explicitly assert the opposite platform-ADMIN shop-publish behaviour. Attempt 3 must run the hierarchy regressions above while preserving the accepted PostgreSQL evidence.
 
 ### Architecture Conformance
 
-Partial. The one-Auth.js design, principal shapes, development bypass, platform precedence intent, shop-scoped merchant roles and manual provisioning boundary conform to ARCH-021. Acceptance is blocked by the race in first-login identity binding, mixed-subject authorization gap, PlatformAdmin publish-permission broadening, duplicate legacy/unified platform authorization paths, and incomplete required PostgreSQL validation.
+Partial. Attempt 2 conforms on authentication, PlatformAdmin precedence, merchant subject binding, mixed-subject rejection, multi-shop persistence and manual provisioning. The remaining non-conformance is the authorization ordering: the implementation currently treats platform `ADMIN` as lower than merchant `ADMIN` for shop publication, contrary to the clarified hierarchy.
 
 ### Follow-up
 
-Reclaim the same task for Attempt 2. Correct only the auth/authorization and validation issues above; do not start `ARCH-021-COMMERCE-028` or broaden into merchant-facing Studio UI work. After correction, rerun focused auth tests, the disposable-PostgreSQL CLI/binding validations, targeted ESLint/typecheck and `git diff --check`, reconcile the Completion Report, set the task back to `review`, clear `executor`/`claimed_at`, and STOP.
+Reclaim this same task for Attempt 3. No new task is required. `ARCH-021-COMMERCE-028` remains gated until COMMERCE-025, COMMERCE-026 and this task are Complete.
