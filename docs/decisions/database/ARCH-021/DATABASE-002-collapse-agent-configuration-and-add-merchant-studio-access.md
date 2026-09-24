@@ -40,6 +40,7 @@ Coordinator:
 
 `moda_architect`
 
+
 ## Objective
 
 Replace the fragmented Phase-2 model-selection/prompt-pointer/template-revision persistence with one Agent Configuration model, keep prompt revisions and template categories, add the shop-scoped merchant Studio authorization record, and make audit events support both platform-admin and merchant actors plus lightweight operation reconciliation.
@@ -99,8 +100,8 @@ model CommerceAgentConfiguration {
   environment            CommerceEnvironment
   scope                  CommerceAgentPromptScope
   shopId                 String?                  @db.Text
-  modelId                String?                 @db.Text
-  activePromptRevisionId String?                 @db.Text
+  modelId                String?                  @db.Text
+  activePromptRevisionId String?                  @db.Text
   modelEditVersion       Int                      @default(1)
   promptEditVersion      Int                      @default(1)
   createdAt              DateTime                 @default(now()) @db.Timestamptz(3)
@@ -168,7 +169,26 @@ createdAt              <- earliest non-null source createdAt, otherwise migratio
 updatedAt              <- latest non-null source updatedAt, otherwise createdAt
 ```
 
-The shop source row set is the FULL OUTER JOIN of `CommerceShopModelSelection` and `CommerceShopPromptPointer` on `(environment, shopId)`, with the analogous mappings and `generationId` intentionally not migrated.
+Shop key:
+
+```text
+(environment, scope=SHOP, shopId)
+```
+
+The source row set is the FULL OUTER JOIN of `CommerceShopModelSelection` and `CommerceShopPromptPointer` on `(environment, shopId)`.
+
+Map:
+
+```text
+modelId                <- model selection modelId or NULL
+activePromptRevisionId <- prompt pointer promptRevisionId or NULL
+modelEditVersion       <- model selection editVersion or 1
+promptEditVersion      <- prompt pointer editVersion or 1
+createdAt              <- earliest non-null source createdAt
+updatedAt              <- latest non-null source updatedAt
+```
+
+`generationId` values are intentionally not migrated.
 
 ### R4. Database-enforce prompt scope ownership
 
@@ -212,33 +232,132 @@ sourceTemplate   CommercePromptTemplate? @relation(fields: [sourceTemplateId], r
 
 For every current `sourceTemplateRevisionId`, backfill `sourceTemplateId` from the referenced `CommercePromptTemplateRevision.templateId`.
 
-Then remove `CommerceAgentPromptRevision.sourceTemplateRevisionId` and the `CommercePromptTemplateRevision` model/table. Keep prompt revisions themselves unchanged and immutable after publish.
+Then remove:
+
+```text
+CommerceAgentPromptRevision.sourceTemplateRevisionId
+CommercePromptTemplateRevision model/table
+```
+
+Keep prompt revisions themselves unchanged and immutable after publish.
 
 ### R7. Remove PlatformAdmin-only creator fields from merchant-editable prompt runtime models
 
-Remove `createdByAdminId` and `createdBy` from `CommerceAgentPrompt`.
+Remove these fields/relations from `CommerceAgentPrompt`:
 
-Remove `createdByAdminId`, `createdBy`, `publishedByAdminId`, and `publishedBy` from `CommerceAgentPromptRevision`.
+```text
+createdByAdminId
+createdBy
+```
+
+Remove these fields/relations from `CommerceAgentPromptRevision`:
+
+```text
+createdByAdminId
+createdBy
+publishedByAdminId
+publishedBy
+```
 
 Actor history for new operations is represented by `CommerceAuditEvent`. Do not replace these fields with another polymorphic creator column.
 
 ### R8. Add merchant Studio authorization enum/model exactly
 
-Add enum `CommerceStudioMerchantRole` with `ADMIN`, `EDITOR`, and `VIEWER` in schema `commerce`.
+Add enum:
 
-Add model `CommerceStudioMerchantAccess` with shop, provider, providerSubject, normalized email, role, active, platform-admin creator/updater, login and timestamps; unique `[shopId, email]`, unique `[shopId, provider, providerSubject]`, indexes `[email, active]`, `[provider, providerSubject, active]`, `[shopId, active, role]`, and schema `commerce`. Use the exact relation names `CommerceStudioMerchantAccessCreator`, `CommerceStudioMerchantAccessUpdater`, and `CommerceAuditMerchantActor`, with restrictive foreign keys.
+```prisma
+enum CommerceStudioMerchantRole {
+  ADMIN
+  EDITOR
+  VIEWER
 
-Email values must be normalized by service code to trimmed lowercase. Add check exactly named `CommerceStudioMerchantAccess_email_normalized_check` requiring `email = lower(btrim(email))` and non-empty.
+  @@schema("commerce")
+}
+```
+
+Add model:
+
+```prisma
+model CommerceStudioMerchantAccess {
+  id                       String                     @id @default(cuid()) @db.Text
+  shopId                   String                     @db.Text
+  provider                 String                     @default("google") @db.VarChar(32)
+  providerSubject          String?                    @db.VarChar(255)
+  email                    String                     @db.VarChar(320)
+  role                     CommerceStudioMerchantRole @default(ADMIN)
+  active                   Boolean                    @default(true)
+  createdByPlatformAdminId String                     @db.Text
+  updatedByPlatformAdminId String?                    @db.Text
+  lastLoginAt              DateTime?                  @db.Timestamptz(3)
+  createdAt                DateTime                   @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime                   @default(now()) @updatedAt @db.Timestamptz(3)
+
+  shop      Shop           @relation(fields: [shopId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  createdBy PlatformAdmin  @relation("CommerceStudioMerchantAccessCreator", fields: [createdByPlatformAdminId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  updatedBy PlatformAdmin? @relation("CommerceStudioMerchantAccessUpdater", fields: [updatedByPlatformAdminId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  auditEvents CommerceAuditEvent[] @relation("CommerceAuditMerchantActor")
+
+  @@unique([shopId, email])
+  @@unique([shopId, provider, providerSubject])
+  @@index([email, active])
+  @@index([provider, providerSubject, active])
+  @@index([shopId, active, role])
+  @@schema("commerce")
+}
+```
+
+Email values must be normalized by service code to trimmed lowercase. Add DB check exactly named `CommerceStudioMerchantAccess_email_normalized_check` requiring `email = lower(btrim(email))` and non-empty.
 
 Create function exactly `commerce.arch021_merchant_access_identity_guard` and trigger `CommerceStudioMerchantAccess_identity_guard_trigger`.
 
-The trigger must allow `providerSubject` transitions only `NULL -> non-empty` and same non-empty value -> same value. It must reject non-null A -> non-null B and non-null -> NULL.
+The trigger must allow `providerSubject` transition only:
+
+```text
+NULL -> non-empty value
+same non-empty value -> same value
+```
+
+It must reject:
+
+```text
+non-null A -> non-null B
+non-null -> NULL
+```
 
 ### R9. Make Commerce audit actor-compatible and reconciliation-capable
 
-Add enum `CommerceAuditActorType` with `PLATFORM_ADMIN` and `MERCHANT_ACCESS` in schema `commerce`.
+Add enum:
 
-Change `CommerceAuditEvent` to add `actorType` defaulting to `PLATFORM_ADMIN`, make `actorAdminId` nullable, and add nullable `actorMerchantAccessId`, `operationId` (`VarChar(128)`), `agentConfigurationId`, and `merchantAccessId` relations as specified. Keep `promptTemplateRevisionId` as an optional raw historical identifier without a Prisma relation/FK.
+```prisma
+enum CommerceAuditActorType {
+  PLATFORM_ADMIN
+  MERCHANT_ACCESS
+
+  @@schema("commerce")
+}
+```
+
+Change `CommerceAuditEvent` by adding/changing exactly:
+
+```text
+actorType              CommerceAuditActorType @default(PLATFORM_ADMIN)
+actorAdminId           String?                 // currently required; make nullable
+actorMerchantAccessId  String?
+operationId            String? @db.VarChar(128)
+agentConfigurationId   String?
+merchantAccessId       String?
+```
+
+Relations:
+
+```text
+actorAdminId          -> PlatformAdmin.id
+actorMerchantAccessId -> CommerceStudioMerchantAccess.id relation name CommerceAuditMerchantActor
+agentConfigurationId  -> CommerceAgentConfiguration.id
+merchantAccessId      -> CommerceStudioMerchantAccess.id
+```
+
+Keep `promptTemplateRevisionId` as an optional raw text historical identifier after dropping the TemplateRevision table, but remove its Prisma relation/FK.
 
 Create partial unique index exactly:
 
@@ -248,11 +367,17 @@ ON commerce."CommerceAuditEvent" ("operationId")
 WHERE "operationId" IS NOT NULL;
 ```
 
-Backfill `actorType='PLATFORM_ADMIN'` for all existing rows. For existing Phase-2 Agent Configuration/template actions, set `operationId=id` when null; do not modify unrelated historical audit rows. Add check exactly named `CommerceAuditEvent_actor_check` requiring exactly one actor according to `actorType`.
+Backfill `actorType='PLATFORM_ADMIN'` for all existing rows.
+
+For existing Phase-2 Agent Configuration/template actions, set `operationId=id` when the new column is null. The relevant action values are the existing enum values from `CREATE_MODEL_CATALOGUE_ENTRY` through `CLEAR_SHOP_PROMPT_POINTER` inclusive; do not modify unrelated historical audit rows.
+
+Add check exactly named `CommerceAuditEvent_actor_check` requiring exactly one actor according to `actorType`.
 
 ### R10. Audit action compatibility
 
-Do not remove current `CommerceAuditAction` values. Add exactly:
+Do not remove any current `CommerceAuditAction` values because existing rows may use them.
+
+Add exactly these values:
 
 ```text
 UPSERT_AGENT_CONFIGURATION
@@ -269,13 +394,21 @@ BIND_MERCHANT_STUDIO_IDENTITY
 
 ### R11. Drop obsolete tables only after successful backfill
 
-After all backfills and new FKs/guards are valid, drop exactly `CommercePlatformModelSelection`, `CommerceShopModelSelection`, `CommercePlatformPromptPointer`, `CommerceShopPromptPointer`, and `CommercePromptTemplateRevision`.
+After all backfills and new FKs/guards are valid, drop exactly:
+
+```text
+CommercePlatformModelSelection
+CommerceShopModelSelection
+CommercePlatformPromptPointer
+CommerceShopPromptPointer
+CommercePromptTemplateRevision
+```
 
 Do not drop model catalogue, prompt lineage/revisions, template categories/templates, capabilities, releases, grants, connections, credentials, tools or audits.
 
 ### R12. PlatformAdmin relation cleanup
 
-Remove inverse relations referencing the five dropped models and removed prompt creator/publisher relations.
+Remove inverse relations referencing the five dropped models and the removed prompt creator/publisher relations.
 
 Add:
 
@@ -288,11 +421,22 @@ Keep existing model-catalogue/template-category/template admin relations.
 
 ### R13. One migration only
 
-Create exactly `prisma/migrations/20260924103000_arch021_simplify_agent_configuration/migration.sql` and perform add/backfill/guard/drop in one deterministic migration. Do not create a second ARCH-021 simplification migration.
+Create exactly:
+
+```text
+prisma/migrations/20260924103000_arch021_simplify_agent_configuration/migration.sql
+```
+
+The migration must perform add/backfill/guard/drop in one deterministic migration. Do not create a second ARCH-021 simplification migration in this task.
 
 ### R14. Deterministic validators
 
-Add scripts `scripts/validate-arch021-simplification-schema.mjs` and `scripts/validate-arch021-simplification-migration.mjs`.
+Add scripts:
+
+```text
+scripts/validate-arch021-simplification-schema.mjs
+scripts/validate-arch021-simplification-migration.mjs
+```
 
 Add package scripts exactly:
 
@@ -301,7 +445,9 @@ Add package scripts exactly:
 "test:arch021-simplification-migration": "node scripts/validate-arch021-simplification-migration.mjs"
 ```
 
-Migration validation must use disposable PostgreSQL and prove fresh schema application and upgrade from current Phase-2 schema with seeded platform/shop model+prompt/template data. The upgrade fixture must prove all mapped IDs/text/edit versions and audit `operationId` backfills exactly.
+Migration validation must use disposable PostgreSQL and prove both fresh schema application and upgrade from current Phase-2 schema with seeded platform/shop model+prompt/template data.
+
+The upgrade fixture must prove all mapped IDs/text/edit versions and audit `operationId` backfills exactly.
 
 ## Work Items
 
@@ -362,6 +508,7 @@ No Shared-package contract is introduced.
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin enabled or follow-on tasks.
+
 
 ## Implementation Notes
 

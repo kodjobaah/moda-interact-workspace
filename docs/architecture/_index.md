@@ -976,11 +976,6 @@ Configuration, prompt-template and platform-prompt authoring surfaces. Shop over
 immutable row-generation tokens plus edit versions so clear/recreate cannot ABA-match stale
 mutations.
 
-Phase 3 is materialised for complete Tool authoring without live provider execution.
-COMMERCE-016 is architect-accepted Complete: Commerce now owns the canonical persisted Tool
-definition while Shared remains pinned at exact 0.14.2. The independent current Ready frontier is
-COMMERCE-017 (bounded request JavaScript), COMMERCE-018 (Shopify Admin GraphQL compiler),
-COMMERCE-019 (common authoring validation/publication gate), and COMMERCE-020 (Tool authoring
-domain extraction).
+Phase 3 contract task COMMERCE-016 is architect-accepted Complete, but the remaining Phase-3 frontier is paused while a pre-Phase-3 simplification checkpoint runs. The checkpoint collapses Agent Configuration persistence, simplifies prompt templates while retaining first-class categories, establishes unified Auth.js platform/merchant authorization, removes production function-valued Studio service props, preserves explicit UI reconciliation without swallowing errors, and removes RSA/JWT/token exchange from the private MCP path. Initial checkpoint frontier: DATABASE-002 and COMMERCE-030.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
