@@ -970,16 +970,17 @@ Phase 1's six Commerce-only tasks for real Connections composition, server-valid
 `shopId` context, production external connection selection and JavaScript response-panel
 installation are architect-accepted Complete.
 
-Phase 2 is now materialised as one cohesive Database task and the Commerce task set covering
-the model catalogue/selections, data-driven prompt-template categories with multiple templates
-per category, immutable template/prompt revisions, independent platform/shop model/prompt
-resolution, the shared Agent Configuration shell/model UI, selected-shop overrides, the template
-library and platform prompt authoring. COMMERCE-015 is the bounded read-contract completion task
-for durable prompt-template revision history. Shop override CAS uses immutable row-generation tokens plus
-edit versions so clear/recreate cannot ABA-match stale mutations. DATABASE-001, COMMERCE-007 and
-COMMERCE-011 are architect-accepted Complete; COMMERCE-008 and COMMERCE-015 are architect-accepted Complete. COMMERCE-013 is Ready for Attempt 2 now that the bounded revision-history read dependency is satisfied, while the other Phase 2 tasks follow
-their explicit dependencies. The Phase 2 UI incrementally
-extracts Agent Configuration state from `StudioWorkspace` without rewriting unrelated Studio
-domains. Live model/tool execution and Shared/Background runtime changes remain deferred.
+Phase 2 is architect-accepted Complete across its Database and Commerce tasks, including
+the bounded COMMERCE-015 prompt-template revision-history read contract and the accepted Agent
+Configuration, prompt-template and platform-prompt authoring surfaces. Shop override CAS uses
+immutable row-generation tokens plus edit versions so clear/recreate cannot ABA-match stale
+mutations.
+
+Phase 3 is materialised for complete Tool authoring without live provider execution.
+COMMERCE-016 is architect-accepted Complete: Commerce now owns the canonical persisted Tool
+definition while Shared remains pinned at exact 0.14.2. The independent current Ready frontier is
+COMMERCE-017 (bounded request JavaScript), COMMERCE-018 (Shopify Admin GraphQL compiler),
+COMMERCE-019 (common authoring validation/publication gate), and COMMERCE-020 (Tool authoring
+domain extraction).
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)

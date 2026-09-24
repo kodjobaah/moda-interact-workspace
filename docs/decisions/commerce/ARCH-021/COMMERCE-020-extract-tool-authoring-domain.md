@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ enables:
   - ARCH-021-COMMERCE-021
   - ARCH-021-COMMERCE-022
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Extract Tool authoring domain from StudioWorkspace

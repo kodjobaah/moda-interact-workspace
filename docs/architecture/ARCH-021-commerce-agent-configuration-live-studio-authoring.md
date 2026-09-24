@@ -4,14 +4,14 @@ title: CommerceAgent configuration and live Studio authoring
 status: agreed
 coordinator: moda_architect
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # ARCH-021: CommerceAgent configuration and live Studio authoring
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 and Phase 2 are architect-accepted Complete. Phase 3 is materialised; `ARCH-021-COMMERCE-016` is the initial Ready frontier.
+Agreed — Phase 0 contract accepted; Phase 1 and Phase 2 are architect-accepted Complete. Phase 3 is materialised; `ARCH-021-COMMERCE-016` is architect-accepted Complete and `ARCH-021-COMMERCE-017` through `020` form the independent Ready frontier.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -781,11 +781,11 @@ Phase 3 tasks:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-016 | moda_commerce | Ready | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-017 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
-| ARCH-021-COMMERCE-018 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-020 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
+| ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-019, 020, 023, ARCH-021-COMMERCE-005, 006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-019, 020, 024 |
 | ARCH-021-COMMERCE-023 | moda_commerce | Pending | ARCH-021-COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
@@ -804,7 +804,7 @@ COMMERCE-016
     |
     +--> COMMERCE-020 -------- Tool UI extraction ------------+
 
-After COMMERCE-016 is accepted, COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020 are independent and may execute in parallel. COMMERCE-023 is the External HTTP validator/preview boundary; COMMERCE-024 is the Shopify Admin validator boundary. COMMERCE-020 also consumes the already-accepted Phase 1 Tool composition (COMMERCE-005/006).
+COMMERCE-016 is architect-accepted Complete. COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020 are Ready, independent and may execute in parallel. COMMERCE-023 is the External HTTP validator/preview boundary; COMMERCE-024 is the Shopify Admin validator boundary. COMMERCE-020 also consumes the already-accepted Phase 1 Tool composition (COMMERCE-005/006).
 ```
 
 Phase 3 exit criteria:
@@ -876,11 +876,11 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-013 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
-| ARCH-021-COMMERCE-016 | moda_commerce | Ready | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-017 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
-| ARCH-021-COMMERCE-018 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-018, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-020 | moda_commerce | Pending | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-020-COMMERCE-011 |
 
