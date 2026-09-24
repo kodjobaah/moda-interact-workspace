@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -470,307 +470,247 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 2 implementation `e5c6ed2` with parent report `edd22c18` is not accepted yet. The reduced service implementation now contains most of the required DATABASE-002 semantics: nullable model reads, first-write configuration creation with edit-version baseline `1 -> 2`, current-template provenance via `sourceTemplateId`, real prompt lineage ids, parameterized per-lineage draft locking, post-failure operation-receipt reconciliation, and shared-library structured database-unavailable logging.
+Attempt 3 implementation `d1e884c` with parent report `cb0486b3` is not accepted yet. The reduced DATABASE-002 service implementation is close and most Attempt 2 corrections are present: the three formerly skipped unit suites are enabled, model/prompt contracts use `CommerceAgentConfiguration`, shop-scoped database-unavailable logs carry `shopId`, first-write CAS uses the `1 -> 2` baseline, cleared overrides retain the configuration row, prompt pointers expose the real prompt lineage id, and operation-receipt reconciliation returns `OPERATION_ALREADY_COMMITTED`.
 
-The remaining blockers are deterministic and bounded. Attempt 3 MUST preserve the current reduced service implementation unless one of the correction items below requires a direct change. Do not restore any dropped Phase-2 table, generation token, template revision provenance, payload hash, stored result replay, or `kind:'unknown'` result.
+Attempt 4 MUST preserve those accepted mechanics. Do not restore dropped Phase-2 selection/pointer tables, generation tokens, template-revision provenance, payload hashing, stored-result replay, or `kind:'unknown'`.
 
-Correction contract, in execution order:
+The remaining corrections are deterministic and must be completed in this order:
 
-1. **Finish the shared-logger correlation contract.**
-   - Files: `src/commerce/agent-configuration/model-service.ts` and `src/commerce/agent-configuration/prompt-service.ts`.
-   - Continue using only:
-
-     ```ts
-     import { createLogger } from '@modainteract/moda-interact-shared/logging';
-     ```
-
-   - Preserve the existing logger identity:
-
-     ```ts
-     createLogger({
-       serviceNamespace: 'moda-interact',
-       serviceName: 'moda-interact-commerce',
-       environment: process.env.DEPLOYMENT_ENVIRONMENT_NAME ?? process.env.NODE_ENV ?? 'unknown',
-     });
-     ```
-
-   - Keep the event name exactly:
+1. **Restore the mandatory platform-baseline rule in the effective resolver.**
+   - File: `src/commerce/agent-configuration/effective-configuration.ts`.
+   - ARCH-021 still requires a valid platform model default AND valid platform active prompt before an environment is considered configured, even when a shop override exists.
+   - Inside the existing `RepeatableRead` transaction, first resolve/validate:
 
      ```text
-     commerce.agent_configuration.database_unavailable
+     platform model -> must be present, joined, enabled
+     platform prompt -> must be present, PUBLISHED, PLATFORM scoped
      ```
 
-   - Preserve the original thrown `Error`/value in the `error` field and continue returning only `DATABASE_UNAVAILABLE`, `retryable: true` to the caller.
-   - For shop-scoped operations where `shopId` is already present on the public input, pass that same bounded `shopId` into the database-unavailable log event. At minimum this applies to:
+   - If either platform baseline is unavailable/invalid, the corresponding effective component MUST be `UNAVAILABLE`; a shop override MUST NOT mask the missing/broken platform baseline.
+   - Only after the platform baseline is valid may an explicit shop override replace the effective value.
+   - Preserve independent model/prompt resolution: a valid shop model override does not imply a shop prompt override and vice versa.
+   - Update `tests/agent-configuration-effective.test.ts`: the existing case named `requires valid platform baselines even when shop overrides exist` is currently asserting the opposite behavior and MUST be corrected. Required expectations:
 
      ```text
-     setShopModelOverride
-     clearShopModelOverride
-     setShopPromptOverride
-     clearShopPromptOverride
+     platform model missing + valid shop model -> effective model UNAVAILABLE
+     platform model disabled + valid shop model -> effective model UNAVAILABLE
+     platform prompt missing + valid shop prompt -> effective prompt UNAVAILABLE
+     valid platform baselines + valid shop override -> SHOP source
      ```
 
-   - Do not query another table merely to obtain logging metadata.
-   - Do not log `DATABASE_URL`, connection strings, credentials, passwords, authorization headers, tokens, secrets, or manually copied `error.message` / `error.stack` fields.
-   - Logger/sink failure MUST remain isolated: caller result stays `DATABASE_UNAVAILABLE`, `retryable: true`.
-   - Do not introduce `console.log`, `console.error`, Pino, Winston, or another Commerce-local generic logger.
-
-2. **Activate and migrate the required model service suite.**
-   - File: `tests/agent-configuration-model.test.ts`.
-   - Remove `describe.skip`.
-   - Delete all fixtures/assertions for `commercePlatformModelSelection`, `commerceShopModelSelection`, `generationId`, delete-on-clear semantics, and nullable first-write tokens.
-   - Build the test double around `commerceAgentConfiguration` and the current reduced contracts.
-   - The active suite MUST prove all of these exact behaviors:
-
-     ```text
-     no PLATFORM row + expectedEditVersion=1
-       -> setPlatformModel succeeds
-       -> modelEditVersion=2
-       -> promptEditVersion=1
-
-     no PLATFORM row + expectedEditVersion!=1
-       -> CAS_CONFLICT
-
-     no SHOP row + expectedEditVersion=1
-       -> setShopModel succeeds
-       -> modelEditVersion=2
-
-     clear existing SHOP model
-       -> row remains
-       -> modelId=NULL
-       -> modelEditVersion increments exactly once
-       -> promptEditVersion unchanged
-       -> immediate getShopModel() returns null
-
-     row has modelId!=NULL but joined model is unexpectedly absent
-       -> fail closed; never return inheritance/null as if valid
-
-     sequential duplicate operationId
-       -> OPERATION_ALREADY_COMMITTED
-       -> no second business mutation
-     ```
-
-   - Add/retain one model-service database-unavailable logging regression using a mocked shared logger. It MUST assert exactly one `commerce.agent_configuration.database_unavailable` call, the original error object, exact bounded operation name, Prisma code, `DATABASE_UNAVAILABLE/retryable=true` public result, and `shopId` for a shop-scoped failure.
-
-3. **Activate and migrate the required prompt service suite.**
+2. **Repair and complete the prompt unit suite.**
    - File: `tests/agent-configuration-prompts.test.ts`.
-   - Remove `describe.skip`.
-   - Remove `generationId`, `sourceTemplateRevisionId`, old pointer-table fixtures, and stored-result/`unknown` expectations.
-   - Build the test double around `commerceAgentConfiguration`, `commerceAgentPrompt`, `commerceAgentPromptRevision`, `commercePromptTemplate`, and `commerceAuditEvent`.
-   - The active suite MUST prove:
+   - Keep it active; do not reintroduce `describe.skip`.
+   - Add explicit reduced-contract tests for ALL of the following:
 
      ```text
      pointer.promptId == activePromptRevision.promptId
      pointer.promptId != CommerceAgentConfiguration.id
 
      no PLATFORM config row + expectedEditVersion=1
-       -> setPlatformPointer succeeds
+       -> setPlatformPointer ok
        -> promptEditVersion=2
        -> modelEditVersion=1
 
+     no PLATFORM config row + expectedEditVersion!=1
+       -> CAS_CONFLICT
+
      no SHOP config row + expectedEditVersion=1
-       -> setShopPointer succeeds
+       -> setShopPointer ok
        -> promptEditVersion=2
 
      clear existing SHOP prompt
-       -> row remains
+       -> row retained
        -> activePromptRevisionId=NULL
        -> promptEditVersion increments exactly once
        -> modelEditVersion unchanged
-       -> immediate getShopPointer() returns null
+       -> immediate getShopPointer() == null
 
      createPromptDraftFromTemplate
-       -> copies current CommercePromptTemplate.promptText
-       -> stores sourceTemplateId exactly
-       -> no template-revision id exists in the contract
-
-     two serialized/concurrent draft allocations for one lineage
-       -> distinct revision numbers
+       -> exact current CommercePromptTemplate.promptText copied
+       -> exact sourceTemplateId stored
+       -> no template revision id in contract
      ```
 
-   - Add/retain one prompt-service database-unavailable logging regression with the same shared-logger assertions as item 2, including `shopId` for a shop-scoped failure.
+   - Add one prompt-service database-unavailable logging regression. Mock only `@modainteract/moda-interact-shared/logging`. It MUST prove exactly one event named `commerce.agent_configuration.database_unavailable`, original `error` object preserved, exact bounded operation name, expected Prisma code, `shopId` for a shop-scoped failure, and public result `DATABASE_UNAVAILABLE` / `retryable:true`.
 
-4. **Activate and migrate the effective resolver suite.**
-   - File: `tests/agent-configuration-effective.test.ts`.
-   - Remove `describe.skip`.
-   - Remove all `commercePlatformModelSelection`, `commerceShopModelSelection`, `commercePlatformPromptPointer`, `commerceShopPromptPointer`, `generationId`, and `sourceTemplateRevisionId` fixtures.
-   - Drive the resolver only with `commerceAgentConfiguration.findMany(...)` rows matching the DATABASE-002 schema.
-   - Keep all four combinations active:
+3. **Repair the PostgreSQL prompt suite before attempting live validation.**
+   - File: `tests/agent-configuration-prompts-postgres.test.ts`.
+   - Current Attempt 3 source is syntactically invalid and MUST be corrected:
 
      ```text
-     platform model + platform prompt
-     shop model + platform prompt
-     platform model + shop prompt
-     shop model + shop prompt
+     duplicate `let prisma: PrismaClient` declaration
+     stray `*/` after the `beforeAll` block
      ```
 
-   - Keep explicit invalid/disabled shop overrides fail-closed rather than falling back around them.
-   - Assert the resolver still requests one `RepeatableRead` transaction/snapshot.
+   - There must be exactly one Prisma client declaration and a normal closed `beforeAll(...)`.
+   - The PostgreSQL test MUST read its database URL from `COMMERCE_TEST_DATABASE_URL` only. Use this exact source pattern:
 
-5. **Migrate and execute the PostgreSQL suites.**
-   - Files:
+     ```ts
+     const databaseUrl = process.env.COMMERCE_TEST_DATABASE_URL;
+     if (!databaseUrl) {
+       throw new Error('COMMERCE_TEST_DATABASE_URL is required for PostgreSQL validation');
+     }
+
+     const prisma = new PrismaClient({
+       datasources: {
+         db: { url: databaseUrl },
+       },
+     });
+     ```
+
+   - MUST NOT read `process.env.DATABASE_URL` in this test file and MUST NOT fall back from `COMMERCE_TEST_DATABASE_URL` to `DATABASE_URL`. A missing `COMMERCE_TEST_DATABASE_URL` is a hard validation error, not a reason to use the application/development database.
+
+   - The template-copy PostgreSQL case MUST create/own its own enabled category/template fixture in the disposable database; do not assume a fresh DATABASE-002 database already contains a template row. Use a valid template key matching the database key constraint.
+   - Preserve the required live behaviors:
 
      ```text
-     tests/agent-configuration-model-postgres.test.ts
+     concurrent first prompt write -> exactly one ok + one CAS_CONFLICT
+     concurrent identical operationId -> one receipt + loser OPERATION_ALREADY_COMMITTED
+     concurrent same-lineage draft creation -> both ok + distinct revision numbers
+     current-template copy -> exact promptText + sourceTemplateId
+     clear shop prompt -> row retained + modelEditVersion unchanged
+     ```
+
+4. **Make the PostgreSQL model suite use the disposable test URL exclusively.**
+   - File: `tests/agent-configuration-model-postgres.test.ts`.
+   - Use the same exact URL source/Prisma construction contract as item 3:
+
+     ```ts
+     const databaseUrl = process.env.COMMERCE_TEST_DATABASE_URL;
+     if (!databaseUrl) {
+       throw new Error('COMMERCE_TEST_DATABASE_URL is required for PostgreSQL validation');
+     }
+
+     const prisma = new PrismaClient({
+       datasources: {
+         db: { url: databaseUrl },
+       },
+     });
+     ```
+
+   - MUST NOT read `process.env.DATABASE_URL` and MUST NOT fall back to it.
+   - Preserve the existing DATABASE-002 model assertions.
+
+5. **Use the repository's npm toolchain exactly; do not substitute pnpm.**
+   - `moda-interact-commerce/package.json` and the committed `package-lock.json` define the task validation path.
+   - Attempt 4 MUST NOT run `pnpm exec`, `pnpm install`, or `pnpm approve-builds`. `ERR_PNPM_IGNORED_BUILDS` is not acceptance evidence for this task.
+   - Before validation, use the normal Node bootstrap rule if necessary. If dependencies are absent/incomplete, run:
+
+     ```bash
+     npm ci
+     ```
+
+     Do not edit package-manager configuration.
+
+6. **Run the five required focused suites with zero skips.**
+
+   ```bash
+   npm run prisma:generate
+
+   npm exec vitest run \
+     tests/agent-configuration-model.test.ts \
+     tests/agent-configuration-prompts.test.ts \
+     tests/agent-configuration-effective.test.ts \
+     tests/agent-configuration-reconciliation.test.ts \
+     tests/agent-configuration-reduced.test.ts
+   ```
+
+   Acceptance condition: all five files execute; zero skipped files/tests.
+
+7. **Run both PostgreSQL suites against a freshly migrated disposable DATABASE-002 database.**
+   - Use a database dedicated to this validation. Do not point these tests at a development/shared database.
+   - One deterministic local-Docker procedure, when Docker is available, is:
+
+     ```bash
+     docker rm -f moda-c025-postgres 2>/dev/null || true
+     docker run --name moda-c025-postgres --rm -d \
+       -e POSTGRES_USER=postgres \
+       -e POSTGRES_PASSWORD=postgres \
+       -p 127.0.0.1:55432:5432 \
+       postgres:15
+
+     until docker exec moda-c025-postgres pg_isready -U postgres -d postgres >/dev/null 2>&1; do sleep 1; done
+     docker exec moda-c025-postgres createdb -U postgres arch021_c025_test
+
+     export COMMERCE_TEST_DATABASE_URL='postgresql://postgres:postgres@localhost:55432/arch021_c025_test'
+
+     DATABASE_URL="$COMMERCE_TEST_DATABASE_URL" \
+       npm --prefix database run migrate:deploy
+
+     COMMERCE_TEST_DATABASE_URL="$COMMERCE_TEST_DATABASE_URL" \
+       npm exec vitest run \
+         tests/agent-configuration-model-postgres.test.ts \
+         tests/agent-configuration-prompts-postgres.test.ts \
+         -- --reporter=verbose
+
+     docker stop moda-c025-postgres
+     ```
+
+   - `DATABASE_URL` in the migration command above is permitted only as a one-command Prisma migration override derived from the already-defined disposable `COMMERCE_TEST_DATABASE_URL`; application/test source MUST NOT read it.
+   - Before running the PostgreSQL suites, enforce this source invariant:
+
+     ```bash
+     if rg -n 'process\.env\.DATABASE_URL' \
+       tests/agent-configuration-model-postgres.test.ts \
+       tests/agent-configuration-prompts-postgres.test.ts; then
+       echo 'ERROR: PostgreSQL tests must use COMMERCE_TEST_DATABASE_URL only' >&2
+       exit 1
+     fi
+     ```
+
+   - An equivalent disposable PostgreSQL target is acceptable, but the two suites MUST actually execute and pass.
+   - If a disposable database genuinely cannot be obtained, set the task to `blocked` and report the environment gap. Do not return `review`.
+
+8. **Run final lint/diff validation.**
+
+   ```bash
+   npx eslint \
+     src/commerce/agent-configuration/model-service.ts \
+     src/commerce/agent-configuration/prompt-service.ts \
+     src/commerce/agent-configuration/effective-configuration.ts \
+     tests/agent-configuration-model.test.ts \
+     tests/agent-configuration-prompts.test.ts \
+     tests/agent-configuration-effective.test.ts \
+     tests/agent-configuration-reconciliation.test.ts \
+     tests/agent-configuration-reduced.test.ts \
+     tests/agent-configuration-model-postgres.test.ts \
      tests/agent-configuration-prompts-postgres.test.ts
-     ```
 
-   - Remove every query/reference to:
+   git diff --check
+   ```
 
-     ```text
-     CommercePlatformModelSelection
-     CommerceShopModelSelection
-     CommercePlatformPromptPointer
-     CommerceShopPromptPointer
-     generationId
-     sourceTemplateRevisionId
-     ```
-
-   - Use only DATABASE-002 durable state for these behaviors.
-   - Model PostgreSQL suite MUST prove:
-
-     ```text
-     concurrent first write to same configuration
-       -> exactly one ok
-       -> exactly one CAS_CONFLICT
-
-     concurrent identical operationId
-       -> exactly one business mutation / one receipt
-       -> loser OPERATION_ALREADY_COMMITTED
-
-     clear shop model retains configuration row and independent promptEditVersion
-     ```
-
-   - Prompt PostgreSQL suite MUST prove:
-
-     ```text
-     concurrent first prompt write
-       -> exactly one ok
-       -> exactly one CAS_CONFLICT
-
-     concurrent identical operationId
-       -> exactly one durable receipt
-       -> loser OPERATION_ALREADY_COMMITTED
-
-     concurrent same-lineage draft creation
-       -> both succeed
-       -> distinct revision numbers
-
-     current-template copy persists exact promptText + sourceTemplateId
-
-     clear shop prompt retains configuration row and independent modelEditVersion
-     ```
-
-6. **Do not return to review without the required validation evidence.**
-   - A run where model/prompt/effective suites are skipped is a failed task validation, even if Vitest exits zero.
-   - A missing disposable PostgreSQL URL is not acceptance evidence. If a disposable DATABASE-002 database cannot be obtained, set the task to `blocked` and report the environment gap instead of returning `review`.
-   - Do not mark the task Ready for Review until both PostgreSQL suites have actually executed and passed.
+   Repository-wide typecheck baseline remains non-blocking only if Attempt 4 introduces no new diagnostics in task-owned source/tests. Record that comparison.
 
 ### Reviewed Files
 
 - `src/commerce/agent-configuration/model-service.ts`
 - `src/commerce/agent-configuration/prompt-service.ts`
 - `src/commerce/agent-configuration/effective-configuration.ts`
-- `src/studio/agent-configuration/model-contracts.ts`
-- `src/studio/agent-configuration/prompt-contracts.ts`
-- `src/studio/agent-configuration/effective-contracts.ts`
 - `tests/agent-configuration-model.test.ts`
 - `tests/agent-configuration-prompts.test.ts`
 - `tests/agent-configuration-effective.test.ts`
-- `tests/agent-configuration-reconciliation.test.ts`
-- `tests/agent-configuration-reduced.test.ts`
 - `tests/agent-configuration-model-postgres.test.ts`
 - `tests/agent-configuration-prompts-postgres.test.ts`
+- Attempt 3 Completion Report and task metadata
 
 ### Validation Reviewed
 
-Attempt 2 submitted evidence:
+Attempt 3 submitted evidence:
 
 ```text
-Prisma generation: PASS
-ESLint: PASS
 git diff --check: PASS
-focused Vitest command: 2 active files / 6 tests PASS,
-                        3 required files / 21 tests SKIPPED
-PostgreSQL model/prompt validation: NOT RUN
-repository typecheck: 85 documented errors / 16 files
+focused unit suites: NOT EXECUTED
+PostgreSQL suites: NOT EXECUTED
+reported blocker: ERR_PNPM_IGNORED_BUILDS from pnpm
 ```
 
-This is not sufficient for acceptance because the latest Architect Review explicitly required the three skipped suites to be migrated and enabled and required both PostgreSQL suites to be migrated and executed.
-
-Attempt 3 MUST run and record exactly:
-
-```bash
-npm run prisma:generate
-
-npm exec vitest run \
-  tests/agent-configuration-model.test.ts \
-  tests/agent-configuration-prompts.test.ts \
-  tests/agent-configuration-effective.test.ts \
-  tests/agent-configuration-reconciliation.test.ts \
-  tests/agent-configuration-reduced.test.ts
-```
-
-The command above MUST report zero skipped files/tests from those five task-owned files.
-
-Then run:
-
-```bash
-COMMERCE_TEST_DATABASE_URL='<fresh disposable DATABASE-002 database URL>' \
-  npm exec vitest run \
-  tests/agent-configuration-model-postgres.test.ts \
-  tests/agent-configuration-prompts-postgres.test.ts \
-  --reporter=verbose
-```
-
-The two PostgreSQL files MUST execute; environment-based `describe.skip` is not acceptance evidence.
-
-Then run:
-
-```bash
-npx eslint \
-  src/commerce/agent-configuration/model-service.ts \
-  src/commerce/agent-configuration/prompt-service.ts \
-  src/commerce/agent-configuration/effective-configuration.ts \
-  src/studio/agent-configuration/model-contracts.ts \
-  src/studio/agent-configuration/prompt-contracts.ts \
-  src/studio/agent-configuration/effective-contracts.ts \
-  src/studio/agent-configuration/model-server-actions.ts \
-  src/studio/agent-configuration/prompt-server-actions.ts \
-  src/studio/agent-configuration/reconciliation-server-actions.ts \
-  tests/agent-configuration-model.test.ts \
-  tests/agent-configuration-prompts.test.ts \
-  tests/agent-configuration-effective.test.ts \
-  tests/agent-configuration-reconciliation.test.ts \
-  tests/agent-configuration-reduced.test.ts \
-  tests/agent-configuration-model-postgres.test.ts \
-  tests/agent-configuration-prompts-postgres.test.ts
-
-git diff --check
-```
-
-Repository-wide typecheck baseline errors remain non-blocking only if no new diagnostic is introduced in task-owned source/tests. Record that comparison explicitly.
+This does not satisfy the latest deterministic review contract. The repository validation contract for this task is npm-based, and the required suites must execute before review.
 
 ### Architecture Conformance
 
-Changes Requested. The reduced DATABASE-002 implementation direction is now substantially correct, including first-write CAS, nullable override semantics, prompt lineage identity, parameterized prompt draft locking, post-failure operation-receipt reconciliation and use of `@modainteract/moda-interact-shared/logging`. Acceptance is blocked by incomplete task-owned test migration, missing live PostgreSQL evidence, and the bounded shop-correlation logging gap described above.
+Changes Requested. The reduced DATABASE-002 service direction is substantially correct, including shared-library database-unavailable logging with shop correlation, first-write CAS, nullable override clearing, real prompt lineage identity, per-lineage prompt locking and operation receipt reconciliation. Acceptance is blocked by a regression of the mandatory platform-baseline rule, incomplete prompt unit coverage, a syntactically invalid prompt PostgreSQL suite, and the absence of the required npm-based unit/PostgreSQL validation evidence.
 
 ### Follow-up
 
-Return the same task through `/moda-task ARCH-021-COMMERCE-025`. The next authorized claim is Attempt 3. Preserve `attempt: 2` until the launcher claim increments it.
-
-Do not start COMMERCE-028.
-
-After every correction item and required command above passes, update the Completion Report with:
-
-```text
-implementation commit
-all active focused suite counts
-PostgreSQL suite counts/results
-database target described only as disposable/local-safe (never log its URL)
-shared logger regression results
-worktree/synchronization/submodule evidence
-pushed branch parity
-```
-
-Set `status: review`, clear `executor`/`claimed_at`, return to `moda_architect`, and STOP.
+Return the same task through `/moda-task ARCH-021-COMMERCE-025`. Preserve `attempt: 3`; the next authorized claim increments it to Attempt 4. COMMERCE-028 remains Pending.

@@ -963,6 +963,13 @@ independent of features.
 
 ## Change History
 
+### 2026-09-24 — COMMERCE-025 Attempt 3 changes requested
+
+- Reviewed implementation `d1e884c` with parent report `cb0486b3`.
+- Confirmed the reduced services now include most Attempt 2 corrections, including active unit suites, shop-correlated shared logging, first-write CAS, retained nullable override rows, real prompt lineage identity and operation-receipt reconciliation.
+- Returned COMMERCE-025 to Ready because the effective resolver regressed the mandatory platform-baseline rule, the prompt unit suite remains incomplete, the prompt PostgreSQL test is syntactically invalid, and none of the required npm-based unit/PostgreSQL validation actually executed.
+- Attempt 4 must use npm (not pnpm), repair/migrate the task-owned suites, execute both PostgreSQL suites against a disposable DATABASE-002 database, and return to review only after all required validation passes. COMMERCE-028 remains Pending.
+
 ### 2026-09-24 — COMMERCE-025 Attempt 2 changes requested
 
 - Reviewed implementation `e5c6ed2` with parent report `edd22c18`.

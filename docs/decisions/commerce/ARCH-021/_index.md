@@ -156,6 +156,10 @@ ARCH-021-BACKGROUND-001
 ```
 
 DATABASE-002 Attempt 2 is architect-accepted Complete. The simplified durable schema is now available, so COMMERCE-025, COMMERCE-026 and COMMERCE-027 are independently Ready; COMMERCE-028 remains Pending until all three are Complete.
+### COMMERCE-025 Attempt 3 architect review — 2026-09-24
+
+COMMERCE-025 remains **Ready** for Attempt 4. The reduced service implementation is close, but acceptance is blocked by a regressed mandatory platform-baseline rule, incomplete prompt unit coverage, a syntactically invalid prompt PostgreSQL suite, and missing required npm-based unit/PostgreSQL execution. COMMERCE-028 remains Pending.
+
 ### COMMERCE-030 Attempt 2 accepted — 2026-09-24
 
 COMMERCE-030 is **Complete**. Attempt 2 removes secret-bearing configuration logging, preserves typed MCP authorization-domain failures through the production adapter, keeps unexpected storage/runtime failures fail-closed as `UNAVAILABLE`, reconciles Commerce-owned RSA/signed-context operational guidance, and records the required launcher/worktree/commit/push evidence. The private MCP remains context-only over the private service link with PostgreSQL shop/turn/grant/release/tool authorization intact. `ARCH-021-BACKGROUND-001` is promoted to **Ready**; GATEWAY-001 remains Pending on BACKGROUND-001.
