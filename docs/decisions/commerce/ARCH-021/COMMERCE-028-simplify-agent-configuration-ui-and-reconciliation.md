@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-24T17:18:44Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-025
@@ -254,10 +254,10 @@ Implementation commit `354c06b` on `task/ARCH-021-COMMERCE-028`:
 
 ### Validation Results
 
-- `npm test -- --run tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-platform-prompt-ui.test.tsx tests/agent-configuration-production.test.tsx tests/agent-configuration-template-ui.test.tsx tests/agent-configuration-screen-state.test.tsx tests/agent-configuration-shop-ui.test.tsx`: passed, 6 files / 14 tests.
-- Targeted `npx eslint` over all 13 changed files: passed.
+- Exact `npm exec vitest run tests/agent-configuration-model-ui.test.tsx tests/agent-configuration-platform-prompt-ui.test.tsx tests/agent-configuration-template-ui.test.tsx tests/agent-configuration-shop-ui.test.tsx tests/agent-configuration-screen-state.test.tsx tests/agent-configuration-production.test.tsx`: passed, 6 files / 18 tests, zero skipped.
+- Targeted `npm exec eslint --` over all three Attempt 3 changed TS/TSX files and the six focused tests: passed.
 - `git diff --check`: passed before commit.
-- `npm run typecheck`: blocked by 18 existing errors in unrelated preview, integration, and older test files; no changed Agent Configuration file was reported.
+- `npm run typecheck`: exit non-zero with 18 existing errors in 9 unrelated preview, integration, and older test files; no changed Agent Configuration file was reported.
 - `npm run build`: blocked before compilation because `@jitl/quickjs-wasmfile-release-sync/package.json` is missing from the worktree dependency state.
 
 ### Deviations
@@ -277,6 +277,29 @@ Implementation commit `354c06b` on `task/ARCH-021-COMMERCE-028`:
 ### Architectural Concerns
 
 - None identified within the bounded Attempt 2 correction contract.
+
+### Attempt 3 Completion Evidence
+
+- A3-R1: `ShopAgentConfiguration` now consumes named `getShopAgentConfiguration(shopId)` and uses only `modelId`, `activePromptRevisionId`, `modelEditVersion`, and `promptEditVersion`; retained versions survive clear/reload. The shop UI test proves model and prompt set/version2, clear/null/version3, set/version3 sequences and cross-field version independence.
+- A3-R2: the shop UI now consumes named `getShopPrompt(shopId)` for exact-shop durable lineage when the active pointer is null; it does not use platform lineage, Prisma, or a second client shop store.
+- A3-R3: focused tests prove exact `Not committed`, retry with a different operation ID, reconciliation rejection with the original operation ID and exact `Reconciliation unavailable; try reconciliation again`, pending/retry lock, retained Reconcile/Abandon controls, and StudioWorkspace navigation lock/unlock composition.
+- A3-R4: Attempt 2 behavior remains preserved, including validated shop forwarding, direct named actions, typed `DATABASE_UNAVAILABLE`, original reconciliation receipt, committed reload ordering, independent dirty flags, ADMIN read-only behavior, and no live provider/model execution.
+- A3-R5: exact six-file packet passed with 6 files / 18 tests; targeted ESLint passed; full typecheck retained 18 unrelated baseline diagnostics with none in changed files; `git diff --check` passed.
+- A3-R6: implementation commit `268eaa8` is pushed. Parent report commit and parity verification follow this edit.
+
+### Attempt 3 Launcher and Publication Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-028`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-028`.
+- Matching branches: `task/ARCH-021-COMMERCE-028` in both repositories.
+- Start-of-attempt parent synchronization: `3501b0ed3f3101f569940d982e42f01764cf7f82`.
+- Start-of-attempt implementation synchronization/head: `99f5dd2876920145115286de752eb0002c170704`.
+- Attempt 3 claim: prepared launcher evidence recorded `execution_state: claimed`, executor `copilot`, attempt `3`, with parent claim committed/pushed before execution.
+- Recursive submodule sync/update passed; database submodule commit: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation branch publication: `268eaa8` pushed to `origin/task/ARCH-021-COMMERCE-028`.
+- Parent report publication: pending this report commit/push.
+- No token, secret, database schema, or follow-on task was touched.
 
 ## Architect Review
 
