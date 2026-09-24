@@ -17,7 +17,7 @@ attempt: 0
 depends_on:
   - ARCH-021-COMMERCE-033
 enables:
-  - ARCH-021-SYSTEM-TEST-001
+  - ARCH-021-COMMERCE-035
 created: 2026-09-24
 updated: 2026-09-24
 ---
@@ -323,7 +323,7 @@ Produces no new cross-service contract.
 
 ## Enables
 
-- ARCH-021-SYSTEM-TEST-001
+- ARCH-021-COMMERCE-035
 
 ## Acceptance Criteria
 

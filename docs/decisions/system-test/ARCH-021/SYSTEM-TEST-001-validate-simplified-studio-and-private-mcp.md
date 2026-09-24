@@ -25,6 +25,7 @@ depends_on:
   - ARCH-021-COMMERCE-032
   - ARCH-021-COMMERCE-033
   - ARCH-021-COMMERCE-034
+  - ARCH-021-COMMERCE-035
   - ARCH-021-BACKGROUND-001
   - ARCH-021-GATEWAY-001
 enables: []
@@ -187,6 +188,21 @@ Prove all of the following:
 - normal schema browsing/generation performs no Shopify/provider network request;
 - the obsolete hand-authored Storefront subset is not used.
 
+
+### R9. Shopify documentation is readable and safely normalized
+
+Prove the Explore Documentation tab against the accepted COMMERCE-035 contract:
+
+- search results show bounded plain-text excerpts, not raw HTML/Markdown syntax;
+- opening a canonical Shopify document renders separate headings, paragraphs,
+  lists, blockquotes and code blocks;
+- code preserves meaningful whitespace/newlines;
+- script/style/browser-control content is excluded;
+- no `dangerouslySetInnerHTML` path exists;
+- the canonical source action points only to the already approved
+  `https://shopify.dev/docs/...` URL;
+- the existing documentation input/output/redirect bounds remain enforced.
+
 ## Work Items
 
 - [ ] Add reduced configuration inheritance scenarios.
@@ -197,6 +213,7 @@ Prove all of the following:
 - [ ] Add context-only private MCP scenario/public denial proof.
 - [ ] Add cross-repository obsolete-auth residue check.
 - [ ] Add dynamic real-schema Storefront builder scenario.
+- [ ] Add readable/safe Shopify documentation scenario.
 
 ## Interfaces / Contracts
 
@@ -214,6 +231,7 @@ Consumes only architect-accepted implementation dependencies listed below.
 - ARCH-021-COMMERCE-032
 - ARCH-021-COMMERCE-033
 - ARCH-021-COMMERCE-034
+- ARCH-021-COMMERCE-035
 - ARCH-021-BACKGROUND-001
 - ARCH-021-GATEWAY-001
 
@@ -223,7 +241,7 @@ None
 
 ## Acceptance Criteria
 
-- [ ] R1-R8 pass.
+- [ ] R1-R9 pass.
 - [ ] No application-layer MCP credential remains.
 - [ ] No swallowed Studio mutation error remains in tested flows.
 - [ ] No system-test task modifies implementation repositories.
