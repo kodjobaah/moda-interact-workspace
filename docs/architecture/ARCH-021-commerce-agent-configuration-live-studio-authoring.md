@@ -949,14 +949,14 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
 | ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
 | ARCH-021-COMMERCE-032 | moda_commerce | Complete | COMMERCE-029 |
-| ARCH-021-COMMERCE-033 | moda_commerce | Ready | COMMERCE-032 |
-| ARCH-021-COMMERCE-034 | moda_commerce | Pending | COMMERCE-033 |
+| ARCH-021-COMMERCE-033 | moda_commerce | Complete | COMMERCE-032 |
+| ARCH-021-COMMERCE-034 | moda_commerce | Ready | COMMERCE-033 |
 | ARCH-021-COMMERCE-035 | moda_commerce | Pending | COMMERCE-034 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks, including COMMERCE-032..035 |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-033`. COMMERCE-032 is architect-accepted Complete and COMMERCE-033 is Ready. COMMERCE-034/035 remain dependency-gated. SYSTEM-TEST-001 remains Pending until the complete correction chain is architect-accepted Complete. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
+Current checkpoint frontier: `ARCH-021-COMMERCE-034`. COMMERCE-032 and COMMERCE-033 are architect-accepted Complete, and COMMERCE-034 is Ready. COMMERCE-035 remains dependency-gated on COMMERCE-034. SYSTEM-TEST-001 remains Pending until the complete correction chain is architect-accepted Complete. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
 
 ### Phase 4 — live single-tool testing
 
@@ -1541,6 +1541,18 @@ architect-accepted Complete.
 - Confirmed the private MCP remains context-only over the private service link with server-derived environment, local ten-second tool deadline and PostgreSQL shop/turn/grant/release/tool authorization intact.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
+
+### 2026-09-24 — COMMERCE-033 Attempt 3 accepted
+
+- Accepted the recursive C032-backed Storefront schema browser and nested
+  selection tree as Complete.
+- Confirmed the final regression evidence covers genuinely nested ancestor
+  counting, the browser's exact 99->100 acceptance and 100->101 rejection
+  boundary, and both `schemaHash` and `apiVersion` identity resets.
+- Attempt 3 did not redesign production C033 behavior; it completed the
+  deterministic evidence requested after Attempt 2.
+- Promoted COMMERCE-034 to Ready. COMMERCE-035 and SYSTEM-TEST-001 remain
+  dependency-gated.
 
 ### 2026-09-24 — COMMERCE-033 Attempt 2 changes requested
 

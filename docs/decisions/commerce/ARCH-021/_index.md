@@ -149,19 +149,19 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
 | [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Complete | COMMERCE-025 |
 | [COMMERCE-032](COMMERCE-032-normalize-storefront-schema-graph.md) | Normalize real pinned Storefront introspection into one truthful schema graph contract | Complete | COMMERCE-029 |
-| [COMMERCE-033](COMMERCE-033-build-recursive-storefront-schema-browser.md) | Build recursive schema-driven Storefront browser and selection tree | Ready | COMMERCE-032 |
-| [COMMERCE-034](COMMERCE-034-generate-storefront-graphql-from-schema-selection.md) | Generate/merge Storefront GraphQL from dynamic schema selections | Pending | COMMERCE-033 |
+| [COMMERCE-033](COMMERCE-033-build-recursive-storefront-schema-browser.md) | Build recursive schema-driven Storefront browser and selection tree | Complete | COMMERCE-032 |
+| [COMMERCE-034](COMMERCE-034-generate-storefront-graphql-from-schema-selection.md) | Generate/merge Storefront GraphQL from dynamic schema selections | Ready | COMMERCE-033 |
 | [COMMERCE-035](COMMERCE-035-render-shopify-documentation-readably.md) | Normalize Shopify docs into readable safe excerpts and structured article blocks | Pending | COMMERCE-034 |
 
 
 Current checkpoint frontier:
 
 ```text
-ARCH-021-COMMERCE-033
+ARCH-021-COMMERCE-034
 ```
 
-COMMERCE-032 is architect-accepted Complete. COMMERCE-033 is Ready.
-COMMERCE-034 and COMMERCE-035 remain Pending on the correction chain.
+COMMERCE-032 and COMMERCE-033 are architect-accepted Complete.
+COMMERCE-034 is Ready. COMMERCE-035 remains Pending on COMMERCE-034.
 `ARCH-021-SYSTEM-TEST-001` remains Pending until all correction tasks are
 architect-accepted Complete.
 
@@ -320,6 +320,16 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 ### COMMERCE-013 Attempt 2 architect review — 2026-09-23
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
+
+### COMMERCE-033 Attempt 3 accepted — 2026-09-24
+
+COMMERCE-033 is architect-accepted **Complete**. Attempt 3 added the missing
+deterministic regression evidence for recursive ancestor counting, the browser's
+exact 100/101 total-field boundary and both schema-identity reset dimensions
+without changing the accepted Attempt 2 production implementation.
+
+COMMERCE-034 is now **Ready**. COMMERCE-035 and SYSTEM-TEST-001 remain
+dependency-gated.
 
 ### COMMERCE-033 Attempt 2 changes requested — 2026-09-24
 

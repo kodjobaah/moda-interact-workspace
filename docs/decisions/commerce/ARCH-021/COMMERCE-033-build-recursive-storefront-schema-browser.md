@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 25
 executor: null
 claimed_at: null
@@ -425,124 +425,63 @@ None identified for this bounded task.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 corrects both production-code blockers from Attempt 1.
+Attempt 3 completes the deterministic regression evidence requested after Attempt 2.
 
-Architect review confirms the final source now uses:
+No production-code redesign was required. Review of the supplied snapshot confirms that Attempt 3 changes the focused browser regression harness/tests while preserving the accepted Attempt 2 production implementation.
+
+The final accepted production behavior remains:
+
+```text
+real C032 root/type metadata
+  -> named browseShopifySchema Server Action
+  -> lazy child-type pages cached by schema identity + parent type
+  -> nested SelectionTree
+  -> depth bound = 8 total field segments
+  -> selected-field bound = 100 total SelectionNode values
+```
+
+The final source still enforces:
 
 ```ts
 if (ancestry.length >= MAX_DEPTH) {
-  ...
+  onStatus(`Selection depth is limited to ${MAX_DEPTH} fields.`);
+  return;
 }
 ```
 
-for object expansion, where `ancestry` is the complete current field ancestry including the object being expanded. This correctly prevents a depth-8 object from exposing depth-9 children.
-
-The browser also now computes:
+for object expansion, and:
 
 ```ts
 const candidate = selectLeaf(selection, ancestry);
 
 if (selectedFieldCount(candidate) > MAX_SELECTED_FIELDS) {
-  ...
+  onStatus(`Selection is limited to ${MAX_SELECTED_FIELDS} fields.`);
+  return;
 }
 ```
 
-and `selectedFieldCount()` recursively counts every `SelectionNode`, so the implementation itself now counts object ancestors and leaves consistently with the accepted compiler's 100-field limit.
+for leaf selection.
 
-The restored task contract, required three-file focused test command, source audit and Completion Report are also present.
-
-There is one remaining blocker: the Attempt 2 regression evidence does not actually prove all of the deterministic correction contract that was explicitly required.
-
-#### Finding 1 — the 100/101 regression does not exercise the browser guard
-
-The current test named:
-
-```text
-counts every selected ancestor and leaf and rejects the 101st field
-```
-
-does this:
+`selectedFieldCount()` recursively counts every selected object ancestor and leaf:
 
 ```ts
-const nodes = Array.from({ length: 100 }, ... all root leaf nodes ...);
-expect(selectedFieldCount(nodes)).toBe(100);
-
-const candidate = selectLeaf(nodes, [{ parentTypeName: 'Product', field }]);
-expect(selectedFieldCount(candidate)).toBe(101);
+return tree.reduce(
+  (count, node) => count + 1 + selectedFieldCount(node.children),
+  0,
+);
 ```
 
-This proves only:
+#### Attempt 3 regression evidence accepted
 
-```text
-100 independent root nodes -> count 100
-101 independent root nodes -> count 101
-```
+The architect inspected the final `tests/storefront-schema-browser.test.tsx` and confirmed it now proves the missing cases.
 
-It does **not** prove:
+1. **Recursive ancestor counting**
 
-```text
-ancestors are recursively counted
-exactly 100 total nodes are accepted by StorefrontSchemaBrowser
-a 101-node candidate is rejected by StorefrontSchemaBrowser
-the prior selection tree remains unchanged after rejection
-the bounded "Selection is limited to 100 fields." status is emitted
-```
-
-The Attempt 1 review explicitly required those cases because the defect was in browser/compiler parity, not merely arithmetic.
-
-#### Finding 2 — schema-identity reset proves only schemaHash
-
-The current reset regression changes:
-
-```ts
-schemaHash
-```
-
-but not:
-
-```ts
-apiVersion
-```
-
-The correction contract required proof that changing **either** identity dimension resets incompatible cached/selected browser state.
-
-The production identity code appears correct:
-
-```ts
-const identity = `${schema.apiVersion}:${schema.schemaHash}`;
-```
-
-but both dimensions must be covered by regression evidence before acceptance.
-
-### Attempt 3 deterministic correction
-
-Reclaim the same task as Attempt 3.
-
-No production-code redesign is authorized. If the following tests pass against the existing source, production source should remain unchanged.
-
-#### 1. Prove recursive ancestor counting directly
-
-Add a pure selection-tree regression with a genuinely nested tree.
-
-For example create:
-
-```text
-root
-  child
-    leaf
-```
-
-and prove:
-
-```ts
-selectedFieldCount(tree) === 3
-```
-
-Then add a sibling leaf under an existing ancestor and prove only the new field increments the total:
+A genuinely nested tree:
 
 ```text
 root
@@ -551,160 +490,104 @@ root
     leafB
 ```
 
-must count as:
+is asserted to contain exactly four selected fields.
+
+This proves the helper counts object ancestors and leaves rather than only independent roots/leaves.
+
+2. **Exact 100/101 browser boundary**
+
+The test harness now supports test-only initial `SelectionTree` state without adding any production test seam to `StorefrontSchemaBrowser`.
+
+The accepted regression exercises a real C032-backed field through the production named Server Action path:
 
 ```text
-4
+99-node initial tree
+  + real product.title selection
+  -> 100
+  -> checkbox checked
+
+100-node initial tree
+  + same real product.title selection
+  -> candidate 101
+  -> selection remains at 100
+  -> checkbox remains unchecked
+  -> exact status:
+     "Selection is limited to 100 fields."
 ```
 
-Do not use 100 independent root nodes as the only proof that ancestors count.
+That exercises the browser guard itself rather than merely testing helper arithmetic.
 
-#### 2. Exercise the browser's exact 100/101 boundary
+3. **Both schema identity dimensions**
 
-Extend the real `StorefrontSchemaBrowser` test harness so a test can provide an initial `SelectionTree` while still allowing `onSelectionChange` to update it.
-
-Use a valid tree whose complete `selectedFieldCount()` is exactly:
+The final regression is parameterized across:
 
 ```text
-100
+schemaHash change
+apiVersion change
 ```
 
-and expose one real selectable leaf through the C032-backed browser that is not already selected.
-
-Prove:
-
-```text
-candidate total 101
-```
-
-then click that real checkbox and assert all of:
-
-```text
-onSelectionChange does not commit the 101-node candidate
-the rendered/exposed selection remains the original 100-node tree
-the new leaf remains unchecked
-onStatus receives exactly:
-  "Selection is limited to 100 fields."
-```
-
-Also prove an exactly-100 candidate is allowed. This can be done by starting from a 99-node valid tree and selecting one new field whose candidate total is exactly 100.
-
-The test tree may be created directly with valid `SelectionNode` values; the field presented/clicked by the React browser must still come from the real C032 browse contract.
-
-Do not add a production test-only service/port/fixture prop. A normal `initialSelection` option belongs only in the **test harness**, not in `StorefrontSchemaBrowser`.
-
-#### 3. Prove both schema-identity dimensions
-
-Parameterize or add separate tests for:
-
-```text
-schemaHash change with same apiVersion
-apiVersion change with same/different schemaHash
-```
-
-For each case prove:
+and proves for each:
 
 ```text
 selection clears
-expanded branch no longer remains expanded
-parent status receives:
+product branch is collapsed again
+status receives:
   "Schema changed; cached fields and validation were reset."
 ```
 
-Because only `2026-07` is a real supported pinned version, the API-version-change test may create a copied `SchemaPage` object with a different version string solely to exercise React identity-reset behavior. It must not be passed through `browseSchema()` or represented as a real supported Shopify schema.
+The synthetic alternate API version exists only in the React identity-reset test and is not passed through `browseSchema()` or represented as a supported pinned Shopify schema.
 
-#### 4. Preserve all current implementation behavior
+4. **Production test-boundary parity**
 
-Do not change:
-
-```text
-C032 named Server Action boundary
-selection-tree structure
-depth bound = 8
-selected-field bound = 100
-restriction behavior
-unsupported interface/union behavior
-argument display behavior
-schema cache key structure
-```
-
-unless a new regression demonstrates an actual source defect.
-
-#### 5. Required validation
-
-Re-run:
-
-```bash
-npx vitest run \
-  tests/storefront-schema-browser.test.tsx \
-  tests/studio-workspace.test.tsx \
-  tests/discovery.test.ts \
-  --reporter=verbose
-```
-
-If a separate pure selection-tree test file is added, include it explicitly in the same command.
-
-Run targeted ESLint for every Attempt 3 changed file.
-
-Run:
-
-```bash
-npm run typecheck
-```
-
-The documented unrelated baseline is permitted only if no Attempt 3-owned file appears in the diagnostics.
-
-Run:
-
-```bash
-rg -n "field\.path|selected\.includes\(field\.path\)" components src/studio
-git diff --check
-```
-
-Expected:
+The browser test continues to mock the same named:
 
 ```text
-source audit: no Storefront schema-builder matches
+browseShopifySchema
+```
+
+module export that production imports.
+
+The interacted field/page data comes from the real C032 `browseSchema()` contract.
+
+No production test-only service/port/fixture prop was introduced.
+
+5. **Source audit**
+
+Architect static inspection of the supplied snapshot found no:
+
+```text
+field.path
+selected.includes(field.path)
+```
+
+usage under the Storefront schema-builder production paths.
+
+#### Submitted validation
+
+The Completion Report records:
+
+```text
+focused tests: 3 files / 46 passed
+targeted ESLint: PASS
+source audit: PASS
 git diff --check: PASS
+typecheck: 15 unchanged unrelated baseline diagnostics
+           zero task-owned diagnostics
 ```
 
-#### 6. Completion Report
+The review archive does not contain `node_modules`, so the architect did not independently rerun Vitest, ESLint or TypeScript. The final test source itself was inspected against the requested regression contract.
 
-Update the Completion Report to distinguish:
+Implementation/test commit reviewed:
 
 ```text
-production code correction completed in Attempt 2
-missing deterministic regression evidence completed in Attempt 3
+3453240d
 ```
 
-Do not claim `rejects the 101st field` based solely on a helper count.
-
-Record:
+Final parent report supplied:
 
 ```text
-Attempt 3 implementation/test commit
-final parent report commit
-focused test file/test count
-ESLint
-typecheck baseline
-source audit
-git diff --check
-clean/upstream branch evidence
-database submodule synchronization
+a54b41e5
 ```
-
-Return:
-
-```yaml
-status: review
-executor: null
-claimed_at: null
-attempt: 3
-```
-
-and STOP.
-
-Do not start `ARCH-021-COMMERCE-034`.
 
 ### Reviewed Files
 
@@ -713,39 +596,41 @@ Do not start `ARCH-021-COMMERCE-034`.
 - `tests/storefront-schema-browser.test.tsx`
 - `tests/studio-workspace.test.tsx`
 - `tests/discovery.test.ts`
-- restored task contract and Attempt 2 Completion Report
+- task Completion Report
+- Commerce ARCH-021 index/frontier
+- parent ARCH-021 execution table/frontier
+- COMMERCE-034 dependency gate
 
 ### Validation Reviewed
 
-Submitted Attempt 2 evidence records:
+Architect source comparison between the supplied Attempt 2 and Attempt 3 snapshots confirms the production C033 source is unchanged in Attempt 3; the material focused change is the regression test harness/evidence.
+
+Architect independently confirmed the final static source audit contains no Storefront schema-builder `field.path` dependency.
+
+Submitted validation:
 
 ```text
-focused tests: 3 files / 44 passed
-targeted ESLint: PASS
-source audit: PASS
-git diff --check: PASS
-typecheck: unchanged 15-error unrelated baseline
+3 focused files / 46 tests passed
+targeted ESLint passed
+source audit passed
+git diff --check passed
+typecheck retained only the documented 15-error unrelated baseline
 ```
-
-Architect source audit of the supplied snapshot also found no:
-
-```text
-field.path
-selected.includes(field.path)
-```
-
-matches under `components` / `src/studio`.
-
-The supplied archive does not contain `node_modules`, so Vitest/ESLint/typecheck were not independently rerun by the architect.
 
 ### Architecture Conformance
 
-Production implementation conforms in substance.
+Conforms.
 
-Acceptance is blocked only on the deterministic regression evidence explicitly required by the Attempt 1 correction contract.
+The recursive browser is now data-driven from the truthful C032 schema graph, keeps ancestry in client selection state, enforces the same obvious depth/field bounds before later Tool compilation, and has deterministic regression evidence for the previously missing boundary cases.
 
 ### Follow-up
 
-Attempt 3 is test/evidence-only unless the stronger regressions expose a real source defect.
+`ARCH-021-COMMERCE-033` is Complete.
 
-`ARCH-021-COMMERCE-034` remains Pending until C033 is architect-accepted Complete.
+`ARCH-021-COMMERCE-034` becomes Ready.
+
+`ARCH-021-COMMERCE-035` remains Pending on COMMERCE-034.
+
+Terminal `ARCH-021-SYSTEM-TEST-001` remains Pending until the remaining correction tasks are architect-accepted Complete.
+
+Do not start COMMERCE-035 until COMMERCE-034 is architect-accepted Complete.
