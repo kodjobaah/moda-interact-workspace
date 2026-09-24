@@ -963,6 +963,15 @@ independent of features.
 
 ## Change History
 
+### 2026-09-24 — COMMERCE-025 Attempt 1 changes requested
+
+- Reviewed implementation `256dbef112ae9f7c7d4301f6603b4ec892972067` with parent report `19e4c3d05ebdd319de2884f4fe4eed4206dfeb5d`.
+- Accepted the direction toward direct `CommerceAgentConfiguration` transactions plus read-only audit reconciliation, but identified reduced-contract drift: synthetic generation/template-revision fields remain, nullable cleared overrides cannot be read as inheritance, prompt pointers expose configuration ids as prompt ids, and first configuration writes return `NOT_FOUND` instead of creating the DATABASE-002 row.
+- Identified concurrent receipt/draft-allocation gaps: an operation-id unique race can become `INTERNAL_ERROR`, and prompt draft numbering uses unsafe `count + 1` without a per-lineage lock.
+- Required Prisma connection/initialization failures to normalize publicly to `DATABASE_UNAVAILABLE` while preserving the original root cause through the canonical `@modainteract/moda-interact-shared/logging` logger using the repository's existing `createLogger` contract; no local logger or secret-bearing fields are permitted.
+- Attempt 1 validation is incomplete because the model, prompt and effective suites are disabled with `describe.skip`; Attempt 2 must migrate and activate them plus the reduced PostgreSQL model/prompt suites.
+- Returned COMMERCE-025 to Ready at `attempt: 1`; COMMERCE-028 remains Pending.
+
 ### 2026-09-24 — DATABASE-002 Attempt 2 accepted
 
 - Accepted implementation `f2629f1` with task report `dde2e33` after the Attempt 1 migration-execution corrections.
