@@ -145,18 +145,28 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Complete | DATABASE-002, COMMERCE-008, 015 |
 | [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Complete | DATABASE-002 |
 | [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Complete | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
-| [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Ready | COMMERCE-028, COMMERCE-001..006 |
+| [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Complete | COMMERCE-028, COMMERCE-001..006 |
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
 | [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Complete | COMMERCE-025 |
 
-Current checkpoint frontier:
+Current checkpoint implementation frontier: none.
 
-```text
-ARCH-021-COMMERCE-029
-```
+COMMERCE-029 is architect-accepted Complete. All pre-Phase-3 simplification
+implementation dependencies are Complete, so terminal `ARCH-021-SYSTEM-TEST-001`
+is Ready. The developer may leave that terminal system-test task Ready while
+manually validating the completed checkpoint.
 
-GATEWAY-001 is architect-accepted Complete. COMMERCE-028 is architect-accepted
-Complete and all COMMERCE-029 dependencies are Complete, so COMMERCE-029 is Ready.
+### COMMERCE-029 Attempt 3 accepted — 2026-09-24
+
+COMMERCE-029 is architect-accepted **Complete**. Production Studio and Connections
+React boundaries no longer expose test-only service/port/render-function injection
+props. Tests configure fixture state behind the same named Server Action modules used
+by production. The focused packet passed 9 files / 71 tests and the required source
+audits passed with no production matches. Repository-wide typecheck/build remain
+blocked only by the documented unrelated Commerce baseline.
+
+All simplification checkpoint implementation dependencies are now Complete, so
+`ARCH-021-SYSTEM-TEST-001` is Ready.
 
 ### COMMERCE-029 Attempt 2 changes requested — 2026-09-24
 

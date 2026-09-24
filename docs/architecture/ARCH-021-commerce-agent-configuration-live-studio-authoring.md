@@ -894,14 +894,14 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Complete | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
-| ARCH-021-COMMERCE-029 | moda_commerce | Ready | COMMERCE-028, COMMERCE-001..006 |
+| ARCH-021-COMMERCE-029 | moda_commerce | Complete | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
 | ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
-| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Ready | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-029`. GATEWAY-001 is architect-accepted Complete. COMMERCE-028 is architect-accepted Complete and all COMMERCE-029 dependencies are Complete, so COMMERCE-029 is Ready. SYSTEM-TEST-001 remains Pending until COMMERCE-029 is architect-accepted Complete.
+Current checkpoint implementation frontier: none. COMMERCE-029 is architect-accepted Complete, so every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete and SYSTEM-TEST-001 is Ready. The developer may intentionally leave the terminal system-test task Ready while manually validating the completed checkpoint. Phase-3 tasks remain paused until checkpoint validation/reconciliation.
 
 ### Phase 4 — live single-tool testing
 
@@ -994,6 +994,19 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-029 Attempt 3 accepted
+
+- Accepted the final serializable Studio/Connections production boundary.
+- Confirmed production components no longer expose alternate function-valued
+  service/port/render-function seams solely for tests.
+- Confirmed fixture/in-memory behavior is now configured only inside test code
+  behind the same named Server Action modules production invokes.
+- Accepted the 9-file / 71-test focused packet and zero-match source audits.
+- Confirmed current typecheck diagnostics remain limited to documented unrelated
+  Commerce baseline files; no Attempt 3-owned diagnostic is present.
+- Marked COMMERCE-029 Complete and promoted terminal SYSTEM-TEST-001 to Ready.
+- Phase-3 remains paused pending terminal checkpoint validation/reconciliation.
 
 ### 2026-09-24 — COMMERCE-029 Attempt 2 changes requested
 
