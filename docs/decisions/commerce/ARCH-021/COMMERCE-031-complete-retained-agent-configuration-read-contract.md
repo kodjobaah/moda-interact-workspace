@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T17:01:16Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-025
@@ -239,15 +239,15 @@ for COMMERCE-028.
 
 ## Acceptance Criteria
 
-- [ ] A retained SHOP row with `modelId=null` returns its real `modelEditVersion`.
-- [ ] A retained SHOP row with `activePromptRevisionId=null` returns its real `promptEditVersion`.
-- [ ] Clearing model does not change the returned prompt edit version.
-- [ ] Clearing prompt does not change the returned model edit version.
-- [ ] Missing configuration row returns `null`; it is not fabricated as version `1`.
-- [ ] A durable shop prompt lineage remains readable while no prompt override is active.
-- [ ] Shop prompt lineage lookup cannot return another shop's or a platform lineage.
-- [ ] ADMIN can perform these reads through the existing Studio authorization boundary.
-- [ ] No mutation/audit/schema behavior changes.
+- [x] A retained SHOP row with `modelId=null` returns its real `modelEditVersion`.
+- [x] A retained SHOP row with `activePromptRevisionId=null` returns its real `promptEditVersion`.
+- [x] Clearing model does not change the returned prompt edit version.
+- [x] Clearing prompt does not change the returned model edit version.
+- [x] Missing configuration row returns `null`; it is not fabricated as version `1`.
+- [x] A durable shop prompt lineage remains readable while no prompt override is active.
+- [x] Shop prompt lineage lookup cannot return another shop's or a platform lineage.
+- [x] ADMIN can perform these reads through the existing Studio authorization boundary.
+- [x] No mutation/audit/schema behavior changes.
 
 ## Validation
 
@@ -315,6 +315,18 @@ resolver and not an active-pointer read.
 
 Ready for Review
 
+### Attempt 2 Correction Checklist
+
+- A1-R1 implemented in `tests/agent-configuration-retained-read.test.ts` using
+  one shared mutable `CommerceAgentConfiguration` row and both real services;
+  the exact set/clear model and set/clear prompt sequence passed.
+- A1-R2 retained in the existing model and prompt regressions; the exact-shop
+  lineage isolation and retained-null model read both passed.
+- A1-R3 all Acceptance Criteria reconciled; the exact required Vitest command,
+  targeted ESLint, typecheck, build and diff checks were run and recorded below.
+- A1-R4 this report records the exact Attempt 2 launcher/worktree packet and
+  publication parity.
+
 ### Files Changed
 
 - `src/commerce/agent-configuration/model-service.ts`
@@ -325,6 +337,7 @@ Ready for Review
 - `src/studio/agent-configuration/prompt-server-actions.ts`
 - `tests/agent-configuration-model.test.ts`
 - `tests/agent-configuration-prompts.test.ts`
+- `tests/agent-configuration-retained-read.test.ts`
 
 ### Work Completed
 
@@ -335,31 +348,54 @@ Ready for Review
 - Added exact-scope durable `getShopPrompt(shopId)` lineage lookup and its
   ADMIN-gated Server Action; it does not depend on an active prompt pointer.
 - Preserved existing mutation, audit, schema and authorization boundaries.
-- Added retained-null/CAS and exact-shop lineage regressions.
+- Added the required shared-row model-plus-prompt retained CAS regression while
+  retaining the existing retained-null and exact-shop lineage regressions.
 
 ### Validation Results
 
-- Focused new regressions: PASS — 2 passed, 14 skipped using Vitest
-  `--testNamePattern "retained nullable|durable shop prompt"`.
-- Focused model/prompt suites: 15 passed, 1 unrelated pre-existing failure in
-  the template-copy test (`tests/agent-configuration-prompts.test.ts`).
-- Targeted ESLint: PASS with 2 existing warnings in the model test helper and
-  no errors.
+- Exact required focused command: PASS — 3 test files, 17 tests passed:
+  `npx vitest run tests/agent-configuration-retained-read.test.ts tests/agent-configuration-model.test.ts tests/agent-configuration-prompts.test.ts`.
+- Targeted ESLint: PASS with 0 errors and 2 pre-existing warnings in the model
+  test helper (`modelWith` and `key` unused).
 - `git diff --check`: PASS.
-- `npm run typecheck`: non-zero on existing repository diagnostics; no new
-  diagnostics in changed files. Record against documented `TYPECHECK-001` where
-  applicable; the Commerce `Prisma.sql` diagnostic and unrelated UI diagnostics
-  predate this task.
+- `npm run typecheck`: non-zero on existing repository diagnostics; no diagnostics
+  in the new retained-read test or changed Agent Configuration runtime files.
+  The output includes the known missing preview modules and unrelated UI
+  contract diagnostics; the `prompt-service.ts` Prisma diagnostic remains the
+  documented sibling/baseline condition.
 - `npm run build`: code-runtime packaging, smoke test and Prisma generation
-  passed; Next build is blocked by pre-existing missing preview modules in
-  `app/api/studio/code-response/validate/route.ts` (`lib/preview/http`,
+  passed; Next build is blocked by the same pre-existing missing preview modules
+  in `app/api/studio/code-response/validate/route.ts` (`lib/preview/http`,
   `lib/preview/runtime`, `src/commerce/preview/types`). No changed file is in
   that failure path.
 
+### Attempt 2 Prepared-Execution Packet
+
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-031`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-031`
+- Parent branch: `task/ARCH-021-COMMERCE-031`
+- Implementation branch: `task/ARCH-021-COMMERCE-031`
+- Start-of-attempt parent synchronization: launcher completed and passed;
+  parent head at preparation `d5e535cccf3bd62f73300c1f8d8610331bf20512`.
+- Start-of-attempt implementation synchronization: launcher completed and
+  passed; implementation head at preparation `b510ff8fad7455eaa156e70ab982e547a2f2bc7c`.
+- Attempt 2 claim evidence: parent claim commit
+  `79d893a463d5b382ae3a4a1a671a429d63b789c0`.
+- Recursive submodule materialization: `sync_recursive` and
+  `update_init_recursive` passed.
+- Database submodule commit: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commit: `7171a6f6ca4ed564171463f5a45ab8ad1d0a532f`.
+- Parent report commit: recorded after this report edit and pushed below.
+- Push parity: implementation local HEAD equals
+  `origin/task/ARCH-021-COMMERCE-031` at `7171a6f6ca4ed564171463f5a45ab8ad1d0a532f`.
+- Clean implementation worktree: verified after implementation push.
+- Clean parent worktree: verified after parent report push.
+
 ### Deviations
 
-- Full focused suite and repository typecheck/build remain non-zero because of
-  unrelated existing failures documented above; task-specific regressions pass.
+- Repository typecheck and Next build remain non-zero because of unrelated
+  existing diagnostics/missing preview modules documented above; task-specific
+  regressions, lint and changed-file diagnostics pass.
 
 ### Assumptions
 
@@ -368,8 +404,8 @@ Ready for Review
 
 ### Unresolved Issues
 
-- Existing template-copy test failure, repository typecheck diagnostics and
-  missing preview build modules remain for their owning work.
+- Repository typecheck diagnostics and missing preview build modules remain for
+  their owning work.
 
 ### Architectural Concerns
 
