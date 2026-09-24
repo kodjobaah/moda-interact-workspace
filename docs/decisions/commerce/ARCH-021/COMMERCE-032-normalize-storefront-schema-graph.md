@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -474,24 +474,263 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is architecturally correct in its primary implementation:
+
+- `lib/discovery/artifacts/storefront-2026-07.json` is consumed as the real pinned Storefront `2026-07` introspection source;
+- provenance/hash/query-root metadata are centralized through `storefront-artifact.ts`;
+- recursive `NON_NULL` / `LIST` / named type references are preserved;
+- discovery fields expose truthful schema metadata and no longer expose a synthetic server `path`;
+- `src/studio/contracts.ts` aliases the canonical discovery contract instead of independently declaring a richer field shape;
+- the production `as SchemaPage` assertion was removed;
+- discovery and the Storefront compiler share the same root/token restriction helper;
+- normal `browseSchema()` remains local to the committed artifact and introduces no provider/network dependency;
+- the submitted focused tests cover the real artifact graph and report 28 passing tests.
+
+Architect independently ran:
+
+```text
+node scripts/check-storefront-schema-artifact.mjs
+```
+
+against the supplied review snapshot and confirmed:
+
+```text
+apiVersion: 2026-07
+artifactSha256: 54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc
+queryRoot: QueryRoot
+typeCount: 392
+queryRootFieldCount: 33
+```
+
+There is one implementation blocker.
+
+#### R1 is not actually satisfied: the obsolete hand-authored schema file is still present
+
+The supplied Attempt 1 review snapshot physically contains:
+
+```text
+moda-interact-commerce/lib/discovery/storefront-2026-07.json
+```
+
+The file is 1,303 bytes and contains the old hand-authored subset, including entries such as:
+
+```text
+availableForSale
+description
+handle
+onlineStoreUrl
+product
+productType
+shop
+title
+vendor
+```
+
+This contradicts both:
+
+```text
+R1 — the obsolete hand-authored file must be deleted
+```
+
+and the Completion Report statement:
+
+```text
+"The obsolete hand-authored subset ... was absent after cleanup and is verified absent."
+```
+
+The current artifact checker also still exits successfully while that obsolete file exists, so it does not enforce the single-source-of-truth invariant.
+
+Whether that legacy file is currently tracked, untracked, or residual local workspace state does not change the architectural requirement: the task worktree used for review must not contain a second Storefront schema source.
+
+### Attempt 2 deterministic correction
+
+Reclaim the same task as Attempt 2.
+
+Do **not** redesign the normalized graph, compiler policy, Studio schema DTO, or future recursive browser. The only implementation correction is legacy-source removal plus durable validation of that invariant.
+
+1. At Attempt 2 start, inspect:
+
+   ```bash
+   git ls-files --error-unmatch lib/discovery/storefront-2026-07.json
+   ```
+
+   Record one of these exact outcomes in the Completion Report:
+
+   ```text
+   tracked legacy file
+   ```
+
+   or:
+
+   ```text
+   untracked/local legacy residue
+   ```
+
+   Do not guess.
+
+2. Ensure this path does not exist in the implementation worktree:
+
+   ```text
+   lib/discovery/storefront-2026-07.json
+   ```
+
+   If tracked, delete it and commit the deletion.
+
+   If untracked/local residue, remove it from the worktree and record that no Git deletion was possible because it was not tracked.
+
+3. Strengthen:
+
+   ```text
+   scripts/check-storefront-schema-artifact.mjs
+   ```
+
+   so the checker fails non-zero if the obsolete path exists.
+
+   Use the repository root already resolved by the script. The checker must test the exact path:
+
+   ```text
+   lib/discovery/storefront-2026-07.json
+   ```
+
+   Required failure message:
+
+   ```text
+   storefront-schema-artifact: obsolete hand-authored schema source still exists: lib/discovery/storefront-2026-07.json
+   ```
+
+   Do not add the obsolete file to `.gitignore`.
+
+4. Add a focused regression for the checker invariant. The test may either:
+
+   - invoke the checker in a controlled temporary fixture; or
+   - factor a small pure checker helper used by both the script and test.
+
+   It must prove that presence of the obsolete path causes failure.
+
+   Do not create a second schema fixture that becomes another production source.
+
+5. Preserve all accepted Attempt 1 behavior:
+
+   ```text
+   real artifact graph
+   provenance/hash verification
+   query root from introspection
+   recursive type references
+   no DiscoveryField.path
+   no production as SchemaPage
+   shared compiler/discovery restriction helper
+   no runtime provider/network schema request
+   ```
+
+6. Re-run:
+
+   ```bash
+   npm run check:storefront-schema-artifact
+
+   npx vitest run \
+     tests/storefront-schema-graph.test.ts \
+     tests/discovery.test.ts \
+     tests/discovery-route.test.ts \
+     --reporter=verbose
+   ```
+
+   Include any new checker-specific test file in the same focused packet.
+
+7. Run targeted ESLint for every Attempt 2 changed source/test/script file.
+
+8. Run:
+
+   ```bash
+   npm run typecheck
+   ```
+
+   The already-documented unrelated baseline may remain non-zero, but the Completion Report must record the exact current baseline classes and confirm zero new diagnostics in Attempt 2-owned files.
+
+9. Run:
+
+   ```bash
+   test ! -e lib/discovery/storefront-2026-07.json
+   git diff --check
+   ```
+
+   Both must pass.
+
+10. Reconcile the task `## Validation` checklist. Attempt 1 returned with every Validation checkbox unchecked despite recording the commands as executed. On Attempt 2, mark each validation item `[x]` when its required evidence is satisfied, including typecheck when only the explicitly allowed unchanged unrelated baseline remains.
+
+11. Reconcile the Completion Report so it no longer states that the obsolete file was absent unless the final worktree actually proves:
+
+   ```bash
+   test ! -e lib/discovery/storefront-2026-07.json
+   ```
+
+12. Record normal Attempt 2 launcher/worktree/synchronization/submodule evidence, implementation commit, parent report commit, and final clean/upstream branch state.
+
+13. Return:
+
+   ```yaml
+   status: review
+   executor: null
+   claimed_at: null
+   attempt: 2
+   ```
+
+   and STOP.
+
+Do not start `ARCH-021-COMMERCE-033`.
 
 ### Reviewed Files
 
-None
+- `lib/discovery/artifacts/storefront-2026-07.json`
+- `lib/discovery/artifacts/storefront-2026-07.provenance.json`
+- `lib/discovery/storefront-2026-07.json`
+- `lib/discovery/storefront-artifact.ts`
+- `lib/discovery/schema.ts`
+- `lib/discovery/compiler.ts`
+- `src/studio/contracts.ts`
+- `src/commerce/integration/studio/services.ts`
+- `components/studio-workspace.tsx`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `scripts/check-storefront-schema-artifact.mjs`
+- `tests/storefront-schema-graph.test.ts`
+- `tests/discovery.test.ts`
+- `tests/discovery-route.test.ts`
+- `package.json`
+- task Completion Report
 
 ### Validation Reviewed
 
-None
+Architect independently verified the artifact checker against the supplied snapshot:
+
+```text
+apiVersion: 2026-07
+artifactSha256: 54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc
+queryRoot: QueryRoot
+typeCount: 392
+queryRootFieldCount: 33
+```
+
+Submitted evidence records:
+
+```text
+focused tests: 3 files / 28 passed
+targeted ESLint: PASS
+git diff --check: PASS
+```
+
+The supplied archive has no `node_modules`, so the architect did not independently rerun Vitest/ESLint/typecheck.
 
 ### Architecture Conformance
 
-Pending
+Partial.
+
+The normalized Storefront graph and Studio contract are conformant. The remaining non-conformance is the physical presence of the obsolete hand-authored Storefront schema source and the lack of a checker guard preventing its reintroduction.
 
 ### Follow-up
 
-None
+Attempt 2 is removal/validation-only. No schema-browser or query-builder work is authorized in this correction.
+
+`ARCH-021-COMMERCE-033` remains Pending until COMMERCE-032 is architect-accepted Complete.

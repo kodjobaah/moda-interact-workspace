@@ -168,6 +168,15 @@ COMMERCE-032 is Ready. COMMERCE-033/034 are Pending on that chain.
 `ARCH-021-SYSTEM-TEST-001` returns to Pending until all three correction tasks are
 architect-accepted Complete.
 
+### COMMERCE-032 Attempt 1 changes requested — 2026-09-24
+
+The real pinned Storefront graph, normalized contract and compiler-policy sharing are
+accepted in substance. COMMERCE-032 remains **Ready** for a narrow Attempt 2 because
+the submitted review snapshot still contains the obsolete hand-authored
+`lib/discovery/storefront-2026-07.json` file while the Completion Report says it is
+absent. Attempt 2 must remove that residue and make the artifact checker fail whenever
+the obsolete source exists. COMMERCE-033 remains Pending.
+
 ### Storefront dynamic-schema correction tasks materialised — 2026-09-24
 
 Manual validation found that the real `browseSchema()` result is derived from the

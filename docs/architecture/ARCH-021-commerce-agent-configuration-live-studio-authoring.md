@@ -1050,6 +1050,19 @@ independent of features.
 
 ## Change History
 
+### 2026-09-24 — COMMERCE-032 Attempt 1 changes requested
+
+- Accepted the real pinned Storefront artifact graph, canonical recursive type
+  reference contract, removal of synthetic field paths from discovery DTOs, and
+  shared compiler/discovery restriction policy in substance.
+- Returned COMMERCE-032 to Ready because the supplied review snapshot still
+  physically contains the obsolete hand-authored
+  `lib/discovery/storefront-2026-07.json`, contradicting R1 and the Completion
+  Report.
+- Attempt 2 is bounded to removing that residue, teaching the artifact checker to
+  fail if it reappears, and reconciling validation/report evidence.
+- COMMERCE-033 remains Pending.
+
 ### 2026-09-24 — Dynamic Storefront schema correction decomposed
 
 - Manual validation identified the exact checkbox defect: production discovery
