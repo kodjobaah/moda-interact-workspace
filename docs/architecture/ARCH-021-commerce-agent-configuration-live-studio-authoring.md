@@ -854,6 +854,36 @@ reconcile NOT_COMMITTED -> allow explicit retry with a new operationId
 
 Do not catch ordinary failures and silently return success, empty state or generic `unknown`.
 
+### Authorization hierarchy clarification — 2026-09-24
+
+Studio authorization is one ordered hierarchy with scope layered on top:
+
+```text
+PLATFORM_SUPER_ADMIN
+        >
+PLATFORM_ADMIN
+        >
+MERCHANT_ADMIN
+        >
+MERCHANT_EDITOR
+        >
+MERCHANT_VIEWER
+```
+
+Platform roles are global. Merchant roles are evaluated against the requested shop and may differ across shops for the same Auth.js identity. An active PlatformAdmin takes precedence over merchant-access rows and is never downgraded for a shop request.
+
+Shop minimum authority is:
+
+```text
+inspect / preview -> MERCHANT_VIEWER
+edit              -> MERCHANT_EDITOR
+publish           -> MERCHANT_ADMIN
+```
+
+Therefore both `PLATFORM_ADMIN` and `PLATFORM_SUPER_ADMIN` satisfy every shop minimum-authority check for every shop. Platform-only operations remain separate: platform catalogue/template/default administration requires at least `PLATFORM_ADMIN`; platform release activation/rollback, global sensitive capability enable/disable, PlatformAdmin membership/role administration and global merchant-access override require `PLATFORM_SUPER_ADMIN`.
+
+The authorization implementation must centralize minimum-role comparison. Compatibility helpers may delegate to that hierarchy but must not maintain a second platform-vs-merchant permission matrix. Authentication remains the normal Auth.js Google path; the hierarchy is authorization only and is not persisted as a new combined-role enum.
+
 Checkpoint tasks:
 
 | Task | Owner | Status | Depends On |
@@ -861,7 +891,7 @@ Checkpoint tasks:
 | ARCH-021-DATABASE-002 | moda_database | Complete | DATABASE-001 |
 | ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
-| ARCH-021-COMMERCE-027 | moda_commerce | Ready | DATABASE-002 |
+| ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
@@ -991,6 +1021,26 @@ independent of features.
 - Required Prisma connection/initialization failures to normalize publicly to `DATABASE_UNAVAILABLE` while preserving the original root cause through the canonical `@modainteract/moda-interact-shared/logging` logger using the repository's existing `createLogger` contract; no local logger or secret-bearing fields are permitted.
 - Attempt 1 validation is incomplete because the model, prompt and effective suites are disabled with `describe.skip`; Attempt 2 must migrate and activate them plus the reduced PostgreSQL model/prompt suites.
 - Returned COMMERCE-025 to Ready at `attempt: 1`; COMMERCE-028 remains Pending.
+### 2026-09-24 — COMMERCE-027 Attempt 5 accepted
+
+- Accepted the hierarchical Auth.js Studio authorization implementation and final SUPER_ADMIN-only global merchant-access administration boundary.
+- Confirmed platform `ADMIN` still inherits all shop-scoped merchant authority, including shop publication, while explicit global-sensitive operations remain `PLATFORM_SUPER_ADMIN`-only.
+- Accepted focused authorization validation (62/62) and disposable PostgreSQL validation (3/3), including denied platform-ADMIN administration with no merchant/audit mutation, successful SUPER_ADMIN lifecycle, and concurrent subject-binding.
+- Marked COMMERCE-027 Complete. COMMERCE-028 remains Pending only on COMMERCE-025.
+
+### 2026-09-24 — COMMERCE-027 Attempt 4 changes requested
+
+- Accepted the hierarchical authorization implementation, direct production-entrypoint regressions and hardened PostgreSQL harness in substance.
+- Returned COMMERCE-027 to Ready for one bounded security correction because the manual global merchant-access CLI currently accepts any active `PlatformAdmin`, while the architecture reserves global merchant-access administration to `PLATFORM_SUPER_ADMIN`.
+- Required an explicit PostgreSQL denial regression for platform `ADMIN` while preserving the accepted SUPER_ADMIN lifecycle and concurrent subject-binding proof.
+- COMMERCE-028 remains Pending on COMMERCE-025 and COMMERCE-027.
+
+### 2026-09-24 — Authorization hierarchy clarified
+
+- Defined one ordered Studio authorization hierarchy: `PLATFORM_SUPER_ADMIN > PLATFORM_ADMIN > MERCHANT_ADMIN > MERCHANT_EDITOR > MERCHANT_VIEWER`.
+- Confirmed platform roles are global, merchant roles are exact-shop scoped, PlatformAdmin takes precedence, and platform `ADMIN` satisfies merchant-ADMIN shop operations including shop publication.
+- Kept explicitly platform-sensitive operations such as release activation/rollback and global-sensitive controls SUPER_ADMIN-only.
+
 ### 2026-09-24 — COMMERCE-026 Attempt 3 accepted
 
 - Accepted implementation `f769392` with parent report `1c0d0c0e`.
@@ -1019,7 +1069,6 @@ independent of features.
 - Required removal of remaining C026-owned `sourceTemplateRevisionId` UI references while leaving COMMERCE-025-owned prompt-service migration to COMMERCE-025.
 - Required focused regressions to adopt `OPERATION_ALREADY_COMMITTED`/read-only reconciliation rather than identical successful result replay, plus mandatory launcher/worktree evidence in the Completion Report.
 - COMMERCE-028 remains Pending; COMMERCE-025 and COMMERCE-027 remain independently executable.
-
 ### 2026-09-24 — DATABASE-002 Attempt 2 accepted
 
 - Accepted implementation `f2629f1` with task report `dde2e33` after the Attempt 1 migration-execution corrections.
