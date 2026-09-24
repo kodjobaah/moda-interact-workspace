@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-09-24T16:23:57Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-030
@@ -212,27 +212,45 @@ None.
 
 ## Architect Review
 
+
 ### Review Status
 
 Changes Requested
 
 ### Review Notes
 
-Attempt 1 correctly removes the RSA/JWT assertion-key environment wiring from both Render blueprints, adds no replacement MCP credential, keeps `COMMERCE_MCP_URL` only on the Background messaging worker, and preserves the public HAProxy denial for `/api/mcp`. The submitted positive/negative Blueprint validators and YAML parsing also pass.
+Attempt 2 resolves the only implementation defect from Attempt 1. The private MCP deployment runbook now:
 
-One task-owned deployment-runbook defect remains. The accepted COMMERCE-030/BACKGROUND-001 private MCP contract is:
+- uses one ordinary JSON-RPC request body that contains no caller context;
+- sends `X-Moda-Commerce-Context` explicitly for valid, malformed and stale probes;
+- varies only the context-header value between the malformed/stale probes;
+- rejects every 2xx malformed/stale response without imposing an undocumented fixed HTTP 401;
+- prints a bounded rejection body for operator diagnosis;
+- retains the private Render service-link trust boundary and public `/api/mcp` denial;
+- introduces no replacement Bearer token, API key, JWT, assertion, shared secret or MCP credential.
+
+The Gateway-owned validator now also fails if the smoke section loses the literal `X-Moda-Commerce-Context` header or reintroduces service-credential wording.
+
+Architect independently reran the implementation validation from the supplied Attempt 2 snapshot:
 
 ```text
-private service link
-+ X-Moda-Commerce-Context: <base64url(JSON UTF-8)>
-+ ordinary JSON-RPC body
+bash tests/validate-render-blueprints.sh            PASS
+bash tests/validate-render-blueprints-negative.sh   PASS
+Ruby Psych parse render.test.yaml                   PASS
+Ruby Psych parse render.production.yaml             PASS
 ```
 
-`docs/commerce-deployment.md` currently does not send `X-Moda-Commerce-Context`. Instead it describes three different JSON-RPC bodies as containing valid/malformed/stale context and posts only those bodies. That does not exercise the implemented private-MCP contract.
+Architect also inspected both Blueprints and confirmed that the only MCP-specific runtime configuration is `COMMERCE_MCP_URL` on the messaging worker in each environment. The legacy credential strings remain only in validator absence guards / intentional negative fixtures.
 
-The same runbook also requires HTTP `401` for both malformed and stale context. COMMERCE-030 does not define that invariant: malformed/missing context is an `INVALID_INPUT`/`UNAUTHENTICATED`-equivalent bounded error, while DB-backed stale/mismatched context may surface `STALE_TURN`, `FORBIDDEN`, `INCOMPATIBLE_VERSION`, or another bounded non-success result. The runbook must demonstrate explicit rejection without falsely requiring stale state to be HTTP 401.
+No Gateway source, Blueprint, topology or deployment-runbook correction remains.
 
-No Blueprint/topology redesign is required.
+The task cannot yet be accepted because the durable task record was not reconciled as required by the Attempt 1 correction contract:
+
+1. all four task-owned `## Validation` checkboxes remain unchecked even though the Completion Report says they passed;
+2. the task frontmatter still carried an active executor/claim on return to review;
+3. the Completion Report does not record the Attempt 2 launcher-prepared parent/implementation worktree evidence, start-of-attempt synchronization evidence, recursive submodule/materialization evidence where applicable, or final implementation/report commit-and-push evidence.
+
+Those are task-protocol/reporting defects only. Do not modify Gateway implementation files to address this review.
 
 ### Reviewed Files
 
@@ -243,87 +261,79 @@ No Blueprint/topology redesign is required.
 - `moda-interact-gateway/docs/gateway.md`
 - `moda-interact-gateway/tests/validate-render-blueprints.sh`
 - `moda-interact-gateway/tests/validate-render-blueprints-negative.sh`
-- `docs/decisions/commerce/ARCH-021/COMMERCE-030-simplify-private-mcp-authentication.md`
+- `docs/decisions/gateway/ARCH-021/GATEWAY-001-simplify-private-commerce-mcp-secret-wiring.md`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-Architect independently reran from the supplied snapshot:
+Architect independently verified:
 
 ```text
-bash tests/validate-render-blueprints.sh          PASS
-bash tests/validate-render-blueprints-negative.sh PASS
-Ruby Psych parse render.test.yaml                 PASS
-Ruby Psych parse render.production.yaml           PASS
+bash tests/validate-render-blueprints.sh            PASS
+bash tests/validate-render-blueprints-negative.sh   PASS
+Ruby Psych parse render.test.yaml                   PASS
+Ruby Psych parse render.production.yaml             PASS
 ```
 
-The submitted Completion Report records `git diff --check` as PASS. The review archive does not contain Git metadata, so that check was not independently repeated from the archive.
+The submitted Completion Report records `git diff --check` and the semantic credential audit as PASS. The supplied review archive contains no Git metadata, so commit ancestry/upstream cleanliness could not be independently reconstructed from the archive.
 
 ### Architecture Conformance
 
-Changes Requested. The deployed topology and credential removal conform in substance, but the operator validation/runbook does not conform to the accepted context-header transport contract and currently encodes an incorrect fixed-401 assumption for stale DB-backed context.
+Implementation conforms to the ARCH-021 context-only private MCP trust boundary. The remaining work is report/task-state reconciliation only.
 
 ### Follow-up
 
-Reclaim this same task as Attempt 2. Make only the following bounded corrections.
+Reclaim this same task as Attempt 3 and perform **only** the following deterministic report correction. Do not modify Gateway source, Blueprint, HAProxy, runbook or validator files unless the report reconciliation itself exposes a factual mismatch.
 
-1. **Correct the private MCP smoke inputs in `docs/commerce-deployment.md`.** Separate the ordinary JSON-RPC body from the context header. Use explicit inputs with these semantics:
+1. Immediately after the Attempt 3 launcher claim, verify the task is `in_progress`, `attempt: 3`, and that the launcher resolved dedicated parent and implementation worktrees from the canonical primary workspace. Record the actual prepared packet evidence; do not invent paths or SHAs.
 
-   ```text
-   PRIVATE_MCP_REQUEST_BODY
-       ordinary bounded JSON-RPC/MCP request body; contains no caller context
-
-   PRIVATE_VALID_COMMERCE_CONTEXT
-       valid base64url(JSON UTF-8) value for X-Moda-Commerce-Context
-
-   PRIVATE_MALFORMED_COMMERCE_CONTEXT
-       deliberately malformed header value
-
-   PRIVATE_STALE_COMMERCE_CONTEXT
-       syntactically valid encoded context whose durable DB state is stale/mismatched
-   ```
-
-   The Background-owned harness remains responsible for producing those context values. Do not document or introduce a bearer token, API key, JWT, assertion, shared secret, or replacement credential.
-
-2. **Send the implemented header explicitly on every private MCP smoke request.** The valid request must have this exact shape in substance:
-
-   ```sh
-   curl -fsS -X POST \
-     -H 'Content-Type: application/json' \
-     -H "X-Moda-Commerce-Context: ${PRIVATE_VALID_COMMERCE_CONTEXT}" \
-     --data-binary "${PRIVATE_MCP_REQUEST_BODY}" \
-     "${COMMERCE_MCP_URL}"
-   ```
-
-   Malformed and stale probes must use the same JSON-RPC body and vary only the `X-Moda-Commerce-Context` value.
-
-3. **Do not require stale context to be HTTP 401.** For each malformed/stale probe, capture the HTTP status and response body deterministically. Fail the smoke check if the response is any 2xx status. Preserve/print the bounded response body so the operator can see the actual MCP error code. Do not broaden this into a new error-mapping contract and do not hard-code a stale-context status that COMMERCE-030 does not guarantee.
-
-4. **Remove stale wording.** Replace wording such as `private MCP assertions` or request bodies `with ... context` where it implies the old signed/assertion model or context-in-body transport. The runbook must consistently describe the private-link + context-header + JSON-RPC-body contract.
-
-5. **Add a deterministic documentation regression check.** Extend an existing Gateway validation script (prefer `tests/validate-render-blueprints.sh`; do not create a new framework) so it fails if `docs/commerce-deployment.md` no longer contains the literal header name `X-Moda-Commerce-Context`, or if the private MCP smoke section reintroduces a service `Authorization`/Bearer/JWT/assertion credential. Keep this check bounded to the Gateway-owned deployment/runbook files; do not scan unrelated Auth.js/session documentation.
-
-6. **Re-run and record all required validation.** Required commands/results before returning to review:
+2. In `## Validation`, change exactly these four existing checkboxes from `[ ]` to `[x]`, because Attempt 2 already executed them successfully:
 
    ```text
-   bash tests/validate-render-blueprints.sh            PASS
-   bash tests/validate-render-blueprints-negative.sh   PASS
-   Ruby Psych parse render.test.yaml                   PASS
-   Ruby Psych parse render.production.yaml             PASS
-   git diff --check                                    PASS
+   bash tests/validate-render-blueprints.sh
+   bash tests/validate-render-blueprints-negative.sh
+   repository-declared YAML/config validation
+   git diff --check
    ```
 
-   Also run a source audit over the Gateway-owned Blueprints/runbook/validators proving there is no runtime configuration for:
+   Do not rerun the Gateway validators solely to reproduce evidence already obtained in Attempt 2 unless the task record correction unexpectedly changes a Gateway-owned implementation file.
+
+3. Reconcile `## Completion Report` so it durably records the actual Attempt 2 execution evidence:
+
+   - launcher-resolved parent task worktree;
+   - launcher-resolved implementation worktree;
+   - start-of-attempt parent synchronization/base evidence;
+   - start-of-attempt implementation synchronization/base evidence;
+   - recursive submodule/materialization evidence where applicable;
+   - implementation commit: `fc25bfc`;
+   - parent Completion Report commit: `0c18805e`;
+   - final implementation branch clean and equal to its upstream;
+   - final parent task branch clean and equal to its upstream;
+   - no follow-on task started.
+
+   If any of those facts cannot be established from Git/launcher evidence, do not guess. Record the exact missing evidence and return the task `blocked`.
+
+4. Preserve the existing successful Attempt 2 validation results and semantic credential audit in the Completion Report. Remove no valid implementation evidence.
+
+5. After the report-only correction is complete, set:
+
+   ```yaml
+   status: review
+   executor: null
+   claimed_at: null
+   attempt: 3
+   ```
+
+   Set Completion Report status to `Ready for architect review`.
+
+6. Run only the report-level final check required by the files changed in Attempt 3:
 
    ```text
-   COMMERCE_ASSERTION_PUBLIC_KEYS
-   COMMERCE_ASSERTION_PRIVATE_KEY
-   COMMERCE_ASSERTION_KEY_ID
-   COMMERCE_MCP_SERVICE_TOKEN
-   COMMERCE_MCP_TOKEN
-   COMMERCE_MCP_SECRET
+   git diff --check
    ```
 
-   Negative-test fixture strings used solely to prove rejection are allowed and must be identified as such in the Completion Report.
+   Record the result.
 
-7. **Reconcile task execution state before handoff.** On the Attempt 2 claim, increment `attempt` exactly once. After the corrections and validation pass, check the task-owned Validation boxes, update the Completion Report with the actual Attempt 2 launcher/worktree synchronization and commit/push evidence, set `status: review`, clear `executor`/`claimed_at`, return to `moda_architect`, and STOP. Do not start `ARCH-021-SYSTEM-TEST-001`.
+7. Commit and push the parent task-report correction according to the normal task workflow, verify the parent branch is clean and equals its upstream, return to `moda_architect`, and STOP. Do not start `ARCH-021-SYSTEM-TEST-001`.
+
+No further Gateway implementation work is authorized by this review.
