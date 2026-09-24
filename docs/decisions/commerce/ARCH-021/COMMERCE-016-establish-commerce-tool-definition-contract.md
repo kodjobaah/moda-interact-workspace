@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-09-23T23:58:49Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-021
@@ -561,9 +561,106 @@ Task status is `review`, with `executor: null` and `claimed_at: null`. Control i
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1.
+Changes Requested — Attempt 2.
 
 ### Review Notes
+#### Attempt 2 review — 2026-09-24
+
+Reviewed the submitted Attempt 2 snapshot for implementation `5f6e014` and parent
+report `21a3e952` against the complete Attempt 1 correction contract. Attempt 2
+correctly fixes the null-prototype deep copy for request-JavaScript arguments,
+restores deterministic OBJECT/LIST publication compatibility, and rejects the
+specific `export default async` and `fetch(...)` examples covered by the focused
+suite. Shared remains pinned to exact `0.14.2`, and the local
+`src/commerce/tool-definition/` ownership direction remains correct.
+
+Attempt 2 is not accepted because A1-R1, A1-R2/R4 and A1-R5 are still incomplete.
+The remaining corrections below are the complete Attempt 3 contract. Do not redesign
+the Tool UI or implement COMMERCE-017/018/020 functionality while correcting this
+task.
+
+##### A2-R1 — finish the explicitly scoped legacy full-definition migration
+
+Source and focused-test changes are required. The remaining flat/Shared consumers
+are task-owned; they must not be classified as unrelated typecheck baseline. The
+submitted snapshot still includes, at minimum:
+
+- `src/studio/external-http/editor.tsx` importing Shared
+  `ExternalHttpExecutionSchema` / `ExternalHttpExecution` and editing the old
+  root-level `execution.path` / `execution.query` shape;
+- `components/studio-workspace.tsx` importing Shared
+  `CommerceToolDefinitionSchema` and reading old root-level
+  `definition.execution.path` / `definition.execution.query`; and
+- `tests/external-tools-ui.test.tsx` importing Shared
+  `CommerceToolDefinitionSchema` / `ExternalHttpExecutionSchema`.
+
+These files were explicitly identified by the Attempt 1 review and are within the
+task's migration scope. Move them to the Commerce-owned contract and canonical
+nested `execution.request` shape with the minimum compatibility-neutral edits
+required for the existing UI/tests. Do not add a legacy normalization parser.
+
+After correction, run an exhaustive deterministic import audit proving there is no
+production Commerce import of the legacy Shared full Tool-definition symbols listed
+in A1-R1. Shared imports for genuine cross-service descriptors/results/manifests,
+connection contracts and reusable primitives remain valid.
+
+Any TypeScript diagnostic caused by an old flat EXTERNAL_HTTP object missing the
+canonical `request` field, or by Shared/local Tool-definition incompatibility in
+these explicitly scoped consumers, is task-owned and must be corrected before
+acceptance.
+
+##### A2-R2 — make persisted request-JavaScript admission satisfy the exact R4 contract
+
+Source and focused-test changes are required. The current source filter rejects
+`export default`, `async function` and direct `fetch(...)`, but it still admits
+unsupported persisted programs such as:
+
+- source that does not define `function buildRequest({ args })`;
+- an async arrow/function expression such as
+  `const buildRequest = async ({ args }) => ...`; and
+- dynamic `import(...)`.
+
+R4 defines one synchronous persisted entry point and explicitly excludes exports,
+imports, async functions and network operations. Persisted-source admission must
+reject unsupported forms deterministically without executing JavaScript. Keep actual
+QuickJS execution in COMMERCE-017.
+
+Add focused negative controls for at least missing/wrong `buildRequest`, async arrow
+syntax and dynamic import, while preserving the canonical synchronous positive
+example.
+
+##### A2-R3 — complete the mandatory R14 proof
+
+The focused contract suite now covers many more semantics but still does not prove
+all mandatory R14 items. Extend the focused proof so it explicitly verifies:
+
+- a `POLICY_OPERATION` definition still parses;
+- a transitional `SHOPIFY_STOREFRONT_QUERY` definition still parses; and
+- the zero-legacy-full-definition-import invariant from A2-R1.
+
+The deterministic zero-import proof may be implemented as a focused repository
+audit invoked by the task script or as an equivalent test/helper, but it must fail
+when an explicitly forbidden Shared full-definition import is reintroduced.
+
+Keep the existing safe-copy, Admin mapping, publication compatibility, hashing,
+DIRECT/JSON, JavaScript-response-root, descriptor and canonical/root-level HTTP
+proofs.
+
+##### A2-R4 — reconcile Attempt 2 execution/report state
+
+The submitted task metadata still carries an active `executor: copilot` /
+`claimed_at` while `status: review`, and the Completion Report still records the
+Attempt 1 launcher claim rather than the exact Attempt 2 prepared-execution packet.
+Record the exact launcher-resolved parent worktree, implementation worktree,
+matching branch names, start-of-attempt synchronization, Attempt 2 claim and
+recursive submodule/database evidence. Do not invent values.
+
+Re-run the focused contract and affected regression suites, targeted lint,
+`git diff --check`, and full typecheck after A2-R1. Separate only genuinely
+pre-existing diagnostics from task-owned flat/local-contract migration diagnostics.
+The two backend singleton environment assertions may remain documented if they
+reproduce unchanged and are unrelated to this contract migration.
+
 Reviewed the corrected submitted snapshot for implementation `98511ef` and parent
 report `9b7de4ad`. The new `src/commerce/tool-definition/` boundary is directionally
 correct, Shared remains pinned at exact `0.14.2`, the canonical nested
