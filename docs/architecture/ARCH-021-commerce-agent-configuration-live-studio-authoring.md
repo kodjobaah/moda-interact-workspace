@@ -841,6 +841,7 @@ Collapse/remove:
 - template revision persistence into current template `promptText` plus copy-on-use Agent Prompt revisions;
 - generic payload-hash/stored-result command replay for ordinary PostgreSQL configuration mutations;
 - production Server -> Client function-valued Studio service/port bundles;
+- test-only function/port/service injection props on production React components; automated tests must replace the same named Server Action/module boundaries used by production instead of creating an alternate runtime composition;
 - MCP RSA/JWT/key exchange and **all replacement application-layer MCP credentials**. The existing private service link is the MCP caller trust boundary; Commerce continues to authorize shop/turn/grant/release/tool context from PostgreSQL.
 
 Error rule:
@@ -893,14 +894,14 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Complete | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
-| ARCH-021-COMMERCE-029 | moda_commerce | Ready | COMMERCE-028, COMMERCE-001..006 |
+| ARCH-021-COMMERCE-029 | moda_commerce | Complete | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
 | ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
-| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Ready | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-029` and `ARCH-021-GATEWAY-001`. COMMERCE-028 is architect-accepted Complete and all COMMERCE-029 dependencies are Complete, so COMMERCE-029 is Ready. BACKGROUND-001 acceptance satisfies the remaining GATEWAY-001 dependency.
+Current checkpoint implementation frontier: none. COMMERCE-029 is architect-accepted Complete, so every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete and SYSTEM-TEST-001 is Ready. The developer may intentionally leave the terminal system-test task Ready while manually validating the completed checkpoint. Phase-3 tasks remain paused until checkpoint validation/reconciliation.
 
 ### Phase 4 — live single-tool testing
 
@@ -993,6 +994,45 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-029 Attempt 3 accepted
+
+- Accepted the final serializable Studio/Connections production boundary.
+- Confirmed production components no longer expose alternate function-valued
+  service/port/render-function seams solely for tests.
+- Confirmed fixture/in-memory behavior is now configured only inside test code
+  behind the same named Server Action modules production invokes.
+- Accepted the 9-file / 71-test focused packet and zero-match source audits.
+- Confirmed current typecheck diagnostics remain limited to documented unrelated
+  Commerce baseline files; no Attempt 3-owned diagnostic is present.
+- Marked COMMERCE-029 Complete and promoted terminal SYSTEM-TEST-001 to Ready.
+- Phase-3 remains paused pending terminal checkpoint validation/reconciliation.
+
+### 2026-09-24 — COMMERCE-029 Attempt 2 changes requested
+
+- Accepted the Attempt 2 removal of `StudioServices` from `StudioWorkspace`, structured
+  logging of unexpected server failures, bounded client failure-class visibility, and
+  updated named-Server-Action production regressions.
+- Clarified the checkpoint testing invariant with the developer: test helpers/fixtures
+  may remain, but production React/component APIs must not expose alternate
+  function-valued ports or render callbacks solely for tests.
+- Returned COMMERCE-029 to Ready for a bounded Attempt 3 removing the test-only
+  `StudioWorkspace.externalHttpPort`, dead `StudioWorkspace.renderCodePanel`, and
+  `ConnectionsPage.port` seams and migrating tests to the same serializable DTO +
+  named Server Action composition used by production.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-24 — COMMERCE-029 Attempt 1 changes requested
+
+- Retained the serializable production composition: server pages pass DTOs and
+  production clients invoke named Server Actions directly.
+- Returned COMMERCE-029 to Ready because `StudioWorkspace` still exposes a
+  function-valued `StudioServices` fixture prop, task-owned catches still collapse
+  unexpected failures without the required structured logging / visible failure
+  class, and the Agent Configuration production regression still encodes the old
+  `getStudioServices()` composition.
+- Attempt 2 is bounded to boundary/error/test correction plus task-report
+  reconciliation. SYSTEM-TEST-001 remains Pending.
 
 ### 2026-09-24 — COMMERCE-028 Attempt 3 accepted
 

@@ -145,19 +145,49 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Complete | DATABASE-002, COMMERCE-008, 015 |
 | [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Complete | DATABASE-002 |
 | [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Complete | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
-| [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Ready | COMMERCE-028, COMMERCE-001..006 |
+| [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Complete | COMMERCE-028, COMMERCE-001..006 |
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
 | [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Complete | COMMERCE-025 |
 
-Current checkpoint frontier:
+Current checkpoint implementation frontier: none.
 
-```text
-ARCH-021-COMMERCE-029
-ARCH-021-GATEWAY-001
-```
+COMMERCE-029 is architect-accepted Complete. All pre-Phase-3 simplification
+implementation dependencies are Complete, so terminal `ARCH-021-SYSTEM-TEST-001`
+is Ready. The developer may leave that terminal system-test task Ready while
+manually validating the completed checkpoint.
 
-COMMERCE-028 is architect-accepted Complete. All COMMERCE-029 dependencies are
-Complete, so COMMERCE-029 is Ready.
+### COMMERCE-029 Attempt 3 accepted — 2026-09-24
+
+COMMERCE-029 is architect-accepted **Complete**. Production Studio and Connections
+React boundaries no longer expose test-only service/port/render-function injection
+props. Tests configure fixture state behind the same named Server Action modules used
+by production. The focused packet passed 9 files / 71 tests and the required source
+audits passed with no production matches. Repository-wide typecheck/build remain
+blocked only by the documented unrelated Commerce baseline.
+
+All simplification checkpoint implementation dependencies are now Complete, so
+`ARCH-021-SYSTEM-TEST-001` is Ready.
+
+### COMMERCE-029 Attempt 2 changes requested — 2026-09-24
+
+Attempt 2 fixes the original `StudioServices` prop, error visibility/logging, and stale
+production-composition tests. COMMERCE-029 remains **Ready** for Attempt 3 because
+production Client Component APIs still expose alternate function-valued seams used only
+by tests (`StudioWorkspace.externalHttpPort`, `StudioWorkspace.renderCodePanel`, and
+`ConnectionsPage.port`). The developer-confirmed invariant is now explicit: test helpers
+may exist, but tests must mock the same named Server Action/module boundaries production
+uses instead of adding test-only production React props. SYSTEM-TEST-001 remains Pending.
+
+### COMMERCE-029 Attempt 1 changes requested — 2026-09-24
+
+The production Server/Client function-prop removal is retained, but COMMERCE-029
+returns to **Ready** for Attempt 2. `StudioWorkspace` must no longer accept
+`StudioServices` even under a renamed fixture prop; task-owned client/server
+exception paths must stop swallowing arbitrary failures and use the approved
+shared structured logger on the server while rendering a bounded failure class
+on the client; and stale production-composition tests must be migrated to the
+new serializable DTO + named Server Action architecture. SYSTEM-TEST-001 remains
+Pending.
 
 ### COMMERCE-028 Attempt 3 accepted — 2026-09-24
 
