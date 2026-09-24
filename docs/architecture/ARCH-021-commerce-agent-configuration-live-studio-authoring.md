@@ -859,7 +859,7 @@ Checkpoint tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-DATABASE-002 | moda_database | Complete | DATABASE-001 |
-| ARCH-021-COMMERCE-025 | moda_commerce | Ready | DATABASE-002, COMMERCE-007, 009, 010 |
+| ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Ready | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
@@ -869,7 +869,7 @@ Checkpoint tasks:
 | ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-025`, `ARCH-021-COMMERCE-027` and `ARCH-021-BACKGROUND-001`. COMMERCE-026 is Complete; COMMERCE-028 remains Pending until COMMERCE-025 and COMMERCE-027 are Complete.
+Current checkpoint frontier: `ARCH-021-COMMERCE-027` and `ARCH-021-BACKGROUND-001`. COMMERCE-025 and COMMERCE-026 are Complete; COMMERCE-028 remains Pending until COMMERCE-027 is Complete.
 
 ### Phase 4 — live single-tool testing
 
@@ -962,6 +962,12 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-025 Attempt 4 accepted
+
+- Accepted final implementation `3a64581b0987a8fa0e790cff8a7c1d79264f4cba`; mandatory platform baselines, reduced DATABASE-002 state, independent model/prompt CAS, retained nullable overrides, prompt-lineage identity, template provenance, operation receipts/reconciliation and shared structured database-unavailable logging conform.
+- Architect-completed validation passed 30/30 focused tests with zero skips, 3/3 model PostgreSQL concurrency cases and 5/5 prompt PostgreSQL concurrency cases. Model and prompt PostgreSQL suites used separate freshly migrated disposable DATABASE-002 databases because immutable audit receipts correctly prevent destructive cleanup between suites. Targeted ESLint has zero errors after the review-time fixture typing correction; `git diff --check` passes.
+- Marked COMMERCE-025 Complete. COMMERCE-028 remains Pending only on COMMERCE-027; the active checkpoint frontier is COMMERCE-027 plus BACKGROUND-001.
 
 ### 2026-09-24 — COMMERCE-025 Attempt 3 changes requested
 
