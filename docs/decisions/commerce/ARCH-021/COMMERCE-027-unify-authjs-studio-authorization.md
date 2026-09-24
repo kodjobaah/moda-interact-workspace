@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T12:23:33Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-DATABASE-002
@@ -247,15 +247,15 @@ Consumes `CommerceStudioMerchantAccess` from DATABASE-002. No new external auth 
 
 ## Validation
 
-- [ ] platform-admin login tests
-- [ ] merchant first-login subject binding test
-- [ ] multi-shop merchant binding test
-- [ ] conflicting subject denial test
-- [ ] platform-admin precedence test
-- [ ] shop authorization matrix tests
-- [ ] manual CLI focused integration test against disposable PostgreSQL
-- [ ] targeted ESLint/typecheck
-- [ ] `git diff --check`
+- [x] platform-admin login tests
+- [x] merchant first-login subject binding test
+- [x] multi-shop merchant binding test
+- [x] conflicting subject denial test
+- [x] platform-admin precedence test
+- [x] shop authorization matrix tests
+- [x] manual CLI focused integration test against disposable PostgreSQL
+- [x] targeted ESLint; full typecheck has documented baseline failures
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -270,39 +270,55 @@ Authentication proves identity; authorization comes from PlatformAdmin or Mercha
 
 ### Status
 
-Review requested
+Review requested for Attempt 2
+
+### Execution Evidence
+
+- Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-027`, branch `task/ARCH-021-COMMERCE-027`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-027`, branch `task/ARCH-021-COMMERCE-027`.
+- Attempt 2 claim commit: `93460e3663590ecc63e79d47e5dfec0a2254432b`.
+- Start-of-attempt preparation synchronization: parent `a546fa126e7df78c621f78364ad745b5c13eeaea`; implementation `ddfa2501d952598511659f5e639a8b13bfabae66`; both were already current, so synchronization was not needed.
+- Recursive submodule synchronization/update passed; database submodule is at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Published implementation commit: `ab6595a86077bdc1ede5925caf7a70ed98f20e1b`, pushed to `origin/task/ARCH-021-COMMERCE-027`.
 
 ### Files Changed
 
 - `auth.ts`
 - `lib/auth/index.ts`
 - `lib/auth/merchant-access.ts`
+- `lib/auth/merchant-binding.ts`
+- `lib/auth/platform-admin.ts`
 - `lib/auth/security-policy.ts`
 - `scripts/merchant-studio-access.mjs`
 - `tests/auth-platform-admin.test.ts`
 - `tests/auth-security-policy.test.ts`
 - `tests/auth-merchant-access.test.ts`
+- `tests/auth-merchant-access-postgres.test.ts`
 
 ### Work Completed
 
 - Unified Auth.js Google sign-in now admits active platform admins or active merchant access rows, with platform precedence.
-- Merchant provider subjects bind atomically across all active rows for a normalized email and conflicting subjects are denied without mutation.
-- Added exact-shop principal resolution, permission enforcement, unified platform/super-admin guards, and the VIEWER/EDITOR/ADMIN matrix.
+- Merchant provider subjects now bind atomically across all active rows for a normalized email; a durable re-read rejects losing/conflicting races without refreshing `lastLoginAt`.
+- Principal resolution rejects mixed-subject active merchant rows before shop selection; exact-shop access and the VIEWER/EDITOR/ADMIN matrix remain enforced.
+- Platform `ADMIN` cannot publish while platform `SUPER_ADMIN` can; merchant `ADMIN` can publish only for its exact shop.
+- `requireStudioAdmin()` is now a compatibility wrapper over the unified platform-admin guard.
 - Added an operator-only grant/update/disable/enable command with normalized email, exact shop resolution, no provider-subject input, and transactional audit events.
-- Existing platform-admin compatibility helpers and platform-only authorization boundaries remain available.
+- Added a real PostgreSQL integration harness covering CLI grant/update/disable/enable audit durability and concurrent merchant subject binding.
 
 ### Validation Results
 
-- `npx vitest run tests/auth-merchant-access.test.ts tests/auth-security-policy.test.ts tests/auth-platform-admin.test.ts`: 3 files, 34 tests passed.
-- `npx eslint auth.ts lib/auth/index.ts lib/auth/merchant-access.ts lib/auth/security-policy.ts scripts/merchant-studio-access.mjs tests/auth-security-policy.test.ts tests/auth-merchant-access.test.ts tests/auth-platform-admin.test.ts`: passed.
+- `npx vitest run tests/auth-merchant-access.test.ts tests/auth-security-policy.test.ts tests/auth-platform-admin.test.ts tests/auth-merchant-access-postgres.test.ts`: 3 files passed, 1 opt-in PostgreSQL file skipped without `COMMERCE_AUTH_POSTGRES=1`, 38 tests passed and 2 skipped.
+- Disposable PostgreSQL proof: Docker `postgres:16`, `prisma db push --schema database/prisma/schema.prisma --skip-generate`, then `COMMERCE_AUTH_POSTGRES=1 DATABASE_URL=... npx vitest run tests/auth-merchant-access-postgres.test.ts`: 1 file and 2 tests passed, covering durable CLI state/audits and concurrent binding.
+- `npx eslint auth.ts lib/auth/index.ts lib/auth/merchant-access.ts lib/auth/merchant-binding.ts lib/auth/platform-admin.ts lib/auth/security-policy.ts scripts/merchant-studio-access.mjs tests/auth-security-policy.test.ts tests/auth-merchant-access.test.ts tests/auth-merchant-access-postgres.test.ts tests/auth-platform-admin.test.ts tests/auth-entrypoints.test.ts`: passed with no warnings.
 - `node --check scripts/merchant-studio-access.mjs`: passed.
 - CLI rejects unknown `--providerSubject` before database access.
 - `git diff --check`: passed.
-- `npm run typecheck`: existing unrelated failures remain in preview routes and generated commerce agent-configuration Prisma model surfaces; no task-owned diagnostics remain.
+- `npm run typecheck`: nonzero from existing sibling/baseline diagnostics in `src/commerce/agent-configuration/prompt-service.ts`, `src/commerce/agent-configuration/prompt-template-service.ts`, agent-configuration model/prompt PostgreSQL and production tests, `tests/c20-integration-fixture.test.ts`, `tests/connections-production.test.ts`, `tests/external-tools-ui.test.tsx`, `tests/external-wiring.test.ts`, and `tests/local-external-mcp-diagnostic.test.ts`; no task-owned auth diagnostics remain.
+- `tests/auth-entrypoints.test.ts` retains an unrelated MCP route assertion drift (`createMcpService` expected, route now uses `getCommerceBackend`) and was not changed.
 
 ### Deviations
 
-The disposable PostgreSQL CLI integration validation was not run because no disposable database was available in this worktree; CLI syntax, fail-closed actor resolution, and forbidden-flag behavior were validated locally.
+The PostgreSQL integration test is opt-in and uses an isolated disposable database. The implementation worktree's normal focused run skips it without the opt-in environment, while the explicit Docker-backed run passed both tests.
 
 ### Assumptions
 
@@ -310,7 +326,7 @@ Prisma schema/client generation from DATABASE-002 is already available and the i
 
 ### Unresolved Issues
 
-No task-owned unresolved implementation issues. Full-repository typecheck remains blocked by pre-existing preview and generated-schema failures documented above.
+No task-owned unresolved implementation issues. Full-repository typecheck remains blocked by the pre-existing diagnostics documented above; the unrelated MCP entrypoint assertion drift remains outside this task.
 
 ### Architectural Concerns
 
