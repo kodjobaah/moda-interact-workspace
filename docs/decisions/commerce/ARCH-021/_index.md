@@ -117,20 +117,42 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-016](COMMERCE-016-establish-commerce-tool-definition-contract.md) | Establish canonical Commerce-owned Tool-definition contract | Complete | ARCH-020-COMMERCE-021, 030 |
-| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Ready | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
-| [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Ready | COMMERCE-016, ARCH-020-COMMERCE-011 |
-| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth contract and `LIVE_TEST_REQUIRED` publication gate | Ready | COMMERCE-016, ARCH-020-COMMERCE-030 |
-| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring domain from StudioWorkspace | Ready | COMMERCE-016, COMMERCE-005, 006 |
-| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Pending | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
-| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Pending | COMMERCE-019, 020, 024 |
-| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Pending | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
-| [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Pending | COMMERCE-016, 018, 019 |
+| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Blocked | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
+| [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Blocked | COMMERCE-016, ARCH-020-COMMERCE-011 |
+| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth contract and `LIVE_TEST_REQUIRED` publication gate | Blocked | COMMERCE-016, ARCH-020-COMMERCE-030 |
+| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring domain from StudioWorkspace | Blocked | COMMERCE-016, COMMERCE-005, 006 |
+| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Blocked | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
+| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Blocked | COMMERCE-019, 020, 024 |
+| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Blocked | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
+| [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Blocked | COMMERCE-016, 018, 019 |
 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
 
 ```text
 COMMERCE-016 is architect-accepted Complete.
-Current independent Ready frontier: COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020.
+Phase 3 is paused for the pre-Phase-3 simplification checkpoint. COMMERCE-017 through COMMERCE-024 are Blocked until architect reconciliation after the checkpoint; COMMERCE-016 remains Complete.
+```
+
+
+
+## Pre-Phase-3 simplification checkpoint — 2026-09-24
+
+The checkpoint reduces Phase-2 configuration/reconciliation complexity before further Tool authoring. It preserves model catalogue, prompt revisions, prompt-template categories, immutable published artifacts, capabilities/releases/grants, server-owned credentials and future merchant Studio authorization. Errors must remain visible and transport-level uncertainty must be reconcilable through the UI; ordinary failures must not be swallowed into a generic unknown state.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-025](COMMERCE-025-simplify-agent-configuration-services.md) | Simplify Agent Configuration services and reconciliation | Pending | DATABASE-002, COMMERCE-007, 009, 010 |
+| [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Pending | DATABASE-002, COMMERCE-008, 015 |
+| [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Pending | DATABASE-002 |
+| [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Pending | COMMERCE-025, 026, 027, 011..014 |
+| [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Pending | COMMERCE-028, COMMERCE-001..006 |
+| [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Ready | ARCH-020-COMMERCE-024 |
+
+Independent initial frontier:
+
+```text
+ARCH-021-DATABASE-002
+ARCH-021-COMMERCE-030
 ```
 
 ### COMMERCE-013 Attempt 1 architect review — 2026-09-23

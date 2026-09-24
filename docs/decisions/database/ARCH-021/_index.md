@@ -38,3 +38,12 @@ ARCH-021-DATABASE-001   Complete
 ```
 
 COMMERCE-007 and COMMERCE-008 are now independently Ready because their durable prerequisite exists. COMMERCE-009 remains gated on architect acceptance of COMMERCE-008 because prompt copy-on-use consumes the template service.
+
+
+## Pre-Phase-3 simplification checkpoint — 2026-09-24
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [DATABASE-002](DATABASE-002-collapse-agent-configuration-and-add-merchant-studio-access.md) | Collapse Agent Configuration persistence, retain template categories, add merchant Studio access | Ready | DATABASE-001 |
+
+DATABASE-002 is the Database simplification frontier. It replaces the fragmented platform/shop selection/pointer/template-revision persistence while preserving existing data and published prompt revisions.

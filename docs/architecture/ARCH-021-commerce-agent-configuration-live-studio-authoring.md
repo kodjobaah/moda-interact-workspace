@@ -11,7 +11,7 @@ updated: 2026-09-24
 
 ## Status
 
-Agreed — Phase 0 contract accepted; Phase 1 and Phase 2 are architect-accepted Complete. Phase 3 is materialised; `ARCH-021-COMMERCE-016` is architect-accepted Complete and `ARCH-021-COMMERCE-017` through `020` form the independent Ready frontier.
+Agreed — Phase 1 and Phase 2 are architect-accepted Complete. Phase 3 contract task `ARCH-021-COMMERCE-016` is Complete, but remaining Phase 3 tasks are paused/Blocked while the 2026-09-24 simplification checkpoint reduces Agent Configuration, Studio composition and private-MCP complexity.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -782,14 +782,14 @@ Phase 3 tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-017 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
-| ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
-| ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-019, 020, 023, ARCH-021-COMMERCE-005, 006 |
-| ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-019, 020, 024 |
-| ARCH-021-COMMERCE-023 | moda_commerce | Pending | ARCH-021-COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-024 | moda_commerce | Pending | ARCH-021-COMMERCE-016, 018, 019 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 023, ARCH-021-COMMERCE-005, 006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 024 |
+| ARCH-021-COMMERCE-023 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-024 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, 018, 019 |
 
 Dependency graph:
 
@@ -804,7 +804,7 @@ COMMERCE-016
     |
     +--> COMMERCE-020 -------- Tool UI extraction ------------+
 
-COMMERCE-016 is architect-accepted Complete. COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020 are Ready, independent and may execute in parallel. COMMERCE-023 is the External HTTP validator/preview boundary; COMMERCE-024 is the Shopify Admin validator boundary. COMMERCE-020 also consumes the already-accepted Phase 1 Tool composition (COMMERCE-005/006).
+COMMERCE-016 is architect-accepted Complete. COMMERCE-017 through COMMERCE-024 are paused/Blocked by the pre-Phase-3 simplification checkpoint and must not be claimed. `moda_architect` will reconcile/reissue the Phase-3 frontier after the simplification implementation is architect-accepted.
 ```
 
 Phase 3 exit criteria:
@@ -819,6 +819,57 @@ Phase 3 exit criteria:
 - production Studio authors Shopify Admin GraphQL definitions and no longer offers Storefront for new Tool creation;
 - Tool-specific state/actions are outside `StudioWorkspace`;
 - all Phase 3 tasks are architect-accepted Complete.
+
+### Pre-Phase-3 simplification checkpoint — 2026-09-24
+
+Before expanding Tool authoring further, ARCH-021 reduces implementation complexity while preserving product invariants.
+
+Keep:
+
+- `CommerceModelCatalogueEntry`;
+- immutable published `CommerceAgentPromptRevision`;
+- first-class `CommercePromptTemplateCategory`;
+- immutable Tool/capability/release/grant boundaries;
+- server-owned Shopify/external credentials and tenant authorization;
+- merchant Studio authorization as a shop-scoped authorization layer on the normal Auth.js identity; initial access provisioning is manual;
+- UI reconciliation for genuinely unconfirmed client outcomes.
+
+Collapse/remove:
+
+- separate platform/shop model-selection and prompt-pointer tables into one `CommerceAgentConfiguration`;
+- `generationId` ABA machinery by retaining shop configuration rows and clearing nullable override fields;
+- template revision persistence into current template `promptText` plus copy-on-use Agent Prompt revisions;
+- generic payload-hash/stored-result command replay for ordinary PostgreSQL configuration mutations;
+- production Server -> Client function-valued Studio service/port bundles;
+- MCP RSA/JWT/key exchange and **all replacement application-layer MCP credentials**. The existing private service link is the MCP caller trust boundary; Commerce continues to authorize shop/turn/grant/release/tool context from PostgreSQL.
+
+Error rule:
+
+```text
+known domain/DB error -> explicit typed UI error
+lost/untrustworthy client response -> UNCONFIRMED with operationId -> read-only reconcile
+reconcile COMMITTED -> reload canonical state
+reconcile NOT_COMMITTED -> allow explicit retry with a new operationId
+```
+
+Do not catch ordinary failures and silently return success, empty state or generic `unknown`.
+
+Checkpoint tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-DATABASE-002 | moda_database | Ready | DATABASE-001 |
+| ARCH-021-COMMERCE-025 | moda_commerce | Pending | DATABASE-002, COMMERCE-007, 009, 010 |
+| ARCH-021-COMMERCE-026 | moda_commerce | Pending | DATABASE-002, COMMERCE-008, 015 |
+| ARCH-021-COMMERCE-027 | moda_commerce | Pending | DATABASE-002 |
+| ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
+| ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
+| ARCH-021-COMMERCE-030 | moda_commerce | Ready | ARCH-020-COMMERCE-024 |
+| ARCH-021-BACKGROUND-001 | moda_background | Pending | COMMERCE-030 |
+| ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
+
+Initial independent frontier: `ARCH-021-DATABASE-002` and `ARCH-021-COMMERCE-030`.
 
 ### Phase 4 — live single-tool testing
 
@@ -877,12 +928,12 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-017 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
-| ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
-| ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
-| ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Blocked | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Blocked | ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-020-COMMERCE-011 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
