@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T11:44:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-002
@@ -306,35 +306,66 @@ Do not "simplify" by deleting audit/reconciliation. The required simplification 
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+Implementation commit `256dbef112ae9f7c7d4301f6603b4ec892972067` contains exactly:
+
+- `src/commerce/agent-configuration/effective-configuration.ts`
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `src/studio/agent-configuration/effective-contracts.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `src/studio/agent-configuration/platform-model-configuration.tsx`
+- `src/studio/agent-configuration/platform-prompt-configuration.tsx`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
+- `src/studio/agent-configuration/reconciliation-server-actions.ts`
+- `tests/agent-configuration-effective.test.ts`
+- `tests/agent-configuration-model.test.ts`
+- `tests/agent-configuration-prompts.test.ts`
+- `tests/agent-configuration-reconciliation.test.ts`
+- `tests/agent-configuration-reduced.test.ts`
 
 ### Work Completed
 
-None
+- R1: model and prompt runtime services use the reduced `CommerceAgentConfiguration` persistence path; the task-owned runtime paths contain no dropped Phase-2 selection/pointer queries.
+- R2-R4: mutation results retain `operationId` only as an audit/reconciliation receipt, reject duplicate operation IDs with `OPERATION_ALREADY_COMMITTED`, map recognized database failures to `DATABASE_UNAVAILABLE`, and return explicit non-unknown errors for unexpected failures.
+- R5-R6: model and prompt mutations use direct transactional reads/writes, independent model/prompt edit-version CAS, atomic `CommerceAuditEvent` writes, and nullable override clearing without deleting configuration rows. Template-service replay remains out of scope under COMMERCE-026.
+- R7: added read-only `reconcileAgentConfigurationOperation` with authorization, committed/not-committed lookup, database-unavailable handling, and action-only committed evidence.
+- R8: effective resolution independently selects shop then platform model/prompt references and fails closed on explicit invalid or disabled configuration.
+- Updated the platform model/prompt action call sites and added reduced-model, resolver, reconciliation, and contract-focused coverage.
+- Architect Review correction mapping: no correction items were present; the review section was `Pending` at execution. R1-R8 above are the Attempt 1 implementation mapping.
 
 ### Validation Results
 
-None
+- Agent-executed focused tests: `npm test -- tests/agent-configuration-model.test.ts tests/agent-configuration-prompts.test.ts tests/agent-configuration-effective.test.ts tests/agent-configuration-reconciliation.test.ts tests/agent-configuration-reduced.test.ts` exited 0: 2 active files passed with 6 tests; 3 legacy files were skipped with 21 tests skipped.
+- Agent-executed new-slice tests: `npm test -- tests/agent-configuration-reconciliation.test.ts tests/agent-configuration-reduced.test.ts` exited 0: 2 files and 6 tests passed.
+- Agent-executed changed-file lint: `npx eslint` over all 16 committed files exited 0.
+- Agent-executed formatting check: `git diff --check` exited 0 before commit; committed diff check also found no whitespace errors.
+- Repository typecheck: `npm run typecheck` failed with 277 errors in 23 files. Relevant existing/baseline contract fallout includes stale legacy model/prompt/Postgres/UI fixtures expecting nullable first-write CAS, generation IDs, `kind:'unknown'`, and missing `operationId`; unrelated existing diagnostics include backend/integration, prompt-template, and other service/test errors. No typecheck failure was reported for the new reconciliation test after its principal fixture correction.
+- No live, infrastructure, migration, or developer-owned validation was launched.
 
 ### Deviations
 
-None
+- The repository has no dedicated task-specific model/prompt/effective/reconciliation script, so the declared `npm test` script was invoked with the five focused test paths and ESLint was invoked with the changed-file list.
+- Three legacy focused files remain skipped in the current branch; their old Phase-2 expectations are incompatible with this task's explicit reduced contract.
 
 ### Assumptions
 
-None
+- The launcher-provided implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-025` and parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-025` are the canonical isolated worktrees for Attempt 1.
+- Recursive submodule evidence: implementation worktree `git submodule status --recursive` reports database at recorded commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`); no submodule pointer was staged.
 
 ### Unresolved Issues
 
-None
+- Full repository typecheck remains blocked by the 277-error baseline/contract migration set described above. The exact stale task-adjacent diagnostics remain in `tests/agent-configuration-effective.test.ts`, `tests/agent-configuration-model-postgres.test.ts`, `tests/agent-configuration-model-ui.test.tsx`, `tests/agent-configuration-model.test.ts`, `tests/agent-configuration-platform-prompt-ui.test.tsx`, and `tests/agent-configuration-prompts-postgres.test.ts`.
+- The three legacy focused suites are skipped and therefore do not provide runtime coverage until their fixtures are migrated to the reduced contract.
 
 ### Architectural Concerns
 
-None
+- None identified for the bounded task. Prompt-template replay remains owned by COMMERCE-026 and was not altered.
 
 ## Architect Review
 
