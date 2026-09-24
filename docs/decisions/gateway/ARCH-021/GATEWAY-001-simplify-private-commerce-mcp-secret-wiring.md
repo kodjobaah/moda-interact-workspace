@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-09-24T16:23:57Z
@@ -182,6 +182,9 @@ Ready for architect review
 - Replaced JWT/Bearer deployment examples with private-service, DB-backed context examples for valid, malformed and stale requests.
 - Extended positive validation to assert public MCP denial and credential absence; added negative mutations for legacy credentials, replacement service tokens and removed denial rules.
 - Added the required Commerce `/health/live` check to both blueprints so the validator's existing liveness contract is explicit.
+- Corrected the private MCP smoke checks to send the ordinary JSON-RPC body separately from the `X-Moda-Commerce-Context` header.
+- Changed malformed/stale probes to print bounded response bodies and reject any 2xx response without imposing an undocumented HTTP 401 status.
+- Added a positive validator regression check for the context header and forbidden service credential wording in the private MCP smoke section.
 
 ### Validation Results
 
@@ -189,6 +192,7 @@ Ready for architect review
 - `bash tests/validate-render-blueprints-negative.sh` passed, including `public_mcp_exposure`, `assertion_public_on_messaging` and `mcp_service_token_on_messaging` cases.
 - Ruby Psych parsing passed for `render.test.yaml` and `render.production.yaml`.
 - `git diff --check` passed.
+- Semantic runtime credential audit passed for both blueprints and the smoke documentation; validator references are limited to intentional negative fixtures and absence guards.
 
 ### Deviations
 
