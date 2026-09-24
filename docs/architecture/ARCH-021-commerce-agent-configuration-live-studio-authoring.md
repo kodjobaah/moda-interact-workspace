@@ -895,11 +895,11 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-028 | moda_commerce | Ready | COMMERCE-025, 026, 027, 011..014 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
-| ARCH-021-BACKGROUND-001 | moda_background | Ready | COMMERCE-030 |
-| ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
+| ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
+| ARCH-021-GATEWAY-001 | moda_gateway | Ready | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-028` and `ARCH-021-BACKGROUND-001`. COMMERCE-025, COMMERCE-026 and COMMERCE-027 are Complete; COMMERCE-028 is Ready for Attempt 2 Changes Requested work, and COMMERCE-029 remains Pending on COMMERCE-028.
+Current checkpoint frontier: `ARCH-021-COMMERCE-028` and `ARCH-021-GATEWAY-001`. All COMMERCE-028 dependencies are Complete; BACKGROUND-001 acceptance also satisfies the remaining GATEWAY-001 dependency.
 
 ### Phase 4 — live single-tool testing
 
@@ -999,6 +999,15 @@ independent of features.
 - Preserved the direct named-Server-Action and serializable `UNCONFIRMED` direction.
 - Required Attempt 2 to restore the reduced shop Agent Configuration surface using only `shopSelection.selectedShop?.id`, aggregate independent dirty/unconfirmed state into Studio navigation blocking, make reconciliation transport-safe, migrate the stale action-bundle/`kind:'unknown'` UI suites, add validated-shop production composition coverage, and reconcile the stale Completion Report.
 - COMMERCE-029 remains Pending. Active checkpoint frontier: COMMERCE-028 plus BACKGROUND-001.
+
+### 2026-09-24 — BACKGROUND-001 Attempt 2 accepted
+
+- Accepted implementation `a8dfda0` with submitted parent report `ea5a3a7b`; the initial context-only implementation was `49e8596`.
+- Confirmed Background has no task-owned RSA/JWT signing, MCP assertion credential, service token/API key/shared secret or MCP `Authorization` construction; requests use the validated bounded `X-Moda-Commerce-Context` over the private service link.
+- Confirmed endpoint/bounds, JSON-RPC/MCP semantics, grant/release selection, retry/timeout and Tool behavior remain unchanged in substance.
+- Attempt 2 added deterministic fixture exception capture and restored the required host fixture to 40/40; both reviewed concurrency cases also pass individually and no production MCP-client correction was required.
+- Submitted build and `git diff --check` pass; unrelated full-suite environment/baseline failures remain documented outside this task.
+- Marked BACKGROUND-001 Complete and promoted GATEWAY-001 to Ready. Reconciled the already-Ready COMMERCE-028 task into the checkpoint tables; the independent checkpoint frontier is now COMMERCE-028 plus GATEWAY-001.
 
 ### 2026-09-24 — COMMERCE-025 Attempt 4 accepted
 

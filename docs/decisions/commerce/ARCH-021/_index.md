@@ -152,8 +152,12 @@ Current checkpoint frontier:
 
 ```text
 ARCH-021-COMMERCE-028
-ARCH-021-BACKGROUND-001
+ARCH-021-GATEWAY-001
 ```
+
+### Checkpoint frontier reconciled after BACKGROUND-001 acceptance — 2026-09-24
+
+All COMMERCE-028 dependencies are Complete and its authoritative task YAML is `ready`; the index now reflects that state. In parallel, BACKGROUND-001 acceptance makes GATEWAY-001 Ready. The current independent checkpoint frontier is therefore COMMERCE-028 plus GATEWAY-001.
 
 ### COMMERCE-028 Attempt 1 architect review — 2026-09-24
 
