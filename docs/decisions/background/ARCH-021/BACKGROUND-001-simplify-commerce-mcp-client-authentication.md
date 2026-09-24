@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -237,95 +237,22 @@ Ready for Review
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 implements the intended context-only private-MCP caller contract in substance:
+Attempt 2 is accepted. The production Background MCP caller now conforms to the ARCH-021 / COMMERCE-030 context-only private-service contract without reintroducing an application-layer caller credential.
 
-- `src/commerce/mcp-client.ts` removes RSA/private-key/JWT construction and the Background assertion configuration fields.
-- Each request validates the trusted turn/grant context with the existing Shared schema, serialises the validated object as UTF-8 JSON/base64url and sends it in `X-Moda-Commerce-Context`.
-- The production client no longer constructs an MCP `Authorization` header, service token, API key or shared secret.
-- Endpoint, payload-size, JSON-RPC/MCP transport, grant/release selection, retry/timeout, tool and response-validation behaviour remain otherwise unchanged.
-- The local interoperability fixture explicitly rejects an `Authorization` header and validates resolve/execute context semantics.
-- Background-owned runtime documentation no longer instructs operators to configure assertion key material.
+- `src/commerce/mcp-client.ts` has no RSA/private-key/JWT signing path and no MCP service-token/API-key/shared-secret configuration.
+- `COMMERCE_MCP_URL` remains the only MCP-specific Background configuration.
+- Resolve/execute context is validated with the existing published Shared schema, encoded as UTF-8 JSON/base64url and sent in `X-Moda-Commerce-Context`.
+- The task-owned Commerce MCP client does not construct an `Authorization` header.
+- Endpoint validation, request/response size bounds, ten-second request deadline, JSON-RPC/MCP transport, grant/release selection and Tool behavior remain unchanged in substance.
+- Remaining `jose` package-lock presence is transitive through `@modelcontextprotocol/sdk`; Background has no direct `jose` dependency or task-owned signing usage.
 
-The task cannot be accepted yet because the required focused MCP validation is not green. The submitted host suite reports **38 passed / 2 failed**, and both failures are concurrency cases returning `Commerce host: UNAVAILABLE`.
+The Attempt 1 concurrency validation concern is also resolved. Attempt 2 added deterministic fixture error capture without changing production failure semantics, reran both reviewed concurrency cases individually, and restored the complete host fixture to 40/40. No fixture exception was captured and no production MCP-client correction was required.
 
-The Completion Report currently calls those failures "pre-existing". That classification is not established by the durable baseline. In particular, architect-accepted `ARCH-020-BACKGROUND-002` records:
-
-```text
-npm exec vitest run tests/integration/commerce/host.test.ts
-passed, 1 file / 40 tests
-```
-
-for the same 40-test host fixture. The current task changes the MCP request path and the fixture's request-validation boundary, so the two failures must be diagnosed rather than waived.
-
-#### Attempt 2 correction contract
-
-1. **Do not redesign the accepted context-only authentication change.** Keep:
-   - `COMMERCE_MCP_URL` as the only MCP-specific Background configuration;
-   - no RSA/JWT signing;
-   - no service token/API key/shared secret;
-   - `X-Moda-Commerce-Context`;
-   - no MCP `Authorization` header;
-   - existing grant/tool/ordering/retry semantics.
-
-2. Reproduce and record the exact names of the two failing concurrency tests from `tests/integration/commerce/host.test.ts`.
-
-3. The local HTTP/MCP fixture currently contains a bare `catch { ...500... }` which hides the exception that caused an `UNAVAILABLE` response. Do not leave the diagnostic path swallowing the real error.
-   - Change the fixture to capture the caught `error` in deterministic test-owned state before returning HTTP 500.
-   - Clear that state in `beforeEach`.
-   - The concurrency regressions must either assert that no fixture error occurred or surface the captured original error when they fail.
-   - This is test diagnostic state only; do not introduce a new production logger or change production error semantics merely to diagnose the fixture.
-
-4. Run each failing concurrency case **individually** with the exact test name and verbose reporting, then run the complete host fixture:
-   ```bash
-   npx vitest run tests/integration/commerce/host.test.ts \
-     -t "first-turn insert races retain the unique winner" \
-     --reporter=verbose
-
-   npx vitest run tests/integration/commerce/host.test.ts \
-     -t "uses a concurrently persisted different release instead of its losing resolve candidate" \
-     --reporter=verbose
-
-   npx vitest run tests/integration/commerce/host.test.ts --reporter=verbose
-   ```
-
-5. Classify the root cause from evidence:
-   - if the context-only client/request change caused the regression, correct it within this task and add the smallest regression assertion;
-   - if the failure is entirely in the local fixture/concurrency harness, correct only the fixture;
-   - if another already-landed change outside this task caused it, identify the exact file/commit or durable baseline entry. Do not write "pre-existing" without that evidence.
-
-6. The final focused host validation for this task must be:
-   ```text
-   tests/integration/commerce/host.test.ts
-   1 file passed
-   40 tests passed
-   0 failed
-   ```
-   If that cannot be achieved without work outside this task's ownership, return the task `blocked` with the concrete owner/dependency instead of returning it to review.
-
-7. Re-run:
-   ```bash
-   npm run build
-   git diff --check
-   ```
-   and the repository test command required by this task. Record exact commands/results. A repository-wide unrelated failure may remain documented only when the changed slice and required focused validation are green.
-
-8. Reconcile the implementation-owned task checklists before review:
-   - Work Items;
-   - Acceptance Criteria;
-   - Validation.
-   Do not leave completed items unchecked.
-
-9. Reconcile the Completion Report:
-   - replace the unsupported "pre-existing concurrency failures" statement with the proven root cause and final result;
-   - record the Attempt 2 launcher/preparation evidence, including parent and implementation synchronization heads plus recursive submodule state;
-   - record the final implementation commit/push evidence;
-   - leave `ARCH-021-GATEWAY-001` unstarted.
-
-After these corrections, set the task to `review`, clear `executor`/`claimed_at`, return the updated Completion Report to `moda_architect`, and STOP.
+Implementation reviewed: `a8dfda0` (following initial implementation `49e8596`). Submitted parent report: `ea5a3a7b`.
 
 ### Reviewed Files
 
@@ -338,21 +265,23 @@ After these corrections, set the task to `review`, clear `executor`/`claimed_at`
 - `moda-interact-background/package-lock.json`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-030-simplify-private-mcp-authentication.md`
 - this task's Completion Report
-- the accepted `ARCH-020-BACKGROUND-002` validation record
+- the accepted `ARCH-020-BACKGROUND-002` host-validation record
 
 ### Validation Reviewed
 
-- Submitted `npm run build`: PASS.
+- Submitted focused host fixture: **1 file / 40 tests passed / 0 failed**.
+- Both previously failing concurrency cases passed individually with verbose reporting.
+- Fixture diagnostic state remained clear in the reviewed individual and complete focused runs.
+- Submitted `npm run build`: PASS, including Prisma generation and TypeScript compilation.
 - Submitted `git diff --check`: PASS.
-- Submitted focused host fixture: **38 passed / 2 failed**; not acceptable as final task validation.
-- Submitted full repository suite: contains the same two host failures plus unrelated environment/baseline failures.
-- Repository scan confirms no Background Commerce RSA/JWT signing code, MCP service token/API key/shared-secret configuration or task-owned MCP `Authorization` construction remains.
-- Historical architect-accepted host validation records **40/40 passing**, so the two current concurrency failures require evidence-based diagnosis.
+- Repository scan confirms no task-owned MCP RSA/JWT signing, assertion-key configuration, service token/API key/shared secret, or MCP `Authorization` construction remains.
+- The submitted full repository suite retains documented failures outside this task; the changed Commerce host slice is green.
+- The supplied review archive does not contain `node_modules`, so the architect inspected the implementation/test source and submitted results rather than rerunning Node validation locally.
 
 ### Architecture Conformance
 
-The implementation direction conforms to the ARCH-021/COMMERCE-030 context-only private-link contract, but final conformance is pending clean required host validation and reconciliation of the task evidence.
+Conforms. Background now treats the private service link as the MCP caller trust boundary while continuing to send only bounded request context for Commerce's authoritative PostgreSQL shop/turn/grant/release/tool authorization. No replacement application-layer credential was introduced.
 
 ### Follow-up
 
-`ARCH-021-GATEWAY-001` remains Pending. Do not promote it until BACKGROUND-001 is architect-accepted Complete.
+`ARCH-021-GATEWAY-001` is now **Ready** because both `ARCH-021-COMMERCE-030` and `ARCH-021-BACKGROUND-001` are Complete. Gateway must preserve private-only `/api/mcp` routing while removing obsolete assertion-key wiring and must not introduce a replacement secret.
