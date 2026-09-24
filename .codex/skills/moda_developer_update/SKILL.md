@@ -160,7 +160,7 @@ Do not merge/push `main`.
 
 ## 5. Explicit `reopen`
 
-A developer may reopen any task with `status: complete`, regardless of whether
+A developer may reopen any task with  regardless of whether
 completion was automatic or developer-controlled.
 
 Reopen is NOT a claim.
