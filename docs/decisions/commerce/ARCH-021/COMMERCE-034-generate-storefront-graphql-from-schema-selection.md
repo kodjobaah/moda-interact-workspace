@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-24T23:02:16Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-033
 enables:
   - ARCH-021-COMMERCE-035
 created: 2026-09-24
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Generate Storefront GraphQL from dynamic schema selections
@@ -306,16 +306,16 @@ No production Storefront query generation may depend on `path.split(".")`.
 ## Work Items
 
 - [x] Add pure Storefront AST query builder.
-- [ ] Add schema-driven argument-binding state/controls.
-- [ ] Add inputSchema-property variable mapping.
-- [ ] Add bounded literal argument generation.
-- [ ] Add connection-first handling.
+- [x] Add schema-driven argument-binding state/controls.
+- [x] Add inputSchema-property variable mapping.
+- [x] Add bounded literal argument generation.
+- [x] Add connection-first handling.
 - [x] Merge selections safely into existing query AST.
 - [x] Preserve aliases/unrelated existing selections.
-- [ ] Make pinned schema identity authoritative.
+- [x] Make pinned schema identity authoritative.
 - [x] Wire exact candidate through existing `validateToolDefinition`.
 - [x] Remove old dot-path query-generation code.
-- [ ] Add real-artifact integrated regressions.
+- [x] Add real-artifact integrated regressions.
 
 ## Interfaces / Contracts
 
@@ -341,33 +341,33 @@ Produces no new cross-service contract.
 ## Acceptance Criteria
 
 - [x] GraphQL is generated/merged from real schema metadata and selection tree.
-- [ ] Required schema arguments cannot be bypassed.
-- [ ] Input-property variable mappings remain the Tool's persisted argument contract.
-- [ ] Connection pagination obeys existing bounded compiler policy.
+- [x] Required schema arguments cannot be bypassed.
+- [x] Input-property variable mappings remain the Tool's persisted argument contract.
+- [x] Connection pagination obeys existing bounded compiler policy.
 - [x] Existing aliases/unrelated selections survive deterministic merge.
 - [x] No dot-path split builder remains.
-- [ ] Candidate uses the pinned API version/schema hash.
+- [x] Candidate uses the pinned API version/schema hash.
 - [x] `Use in tool` can apply only the exact candidate that passed existing server validation.
-- [ ] Real-artifact nested product regression passes.
+- [x] Real-artifact nested product regression passes.
 - [x] No provider/network request occurs during schema authoring/validation.
 
 ## Validation
 
-- [ ] `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts --reporter=verbose`
-- [ ] Existing Storefront compiler/definition tests directly affected by generated queries pass.
-- [ ] Targeted ESLint for every changed source/test file.
+- [x] `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts --reporter=verbose`
+- [x] Existing Storefront compiler/definition tests directly affected by generated queries pass.
+- [x] Targeted ESLint for every changed source/test file.
 - [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required).
-- [ ] Legacy path-string source audit:
+- [x] Legacy path-string source audit:
   ```text
   rg -n "buildQueryDefinition|path\.split\("\\\."\)|selectedPaths" components src/studio
   ```
   expected: no legacy Storefront path-string builder matches.
-- [ ] Client artifact-boundary audit:
+- [x] Client artifact-boundary audit:
   ```text
   rg -n "storefrontSchemaHash|storefrontArtifact|storefrontSchema"     src/studio/discovery components
   ```
   expected: no runtime Storefront artifact/schema value import in client query-builder/UI code.
-- [ ] `git diff --check`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -392,40 +392,44 @@ Ready for Review
 ### Files Changed
 
 - `components/studio-workspace.tsx`
+- `lib/discovery/compiler.ts`
+- `lib/discovery/storefront-input-compatibility.ts`
+- `src/studio/discovery/selection-tree.ts`
+- `src/studio/discovery/storefront-argument-bindings.tsx`
 - `src/studio/discovery/storefront-query-builder.ts`
 - `src/studio/testing/in-memory-studio-services.ts`
+- `tests/storefront-argument-bindings.test.tsx`
 - `tests/storefront-query-builder.test.ts`
-- Implementation commit: `0f02fc17129bf4bf84692bcec6bffb09747ac7a9`
+- `tests/storefront-schema-browser.test.tsx`
+- `tests/studio-services.test.ts`
+- `tests/studio-workspace.test.tsx`
+- Implementation commit: `9e180cc2956d50f064825f3e13a2cc72115b7782`
 
 ### Work Completed
 
-Implemented schema-backed GraphQL AST generation and safe merge into the existing named Storefront query. The builder consumes the recursive selection tree, emits deterministic input-property variables and literals, fails closed for missing/ambiguous selections, preserves aliases and unrelated selections, pins the committed Storefront schema hash, and removes the legacy dot-path builder. Added real-artifact regressions covering nested product traversal, sibling exclusion, required arguments, validation-boundary acceptance, alias merge, duplicate-root ambiguity, and schema identity.
+Attempt 2 completes the requested C034 corrections while preserving the accepted Attempt 1 AST/merge foundation. Added production schema-driven argument-binding state and controls; shared client-safe inputSchema compatibility with the accepted compiler; typed scalar/enum literal generation with explicit unsupported input-object/list rejection; bounded connection `first` handling; authoritative C032 API-version/schema-hash identity; generated-variable collision protection; real compiler-backed validation regressions; and result-path/alias/selection merge safety. The legacy dot-path builder remains removed.
 
 ### Validation Results
 
-Focused suite: passed, 4 files and 51 tests.
+Focused validation passed: `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose` completed with 6 test files and 62 tests passing. The directly affected Storefront definition/compiler tests passed; no provider or network request was used. Targeted ESLint over all 13 changed implementation files passed with zero errors/warnings.
 
-Targeted ESLint: passed with zero errors/warnings.
+The legacy path-string source audit passed: no `buildQueryDefinition`, `path.split(".")`, or `selectedPaths` matches remain in `components` or `src/studio`. The client artifact-boundary audit passed: no runtime Storefront artifact/schema value import remains in the client query-builder/UI surface. `git diff --check` passed.
 
-Source audit: passed; no `buildQueryDefinition`, `path.split(".")`, or `selectedPaths` matches in `components` or `src/studio`.
+`npm run typecheck` is non-zero with the unchanged documented repository baseline, including Prisma generated-type drift and existing implicit-any/strictness diagnostics outside the Attempt 2-owned files, plus one Attempt 2-owned diagnostic at `src/studio/discovery/storefront-argument-bindings.tsx:62` (`TS2367`, the `LIST` kind comparison). This remains an implementation validation blocker and was not changed because this publication step is restricted to the parent report.
 
-`git diff --check`: passed.
-
-`npm run typecheck`: repository command remains non-zero because of unchanged unrelated baseline diagnostics, including Prisma generated-type drift and existing implicit-any/strictness errors outside task-owned files. The task-owned builder diagnostics found on the first run were repaired and no longer appear.
-
-Launcher evidence: prepared implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-034` on `task/ARCH-021-COMMERCE-034`; prepared parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-034` on the same branch name. Launcher synchronization and dependency gates were reused without reclaming or startup repetition. Recursive submodule evidence: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`).
+Launcher topology evidence: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-034` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-034` both use `task/ARCH-021-COMMERCE-034`. The implementation worktree is clean and `HEAD` equals `origin/task/ARCH-021-COMMERCE-034` at `9e180cc2956d50f064825f3e13a2cc72115b7782`. Recursive submodule evidence: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`).
 
 ### Deviations
 
-Full repository typecheck is not green because of the documented unrelated baseline; task-owned diagnostics are clear. No live provider/network request was added or used.
+The full repository typecheck is blocked by the unchanged baseline and the one Attempt 2-owned `TS2367` diagnostic described above. Focused tests, targeted ESLint, both source audits, and `git diff --check` passed. No live provider/network request was added or used.
 
 ### Assumptions
 
-The accepted Storefront compiler and COMMERCE-032 pinned artifact remain the validation authority. The implementation branch commit is pushed to `origin/task/ARCH-021-COMMERCE-034`.
+The accepted Storefront compiler and COMMERCE-032 pinned artifact remain the validation authority. The implementation commit is pushed to `origin/task/ARCH-021-COMMERCE-034`.
 
 ### Unresolved Issues
 
-Repository-wide typecheck remains blocked by unrelated baseline diagnostics described above; architect review should retain that baseline distinction.
+Repository-wide typecheck remains blocked by unrelated baseline diagnostics and the Attempt 2-owned `TS2367` diagnostic. Resolving that source diagnostic is outside this report-only publication step and remains for architect/developer disposition.
 
 ### Architectural Concerns
 
