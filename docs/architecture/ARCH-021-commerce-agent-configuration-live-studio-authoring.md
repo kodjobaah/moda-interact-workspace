@@ -860,7 +860,7 @@ Checkpoint tasks:
 |---|---|---|---|
 | ARCH-021-DATABASE-002 | moda_database | Complete | DATABASE-001 |
 | ARCH-021-COMMERCE-025 | moda_commerce | Ready | DATABASE-002, COMMERCE-007, 009, 010 |
-| ARCH-021-COMMERCE-026 | moda_commerce | Ready | DATABASE-002, COMMERCE-008, 015 |
+| ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Ready | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
@@ -869,7 +869,7 @@ Checkpoint tasks:
 | ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-DATABASE-002` and `ARCH-021-BACKGROUND-001`.
+Current checkpoint frontier: `ARCH-021-COMMERCE-025`, `ARCH-021-COMMERCE-027` and `ARCH-021-BACKGROUND-001`. COMMERCE-026 is Complete; COMMERCE-028 remains Pending until COMMERCE-025 and COMMERCE-027 are Complete.
 
 ### Phase 4 — live single-tool testing
 
@@ -962,6 +962,35 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-026 Attempt 3 accepted
+
+- Accepted implementation `f769392` with parent report `1c0d0c0e`.
+- Confirmed structured Prisma `P2002` classification, deterministic post-rollback
+  `operationId` reconciliation and explicit reconciliation-lookup failure handling.
+- Confirmed translated infrastructure/unexpected failures use
+  `@modainteract/moda-interact-shared/logging` with the raw `Error` field and bounded
+  operation IDs.
+- Accepted the isolated PostgreSQL proof with all 3/3 required concurrency cases
+  executed and passed.
+- Marked COMMERCE-026 Complete. COMMERCE-028 remains Pending because COMMERCE-025
+  and COMMERCE-027 are not yet Complete.
+
+### 2026-09-24 — COMMERCE-026 Attempt 2 changes requested
+
+- Attempt 2 closes the direct-current-template, canonical audit `operationId`, explicit-error, enabled-state, template-provenance and workflow-evidence corrections.
+- Returned COMMERCE-026 to Ready for Attempt 3 because the PostgreSQL concurrency regression still contains the removed `kind: conflict` result and was skipped; the submitted TypeScript build information records that task-owned diagnostic.
+- Required the service to reconcile concurrent same-operation unique/CAS losers through the canonical audit receipt, log every translated infrastructure/unexpected exception through the approved shared structured logger without silent `.catch(() => null)` fallbacks, and then execute all three isolated PostgreSQL concurrency regressions.
+- COMMERCE-028 remains Pending.
+
+### 2026-09-24 — COMMERCE-026 Attempt 1 changes requested
+
+- Retained the direct `CommercePromptTemplate.promptText` authoring direction and removal of template revision lifecycle/UI.
+- Returned COMMERCE-026 to Ready because template mutations use `CommerceAuditEvent.id` instead of the DATABASE-002 `operationId` correlation field, retain pre-simplification replay/error semantics, and classify arbitrary failures as `DATABASE_UNAVAILABLE`.
+- Required the visible template enabled control to persist through CAS; the submitted checkbox is currently ignored by `updateTemplate`.
+- Required removal of remaining C026-owned `sourceTemplateRevisionId` UI references while leaving COMMERCE-025-owned prompt-service migration to COMMERCE-025.
+- Required focused regressions to adopt `OPERATION_ALREADY_COMMITTED`/read-only reconciliation rather than identical successful result replay, plus mandatory launcher/worktree evidence in the Completion Report.
+- COMMERCE-028 remains Pending; COMMERCE-025 and COMMERCE-027 remain independently executable.
 
 ### 2026-09-24 — DATABASE-002 Attempt 2 accepted
 
