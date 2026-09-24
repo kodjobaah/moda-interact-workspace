@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -275,9 +275,61 @@ None beyond the listed repository-wide baseline/sibling typecheck failures.
 
 ### Review Status
 
-Changes Requested
+Accepted — Attempt 3
 
 ### Review Notes
+
+#### Attempt 3 — Accepted — 2026-09-24
+
+Reviewed implementation `f76939275ae185794b9b025cfb5da8fc49abc2a4`
+and parent report `1c0d0c0e` against the complete Attempt 2 correction contract.
+
+Attempt 3 is accepted.
+
+The implementation now classifies Prisma `P2002` from the structured Prisma error
+object rather than parsing `error.message`. Domain errors created by the
+prompt-template service retain their explicit service-owned code parsing.
+
+CAS and `P2002` losers are reconciled exactly once after the failed transaction has
+rolled back by querying `CommerceAuditEvent.operationId`. A committed same-operation
+receipt returns `OPERATION_ALREADY_COMMITTED`; a genuine different-operation stale
+CAS returns `CAS_CONFLICT`; a `P2002` with no matching receipt fails closed as
+`INTERNAL_ERROR`. Reconciliation lookup failure is itself classified and returned as
+`DATABASE_UNAVAILABLE` or `INTERNAL_ERROR`; it is never treated as a fabricated
+missing receipt.
+
+Translated infrastructure/unexpected failures use the approved shared logger from
+`@modainteract/moda-interact-shared/logging`. The service preserves the constructor
+logger-injection seam and passes the original raw `Error` object to
+`commerce.prompt_template.mutation_failed` or
+`commerce.prompt_template.reconciliation_lookup_failed`. The logged operation id is
+bounded to 128 characters. No service-local logger, `console.error`, payload hash,
+stored result replay, generic `unknown` result, second audit table or advisory-lock
+mechanism was introduced.
+
+The PostgreSQL stale-CAS regression uses the current explicit result contract
+(`kind: 'error'`, `code: 'CAS_CONFLICT'`). The submitted isolated disposable
+PostgreSQL proof executed all three required concurrency scenarios: same-operation
+create, same-operation CAS and different-operation stale CAS; all 3/3 passed.
+
+The submitted focused packet reports 19 tests passed. Targeted ESLint and
+`git diff --check` passed. Inspection of the submitted `tsconfig.tsbuildinfo`
+confirms zero semantic diagnostics in the COMMERCE-026-owned service/contracts/UI and
+Attempt 3 test files. The remaining diagnostics are confined to the exact sibling /
+baseline files listed in the Completion Report.
+
+The Completion Report records the canonical parent and implementation task worktrees,
+matching task branches, start-of-attempt synchronization, Attempt 3 launcher claim,
+recursive submodule materialization, database submodule commit, implementation
+commit and isolated PostgreSQL evidence. Both branches were reported clean and
+synchronized.
+
+The supplied review archive does not contain `node_modules`, so Vitest, ESLint and
+typecheck were not independently rerun by the architect. Static source inspection,
+the focused tests, the executed PostgreSQL evidence and the submitted TypeScript
+diagnostic artifact provide sufficient acceptance evidence.
+
+#### Historical Attempt 2 Changes Requested
 
 Attempt 2 is substantially improved and satisfies most of the Attempt 1 correction contract: current template content is edited directly with CAS, audit rows now use the canonical `CommerceAuditEvent.operationId` correlation column with independent audit IDs, the template result contract is explicit rather than `unknown`/replay-based, enabled-state changes use the dedicated CAS action without discarding dirty edits, task-owned `sourceTemplateRevisionId` UI provenance is removed, and the Completion Report now contains the required prepared-worktree/commit evidence.
 
@@ -436,26 +488,45 @@ Attempt 3 is deliberately narrow. Execute the following correction contract exac
 - `src/studio/agent-configuration/prompt-template-library.tsx`
 - `src/studio/agent-configuration/platform-prompt-configuration.tsx`
 - `tests/agent-configuration-templates.test.ts`
+- `tests/agent-configuration-templates-postgres.test.ts`
 - `tests/agent-configuration-template-server-actions.test.ts`
 - `tests/agent-configuration-template-ui.test.tsx`
 - `tests/agent-configuration-platform-prompt-ui.test.tsx`
-- `tests/agent-configuration-templates-postgres.test.ts`
 - `tests/agent-configuration-production.test.tsx`
-- submitted `tsconfig.tsbuildinfo` diagnostics
-- Attempt 2 Completion Report and ARCH-021/DATABASE-002 contracts
+- submitted `tsconfig.tsbuildinfo`
+- Attempt 3 Completion Report
 
 ### Validation Reviewed
 
-- Submitted focused Vitest result: 16 tests passed; 3 PostgreSQL tests skipped.
-- Submitted targeted ESLint and `git diff --check`: reported passed.
-- Source inspection confirms the direct-content, enabled-state and UI-provenance corrections.
-- The submitted TypeScript build information contains task-owned TS2367 at `tests/agent-configuration-templates-postgres.test.ts:58` because `kind: 'conflict'` no longer exists.
-- The supplied review archive contains no `node_modules`, so Vitest/ESLint were not independently rerun in this review environment.
+- Submitted focused validation: 5 files / 19 tests passed.
+- Submitted targeted service regressions: 7 tests passed.
+- Submitted isolated disposable PostgreSQL proof: 3/3 tests executed and passed.
+- Submitted targeted ESLint: passed with no warnings.
+- Submitted `git diff --check`: passed.
+- Submitted full typecheck: non-zero only on the exact sibling/baseline files recorded
+  in the Completion Report.
+- Independent inspection of `tsconfig.tsbuildinfo`: zero semantic diagnostics in
+  COMMERCE-026-owned prompt-template files and Attempt 3 test files.
+- Independent source inspection confirms structured Prisma-code classification,
+  post-rollback reconciliation, shared-logger raw-Error usage and no silent
+  reconciliation fallback.
 
 ### Architecture Conformance
 
-Not yet accepted. The simplified template architecture now conforms in its main persistence/UI shape, but the lightweight `operationId` reconciliation contract is not yet race-correct and the required PostgreSQL concurrency validation has not executed.
+Conforms. Prompt templates retain first-class categories and current mutable
+`promptText` with edit-version CAS while template revision lifecycle remains removed.
+Audit correlation uses `CommerceAuditEvent.operationId`; no result replay/payload hash
+or generic `unknown` mutation result is reintroduced. Error translation remains
+explicit and observable through the approved shared structured logger. Copy-on-use
+continues to isolate existing immutable Agent Prompt revisions from later template
+edits. COMMERCE-025 remains the owner of the remaining Agent Prompt service/schema
+migration and COMMERCE-028 remains the owner of the later consolidated UI /
+reconciliation layer.
 
 ### Follow-up
 
-Return `ARCH-021-COMMERCE-026` to `ready` with `attempt: 2`, `executor: null`, and `claimed_at: null`. The next authorized claim becomes Attempt 3. `ARCH-021-COMMERCE-028` remains Pending until COMMERCE-025, COMMERCE-026 and COMMERCE-027 are all architect-accepted Complete.
+`ARCH-021-COMMERCE-026` is architect-accepted Complete at Attempt 3.
+
+`ARCH-021-COMMERCE-028` remains Pending because `ARCH-021-COMMERCE-025` and
+`ARCH-021-COMMERCE-027` are still Ready rather than Complete. This acceptance does
+not start either task and does not start COMMERCE-028.

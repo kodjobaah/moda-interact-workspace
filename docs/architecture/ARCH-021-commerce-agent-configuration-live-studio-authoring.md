@@ -860,7 +860,7 @@ Checkpoint tasks:
 |---|---|---|---|
 | ARCH-021-DATABASE-002 | moda_database | Complete | DATABASE-001 |
 | ARCH-021-COMMERCE-025 | moda_commerce | Ready | DATABASE-002, COMMERCE-007, 009, 010 |
-| ARCH-021-COMMERCE-026 | moda_commerce | Ready | DATABASE-002, COMMERCE-008, 015 |
+| ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Ready | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
@@ -869,7 +869,7 @@ Checkpoint tasks:
 | ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-DATABASE-002` and `ARCH-021-BACKGROUND-001`.
+Current checkpoint frontier: `ARCH-021-COMMERCE-025`, `ARCH-021-COMMERCE-027` and `ARCH-021-BACKGROUND-001`. COMMERCE-026 is Complete; COMMERCE-028 remains Pending until COMMERCE-025 and COMMERCE-027 are Complete.
 
 ### Phase 4 — live single-tool testing
 
@@ -962,6 +962,19 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-026 Attempt 3 accepted
+
+- Accepted implementation `f769392` with parent report `1c0d0c0e`.
+- Confirmed structured Prisma `P2002` classification, deterministic post-rollback
+  `operationId` reconciliation and explicit reconciliation-lookup failure handling.
+- Confirmed translated infrastructure/unexpected failures use
+  `@modainteract/moda-interact-shared/logging` with the raw `Error` field and bounded
+  operation IDs.
+- Accepted the isolated PostgreSQL proof with all 3/3 required concurrency cases
+  executed and passed.
+- Marked COMMERCE-026 Complete. COMMERCE-028 remains Pending because COMMERCE-025
+  and COMMERCE-027 are not yet Complete.
 
 ### 2026-09-24 — COMMERCE-026 Attempt 2 changes requested
 

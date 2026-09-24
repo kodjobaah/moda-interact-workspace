@@ -142,7 +142,7 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-025](COMMERCE-025-simplify-agent-configuration-services.md) | Simplify Agent Configuration services and reconciliation | Ready | DATABASE-002, COMMERCE-007, 009, 010 |
-| [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Ready | DATABASE-002, COMMERCE-008, 015 |
+| [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Complete | DATABASE-002, COMMERCE-008, 015 |
 | [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Ready | DATABASE-002 |
 | [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Pending | COMMERCE-025, 026, 027, 011..014 |
 | [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Pending | COMMERCE-028, COMMERCE-001..006 |
@@ -155,7 +155,19 @@ ARCH-021-DATABASE-002
 ARCH-021-BACKGROUND-001
 ```
 
-DATABASE-002 Attempt 2 is architect-accepted Complete. The simplified durable schema is now available, so COMMERCE-025, COMMERCE-026 and COMMERCE-027 are independently Ready; COMMERCE-028 remains Pending until all three are Complete.
+DATABASE-002 Attempt 2 and COMMERCE-026 Attempt 3 are architect-accepted Complete. The remaining independent Commerce checkpoint frontier is COMMERCE-025 and COMMERCE-027; COMMERCE-028 remains Pending until both are Complete.
+
+
+### COMMERCE-026 Attempt 3 accepted — 2026-09-24
+
+COMMERCE-026 is **Complete / Accepted, Attempt 3**. Structured Prisma-code
+classification replaces message parsing for `P2002`; CAS/P2002 losers reconcile once
+after rollback through `CommerceAuditEvent.operationId`; reconciliation lookup
+failure is explicit rather than swallowed; and translated infrastructure/unexpected
+failures use the approved shared structured logger with raw `Error` objects and
+bounded operation IDs. The isolated PostgreSQL proof executed and passed all three
+required concurrency regressions. COMMERCE-028 remains Pending on COMMERCE-025 and
+COMMERCE-027.
 
 ### COMMERCE-026 Attempt 1 changes requested — 2026-09-24
 
