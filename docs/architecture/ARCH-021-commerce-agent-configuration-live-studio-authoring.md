@@ -963,6 +963,13 @@ independent of features.
 
 ## Change History
 
+### 2026-09-24 — COMMERCE-026 Attempt 2 changes requested
+
+- Attempt 2 closes the direct-current-template, canonical audit `operationId`, explicit-error, enabled-state, template-provenance and workflow-evidence corrections.
+- Returned COMMERCE-026 to Ready for Attempt 3 because the PostgreSQL concurrency regression still contains the removed `kind: conflict` result and was skipped; the submitted TypeScript build information records that task-owned diagnostic.
+- Required the service to reconcile concurrent same-operation unique/CAS losers through the canonical audit receipt, log every translated infrastructure/unexpected exception through the approved shared structured logger without silent `.catch(() => null)` fallbacks, and then execute all three isolated PostgreSQL concurrency regressions.
+- COMMERCE-028 remains Pending.
+
 ### 2026-09-24 — COMMERCE-026 Attempt 1 changes requested
 
 - Retained the direct `CommercePromptTemplate.promptText` authoring direction and removal of template revision lifecycle/UI.

@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -169,7 +169,7 @@ Keep category create/update/enable/disable and multiple templates per category.
 - [x] Replace template contracts/DTOs with R2.
 - [x] Implement direct CAS update of promptText.
 - [x] Remove template revision UI/history.
-- [x] Update audit/reconciliation behavior.
+- [ ] Update audit/reconciliation behavior and structured failure logging.
 - [x] Update focused tests.
 
 ## Interfaces / Contracts
@@ -194,7 +194,7 @@ Consumes `CommercePromptTemplateCategory`, `CommercePromptTemplate.promptText`, 
 - [x] Template content is edited directly with CAS.
 - [x] No template revision persistence/service/UI remains.
 - [x] Existing Agent Prompt revisions remain unaffected by later template edits.
-- [x] Errors are explicit and reconcilable; none are swallowed into `unknown`.
+- [ ] Errors are explicit and reconcilable; none are swallowed into `unknown`, and every caught infrastructure/unexpected failure translated into an error result is emitted through the approved shared structured logger with the original `Error` object.
 
 ## Validation
 
@@ -202,8 +202,9 @@ Consumes `CommercePromptTemplateCategory`, `CommercePromptTemplate.promptText`, 
 - [x] focused template UI tests
 - [x] stale CAS test
 - [x] DB-unavailable error test
-- [x] operation reconciliation test
-- [x] targeted ESLint/typecheck
+- [ ] operation reconciliation test
+- [ ] structured error logging regression
+- [ ] targeted ESLint/typecheck
 - [x] `git diff --check`
 
 ## Stop Condition
@@ -277,21 +278,154 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 is not accepted. The revision-lifecycle removal is directionally correct, but the submitted implementation does not yet satisfy the checkpoint's audit/reconciliation, explicit-error or exact UI contracts. Reclaim the same task for Attempt 2 and make only the bounded corrections below.
+Attempt 2 is substantially improved and satisfies most of the Attempt 1 correction contract: current template content is edited directly with CAS, audit rows now use the canonical `CommerceAuditEvent.operationId` correlation column with independent audit IDs, the template result contract is explicit rather than `unknown`/replay-based, enabled-state changes use the dedicated CAS action without discarding dirty edits, task-owned `sourceTemplateRevisionId` UI provenance is removed, and the Completion Report now contains the required prepared-worktree/commit evidence.
 
-1. **Persist `operationId` in the canonical audit correlation column.** `PromptTemplateService.command()` currently looks up `CommerceAuditEvent.id = operationId` and creates the receipt with `id: operationId`, while DATABASE-002 introduced `CommerceAuditEvent.operationId` specifically for reconciliation. New template/category mutations must write `operationId: input.operationId` atomically with the business mutation and must not overload the audit primary key as the correlation mechanism. Duplicate detection/reconciliation must query the `operationId` column. Add a regression proving one committed template mutation is discoverable by `CommerceAuditEvent.operationId` and that the audit row may keep its normal independent `id`.
+Attempt 3 is deliberately narrow. Execute the following correction contract exactly; do not redesign the template service or introduce another reconciliation abstraction.
 
-2. **Align template mutation results with the COMMERCE-025 explicit-error rules referenced by R4.** The current template contract still exposes `kind: conflict`, `CONFLICTING_REPLAY` and `OPERATION_RECONCILIATION_REQUIRED`, and the catch block maps every unexpected exception to `DATABASE_UNAVAILABLE`. Remove replay semantics. A duplicate committed operation must report `OPERATION_ALREADY_COMMITTED`; CAS must report `CAS_CONFLICT`; recognized Prisma connection/initialization failures may report retryable `DATABASE_UNAVAILABLE`; unexpected failures must become non-retryable `INTERNAL_ERROR` and be logged with bounded correlation metadata through the approved shared structured logger. Do not classify arbitrary programming/constraint failures as database unavailability.
+1. **Fix the stale PostgreSQL regression contract.** In `tests/agent-configuration-templates-postgres.test.ts`, replace the removed `result.kind === 'conflict'` expectation with the explicit result shape `result.kind === 'error' && result.code === 'CAS_CONFLICT'`. The submitted `tsconfig.tsbuildinfo` records TS2367 on this stale assertion, so this exact diagnostic must disappear before review.
 
-3. **Make template enabled-state editing actually persist.** `PromptTemplateLibrary` currently renders an `enabled` checkbox and includes it in local `draft`, but `updateTemplate` does not accept or persist `enabled`, so clicking **Save template** silently leaves the durable enabled state unchanged. Use the existing `setTemplateEnabled` CAS operation as an explicit enable/disable control (or an equally coherent single-CAS design that preserves the R1 surface). Do not allow that action to discard independently dirty prompt/metadata edits. Add a focused UI/service regression proving the enabled state changes durably and editVersion advances exactly once.
+2. **Read Prisma error codes from the Prisma error object, never from `error.message`.** In `src/commerce/agent-configuration/prompt-template-service.ts`, add or use one bounded helper with this behaviour:
 
-4. **Finish the task-owned removal of template-revision identity from the UI.** `platform-prompt-configuration.tsx` still includes `sourceTemplateRevisionId` in its draft input shape and still renders template-revision provenance in Agent Prompt revision history. C026 must stop requesting or displaying a template revision id and use only current `promptText` plus `sourceTemplateId`. Do **not** modify COMMERCE-025-owned prompt-service internals merely to satisfy this correction; COMMERCE-025 remains responsible for replacing its legacy prompt-service/contract references when it executes. C026's Completion Report must not claim those sibling-owned service references are already removed.
+   ```ts
+   function prismaErrorCode(error: unknown): string | undefined {
+     if (typeof error !== 'object' || error === null || !('code' in error)) return undefined;
+     const code = (error as { code?: unknown }).code;
+     return typeof code === 'string' ? code : undefined;
+   }
+   ```
 
-5. **Update the focused regressions to prove the simplified semantics rather than the old replay model.** In particular, `agent-configuration-templates-postgres.test.ts` still expects two concurrent uses of one operation id to return identical `ok` results, which contradicts the no-result-replay checkpoint. Replace those expectations with the new committed-operation/reconciliation contract. Strengthen the direct `promptText` CAS unit test so it asserts the actual `updateMany.data.promptText`, one edit-version increment, and the returned updated value rather than returning the fixture's unchanged `Current text`. Add coverage for the enabled-state correction and remaining UI provenance removal.
+   Do not use `error.message.split(':')` to recognize Prisma `P2002`. The existing domain failures created by `fail('CAS_CONFLICT', ...)`, `fail('INVALID_INPUT', ...)`, and `fail('NOT_FOUND', ...)` may continue to use their explicit domain-code parsing because those are service-owned errors, not Prisma errors.
 
-6. **Reconcile the Completion Report/workflow evidence.** Record the launcher-resolved dedicated parent and implementation worktrees, start-of-attempt synchronization heads, recursive submodule evidence, final implementation commit/push and parent report commit/push. The current report contains none of the mandatory prepared-worktree evidence. For typecheck, identify the exact remaining diagnostics and their owning sibling/baseline rather than describing all generated Prisma/integration errors generically as unrelated.
+3. **Reconcile a same-operation loser in one deterministic place after the failed transaction.** A unique collision or CAS miss may mean another request with the same `operationId` committed while this transaction was waiting. After the transaction has rolled back, query `CommerceAuditEvent` by `operationId` exactly once for that reconciliation decision. The required outcome order is:
 
-The current production `StudioWorkspace` function-valued service props and the legacy COMMERCE-025 prompt-service schema references are not correction work for this task: COMMERCE-029 and COMMERCE-025 respectively own those boundaries. Do not broaden Attempt 2 into those tasks.
+   ```text
+   transaction succeeds
+       -> ok
+
+   transaction fails with CAS_CONFLICT
+       -> query CommerceAuditEvent.operationId
+       -> receipt exists     -> OPERATION_ALREADY_COMMITTED
+       -> no receipt         -> CAS_CONFLICT
+       -> receipt query fails -> classify/log the receipt-query failure; never pretend no receipt exists
+
+   transaction fails with Prisma P2002
+       -> query CommerceAuditEvent.operationId
+       -> receipt exists     -> OPERATION_ALREADY_COMMITTED
+       -> no receipt         -> INTERNAL_ERROR
+       -> receipt query fails -> classify/log the receipt-query failure; never pretend no receipt exists
+   ```
+
+   Do not add payload hashes, stored result replay, `kind: 'unknown'`, advisory locks, queues, or a second audit table.
+
+4. **Do not swallow exceptions. Use the existing shared structured logger and pass the actual `Error` object.** Before editing, read `docs/observability/shared-logging.md`. The approved API is already available and already imported by this service:
+
+   ```ts
+   import {
+     createLogger,
+     type StructuredLogger,
+   } from '@modainteract/moda-interact-shared/logging';
+   ```
+
+   Keep the existing constructor injection seam so tests can supply a logger:
+
+   ```ts
+   private readonly logger: StructuredLogger;
+
+   constructor(private readonly db: PrismaClient, logger?: StructuredLogger) {
+     this.logger = logger ?? createLogger({
+       serviceName: 'moda-interact-commerce',
+       environment: process.env.NODE_ENV ?? 'development',
+     });
+   }
+   ```
+
+   Do **not** add `console.error`, a service-local JSON logger, or custom Error serialization. The shared logger already provides JSON serialization, redaction, bounded values, `Error` serialization, and sink-failure isolation.
+
+   When an infrastructure/unexpected exception is converted into `DATABASE_UNAVAILABLE` or `INTERNAL_ERROR`, emit exactly one mutation failure record before returning the result:
+
+   ```ts
+   this.logger.error('commerce.prompt_template.mutation_failed', {
+     action,
+     operationId: input.operationId.slice(0, 128),
+     resultCode: 'DATABASE_UNAVAILABLE', // or 'INTERNAL_ERROR'
+     prismaCode: prismaErrorCode(error),
+     error,
+   });
+   ```
+
+   Pass `error` as the raw field. **Do not** pass only `error.message`, stringify the error, or construct `{ name, message }` locally. The shared logger serializes an `Error` to bounded `name` and `message` and omits stack by default. Do not log `promptText`, template contents, request bodies, credentials, authorization headers, email addresses, or other customer/provider payloads. `operationId` must remain bounded to 128 characters.
+
+   If the post-rollback reconciliation lookup itself throws, that exception must also be visible. Do not use `.catch(() => null)` or any equivalent silent fallback. Emit:
+
+   ```ts
+   this.logger.error('commerce.prompt_template.reconciliation_lookup_failed', {
+     action,
+     operationId: input.operationId.slice(0, 128),
+     triggerPrismaCode: prismaErrorCode(triggerError),
+     triggerError,
+     error: reconciliationError,
+   });
+   ```
+
+   Then return `DATABASE_UNAVAILABLE` when `reconciliationError` satisfies `isDatabaseUnavailable(...)`; otherwise return `INTERNAL_ERROR`. Do not fall through to `CAS_CONFLICT`, `OPERATION_ALREADY_COMMITTED`, or a fabricated "no receipt" result when the receipt lookup itself failed.
+
+   Expected domain outcomes (`FORBIDDEN`, `INVALID_INPUT`, `NOT_FOUND`, a genuine `CAS_CONFLICT`, and a successfully detected `OPERATION_ALREADY_COMMITTED`) are already explicit results and do not need to be emitted as `error` logs merely to satisfy this correction. The no-swallow rule applies to caught infrastructure/unexpected exceptions that would otherwise disappear behind a translated result.
+
+5. **Add deterministic logging regressions.** Use the shared logger rather than mocking `console`. A valid test pattern is:
+
+   ```ts
+   const records: LogRecord[] = [];
+   const logger = createLogger({
+     serviceName: 'moda-interact-commerce',
+     environment: 'test',
+     sink: (record) => records.push(record),
+   });
+   const service = new PromptTemplateService(db, logger);
+   ```
+
+   Add focused assertions proving:
+   - an unexpected mutation exception returns `INTERNAL_ERROR` and emits `commerce.prompt_template.mutation_failed`;
+   - a database-unavailable exception returns `DATABASE_UNAVAILABLE` and emits the same event with `resultCode: 'DATABASE_UNAVAILABLE'`;
+   - the emitted record contains the bounded `operationId` and serialized `data.error.name` / `data.error.message`;
+   - a reconciliation lookup failure emits `commerce.prompt_template.reconciliation_lookup_failed` and is not silently converted into "receipt missing";
+   - the tests do not require or assert stack traces.
+
+6. **Run the required PostgreSQL concurrency proof instead of skipping it.** Use an explicitly isolated/disposable PostgreSQL database only. Do not point this test at a shared development, staging, or production database. From `moda-interact-commerce`, run:
+
+   ```bash
+   COMMERCE_PROMPT_TEMPLATE_POSTGRES=1 \
+   DATABASE_URL='<isolated-disposable-postgres-url>' \
+   npm exec vitest run tests/agent-configuration-templates-postgres.test.ts
+   ```
+
+   All three PostgreSQL tests must execute and pass: same-operation create, same-operation CAS, and different-operation stale CAS. If an isolated PostgreSQL target is unavailable, leave the operation-reconciliation validation unchecked, set the task to `blocked`, document exactly what is unavailable, and STOP. Do not mark the PostgreSQL suite passed when Vitest reports it skipped.
+
+7. **Run the bounded Attempt 3 validation in this order.**
+
+   ```bash
+   npm exec vitest run \
+     tests/agent-configuration-templates.test.ts \
+     tests/agent-configuration-template-server-actions.test.ts \
+     tests/agent-configuration-template-ui.test.tsx \
+     tests/agent-configuration-platform-prompt-ui.test.tsx \
+     tests/agent-configuration-production.test.tsx
+
+   COMMERCE_PROMPT_TEMPLATE_POSTGRES=1 \
+   DATABASE_URL='<isolated-disposable-postgres-url>' \
+   npm exec vitest run tests/agent-configuration-templates-postgres.test.ts
+
+   npm exec eslint \
+     src/commerce/agent-configuration/prompt-template-service.ts \
+     tests/agent-configuration-templates.test.ts \
+     tests/agent-configuration-templates-postgres.test.ts
+
+   npm run typecheck -- --pretty false
+   git diff --check
+   ```
+
+   The full typecheck may retain already-documented sibling/baseline diagnostics, but **zero diagnostics may remain in `prompt-template-service.ts`, `agent-configuration-templates.test.ts`, or `agent-configuration-templates-postgres.test.ts`**. Record the exact residual diagnostics and owners in the Completion Report rather than describing them generically.
+
+8. **Stop condition.** Once the source changes and all required validation above are complete, update the task checklist and Completion Report, set `status: review`, clear `executor`/`claimed_at` as required by the handoff path, push the implementation and parent report commits, return control to `moda_architect`, and STOP. Do not start COMMERCE-028 or modify COMMERCE-025/027/029.
 
 ### Reviewed Files
 
@@ -300,29 +434,27 @@ The current production `StudioWorkspace` function-valued service props and the l
 - `src/studio/agent-configuration/template-server-actions.ts`
 - `src/studio/agent-configuration/prompt-template-library.tsx`
 - `src/studio/agent-configuration/platform-prompt-configuration.tsx`
-- `components/production-studio-page.tsx`
 - `tests/agent-configuration-templates.test.ts`
 - `tests/agent-configuration-template-server-actions.test.ts`
 - `tests/agent-configuration-template-ui.test.tsx`
 - `tests/agent-configuration-platform-prompt-ui.test.tsx`
 - `tests/agent-configuration-templates-postgres.test.ts`
 - `tests/agent-configuration-production.test.tsx`
-- DATABASE-002 Prisma schema/migration and COMMERCE-025/026 task contracts
-- task Completion Report
+- submitted `tsconfig.tsbuildinfo` diagnostics
+- Attempt 2 Completion Report and ARCH-021/DATABASE-002 contracts
 
 ### Validation Reviewed
 
-- Submitted focused validation: 14 tests reported passed.
-- Submitted production composition test: reported passed.
+- Submitted focused Vitest result: 16 tests passed; 3 PostgreSQL tests skipped.
 - Submitted targeted ESLint and `git diff --check`: reported passed.
-- PostgreSQL template concurrency suite was explicitly skipped in the Completion Report.
-- Repository-wide typecheck remains non-passing; source inspection confirms at least some stale prompt-service Prisma references belong to pending COMMERCE-025, but the C026 report must enumerate rather than generically waive the diagnostics.
-- The supplied review archive does not include `node_modules`, so the test commands were inspected from source/report rather than rerun in this review environment.
+- Source inspection confirms the direct-content, enabled-state and UI-provenance corrections.
+- The submitted TypeScript build information contains task-owned TS2367 at `tests/agent-configuration-templates-postgres.test.ts:58` because `kind: 'conflict'` no longer exists.
+- The supplied review archive contains no `node_modules`, so Vitest/ESLint were not independently rerun in this review environment.
 
 ### Architecture Conformance
 
-Not yet accepted. The direct-current-template model and revision-UI removal conform in principle, but audit correlation currently bypasses `CommerceAuditEvent.operationId`, the mutation error/replay contract still implements pre-simplification semantics, enabled-state editing is non-functional, and task-owned UI still exposes `sourceTemplateRevisionId`.
+Not yet accepted. The simplified template architecture now conforms in its main persistence/UI shape, but the lightweight `operationId` reconciliation contract is not yet race-correct and the required PostgreSQL concurrency validation has not executed.
 
 ### Follow-up
 
-Return `ARCH-021-COMMERCE-026` to `ready` with `attempt: 1`, `executor: null`, and `claimed_at: null`. The next authorized claim becomes Attempt 2. `ARCH-021-COMMERCE-028` remains Pending; do not start it. COMMERCE-025 and COMMERCE-027 remain independently executable according to their own state.
+Return `ARCH-021-COMMERCE-026` to `ready` with `attempt: 2`, `executor: null`, and `claimed_at: null`. The next authorized claim becomes Attempt 3. `ARCH-021-COMMERCE-028` remains Pending until COMMERCE-025, COMMERCE-026 and COMMERCE-027 are all architect-accepted Complete.
