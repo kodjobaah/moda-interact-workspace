@@ -1226,3 +1226,9 @@ independent of features.
 - Reused pinned Shopify Dev MCP/Admin 2026-07 schema as development validation evidence while keeping normal Studio validation local/offline.
 - Deferred all real provider calls and publication proof to Phase 4; Phase 3 new definitions fail closed with LIVE_TEST_REQUIRED.
 - Continued incremental Studio decomposition by extracting the Tool domain from StudioWorkspace.
+### 2026-09-24 — COMMERCE-030 Attempt 1 changes requested
+
+- Accepted in substance implementation `fd281e0` / submitted parent report `f9ec3a52`: Commerce MCP no longer verifies RS256/JWT caller assertions or requires MCP caller credentials, parses only the bounded private-link context header, derives environment locally and keeps PostgreSQL turn/grant/release/tool authorization in the execution path.
+- Submitted focused MCP suite (26 tests), local persisted external-MCP diagnostic, lint and diff checks passed; unrelated repository typecheck and health-origin baseline issues remain non-blocking.
+- Returned COMMERCE-030 to Ready for a bounded correction because task-owned config currently logs raw database/Redis endpoint values, known production authorization-domain failures can be collapsed to generic `UNAVAILABLE`, and runtime/env guidance still contains stale RSA/signed-context wording.
+- BACKGROUND-001 and GATEWAY-001 remain Pending until the private-MCP simplification dependencies are architect-accepted Complete.

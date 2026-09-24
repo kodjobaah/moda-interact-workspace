@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -40,79 +40,36 @@ Coordinator:
 
 ## Objective
 
-Ready for Review
+Remove RSA/JWT verification and every application-layer caller credential from the private Commerce MCP endpoint. Accept only the bounded `X-Moda-Commerce-Context` request context from the existing private service link while preserving authoritative PostgreSQL shop/turn/grant/release/tool authorization and bounded failure semantics.
 
 ## Context
 
-- `.env.example`
-- `docs/commerce-backend-integration.md`
-- `docs/runtime-compatibility.md`
-- `lib/server/config.ts`
-- `package-lock.json`
-- `package.json`
-- `scripts/clean-clone.sh`
-- `scripts/readiness-local-smoke.mjs`
-- `src/commerce/integration/backend.ts`
-- `src/commerce/integration/backend/authorization.ts`
-- `src/commerce/mcp/authentication.ts`
-- `src/commerce/mcp/authorization.ts`
-- `src/commerce/mcp/ports.ts`
-- `src/commerce/mcp/service.ts`
-- `tests/backend-integration.test.ts`
-- `tests/definition-execution-mcp.test.ts`
-- `tests/external-wiring.test.ts`
-- `tests/health.test.ts`
-- `tests/local-external-mcp-diagnostic.test.ts`
-- `tests/mcp-authorization.test.ts`
-- `tests/mcp-compatibility.test.ts`
-- `tests/mcp-service.test.ts`
-- `tests/preview-model-provider.test.ts`
-- `tests/studio-integration-c20.test.ts`
-
 The Commerce MCP endpoint is not a public API. Gateway/Render topology exposes it only over the private service path used by Background. ARCH-020 added RS256 signing, key distribution, `kid` rotation and JWT claim validation on top of that private link. That machinery is not required for the agreed development architecture and must not be replaced with a bearer token, API key, shared secret or another key exchange.
 
-- Replaced RSA/JWT assertion verification with bounded `X-Moda-Commerce-Context` parsing and request-context terminology.
-- Removed Commerce MCP caller credential configuration, RSA key parsing, JWT dependency, key-generation/readiness wiring, and assertion-expiry deadline logic.
-- Preserved PostgreSQL-backed shop, turn, grant, release, manifest, tool and lease authorization checks.
-- Updated the local external MCP diagnostic to use context-only requests; the persisted lifecycle still covers grant, `tools/list` and `tools/call`.
+The private service link is the caller trust boundary. The context header remains untrusted lookup/authorization context: Commerce must continue to derive environment locally and verify authoritative shop, conversation, turn, lease, grant, release, manifest and tool state from PostgreSQL before exposing or executing capabilities.
 
 ## Scope
 
-- `npm exec vitest run tests/mcp-service.test.ts tests/mcp-authorization.test.ts tests/mcp-compatibility.test.ts tests/definition-execution-mcp.test.ts tests/external-wiring.test.ts` - passed, 5 files / 26 tests.
-- `npm run diagnose:arch020-external-mcp:local` - passed end to end, including PostgreSQL/Redis fixture setup, persisted lifecycle, `tools/list`, `tools/call`, and cleanup with zero owned Docker resources remaining.
-- `npm run lint` - passed with 6 pre-existing warnings and 0 errors.
-- `git diff --check` - passed before implementation commit.
-- `npm run typecheck` - blocked by existing unrelated errors in preview module paths, Studio UI, agent configuration, and unrelated test typing; no MCP runtime contract error remains after the task-local fix.
-- Health/config unit coverage was run with the focused suite: MCP tests passed, but the existing `tests/health.test.ts` assertion for `http://host` in `COMMERCE_STUDIO_ORIGIN` failed because the current config accepts HTTP origins in test mode. This is outside the MCP authentication diff.
+Primary repository-owned files include:
 
 ```text
-src/commerce/mcp/authentication.ts
-- The local diagnostic is environment-gated and was run through its declared package script as required; direct Vitest invocation is intentionally rejected by the test.
-src/commerce/mcp/service.ts
-src/commerce/integration/backend.ts
-lib/server/config.ts
-- The private service link remains the caller trust boundary; no replacement token, API key, shared secret or signing key was introduced.
+.env.example
+docs/commerce-backend-integration.md
 docs/runtime-compatibility.md
-generate-commerce-assertion-keys.sh          # delete
-tests/*mcp*.test.ts
-- Repository-wide typecheck remains blocked by the unrelated baseline errors listed above.
-- The pre-existing health/config origin assertion remains unresolved and is not part of this task's MCP caller-auth scope.
-tests/local-external-mcp-diagnostic.test.ts
-scripts/readiness-local-smoke.mjs
+lib/server/config.ts
+package.json / package-lock.json
 scripts/clean-clone.sh
-None. The implementation preserves DB-backed business authorization and introduces no public MCP route.
-
-### Review-Correction Mapping
-
-- Architect Review corrections: none; the review section was pending at finalization.
-- R1-R7 and all listed Work Items: implemented in the files above; focused MCP tests and the declared local diagnostic provide the behavioral evidence.
-
-### Implementation Publication
-
-- Implementation repository branch: `task/ARCH-021-COMMERCE-030`
-- Implementation commit: `fd281e0` (`refactor(commerce): remove private MCP caller auth`)
-- Implementation remote: pushed to `origin/task/ARCH-021-COMMERCE-030`
-- Prepared launcher evidence: canonical implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-030`; canonical parent report worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-030`; mirrored task branch `task/ARCH-021-COMMERCE-030`; Attempt 1 retained.
+scripts/readiness-local-smoke.mjs
+src/commerce/integration/backend.ts
+src/commerce/integration/backend/authorization.ts
+src/commerce/mcp/authentication.ts
+src/commerce/mcp/authorization.ts
+src/commerce/mcp/ports.ts
+src/commerce/mcp/service.ts
+tests/*mcp*.test.ts
+tests/local-external-mcp-diagnostic.test.ts
+relevant health/backend/external-wiring tests
+```
 
 Modify equivalent existing files only when repository naming differs. Do not create a second MCP authentication module.
 
@@ -335,24 +292,50 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implements the core private-link simplification correctly: runtime RSA/JWT verification and MCP caller credentials are removed; `X-Moda-Commerce-Context` is bounded/canonical; environment is server-derived; the tool deadline is local (`now + 10_000`); and the existing PostgreSQL authorization path remains in front of tool execution. The declared local external MCP diagnostic also exercises the persisted grant -> tools/list -> tools/call lifecycle without JWT/key configuration.
+
+The task returns to Ready for one bounded correction pass:
+
+1. **Remove secret-bearing configuration logging.** `lib/server/config.ts` currently logs the raw endpoint value and parsed `URL` while reading `DATABASE_URL` and `REDIS_URL`. Those values may contain usernames/passwords and must never be emitted to application logs. Remove the diagnostic `console.log` output from the configuration parser; do not replace it with partially redacted secret logging.
+2. **Preserve typed MCP authorization failures at the production adapter boundary.** The production Prisma resolver can throw coded `LifecycleError` values such as `FORBIDDEN`/`UNAVAILABLE` before `resolveAuthorizedSnapshot()` runs. `createCommerceAuthorization()` currently lets those escape as generic errors, so `createMcpService()` converts them to HTTP 503/`UNAVAILABLE`. Map only known authorization-domain codes to the corresponding bounded `McpError` (`FORBIDDEN`, `STALE_TURN`, `INCOMPATIBLE_VERSION`, `UNAVAILABLE`, etc.) while leaving unexpected database/runtime failures fail-closed as `UNAVAILABLE`. Add focused end-to-end adapter/service coverage proving a shop/conversation ownership mismatch is not collapsed to generic 503 and that an unexpected storage failure still is.
+3. **Reconcile operational documentation/config examples.** Remove the orphan RSA-public-key comment from `.env.example`; update changed runtime/deployment guidance so it no longer says consumers retain a "signed-context" check; and remove stale Commerce README/readiness wording that claims RSA public-key validation. Do not change Studio's unrelated Auth.js/JWT session documentation.
+4. **Completion Report/workflow reconciliation.** Attempt 1 executor material was written into architect-owned Objective/Context/Scope while the formal Completion Report remained `Not Started`. This architect patch restores the canonical task definition. Attempt 2 must populate the standard Completion Report with actual changed files, validation, prepared worktree/synchronization evidence, final implementation commit and pushed-branch evidence, then return the task to `review`.
+
+No redesign of the private-link trust decision, context schema, DB grant/tool authorization, provider budget, or local diagnostic lifecycle is requested.
 
 ### Reviewed Files
 
-None
+- `src/commerce/mcp/authentication.ts`
+- `src/commerce/mcp/ports.ts`
+- `src/commerce/mcp/authorization.ts`
+- `src/commerce/mcp/service.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/integration/backend/authorization.ts`
+- `lib/server/config.ts`
+- `.env.example`
+- `docs/runtime-compatibility.md`
+- `docs/commerce-backend-integration.md`
+- `README.md`
+- `scripts/readiness-local-smoke.mjs`
+- `scripts/clean-clone.sh`
+- focused MCP/authorization/local-diagnostic tests
 
 ### Validation Reviewed
 
-None
+- Submitted focused MCP suite: 5 files / 26 tests passed.
+- Submitted `npm run diagnose:arch020-external-mcp:local`: passed end to end with zero owned Docker resources remaining.
+- Submitted lint: 0 errors (6 pre-existing warnings).
+- Submitted `git diff --check`: passed.
+- Repository-wide typecheck baseline remains non-blocking for unrelated files; Attempt 2 must keep task-owned diagnostics clean.
 
 ### Architecture Conformance
 
-Pending
+Conforms in substance to the private-link/context-only architecture, but cannot be accepted while task-owned configuration may log credentials and production authorization-domain failures can be collapsed to generic `UNAVAILABLE` contrary to R6.
 
 ### Follow-up
 
-None
+Return the same task through `/moda-task ARCH-021-COMMERCE-030`. Preserve `attempt: 1`; the next authorized claim becomes Attempt 2. `ARCH-021-BACKGROUND-001` remains Pending until COMMERCE-030 is Complete.
