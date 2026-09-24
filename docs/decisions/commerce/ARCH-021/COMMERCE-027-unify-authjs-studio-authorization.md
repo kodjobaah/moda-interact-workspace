@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -461,222 +461,236 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 2 resolved the previously requested merchant subject-binding race, mixed-subject rejection, compatibility-wrapper drift and PostgreSQL validation. Those corrections are retained. The task is returned to Ready because the authoritative authorization model has now been clarified: Studio roles are hierarchical, with platform roles above merchant roles and merchant scope enforced per requested shop.
+Attempt 3's authorization implementation is accepted in substance. The supplied source now has the canonical hierarchy, direct production-entrypoint regressions and the corrected PostgreSQL fixture lifecycle. The developer also manually reran the focused authorization suite and PostgreSQL regressions successfully:
 
-The next authorized claim is **Attempt 3**. This is a bounded authorization correction, not a redesign. Preserve all accepted Attempt 2 identity-binding and CLI behaviour.
+```text
+focused authorization: 5 files passed / 62 tests passed
+PostgreSQL authorization: 1 file passed / 2 tests passed / 0 failed / 0 skipped
+targeted ESLint: no diagnostics
+git diff --check: no diagnostics
+```
 
-#### Attempt 3 deterministic correction contract
+Do **not** redesign or otherwise change the authorization hierarchy in the next attempt unless one of the required regressions fails. The remaining work is limited to two deterministic PostgreSQL-test-harness requirements from the previous correction contract plus truthful Completion Report reconciliation.
 
-Execute the following in order. Do not substitute a different authorization model.
+The same task is returned to Ready. Preserve `attempt: 3`; the next authorized `/moda-task ARCH-021-COMMERCE-027` claim must increment it exactly once to **Attempt 4**.
 
-1. **Read before editing**
+#### Attempt 4 deterministic correction contract
 
-   Re-read this entire task, the parent ARCH-021 authorization-hierarchy section, and these existing task-owned files before making source changes:
+Execute exactly the following bounded steps and then stop.
+
+1. **Do not change accepted authorization behaviour**
+
+   Preserve the current hierarchy and helpers exactly unless a required regression fails:
 
    ```text
-   lib/auth/merchant-access.ts
-   lib/auth/platform-admin.ts
-   lib/auth/permissions.ts
-   lib/auth/index.ts
-   tests/auth-merchant-access.test.ts
-   tests/auth-platform-admin.test.ts
-   tests/auth-permissions.test.ts
-   tests/auth-security-policy.test.ts
+   PLATFORM_SUPER_ADMIN
+           >
+   PLATFORM_ADMIN
+           >
+   MERCHANT_ADMIN
+           >
+   MERCHANT_EDITOR
+           >
+   MERCHANT_VIEWER
+   ```
+
+   Preserve:
+
+   ```text
+   requireStudioPlatformRole()
+   requireStudioShopRole()
+   requireStudioShopAccess()
+   PlatformAdmin precedence
+   exact-shop merchant scope
+   one-time merchant providerSubject binding
+   mixed-subject rejection
+   concurrent first-login single-winner behaviour
+   manual merchant-access CLI and audit behaviour
+   ```
+
+   Do not edit Agent Configuration service/action files owned by COMMERCE-025/026. Do not start COMMERCE-028.
+
+2. **Make explicit PostgreSQL execution fail closed on an unsafe target**
+
+   Modify only the task-owned PostgreSQL test harness as needed, primarily:
+
+   ```text
    tests/auth-merchant-access-postgres.test.ts
    ```
 
-   Do not modify Agent Configuration service/action files owned by COMMERCE-025/026 during this task. This task establishes the canonical authorization helpers those tasks must consume.
+   `COMMERCE_TEST_DATABASE_URL` remains the only database-selection variable for this test. Do not fall back to the application's ordinary `DATABASE_URL` when deciding which database the test itself will target.
 
-2. **Centralize role comparison**
-
-   Add one canonical role-level representation in the auth layer equivalent to:
+   Required enablement semantics are exactly:
 
    ```text
-   MERCHANT_VIEWER       10
-   MERCHANT_EDITOR       20
-   MERCHANT_ADMIN        30
-   PLATFORM_ADMIN        40
-   PLATFORM_SUPER_ADMIN  50
+   COMMERCE_AUTH_POSTGRES != "1"
+       -> PostgreSQL suite may be skipped
+
+   COMMERCE_AUTH_POSTGRES == "1"
+       -> COMMERCE_TEST_DATABASE_URL is mandatory
+       -> unsafe/malformed target is a test failure, not a skip
    ```
 
-   The numeric values are comparison implementation details only. Do not add them to the database, Auth.js session, Prisma schema or merchant-access records.
+   Before constructing `PrismaClient` or executing a CLI subprocess, parse `COMMERCE_TEST_DATABASE_URL` and require all of:
 
-   Add pure comparison helpers so role ordering is not reimplemented by callers. Direct `role === ...` is allowed only where testing an identity kind or an operation explicitly requiring the exact top role is clearer than a minimum-role call; ordinary authorization must use the central minimum-role comparison.
+   ```text
+   protocol: postgres: or postgresql:
+   hostname: localhost, 127.0.0.1, ::1 or [::1]
+   database name: ^arch021_commerce027_auth_[a-z0-9_]+$
+   ```
 
-3. **Implement the canonical platform-role helper**
+   The validation must reject any Render/public/non-loopback database and any database whose name does not match that exact disposable-test prefix.
 
-   Export:
+   A minimal local helper is sufficient. Do not create another shared infrastructure abstraction for this task.
+
+   The CLI subprocess may receive the already validated test URL as its `DATABASE_URL`, because the CLI/Prisma runtime consumes `DATABASE_URL`:
 
    ```ts
-   requireStudioPlatformRole(minimumRole: 'ADMIN' | 'SUPER_ADMIN')
+   env: {
+     ...process.env,
+     DATABASE_URL: validatedTestDatabaseUrl,
+   }
    ```
 
-   Required outcomes:
+   Do not log the full database URL or credentials.
 
-   ```text
-   actual PLATFORM_ADMIN, minimum ADMIN         -> allow
-   actual PLATFORM_SUPER_ADMIN, minimum ADMIN   -> allow
-   actual PLATFORM_ADMIN, minimum SUPER_ADMIN   -> deny
-   actual PLATFORM_SUPER_ADMIN, minimum SUPER_ADMIN -> allow
-   any MERCHANT principal                       -> deny
-   ```
+3. **Keep immutable audit records immutable**
 
-   `requireStudioPlatformAdmin()` must delegate to `requireStudioPlatformRole('ADMIN')`.
-   `requireStudioSuperAdmin()` must delegate to `requireStudioPlatformRole('SUPER_ADMIN')`.
-   `requireStudioAdmin()` remains the legacy shape adapter over `requireStudioPlatformAdmin()` and must not perform a second authorization lookup.
-
-4. **Implement the canonical shop-role helper**
-
-   Export:
+   Preserve the corrected fixture cleanup boundary:
 
    ```ts
-   requireStudioShopRole(
-     shopId: string,
-     minimumRole: 'VIEWER' | 'EDITOR' | 'ADMIN',
-   )
+   afterAll(async () => {
+     await prisma?.$disconnect();
+   });
    ```
 
-   Required outcomes:
+   The PostgreSQL test must not call `commerceAuditEvent.deleteMany()`, must not disable/drop `arch020_audit_immutable`, and must not attempt row-by-row cleanup of audit-owned fixture state. The disposable database/container is the cleanup boundary.
 
-   ```text
-   PLATFORM_SUPER_ADMIN -> allow any shop / VIEWER|EDITOR|ADMIN
-   PLATFORM_ADMIN       -> allow any shop / VIEWER|EDITOR|ADMIN
+4. **Give the CLI lifecycle regression an explicit local timeout**
 
-   MERCHANT_ADMIN       -> allow exact shop / VIEWER|EDITOR|ADMIN
-   MERCHANT_EDITOR      -> allow exact shop / VIEWER|EDITOR; deny ADMIN
-   MERCHANT_VIEWER      -> allow exact shop / VIEWER; deny EDITOR|ADMIN
+   The grant/update/disable/enable regression launches multiple CLI subprocesses. Give **that test only** an explicit 60-second timeout using the Vitest test argument:
 
-   any merchant role on a different shop -> deny
+   ```ts
+   it(
+     'runs grant, update, disable and enable through the operator CLI with durable audit rows',
+     async () => {
+       // existing test body
+     },
+     60_000,
+   );
    ```
 
-   The resolver must continue to give an active PlatformAdmin precedence before merchant lookup. Do not query merchant access after a valid PlatformAdmin has resolved.
+   Do not increase the global Vitest timeout and do not add retries.
 
-5. **Make permission compatibility delegate; do not keep a parallel matrix**
+5. **Run the exact focused authorization suite**
 
-   `requireStudioShopAccess(shopId, permission)` remains for existing callers and must perform only this mapping:
-
-   ```text
-   inspect -> VIEWER
-   preview -> VIEWER
-   edit    -> EDITOR
-   publish -> ADMIN
-   ```
-
-   It must then call/delegate to `requireStudioShopRole`.
-
-   Remove the current rule that treats platform `ADMIN` as unable to perform shop `publish`. Platform `ADMIN` must satisfy `MERCHANT_ADMIN` shop authority globally.
-
-   Remove `studioPlatformPermissionAllowed()` as an independent authorization implementation. If a compatibility export is demonstrably required by an existing caller, it may remain only as a thin wrapper over the canonical role comparison; it must not contain a second permission matrix.
-
-6. **Keep platform-only privileged operations distinct from shop publication**
-
-   Do not interpret shop `publish` as platform release activation. Platform-only operations must continue to use platform-role checks. The authoritative minimum authority is:
-
-   ```text
-   platform catalogue/templates/default configuration -> PLATFORM_ADMIN
-   platform release activation/rollback                -> PLATFORM_SUPER_ADMIN
-   global sensitive capability enable/disable          -> PLATFORM_SUPER_ADMIN
-   PlatformAdmin membership/role administration        -> PLATFORM_SUPER_ADMIN
-   global merchant-access override                      -> PLATFORM_SUPER_ADMIN
-   ```
-
-   `requireStudioPermission()` is a legacy platform-action helper. If retained, make its role comparison use the same canonical hierarchy. Do not call it from `requireStudioShopAccess` and do not use its generic `publish` value to authorize shop publication.
-
-7. **Preserve accepted identity semantics exactly**
-
-   Do not alter the accepted Attempt 2 behaviour for:
-
-   ```text
-   one Auth.js Google path
-   development bypass -> PLATFORM_SUPER_ADMIN
-   PlatformAdmin precedence
-   merchant one-time providerSubject binding
-   concurrent first-login single-winner behaviour
-   mixed-subject rejection
-   lastLoginAt update ordering
-   multi-shop merchant access
-   manual grant/update/disable/enable CLI
-   audit durability
-   ```
-
-8. **Required tests — exact regressions**
-
-   Add/modify tests to prove at least:
-
-   ```text
-   platform SUPER_ADMIN + shop VIEWER requirement -> allow
-   platform SUPER_ADMIN + shop ADMIN requirement  -> allow
-   platform ADMIN + shop VIEWER requirement       -> allow
-   platform ADMIN + shop EDITOR requirement       -> allow
-   platform ADMIN + shop ADMIN requirement        -> allow
-   platform ADMIN + shop publish compatibility    -> allow
-
-   merchant ADMIN + own shop ADMIN requirement    -> allow
-   merchant ADMIN + other shop VIEWER requirement -> deny
-   merchant EDITOR + own shop EDITOR requirement  -> allow
-   merchant EDITOR + own shop ADMIN requirement   -> deny
-   merchant VIEWER + own shop VIEWER requirement  -> allow
-   merchant VIEWER + own shop EDITOR requirement  -> deny
-
-   platform ADMIN + platform ADMIN requirement       -> allow
-   platform SUPER_ADMIN + platform ADMIN requirement -> allow
-   platform ADMIN + platform SUPER_ADMIN requirement -> deny
-   merchant ADMIN + platform ADMIN requirement       -> deny
-   ```
-
-   Replace the existing regression that says `platform ADMIN cannot publish` with the correct shop-scoped assertion that platform `ADMIN` **can** satisfy shop `publish`.
-
-   Keep the Attempt 2 PostgreSQL binding/CLI tests and rerun them without weakening or skipping their explicit disposable-PostgreSQL proof.
-
-9. **Deterministic source audit before handoff**
-
-   Run repository searches and record the results in the Completion Report:
+   Run:
 
    ```bash
-   rg -n "studioPlatformPermissionAllowed|studioShopPermissionAllowed|requireStudioShopAccess|requireStudioShopRole|requireStudioPlatformRole|role === 'SUPER_ADMIN'|role === 'ADMIN'" \
-     lib/auth tests/auth-*.test.ts
+   npx vitest run \
+     tests/auth-merchant-access.test.ts \
+     tests/auth-role-requirements.test.ts \
+     tests/auth-platform-admin.test.ts \
+     tests/auth-permissions.test.ts \
+     tests/auth-security-policy.test.ts \
+     --reporter=verbose
    ```
 
-   Inspect every hit. There must be no second task-owned shop authorization matrix and no stale assertion that platform `ADMIN` is below merchant `ADMIN`. Exact-role comparisons retained for identity-shape/adaptation purposes must be listed and justified in the Completion Report.
+   Required result: all five files pass. The current observed baseline is 62 passing tests; if the count changes because of the narrow harness correction, record the actual count rather than hard-coding 62.
 
-10. **Validation and stop condition**
+6. **Run the PostgreSQL proof against the safe target**
 
-    Run the focused auth tests, explicit disposable-PostgreSQL auth tests, targeted ESLint, full typecheck, and `git diff --check`. A known unrelated typecheck baseline may remain nonzero only if no changed/task-owned auth file appears in the diagnostics.
+   With an already-created/migrated disposable local database whose name matches the required prefix, run:
 
-    Update every Work Item, Acceptance Criterion and Validation checkbox truthfully. Record the launcher-resolved parent/implementation worktrees, start-of-attempt synchronization, recursive submodule state, implementation commit and parent report commit.
+   ```bash
+   COMMERCE_AUTH_POSTGRES=1 \
+   COMMERCE_TEST_DATABASE_URL="$COMMERCE_TEST_DATABASE_URL" \
+   npx vitest run \
+     tests/auth-merchant-access-postgres.test.ts \
+     --reporter=verbose
+   ```
 
-    Then set:
+   Required result is exactly:
 
-    ```yaml
-    status: review
-    executor: null
-    claimed_at: null
-    ```
+   ```text
+   Test Files  1 passed (1)
+   Tests       2 passed (2)
+   0 failed
+   0 skipped
+   no hook failure
+   no timeout
+   no immutable-audit deletion error
+   ```
 
-    return the Completion Report to `moda_architect` and **STOP**. Do not start `ARCH-021-COMMERCE-028`.
+   If a safe disposable PostgreSQL target is unavailable, set the task to `blocked`; do not report the PostgreSQL validation as passing or substitute a normal/remote application database.
+
+7. **Run the remaining deterministic validation**
+
+   Run targeted ESLint over the task-owned auth sources/tests, including the new direct-entrypoint regression file, then:
+
+   ```bash
+   rg -n \
+     "studioPlatformPermissionAllowed|studioShopPermissionAllowed|requireStudioShopAccess|requireStudioShopRole|requireStudioPlatformRole|role === 'SUPER_ADMIN'|role === 'ADMIN'" \
+     lib/auth tests/auth-*.test.ts
+
+   npm run typecheck
+   git diff --check
+   ```
+
+   Inspect every `rg` hit. `studioPlatformPermissionAllowed` must remain absent. The exact `role === 'SUPER_ADMIN'` comparison in the centralized effective-role adapter is allowed. Typecheck may remain nonzero only for documented unrelated baseline/sibling diagnostics; no changed/task-owned auth file may appear in the diagnostics.
+
+8. **Reconcile the Completion Report truthfully**
+
+   The current report contains stale Attempt 3 statements about a PostgreSQL timeout and immutable-audit cleanup failure. Replace them with the actual final validation evidence.
+
+   The final Completion Report must include:
+
+   ```text
+   focused authorization suite: all 5 files passed; actual passing-test count
+   PostgreSQL authorization suite: 1 file / 2 passed / 0 failed / 0 skipped
+   targeted ESLint: PASS
+   source audit: PASS with retained exact-role comparisons justified
+   typecheck: only documented unrelated baseline diagnostics, if still nonzero
+   git diff --check: PASS
+   ```
+
+   Add `tests/auth-role-requirements.test.ts` to Files Changed if it is part of the submitted implementation.
+
+   Record the actual Attempt 4 launcher/preparation/claim evidence, implementation commit and parent Completion Report commit. Do not carry forward stale `Attempt 2 claim commit` wording as current-attempt evidence.
+
+9. **Stop condition**
+
+   When all steps above pass, update the implementing-agent-owned task fields/checklists/report, set:
+
+   ```yaml
+   status: review
+   executor: null
+   claimed_at: null
+   ```
+
+   return the task to `moda_architect` and **STOP**. Do not start `ARCH-021-COMMERCE-028`.
 
 ### Reviewed Files
 
+- `lib/auth/role-hierarchy.ts`
 - `lib/auth/merchant-access.ts`
-- `lib/auth/platform-admin.ts`
-- `lib/auth/permissions.ts`
 - `lib/auth/index.ts`
+- `tests/auth-role-requirements.test.ts`
+- `tests/auth-merchant-access-postgres.test.ts`
 - `tests/auth-merchant-access.test.ts`
 - `tests/auth-platform-admin.test.ts`
 - `tests/auth-permissions.test.ts`
 - `tests/auth-security-policy.test.ts`
-- `tests/auth-merchant-access-postgres.test.ts`
-- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
-- this task file and Attempt 2 Completion Report
+- this task file and current Completion Report
 
 ### Validation Reviewed
 
-Attempt 2's 38 focused tests, two explicit disposable-PostgreSQL tests, ESLint, syntax and diff checks are accepted as evidence for the identity-binding/CLI corrections. They do not validate the newly clarified hierarchical authorization rule because the submitted tests explicitly assert the opposite platform-ADMIN shop-publish behaviour. Attempt 3 must run the hierarchy regressions above while preserving the accepted PostgreSQL evidence.
+The developer-provided manual reruns are accepted as evidence that the current hierarchy and PostgreSQL behaviour work: 62 focused authorization tests passed and both PostgreSQL regressions passed. Source inspection confirms the production-entrypoint regression file directly invokes `requireStudioPlatformRole`, `requireStudioShopRole` and `requireStudioShopAccess`, and the PostgreSQL fixture no longer deletes immutable audit rows. The remaining requested changes are test-target safety and the explicit local timeout plus report reconciliation.
 
 ### Architecture Conformance
 
-Partial. Attempt 2 conforms on authentication, PlatformAdmin precedence, merchant subject binding, mixed-subject rejection, multi-shop persistence and manual provisioning. The remaining non-conformance is the authorization ordering: the implementation currently treats platform `ADMIN` as lower than merchant `ADMIN` for shop publication, contrary to the clarified hierarchy.
+The authorization implementation conforms to the clarified ARCH-021 hierarchical model. The remaining correction is validation-harness hardening only; no authorization redesign is requested.
 
 ### Follow-up
 
-Reclaim this same task for Attempt 3. No new task is required. `ARCH-021-COMMERCE-028` remains gated until COMMERCE-025, COMMERCE-026 and this task are Complete.
+Reclaim this same task for the bounded Attempt 4 correction above. `ARCH-021-COMMERCE-028` remains gated until COMMERCE-025, COMMERCE-026 and COMMERCE-027 are architect-accepted Complete.
