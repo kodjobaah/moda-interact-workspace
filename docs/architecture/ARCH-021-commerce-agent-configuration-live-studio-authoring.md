@@ -963,6 +963,13 @@ independent of features.
 
 ## Change History
 
+### 2026-09-24 — COMMERCE-025 Attempt 2 changes requested
+
+- Reviewed implementation `e5c6ed2` with parent report `edd22c18`.
+- Confirmed the reduced DATABASE-002 service implementation now contains most requested semantics: nullable model inheritance reads, deterministic first-write `1 -> 2` CAS creation, real prompt lineage ids, current-template `sourceTemplateId` provenance, parameterized prompt-lineage locking, concurrent operation-receipt reconciliation and the canonical shared logger path.
+- Acceptance remains blocked because the required model/prompt/effective suites are still disabled (`21` skipped tests), both PostgreSQL suites still contain dropped Phase-2 fixtures/fields and were not executed, and the database-unavailable event omits already-known shop correlation on shop-scoped failures.
+- Returned COMMERCE-025 to Ready at `attempt: 2`; COMMERCE-028 remains Pending.
+
 ### 2026-09-24 — COMMERCE-025 Attempt 1 changes requested
 
 - Reviewed implementation `256dbef112ae9f7c7d4301f6603b4ec892972067` with parent report `19e4c3d05ebdd319de2884f4fe4eed4206dfeb5d`.
