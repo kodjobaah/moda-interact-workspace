@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-021
   - ARCH-020-COMMERCE-030
@@ -517,28 +517,42 @@ This task may update/reseed development fixtures. It MUST NOT perform production
 ## Completion Report
 
 ### Status
-Not Started
+Attempt 3 complete; returned to architect review.
 ### Files Changed
-None
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-016`
+
+Changed surfaces: local Commerce tool-definition contracts, publication validation, external response/preview/publication ports, Studio external HTTP editor and tool creation, and focused contract/UI tests. Shared remains untouched at `@modainteract/moda-interact-shared@0.14.2`.
 ### Work Completed
-None
+- Completed the Attempt 3 correction contract: local Commerce authoring consumers now use the nested `execution.request` shape, including Studio creation and editor controls.
+- Added exact request-JavaScript entry-point admission checks and negative controls for imports, async functions, and network APIs.
+- Preserved null-prototype validated mapping copies and declaration-order-safe mapping validation.
+- Added deterministic Policy/Storefront parsing and zero-legacy-import audit coverage.
+- Added explicit local `DIRECT` response handling at runtime/sample boundaries while keeping OBJECT/LIST projection narrowing explicit.
 ### Validation Results
-None
+- `npm run test:arch021-commerce-tool-contract`: 12/12 passed.
+- `npm run test:arch020-external-tools-ui`: 13/13 passed.
+- `npm run test:arch020-external-http`: 13/13 passed.
+- `npm run test:arch020-external-publication`: 12/12 passed.
+- `npm run test:arch020-external-wiring`: 4/4 passed.
+- `npm run lint`: 0 errors, 5 existing warnings.
+- `git diff --check`: passed.
+- Scoped typecheck for the changed Commerce contract/external/Studio modules: clean. Full typecheck still reports unrelated baseline diagnostics, including a missing pre-existing preview HTTP helper, legacy shared-fixture typing, duplicate `productionCodePanel`, and `StudioFailure.message`.
+- Attempt 3 launcher packet: claim commit `18dde9d0c0a6be4c4ec558e500e6eca7eaf8f5d0`; parent head `8b9751cf867dabe4a3c7ce1ce1bc29c2467a1445`; implementation head at start `5f6e014cd4867fe7248fed7dd34d64f00f42332e`; database/submodule commit `98fdf715e54fe6df92ac6951facd104e410068f2`.
 ### Deviations
-None
+The full repository typecheck is not globally clean because of pre-existing diagnostics outside the changed contract path; no unrelated baseline files were modified.
 ### Assumptions
-None
+Request-JavaScript execution remains deferred to COMMERCE-017, and Admin GraphQL compilation remains deferred to COMMERCE-018.
 ### Unresolved Issues
-None
+Architect review should confirm whether the existing baseline typecheck diagnostics must be cleared in a separate task before downstream work proceeds.
 ### Architectural Concerns
-None
+The local response contract includes `DIRECT`; its pass-through behavior is now explicit at the response processor boundary, while visual projection remains restricted to OBJECT/LIST.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Pending architect review
 ### Review Notes
-None
+Attempt 2 corrections were reworked in Attempt 3 and validated with the focused contract, external runtime/publication/wiring, and Studio UI suites above.
 ### Reviewed Files
 None
 ### Validation Reviewed
