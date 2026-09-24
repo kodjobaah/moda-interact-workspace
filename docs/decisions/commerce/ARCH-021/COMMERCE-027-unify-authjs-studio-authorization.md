@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T14:17:56Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-DATABASE-002
@@ -368,11 +368,11 @@ Consumes `CommerceStudioMerchantAccess` from DATABASE-002. No new external auth 
 - [x] `requireStudioPlatformRole`: platform ADMIN satisfies ADMIN but not SUPER_ADMIN; merchants satisfy neither
 - [x] compatibility-wrapper tests prove `requireStudioShopAccess` and existing platform wrappers delegate to canonical hierarchy
 - [x] regression search: no `studioPlatformPermissionAllowed` implementation/export/call remains
-- [x] targeted auth Vitest suite passes: 55 tests
-- [x] disposable PostgreSQL auth/binding tests from Attempt 2 were explicitly run; test execution reached both regressions, but existing immutable-audit cleanup and default timeout prevented a clean pass
+- [x] targeted auth Vitest suite passes: 5 files, 62 tests
+- [x] disposable PostgreSQL auth/binding tests pass: 1 file, 2 tests, 0 failed, 0 skipped, no hook failure or timeout
 - [x] targeted ESLint passes
 - [x] full typecheck run; nonzero result contains no task-owned auth diagnostics
-- [x] `git diff --check` after Attempt 3 changes
+- [x] `git diff --check` after Attempt 4 changes
 
 ## Stop Condition
 
@@ -387,17 +387,21 @@ Authentication proves identity; authorization comes from PlatformAdmin or Mercha
 
 ### Status
 
-Review requested for Attempt 3
+Review requested for Attempt 4
 
 ### Execution Evidence
 
 - Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-027`, branch `task/ARCH-021-COMMERCE-027`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-027`, branch `task/ARCH-021-COMMERCE-027`.
-- Attempt 2 claim commit: `93460e3663590ecc63e79d47e5dfec0a2254432b`.
-- Start-of-attempt preparation synchronization: parent `a546fa126e7df78c621f78364ad745b5c13eeaea`; implementation `ddfa2501d952598511659f5e639a8b13bfabae66`; both were already current, so synchronization was not needed.
+- Attempt 4 launcher claim commit: `23067a4e9ec21a96ffd160eb62f3d7fd2bd08bae`, pushed to `origin/task/ARCH-021-COMMERCE-027`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-027`, branch `task/ARCH-021-COMMERCE-027`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-027`, branch `task/ARCH-021-COMMERCE-027`.
+- Start-of-attempt synchronization: parent remote fast-forward `not-needed`, origin/main `already-current`; implementation remote fast-forward `not-needed`, origin/main `yes`.
 - Recursive submodule synchronization/update passed; database submodule is at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Published implementation commit: `ab6595a86077bdc1ede5925caf7a70ed98f20e1b`, pushed to `origin/task/ARCH-021-COMMERCE-027`.
-- Attempt 3 implementation commit: `4fe2ff4`, pushed to `origin/task/ARCH-021-COMMERCE-027`.
+- Parent synchronization commit: `016f938c0d67c63ebbc1def04d6397d095f85c73`.
+- Attempt 4 implementation commit: `24fb8d8`, pushed to `origin/task/ARCH-021-COMMERCE-027`.
+- Prior accepted implementation commits: `ab6595a86077bdc1ede5925caf7a70ed98f20e1b`, `4fe2ff4`, pushed to `origin/task/ARCH-021-COMMERCE-027`.
 
 ### Files Changed
 
@@ -413,6 +417,7 @@ Review requested for Attempt 3
 - `tests/auth-merchant-access.test.ts`
 - `tests/auth-merchant-access-postgres.test.ts`
 - `lib/auth/role-hierarchy.ts`
+- `tests/auth-role-requirements.test.ts`
 
 ### Work Completed
 
@@ -424,22 +429,23 @@ Review requested for Attempt 3
 - `requireStudioAdmin()` is now a compatibility wrapper over the unified platform-admin guard.
 - Added an operator-only grant/update/disable/enable command with normalized email, exact shop resolution, no provider-subject input, and transactional audit events.
 - Added a real PostgreSQL integration harness covering CLI grant/update/disable/enable audit durability and concurrent merchant subject binding.
+- Hardened the PostgreSQL harness to require a loopback `COMMERCE_TEST_DATABASE_URL` with the exact disposable database prefix, avoid immutable-audit row deletion, and give the CLI lifecycle regression a local 60-second timeout.
 
 ### Validation Results
 
-- `npx vitest run tests/auth-merchant-access.test.ts tests/auth-platform-admin.test.ts tests/auth-permissions.test.ts tests/auth-security-policy.test.ts`: 4 files passed, 55 tests passed.
-- `COMMERCE_AUTH_POSTGRES=1 npx vitest run tests/auth-merchant-access-postgres.test.ts`: both explicit PostgreSQL tests ran; the existing immutable-audit cleanup trigger failed and the first test exceeded the default timeout. This is unrelated to the auth hierarchy change.
-- Targeted ESLint for changed auth modules and tests passed with no warnings.
+- `npx vitest run tests/auth-merchant-access.test.ts tests/auth-role-requirements.test.ts tests/auth-platform-admin.test.ts tests/auth-permissions.test.ts tests/auth-security-policy.test.ts --reporter=verbose`: 5 files passed, 62 tests passed.
+- `COMMERCE_AUTH_POSTGRES=1 COMMERCE_TEST_DATABASE_URL=<validated loopback disposable URL> npx vitest run tests/auth-merchant-access-postgres.test.ts --reporter=verbose`: 1 file passed, 2 tests passed, 0 failed, 0 skipped, with no hook failure, timeout or immutable-audit deletion.
+- Targeted ESLint over task-owned auth sources/tests, including `tests/auth-role-requirements.test.ts` and the PostgreSQL harness: PASS with no diagnostics.
 - `node --check scripts/merchant-studio-access.mjs`: passed.
 - CLI rejects unknown `--providerSubject` before database access.
 - `git diff --check`: passed.
-- Required source audit found no `studioPlatformPermissionAllowed` implementation/export/call and no second task-owned platform-vs-shop matrix. The `role === 'SUPER_ADMIN'` comparison remains only in the canonical role adapter; platform-only permissions still use the centralized comparison.
+- Required source audit found no `studioPlatformPermissionAllowed` implementation/export/call and no second task-owned platform-vs-shop matrix. The `role === 'SUPER_ADMIN'` comparison remains only in the centralized effective-role adapter; platform-only permissions still use the centralized comparison. PASS.
 - `npm run typecheck`: nonzero from existing sibling/baseline diagnostics in `src/commerce/agent-configuration/prompt-service.ts`, `src/commerce/agent-configuration/prompt-template-service.ts`, agent-configuration model/prompt PostgreSQL and production tests, `tests/c20-integration-fixture.test.ts`, `tests/connections-production.test.ts`, `tests/external-tools-ui.test.tsx`, `tests/external-wiring.test.ts`, and `tests/local-external-mcp-diagnostic.test.ts`; no task-owned auth diagnostics remain.
 - `tests/auth-entrypoints.test.ts` retains an unrelated MCP route assertion drift (`createMcpService` expected, route now uses `getCommerceBackend`) and was not changed.
 
 ### Deviations
 
-The PostgreSQL integration test is opt-in and uses an isolated disposable database. The implementation worktree's normal focused run skips it without the opt-in environment, while the explicit Docker-backed run passed both tests.
+The PostgreSQL integration test is opt-in and uses only a validated loopback disposable database selected by `COMMERCE_TEST_DATABASE_URL`; ordinary `DATABASE_URL` is not used to select the test target.
 
 ### Assumptions
 
@@ -447,7 +453,7 @@ Prisma schema/client generation from DATABASE-002 is already available and the i
 
 ### Unresolved Issues
 
-No task-owned unresolved implementation issues. Full-repository typecheck remains blocked by the pre-existing diagnostics documented above; the unrelated MCP entrypoint assertion drift and PostgreSQL immutable-audit cleanup fixture remain outside this task.
+No task-owned unresolved implementation issues. Full-repository typecheck remains blocked by the pre-existing diagnostics documented above; the unrelated MCP entrypoint assertion drift remains outside this task.
 
 ### Architectural Concerns
 
