@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -619,9 +619,58 @@ The local response contract includes `DIRECT`; its pass-through behavior is now 
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 3.
+Accepted — Attempt 4.
 
 ### Review Notes
+#### Attempt 4 review — Accepted — 2026-09-24
+
+Reviewed implementation `12576c0` and parent report `7f35247e` against the
+explicit Attempt 4 correction contract.
+
+Attempt 4 satisfies A3-R1. The exact seven required test boundaries no longer
+import or use Shared `exampleDefinition`; each now consumes the single canonical
+Commerce-local fixture at `tests/fixtures/commerce-tool-definition.ts`. That fixture
+is constructed directly in the local canonical shape and parsed through the local
+`CommerceToolDefinitionSchema`. No flat EXTERNAL_HTTP compatibility adapter was
+introduced.
+
+Attempt 4 satisfies A3-R2. `mapToolArguments()` now has the exact
+`Record<string, unknown>` return contract. The request-JavaScript path still validates
+against the persisted input schema first and then returns the bounded null-prototype
+deep/plain copy. No unchecked cast was added at the executor call site and no
+credential, authority, URL or provider state is injected.
+
+Attempt 4 satisfies A3-R3. Comparing the submitted Attempt 3 and Attempt 4
+`tsconfig.tsbuildinfo` diagnostics shows that all task-owned diagnostics identified
+by the correction contract are gone: there is no remaining
+`mapToolArguments()` unknown-to-record diagnostic and none of the seven migrated
+fixture consumers reports Shared/local or missing canonical `request` incompatibility.
+The remaining diagnostics are the same pre-existing diagnostics already present
+outside this Attempt 4 correction slice, including Agent Configuration, Connections,
+the local MCP diagnostic, StudioWorkspace and existing UI-test diagnostics.
+
+The submitted focused validation reports 12/12 contract tests, 13/13 external HTTP,
+12/12 publication, 4/4 wiring, 13/13 external-tools UI, lint with zero errors and a
+clean `git diff --check`. The seven-suite boundary packet reports 59/61; the two
+failures are the previously documented backend singleton environment assertions.
+Attempt 3 -> Attempt 4 inspection confirms `tests/backend-integration.test.ts`
+changed only by replacing Shared `exampleDefinition` with the local canonical fixture,
+so those two environment assertions are not caused by the fixture migration.
+
+Attempt 4 satisfies A3-R4. The Completion Report records the canonical parent and
+implementation worktrees, matching branches, start synchronization, Attempt 4 claim,
+recursive submodule update, database submodule commit and implementation commit.
+
+The supplied archive does not contain `node_modules`, so Vitest/typecheck were not
+independently rerun by the architect. The implementation diff, focused tests,
+repository audits and before/after TypeScript diagnostic artifacts provide sufficient
+review evidence.
+
+The parent task file also contained stray literal merge-conflict marker lines in an
+older Architect Review tail. Those markers are coordination-document corruption,
+not implementation work; this acceptance reconciliation removes them architect-side
+rather than requiring another repository attempt.
+
 #### Attempt 3 review — explicit Attempt 4 correction contract — 2026-09-24
 
 This block is the complete and authoritative correction contract for Attempt 4.
@@ -1103,53 +1152,54 @@ ownership migration is task-owned and must not be classified as baseline. The tw
 backend singleton environment assertions may remain documented if they reproduce
 unchanged after the corrections and are not caused by the Tool-contract migration.
 
-=======
-Pending architect review
-### Review Notes
-Attempt 2 corrections were reworked in Attempt 3 and validated with the focused contract, external runtime/publication/wiring, and Studio UI suites above.
->>>>>>> origin/main
 ### Reviewed Files
 
-- `src/commerce/tool-definition/contracts.ts`
 - `src/commerce/tool-definition/mappings.ts`
-- `src/commerce/tool-definition/publication.ts`
-- `src/commerce/tool-definition/storage.ts`
-- `src/commerce/tool-definition/index.ts`
-- `src/commerce/execution/executor.ts`
-- `src/commerce/external-http/index.ts`
-- `lib/discovery/schema.ts`
-- `src/commerce/publication/ports.ts`
-- `src/commerce/mcp/ports.ts`
-- `src/commerce/preview/types.ts`
-- `src/commerce/integration/preview/adapters.ts`
-- `src/studio/contracts.ts`
-- `src/studio/external-http/ports.ts`
-- `src/studio/external-http/editor.tsx`
-- `components/studio-workspace.tsx`
+- `tests/fixtures/commerce-tool-definition.ts`
+- `tests/backend-integration.test.ts`
+- `tests/definition-execution.test.ts`
+- `tests/definition-execution-mcp.test.ts`
+- `tests/external-preview.test.ts`
+- `tests/mcp-authorization.test.ts`
+- `tests/mcp-compatibility.test.ts`
+- `tests/mcp-service.test.ts`
 - `tests/arch021-commerce-tool-contract.test.ts`
-- adjacent Tool-definition consumers identified by repository search
+- `tsconfig.tsbuildinfo`
+- Attempt 3 and Attempt 4 submitted snapshots for scoped diff/diagnostic comparison
 
 ### Validation Reviewed
 
-- Submitted `npm run test:arch021-commerce-tool-contract`: 7/7 reported pass.
-- Submitted `npm run test:arch020-external-http`: 13/13 reported pass.
-- Submitted external publication/preview/execution/wiring slices and local MCP
-  diagnostic reviewed as evidence.
-- Submitted backend integration result: 60/62 with two stated environment/baseline
-  singleton assertions.
-- Static source/import review independently identified A1-R1 through A1-R4.
-- The supplied archive does not contain `node_modules`, so Vitest/typecheck were not
-  independently rerun in the review environment.
+- Submitted `npm run test:arch021-commerce-tool-contract`: 12/12 passed.
+- Submitted seven-suite boundary packet: 59/61; two previously documented backend
+  singleton environment assertions remain.
+- Submitted `npm run test:arch020-external-http`: 13/13 passed.
+- Submitted `npm run test:arch020-external-publication`: 12/12 passed.
+- Submitted `npm run test:arch020-external-wiring`: 4/4 passed.
+- Submitted `npm run test:arch020-external-tools-ui`: 13/13 passed.
+- Submitted lint: zero errors; existing warnings only.
+- Submitted `git diff --check`: passed.
+- Independent repository audit: no `exampleDefinition` occurrence remains in the
+  seven required local full-definition test boundaries.
+- Independent production audit: no forbidden Shared full-definition import remains
+  under `src`, `lib` or `components`.
+- Independent Attempt 3 -> Attempt 4 `tsconfig.tsbuildinfo` comparison confirms the
+  task-owned flat-definition and `mapToolArguments()` diagnostics are removed.
 
 ### Architecture Conformance
 
-Changes required. The ownership direction and fail-closed runtime baseline conform,
-but the submitted implementation still has dual Shared/Commerce canonical Tool
-definitions, does not meet R10 request-JS safe-copy semantics, regresses R12 visual
-publication compatibility, and does not yet provide the complete R14 proof.
+Conforms. Commerce owns the persisted Tool authoring/execution definition while
+Shared remains pinned at exact `0.14.2` for genuinely cross-service contracts. There
+is one canonical nested EXTERNAL_HTTP request shape with no compatibility parser.
+Request-JavaScript admission/copying, visual publication compatibility, policy and
+transitional Storefront parsing, MCP projection and fail-closed Phase 3 runtime
+boundaries conform to ARCH-021. COMMERCE-016 introduces no live provider execution,
+database migration, Shared publication, Admin compiler implementation or Phase 3
+authoring UI expansion.
 
 ### Follow-up
 
-Return the same task through `/moda-task ARCH-021-COMMERCE-016`. Preserve
-`attempt: 1`; the next authorized claim increments to Attempt 2. Do not start
-COMMERCE-017/018/020 until COMMERCE-016 is architect-accepted Complete.
+`ARCH-021-COMMERCE-016` is Complete. Its direct dependants are re-gated from their
+authoritative task files. Because all of their remaining dependencies are already
+Complete, `ARCH-021-COMMERCE-017`, `ARCH-021-COMMERCE-018`,
+`ARCH-021-COMMERCE-019` and `ARCH-021-COMMERCE-020` become Ready and may execute
+independently. Do not implicitly start any of them from this review.

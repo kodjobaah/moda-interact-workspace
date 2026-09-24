@@ -116,11 +116,11 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-016](COMMERCE-016-establish-commerce-tool-definition-contract.md) | Establish canonical Commerce-owned Tool-definition contract | Ready | ARCH-020-COMMERCE-021, 030 |
-| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Pending | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
-| [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Pending | COMMERCE-016, ARCH-020-COMMERCE-011 |
-| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth contract and `LIVE_TEST_REQUIRED` publication gate | Pending | COMMERCE-016, ARCH-020-COMMERCE-030 |
-| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring domain from StudioWorkspace | Pending | COMMERCE-016, COMMERCE-005, 006 |
+| [COMMERCE-016](COMMERCE-016-establish-commerce-tool-definition-contract.md) | Establish canonical Commerce-owned Tool-definition contract | Complete | ARCH-020-COMMERCE-021, 030 |
+| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Ready | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
+| [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Ready | COMMERCE-016, ARCH-020-COMMERCE-011 |
+| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth contract and `LIVE_TEST_REQUIRED` publication gate | Ready | COMMERCE-016, ARCH-020-COMMERCE-030 |
+| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring domain from StudioWorkspace | Ready | COMMERCE-016, COMMERCE-005, 006 |
 | [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Pending | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
 | [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Pending | COMMERCE-019, 020, 024 |
 | [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Pending | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
@@ -129,8 +129,8 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
 
 ```text
-Phase 3 entry task: ARCH-021-COMMERCE-016 (moda_commerce)
-After COMMERCE-016 acceptance: COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020 may execute independently.
+COMMERCE-016 is architect-accepted Complete.
+Current independent Ready frontier: COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020.
 ```
 
 ### COMMERCE-013 Attempt 1 architect review — 2026-09-23
