@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-09-23T23:58:49Z
@@ -22,7 +22,7 @@ enables:
   - ARCH-021-COMMERCE-018
   - ARCH-021-COMMERCE-020
 created: 2026-09-23
-updated: 2026-09-23
+updated: 2026-09-24
 ---
 
 # Establish the canonical Commerce-owned Tool definition contract
@@ -500,10 +500,15 @@ Both are already Complete in the Phase 3 baseline.
 
 ## Validation
 
-- [x] `npm run test:arch021-commerce-tool-contract` (7/7)
+- [x] `npm run test:arch021-commerce-tool-contract` (10/10, Attempt 2)
 - [x] `npm run test:arch020-external-http` (13/13)
+- [x] `npm run test:arch020-external-publication` (12/12)
+- [x] `npm run test:arch020-external-wiring` (4/4)
+- [x] `npm run test:arch020-external-tools-ui` (13/13)
 - [ ] `npm run test:arch020-backend-integration` (60/62; 2 existing backend singleton environment assertions fail)
-- [x] targeted lint; full typecheck attempted, with existing Shared/Prisma baseline diagnostics remaining
+- [x] `npm run lint` (0 errors, 5 existing warnings)
+- [ ] full typecheck attempted; stale legacy flat EXTERNAL_HTTP consumers remain outside this task's scoped contract migration
+- [x] source authoring-import audit and `git diff --check`
 - [x] `git diff --check`
 
 ## Stop Condition
@@ -518,6 +523,12 @@ This task may update/reseed development fixtures. It MUST NOT perform production
 
 ### Status
 Ready for architect review.
+
+### Attempt 2 Rework Evidence
+
+Architect Attempt 1 corrections A1-R1 through A1-R5 are applied: Commerce owns the canonical request-construction, response-processing, Admin GraphQL, mapping, publication, storage and descriptor-projection contracts; request JavaScript is rejected from network-capable operations; request-JavaScript arguments are copied into null-prototype structures; OBJECT/LIST publication compatibility is checked against declared output schemas; and the focused migration suite covers all 10 contract cases.
+
+The Shared package remains pinned at `@modainteract/moda-interact-shared@0.14.2` and was not modified. Runtime regression suites for external HTTP execution, publication, wiring and the existing Studio UI pass. Full typecheck still reports legacy root-level EXTERNAL_HTTP fixtures/consumers outside the contract migration slice; no compatibility parser was added because the canonical parser must reject that shape.
 
 ### Implementation
 
