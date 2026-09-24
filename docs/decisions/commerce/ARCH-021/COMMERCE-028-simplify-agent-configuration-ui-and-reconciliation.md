@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -282,9 +282,24 @@ Implementation commit `354c06b` on `task/ARCH-021-COMMERCE-028`:
 
 ### Review Status
 
-Blocked — Attempt 2
+Changes Requested — Attempt 2 (dependency resolved)
 
 ### Review Notes
+
+#### Dependency resolution — 2026-09-24
+
+`ARCH-021-COMMERCE-031` is architect-accepted Complete at Attempt 2. The retained
+configuration read contract now exposes nullable override state together with the
+real persisted `modelEditVersion` / `promptEditVersion`, and exact-shop durable prompt
+lineage can be rediscovered independently of an active pointer.
+
+The blocking prerequisite identified below is resolved. This same task returns to
+`ready` with `attempt: 2`; the next authorized claim becomes Attempt 3.
+
+The existing **Attempt 3 correction contract after COMMERCE-031 completes** below is
+now authoritative. Execute A3-R1 through A3-R6 exactly; do not infer a reduced scope.
+
+#### Historical Attempt 2 block
 
 #### Attempt 2 review — 2026-09-24
 
@@ -574,8 +589,8 @@ required bounded prerequisite.
 
 ### Follow-up
 
-- `ARCH-021-COMMERCE-031` becomes Ready.
-- `ARCH-021-COMMERCE-028` remains Blocked at `attempt: 2`.
+- `ARCH-021-COMMERCE-031` is Complete / Accepted, Attempt 2.
+- `ARCH-021-COMMERCE-028` is Ready at `attempt: 2`; the next authorized claim is
+  Attempt 3 using A3-R1 through A3-R6 above.
 - `ARCH-021-COMMERCE-029` remains Pending.
-- After COMMERCE-031 is accepted Complete, architect must explicitly return
-  COMMERCE-028 to Ready. Do not start COMMERCE-029.
+- Do not start COMMERCE-029.

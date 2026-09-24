@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -415,9 +415,70 @@ None.
 
 ### Review Status
 
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-09-24
+
+Reviewed the submitted Attempt 2 snapshot against the complete Attempt 1 correction
+contract.
+
+Attempt 2 is accepted.
+
+The runtime implementation is unchanged from the already-reviewed Attempt 1 source.
+The only substantive implementation-tree addition is
+`tests/agent-configuration-retained-read.test.ts` (plus regenerated TypeScript build
+metadata). That regression uses one shared mutable `CommerceAgentConfiguration` row
+and both real `ModelConfigurationService` and `PromptConfigurationService`
+instances. It executes the required model and prompt lifecycle on the same retained
+row and proves:
+
+```text
+initial                    model=1 prompt=1
+set model expected=1       model=2 prompt=1
+clear model expected=2     model=3 prompt=1, modelId=null
+set prompt expected=1      model=3 prompt=2
+clear prompt expected=2    model=3 prompt=3, activePromptRevisionId=null
+```
+
+The final retained row remains present. The prompt revision used by the set operation
+is a PUBLISHED revision in the exact SHOP / exact-shop lineage, so the real
+pointer-scope validation is exercised rather than bypassed.
+
+The existing focused regressions still prove retained-null model state, missing
+configuration -> null, and exact-shop prompt-lineage isolation:
+
+```text
+getShopPrompt('shop-1') -> exact SHOP/shop-1 lineage
+getShopPrompt('shop-2') -> null
+```
+
+All Work Items and Acceptance Criteria are reconciled.
+
+The submitted exact focused command reports 3 files / 17 tests passed. Targeted
+ESLint and `git diff --check` passed. Inspection of the submitted
+`tsconfig.tsbuildinfo` shows no semantic diagnostic in the COMMERCE-031 runtime
+read-contract files or `tests/agent-configuration-retained-read.test.ts`. The
+reported typecheck/build failures remain on documented pre-existing preview/UI
+baseline surfaces outside the retained-read contract.
+
+The Completion Report records the exact Attempt 2 parent/implementation worktrees,
+matching task branches, start synchronization, claim evidence, recursive submodule
+materialization, database submodule commit, implementation push parity and clean
+worktrees.
+
+The final handoff names parent branch/report commit `40a2cdec`, while the embedded
+Completion Report records `3f62e276` as the parent report commit. The review archive
+contains no `.git` metadata, so the architect cannot reconstruct the relationship
+between those two parent hashes. The durable task contents, cleared claim state and
+reported push parity are otherwise coherent, so this bookkeeping discrepancy does
+not block acceptance.
+
+This completes the prerequisite identified during COMMERCE-028 Attempt 2 review.
+COMMERCE-028 may now return to Ready for Attempt 3; COMMERCE-029 remains Pending.
+
+#### Historical Attempt 1 Changes Requested
 
 #### Attempt 1 review — 2026-09-24
 
@@ -589,24 +650,37 @@ Then push implementation and parent task branches, return control to `moda_archi
 - `src/studio/agent-configuration/model-server-actions.ts`
 - `src/studio/agent-configuration/prompt-contracts.ts`
 - `src/studio/agent-configuration/prompt-server-actions.ts`
+- `tests/agent-configuration-retained-read.test.ts`
 - `tests/agent-configuration-model.test.ts`
 - `tests/agent-configuration-prompts.test.ts`
 - submitted `tsconfig.tsbuildinfo`
-- Completion Report
+- Attempt 2 Completion Report
 
 ### Validation Reviewed
 
-- Submitted new focused regressions: 2 passed.
-- Submitted model/prompt focused packet: 15 passed with one reported pre-existing template-copy failure.
-- Submitted targeted ESLint: zero errors; two existing warnings.
-- Submitted `git diff --check`: passed.
-- Submitted full typecheck: non-zero; current artifact retains the documented `prompt-service.ts` Prisma-generated-client diagnostic and unrelated baseline diagnostics.
-- Static review confirms the exact required cross-service retained-row sequence was not exercised by the submitted two new tests.
+- Exact focused command: 3 files / 17 tests passed.
+- Targeted ESLint: passed; only the two reported pre-existing helper warnings remain.
+- `git diff --check`: passed.
+- Full typecheck: non-zero only on documented baseline/dependency diagnostics; no
+  semantic diagnostic in COMMERCE-031 read-contract runtime files or the new
+  retained-row regression.
+- Next build: blocked on documented pre-existing missing preview modules outside the
+  COMMERCE-031 read path.
+- Independent Attempt 1 -> Attempt 2 comparison: no runtime source changes; only the
+  required retained-row regression plus regenerated `tsconfig.tsbuildinfo`.
 
 ### Architecture Conformance
 
-Implementation direction conforms. Acceptance is deferred only because the task's required shared-row model/prompt CAS proof and mandatory prepared-execution evidence are incomplete. No architecture redesign is requested.
+Conforms. The reduced Agent Configuration service now exposes the retained nullable
+configuration row and its independent persisted model/prompt CAS versions without
+changing mutation, audit, schema, logging or reconciliation semantics. Durable shop
+prompt lineage is readable by exact SHOP/shopId independently of the active pointer.
+The UI remains outside this task.
 
 ### Follow-up
 
-Return this same task through `/moda-task ARCH-021-COMMERCE-031` for Attempt 2. COMMERCE-028 remains Blocked and COMMERCE-029 remains Pending until COMMERCE-031 is architect-accepted Complete.
+`ARCH-021-COMMERCE-031` is Complete / Accepted at Attempt 2.
+
+Return `ARCH-021-COMMERCE-028` from Blocked to Ready, preserving `attempt: 2` and its
+existing Attempt 3 correction contract. `ARCH-021-COMMERCE-029` remains Pending.
+Do not start either task from this review.
