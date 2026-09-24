@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -320,24 +320,59 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not accepted. The overall direction is correct — one Auth.js/Google identity path, platform-admin precedence, shop-scoped merchant principals and a manual merchant-access command — but the submitted implementation has security/correctness gaps in the merchant subject-binding and authorization paths, and required PostgreSQL validation is incomplete.
+
+1. **Merchant first-login subject binding is not race-safe.** In `auth.ts`, `bindMerchantSubjects` reads the active rows, conditionally updates `providerSubject=NULL`, then returns the *pre-update* `rows.length` without checking the `updateMany` count or re-reading the durable subjects. Two concurrent first logins with different Google subjects can both read unbound rows; after one subject wins, the losing `updateMany` may update zero rows but the loser still returns a positive count and `authorizeGoogleProfile()` treats that login as authorized. This violates R5 and the acceptance criterion that provider subject binds once and cannot be reassigned. Make the transaction prove that every active Google merchant-access row for the normalized email is durably bound to the current subject before it reports success. A losing/conflicting race must deny and must not refresh `lastLoginAt`.
+
+2. **Per-request merchant resolution does not reject a mixed-subject identity set.** `resolveStudioPrincipal()` filters to rows whose subject matches the current session and can authorize one shop even when another active row for the same normalized email is bound to a different subject. R5 establishes one deterministic Google identity across all active rows for that email. If any active Google row has a different non-null subject, resolution must deny with `merchant_identity_conflict` rather than authorize a matching subset.
+
+3. **`requireStudioShopAccess()` broadens existing PlatformAdmin publish permissions.** It returns any `PLATFORM_ADMIN` immediately for every shop permission, including `publish`. Existing Studio authorization makes platform `ADMIN` inspect/edit/preview only and reserves publish/rollback/enable/disable for `SUPER_ADMIN`; changing PlatformAdmin permissions is explicitly out of scope. Preserve that existing platform permission matrix while applying the new merchant VIEWER/EDITOR/ADMIN matrix. Add regressions proving platform `ADMIN` cannot publish, platform `SUPER_ADMIN` can, and merchant `ADMIN` can publish only for its exact shop.
+
+4. **R6's compatibility-wrapper requirement is not implemented.** `lib/auth/platform-admin.ts` still owns a separate `requireStudioAdmin()`/`resolveStudioAdminPrincipal()` authorization path, while `requireStudioPlatformAdmin()` uses the new unified resolver. `requireStudioAdmin()` must become a compatibility wrapper over the unified platform-admin guard (without broadening existing platform-only entry points), so there is one authoritative hosted authorization path rather than two implementations that can drift. Preserve legacy exports/types where needed by callers.
+
+5. **Required validation is incomplete.** The task explicitly requires a focused manual-CLI integration test against disposable PostgreSQL, but the Completion Report states it was not run and every Validation checkbox remains unchecked. Attempt 2 must execute the real grant/update/disable/enable path against isolated PostgreSQL and verify durable merchant-access state plus same-transaction `CommerceAuditEvent` rows. It must also exercise the merchant binding race against the real persistence implementation (or an equivalently deterministic database-backed concurrency test), not only mock `bindMerchantSubjects`.
+
+6. **The Completion Report must be reconciled before resubmission.** Check each Validation item only when actually completed; record any baseline typecheck failures precisely; and add the launcher-resolved dedicated parent/implementation worktree, start-of-attempt synchronization and recursive-submodule evidence required by the task isolation policy.
+
+No work on `ARCH-021-COMMERCE-028` is authorized while this task remains incomplete.
 
 ### Reviewed Files
 
-None
+- `auth.ts`
+- `lib/auth/index.ts`
+- `lib/auth/merchant-access.ts`
+- `lib/auth/platform-admin.ts`
+- `lib/auth/permissions.ts`
+- `lib/auth/security-policy.ts`
+- `lib/auth/audit.ts`
+- `scripts/merchant-studio-access.mjs`
+- `tests/auth-merchant-access.test.ts`
+- `tests/auth-security-policy.test.ts`
+- `tests/auth-platform-admin.test.ts`
+- `tests/auth-entrypoints.test.ts`
+- `database/prisma/schema.prisma`
+- `database/prisma/migrations/20260924103000_arch021_simplify_agent_configuration/migration.sql`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- this task file and Completion Report
 
 ### Validation Reviewed
 
-None
+- Submitted focused result: `34` tests passed across `auth-merchant-access`, `auth-security-policy` and `auth-platform-admin`; source/tests were inspected, but the archive contains no `node_modules`, so Vitest was not independently rerun in this review environment.
+- Submitted targeted ESLint: passed; not independently rerun for the same dependency reason.
+- `node --check scripts/merchant-studio-access.mjs`: submitted as passed; source inspected.
+- `git diff --check`: submitted as passed.
+- Full typecheck: submitted with unrelated existing preview/generated-Prisma diagnostics and no task-owned diagnostics.
+- Required disposable-PostgreSQL CLI integration validation: **not run**.
+- Required durable merchant-binding concurrency behaviour: **not proven** by the submitted mocked tests.
 
 ### Architecture Conformance
 
-Pending
+Partial. The one-Auth.js design, principal shapes, development bypass, platform precedence intent, shop-scoped merchant roles and manual provisioning boundary conform to ARCH-021. Acceptance is blocked by the race in first-login identity binding, mixed-subject authorization gap, PlatformAdmin publish-permission broadening, duplicate legacy/unified platform authorization paths, and incomplete required PostgreSQL validation.
 
 ### Follow-up
 
-None
+Reclaim the same task for Attempt 2. Correct only the auth/authorization and validation issues above; do not start `ARCH-021-COMMERCE-028` or broaden into merchant-facing Studio UI work. After correction, rerun focused auth tests, the disposable-PostgreSQL CLI/binding validations, targeted ESLint/typecheck and `git diff --check`, reconcile the Completion Report, set the task back to `review`, clear `executor`/`claimed_at`, and STOP.
