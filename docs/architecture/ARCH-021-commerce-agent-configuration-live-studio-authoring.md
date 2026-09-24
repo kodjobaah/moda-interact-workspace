@@ -1542,6 +1542,17 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-24 — COMMERCE-033 Attempt 2 changes requested
+
+- Confirmed Attempt 2 source fixes the depth-8 boundary and counts every selected
+  `SelectionNode` for the 100-field browser/compiler parity limit.
+- Returned COMMERCE-033 to Ready only because the required regression evidence is
+  incomplete: the 100/101 test does not exercise browser rejection/prior-tree
+  preservation or genuinely nested ancestor counting, and schema identity reset
+  covers only `schemaHash`.
+- Attempt 3 is bounded to deterministic regression evidence unless those tests
+  expose another source defect. COMMERCE-034 remains Pending.
+
 ### 2026-09-24 — COMMERCE-033 Attempt 1 changes requested
 
 - Accepted the recursive C032-backed browser, lazy type cache and nested selection
