@@ -841,6 +841,7 @@ Collapse/remove:
 - template revision persistence into current template `promptText` plus copy-on-use Agent Prompt revisions;
 - generic payload-hash/stored-result command replay for ordinary PostgreSQL configuration mutations;
 - production Server -> Client function-valued Studio service/port bundles;
+- test-only function/port/service injection props on production React components; automated tests must replace the same named Server Action/module boundaries used by production instead of creating an alternate runtime composition;
 - MCP RSA/JWT/key exchange and **all replacement application-layer MCP credentials**. The existing private service link is the MCP caller trust boundary; Commerce continues to authorize shop/turn/grant/release/tool context from PostgreSQL.
 
 Error rule:
@@ -993,6 +994,20 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-029 Attempt 2 changes requested
+
+- Accepted the Attempt 2 removal of `StudioServices` from `StudioWorkspace`, structured
+  logging of unexpected server failures, bounded client failure-class visibility, and
+  updated named-Server-Action production regressions.
+- Clarified the checkpoint testing invariant with the developer: test helpers/fixtures
+  may remain, but production React/component APIs must not expose alternate
+  function-valued ports or render callbacks solely for tests.
+- Returned COMMERCE-029 to Ready for a bounded Attempt 3 removing the test-only
+  `StudioWorkspace.externalHttpPort`, dead `StudioWorkspace.renderCodePanel`, and
+  `ConnectionsPage.port` seams and migrating tests to the same serializable DTO +
+  named Server Action composition used by production.
+- SYSTEM-TEST-001 remains Pending.
 
 ### 2026-09-24 — COMMERCE-029 Attempt 1 changes requested
 

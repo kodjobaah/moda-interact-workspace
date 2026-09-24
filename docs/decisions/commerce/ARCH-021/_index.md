@@ -158,6 +158,16 @@ ARCH-021-COMMERCE-029
 GATEWAY-001 is architect-accepted Complete. COMMERCE-028 is architect-accepted
 Complete and all COMMERCE-029 dependencies are Complete, so COMMERCE-029 is Ready.
 
+### COMMERCE-029 Attempt 2 changes requested — 2026-09-24
+
+Attempt 2 fixes the original `StudioServices` prop, error visibility/logging, and stale
+production-composition tests. COMMERCE-029 remains **Ready** for Attempt 3 because
+production Client Component APIs still expose alternate function-valued seams used only
+by tests (`StudioWorkspace.externalHttpPort`, `StudioWorkspace.renderCodePanel`, and
+`ConnectionsPage.port`). The developer-confirmed invariant is now explicit: test helpers
+may exist, but tests must mock the same named Server Action/module boundaries production
+uses instead of adding test-only production React props. SYSTEM-TEST-001 remains Pending.
+
 ### COMMERCE-029 Attempt 1 changes requested — 2026-09-24
 
 The production Server/Client function-prop removal is retained, but COMMERCE-029

@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -259,328 +259,328 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 is directionally correct and removes the production Server Component -> Client Component function-bundle composition that caused the original Next.js serialization failure.
+Attempt 2 resolves the substantive Attempt 1 defects:
 
-Accepted in substance:
+- `StudioWorkspace` no longer accepts `StudioServices` / `fixtureAdapter` in its production React props;
+- Studio tests now drive the same named `src/studio/server-actions` boundary through module mocks rather than passing a `StudioServices` object into the production component;
+- unexpected task-owned server exceptions are logged through `@modainteract/moda-interact-shared/logging` with the raw `Error`;
+- task-owned client catches now preserve a bounded thrown failure class rather than silently collapsing arbitrary rejection into an indistinguishable domain result;
+- empty reconciliation catches were removed;
+- Agent Configuration and selected-shop production composition regressions now model the named-Server-Action + serializable-DTO architecture;
+- the submitted expanded focused packet passes 8 files / 69 tests;
+- the reported typecheck/build blockers remain the already-recorded unrelated Commerce preview/integration diagnostics and no Attempt 2-owned diagnostic is reported.
 
-- `ProductionStudioPage` no longer passes `StudioServices`, Agent Configuration action bundles, `ExternalHttpUiPort`, `renderCodePanel`, or another server-created function object into `StudioWorkspace`.
-- production Studio page/detail reads are passed as serializable DTO/result values;
-- production mutations use named Server Actions imported by client domain code;
-- production Connections routes pass serializable initial list/detail values and do not compose/pass a `ConnectionPort`;
-- the production Tools route passes serializable connection/revision catalogue data and the client creates its local External HTTP authoring helper from those DTOs;
-- Preview route composition is serializable;
-- test-only Connection/External HTTP adapters remain available;
-- the submitted changed-file TypeScript surface has no reported task-owned diagnostics;
-- the reported repository-wide typecheck/build blockers match already-recorded Commerce preview/integration baseline failures outside this task-owned changed-file set.
+No further logging/reconciliation redesign is requested.
 
-The task is not yet acceptable because three requirements remain incomplete.
+However, after applying the architecture principle agreed with the developer during review — **tests must exercise the same production composition rather than adding production APIs solely for test injection** — three remaining production seams must be removed before this task can be accepted.
 
-#### 1. R2 is not satisfied: `StudioWorkspace` still accepts a `StudioServices` function bundle
+The distinction is important:
 
-`components/studio-workspace.tsx` removed the old `services` prop but introduced:
+- **Allowed:** helpers, in-memory fixtures, wrappers and state that exist only under `tests/` (or an explicitly test-support module) and are used to configure mocks.
+- **Not allowed:** a prop, branch or exported runtime alias in a production component/module whose only reason to exist is to let tests inject a different execution path.
 
-```ts
-fixtureAdapter?: StudioServices;
-```
+The goal is one production execution model and tests that replace its real module boundaries.
 
-and assigns that function-valued object to module-global `fixtureStudioServices`.
+#### Finding 1 — `StudioWorkspace.externalHttpPort` is a test-only production prop
 
-R2 is explicit: `StudioWorkspace` must no longer accept `StudioServices` as a Client Component prop. Renaming the prop to `fixtureAdapter` does not make the public React boundary serializable.
-
-Test adapters may remain, but they must be injected through a test-only mechanism that does **not** make `StudioServices` part of the production `StudioWorkspace` prop contract.
-
-Acceptable bounded approaches include:
-
-- mock the named Server Action modules in component tests; or
-- introduce a test-only wrapper/context/helper under the testing surface that supplies fixture behavior without adding a function-valued prop to production `StudioWorkspace`.
-
-Do **not** introduce a generic production client-to-server service/port registry.
-
-After the correction:
-
-```text
-components/studio-workspace.tsx
-```
-
-must have no `StudioServices` import required only for React props, and its exported production props must not contain `StudioServices` or an equivalent function bundle.
-
-#### 2. R6 is not satisfied: unexpected exceptions are still swallowed into generic `unknown` / `unavailable`
-
-The task explicitly requires ordinary failures to remain visible and says client catch blocks must not map arbitrary thrown exceptions to `success`, empty state, `unknown`, or `unavailable` without rendering/logging the actual failure class.
-
-Current task-owned production paths still do this.
-
-Examples:
-
-```text
-components/studio-workspace.tsx
-```
-
-`attempt(...)` catches every thrown value and converts it directly to `kind: "unknown"` without preserving/logging the failure class.
-
-```text
-src/studio/connections/connections-ui.tsx
-```
-
-contains:
-
-- mutation catch -> generic `kind: "unknown"`;
-- reconciliation catch -> empty catch / retained operation;
-- credential-status catch -> generic unavailable;
-- connection-detail catch -> generic unavailable.
-
-The server-side production adapters also translate unexpected infrastructure/runtime exceptions without structured logging:
-
-```text
-src/commerce/integration/studio/services.ts
-src/studio/connections/production.ts
-```
-
-This is precisely the failure-obscuring behavior the checkpoint is intended to remove.
-
-Attempt 2 must implement the following deterministic behavior.
-
-**Known typed/domain outcomes**
-
-Preserve existing typed results such as:
-
-```text
-ok
-not-found
-forbidden
-conflict
-unavailable
-unknown
-```
-
-when those are returned deliberately by the domain/service contract.
-
-Do not log ordinary expected business outcomes as errors merely because they are non-OK.
-
-**Unexpected caught server exceptions**
-
-Whenever server-side Studio/Connections code catches an unexpected exception and translates it to a bounded UI result, log the original exception first using the approved shared logger:
+`components/studio-workspace.tsx` still publicly accepts:
 
 ```ts
-import {
-  createLogger,
-  type StructuredLogger,
-} from "@modainteract/moda-interact-shared/logging";
+externalHttpPort?: ExternalHttpUiPort;
 ```
 
-Use the canonical service identity:
+Production `ProductionStudioPage` never passes this prop. Production instead passes the serializable:
 
 ```ts
-createLogger({
-  serviceName: "moda-interact-commerce",
-  environment:
-    process.env.DEPLOYMENT_ENVIRONMENT_NAME ??
-    process.env.NODE_ENV ??
-    "unknown",
-});
-```
-
-The error must be passed as the raw field:
-
-```ts
-logger.error("commerce.studio.action_failed", {
-  operationId: operationId?.slice(0, 128),
-  error,
-});
-```
-
-or, for Connections:
-
-```ts
-logger.error("commerce.studio.connection_action_failed", {
-  operationId: operationId?.slice(0, 128),
-  error,
-});
-```
-
-Do **not** replace the raw error with `error.message`, `String(error)`, JSON serialization, or a locally invented Error serializer. The shared logger already serializes `Error` to bounded `name` + `message`.
-
-Do not log prompt text, tool definitions, credentials, authorization headers, provider payloads, request/response bodies, customer data, or secrets.
-
-A logger failure must not alter business correctness.
-
-Tests should use the shared logger's injected/capture sink where an injectable logger seam is needed; do not mock `console.error` as the logging contract.
-
-**Unexpected client-side Server Action rejection**
-
-Client code must catch as:
-
-```ts
-catch (error)
-```
-
-rather than an empty catch.
-
-The UI does not need to expose the raw server error message. It must, however, preserve/render a bounded failure class, for example:
-
-```text
-Error
-TypeError
-UnknownThrownValue
-```
-
-alongside the existing safe user message, so an arbitrary thrown exception is not indistinguishable from a deliberate typed `unknown`/`unavailable` domain result.
-
-For reconciliation, retain the admitted operation if required, but do not use an empty catch; update the visible diagnostic state with the caught failure class.
-
-Do not add browser-side generic `console.error` logging as a substitute for the server structured logger.
-
-Add focused regressions proving:
-
-- unexpected Studio mutation rejection is not silently converted to an indistinguishable domain `unknown`;
-- unexpected Connection mutation rejection preserves the admitted operation **and** exposes the caught failure class;
-- reconciliation rejection is not swallowed;
-- unexpected Connection read/credential-status rejection exposes the failure class;
-- server-side unexpected translation emits one structured error event containing the raw `Error`;
-- no secret/body payload is included in the structured log.
-
-#### 3. Production-boundary regression coverage is incomplete/stale
-
-`tests/agent-configuration-production.test.tsx` still mocks:
-
-```text
-src/studio/server-services
-createExternalHttpProductionPort
-```
-
-and expects:
-
-```text
-resolveStudioShopSelection(state.services, shopId)
-```
-
-even though the new production composition calls the selected-shop resolver directly through named actions and no longer creates those production function bundles.
-
-That is stale architecture evidence and it was not included in the submitted 59-test focused packet.
-
-Attempt 2 must update the production composition regressions so the tests themselves represent the new architecture.
-
-At minimum, production-boundary tests must prove:
-
-```text
-ProductionStudioPage -> StudioWorkspace
-```
-
-does **not** pass:
-
-```text
-services
-fixtureAdapter
-externalHttpPort
-agentConfigurationActions
-agentConfigurationTemplateActions
-agentConfigurationPromptActions
-renderCodePanel
-```
-
-and for Tools may pass only the serializable:
-
-```text
 externalHttpCatalogue
 ```
 
-plus ordinary scalar/DTO props.
+and `StudioWorkspace` correctly creates the client-local `ExternalHttpUiPort` from that catalogue.
 
-The Agent Configuration production test must no longer mock or assert use of `getStudioServices()`.
+The only callers passing `externalHttpPort` are tests in `tests/external-tools-ui.test.tsx`.
 
-The selected-shop resolver assertion must match the actual one-argument production contract.
+That leaves an alternate function-valued React composition path solely for tests and keeps open the same class of accidental Server -> Client misuse this task exists to eliminate.
 
-If `createExternalHttpProductionPort()` is now dead production composition, either remove/rename that misleading dead production helper/test or rewrite the test so it validates the serializable production catalogue boundary instead. Do not preserve a "production port" test that no production route uses.
+Attempt 3 must:
+
+1. remove `externalHttpPort` from the exported `StudioWorkspace` prop contract;
+2. construct the client-local port only from serializable `externalHttpCatalogue` in production code;
+3. update external-tool component tests to provide the same serializable catalogue path production uses;
+4. where a pure adapter needs direct unit coverage, call `createExternalHttpSamplePort(catalogue)` directly outside React rather than injecting its returned function object through `StudioWorkspace`.
+
+The internal client-to-client `ExternalHttpUiPort` used by `ToolDetail` / `ExternalHttpEditor` may remain because it is a genuine production client abstraction created on the client from serializable state. The prohibited seam is the **public `StudioWorkspace` injection prop**.
+
+#### Finding 2 — `StudioWorkspace.renderCodePanel` is a dead/test-style function prop
+
+`components/studio-workspace.tsx` also publicly accepts:
+
+```ts
+renderCodePanel?: (props: ExternalCodePanelSlotProps) => React.ReactNode;
+```
+
+No production caller supplies it, and the submitted test packet does not require an external caller either. The production JavaScript response panel is already composed internally through the serializable `productionCodePanel` flag plus the client-created External HTTP adapter.
+
+Attempt 3 must remove `renderCodePanel` from the exported `StudioWorkspace` prop contract and remove the dead fallback path:
+
+```ts
+... : renderCodePanel
+```
+
+Do not replace it with another test-only wrapper/context/registry in production code.
+
+The internal `ExternalHttpEditor.renderCodePanel` client-to-client slot may remain if it is genuinely used by production `ToolDetail`; that is not an RSC boundary and is not test-only.
+
+#### Finding 3 — `ConnectionsPage.port` is a test-only alternate execution architecture
+
+`src/studio/connections/connections-ui.tsx` still exports:
+
+```ts
+ConnectionsPage({ port, ... }: { port?: ConnectionPort; ... })
+```
+
+and threads that optional `ConnectionPort` through `ConnectionDetail` and `CredentialPanel`.
+
+Production `ConnectionsRouteClient` never supplies `port`; it always uses the named functions from:
+
+```text
+src/studio/connections/server-actions.ts
+```
+
+Only `tests/connections-ui.test.tsx` supplies `port`.
+
+This means production and tests still have two distinct client execution paths:
+
+```text
+production -> named Server Actions
+tests      -> injected ConnectionPort
+```
+
+Attempt 3 must reduce this to one path:
+
+```text
+production -> named Server Actions
+tests      -> mock the same named Server Action module
+```
+
+Specifically:
+
+1. remove `port?: ConnectionPort` from `ConnectionsPage`;
+2. remove the `port` prop from `ConnectionDetail` and `CredentialPanel`;
+3. remove client branches of the form:
+
+   ```ts
+   port ? port.someOperation(...) : namedServerAction(...)
+   ```
+
+   and invoke the named Server Action directly;
+4. keep `ConnectionPort` as a server-side/domain adapter where it is genuinely useful (`production.ts`, server actions, pure fixture/unit tests);
+5. update `tests/connections-ui.test.tsx` so its mocked `src/studio/connections/server-actions` functions delegate to a test-owned `createConnectionFixtures()` instance or equivalent fixture state;
+6. do not add `NODE_ENV === "test"`, global runtime registries, test-only React context, or another production injection prop.
+
+A local helper inside `tests/connections-ui.test.tsx` that installs a fixture behind mocked named actions is acceptable because it is test code, not a production API.
+
+#### Finding 4 — remove production exports that exist only as fixture aliases
+
+`src/studio/external-http/ports.ts` currently exports:
+
+```ts
+createExternalHttpFixturePort()
+createExternalHttpCataloguePort()
+```
+
+Neither is used by production runtime code. Production uses:
+
+```ts
+createExternalHttpSamplePort(catalogue)
+```
+
+Attempt 3 must remove those two test-only aliases from the production module.
+
+Tests must:
+
+- create test-owned serializable `ExternalHttpCatalogue` DTOs;
+- use `externalHttpCatalogue` when rendering `StudioWorkspace`;
+- call the real production `createExternalHttpSamplePort(catalogue)` directly for pure adapter tests.
+
+The synthetic sample-processing behavior inside `createExternalHttpSamplePort` remains production authoring behavior for this phase and is **not** to be removed.
+
+Do not broaden this correction into deleting every existing fixture/in-memory helper in the repository. Test fixture implementations are allowed; they simply must not force alternate production React/runtime APIs.
+
+### Required production-surface invariant
+
+After Attempt 3 the following must be true:
+
+```text
+ProductionStudioPage
+    -> serializable StudioWorkspace props only
+    -> named Server Actions for server interaction
+
+ConnectionsRouteClient
+    -> serializable ConnectionsPage props only
+    -> named Connections Server Actions
+
+tests
+    -> same production components
+    -> same named-action imports, replaced by module mocks where deterministic fixtures are needed
+```
+
+Production React public props must not contain a function/port/service value solely to support tests.
+
+### Deterministic source audit
+
+Before returning the task, run:
+
+```bash
+rg -n \
+  "fixtureAdapter|externalHttpPort\\?:|renderCodePanel\\?:|port\\?: ConnectionPort" \
+  components/studio-workspace.tsx \
+  src/studio/connections/connections-ui.tsx
+```
+
+Expected result:
+
+```text
+no matches
+```
+
+Also run:
+
+```bash
+rg -n \
+  "createExternalHttpFixturePort|createExternalHttpCataloguePort" \
+  src
+```
+
+Expected result:
+
+```text
+no matches
+```
+
+The internal production uses of `ExternalHttpUiPort`, `ConnectionPort`, and `ExternalHttpEditor.renderCodePanel` are not forbidden when they are genuine runtime abstractions and are not exposed as test-only React injection seams.
+
+### Test requirements
+
+Update the focused tests so they exercise the single production composition.
+
+At minimum the focused packet must include:
+
+```text
+tests/agent-configuration-production.test.tsx
+tests/connections-production.test.ts
+tests/connections-route-composition.test.tsx
+tests/connections-ui.test.tsx
+tests/external-tools-production.test.ts
+tests/external-tools-ui.test.tsx
+tests/selected-shop-route.test.tsx
+tests/studio-workspace.test.tsx
+tests/studio-services-errors.test.ts
+```
+
+Requirements for that packet:
+
+- `StudioWorkspace` tests configure `InMemoryStudioServices` only behind mocked named Studio Server Actions.
+- External-tool React tests do not pass `externalHttpPort`; they pass a serializable catalogue.
+- Connections React tests do not pass `ConnectionPort`; they configure mocked named Connections Server Actions.
+- Production composition regressions continue proving server pages/routes do not forward function-valued service/port props.
+- Existing unexpected-failure-class and shared-logger regressions continue to pass.
+- No test uses a production-only `NODE_ENV === "test"` branch.
+
+### Task-state/report reconciliation
+
+The implementing agent owns the task checklists. Attempt 2 returned with every Work Item, Acceptance Criterion and Validation item still unchecked even though the Completion Report says most are satisfied.
+
+Attempt 3 must reconcile those checkboxes honestly:
+
+- mark an item `[x]` only when the final Attempt 3 implementation and required validation proves it;
+- leave required typecheck/build items unchecked only if the repository baseline genuinely prevents them, and record the exact unchanged baseline diagnostics;
+- do not return to review with the entire checklist unchecked.
 
 ### Reviewed Files
 
 - `components/production-studio-page.tsx`
 - `components/studio-workspace.tsx`
 - `components/unavailable-studio-workspace.tsx`
-- `app/agent-configuration/page.tsx`
-- `app/connections/page.tsx`
-- `app/connections/[id]/page.tsx`
-- `app/preview/page.tsx`
+- `src/commerce/integration/studio/services.ts`
 - `src/studio/server-actions.ts`
-- `src/studio/server-services.ts`
-- `src/studio/selected-shop.ts`
 - `src/studio/connections/connections-route-client.tsx`
 - `src/studio/connections/connections-ui.tsx`
 - `src/studio/connections/server-actions.ts`
 - `src/studio/connections/production.ts`
+- `src/studio/connections/fixtures.ts`
 - `src/studio/external-http/ports.ts`
 - `src/studio/external-http/editor.tsx`
-- `src/commerce/integration/studio/services.ts`
 - `tests/agent-configuration-production.test.tsx`
+- `tests/connections-production.test.ts`
 - `tests/connections-route-composition.test.tsx`
 - `tests/connections-ui.test.tsx`
 - `tests/external-tools-production.test.ts`
 - `tests/external-tools-ui.test.tsx`
+- `tests/selected-shop-route.test.tsx`
 - `tests/studio-workspace.test.tsx`
+- `tests/studio-services-errors.test.ts`
 - task Completion Report
 - parent ARCH-021 checkpoint state
 
 ### Validation Reviewed
 
-Submitted evidence:
+Submitted Attempt 2 evidence:
 
 ```text
-focused packet: 5 files / 59 tests passed
-npm run lint: PASS with 8 unrelated warnings
+focused expanded tests: 8 files / 69 tests passed
+pnpm lint: PASS (0 errors; unrelated existing warnings)
 git diff --check: PASS
 ```
 
-The submitted full typecheck/build failures are consistent with previously recorded Commerce missing-preview/integration diagnostics outside the 14-file task implementation set. No changed-file typecheck diagnostic was reported.
+The reported repository typecheck/build blockers are the documented missing preview modules / unrelated baseline test diagnostics, with no Attempt 2-owned diagnostics reported.
 
-The review archive does not contain `node_modules`, so the architect did not independently rerun Vitest/ESLint/Next build from the archive.
+The review archive does not contain `node_modules`, so the architect could not independently rerun Vitest/ESLint/build from this archive.
 
 ### Architecture Conformance
 
 Partial.
 
-The production Server/Client function-prop removal is substantially correct, but the Client Component public contract still contains `StudioServices` through `fixtureAdapter`, unexpected failures are still being collapsed without the required structured logging / visible failure class, and a production-composition regression test still encodes the old service-port architecture.
+The original Server Component -> Client Component serialization defect is fixed and the error/logging correction is conformant. The remaining non-conformance is narrower: some production Client Component APIs still contain alternate function-valued execution seams solely for tests.
+
+This review adopts the developer-confirmed testing invariant:
+
+> Test-only helpers are normal; test-only **production APIs** are not. Tests should replace the same module boundaries production uses rather than adding an alternate runtime composition to production components.
 
 ### Follow-up
 
-Reclaim this same task as Attempt 2.
+Reclaim this same task as Attempt 3.
 
-Perform **only** the bounded corrections below. Do not redesign Studio visuals, Tool algorithms, Connections domain semantics, Agent Configuration behavior, preview runtime, or Phase-3 contracts.
+Implement only the test/runtime-boundary corrections above. Preserve the accepted Attempt 2 logging, error behavior, serializable server composition and domain behavior.
 
-1. Remove `fixtureAdapter?: StudioServices` from `StudioWorkspace` production React props.
-2. Move fixture service injection to a test-only mechanism or mock the named Server Action imports directly.
-3. Preserve local/test `ExternalHttpUiPort` and `ConnectionPort` adapters only where they do not cross a production Server Component -> Client Component boundary.
-4. Add approved shared structured logging for unexpected server-side Studio/Connections exceptions before translating them to bounded UI results. Pass the raw `Error` field.
-5. Change task-owned client catches to retain/render a bounded actual failure class instead of silently converting arbitrary thrown failures to indistinguishable `unknown`/`unavailable`.
-6. Remove empty reconciliation catches.
-7. Update stale production-composition tests, especially `tests/agent-configuration-production.test.tsx`.
-8. Add/adjust regressions for the failure behavior above.
-9. Re-run a focused packet that includes at least:
+Do not:
 
-   ```text
-   tests/agent-configuration-production.test.tsx
-   tests/connections-route-composition.test.tsx
-   tests/connections-ui.test.tsx
-   tests/external-tools-production.test.ts
-   tests/external-tools-ui.test.tsx
-   tests/studio-workspace.test.tsx
-   ```
+- redesign Studio visuals;
+- change Tool/Connection business semantics;
+- remove genuine server-side/domain interfaces;
+- remove genuine production client-local External HTTP abstractions;
+- create a generic port registry;
+- create a production test context/provider;
+- add `NODE_ENV === "test"` runtime behavior;
+- repair unrelated preview/typecheck/build baseline debt.
 
-   Additional directly affected tests may be added.
+After implementation:
 
-10. Run targeted ESLint for every changed source/test file.
-11. Run repository typecheck/build as required by the task. If the result still matches the already-recorded unrelated Commerce baseline, record the exact current diagnostics and confirm zero diagnostics in Attempt 2 changed files. Do not fix unrelated preview/integration baseline debt.
-12. Run `git diff --check`.
-13. Check every satisfied Work Item, Acceptance Criterion and Validation item in the task file. Do not return with the entire checklist unchecked.
-14. Record the Attempt 2 launcher-prepared parent/implementation worktree evidence, synchronization/base evidence, recursive database submodule evidence, implementation commit, parent report commit, and final clean/upstream branch state.
-15. Set the task to:
+1. run the required focused packet;
+2. run targeted ESLint for every changed file;
+3. run repository typecheck/build as required by the task and classify only the already-documented unrelated baseline diagnostics;
+4. run the deterministic source audits above;
+5. run `git diff --check`;
+6. reconcile Work Items / Acceptance Criteria / Validation checkboxes;
+7. record Attempt 3 launcher-prepared parent/implementation worktrees, start synchronization/base evidence, recursive database-submodule evidence, implementation commit, parent report commit and final clean/upstream branch state;
+8. set:
 
    ```yaml
    status: review
    executor: null
    claimed_at: null
-   attempt: 2
+   attempt: 3
    ```
 
-16. Return to `moda_architect` and STOP. Do not start Phase-3 follow-on work or `ARCH-021-SYSTEM-TEST-001`.
+9. return to `moda_architect` and STOP.
 
-`ARCH-021-SYSTEM-TEST-001` remains Pending while COMMERCE-029 is not Complete.
+`ARCH-021-SYSTEM-TEST-001` remains Pending until COMMERCE-029 is architect-accepted Complete.
