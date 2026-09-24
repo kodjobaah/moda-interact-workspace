@@ -144,9 +144,10 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-025](COMMERCE-025-simplify-agent-configuration-services.md) | Simplify Agent Configuration services and reconciliation | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Complete | DATABASE-002, COMMERCE-008, 015 |
 | [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Complete | DATABASE-002 |
-| [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Ready | COMMERCE-025, 026, 027, 011..014 |
+| [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Ready | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
 | [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Pending | COMMERCE-028, COMMERCE-001..006 |
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
+| [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Complete | COMMERCE-025 |
 
 Current checkpoint frontier:
 
@@ -154,6 +155,23 @@ Current checkpoint frontier:
 ARCH-021-COMMERCE-028
 ARCH-021-GATEWAY-001
 ```
+
+COMMERCE-031 is architect-accepted Complete. COMMERCE-028 is Ready for Attempt 3;
+COMMERCE-029 remains Pending.
+
+### COMMERCE-031 Attempt 2 accepted — 2026-09-24
+
+COMMERCE-031 is **Complete / Accepted, Attempt 2**. The exact shared retained-row
+model+prompt CAS regression executes and passes, all acceptance criteria are
+reconciled, and the Attempt 2 launcher/worktree packet is recorded. Runtime source
+remained unchanged from Attempt 1. COMMERCE-028 is returned to **Ready** at Attempt 2
+for its already-defined Attempt 3 UI/reconciliation correction contract; COMMERCE-029
+remains Pending. Current independent checkpoint frontier: COMMERCE-028 plus
+GATEWAY-001.
+
+### COMMERCE-031 Attempt 1 validation/evidence correction — 2026-09-24
+
+COMMERCE-031's runtime read contract is retained, but the task returns to **Ready** at Attempt 1 because its submitted two-test packet does not execute the mandatory single-retained-row model + prompt CAS sequence and its Completion Report omits the launcher-prepared execution packet. Attempt 2 is test/report focused; no runtime redesign is requested. COMMERCE-028 remains **Blocked, Attempt 2** and COMMERCE-029 remains Pending.
 
 ### Checkpoint frontier reconciled after BACKGROUND-001 acceptance — 2026-09-24
 

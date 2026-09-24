@@ -892,14 +892,15 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
-| ARCH-021-COMMERCE-028 | moda_commerce | Ready | COMMERCE-025, 026, 027, 011..014 |
+| ARCH-021-COMMERCE-028 | moda_commerce | Ready | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
+| ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-028`. GATEWAY-001 is architect-accepted Complete. `ARCH-021-SYSTEM-TEST-001` remains Pending until the full checkpoint implementation dependency set is Complete, including COMMERCE-028 and COMMERCE-029.
+Current checkpoint frontier: `ARCH-021-COMMERCE-028` and `ARCH-021-GATEWAY-001`. COMMERCE-031 is architect-accepted Complete; COMMERCE-028 is Ready for Attempt 3 and COMMERCE-029 remains Pending. BACKGROUND-001 acceptance satisfies the remaining GATEWAY-001 dependency.
 
 ### Phase 4 — live single-tool testing
 
@@ -992,6 +993,18 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-031 Attempt 2 accepted
+
+- Accepted the retained nullable Agent Configuration read contract with persisted,
+  independent model/prompt CAS versions and exact-shop durable prompt-lineage lookup.
+- Attempt 2 uses one shared retained row and both real model/prompt services to prove
+  the required model/prompt `1 -> 2 -> 3` CAS sequence without cross-counter mutation.
+- Runtime source is unchanged from Attempt 1; Attempt 2 adds only the missing proof
+  plus regenerated typecheck metadata.
+- Marked COMMERCE-031 Complete and returned COMMERCE-028 to Ready at Attempt 2 for
+  its existing Attempt 3 correction contract. COMMERCE-029 remains Pending.
+- Current independent checkpoint frontier: COMMERCE-028 plus GATEWAY-001.
 
 ### 2026-09-24 — BACKGROUND-001 Attempt 2 accepted
 
