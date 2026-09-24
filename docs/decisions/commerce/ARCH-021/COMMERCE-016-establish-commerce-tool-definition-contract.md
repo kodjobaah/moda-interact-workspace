@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-09-24T00:15:55Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-COMMERCE-021
@@ -561,9 +561,261 @@ Task status is `review`, with `executor: null` and `claimed_at: null`. Control i
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 2.
+Changes Requested — Attempt 3.
 
 ### Review Notes
+#### Attempt 3 review — explicit Attempt 4 correction contract — 2026-09-24
+
+This block is the complete and authoritative correction contract for Attempt 4.
+Do not infer additional work from chat history. Do not implement COMMERCE-017,
+COMMERCE-018 or COMMERCE-020 while executing these corrections.
+
+Attempt 3 successfully completed the contract/schema semantics requested previously:
+the named Studio/UI consumers use the Commerce-owned definition; EXTERNAL_HTTP uses
+the canonical nested `execution.request`; persisted request JavaScript is restricted
+to the synchronous `function buildRequest({ args })` entrypoint; unsupported
+export/import/async/network forms are covered; transitional Storefront and policy
+definitions remain parseable; and the deterministic production-import audit exists.
+
+Only A3-R1 through A3-R4 below remain.
+
+##### A3-R1 — replace the Shared full-definition test fixture at every local persisted-definition boundary
+
+**Files that MUST be inspected and changed if they still import/use Shared
+`exampleDefinition`:**
+
+```text
+tests/backend-integration.test.ts
+tests/definition-execution.test.ts
+tests/definition-execution-mcp.test.ts
+tests/external-preview.test.ts
+tests/mcp-authorization.test.ts
+tests/mcp-compatibility.test.ts
+tests/mcp-service.test.ts
+```
+
+Create exactly one Commerce-local canonical full-definition fixture under:
+
+```text
+tests/fixtures/commerce-tool-definition.ts
+```
+
+The fixture MUST:
+
+1. import `CommerceToolDefinitionSchema` and `CommerceToolDefinition` from
+   `../../src/commerce/tool-definition`;
+2. construct the persisted Tool definition directly in Commerce canonical shape;
+3. parse the fixture through `CommerceToolDefinitionSchema.parse(...)`;
+4. export a typed `CommerceToolDefinition`;
+5. preserve the Storefront/policy behaviour needed by the existing tests;
+6. NOT import, spread, cast or normalize Shared `exampleDefinition`;
+7. NOT add a legacy flat EXTERNAL_HTTP parser or compatibility adapter.
+
+Use this local fixture anywhere the value is assigned to, or passed through, one of
+these Commerce-owned full-definition boundaries:
+
+```text
+CommerceToolDefinition
+CommerceToolDefinitionSchema
+AuthorizedToolCall.definition
+McpAuthorizationSnapshot.definitions
+savedTools.load(...).definition
+publication/preview/execution definition inputs
+createExecutableRegistry(...).isAvailable(...)
+```
+
+Shared `exampleTurn`, `exampleGrant`, `exampleManifest`, canonical response-contract
+fixtures and other genuinely cross-service fixtures MAY remain imported from Shared.
+
+**Required source audit after the edit:**
+
+```bash
+rg -n \
+  "exampleDefinition" \
+  tests/backend-integration.test.ts \
+  tests/definition-execution.test.ts \
+  tests/definition-execution-mcp.test.ts \
+  tests/external-preview.test.ts \
+  tests/mcp-authorization.test.ts \
+  tests/mcp-compatibility.test.ts \
+  tests/mcp-service.test.ts
+```
+
+Expected result:
+
+```text
+NO MATCHES
+```
+
+If a test still needs a name to call `tools/call`, read it from the Commerce-local
+fixture, not from Shared.
+
+**Required typecheck result for this correction:**
+
+After A3-R1, the full typecheck MUST contain no diagnostic in the files above whose
+message says, or whose causal chain says:
+
+```text
+Property 'request' is missing
+root-level EXTERNAL_HTTP path/query is not assignable to canonical EXTERNAL_HTTP
+Shared CommerceToolDefinition is not assignable to local CommerceToolDefinition
+Map<..., Shared definition> is not assignable to McpAuthorizationSnapshot.definitions
+```
+
+These diagnostics are task-owned. They are not permitted to remain as baseline.
+
+##### A3-R2 — give `mapToolArguments()` an exact `Record<string, unknown>` return contract
+
+Change:
+
+```text
+src/commerce/tool-definition/mappings.ts
+```
+
+`mapToolArguments()` MUST have this public contract:
+
+```ts
+export function mapToolArguments(
+  definition: CommerceToolDefinition,
+  raw: unknown,
+): Record<string, unknown>
+```
+
+Do not solve the error with an unchecked cast at the executor call site.
+
+Preserve this exact runtime order:
+
+```text
+1. compile/validate `raw` against definition.inputSchema;
+2. if EXTERNAL_HTTP + JAVASCRIPT:
+     return a null-prototype deep/plain copy of the validated TOP-LEVEL object;
+3. otherwise map the appropriate persisted mapping;
+4. never inject credentials, shop authority, headers, URLs or provider state.
+```
+
+Update the private copy helper so its typing proves the top-level return value is a
+record while still recursively copying nested objects/arrays. The existing
+null-prototype runtime assertions must remain green.
+
+After this edit the full typecheck MUST NOT report the current task-owned error in:
+
+```text
+src/commerce/execution/executor.ts
+```
+
+equivalent to:
+
+```text
+Type 'unknown' is not assignable to type 'Record<string, unknown>'
+mapped = mapToolArguments(definition, call.arguments)
+```
+
+Do not weaken `compileSubset(...).parse(raw)` and do not add `as Record<string,
+unknown>` to `executor.ts` merely to silence TypeScript.
+
+##### A3-R3 — deterministic validation commands and pass/fail rules
+
+Run from the canonical Attempt 4 implementation worktree:
+
+```bash
+npm run test:arch021-commerce-tool-contract
+
+npx vitest run \
+  tests/backend-integration.test.ts \
+  tests/definition-execution.test.ts \
+  tests/definition-execution-mcp.test.ts \
+  tests/external-preview.test.ts \
+  tests/mcp-authorization.test.ts \
+  tests/mcp-compatibility.test.ts \
+  tests/mcp-service.test.ts
+
+npm run test:arch020-external-http
+npm run test:arch020-external-publication
+npm run test:arch020-external-wiring
+npm run test:arch020-external-tools-ui
+
+npm run lint
+npm run typecheck
+git diff --check
+```
+
+Also rerun the deterministic ownership audit already introduced by COMMERCE-016.
+
+**Attempt 4 is NOT ready for review if `npm run typecheck` still contains either:**
+
+```text
+A. a missing canonical `execution.request` / Shared-vs-local full-definition error
+   caused by the files listed in A3-R1; or
+
+B. the `mapToolArguments()` unknown-to-Record error described in A3-R2.
+```
+
+Other typecheck failures may be reported as baseline only when the Completion Report
+names the exact file/error and demonstrates it is outside the files/symbols changed
+or migrated by COMMERCE-016.
+
+The two previously documented backend singleton/environment assertions may remain
+documented only if they reproduce unchanged and are not caused by the local Tool
+contract or fixture migration.
+
+##### A3-R4 — exact Attempt 4 execution/report evidence
+
+Before returning to architect review, update this task file with the exact prepared
+Attempt 4 packet. The Completion Report MUST record:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-016
+implementation branch = task/ARCH-021-COMMERCE-016
+start-of-attempt parent synchronization evidence
+start-of-attempt implementation synchronization evidence
+Attempt 4 claim commit / claim evidence
+recursive submodule update evidence
+database submodule commit
+implementation commit
+parent report commit
+all commands from A3-R3 with pass/fail counts
+remaining full-typecheck diagnostics, if any, classified by exact file
+```
+
+Do not reuse Attempt 1/2/3 launcher values and do not invent missing values.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+executor: null
+claimed_at: null
+attempt: 4
+```
+
+##### Attempt 4 stop condition
+
+When and only when:
+
+```text
+A3-R1 complete
+AND A3-R2 complete
+AND all task-owned typecheck diagnostics described above are gone
+AND required focused/regression validation has been run
+AND Attempt 4 launcher/report evidence is complete
+```
+
+then:
+
+```text
+finish Completion Report
+set status: review
+clear executor / claimed_at
+push implementation branch
+push parent task branch
+return control to moda_architect
+STOP
+```
+
+Do not begin COMMERCE-017, COMMERCE-018, COMMERCE-020 or any other follow-on task.
+
 #### Attempt 2 review — 2026-09-24
 
 Reviewed the submitted Attempt 2 snapshot for implementation `5f6e014` and parent
