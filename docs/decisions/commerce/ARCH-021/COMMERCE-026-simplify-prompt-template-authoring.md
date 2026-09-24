@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-002
@@ -253,24 +253,56 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not accepted. The revision-lifecycle removal is directionally correct, but the submitted implementation does not yet satisfy the checkpoint's audit/reconciliation, explicit-error or exact UI contracts. Reclaim the same task for Attempt 2 and make only the bounded corrections below.
+
+1. **Persist `operationId` in the canonical audit correlation column.** `PromptTemplateService.command()` currently looks up `CommerceAuditEvent.id = operationId` and creates the receipt with `id: operationId`, while DATABASE-002 introduced `CommerceAuditEvent.operationId` specifically for reconciliation. New template/category mutations must write `operationId: input.operationId` atomically with the business mutation and must not overload the audit primary key as the correlation mechanism. Duplicate detection/reconciliation must query the `operationId` column. Add a regression proving one committed template mutation is discoverable by `CommerceAuditEvent.operationId` and that the audit row may keep its normal independent `id`.
+
+2. **Align template mutation results with the COMMERCE-025 explicit-error rules referenced by R4.** The current template contract still exposes `kind: conflict`, `CONFLICTING_REPLAY` and `OPERATION_RECONCILIATION_REQUIRED`, and the catch block maps every unexpected exception to `DATABASE_UNAVAILABLE`. Remove replay semantics. A duplicate committed operation must report `OPERATION_ALREADY_COMMITTED`; CAS must report `CAS_CONFLICT`; recognized Prisma connection/initialization failures may report retryable `DATABASE_UNAVAILABLE`; unexpected failures must become non-retryable `INTERNAL_ERROR` and be logged with bounded correlation metadata through the approved shared structured logger. Do not classify arbitrary programming/constraint failures as database unavailability.
+
+3. **Make template enabled-state editing actually persist.** `PromptTemplateLibrary` currently renders an `enabled` checkbox and includes it in local `draft`, but `updateTemplate` does not accept or persist `enabled`, so clicking **Save template** silently leaves the durable enabled state unchanged. Use the existing `setTemplateEnabled` CAS operation as an explicit enable/disable control (or an equally coherent single-CAS design that preserves the R1 surface). Do not allow that action to discard independently dirty prompt/metadata edits. Add a focused UI/service regression proving the enabled state changes durably and editVersion advances exactly once.
+
+4. **Finish the task-owned removal of template-revision identity from the UI.** `platform-prompt-configuration.tsx` still includes `sourceTemplateRevisionId` in its draft input shape and still renders template-revision provenance in Agent Prompt revision history. C026 must stop requesting or displaying a template revision id and use only current `promptText` plus `sourceTemplateId`. Do **not** modify COMMERCE-025-owned prompt-service internals merely to satisfy this correction; COMMERCE-025 remains responsible for replacing its legacy prompt-service/contract references when it executes. C026's Completion Report must not claim those sibling-owned service references are already removed.
+
+5. **Update the focused regressions to prove the simplified semantics rather than the old replay model.** In particular, `agent-configuration-templates-postgres.test.ts` still expects two concurrent uses of one operation id to return identical `ok` results, which contradicts the no-result-replay checkpoint. Replace those expectations with the new committed-operation/reconciliation contract. Strengthen the direct `promptText` CAS unit test so it asserts the actual `updateMany.data.promptText`, one edit-version increment, and the returned updated value rather than returning the fixture's unchanged `Current text`. Add coverage for the enabled-state correction and remaining UI provenance removal.
+
+6. **Reconcile the Completion Report/workflow evidence.** Record the launcher-resolved dedicated parent and implementation worktrees, start-of-attempt synchronization heads, recursive submodule evidence, final implementation commit/push and parent report commit/push. The current report contains none of the mandatory prepared-worktree evidence. For typecheck, identify the exact remaining diagnostics and their owning sibling/baseline rather than describing all generated Prisma/integration errors generically as unrelated.
+
+The current production `StudioWorkspace` function-valued service props and the legacy COMMERCE-025 prompt-service schema references are not correction work for this task: COMMERCE-029 and COMMERCE-025 respectively own those boundaries. Do not broaden Attempt 2 into those tasks.
 
 ### Reviewed Files
 
-None
+- `src/commerce/agent-configuration/prompt-template-service.ts`
+- `src/studio/agent-configuration/template-contracts.ts`
+- `src/studio/agent-configuration/template-server-actions.ts`
+- `src/studio/agent-configuration/prompt-template-library.tsx`
+- `src/studio/agent-configuration/platform-prompt-configuration.tsx`
+- `components/production-studio-page.tsx`
+- `tests/agent-configuration-templates.test.ts`
+- `tests/agent-configuration-template-server-actions.test.ts`
+- `tests/agent-configuration-template-ui.test.tsx`
+- `tests/agent-configuration-platform-prompt-ui.test.tsx`
+- `tests/agent-configuration-templates-postgres.test.ts`
+- `tests/agent-configuration-production.test.tsx`
+- DATABASE-002 Prisma schema/migration and COMMERCE-025/026 task contracts
+- task Completion Report
 
 ### Validation Reviewed
 
-None
+- Submitted focused validation: 14 tests reported passed.
+- Submitted production composition test: reported passed.
+- Submitted targeted ESLint and `git diff --check`: reported passed.
+- PostgreSQL template concurrency suite was explicitly skipped in the Completion Report.
+- Repository-wide typecheck remains non-passing; source inspection confirms at least some stale prompt-service Prisma references belong to pending COMMERCE-025, but the C026 report must enumerate rather than generically waive the diagnostics.
+- The supplied review archive does not include `node_modules`, so the test commands were inspected from source/report rather than rerun in this review environment.
 
 ### Architecture Conformance
 
-Pending
+Not yet accepted. The direct-current-template model and revision-UI removal conform in principle, but audit correlation currently bypasses `CommerceAuditEvent.operationId`, the mutation error/replay contract still implements pre-simplification semantics, enabled-state editing is non-functional, and task-owned UI still exposes `sourceTemplateRevisionId`.
 
 ### Follow-up
 
-None
+Return `ARCH-021-COMMERCE-026` to `ready` with `attempt: 1`, `executor: null`, and `claimed_at: null`. The next authorized claim becomes Attempt 2. `ARCH-021-COMMERCE-028` remains Pending; do not start it. COMMERCE-025 and COMMERCE-027 remain independently executable according to their own state.

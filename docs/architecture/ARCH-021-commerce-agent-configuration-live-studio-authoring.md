@@ -963,6 +963,15 @@ independent of features.
 
 ## Change History
 
+### 2026-09-24 — COMMERCE-026 Attempt 1 changes requested
+
+- Retained the direct `CommercePromptTemplate.promptText` authoring direction and removal of template revision lifecycle/UI.
+- Returned COMMERCE-026 to Ready because template mutations use `CommerceAuditEvent.id` instead of the DATABASE-002 `operationId` correlation field, retain pre-simplification replay/error semantics, and classify arbitrary failures as `DATABASE_UNAVAILABLE`.
+- Required the visible template enabled control to persist through CAS; the submitted checkbox is currently ignored by `updateTemplate`.
+- Required removal of remaining C026-owned `sourceTemplateRevisionId` UI references while leaving COMMERCE-025-owned prompt-service migration to COMMERCE-025.
+- Required focused regressions to adopt `OPERATION_ALREADY_COMMITTED`/read-only reconciliation rather than identical successful result replay, plus mandatory launcher/worktree evidence in the Completion Report.
+- COMMERCE-028 remains Pending; COMMERCE-025 and COMMERCE-027 remain independently executable.
+
 ### 2026-09-24 — DATABASE-002 Attempt 2 accepted
 
 - Accepted implementation `f2629f1` with task report `dde2e33` after the Attempt 1 migration-execution corrections.
