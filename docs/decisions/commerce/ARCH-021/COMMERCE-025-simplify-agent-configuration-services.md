@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T12:47:15Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-DATABASE-002
@@ -366,6 +366,53 @@ Implementation commit `256dbef112ae9f7c7d4301f6603b4ec892972067` contains exactl
 ### Architectural Concerns
 
 - None identified for the bounded task. Prompt-template replay remains owned by COMMERCE-026 and was not altered.
+
+## Attempt 2 Publication
+
+### Status
+
+Ready for Review. Attempt 2 remains on the existing mirrored task branches; no re-claim, reset, main merge, force-push, or downstream task was started.
+
+### Correction Mapping
+
+- R1/R2/R3/R4: retained reduced configuration reads/writes, explicit mutation errors, operation receipts, duplicate-operation detection, and shared logger database-unavailable mapping in `model-service.ts` and `prompt-service.ts`.
+- R5: retained nullable model reads, deterministic first-write CAS baseline `1`, version `2` creation, clear-with-row-retained semantics, and independent model version updates.
+- R6/R7: retained nullable prompt pointer reads, prompt-lineage identity from the joined revision, template copy by current `sourceTemplateId`, parameterized prompt-row locking, and read-only reconciliation.
+- R8: retained independent shop/platform effective resolution and fail-closed explicit invalid configuration behavior.
+- Contract/UI correction: removed obsolete generation/template-revision fields from the effective/model/prompt contracts and platform prompt action call sites.
+
+### Implementation Publication
+
+Implementation repository: `moda-interact-commerce` worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-025`.
+
+Commit: `e5c6ed2` (`fix commerce configuration reconciliation corrections`), pushed to `origin/task/ARCH-021-COMMERCE-025`; it contains only these seven task-owned files:
+
+- `src/commerce/agent-configuration/effective-configuration.ts`
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `src/studio/agent-configuration/effective-contracts.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/platform-prompt-configuration.tsx`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+
+Launcher/worktree evidence: implementation branch `task/ARCH-021-COMMERCE-025` is the canonical worktree branch; recursive submodule status is `database 0a8d3b9feade69690b6c1e33aeda051ea588bd45` at its recorded commit, and no submodule gitlink was staged.
+
+### Attempt 2 Validation
+
+- `npm run prisma:generate`: passed; Prisma Client 6.19.3 generated from `database/prisma/schema.prisma`.
+- Required focused command `npm exec vitest run tests/agent-configuration-model.test.ts tests/agent-configuration-prompts.test.ts tests/agent-configuration-effective.test.ts tests/agent-configuration-reconciliation.test.ts tests/agent-configuration-reduced.test.ts`: exited 0, but only 2 files/6 tests passed and 3 files/21 tests were skipped because the legacy model/prompt/effective suites remain `describe.skip`; this is an unresolved task-local coverage gap, not a pass claim.
+- Required targeted `npx eslint` over the changed service/contracts/action/test set: passed with exit 0.
+- `git diff --check`: passed with exit 0 before implementation publication.
+- `npm run typecheck`: failed with exactly 85 errors in 16 files. The task-adjacent baseline failures include dropped Prisma delegates and legacy `generationId`, `sourceTemplateRevisionId`, nullable first-write CAS, `kind:'unknown'`, and old replay expectations in `tests/agent-configuration-model.test.ts`, `tests/agent-configuration-prompts.test.ts`, `tests/agent-configuration-effective.test.ts`, `tests/agent-configuration-model-postgres.test.ts`, `tests/agent-configuration-prompts-postgres.test.ts`, and related UI fixtures. Other failures are outside this task in existing integration/connection/UI suites.
+- PostgreSQL validation was not run because no disposable DATABASE-002 database URL was supplied; it remains developer-owned evidence per the task and live-validation policy.
+
+### Unresolved Gaps
+
+The three required model/prompt/effective suites and both PostgreSQL suites still contain legacy skipped or dropped-model fixtures in the committed Attempt 1 tree. The implementation branch is published for architect review with this exact limitation recorded; no claim is made that the full Attempt 2 acceptance criteria passed.
+
+### Branch Metadata
+
+Parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-025`, branch `task/ARCH-021-COMMERCE-025`. Parent report status is `review`, `executor: null`, `claimed_at: null`, `attempt: 2`.
 
 ## Architect Review
 
