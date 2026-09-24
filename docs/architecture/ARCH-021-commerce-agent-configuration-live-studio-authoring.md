@@ -858,10 +858,10 @@ Checkpoint tasks:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-DATABASE-002 | moda_database | Ready | DATABASE-001 |
-| ARCH-021-COMMERCE-025 | moda_commerce | Pending | DATABASE-002, COMMERCE-007, 009, 010 |
-| ARCH-021-COMMERCE-026 | moda_commerce | Pending | DATABASE-002, COMMERCE-008, 015 |
-| ARCH-021-COMMERCE-027 | moda_commerce | Pending | DATABASE-002 |
+| ARCH-021-DATABASE-002 | moda_database | Complete | DATABASE-001 |
+| ARCH-021-COMMERCE-025 | moda_commerce | Ready | DATABASE-002, COMMERCE-007, 009, 010 |
+| ARCH-021-COMMERCE-026 | moda_commerce | Ready | DATABASE-002, COMMERCE-008, 015 |
+| ARCH-021-COMMERCE-027 | moda_commerce | Ready | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Ready | ARCH-020-COMMERCE-024 |
@@ -962,6 +962,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — DATABASE-002 Attempt 2 accepted
+
+- Accepted implementation `f2629f1` with task report `dde2e33` after the Attempt 1 migration-execution corrections.
+- Confirmed migration-local handling of the pre-existing immutable audit and prompt-revision triggers permits deterministic backfill while restoring runtime immutability before migration completion.
+- Confirmed the redundant audit actor-admin FK is not recreated and the predecessor FK remains authoritative.
+- Accepted executable fail-closed PostgreSQL fresh and seeded-upgrade rehearsals proving exact model/prompt edit-version backfill, template-content/source-template migration, audit operation IDs, prompt-scope and merchant-identity guards, pre/post audit immutability and removal of the five obsolete persistence tables.
+- Marked DATABASE-002 Complete and promoted COMMERCE-025, COMMERCE-026 and COMMERCE-027 to Ready. COMMERCE-028 remains Pending on those three Commerce tasks.
 
 ### 2026-09-23 — COMMERCE-012 Attempt 3 accepted
 ### 2026-09-23 - COMMERCE-013 Attempt 5 accepted

@@ -44,6 +44,8 @@ COMMERCE-007 and COMMERCE-008 are now independently Ready because their durable 
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [DATABASE-002](DATABASE-002-collapse-agent-configuration-and-add-merchant-studio-access.md) | Collapse Agent Configuration persistence, retain template categories, add merchant Studio access | Ready | DATABASE-001 |
+| [DATABASE-002](DATABASE-002-collapse-agent-configuration-and-add-merchant-studio-access.md) | Collapse Agent Configuration persistence, retain template categories, add merchant Studio access | Complete | DATABASE-001 |
 
-DATABASE-002 is the Database simplification frontier. It replaces the fragmented platform/shop selection/pointer/template-revision persistence while preserving existing data and published prompt revisions.
+DATABASE-002 Attempt 2 is architect-accepted Complete. The executable fresh and seeded-upgrade PostgreSQL rehearsals prove the simplified schema, exact Phase-2 backfills, migration-local immutability-trigger handling, final prompt/merchant guards, restored audit immutability and removal of the five obsolete persistence tables.
+
+The Database checkpoint has no remaining executable task. `ARCH-021-COMMERCE-025`, `ARCH-021-COMMERCE-026` and `ARCH-021-COMMERCE-027` are now Ready.
