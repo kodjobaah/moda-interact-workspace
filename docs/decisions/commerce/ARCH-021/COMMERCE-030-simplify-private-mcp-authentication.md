@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-024
 enables:
@@ -40,32 +40,35 @@ Coordinator:
 
 ## Objective
 
-Remove RSA/JWT assertion authentication from the Commerce MCP endpoint and replace it with **no application-layer caller credential at all**. The existing private service link is the caller trust boundary. Preserve a bounded request-context header and every PostgreSQL-backed shop/turn/grant/release/tool authorization check.
+Remove RSA/JWT verification and every application-layer caller credential from the private Commerce MCP endpoint. Accept only the bounded `X-Moda-Commerce-Context` request context from the existing private service link while preserving authoritative PostgreSQL shop/turn/grant/release/tool authorization and bounded failure semantics.
 
 ## Context
 
 The Commerce MCP endpoint is not a public API. Gateway/Render topology exposes it only over the private service path used by Background. ARCH-020 added RS256 signing, key distribution, `kid` rotation and JWT claim validation on top of that private link. That machinery is not required for the agreed development architecture and must not be replaced with a bearer token, API key, shared secret or another key exchange.
 
-This task removes **caller authentication**, not business authorization. Commerce must continue to reject stale/mismatched conversation, shop, recovery, inbound-version, grant, release and tool context using PostgreSQL state.
+The private service link is the caller trust boundary. The context header remains untrusted lookup/authorization context: Commerce must continue to derive environment locally and verify authoritative shop, conversation, turn, lease, grant, release, manifest and tool state from PostgreSQL before exposing or executing capabilities.
 
 ## Scope
 
-Primary files:
+Primary repository-owned files include:
 
 ```text
+.env.example
+docs/commerce-backend-integration.md
+docs/runtime-compatibility.md
+lib/server/config.ts
+package.json / package-lock.json
+scripts/clean-clone.sh
+scripts/readiness-local-smoke.mjs
+src/commerce/integration/backend.ts
+src/commerce/integration/backend/authorization.ts
 src/commerce/mcp/authentication.ts
+src/commerce/mcp/authorization.ts
 src/commerce/mcp/ports.ts
 src/commerce/mcp/service.ts
-src/commerce/integration/backend.ts
-lib/server/config.ts
-.env.example
-docs/runtime-compatibility.md
-generate-commerce-assertion-keys.sh          # delete
 tests/*mcp*.test.ts
-tests/health.test.ts
 tests/local-external-mcp-diagnostic.test.ts
-scripts/readiness-local-smoke.mjs
-scripts/clean-clone.sh
+relevant health/backend/external-wiring tests
 ```
 
 Modify equivalent existing files only when repository naming differs. Do not create a second MCP authentication module.
@@ -198,12 +201,12 @@ with zero JWT/key/token configuration.
 
 ## Work Items
 
-- [ ] Replace assertion verification with bounded context parsing.
-- [ ] Rename local assertion-only types to request-context terminology.
-- [ ] Remove RSA/JWT imports/config/scripts/env requirements.
-- [ ] Remove assertion-expiry deadline dependency.
-- [ ] Preserve DB authorization checks unchanged in substance.
-- [ ] Update health/readiness/MCP tests and local diagnostic.
+- [x] Replace assertion verification with bounded context parsing.
+- [x] Rename local assertion-only types to request-context terminology.
+- [x] Remove RSA/JWT imports/config/scripts/env requirements.
+- [x] Remove assertion-expiry deadline dependency.
+- [x] Preserve DB authorization checks unchanged in substance.
+- [x] Update health/readiness/MCP tests and local diagnostic.
 
 ## Interfaces / Contracts
 
@@ -227,21 +230,21 @@ There is deliberately no application-layer caller credential.
 
 ## Acceptance Criteria
 
-- [ ] Commerce MCP has no runtime RSA/JWT verification.
-- [ ] Commerce MCP requires no token/API key/shared secret.
-- [ ] Missing/malformed/oversized context is rejected explicitly.
-- [ ] DB-backed turn/grant/shop/tool authorization remains intact.
-- [ ] Local end-to-end MCP diagnostic passes without keys or tokens.
-- [ ] No new public MCP route is introduced.
+- [x] Commerce MCP has no runtime RSA/JWT verification.
+- [x] Commerce MCP requires no token/API key/shared secret.
+- [x] Missing/malformed/oversized context is rejected explicitly.
+- [x] DB-backed turn/grant/shop/tool authorization remains intact.
+- [x] Local end-to-end MCP diagnostic passes without keys or tokens.
+- [x] No new public MCP route is introduced.
 
 ## Validation
 
-- [ ] MCP context parsing tests
-- [ ] MCP authorization tests
-- [ ] health/config tests
-- [ ] local external MCP diagnostic
-- [ ] targeted ESLint/typecheck
-- [ ] `git diff --check`
+- [x] MCP context parsing tests
+- [x] MCP authorization tests
+- [x] health/config tests (health origin assertion remains a documented baseline mismatch)
+- [x] local external MCP diagnostic
+- [x] targeted ESLint/typecheck (lint passed; repository typecheck is blocked by unrelated existing errors)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -255,58 +258,108 @@ The private service link authenticates network placement. Commerce still authori
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `lib/server/config.ts`
+- `src/commerce/integration/backend/authorization.ts`
+- `tests/mcp-service.test.ts`
+- `.env.example`
+- `README.md`
+- `docs/commerce-backend-integration.md`
+- `docs/runtime-compatibility.md`
 
 ### Work Completed
 
-None
+- Removed raw `DATABASE_URL`/`REDIS_URL` endpoint and parsed-URL logging from configuration parsing; no replacement secret logging was added.
+- Added production authorization-boundary translation for known `LifecycleError` codes to bounded `McpError` responses, preserving `FORBIDDEN`, `STALE_TURN`, `INCOMPATIBLE_VERSION`, `UNAVAILABLE`, and related known outcomes.
+- Preserved fail-closed `UNAVAILABLE` behavior for unexpected resolver/storage failures.
+- Added adapter-to-service coverage proving a shop/conversation ownership denial remains `FORBIDDEN` rather than becoming generic 503, while an unexpected storage error remains `UNAVAILABLE`.
+- Removed the orphan RSA key example and stale signed-context/RSA readiness guidance from Commerce-owned documentation.
+- Preserved the accepted context-only private MCP flow, DB-backed authorization, local ten-second deadline, and diagnostic lifecycle.
 
 ### Validation Results
 
-None
+- Launcher evidence: prepared execution was claimed for Attempt 2 with `execution_state=claimed`, dependency gate passed, parent head `30949d2671b2b3f85f0a740508191a44884efc87`, implementation head `fd281e0e92914378cb911d4539ab5f9c4b9ec629`, canonical worktrees supplied by launcher, and recursive submodules ready with database at `98fdf715e54fe6df92ac6951facd104e410068f2`.
+- Final implementation commit `e9c7c85009552463f9447475072e9bbc6f2ff433` was pushed to `origin/task/ARCH-021-COMMERCE-030`; final parent report commit is recorded below and was pushed to the same mirrored branch in the parent workspace repository.
+- `npm run test -- tests/mcp-service.test.ts tests/mcp-authorization.test.ts`: passed, 2 files / 19 tests.
+- `npm run test -- tests/mcp-service.test.ts tests/mcp-authorization.test.ts tests/mcp-compatibility.test.ts tests/auth-entrypoints.test.ts`: MCP/authorization/compatibility files passed, 3 files / 26 tests; `tests/auth-entrypoints.test.ts` has one pre-existing assertion mismatch expecting route source text `createMcpService` although the current route delegates through `getCommerceBackend().mcp`.
+- `npm run diagnose:arch020-external-mcp:local`: passed end to end; persisted connection -> credential -> tool -> preview -> publish -> capability -> release -> grant -> tools/list -> tools/call lifecycle passed, and cleanup reported zero owned Docker resources.
+- `npm run lint`: passed with 0 errors and 6 pre-existing warnings; no new task-owned diagnostics.
+- `npm run typecheck`: blocked by existing unrelated diagnostics in preview route imports, Studio components, agent-configuration effective configuration, and one agent-configuration test; no changed-file diagnostics were reported.
+- `npm run build`: blocked by the same pre-existing missing preview modules in `app/api/studio/code-response/validate/route.ts`; code-runtime packaging/smoke and Prisma generation passed before Next compilation.
+- `git diff --check`: passed.
+- Commerce-owned stale-authentication scan for `COMMERCE_ASSERTION`, `MCP_ASSERTION`, RSA public-key, signed-context, assertion verifier/importer, and key-generation references: no matches.
 
 ### Deviations
 
-None
+- The implementation push helper rejected the local upstream-name mismatch; the exact command `git push origin HEAD:refs/heads/task/ARCH-021-COMMERCE-030` published successfully.
+- The repository-wide typecheck/build and one entrypoint assertion remain blocked by pre-existing baseline issues documented above; the focused changed-slice tests and lint are clean.
 
 ### Assumptions
 
-None
+- The launcher-provided worktree, synchronization, dependency, and submodule evidence is authoritative for Attempt 2 and was not redundantly recreated.
+- The private service link remains the caller trust boundary; no replacement credential or public MCP route was introduced.
 
 ### Unresolved Issues
 
-None
+- Architect/developer follow-up remains for the documented repository typecheck/build baseline and the stale `auth-entrypoints` source-text assertion.
 
 ### Architectural Concerns
 
-None
+- None introduced. The four Architect Review corrections are implemented in the files above and covered by focused adapter/service tests plus local end-to-end diagnostic evidence.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 satisfies the bounded correction contract from Attempt 1 and the original private-MCP simplification requirements.
+
+- `lib/server/config.ts` no longer logs raw/parsed `DATABASE_URL` or `REDIS_URL` values, so task-owned configuration does not emit credential-bearing endpoints.
+- The production authorization adapter maps known `LifecycleError` authorization-domain codes to bounded `McpError` results before they reach the MCP service while unexpected resolver/storage failures fail closed as `UNAVAILABLE`.
+- Focused adapter-to-service regressions prove a `FORBIDDEN` ownership denial remains HTTP 403/`FORBIDDEN` and an unexpected storage failure remains HTTP 503/`UNAVAILABLE`.
+- Commerce-owned environment/runtime/readiness documentation no longer instructs operators to configure RSA assertion keys or retain a signed-context check. Unrelated Auth.js Studio JWT/session behavior is untouched.
+- The accepted private-link request remains context-only: no `Authorization` header, bearer token, API key, shared secret, RSA/JWT verification or caller-supplied expiry/deadline was reintroduced.
+- Existing PostgreSQL shop/turn/grant/release/tool authorization and the local ten-second execution deadline remain in the request path.
+- The Completion Report now records launcher-resolved worktree isolation/synchronization/submodule evidence, final implementation commit `e9c7c85009552463f9447475072e9bbc6f2ff433`, pushed-branch evidence, focused validation and the accepted non-blocking repository baselines.
+
+The stale `tests/auth-entrypoints.test.ts` route-source assertion remains non-blocking: it asserts literal source text `createMcpService` although the route now delegates through `getCommerceBackend().mcp`; the production MCP route behavior is covered by the focused MCP suite and local persisted external-MCP diagnostic.
 
 ### Reviewed Files
 
-None
+- `lib/server/config.ts`
+- `src/commerce/integration/backend/authorization.ts`
+- `src/commerce/mcp/authentication.ts`
+- `src/commerce/mcp/authorization.ts`
+- `src/commerce/mcp/ports.ts`
+- `src/commerce/mcp/service.ts`
+- `tests/mcp-service.test.ts`
+- `.env.example`
+- `README.md`
+- `docs/commerce-backend-integration.md`
+- `docs/runtime-compatibility.md`
+- task Completion Report and launcher/worktree evidence
 
 ### Validation Reviewed
 
-None
+- Focused MCP/authorization/compatibility suite: 26 tests passed.
+- Local persisted external-MCP diagnostic: passed end to end with clean owned-resource cleanup.
+- Lint: 0 errors; submitted warnings are pre-existing.
+- `git diff --check`: passed.
+- Repository-wide typecheck/build blockers remain documented unrelated baseline conditions and introduce no task-owned diagnostics.
+- Commerce-owned stale RSA/assertion/signed-context scan: no remaining task-owned matches.
 
 ### Architecture Conformance
 
-Pending
+Accepted. The implementation conforms to the ARCH-021 private-link/context-only caller-trust decision while retaining durable PostgreSQL authorization and bounded failure semantics. It introduces no replacement application-layer credential and no public MCP exposure.
 
 ### Follow-up
 
-None
+`ARCH-021-BACKGROUND-001` is now Ready because its sole dependency, COMMERCE-030, is Complete.
+
+`ARCH-021-GATEWAY-001` remains Pending until BACKGROUND-001 is Complete.

@@ -16,4 +16,4 @@ Coordinator:
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-simplify-commerce-mcp-client-authentication.md) | Remove MCP assertion signing and send private-link context only | Pending | ARCH-021-COMMERCE-030 |
+| [BACKGROUND-001](BACKGROUND-001-simplify-commerce-mcp-client-authentication.md) | Remove MCP assertion signing and send private-link context only | Ready | ARCH-021-COMMERCE-030 |
