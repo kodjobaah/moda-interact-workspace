@@ -244,12 +244,12 @@ with zero JWT/key/token configuration.
 
 ## Work Items
 
-- [ ] Replace assertion verification with bounded context parsing.
-- [ ] Rename local assertion-only types to request-context terminology.
-- [ ] Remove RSA/JWT imports/config/scripts/env requirements.
-- [ ] Remove assertion-expiry deadline dependency.
-- [ ] Preserve DB authorization checks unchanged in substance.
-- [ ] Update health/readiness/MCP tests and local diagnostic.
+- [x] Replace assertion verification with bounded context parsing.
+- [x] Rename local assertion-only types to request-context terminology.
+- [x] Remove RSA/JWT imports/config/scripts/env requirements.
+- [x] Remove assertion-expiry deadline dependency.
+- [x] Preserve DB authorization checks unchanged in substance.
+- [x] Update health/readiness/MCP tests and local diagnostic.
 
 ## Interfaces / Contracts
 
@@ -273,21 +273,21 @@ There is deliberately no application-layer caller credential.
 
 ## Acceptance Criteria
 
-- [ ] Commerce MCP has no runtime RSA/JWT verification.
-- [ ] Commerce MCP requires no token/API key/shared secret.
-- [ ] Missing/malformed/oversized context is rejected explicitly.
-- [ ] DB-backed turn/grant/shop/tool authorization remains intact.
-- [ ] Local end-to-end MCP diagnostic passes without keys or tokens.
-- [ ] No new public MCP route is introduced.
+- [x] Commerce MCP has no runtime RSA/JWT verification.
+- [x] Commerce MCP requires no token/API key/shared secret.
+- [x] Missing/malformed/oversized context is rejected explicitly.
+- [x] DB-backed turn/grant/shop/tool authorization remains intact.
+- [x] Local end-to-end MCP diagnostic passes without keys or tokens.
+- [x] No new public MCP route is introduced.
 
 ## Validation
 
-- [ ] MCP context parsing tests
-- [ ] MCP authorization tests
-- [ ] health/config tests
-- [ ] local external MCP diagnostic
-- [ ] targeted ESLint/typecheck
-- [ ] `git diff --check`
+- [x] MCP context parsing tests
+- [x] MCP authorization tests
+- [x] health/config tests (health origin assertion remains a documented baseline mismatch)
+- [x] local external MCP diagnostic
+- [x] targeted ESLint/typecheck (lint passed; repository typecheck is blocked by unrelated existing errors)
+- [x] `git diff --check`
 
 ## Stop Condition
 
