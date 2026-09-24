@@ -864,12 +864,12 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-027 | moda_commerce | Pending | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
-| ARCH-021-COMMERCE-030 | moda_commerce | Ready | ARCH-020-COMMERCE-024 |
-| ARCH-021-BACKGROUND-001 | moda_background | Pending | COMMERCE-030 |
+| ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
+| ARCH-021-BACKGROUND-001 | moda_background | Ready | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Initial independent frontier: `ARCH-021-DATABASE-002` and `ARCH-021-COMMERCE-030`.
+Current checkpoint frontier: `ARCH-021-DATABASE-002` and `ARCH-021-BACKGROUND-001`.
 
 ### Phase 4 — live single-tool testing
 
@@ -1232,3 +1232,13 @@ independent of features.
 - Submitted focused MCP suite (26 tests), local persisted external-MCP diagnostic, lint and diff checks passed; unrelated repository typecheck and health-origin baseline issues remain non-blocking.
 - Returned COMMERCE-030 to Ready for a bounded correction because task-owned config currently logs raw database/Redis endpoint values, known production authorization-domain failures can be collapsed to generic `UNAVAILABLE`, and runtime/env guidance still contains stale RSA/signed-context wording.
 - BACKGROUND-001 and GATEWAY-001 remain Pending until the private-MCP simplification dependencies are architect-accepted Complete.
+
+### 2026-09-24 — COMMERCE-030 Attempt 2 accepted
+
+- Accepted implementation `e9c7c85009552463f9447475072e9bbc6f2ff433` with submitted parent report `3ded199e35f3d40ccfa038dba80d46c71c51c835`.
+- Confirmed task-owned configuration no longer logs raw database/Redis endpoint values.
+- Confirmed known production authorization-domain failures preserve bounded MCP codes while unexpected resolver/storage failures remain fail-closed `UNAVAILABLE`.
+- Confirmed Commerce-owned RSA assertion/signed-context configuration and readiness guidance is removed without altering unrelated Studio Auth.js session behavior.
+- Confirmed the private MCP remains context-only over the private service link with server-derived environment, local ten-second tool deadline and PostgreSQL shop/turn/grant/release/tool authorization intact.
+- Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
+- Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.

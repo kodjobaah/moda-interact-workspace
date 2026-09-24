@@ -146,14 +146,18 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Pending | DATABASE-002 |
 | [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Pending | COMMERCE-025, 026, 027, 011..014 |
 | [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Pending | COMMERCE-028, COMMERCE-001..006 |
-| [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Ready | ARCH-020-COMMERCE-024 |
+| [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
 
-Independent initial frontier:
+Current checkpoint frontier:
 
 ```text
 ARCH-021-DATABASE-002
-ARCH-021-COMMERCE-030
+ARCH-021-BACKGROUND-001
 ```
+
+### COMMERCE-030 Attempt 2 accepted — 2026-09-24
+
+COMMERCE-030 is **Complete**. Attempt 2 removes secret-bearing configuration logging, preserves typed MCP authorization-domain failures through the production adapter, keeps unexpected storage/runtime failures fail-closed as `UNAVAILABLE`, reconciles Commerce-owned RSA/signed-context operational guidance, and records the required launcher/worktree/commit/push evidence. The private MCP remains context-only over the private service link with PostgreSQL shop/turn/grant/release/tool authorization intact. `ARCH-021-BACKGROUND-001` is promoted to **Ready**; GATEWAY-001 remains Pending on BACKGROUND-001.
 
 ### COMMERCE-030 Attempt 1 architect review — 2026-09-24
 

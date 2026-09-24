@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -314,50 +314,52 @@ Ready for Review
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 implements the core private-link simplification correctly: runtime RSA/JWT verification and MCP caller credentials are removed; `X-Moda-Commerce-Context` is bounded/canonical; environment is server-derived; the tool deadline is local (`now + 10_000`); and the existing PostgreSQL authorization path remains in front of tool execution. The declared local external MCP diagnostic also exercises the persisted grant -> tools/list -> tools/call lifecycle without JWT/key configuration.
+Attempt 2 satisfies the bounded correction contract from Attempt 1 and the original private-MCP simplification requirements.
 
-The task returns to Ready for one bounded correction pass:
+- `lib/server/config.ts` no longer logs raw/parsed `DATABASE_URL` or `REDIS_URL` values, so task-owned configuration does not emit credential-bearing endpoints.
+- The production authorization adapter maps known `LifecycleError` authorization-domain codes to bounded `McpError` results before they reach the MCP service while unexpected resolver/storage failures fail closed as `UNAVAILABLE`.
+- Focused adapter-to-service regressions prove a `FORBIDDEN` ownership denial remains HTTP 403/`FORBIDDEN` and an unexpected storage failure remains HTTP 503/`UNAVAILABLE`.
+- Commerce-owned environment/runtime/readiness documentation no longer instructs operators to configure RSA assertion keys or retain a signed-context check. Unrelated Auth.js Studio JWT/session behavior is untouched.
+- The accepted private-link request remains context-only: no `Authorization` header, bearer token, API key, shared secret, RSA/JWT verification or caller-supplied expiry/deadline was reintroduced.
+- Existing PostgreSQL shop/turn/grant/release/tool authorization and the local ten-second execution deadline remain in the request path.
+- The Completion Report now records launcher-resolved worktree isolation/synchronization/submodule evidence, final implementation commit `e9c7c85009552463f9447475072e9bbc6f2ff433`, pushed-branch evidence, focused validation and the accepted non-blocking repository baselines.
 
-1. **Remove secret-bearing configuration logging.** `lib/server/config.ts` currently logs the raw endpoint value and parsed `URL` while reading `DATABASE_URL` and `REDIS_URL`. Those values may contain usernames/passwords and must never be emitted to application logs. Remove the diagnostic `console.log` output from the configuration parser; do not replace it with partially redacted secret logging.
-2. **Preserve typed MCP authorization failures at the production adapter boundary.** The production Prisma resolver can throw coded `LifecycleError` values such as `FORBIDDEN`/`UNAVAILABLE` before `resolveAuthorizedSnapshot()` runs. `createCommerceAuthorization()` currently lets those escape as generic errors, so `createMcpService()` converts them to HTTP 503/`UNAVAILABLE`. Map only known authorization-domain codes to the corresponding bounded `McpError` (`FORBIDDEN`, `STALE_TURN`, `INCOMPATIBLE_VERSION`, `UNAVAILABLE`, etc.) while leaving unexpected database/runtime failures fail-closed as `UNAVAILABLE`. Add focused end-to-end adapter/service coverage proving a shop/conversation ownership mismatch is not collapsed to generic 503 and that an unexpected storage failure still is.
-3. **Reconcile operational documentation/config examples.** Remove the orphan RSA-public-key comment from `.env.example`; update changed runtime/deployment guidance so it no longer says consumers retain a "signed-context" check; and remove stale Commerce README/readiness wording that claims RSA public-key validation. Do not change Studio's unrelated Auth.js/JWT session documentation.
-4. **Completion Report/workflow reconciliation.** Attempt 1 executor material was written into architect-owned Objective/Context/Scope while the formal Completion Report remained `Not Started`. This architect patch restores the canonical task definition. Attempt 2 must populate the standard Completion Report with actual changed files, validation, prepared worktree/synchronization evidence, final implementation commit and pushed-branch evidence, then return the task to `review`.
-
-No redesign of the private-link trust decision, context schema, DB grant/tool authorization, provider budget, or local diagnostic lifecycle is requested.
+The stale `tests/auth-entrypoints.test.ts` route-source assertion remains non-blocking: it asserts literal source text `createMcpService` although the route now delegates through `getCommerceBackend().mcp`; the production MCP route behavior is covered by the focused MCP suite and local persisted external-MCP diagnostic.
 
 ### Reviewed Files
 
-- `src/commerce/mcp/authentication.ts`
-- `src/commerce/mcp/ports.ts`
-- `src/commerce/mcp/authorization.ts`
-- `src/commerce/mcp/service.ts`
-- `src/commerce/integration/backend.ts`
-- `src/commerce/integration/backend/authorization.ts`
 - `lib/server/config.ts`
+- `src/commerce/integration/backend/authorization.ts`
+- `src/commerce/mcp/authentication.ts`
+- `src/commerce/mcp/authorization.ts`
+- `src/commerce/mcp/ports.ts`
+- `src/commerce/mcp/service.ts`
+- `tests/mcp-service.test.ts`
 - `.env.example`
-- `docs/runtime-compatibility.md`
-- `docs/commerce-backend-integration.md`
 - `README.md`
-- `scripts/readiness-local-smoke.mjs`
-- `scripts/clean-clone.sh`
-- focused MCP/authorization/local-diagnostic tests
+- `docs/commerce-backend-integration.md`
+- `docs/runtime-compatibility.md`
+- task Completion Report and launcher/worktree evidence
 
 ### Validation Reviewed
 
-- Submitted focused MCP suite: 5 files / 26 tests passed.
-- Submitted `npm run diagnose:arch020-external-mcp:local`: passed end to end with zero owned Docker resources remaining.
-- Submitted lint: 0 errors (6 pre-existing warnings).
-- Submitted `git diff --check`: passed.
-- Repository-wide typecheck baseline remains non-blocking for unrelated files; Attempt 2 must keep task-owned diagnostics clean.
+- Focused MCP/authorization/compatibility suite: 26 tests passed.
+- Local persisted external-MCP diagnostic: passed end to end with clean owned-resource cleanup.
+- Lint: 0 errors; submitted warnings are pre-existing.
+- `git diff --check`: passed.
+- Repository-wide typecheck/build blockers remain documented unrelated baseline conditions and introduce no task-owned diagnostics.
+- Commerce-owned stale RSA/assertion/signed-context scan: no remaining task-owned matches.
 
 ### Architecture Conformance
 
-Conforms in substance to the private-link/context-only architecture, but cannot be accepted while task-owned configuration may log credentials and production authorization-domain failures can be collapsed to generic `UNAVAILABLE` contrary to R6.
+Accepted. The implementation conforms to the ARCH-021 private-link/context-only caller-trust decision while retaining durable PostgreSQL authorization and bounded failure semantics. It introduces no replacement application-layer credential and no public MCP exposure.
 
 ### Follow-up
 
-Return the same task through `/moda-task ARCH-021-COMMERCE-030`. Preserve `attempt: 1`; the next authorized claim becomes Attempt 2. `ARCH-021-BACKGROUND-001` remains Pending until COMMERCE-030 is Complete.
+`ARCH-021-BACKGROUND-001` is now Ready because its sole dependency, COMMERCE-030, is Complete.
+
+`ARCH-021-GATEWAY-001` remains Pending until BACKGROUND-001 is Complete.
