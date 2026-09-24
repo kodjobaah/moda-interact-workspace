@@ -896,10 +896,10 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
-| ARCH-021-GATEWAY-001 | moda_gateway | Ready | COMMERCE-030, BACKGROUND-001 |
+| ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-028` and `ARCH-021-GATEWAY-001`. All COMMERCE-028 dependencies are Complete; BACKGROUND-001 acceptance also satisfies the remaining GATEWAY-001 dependency.
+Current checkpoint frontier: `ARCH-021-COMMERCE-028`. GATEWAY-001 is architect-accepted Complete. `ARCH-021-SYSTEM-TEST-001` remains Pending until the full checkpoint implementation dependency set is Complete, including COMMERCE-028 and COMMERCE-029.
 
 ### Phase 4 — live single-tool testing
 
