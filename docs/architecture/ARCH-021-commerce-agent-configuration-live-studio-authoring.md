@@ -1542,6 +1542,22 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-25 — COMMERCE-034 Attempt 2 changes requested
+
+- Accepted the main C034 production argument-binding, shared input compatibility,
+  C032 schema-identity, variable-collision and real-compiler integration
+  architecture in substance.
+- Returned COMMERCE-034 to Ready because one C034-owned `TS2367` remains and
+  exposes a real LIST-literal UI bug.
+- Identified compiler/UI pagination drift for real first-only Storefront fields:
+  the compiler treats any `first`/`last` schema argument as pagination, while the
+  editor special-cases `first` only when `last` also exists.
+- Required the remaining explicit Attempt-2 connected regressions: exact generated
+  nested candidate through the real compiler, `first=20` through the compiler,
+  fail-closed required/wrong-input UI behavior, exact schema-identity
+  validate/apply behavior and invalid-resultPath disablement.
+- COMMERCE-035 remains Pending.
+
 ### 2026-09-24 — COMMERCE-034 Attempt 1 changes requested
 
 - Accepted the AST-based query merge, alias preservation, ambiguity detection,

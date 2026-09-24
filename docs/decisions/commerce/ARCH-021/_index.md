@@ -321,6 +321,20 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
 
+### COMMERCE-034 Attempt 2 changes requested — 2026-09-25
+
+Attempt 2 completes the main production argument-binding/schema-identity/compiler
+architecture, but COMMERCE-034 remains **Ready** for Attempt 3.
+
+The submitted typecheck still contains one C034-owned `TS2367`; that comparison
+also leaves LIST literal authoring incorrectly exposed. The argument editor also
+treats `first` as a connection bound only when `last` exists, while the real pinned
+schema contains first-only pagination fields such as `productTags(first: Int!)`.
+
+Attempt 3 is bounded to those source corrections plus the exact connected
+regressions already required by the Attempt 1 review. COMMERCE-035 remains
+Pending.
+
 ### COMMERCE-034 Attempt 1 changes requested — 2026-09-24
 
 The GraphQL AST/merge foundation is accepted in substance, but COMMERCE-034
