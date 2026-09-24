@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-24T22:35:01Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-033
@@ -292,17 +292,17 @@ No production Storefront query generation may depend on `path.split(".")`.
 
 ## Work Items
 
-- [ ] Add pure Storefront AST query builder.
-- [ ] Add schema-driven argument-binding state/controls.
-- [ ] Add inputSchema-property variable mapping.
-- [ ] Add bounded literal argument generation.
-- [ ] Add connection-first handling.
-- [ ] Merge selections safely into existing query AST.
-- [ ] Preserve aliases/unrelated existing selections.
-- [ ] Make pinned schema identity authoritative.
-- [ ] Wire exact candidate through existing `validateToolDefinition`.
-- [ ] Remove old dot-path query-generation code.
-- [ ] Add real-artifact integrated regressions.
+- [x] Add pure Storefront AST query builder.
+- [x] Add schema-driven argument-binding state/controls.
+- [x] Add inputSchema-property variable mapping.
+- [x] Add bounded literal argument generation.
+- [x] Add connection-first handling.
+- [x] Merge selections safely into existing query AST.
+- [x] Preserve aliases/unrelated existing selections.
+- [x] Make pinned schema identity authoritative.
+- [x] Wire exact candidate through existing `validateToolDefinition`.
+- [x] Remove old dot-path query-generation code.
+- [x] Add real-artifact integrated regressions.
 
 ## Interfaces / Contracts
 
@@ -327,29 +327,29 @@ Produces no new cross-service contract.
 
 ## Acceptance Criteria
 
-- [ ] GraphQL is generated/merged from real schema metadata and selection tree.
-- [ ] Required schema arguments cannot be bypassed.
-- [ ] Input-property variable mappings remain the Tool's persisted argument contract.
-- [ ] Connection pagination obeys existing bounded compiler policy.
-- [ ] Existing aliases/unrelated selections survive deterministic merge.
-- [ ] No dot-path split builder remains.
-- [ ] Candidate uses the pinned API version/schema hash.
-- [ ] `Use in tool` can apply only the exact candidate that passed existing server validation.
-- [ ] Real-artifact nested product regression passes.
-- [ ] No provider/network request occurs during schema authoring/validation.
+- [x] GraphQL is generated/merged from real schema metadata and selection tree.
+- [x] Required schema arguments cannot be bypassed.
+- [x] Input-property variable mappings remain the Tool's persisted argument contract.
+- [x] Connection pagination obeys existing bounded compiler policy.
+- [x] Existing aliases/unrelated selections survive deterministic merge.
+- [x] No dot-path split builder remains.
+- [x] Candidate uses the pinned API version/schema hash.
+- [x] `Use in tool` can apply only the exact candidate that passed existing server validation.
+- [x] Real-artifact nested product regression passes.
+- [x] No provider/network request occurs during schema authoring/validation.
 
 ## Validation
 
-- [ ] `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts --reporter=verbose`
-- [ ] existing Storefront compiler/definition tests directly affected by the generated query
-- [ ] targeted ESLint for every changed source/test file
-- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
-- [ ] source audit:
+- [x] Focused Vitest suite — 4 files, 51 tests passed, including the in-memory Studio validation-boundary regression.
+- [x] Existing Storefront compiler/definition coverage — affected compiler validation tests in `tests/discovery.test.ts` pass.
+- [x] Targeted ESLint for every changed source/test file — passed with zero errors and warnings after removing the stale `parse` import.
+- [ ] `npm run typecheck` — blocked by unchanged unrelated baseline diagnostics in Prisma-generated/database integration and other existing strictness failures; zero diagnostics remain in task-owned files after repair.
+- [x] Source audit:
   ```text
   rg -n "buildQueryDefinition|path\.split\(\"\\.\"\)|selectedPaths" components src/studio
   ```
-  expected: no legacy Storefront path-string builder matches
-- [ ] `git diff --check`
+  no legacy Storefront path-string builder matches.
+- [x] `git diff --check` — passed.
 
 ## Stop Condition
 
@@ -369,35 +369,49 @@ Do not broaden Storefront access or compiler limits merely to make a generated q
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `components/studio-workspace.tsx`
+- `src/studio/discovery/storefront-query-builder.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/storefront-query-builder.test.ts`
+- Implementation commit: `0f02fc17129bf4bf84692bcec6bffb09747ac7a9`
 
 ### Work Completed
 
-None
+Implemented schema-backed GraphQL AST generation and safe merge into the existing named Storefront query. The builder consumes the recursive selection tree, emits deterministic input-property variables and literals, fails closed for missing/ambiguous selections, preserves aliases and unrelated selections, pins the committed Storefront schema hash, and removes the legacy dot-path builder. Added real-artifact regressions covering nested product traversal, sibling exclusion, required arguments, validation-boundary acceptance, alias merge, duplicate-root ambiguity, and schema identity.
 
 ### Validation Results
 
-None
+Focused suite: passed, 4 files and 51 tests.
+
+Targeted ESLint: passed with zero errors/warnings.
+
+Source audit: passed; no `buildQueryDefinition`, `path.split(".")`, or `selectedPaths` matches in `components` or `src/studio`.
+
+`git diff --check`: passed.
+
+`npm run typecheck`: repository command remains non-zero because of unchanged unrelated baseline diagnostics, including Prisma generated-type drift and existing implicit-any/strictness errors outside task-owned files. The task-owned builder diagnostics found on the first run were repaired and no longer appear.
+
+Launcher evidence: prepared implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-034` on `task/ARCH-021-COMMERCE-034`; prepared parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-034` on the same branch name. Launcher synchronization and dependency gates were reused without reclaming or startup repetition. Recursive submodule evidence: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`).
 
 ### Deviations
 
-None
+Full repository typecheck is not green because of the documented unrelated baseline; task-owned diagnostics are clear. No live provider/network request was added or used.
 
 ### Assumptions
 
-None
+The accepted Storefront compiler and COMMERCE-032 pinned artifact remain the validation authority. The implementation branch commit is pushed to `origin/task/ARCH-021-COMMERCE-034`.
 
 ### Unresolved Issues
 
-None
+Repository-wide typecheck remains blocked by unrelated baseline diagnostics described above; architect review should retain that baseline distinction.
 
 ### Architectural Concerns
 
-None
+None identified within the bounded task scope.
 
 ## Architect Review
 
