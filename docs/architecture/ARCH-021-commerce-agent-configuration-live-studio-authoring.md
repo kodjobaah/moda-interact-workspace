@@ -1542,6 +1542,24 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-24 — COMMERCE-034 Attempt 1 changes requested
+
+- Accepted the AST-based query merge, alias preservation, ambiguity detection,
+  legacy dot-path removal and exact-candidate validation-token foundation in
+  substance.
+- Returned COMMERCE-034 to Ready because argument binding exists only as a pure
+  builder type with no production UI/state; literal construction is not
+  schema-aware; connection `first`/`last` policy is deferred to the compiler; and
+  the client builder imports schema identity from the artifact module instead of
+  consuming the C032 `SchemaPage`.
+- Also required generated-variable collision safety so an existing mapping cannot
+  be silently rewritten, and real-compiler integrated regressions rather than a
+  hand-authored in-memory Storefront validator.
+- Corrected the R11 source-of-truth wording: C032 shows
+  `product(handle: String, id: ID)` as optional. `productByHandle(handle: String!)`
+  is the required-root regression.
+- COMMERCE-035 remains Pending.
+
 ### 2026-09-24 — COMMERCE-033 Attempt 3 accepted
 
 - Accepted the recursive C032-backed Storefront schema browser and nested

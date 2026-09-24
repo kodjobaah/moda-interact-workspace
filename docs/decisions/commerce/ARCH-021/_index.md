@@ -321,6 +321,18 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
 
+### COMMERCE-034 Attempt 1 changes requested — 2026-09-24
+
+The GraphQL AST/merge foundation is accepted in substance, but COMMERCE-034
+remains **Ready** for Attempt 2 because production Studio has no argument-binding
+controls/state, literal generation is not schema-aware, connection `first`/`last`
+authoring policy is not represented before validation, and the client builder
+takes schema identity from the artifact module instead of the C032 `SchemaPage`.
+
+Attempt 2 must complete the original argument-authoring/schema-identity contract,
+remove generated-variable mapping collision risk, and prove the final candidate
+against the real Storefront compiler. COMMERCE-035 remains Pending.
+
 ### COMMERCE-033 Attempt 3 accepted — 2026-09-24
 
 COMMERCE-033 is architect-accepted **Complete**. Attempt 3 added the missing
