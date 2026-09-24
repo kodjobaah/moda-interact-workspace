@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-24T08:04:27Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -197,11 +197,11 @@ The first is normal deterministic/offline validation. The second is explicit dev
 
 ## Work Items
 
-- [ ] Commit deterministic Admin 2026-07 artifact + provenance.
-- [ ] Implement query-only Admin compiler.
-- [ ] Extend discovery validation API surface.
-- [ ] Add Dev MCP conformance script using validate_graphql_codeblocks.
-- [ ] Add focused offline compiler tests.
+- [x] Commit deterministic Admin 2026-07 artifact + provenance.
+- [x] Implement query-only Admin compiler.
+- [x] Extend discovery validation API surface.
+- [x] Add Dev MCP conformance script using validate_graphql_codeblocks.
+- [x] Add focused offline compiler tests.
 
 ## Interfaces / Contracts
 
@@ -247,19 +247,40 @@ The Shopify Toolkit helps prove the compiler; it is not a runtime dependency for
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review
 ### Files Changed
-None
+Implementation commit `db18555446f0c8f3a9601397941451bdb20b3714` on `task/ARCH-021-COMMERCE-018`:
+
+- `app/api/studio/discovery/route.ts`
+- `lib/discovery/admin-compiler.ts`
+- `lib/discovery/artifacts/admin-2026-07.json`
+- `lib/discovery/artifacts/admin-2026-07.provenance.json`
+- `lib/discovery/schema.ts`
+- `lib/discovery/service.ts`
+- `package.json`
+- `scripts/sync-shopify-admin-schema.mjs`
+- `scripts/validate-shopify-admin-oracle.mjs`
+- `tests/admin-graphql-compiler.test.ts`
 ### Work Completed
-None
+- Added deterministic Admin 2026-07 introspection artifact and exact provenance for `@shopify/dev-mcp@1.15.4`, including SHA-256 `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`.
+- Added offline query-only Admin compiler with schema validation, named-operation enforcement, variable/input compatibility, bounded selection/depth/cost/pagination rules, and closed result-path/schema compatibility checks.
+- Added explicit `storefront-graphql`/`admin-graphql` discovery validation dispatch without changing Storefront behavior.
+- Added the explicit Dev MCP oracle using `learn_shopify_api` and `validate_graphql_codeblocks`; normal request validation remains local and artifact-backed.
+- Prepared launcher evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-018`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-018`; implementation submodule `database` at recorded `98fdf715e54fe6df92ac6951facd104e410068f2`.
 ### Validation Results
-None
+- `npm run test:arch021-shopify-admin-compiler`: PASS, 2 files and 17 tests.
+- `npm run validate:arch021-shopify-admin-oracle`: PASS; valid products query matched valid, unknown field/argument and wrong variable type matched invalid, and mutation was locally rejected while upstream schema accepted it.
+- Focused ESLint over all changed source/scripts/tests: PASS with no warnings or errors.
+- `git diff --check`: PASS.
+- Filtered `npm run typecheck`: no diagnostics in the touched Admin compiler, discovery schema/service, route, or Admin tests. Full typecheck remains non-zero on existing unrelated diagnostics, including missing preview modules in `app/api/studio/code-response/validate/route.ts`, existing Studio/agent-configuration strictness errors, and generated/fixture type errors in unrelated tests.
+- `npm run build`: BLOCKED by existing unrelated missing modules: `lib/preview/http`, `lib/preview/runtime`, and `src/commerce/preview/types` imported by `app/api/studio/code-response/validate/route.ts`.
+- Implementation branch local/remote parity: PASS at `db18555446f0c8f3a9601397941451bdb20b3714`.
 ### Deviations
-None
+- Full repository typecheck and production build are reported as baseline failures because their diagnostics are outside the task files and were present independently of this compiler change.
 ### Assumptions
-None
+- `@shopify/dev-mcp@1.15.4` is the available pinned developer validation environment; the oracle is not part of runtime request handling.
 ### Unresolved Issues
-None
+- Existing repository-wide typecheck/build baseline remains for the owning tasks; no Admin compiler or discovery-slice diagnostics remain.
 ### Architectural Concerns
 None
 
