@@ -282,6 +282,7 @@ Ready for Review
 ### Validation Results
 
 - Launcher evidence: prepared execution was claimed for Attempt 2 with `execution_state=claimed`, dependency gate passed, parent head `30949d2671b2b3f85f0a740508191a44884efc87`, implementation head `fd281e0e92914378cb911d4539ab5f9c4b9ec629`, canonical worktrees supplied by launcher, and recursive submodules ready with database at `98fdf715e54fe6df92ac6951facd104e410068f2`.
+- Final implementation commit `e9c7c85009552463f9447475072e9bbc6f2ff433` was pushed to `origin/task/ARCH-021-COMMERCE-030`; final parent report commit is recorded below and was pushed to the same mirrored branch in the parent workspace repository.
 - `npm run test -- tests/mcp-service.test.ts tests/mcp-authorization.test.ts`: passed, 2 files / 19 tests.
 - `npm run test -- tests/mcp-service.test.ts tests/mcp-authorization.test.ts tests/mcp-compatibility.test.ts tests/auth-entrypoints.test.ts`: MCP/authorization/compatibility files passed, 3 files / 26 tests; `tests/auth-entrypoints.test.ts` has one pre-existing assertion mismatch expecting route source text `createMcpService` although the current route delegates through `getCommerceBackend().mcp`.
 - `npm run diagnose:arch020-external-mcp:local`: passed end to end; persisted connection -> credential -> tool -> preview -> publish -> capability -> release -> grant -> tools/list -> tools/call lifecycle passed, and cleanup reported zero owned Docker resources.
