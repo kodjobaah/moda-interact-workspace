@@ -993,6 +993,13 @@ independent of features.
 
 ## Change History
 
+### 2026-09-24 — COMMERCE-027 Attempt 4 changes requested
+
+- Accepted the hierarchical authorization implementation, direct production-entrypoint regressions and hardened PostgreSQL harness in substance.
+- Returned COMMERCE-027 to Ready for one bounded security correction because the manual global merchant-access CLI currently accepts any active `PlatformAdmin`, while the architecture reserves global merchant-access administration to `PLATFORM_SUPER_ADMIN`.
+- Required an explicit PostgreSQL denial regression for platform `ADMIN` while preserving the accepted SUPER_ADMIN lifecycle and concurrent subject-binding proof.
+- COMMERCE-028 remains Pending on COMMERCE-025 and COMMERCE-027.
+
 ### 2026-09-24 — Authorization hierarchy clarified
 
 - Defined one ordered Studio authorization hierarchy: `PLATFORM_SUPER_ADMIN > PLATFORM_ADMIN > MERCHANT_ADMIN > MERCHANT_EDITOR > MERCHANT_VIEWER`.
