@@ -321,6 +321,17 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
 
+### COMMERCE-033 Attempt 1 changes requested — 2026-09-24
+
+The recursive real-schema browser and nested selection tree are accepted in
+substance. COMMERCE-033 remains **Ready** for Attempt 2 because the UI depth bound
+is off by one relative to the accepted Storefront compiler and the 100-field UI
+bound counts only leaves instead of all selected GraphQL fields/ancestors.
+
+The architect-authored task contract was also restored after the submitted task
+file removed scope/requirement/dependency and validation content during execution.
+COMMERCE-034 remains Pending.
+
 ### COMMERCE-032 Attempt 2 accepted — 2026-09-24
 
 COMMERCE-032 is architect-accepted **Complete**. The real pinned Storefront 2026-07

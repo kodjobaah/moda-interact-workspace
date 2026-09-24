@@ -1542,6 +1542,18 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-24 — COMMERCE-033 Attempt 1 changes requested
+
+- Accepted the recursive C032-backed browser, lazy type cache and nested selection
+  tree in substance.
+- Returned COMMERCE-033 to Ready because the browser permitted a depth-9 leaf
+  while the compiler caps field depth at 8, and the browser's 100-field guard
+  counted only leaves while the compiler counts every object ancestor and leaf.
+- Restored the detailed architect-authored C033 task contract after execution
+  narrowed scope/requirements/dependencies and the required focused validation.
+- Attempt 2 is bounded to compiler-bound parity, missing regressions and report
+  reconciliation. COMMERCE-034 remains Pending.
+
 ### 2026-09-24 — COMMERCE-032 Attempt 2 accepted
 
 - Confirmed the real pinned Storefront 2026-07 introspection artifact is the sole
