@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T12:50:00Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-DATABASE-002
@@ -169,7 +169,7 @@ Keep category create/update/enable/disable and multiple templates per category.
 - [x] Replace template contracts/DTOs with R2.
 - [x] Implement direct CAS update of promptText.
 - [x] Remove template revision UI/history.
-- [ ] Update audit/reconciliation behavior and structured failure logging.
+- [x] Update audit/reconciliation behavior and structured failure logging.
 - [x] Update focused tests.
 
 ## Interfaces / Contracts
@@ -194,7 +194,7 @@ Consumes `CommercePromptTemplateCategory`, `CommercePromptTemplate.promptText`, 
 - [x] Template content is edited directly with CAS.
 - [x] No template revision persistence/service/UI remains.
 - [x] Existing Agent Prompt revisions remain unaffected by later template edits.
-- [ ] Errors are explicit and reconcilable; none are swallowed into `unknown`, and every caught infrastructure/unexpected failure translated into an error result is emitted through the approved shared structured logger with the original `Error` object.
+- [x] Errors are explicit and reconcilable; none are swallowed into `unknown`, and every caught infrastructure/unexpected failure translated into an error result is emitted through the approved shared structured logger with the original `Error` object.
 
 ## Validation
 
@@ -202,9 +202,9 @@ Consumes `CommercePromptTemplateCategory`, `CommercePromptTemplate.promptText`, 
 - [x] focused template UI tests
 - [x] stale CAS test
 - [x] DB-unavailable error test
-- [ ] operation reconciliation test
-- [ ] structured error logging regression
-- [ ] targeted ESLint/typecheck
+- [x] operation reconciliation test
+- [x] structured error logging regression
+- [x] targeted ESLint/typecheck
 - [x] `git diff --check`
 
 ## Stop Condition
@@ -220,51 +220,52 @@ Do not remove categories and do not move templates into a JSON blob. The simplif
 
 ### Status
 
-Ready for architect review after Attempt 2.
+Ready for architect review after Attempt 3.
+
+### Attempt 3 Workflow Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-026`, `task/ARCH-021-COMMERCE-026`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-026`, `task/ARCH-021-COMMERCE-026`.
+- Shared workspace checkout switched or mutated: no. Another task worktree reused: no.
+- Start-of-attempt parent HEAD: `5a9d497cee29dd9f1573e41636da6303d4252fd3`; implementation HEAD: `9473b6006dbf008a5b0a04b124076804fcd4c420`.
+- Parent and implementation task-branch synchronization: remote fast-forward `not-needed`; `origin/main` incorporation `already-current`.
+- Recursive submodule sync/update passed; database submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Attempt 3 launcher claim commit: `1a8ee4ed026889d56818bd81d433e14c5e432847`.
+- Published implementation commit: `f76939275ae185794b9b025cfb5da8fc49abc2a4`, pushed to `origin/task/ARCH-021-COMMERCE-026`.
 
 ### Files Changed
 
 `moda-interact-commerce`: template contracts/service/actions/UI, platform template copy-on-use wiring, and focused template/platform tests. Production Studio composition was not broadened because its function-valued service props are owned by COMMERCE-029.
 
+Attempt 3 changed `src/commerce/agent-configuration/prompt-template-service.ts`, `tests/agent-configuration-templates.test.ts`, and `tests/agent-configuration-templates-postgres.test.ts`.
+
 ### Work Completed
 
 Removed template revision lifecycle and DTOs; direct `promptText` authoring now uses edit-version CAS. Audit operations use `CommerceAuditEvent.operationId` for correlation only, with independent audit IDs, explicit committed-operation/CAS/database/internal error semantics, and bounded structured logging. Enabled-state changes use the explicit CAS operation and cannot discard dirty prompt/metadata edits. Agent Prompt copy-on-use reads current template content and preserves immutable prompt revisions; the task-owned picker no longer requests or displays `sourceTemplateRevisionId`.
 
-Attempt 2 workflow evidence:
+Attempt 3 corrected the stale PostgreSQL CAS assertion, classifies Prisma codes from structured error objects, reconciles CAS/P2002 losers exactly once after rollback, and logs translated mutation/reconciliation failures through the shared logger with raw errors and bounded operation IDs.
 
-- Dedicated implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-026`
-- Dedicated parent report worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-026`
-- Start-of-attempt implementation HEAD: `a8536cf0768d40ea1b7b0d1b610f802cccfb10b6`
-- Start-of-attempt parent HEAD: `4bfeab1bd51afa14407e51f8e018619f93696bfe`
-- Recursive submodule evidence at preparation: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`
-- Launcher claim commit: `aa8f1c5a`
-- Final implementation commit and push: `9473b6006dbf008a5b0a04b124076804fcd4c420` on `origin/task/ARCH-021-COMMERCE-026`
 
 ### Validation Results
 
-Focused Vitest: 4 files passed, 1 opt-in PostgreSQL file skipped; 16 tests passed and 3 skipped. The PostgreSQL concurrency suite was skipped because `COMMERCE_PROMPT_TEMPLATE_POSTGRES=1` and a disposable `DATABASE_URL` were unavailable. Targeted ESLint passed, editor diagnostics for changed source files reported no errors, and `git diff --check` passed.
+Focused Vitest: 5 files passed, 19 tests passed. Targeted service regressions: 7 tests passed.
 
-Full `npm run typecheck` remains nonzero, but no diagnostics remain in the task-owned files. Exact residual ownership is:
+Disposable PostgreSQL proof used database `commerce026_attempt3_1790254377` in the isolated local `moda-arch021-postgres` container. After `prisma db push` and client generation, `COMMERCE_PROMPT_TEMPLATE_POSTGRES=1 DATABASE_URL=... npm exec vitest run tests/agent-configuration-templates-postgres.test.ts` passed all 3 tests: same-operation create, same-operation CAS, and different-operation stale CAS. No PostgreSQL test was skipped in the explicit proof.
 
-- `app/api/studio/code-response/validate/route.ts`: missing preview `http`, `runtime`, and commerce preview type modules; preview-surface baseline.
-- `components/studio-workspace.tsx`: duplicate `productionCodePanel` prop and `StudioFailure.message`; sibling Studio composition ownership.
-- `lib/auth/development-platform-admin.ts`, `lib/server/connections.ts`, `src/commerce/connections/command-kernel.ts`: Prisma generated-client/API mismatches and an untyped transaction callback; shared/database baseline ownership.
-- `src/commerce/agent-configuration/effective-configuration.ts`: missing generated Prisma payload types, `Prisma.sql`, `TransactionIsolationLevel`, and an untyped transaction callback; COMMERCE-025/effective-configuration sibling ownership.
-- `src/commerce/agent-configuration/model-service.ts`: missing generated `Prisma.InputJsonValue`; sibling model-service/generated-client ownership.
-- `src/commerce/agent-configuration/prompt-service.ts`: missing generated `Prisma.sql`/`InputJsonValue` and an untyped transaction callback; COMMERCE-025 ownership.
-- `src/commerce/integration/backend.ts`: untyped comparator parameters; integration backend ownership.
+Targeted ESLint passed with no warnings, and `git diff --check` passed. Full `npm run typecheck -- --pretty false` exits 2 with no diagnostics in `prompt-template-service.ts`, `agent-configuration-templates.test.ts`, or `agent-configuration-templates-postgres.test.ts`. Residual diagnostics are confined to `app/api/studio/code-response/validate/route.ts` (missing preview modules), `components/studio-workspace.tsx` (duplicate prop and StudioFailure shape), `src/commerce/agent-configuration/effective-configuration.ts` and `model-service.ts` (generated Prisma model surfaces), `src/commerce/agent-configuration/prompt-service.ts` (COMMERCE-025 prompt lifecycle/generated Prisma contract), `tests/agent-configuration-model-postgres.test.ts` and `tests/agent-configuration-prompts-postgres.test.ts` (sibling generated Prisma surfaces), `tests/c20-integration-fixture.test.ts`, `tests/connections-production.test.ts`, `tests/external-tools-ui.test.tsx`, `tests/external-wiring.test.ts`, and `tests/local-external-mcp-diagnostic.test.ts` (existing integration/tooling baselines).
 
 ### Deviations
 
-The platform prompt picker was updated only at its template-consumer boundary so it can copy current `promptText`; Agent Prompt revision lifecycle and legacy prompt-service/contract references remain owned by COMMERCE-025 and were not modified by C026.
+The platform prompt picker was updated only at its template-consumer boundary so it can copy current `promptText`; Agent Prompt revision lifecycle and legacy prompt-service/contract references remain owned by COMMERCE-025 and were not modified by C026. The PostgreSQL proof used a fresh database inside the existing disposable local container; no shared development, staging, or production database was used.
 
 ### Assumptions
 
-No additional assumptions. PostgreSQL concurrency validation requires the opt-in flag and a disposable database.
+No additional assumptions.
 
 ### Unresolved Issues
 
-Full repository typecheck remains blocked by the explicitly listed sibling/baseline diagnostics; task-owned files are clean.
+Full repository typecheck remains blocked by the explicitly listed sibling/baseline diagnostics; task-owned files are clean. No task-owned unresolved implementation issues remain.
 
 ### Architectural Concerns
 
