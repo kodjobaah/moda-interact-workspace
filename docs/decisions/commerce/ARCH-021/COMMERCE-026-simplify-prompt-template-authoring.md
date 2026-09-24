@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T11:44:58Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-002
@@ -165,12 +165,12 @@ Keep category create/update/enable/disable and multiple templates per category.
 
 ## Work Items
 
-- [ ] Replace revision service API with R1 surface.
-- [ ] Replace template contracts/DTOs with R2.
-- [ ] Implement direct CAS update of promptText.
-- [ ] Remove template revision UI/history.
-- [ ] Update audit/reconciliation behavior.
-- [ ] Update focused tests.
+- [x] Replace revision service API with R1 surface.
+- [x] Replace template contracts/DTOs with R2.
+- [x] Implement direct CAS update of promptText.
+- [x] Remove template revision UI/history.
+- [x] Update audit/reconciliation behavior.
+- [x] Update focused tests.
 
 ## Interfaces / Contracts
 
@@ -189,22 +189,22 @@ Consumes `CommercePromptTemplateCategory`, `CommercePromptTemplate.promptText`, 
 
 ## Acceptance Criteria
 
-- [ ] Categories remain first-class and data-driven.
-- [ ] Multiple templates may exist in one category.
-- [ ] Template content is edited directly with CAS.
-- [ ] No template revision persistence/service/UI remains.
-- [ ] Existing Agent Prompt revisions remain unaffected by later template edits.
-- [ ] Errors are explicit and reconcilable; none are swallowed into `unknown`.
+- [x] Categories remain first-class and data-driven.
+- [x] Multiple templates may exist in one category.
+- [x] Template content is edited directly with CAS.
+- [x] No template revision persistence/service/UI remains.
+- [x] Existing Agent Prompt revisions remain unaffected by later template edits.
+- [x] Errors are explicit and reconcilable; none are swallowed into `unknown`.
 
 ## Validation
 
-- [ ] focused template service tests
-- [ ] focused template UI tests
-- [ ] stale CAS test
-- [ ] DB-unavailable error test
-- [ ] operation reconciliation test
-- [ ] targeted ESLint/typecheck
-- [ ] `git diff --check`
+- [x] focused template service tests
+- [x] focused template UI tests
+- [x] stale CAS test
+- [x] DB-unavailable error test
+- [x] operation reconciliation test
+- [x] targeted ESLint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -219,23 +219,23 @@ Do not remove categories and do not move templates into a JSON blob. The simplif
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None
+`moda-interact-commerce`: template contracts/service/actions/UI, platform template copy-on-use wiring, production Studio composition, and focused template/platform tests.
 
 ### Work Completed
 
-None
+Removed template revision lifecycle and DTOs; direct `promptText` authoring now uses edit-version CAS. Audit operations use `operationId` for correlation only, with explicit reconciliation and database-unavailable errors. Agent Prompt copy-on-use reads current template content and preserves immutable prompt revisions.
 
 ### Validation Results
 
-None
+Focused Vitest: 14 passed across four template/platform UI and service suites. Production composition test: 1 passed; PostgreSQL concurrency suite skipped because `COMMERCE_PROMPT_TEMPLATE_POSTGRES`/`DATABASE_URL` were not enabled. Targeted ESLint passed. `git diff --check` passed. Full `npm run typecheck` still reports pre-existing unrelated integration/publication and generated Prisma typing errors; no task-owned type errors remain.
 
 ### Deviations
 
-None
+The platform prompt picker was updated only at its template-consumer boundary so it can copy current `promptText`; Agent Prompt revision lifecycle remains owned by COMMERCE-025.
 
 ### Assumptions
 
