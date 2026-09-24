@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T14:36:42Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-021-DATABASE-002
@@ -322,7 +322,7 @@ Do not log access tokens, session tokens or provider credentials.
 - [x] Remove the separate `studioPlatformPermissionAllowed()` shop-publish rule; no parallel platform-vs-shop permission matrix remains.
 - [x] Update focused authorization regressions for hierarchy, platform precedence and multi-shop scope.
 - [x] Verify no task-owned caller still implements an exact-role check where the new minimum-role helper is required.
-- [ ] Restrict the manual merchant-access CLI to active `PLATFORM_SUPER_ADMIN`; reject platform `ADMIN` before any merchant-access mutation.
+- [x] Restrict the manual merchant-access CLI to active `PLATFORM_SUPER_ADMIN`; reject platform `ADMIN` before any merchant-access mutation.
 
 ## Interfaces / Contracts
 
@@ -391,7 +391,7 @@ Authentication proves identity; authorization comes from PlatformAdmin or Mercha
 
 ### Status
 
-Review requested for Attempt 4
+Blocked for Attempt 5: implementation complete, but the required disposable PostgreSQL proof could not run because `COMMERCE_TEST_DATABASE_URL` was unavailable in the execution environment.
 
 ### Execution Evidence
 
@@ -405,6 +405,37 @@ Review requested for Attempt 4
 - Recursive submodule synchronization/update passed; database submodule is at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Parent synchronization commit: `016f938c0d67c63ebbc1def04d6397d095f85c73`.
 - Attempt 4 implementation commit: `24fb8d8`, pushed to `origin/task/ARCH-021-COMMERCE-027`.
+
+### Attempt 5 Correction
+
+- Implementation commit: `6ba906c` (`fix(auth): require super admin for merchant access CLI`), pushed to `origin/task/ARCH-021-COMMERCE-027`.
+- `scripts/merchant-studio-access.mjs` now selects `id`, `active` and `role`, and rejects missing, inactive or non-`SUPER_ADMIN` actors with `active platform SUPER_ADMIN actor not found` before shop lookup or merchant-access/audit mutation.
+- `tests/auth-merchant-access-postgres.test.ts` adds an active platform `ADMIN` fixture and asserts a denied grant leaves both `CommerceStudioMerchantAccess` and `CommerceAuditEvent` unchanged. The existing `SUPER_ADMIN` lifecycle and concurrent binding regressions remain unchanged.
+- Previously accepted hierarchy and Attempt 4 PostgreSQL safety safeguards were preserved; the only behavioral change is requiring `SUPER_ADMIN` for global merchant-access administration.
+
+### Attempt 5 Validation
+
+- Focused authorization suite: `npx vitest run tests/auth-merchant-access.test.ts tests/auth-role-requirements.test.ts tests/auth-platform-admin.test.ts tests/auth-permissions.test.ts tests/auth-security-policy.test.ts --reporter=verbose` passed: 5 files, 62 tests.
+- Targeted ESLint, `node --check scripts/merchant-studio-access.mjs`, required authorization `rg` audit and `git diff --check`: passed.
+- `npm run typecheck`: nonzero with the documented 61 existing diagnostics in unrelated agent-configuration/UI/MCP files; no task-owned auth/CLI diagnostics.
+- PostgreSQL proof required by the correction contract was attempted with `COMMERCE_AUTH_POSTGRES=1`; it was blocked before test execution because `COMMERCE_TEST_DATABASE_URL` was unavailable. No ordinary or remote database was substituted.
+
+### Attempt 5 Disposition
+
+- Correction checklist item 1: implemented in `scripts/merchant-studio-access.mjs`; local syntax/lint validation passed.
+- Correction checklist item 2: implemented in `tests/auth-merchant-access-postgres.test.ts`; runtime proof pending the required disposable PostgreSQL target.
+- Correction checklist item 3: preserved; no changes to the accepted PostgreSQL safety harness.
+- Correction checklist item 4: implemented and passed, 5 files / 62 tests.
+- Correction checklist item 5: blocked by unavailable `COMMERCE_TEST_DATABASE_URL`.
+- Correction checklist item 6: targeted checks passed; full typecheck has only documented unrelated baseline diagnostics.
+- Correction checklist item 7: this Attempt 5 report records the implementation, validation, blocker and publication evidence.
+
+### Attempt 5 Launcher Evidence
+
+- Prepared packet: `prepared_execution: true`, attempt `5`, executor `copilot`, dependency gate passed, parent claim commit `1747903bc0514d6535e7e56b7567e2d2cc052d4f`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-027`, branch `task/ARCH-021-COMMERCE-027`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-027`, branch `task/ARCH-021-COMMERCE-027`.
+- Launcher evidence: recursive submodule synchronization/update passed; database submodule `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Prior accepted implementation commits: `ab6595a86077bdc1ede5925caf7a70ed98f20e1b`, `4fe2ff4`, pushed to `origin/task/ARCH-021-COMMERCE-027`.
 
 ### Files Changed
