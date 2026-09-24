@@ -481,7 +481,7 @@ Repository-wide typecheck remains blocked by unchanged `TYPECHECK-001` baseline 
 - Prepared packet evidence: parent sync head `8aff42630a6c5aad4d2c60efebee63f2f5d6ce2d`; implementation head at start `641f764c0fe74eaa85b446b9a390234f4eb85dee`; claim commit `e1b1466c30b71d09b473beeab6b36a744aff4dfc`; dependency `ARCH-021-COMMERCE-029` complete; database submodule `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Canonical worktrees: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-032`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-032`.
 - Implementation branch: `task/ARCH-021-COMMERCE-032`; implementation commit: `76358c6` (`fix(commerce): enforce pinned storefront schema source`), pushed to `origin/task/ARCH-021-COMMERCE-032`.
-- Parent report commit and final local/remote heads are recorded after parent publication below.
+- Parent report publication commit: `146e6123`, pushed to `origin/task/ARCH-021-COMMERCE-032`.
 - No secrets or `token.txt` were accessed or changed. `ARCH-021-COMMERCE-033` was not started.
 
 ### Architectural Concerns
