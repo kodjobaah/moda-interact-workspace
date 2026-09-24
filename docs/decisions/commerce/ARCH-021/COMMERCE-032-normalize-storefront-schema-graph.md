@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-24T20:56:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-029
@@ -336,16 +336,16 @@ The existing developer-documentation upstream remains separate.
 
 ## Work Items
 
-- [ ] Add canonical Storefront artifact/provenance accessor.
-- [ ] Add deterministic committed-artifact checker.
-- [ ] Add recursive serializable type-reference helpers.
-- [ ] Replace flat/incompatible schema DTO with truthful normalized contract.
-- [ ] Align browse selectability with accepted compiler restrictions.
-- [ ] Remove `DiscoveryField.path` from the server contract.
-- [ ] Remove production `as SchemaPage` assertions at the discovery boundary.
-- [ ] Remove the unused hand-authored `lib/discovery/storefront-2026-07.json`.
-- [ ] Add real-artifact focused regressions.
-- [ ] Add package validation script.
+- [x] Add canonical Storefront artifact/provenance accessor.
+- [x] Add deterministic committed-artifact checker.
+- [x] Add recursive serializable type-reference helpers.
+- [x] Replace flat/incompatible schema DTO with truthful normalized contract.
+- [x] Align browse selectability with accepted compiler restrictions.
+- [x] Remove `DiscoveryField.path` from the server contract.
+- [x] Remove production `as SchemaPage` assertions at the discovery boundary.
+- [x] Remove the unused hand-authored `lib/discovery/storefront-2026-07.json`.
+- [x] Add real-artifact focused regressions.
+- [x] Add package validation script.
 
 ## Interfaces / Contracts
 
@@ -370,16 +370,16 @@ No database or Background contract changes are produced.
 
 ## Acceptance Criteria
 
-- [ ] The full pinned Storefront introspection artifact is the only field/type source.
-- [ ] Artifact provenance and SHA-256 are checked deterministically.
-- [ ] Discovery type wrappers/arguments are preserved structurally.
-- [ ] Discovery fields no longer contain synthetic `path`.
-- [ ] `src/studio/contracts.ts` no longer invents a richer schema-field shape.
-- [ ] No production `as SchemaPage` hides a contract mismatch.
-- [ ] Root/nested fields come from the real artifact.
-- [ ] Browse restrictions cannot advertise an always-rejected root as selectable.
-- [ ] Normal schema browsing performs no provider/network I/O.
-- [ ] Existing Storefront compiler behavior remains unchanged except for sharing canonical artifact/policy metadata.
+- [x] The full pinned Storefront introspection artifact is the only field/type source.
+- [x] Artifact provenance and SHA-256 are checked deterministically.
+- [x] Discovery type wrappers/arguments are preserved structurally.
+- [x] Discovery fields no longer contain synthetic `path`.
+- [x] `src/studio/contracts.ts` no longer invents a richer schema-field shape.
+- [x] No production `as SchemaPage` hides a contract mismatch.
+- [x] Root/nested fields come from the real artifact.
+- [x] Browse restrictions cannot advertise an always-rejected root as selectable.
+- [x] Normal schema browsing performs no provider/network I/O.
+- [x] Existing Storefront compiler behavior remains unchanged except for sharing canonical artifact/policy metadata.
 
 ## Validation
 
@@ -414,35 +414,61 @@ or another synthetic server path. Ancestry belongs to client selection state in 
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `components/studio-workspace.tsx`
+- `lib/discovery/compiler.ts`
+- `lib/discovery/schema.ts`
+- `lib/discovery/storefront-artifact.ts`
+- `package.json`
+- `scripts/check-storefront-schema-artifact.mjs`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/contracts.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/storefront-schema-graph.test.ts`
 
 ### Work Completed
 
-None
+- Added the canonical accessor for the committed `storefront-2026-07` introspection artifact and provenance, including recursive serializable GraphQL type references and pure wrapper helpers.
+- Reworked discovery browsing to normalize the complete real artifact graph, preserve argument/type wrappers, expose root and parent type metadata, and omit server-supplied paths.
+- Shared the compiler and discovery Storefront restriction helper; customer/token-required roots are non-selectable with bounded reasons.
+- Removed production discovery `as SchemaPage` assertions and updated the in-memory Studio fixture to the canonical contract.
+- Removed the obsolete hand-authored `lib/discovery/storefront-2026-07.json` source and added deterministic artifact verification plus real-artifact graph regressions.
+
+Correction mapping:
+- Real source/provenance and obsolete subset: `lib/discovery/storefront-artifact.ts`, `lib/discovery/artifacts/storefront-2026-07.*`, removed `lib/discovery/storefront-2026-07.json`.
+- Deterministic checker/package entry: `scripts/check-storefront-schema-artifact.mjs`, `package.json`.
+- Recursive graph/restriction/compiler policy: `lib/discovery/schema.ts`, `lib/discovery/storefront-artifact.ts`, `lib/discovery/compiler.ts`.
+- Contract/cast cleanup: `src/studio/contracts.ts`, `src/commerce/integration/studio/services.ts`, `components/studio-workspace.tsx`, `src/studio/testing/in-memory-studio-services.ts`.
+- Evidence: `tests/storefront-schema-graph.test.ts`.
 
 ### Validation Results
 
-None
+- Artifact checker: `node scripts/check-storefront-schema-artifact.mjs` passed. Summary: `apiVersion: 2026-07`; `artifactSha256: 54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`; `queryRoot: QueryRoot`; `typeCount: 392`; `queryRootFieldCount: 33`.
+- Focused tests: `pnpm exec vitest run tests/storefront-schema-graph.test.ts tests/discovery.test.ts tests/discovery-route.test.ts --reporter=verbose` passed, 3 files and 28 tests.
+- Targeted ESLint: changed source, fixture, script, and focused test files passed.
+- `git diff --check` passed.
+- Typecheck: `pnpm typecheck` remains non-zero on unchanged repository baseline diagnostics (`TYPECHECK-001`), including existing Prisma/generated-client and unrelated service/test typing errors. No new diagnostics remain in the changed discovery, schema contract, compiler, UI, fixture, script, or focused test paths; the pre-existing `services.ts` diagnostics at lines 72 and 85 are unrelated to this task's boundary changes.
+- Initial dependency setup also reported `ERR_PNPM_IGNORED_BUILDS` for unapproved package build scripts; direct checker/tests/lint ran successfully after setup and no generated dependency files were retained.
 
 ### Deviations
 
-None
+The obsolete hand-authored subset was not a tracked Git file on this branch; it was absent after cleanup and is verified absent. No replacement field catalogue was added.
 
 ### Assumptions
 
-None
+- The committed artifact bytes and provenance remain the accepted pinned Shopify Storefront `2026-07` source.
+- The existing repository-wide typecheck baseline remains architect-owned and outside this bounded schema contract task.
 
 ### Unresolved Issues
 
-None
+Repository-wide typecheck remains blocked by unchanged `TYPECHECK-001` baseline diagnostics; this task introduces no diagnostics in its changed schema/discovery contract paths.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
