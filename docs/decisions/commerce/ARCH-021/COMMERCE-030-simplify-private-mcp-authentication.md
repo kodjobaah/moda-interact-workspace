@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T11:11:02Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-020-COMMERCE-024
@@ -258,35 +258,56 @@ The private service link authenticates network placement. Commerce still authori
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `lib/server/config.ts`
+- `src/commerce/integration/backend/authorization.ts`
+- `tests/mcp-service.test.ts`
+- `.env.example`
+- `README.md`
+- `docs/commerce-backend-integration.md`
+- `docs/runtime-compatibility.md`
 
 ### Work Completed
 
-None
+- Removed raw `DATABASE_URL`/`REDIS_URL` endpoint and parsed-URL logging from configuration parsing; no replacement secret logging was added.
+- Added production authorization-boundary translation for known `LifecycleError` codes to bounded `McpError` responses, preserving `FORBIDDEN`, `STALE_TURN`, `INCOMPATIBLE_VERSION`, `UNAVAILABLE`, and related known outcomes.
+- Preserved fail-closed `UNAVAILABLE` behavior for unexpected resolver/storage failures.
+- Added adapter-to-service coverage proving a shop/conversation ownership denial remains `FORBIDDEN` rather than becoming generic 503, while an unexpected storage error remains `UNAVAILABLE`.
+- Removed the orphan RSA key example and stale signed-context/RSA readiness guidance from Commerce-owned documentation.
+- Preserved the accepted context-only private MCP flow, DB-backed authorization, local ten-second deadline, and diagnostic lifecycle.
 
 ### Validation Results
 
-None
+- Launcher evidence: prepared execution was claimed for Attempt 2 with `execution_state=claimed`, dependency gate passed, parent head `30949d2671b2b3f85f0a740508191a44884efc87`, implementation head `fd281e0e92914378cb911d4539ab5f9c4b9ec629`, canonical worktrees supplied by launcher, and recursive submodules ready with database at `98fdf715e54fe6df92ac6951facd104e410068f2`.
+- `npm run test -- tests/mcp-service.test.ts tests/mcp-authorization.test.ts`: passed, 2 files / 19 tests.
+- `npm run test -- tests/mcp-service.test.ts tests/mcp-authorization.test.ts tests/mcp-compatibility.test.ts tests/auth-entrypoints.test.ts`: MCP/authorization/compatibility files passed, 3 files / 26 tests; `tests/auth-entrypoints.test.ts` has one pre-existing assertion mismatch expecting route source text `createMcpService` although the current route delegates through `getCommerceBackend().mcp`.
+- `npm run diagnose:arch020-external-mcp:local`: passed end to end; persisted connection -> credential -> tool -> preview -> publish -> capability -> release -> grant -> tools/list -> tools/call lifecycle passed, and cleanup reported zero owned Docker resources.
+- `npm run lint`: passed with 0 errors and 6 pre-existing warnings; no new task-owned diagnostics.
+- `npm run typecheck`: blocked by existing unrelated diagnostics in preview route imports, Studio components, agent-configuration effective configuration, and one agent-configuration test; no changed-file diagnostics were reported.
+- `npm run build`: blocked by the same pre-existing missing preview modules in `app/api/studio/code-response/validate/route.ts`; code-runtime packaging/smoke and Prisma generation passed before Next compilation.
+- `git diff --check`: passed.
+- Commerce-owned stale-authentication scan for `COMMERCE_ASSERTION`, `MCP_ASSERTION`, RSA public-key, signed-context, assertion verifier/importer, and key-generation references: no matches.
 
 ### Deviations
 
-None
+- The implementation push helper rejected the local upstream-name mismatch; the exact command `git push origin HEAD:refs/heads/task/ARCH-021-COMMERCE-030` published successfully.
+- The repository-wide typecheck/build and one entrypoint assertion remain blocked by pre-existing baseline issues documented above; the focused changed-slice tests and lint are clean.
 
 ### Assumptions
 
-None
+- The launcher-provided worktree, synchronization, dependency, and submodule evidence is authoritative for Attempt 2 and was not redundantly recreated.
+- The private service link remains the caller trust boundary; no replacement credential or public MCP route was introduced.
 
 ### Unresolved Issues
 
-None
+- Architect/developer follow-up remains for the documented repository typecheck/build baseline and the stale `auth-entrypoints` source-text assertion.
 
 ### Architectural Concerns
 
-None
+- None introduced. The four Architect Review corrections are implemented in the files above and covered by focused adapter/service tests plus local end-to-end diagnostic evidence.
 
 ## Architect Review
 
