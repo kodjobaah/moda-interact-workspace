@@ -104,13 +104,16 @@ lib/discovery/document.ts
 lib/discovery/service.ts
 src/studio/contracts.ts
 src/commerce/integration/studio/services.ts
+src/studio/discovery/shopify-documentation-explorer.tsx  # new required Client Component
+src/studio/discovery/shopify-documentation-article.tsx   # new required pure renderer
 components/studio-workspace.tsx
 app/globals.css
 tests/discovery-document.test.ts
 tests/discovery.test.ts
 tests/studio-services.test.ts
 tests/studio-workspace.test.tsx
-tests/shopify-documentation-rendering.test.tsx   # new if useful
+tests/shopify-documentation-explorer.test.tsx            # new required
+tests/shopify-documentation-article.test.tsx             # new required
 ```
 
 Additional directly affected documentation-only files may be changed when required by the normalized contract.
@@ -126,6 +129,7 @@ Additional directly affected documentation-only files may be changed when requir
 - Database/Shared/Background/Gateway changes.
 - Shopify Admin API.
 - Provider/model calls.
+- A test-only documentation port/service/context/React prop in production code.
 
 ## Requirements
 
@@ -316,11 +320,125 @@ Reject documents exceeding the bounds rather than silently truncating the opened
 
 Search excerpts may be deliberately truncated because they are previews.
 
-### R7 — readable UI
+### R7 — mandatory documentation component boundary
 
-Replace the raw result/document rendering in `StudioWorkspace`.
+The Documentation tab must be extracted from `components/studio-workspace.tsx`.
 
-Search results must render as readable result cards/list items containing:
+Create exactly these production UI modules:
+
+```text
+src/studio/discovery/shopify-documentation-explorer.tsx
+src/studio/discovery/shopify-documentation-article.tsx
+```
+
+#### `ShopifyDocumentationExplorer`
+
+This is the Documentation-tab Client Component.
+
+It owns exactly:
+
+```text
+search query state
+search-result state
+opened-document state
+documentation loading state
+documentation error/status state
+Search documentation action
+Back to results action
+opening a selected result
+Open related schema fields action
+```
+
+It must invoke the same production named Server Actions directly:
+
+```ts
+import {
+  searchDocumentation,
+  getDocumentation,
+} from "../server-actions";
+```
+
+or the correct relative path to that exact module.
+
+Do not introduce:
+
+```text
+DocumentationPort
+DocumentationServices
+documentationActions prop
+test-only callback registry
+test-only React context/provider
+NODE_ENV === "test" branch
+```
+
+The only production props allowed for this component are ordinary UI composition values genuinely used by production. For this checkpoint use:
+
+```ts
+type ShopifyDocumentationExplorerProps = {
+  disabled: boolean;
+  onOpenRelatedSchema: () => void;
+};
+```
+
+`onOpenRelatedSchema` is a real production client-to-client callback used to switch the existing Explore tab. It is not a server boundary and is not test-only.
+
+Tests must mock the same named `searchDocumentation` / `getDocumentation` module exports that production imports.
+
+#### `ShopifyDocumentationArticle`
+
+This is a pure structured-document renderer.
+
+It owns exactly:
+
+```text
+document title
+canonical Open on Shopify link
+HEADING block rendering
+PARAGRAPH block rendering
+LIST block rendering
+CODE block rendering
+BLOCKQUOTE block rendering
+```
+
+Its production contract must be exactly the normalized document DTO (or a single `document` prop of that type):
+
+```ts
+type ShopifyDocumentationArticleProps = {
+  document: DocumentationDocument;
+};
+```
+
+It must:
+
+- contain no provider/network/data-fetching code;
+- import no Server Action;
+- contain no sanitizer for raw HTML;
+- receive no raw HTML;
+- use no `dangerouslySetInnerHTML`.
+
+#### `StudioWorkspace`
+
+After this task, `components/studio-workspace.tsx` may:
+
+- own the existing `"docs" | "schema"` tab state;
+- render `ShopifyDocumentationExplorer` when the Documentation tab is active;
+- pass the real `disabled` value;
+- pass `onOpenRelatedSchema={() => setTab("schema")}`.
+
+It must no longer own:
+
+```text
+DocumentationItem[] state
+DocumentationDocument state
+documentation query state
+documentation search/open functions
+documentation result list markup
+documentation article block markup
+```
+
+Do not move those responsibilities into another generic Studio component.
+
+Search results rendered by `ShopifyDocumentationExplorer` must be readable result cards/list items containing:
 
 ```text
 title
@@ -331,7 +449,7 @@ Open/read action
 
 Do not render a 2,000-character raw chunk as the result paragraph.
 
-Opened documents must render inside a semantic:
+Opened documents rendered by `ShopifyDocumentationArticle` must use a semantic:
 
 ```tsx
 <article>
@@ -413,13 +531,22 @@ Prove the normalized block sequence and the React rendering preserve those disti
 
 Also prove no script/style content appears.
 
-### R11 — contract parity
+### R11 — contract and composition parity
 
-Tests must exercise the same normalization functions and Studio contracts production uses.
+Tests must exercise the same normalization functions, DTOs, components and named Server Action boundary that production uses.
 
 Do not create a richer documentation fixture shape that production never returns.
 
 The in-memory Studio fixture must be updated to use the exact final public documentation DTO.
+
+Component tests must:
+
+- render the real `ShopifyDocumentationExplorer`;
+- mock `searchDocumentation` and `getDocumentation` from the same named Server Action module imported by production;
+- render the real `ShopifyDocumentationArticle`;
+- never pass a test-only service/port/action bundle prop into either production component.
+
+`StudioWorkspace` tests must prove that the Documentation tab composes `ShopifyDocumentationExplorer` rather than maintaining a second inline documentation implementation.
 
 ### R12 — do not broaden upstream trust
 
@@ -446,12 +573,16 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 - [ ] Preserve code/pre whitespace.
 - [ ] Enforce structured-document bounds.
 - [ ] Update Studio service adapter/contracts.
-- [ ] Render search results as bounded readable cards/items.
-- [ ] Render opened document as semantic structured article.
-- [ ] Add canonical `Open on Shopify` action.
+- [ ] Create `ShopifyDocumentationExplorer` with the exact production responsibilities/props in R7.
+- [ ] Create pure `ShopifyDocumentationArticle` with the exact production responsibilities/props in R7.
+- [ ] Remove documentation query/result/document/search/open/rendering state from `StudioWorkspace`.
+- [ ] Render search results as bounded readable cards/items in `ShopifyDocumentationExplorer`.
+- [ ] Render opened document as semantic structured article through `ShopifyDocumentationArticle`.
+- [ ] Add canonical `Open on Shopify` action in `ShopifyDocumentationArticle`.
 - [ ] Add readable documentation CSS.
 - [ ] Update in-memory fixtures to exact production DTO shape.
-- [ ] Add raw-markup and structured-rendering regressions.
+- [ ] Mock the production named documentation Server Actions in component tests.
+- [ ] Add raw-markup, structured-rendering and component-boundary regressions.
 
 ## Interfaces / Contracts
 
@@ -499,18 +630,42 @@ No cross-service contract is introduced.
 - [ ] Canonical source URL remains constrained to `shopify.dev/docs`.
 - [ ] Existing input/output/redirect bounds remain enforced.
 - [ ] Tests and fixtures consume the same final documentation DTO as production.
+- [ ] `StudioWorkspace` no longer owns documentation search/result/open-document state or document rendering markup.
+- [ ] `ShopifyDocumentationExplorer` uses the production named Server Action imports directly.
+- [ ] `ShopifyDocumentationArticle` is a pure renderer with no Server Action/provider/network dependency.
+- [ ] No production documentation port/service/action-bundle prop or test-only React context/provider is introduced.
 
 ## Validation
 
-- [ ] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-rendering.test.tsx --reporter=verbose` (omit the final file only if coverage is kept in the existing named tests)
+- [ ] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
 - [ ] targeted ESLint for every changed source/test file
 - [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
-- [ ] source audit:
+- [ ] raw-rendering source audit:
   ```text
   rg -n "dangerouslySetInnerHTML|<p>\{document\.text\}</p>|item\.text" \
     components src/studio lib/discovery
   ```
   expected: no documentation-rendering matches
+- [ ] `StudioWorkspace` ownership audit:
+  ```text
+  rg -n \
+    "DocumentationItem|DocumentationDocument|searchDocumentation|getDocumentation|setItems|setDocument|async function search\(|async function open\(" \
+    components/studio-workspace.tsx
+  ```
+  expected: no documentation implementation matches
+- [ ] production test-only seam audit:
+  ```text
+  rg -n \
+    "DocumentationPort|DocumentationServices|documentationActions|NODE_ENV.*test|fixture.*Documentation|documentation.*fixture.*prop" \
+    components src/studio
+  ```
+  expected: no production documentation test-injection matches
+- [ ] component existence audit:
+  ```text
+  test -f src/studio/discovery/shopify-documentation-explorer.tsx
+  test -f src/studio/discovery/shopify-documentation-article.tsx
+  ```
+  expected: both pass
 - [ ] `git diff --check`
 
 ## Stop Condition
@@ -528,6 +683,13 @@ Do not add a heavyweight generic HTML/Markdown rendering system unless the bound
 Do not render remote HTML with `dangerouslySetInnerHTML`.
 
 The full-document parser may flatten inline formatting for this checkpoint. Preserving block structure is the required outcome.
+
+
+Do not leave a compatibility copy of the old Documentation-tab implementation in `StudioWorkspace`.
+
+Do not create `TestShopifyDocumentationExplorer`, a test-only production context, or an injectable documentation service prop. Tests mock the same named Server Actions production imports.
+
+Keep `ShopifyDocumentationArticle` deliberately dumb: it renders the normalized DTO and nothing else.
 
 ## Completion Report
 
