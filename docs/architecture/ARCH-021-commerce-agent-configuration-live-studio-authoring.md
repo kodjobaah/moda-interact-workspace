@@ -844,6 +844,54 @@ Collapse/remove:
 - test-only function/port/service injection props on production React components; automated tests must replace the same named Server Action/module boundaries used by production instead of creating an alternate runtime composition;
 - MCP RSA/JWT/key exchange and **all replacement application-layer MCP credentials**. The existing private service link is the MCP caller trust boundary; Commerce continues to authorize shop/turn/grant/release/tool context from PostgreSQL.
 
+### Dynamic Storefront schema-builder correction — 2026-09-24
+
+Manual validation after COMMERCE-029 found that the Storefront Explore UI still
+assumed a synthetic `DiscoveryField.path` that the production discovery response
+does not provide. The existing server discovery already consumes the complete real
+Storefront `2026-07` introspection artifact retained from pinned
+`@shopify/dev-mcp@1.15.4`; the defect is the flattening/UI contract, not absence of
+schema data.
+
+The correction uses these invariants:
+
+1. `lib/discovery/artifacts/storefront-2026-07.json` plus its provenance are the
+   only Storefront field/type source of truth for this pinned version.
+2. The obsolete hand-authored `lib/discovery/storefront-2026-07.json` subset is
+   removed.
+3. The server returns truthful normalized GraphQL type references/arguments and
+   never fabricates an ancestry `path`.
+4. The browser starts from the artifact's real query root and lazily follows real
+   field return types.
+5. Authoritative UI selection state is a nested tree. Any dotted path shown to a
+   human is derived from current ancestry only.
+6. GraphQL is generated/merged from that tree using AST operations and actual
+   schema arguments, then validated by the existing Storefront compiler against
+   the same pinned schema hash.
+7. Normal Studio schema browsing does not perform live Shopify/provider
+   introspection per click; the pinned real artifact provides deterministic,
+   versioned authoring.
+8. Tests consume the same normalized artifact contract as production rather than
+   richer hand-written schema fixtures.
+
+Correction dependency chain:
+
+```text
+COMMERCE-029 Complete
+        |
+        v
+COMMERCE-032  normalize real pinned schema graph
+        |
+        v
+COMMERCE-033  recursive schema browser + selection tree
+        |
+        v
+COMMERCE-034  GraphQL AST generation + existing compiler validation
+        |
+        v
+SYSTEM-TEST-001
+```
+
 Error rule:
 
 ```text
@@ -895,13 +943,20 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Complete | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Complete | COMMERCE-028, COMMERCE-001..006 |
+| ARCH-021-COMMERCE-032 | moda_commerce | Ready | COMMERCE-029 |
+| ARCH-021-COMMERCE-033 | moda_commerce | Pending | COMMERCE-032 |
+| ARCH-021-COMMERCE-034 | moda_commerce | Pending | COMMERCE-033 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
 | ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
+| ARCH-021-COMMERCE-032 | moda_commerce | Ready | COMMERCE-029 |
+| ARCH-021-COMMERCE-033 | moda_commerce | Pending | COMMERCE-032 |
+| ARCH-021-COMMERCE-034 | moda_commerce | Pending | COMMERCE-033 |
+
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
-| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Ready | all checkpoint implementation tasks |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks, including COMMERCE-032..034 |
 
-Current checkpoint implementation frontier: none. COMMERCE-029 is architect-accepted Complete, so every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete and SYSTEM-TEST-001 is Ready. The developer may intentionally leave the terminal system-test task Ready while manually validating the completed checkpoint. Phase-3 tasks remain paused until checkpoint validation/reconciliation.
+Current checkpoint frontier: `ARCH-021-COMMERCE-032`. Manual validation after COMMERCE-029 acceptance exposed the Storefront schema-builder contract mismatch, so SYSTEM-TEST-001 is Pending again. COMMERCE-032 is Ready; COMMERCE-033 and COMMERCE-034 are dependency-gated behind it. Phase-3 tasks remain paused until this correction chain and terminal checkpoint validation are architect-accepted Complete.
 
 ### Phase 4 — live single-tool testing
 
@@ -994,6 +1049,20 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — Dynamic Storefront schema correction decomposed
+
+- Manual validation identified the exact checkbox defect: production discovery
+  fields have no `path`, while the UI used `field.path` as key/selection identity,
+  so all rows shared `undefined`.
+- Confirmed the repository already contains the real complete Storefront 2026-07
+  introspection artifact from pinned `@shopify/dev-mcp@1.15.4`; no hand-authored
+  replacement schema is required.
+- Added COMMERCE-032..034 to normalize that real graph, build recursive selection,
+  and generate GraphQL through the existing compiler.
+- Returned SYSTEM-TEST-001 to Pending until those implementation corrections are
+  architect-accepted Complete.
+- Phase-3 tasks remain paused.
 
 ### 2026-09-24 — COMMERCE-029 Attempt 3 accepted
 

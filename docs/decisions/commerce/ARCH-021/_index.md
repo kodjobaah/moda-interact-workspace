@@ -148,13 +148,46 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Complete | COMMERCE-028, COMMERCE-001..006 |
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
 | [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Complete | COMMERCE-025 |
+| [COMMERCE-032](COMMERCE-032-normalize-storefront-schema-graph.md) | Normalize real pinned Storefront introspection into one truthful schema graph contract | Ready | COMMERCE-029 |
+| [COMMERCE-033](COMMERCE-033-build-recursive-storefront-schema-browser.md) | Build recursive schema-driven Storefront browser and selection tree | Pending | COMMERCE-032 |
+| [COMMERCE-034](COMMERCE-034-generate-storefront-graphql-from-schema-selection.md) | Generate/merge Storefront GraphQL from dynamic schema selections | Pending | COMMERCE-033 |
 
-Current checkpoint implementation frontier: none.
 
-COMMERCE-029 is architect-accepted Complete. All pre-Phase-3 simplification
-implementation dependencies are Complete, so terminal `ARCH-021-SYSTEM-TEST-001`
-is Ready. The developer may leave that terminal system-test task Ready while
-manually validating the completed checkpoint.
+Current checkpoint frontier:
+
+```text
+ARCH-021-COMMERCE-032
+```
+
+Manual validation of the accepted Studio boundary exposed a separate Storefront
+schema-builder contract defect: the production discovery response did not contain
+the synthetic `field.path` assumed by the UI. The correction is now decomposed as
+COMMERCE-032 -> COMMERCE-033 -> COMMERCE-034.
+
+COMMERCE-032 is Ready. COMMERCE-033/034 are Pending on that chain.
+`ARCH-021-SYSTEM-TEST-001` returns to Pending until all three correction tasks are
+architect-accepted Complete.
+
+### Storefront dynamic-schema correction tasks materialised — 2026-09-24
+
+Manual validation found that the real `browseSchema()` result is derived from the
+pinned `@shopify/dev-mcp` introspection artifact but does not contain the synthetic
+`field.path` required by the old flat UI contract. Because every production field
+therefore had `path === undefined`, one checkbox selection could appear to select
+the entire list.
+
+The correction deliberately does not patch that symptom with `path ?? name`.
+Instead:
+
+```text
+COMMERCE-032 -> real pinned introspection -> truthful normalized type graph
+COMMERCE-033 -> recursive graph navigation -> nested selection tree
+COMMERCE-034 -> selection tree + real args -> GraphQL AST -> existing compiler
+```
+
+Normal Studio browsing remains local to the pinned real introspection artifact; no
+per-click Shopify network introspection is introduced. SYSTEM-TEST-001 returns to
+Pending until this correction chain is Complete.
 
 ### COMMERCE-029 Attempt 3 accepted — 2026-09-24
 

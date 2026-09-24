@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 50
 executor: null
 claimed_at: null
@@ -22,6 +22,9 @@ depends_on:
   - ARCH-021-COMMERCE-028
   - ARCH-021-COMMERCE-029
   - ARCH-021-COMMERCE-030
+  - ARCH-021-COMMERCE-032
+  - ARCH-021-COMMERCE-033
+  - ARCH-021-COMMERCE-034
   - ARCH-021-BACKGROUND-001
   - ARCH-021-GATEWAY-001
 enables: []
@@ -155,6 +158,35 @@ COMMERCE_MCP_SERVICE_TOKEN
 
 Historical docs may mention removed names only when clearly labelled historical; active runtime/deployment docs must not.
 
+
+### R8. Dynamic Storefront schema builder uses the real pinned schema
+
+Prove the accepted schema-authoring flow against the real pinned Storefront `2026-07`
+introspection artifact:
+
+```text
+real introspection artifact
+  -> normalized schema graph
+  -> QueryRoot.product
+  -> Product.priceRange
+  -> ProductPriceRange.minVariantPrice
+  -> MoneyV2.amount
+  -> nested selection tree
+  -> GraphQL AST/query
+  -> existing Storefront compiler validation
+```
+
+Prove all of the following:
+
+- the discovery field contract contains no synthetic server `path`;
+- selecting `amount` does not select unrelated sibling fields;
+- the required `product` argument is bound explicitly from the Tool input contract;
+- a missing/wrong argument binding fails visibly;
+- token/restricted roots remain impossible to select;
+- generated schema identity equals the pinned artifact identity;
+- normal schema browsing/generation performs no Shopify/provider network request;
+- the obsolete hand-authored Storefront subset is not used.
+
 ## Work Items
 
 - [ ] Add reduced configuration inheritance scenarios.
@@ -164,6 +196,7 @@ Historical docs may mention removed names only when clearly labelled historical;
 - [ ] Add serializable Studio boundary validation.
 - [ ] Add context-only private MCP scenario/public denial proof.
 - [ ] Add cross-repository obsolete-auth residue check.
+- [ ] Add dynamic real-schema Storefront builder scenario.
 
 ## Interfaces / Contracts
 
@@ -178,6 +211,9 @@ Consumes only architect-accepted implementation dependencies listed below.
 - ARCH-021-COMMERCE-028
 - ARCH-021-COMMERCE-029
 - ARCH-021-COMMERCE-030
+- ARCH-021-COMMERCE-032
+- ARCH-021-COMMERCE-033
+- ARCH-021-COMMERCE-034
 - ARCH-021-BACKGROUND-001
 - ARCH-021-GATEWAY-001
 
@@ -187,7 +223,7 @@ None
 
 ## Acceptance Criteria
 
-- [ ] R1-R7 pass.
+- [ ] R1-R8 pass.
 - [ ] No application-layer MCP credential remains.
 - [ ] No swallowed Studio mutation error remains in tested flows.
 - [ ] No system-test task modifies implementation repositories.

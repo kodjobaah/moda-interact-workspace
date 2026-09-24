@@ -1,0 +1,471 @@
+---
+id: ARCH-021-COMMERCE-032
+architecture_id: ARCH-021
+title: Normalize the pinned Storefront schema graph
+task_kind: implementation
+domain: commerce
+repository: moda-interact-commerce
+assigned_agent: moda_commerce
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: ready
+priority: 20
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+  - ARCH-021-COMMERCE-029
+enables:
+  - ARCH-021-COMMERCE-033
+created: 2026-09-24
+updated: 2026-09-24
+---
+
+# Normalize the pinned Storefront schema graph
+
+## Architecture
+
+Architecture ID:
+
+`ARCH-021`
+
+Architecture document:
+
+`docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+
+Coordinator:
+
+`moda_architect`
+
+## Objective
+
+Make the real pinned Shopify Storefront `2026-07` introspection artifact the single source of truth for Studio schema discovery by exposing one truthful typed graph contract with no synthetic field paths or hand-authored field catalogue.
+
+## Context
+
+Manual checkpoint validation exposed a production contract mismatch in the existing Shopify schema builder.
+
+The repository already contains the real pinned Storefront introspection artifact:
+
+```text
+lib/discovery/artifacts/storefront-2026-07.json
+lib/discovery/artifacts/storefront-2026-07.provenance.json
+```
+
+The provenance currently identifies:
+
+```text
+apiVersion:        2026-07
+sourcePackage:     @shopify/dev-mcp@1.15.4
+sourcePackagePath: dist/data/storefront-graphql_2026-07.json.gz
+artifactSha256:    54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc
+queryType:         QueryRoot
+```
+
+The committed artifact is a real GraphQL introspection response and currently contains hundreds of actual Shopify types. It is already consumed by the Storefront compiler.
+
+The bug is that `lib/discovery/schema.ts` flattens the real schema into a DTO that does **not** contain `path`, while `src/studio/contracts.ts` independently declares `DiscoveryField.path` as required. `src/commerce/integration/studio/services.ts` then hides that mismatch with `as SchemaPage`, and the UI uses `field.path` as its React/checkbox identity. At runtime every `path` is therefore `undefined`, so clicking one checkbox can make every checkbox appear selected.
+
+There is also an obsolete hand-authored subset:
+
+```text
+lib/discovery/storefront-2026-07.json
+```
+
+which is not used by the real discovery/compiler path and must not become a second schema source.
+
+This task fixes only the schema-source/contract layer. It does not implement recursive UI navigation or GraphQL generation.
+
+## Scope
+
+Primary files:
+
+```text
+lib/discovery/artifacts/storefront-2026-07.json
+lib/discovery/artifacts/storefront-2026-07.provenance.json
+lib/discovery/storefront-artifact.ts             # new canonical artifact/provenance accessor
+lib/discovery/schema.ts
+lib/discovery/compiler.ts                        # consume shared artifact metadata/policy only
+lib/discovery/storefront-2026-07.json             # remove obsolete hand-authored subset
+src/studio/contracts.ts
+src/commerce/integration/studio/services.ts
+components/studio-workspace.tsx                   # remove unsafe SchemaPage cast only
+scripts/check-storefront-schema-artifact.mjs      # new deterministic artifact inspection/check
+package.json
+tests/storefront-schema-graph.test.ts             # new
+tests/discovery.test.ts
+tests/discovery-route.test.ts
+```
+
+Additional directly affected files may be changed only when required to compile the contract change.
+
+## Out of Scope
+
+- Recursive schema-navigation UI.
+- Checkbox/tree state implementation.
+- GraphQL document generation.
+- Tool argument-binding UI.
+- Live Shopify requests from the Studio browser.
+- Store-specific schema introspection.
+- Shopify Admin GraphQL / Phase-3 authoring.
+- Database migrations.
+- Shared-package changes.
+- Background/Gateway changes.
+- Provider/model calls.
+- Any new hand-authored field allowlist/catalogue.
+
+## Requirements
+
+### R1 — one real schema source of truth
+
+The canonical Storefront schema source is exactly:
+
+```text
+lib/discovery/artifacts/storefront-2026-07.json
+```
+
+with provenance:
+
+```text
+lib/discovery/artifacts/storefront-2026-07.provenance.json
+```
+
+Normal Studio schema browsing MUST NOT call Shopify or Shopify Dev MCP on every field expansion. The builder is dynamic because it consumes the complete real pinned introspection artifact, not because it performs a live network request for each UI interaction.
+
+The obsolete hand-authored file:
+
+```text
+lib/discovery/storefront-2026-07.json
+```
+
+must be deleted. No replacement hand-authored field list may be introduced.
+
+### R2 — deterministic artifact verification
+
+Create:
+
+```text
+scripts/check-storefront-schema-artifact.mjs
+```
+
+and package script:
+
+```json
+"check:storefront-schema-artifact": "node scripts/check-storefront-schema-artifact.mjs"
+```
+
+The script MUST:
+
+1. read the committed introspection artifact and provenance;
+2. require `apiVersion === "2026-07"`;
+3. require `sourcePackage === "@shopify/dev-mcp@1.15.4"`;
+4. require a GraphQL introspection object at `data.__schema`;
+5. read the query-root name from `data.__schema.queryType.name` instead of hard-coding it;
+6. recompute SHA-256 over the exact committed artifact bytes and require it equals provenance `artifactSha256`;
+7. print deterministic bounded summary lines containing:
+   - API version;
+   - artifact SHA-256;
+   - query-root name;
+   - total type count;
+   - query-root field count;
+8. exit non-zero on any mismatch.
+
+Do not print the complete 1.7MB artifact.
+
+The task Completion Report MUST record the actual summary values produced by this script.
+
+### R3 — canonical serializable GraphQL type reference
+
+Define one serializable type-reference contract owned by Commerce discovery.
+
+Use this exact semantic model:
+
+```text
+NON_NULL -> child type reference
+LIST     -> child type reference
+NAMED    -> name + GraphQL named-kind
+```
+
+The public TypeScript representation may use discriminated unions or the equivalent recursive object, but it MUST preserve the wrapper structure rather than reducing a field type to a display string.
+
+The named kind must be bounded to the GraphQL introspection kinds used by the artifact, including at least:
+
+```text
+SCALAR
+OBJECT
+ENUM
+INTERFACE
+UNION
+INPUT_OBJECT
+```
+
+Provide pure helpers for:
+
+```text
+display type text
+unwrap named type
+is nullable
+is list
+is expandable output type
+```
+
+Those helpers must derive their answer from the type-reference contract.
+
+### R4 — truthful discovery field contract
+
+A discovered field MUST NOT contain a server-supplied `path`.
+
+The normalized discovered field contract must contain at least:
+
+```text
+name
+description
+typeRef
+namedTypeName
+namedTypeKind
+nullable
+list
+expandable
+selectable
+restrictionReason
+arguments
+deprecated
+deprecationReason
+```
+
+Each argument must contain at least:
+
+```text
+name
+description
+typeRef
+required
+defaultValue
+```
+
+The values are derived from the real pinned introspection artifact.
+
+No UI-oriented synthetic ancestry/path belongs in the server field DTO.
+
+### R5 — truthful schema-page contract
+
+`browseSchema()` must return one canonical serializable response containing at least:
+
+```text
+apiVersion
+schemaHash
+rootTypeName
+parentTypeName
+parentTypeKind
+fields
+nextCursor
+```
+
+`rootTypeName` is read from the introspection artifact.
+
+`parentTypeName` is the actual type being browsed.
+
+The default parent is the artifact's real `queryType.name`, not a duplicated string constant.
+
+Searching/pagination remain bounded and deterministic.
+
+### R6 — discovery policy must agree with the accepted compiler policy
+
+The browse result must not present a field as selectable when the accepted Storefront compiler will always reject it for the same context.
+
+At minimum, root-level restrictions already enforced by the compiler and Storefront token requirements must produce:
+
+```text
+selectable: false
+restrictionReason: <bounded safe explanation>
+```
+
+Do not create a second independently maintained restriction matrix.
+
+Factor/reuse one Commerce-owned policy helper where necessary so schema browsing and compiler enforcement cannot silently diverge.
+
+This task must preserve the current accepted compiler semantics; it must not broaden Storefront access.
+
+### R7 — remove contract casts/duplication
+
+After this task:
+
+```text
+src/studio/contracts.ts
+```
+
+must consume/alias the canonical discovery types using type-only imports rather than re-declaring a richer incompatible `DiscoveryField`.
+
+Remove unsafe contract assertions such as:
+
+```text
+as SchemaPage
+```
+
+from the production discovery adapter and Studio composition where the underlying value is the discovery response.
+
+TypeScript must prove the contract.
+
+### R8 — actual pinned-schema evidence
+
+Focused tests must use the real committed introspection artifact and prove at least:
+
+```text
+query root comes from artifact.data.__schema.queryType.name
+QueryRoot contains product
+product resolves to named output type Product
+Product contains title
+Product contains priceRange
+ProductPriceRange contains minVariantPrice
+MoneyV2 contains amount
+customer/root token restriction is represented as not selectable
+field DTOs contain no `path`
+schemaHash equals provenance artifactSha256
+```
+
+Tests must not recreate those fields in a richer hand-written fixture.
+
+### R9 — no normal runtime network dependency
+
+`browseSchema()` remains local/committed-artifact backed.
+
+Do not add a Shopify token requirement, Storefront endpoint, HTTP fetch, Shopify Admin API call or Dev MCP subprocess to normal Studio schema browsing.
+
+The existing developer-documentation upstream remains separate.
+
+## Work Items
+
+- [ ] Add canonical Storefront artifact/provenance accessor.
+- [ ] Add deterministic committed-artifact checker.
+- [ ] Add recursive serializable type-reference helpers.
+- [ ] Replace flat/incompatible schema DTO with truthful normalized contract.
+- [ ] Align browse selectability with accepted compiler restrictions.
+- [ ] Remove `DiscoveryField.path` from the server contract.
+- [ ] Remove production `as SchemaPage` assertions at the discovery boundary.
+- [ ] Remove the unused hand-authored `lib/discovery/storefront-2026-07.json`.
+- [ ] Add real-artifact focused regressions.
+- [ ] Add package validation script.
+
+## Interfaces / Contracts
+
+Produces the canonical Commerce-owned Storefront schema-discovery contract consumed by:
+
+```text
+ARCH-021-COMMERCE-033
+ARCH-021-COMMERCE-034
+```
+
+The schema artifact is not a Shared-package cross-service contract.
+
+No database or Background contract changes are produced.
+
+## Dependencies
+
+- ARCH-021-COMMERCE-029
+
+## Enables
+
+- ARCH-021-COMMERCE-033
+
+## Acceptance Criteria
+
+- [ ] The full pinned Storefront introspection artifact is the only field/type source.
+- [ ] Artifact provenance and SHA-256 are checked deterministically.
+- [ ] Discovery type wrappers/arguments are preserved structurally.
+- [ ] Discovery fields no longer contain synthetic `path`.
+- [ ] `src/studio/contracts.ts` no longer invents a richer schema-field shape.
+- [ ] No production `as SchemaPage` hides a contract mismatch.
+- [ ] Root/nested fields come from the real artifact.
+- [ ] Browse restrictions cannot advertise an always-rejected root as selectable.
+- [ ] Normal schema browsing performs no provider/network I/O.
+- [ ] Existing Storefront compiler behavior remains unchanged except for sharing canonical artifact/policy metadata.
+
+## Validation
+
+- [ ] `npm run check:storefront-schema-artifact`
+- [ ] `npx vitest run tests/storefront-schema-graph.test.ts tests/discovery.test.ts tests/discovery-route.test.ts --reporter=verbose`
+- [ ] targeted ESLint for every changed source/test/script file
+- [ ] `npm run typecheck` (record only unchanged documented unrelated baseline diagnostics; zero task-owned diagnostics required)
+- [ ] `git diff --check`
+
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return to `moda_architect` and STOP.
+
+Do not start COMMERCE-033.
+
+## Implementation Notes
+
+Do not load the complete schema artifact into a Client Component solely to make the UI dynamic. The server discovery action may return bounded type pages derived from the complete local graph.
+
+The artifact is already the real pinned introspection response. Dynamic means the UI follows that graph; it does not mean introducing live remote introspection on every click.
+
+Do not solve the checkbox bug with:
+
+```text
+path ?? name
+path: field.name
+```
+
+or another synthetic server path. Ancestry belongs to client selection state in COMMERCE-033.
+
+## Completion Report
+
+### Status
+
+Not Started
+
+### Files Changed
+
+None
+
+### Work Completed
+
+None
+
+### Validation Results
+
+None
+
+### Deviations
+
+None
+
+### Assumptions
+
+None
+
+### Unresolved Issues
+
+None
+
+### Architectural Concerns
+
+None
+
+## Architect Review
+
+### Review Status
+
+Pending
+
+### Review Notes
+
+None
+
+### Reviewed Files
+
+None
+
+### Validation Reviewed
+
+None
+
+### Architecture Conformance
+
+Pending
+
+### Follow-up
+
+None
