@@ -892,14 +892,14 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
-| ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
+| ARCH-021-COMMERCE-028 | moda_commerce | Ready | COMMERCE-025, 026, 027, 011..014 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
 | ARCH-021-BACKGROUND-001 | moda_background | Ready | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-027` and `ARCH-021-BACKGROUND-001`. COMMERCE-025 and COMMERCE-026 are Complete; COMMERCE-028 remains Pending until COMMERCE-027 is Complete.
+Current checkpoint frontier: `ARCH-021-COMMERCE-028` and `ARCH-021-BACKGROUND-001`. COMMERCE-025, COMMERCE-026 and COMMERCE-027 are Complete; COMMERCE-028 is Ready for Attempt 2 Changes Requested work, and COMMERCE-029 remains Pending on COMMERCE-028.
 
 ### Phase 4 — live single-tool testing
 
@@ -992,6 +992,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-028 Attempt 1 architect review
+
+- Returned COMMERCE-028 to Ready at `attempt: 1`; cleared `executor` / `claimed_at`.
+- Preserved the direct named-Server-Action and serializable `UNCONFIRMED` direction.
+- Required Attempt 2 to restore the reduced shop Agent Configuration surface using only `shopSelection.selectedShop?.id`, aggregate independent dirty/unconfirmed state into Studio navigation blocking, make reconciliation transport-safe, migrate the stale action-bundle/`kind:'unknown'` UI suites, add validated-shop production composition coverage, and reconcile the stale Completion Report.
+- COMMERCE-029 remains Pending. Active checkpoint frontier: COMMERCE-028 plus BACKGROUND-001.
 
 ### 2026-09-24 — COMMERCE-025 Attempt 4 accepted
 
