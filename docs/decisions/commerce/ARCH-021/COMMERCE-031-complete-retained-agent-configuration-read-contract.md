@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T16:44:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-025
@@ -204,12 +204,12 @@ This task is read-contract completion only.
 
 ## Work Items
 
-- [ ] Add `AgentConfigurationState`.
-- [ ] Add platform/shop retained configuration reads to the existing port/service.
-- [ ] Add named ADMIN-readable server actions for those reads.
-- [ ] Add durable `getShopPrompt(shopId)` lineage read to the existing prompt port/service.
-- [ ] Add the named ADMIN-readable `getShopPrompt(shopId)` server action.
-- [ ] Add focused retained-null/CAS and shop-lineage read regressions.
+- [x] Add `AgentConfigurationState`.
+- [x] Add platform/shop retained configuration reads to the existing port/service.
+- [x] Add named ADMIN-readable server actions for those reads.
+- [x] Add durable `getShopPrompt(shopId)` lineage read to the existing prompt port/service.
+- [x] Add the named ADMIN-readable `getShopPrompt(shopId)` server action.
+- [x] Add focused retained-null/CAS and shop-lineage read regressions.
 
 ## Interfaces / Contracts
 
@@ -313,31 +313,63 @@ resolver and not an active-pointer read.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/commerce/agent-configuration/prompt-service.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
+- `tests/agent-configuration-model.test.ts`
+- `tests/agent-configuration-prompts.test.ts`
 
 ### Work Completed
 
-None.
+- Added read-only `AgentConfigurationState` and retained platform/shop reads that
+  return nullable overrides with persisted model/prompt CAS versions.
+- Added ADMIN-gated `getPlatformAgentConfiguration` and
+  `getShopAgentConfiguration` Server Actions.
+- Added exact-scope durable `getShopPrompt(shopId)` lineage lookup and its
+  ADMIN-gated Server Action; it does not depend on an active prompt pointer.
+- Preserved existing mutation, audit, schema and authorization boundaries.
+- Added retained-null/CAS and exact-shop lineage regressions.
 
 ### Validation Results
 
-None.
+- Focused new regressions: PASS — 2 passed, 14 skipped using Vitest
+  `--testNamePattern "retained nullable|durable shop prompt"`.
+- Focused model/prompt suites: 15 passed, 1 unrelated pre-existing failure in
+  the template-copy test (`tests/agent-configuration-prompts.test.ts`).
+- Targeted ESLint: PASS with 2 existing warnings in the model test helper and
+  no errors.
+- `git diff --check`: PASS.
+- `npm run typecheck`: non-zero on existing repository diagnostics; no new
+  diagnostics in changed files. Record against documented `TYPECHECK-001` where
+  applicable; the Commerce `Prisma.sql` diagnostic and unrelated UI diagnostics
+  predate this task.
+- `npm run build`: code-runtime packaging, smoke test and Prisma generation
+  passed; Next build is blocked by pre-existing missing preview modules in
+  `app/api/studio/code-response/validate/route.ts` (`lib/preview/http`,
+  `lib/preview/runtime`, `src/commerce/preview/types`). No changed file is in
+  that failure path.
 
 ### Deviations
 
-None.
+- Full focused suite and repository typecheck/build remain non-zero because of
+  unrelated existing failures documented above; task-specific regressions pass.
 
 ### Assumptions
 
-None.
+- Existing ADMIN Server Action authorization is the required read boundary;
+  service reads retain the established principal authorization path.
 
 ### Unresolved Issues
 
-None.
+- Existing template-copy test failure, repository typecheck diagnostics and
+  missing preview build modules remain for their owning work.
 
 ### Architectural Concerns
 
