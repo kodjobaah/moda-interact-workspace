@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-24T21:23:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-029
@@ -381,13 +381,13 @@ No database or Background contract changes are produced.
 - [x] Normal schema browsing performs no provider/network I/O.
 - [x] Existing Storefront compiler behavior remains unchanged except for sharing canonical artifact/policy metadata.
 
-## Validation
+### Validation
 
-- [ ] `npm run check:storefront-schema-artifact`
-- [ ] `npx vitest run tests/storefront-schema-graph.test.ts tests/discovery.test.ts tests/discovery-route.test.ts --reporter=verbose`
-- [ ] targeted ESLint for every changed source/test/script file
-- [ ] `npm run typecheck` (record only unchanged documented unrelated baseline diagnostics; zero task-owned diagnostics required)
-- [ ] `git diff --check`
+- [x] `npm run check:storefront-schema-artifact`
+- [x] `npx vitest run tests/storefront-schema-graph.test.ts tests/discovery.test.ts tests/discovery-route.test.ts --reporter=verbose`
+- [x] targeted ESLint for every changed source/test/script file
+- [x] `npm run typecheck` (record only unchanged documented unrelated baseline diagnostics; zero task-owned diagnostics required)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -418,6 +418,10 @@ Ready for Review
 
 ### Files Changed
 
+- Attempt 2 correction files:
+   - `lib/discovery/storefront-2026-07.json` (deleted)
+   - `scripts/check-storefront-schema-artifact.mjs`
+   - `tests/storefront-schema-graph.test.ts`
 - `components/studio-workspace.tsx`
 - `lib/discovery/compiler.ts`
 - `lib/discovery/schema.ts`
@@ -437,25 +441,31 @@ Ready for Review
 - Removed production discovery `as SchemaPage` assertions and updated the in-memory Studio fixture to the canonical contract.
 - Removed the obsolete hand-authored `lib/discovery/storefront-2026-07.json` source and added deterministic artifact verification plus real-artifact graph regressions.
 
+Attempt 2 correction checklist:
+
+- [x] `git ls-files --error-unmatch lib/discovery/storefront-2026-07.json` classified the path as `tracked legacy file`.
+- [x] Deleted the tracked legacy source; `test ! -e lib/discovery/storefront-2026-07.json` passed in the implementation worktree.
+- [x] Checker now fails with the required message if the obsolete path is reintroduced.
+- [x] Focused regression creates the forbidden path in a controlled test, verifies checker failure, and removes the temporary file.
+- [x] Preserved accepted artifact graph, provenance/hash, recursive references, truthful DTOs, shared restriction policy, no production `as SchemaPage`, and local/no-network browsing behavior.
+
 Correction mapping:
-- Real source/provenance and obsolete subset: `lib/discovery/storefront-artifact.ts`, `lib/discovery/artifacts/storefront-2026-07.*`, removed `lib/discovery/storefront-2026-07.json`.
-- Deterministic checker/package entry: `scripts/check-storefront-schema-artifact.mjs`, `package.json`.
-- Recursive graph/restriction/compiler policy: `lib/discovery/schema.ts`, `lib/discovery/storefront-artifact.ts`, `lib/discovery/compiler.ts`.
-- Contract/cast cleanup: `src/studio/contracts.ts`, `src/commerce/integration/studio/services.ts`, `components/studio-workspace.tsx`, `src/studio/testing/in-memory-studio-services.ts`.
-- Evidence: `tests/storefront-schema-graph.test.ts`.
+- Attempt 1 accepted source/provenance and contract work: `lib/discovery/storefront-artifact.ts`, `lib/discovery/artifacts/storefront-2026-07.*`, `lib/discovery/schema.ts`, `lib/discovery/compiler.ts`, `src/studio/contracts.ts`, `src/commerce/integration/studio/services.ts`, `components/studio-workspace.tsx`, `src/studio/testing/in-memory-studio-services.ts`, `package.json`.
+- Attempt 2 legacy-source correction: deleted `lib/discovery/storefront-2026-07.json`; guarded exact path in `scripts/check-storefront-schema-artifact.mjs`; added invariant regression in `tests/storefront-schema-graph.test.ts`.
 
 ### Validation Results
 
-- Artifact checker: `node scripts/check-storefront-schema-artifact.mjs` passed. Summary: `apiVersion: 2026-07`; `artifactSha256: 54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`; `queryRoot: QueryRoot`; `typeCount: 392`; `queryRootFieldCount: 33`.
-- Focused tests: `pnpm exec vitest run tests/storefront-schema-graph.test.ts tests/discovery.test.ts tests/discovery-route.test.ts --reporter=verbose` passed, 3 files and 28 tests.
-- Targeted ESLint: changed source, fixture, script, and focused test files passed.
+- Artifact checker: `npm run check:storefront-schema-artifact` passed. Summary: `apiVersion: 2026-07`; `artifactSha256: 54b992d0bc6ceffd030f9d4de69be944159cc9686e1e030d97b8293a5fe059bc`; `queryRoot: QueryRoot`; `typeCount: 392`; `queryRootFieldCount: 33`.
+- Focused tests: `npx vitest run tests/storefront-schema-graph.test.ts tests/discovery.test.ts tests/discovery-route.test.ts --reporter=verbose` passed, 3 files and 29 tests.
+- Targeted ESLint: all changed source, fixture, script, and focused test files passed.
+- Legacy absence: `test ! -e lib/discovery/storefront-2026-07.json` passed.
 - `git diff --check` passed.
-- Typecheck: `pnpm typecheck` remains non-zero on unchanged repository baseline diagnostics (`TYPECHECK-001`), including existing Prisma/generated-client and unrelated service/test typing errors. No new diagnostics remain in the changed discovery, schema contract, compiler, UI, fixture, script, or focused test paths; the pre-existing `services.ts` diagnostics at lines 72 and 85 are unrelated to this task's boundary changes.
+- Typecheck: `npm run typecheck` remains non-zero on unchanged repository baseline diagnostics (`TYPECHECK-001`), including Prisma/generated-client and unrelated service/test typing errors. Zero diagnostics were reported in Attempt 2 checker/test/deleted-file paths. The only task-adjacent diagnostics remain the documented pre-existing `src/commerce/integration/studio/services.ts` diagnostics at lines 72 and 85; no Attempt 2 change touched that file.
 - Initial dependency setup also reported `ERR_PNPM_IGNORED_BUILDS` for unapproved package build scripts; direct checker/tests/lint ran successfully after setup and no generated dependency files were retained.
 
 ### Deviations
 
-The obsolete hand-authored subset was not a tracked Git file on this branch; it was absent after cleanup and is verified absent. No replacement field catalogue was added.
+The Architect Review identified the obsolete subset as tracked. It was deleted in Attempt 2 and the checker now prevents reintroduction. No replacement field catalogue was added.
 
 ### Assumptions
 
@@ -465,6 +475,14 @@ The obsolete hand-authored subset was not a tracked Git file on this branch; it 
 ### Unresolved Issues
 
 Repository-wide typecheck remains blocked by unchanged `TYPECHECK-001` baseline diagnostics; this task introduces no diagnostics in its changed schema/discovery contract paths.
+
+### Publication Evidence
+
+- Prepared packet evidence: parent sync head `8aff42630a6c5aad4d2c60efebee63f2f5d6ce2d`; implementation head at start `641f764c0fe74eaa85b446b9a390234f4eb85dee`; claim commit `e1b1466c30b71d09b473beeab6b36a744aff4dfc`; dependency `ARCH-021-COMMERCE-029` complete; database submodule `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Canonical worktrees: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-032`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-032`.
+- Implementation branch: `task/ARCH-021-COMMERCE-032`; implementation commit: `76358c6` (`fix(commerce): enforce pinned storefront schema source`), pushed to `origin/task/ARCH-021-COMMERCE-032`.
+- Parent report commit and final local/remote heads are recorded after parent publication below.
+- No secrets or `token.txt` were accessed or changed. `ARCH-021-COMMERCE-033` was not started.
 
 ### Architectural Concerns
 
