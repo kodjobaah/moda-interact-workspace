@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-24T19:29:38Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-028
@@ -136,13 +136,13 @@ Named Server Actions must preserve typed domain errors. Client catch blocks must
 
 ## Work Items
 
-- [ ] Remove `StudioServices` production client prop.
-- [ ] Convert initial reads to serializable Server Component DTOs.
-- [ ] Convert client mutations/refreshes to named Server Actions.
-- [ ] Remove production ConnectionPort prop composition.
-- [ ] Remove production ExternalHttpUiPort server-created prop composition.
-- [ ] Preserve test-only adapters where useful.
-- [ ] Update focused route/component tests.
+- [x] Remove `StudioServices` production client prop.
+- [x] Convert initial reads to serializable Server Component DTOs.
+- [x] Convert client mutations/refreshes to named Server Actions.
+- [x] Remove production ConnectionPort prop composition.
+- [x] Remove production ExternalHttpUiPort server-created prop composition.
+- [x] Preserve test-only adapters where useful.
+- [x] Update focused route/component tests.
 
 ## Interfaces / Contracts
 
@@ -170,21 +170,21 @@ None. `moda_architect` must re-review/redefine the paused Phase-3 frontier after
 
 ## Acceptance Criteria
 
-- [ ] No production `StudioServices` object crosses into a Client Component.
-- [ ] No production server-created ConnectionPort crosses into a Client Component.
-- [ ] No production server-created External HTTP port crosses into a Client Component.
-- [ ] Normal UI errors remain visible and typed.
-- [ ] Existing Studio routes retain functional behavior.
-- [ ] Test adapters are not mistaken for production composition.
+- [x] No production `StudioServices` object crosses into a Client Component.
+- [x] No production server-created ConnectionPort crosses into a Client Component.
+- [x] No production server-created External HTTP port crosses into a Client Component.
+- [x] Normal UI errors remain visible and typed.
+- [x] Existing Studio routes retain functional behavior.
+- [x] Test adapters are not mistaken for production composition.
 
 ## Validation
 
-- [ ] focused Studio route tests
-- [ ] focused Connections tests
-- [ ] focused Tool/External editor composition tests
-- [ ] Next production build or repository-declared equivalent
-- [ ] targeted ESLint/typecheck
-- [ ] `git diff --check`
+- [x] focused Studio route tests
+- [x] focused Connections tests
+- [x] focused Tool/External editor composition tests
+- [ ] Next production build or repository-declared equivalent: blocked by the unchanged missing preview modules `lib/preview/http`, `lib/preview/runtime`, and `src/commerce/preview/types`.
+- [ ] targeted ESLint/typecheck: lint passed; typecheck remains blocked by those three missing preview modules and the six unchanged baseline test diagnostic groups recorded below.
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -200,6 +200,41 @@ Do not remove interfaces around Shopify, external HTTP transport, model provider
 ### Status
 
 Ready for Review
+
+### Attempt 3 Files Changed
+
+- `components/studio-workspace.tsx`
+- `src/studio/connections/connections-ui.tsx`
+- `src/studio/external-http/ports.ts`
+- `tests/connections-route-composition.test.tsx`
+- `tests/connections-ui.test.tsx`
+- `tests/external-tools-production.test.ts`
+- `tests/external-tools-ui.test.tsx`
+
+### Attempt 3 Correction Mapping
+
+- R1/R2: the exported `StudioWorkspace` boundary remains serializable; the external HTTP client-local port is constructed only from `externalHttpCatalogue`, and no `externalHttpPort` or `renderCodePanel` public props remain.
+- R4: `ConnectionsPage`, `ConnectionDetail` and `CredentialPanel` use named connection Server Actions directly; no `ConnectionPort` prop or conditional port branch remains. Connection UI tests mock the named action module and delegate to test-owned fixture state.
+- R5: removed production `createExternalHttpFixturePort` and `createExternalHttpCataloguePort` exports; pure adapter coverage calls `createExternalHttpSamplePort(catalogue)` directly.
+- R6/R7: existing typed error rendering and client-only external editor composition remain unchanged.
+
+### Attempt 3 Validation Results
+
+- Focused packet passed: `pnpm exec vitest run tests/agent-configuration-production.test.tsx tests/connections-production.test.ts tests/connections-route-composition.test.tsx tests/connections-ui.test.tsx tests/external-tools-production.test.ts tests/external-tools-ui.test.tsx tests/selected-shop-route.test.tsx tests/studio-workspace.test.tsx tests/studio-services-errors.test.ts` — 9 files, 71 tests.
+- Required audits passed with no matches: `fixtureAdapter|externalHttpPort?:|renderCodePanel?:|port?: ConnectionPort` in the specified production files, and `createExternalHttpFixturePort|createExternalHttpCataloguePort` under `src`.
+- `pnpm lint` passed with 0 errors and 8 pre-existing warnings in unrelated files.
+- `pnpm typecheck` remains baseline-blocked with 15 diagnostics: three missing preview modules plus unchanged diagnostics in `agent-configuration-effective`, `agent-configuration-prompts-postgres`, `c20-integration-fixture`, `external-wiring`, `local-external-mcp-diagnostic`, and `selected-shop-context`; no Attempt 3-owned file is listed.
+- `pnpm build` reached runtime packaging, packaged-runtime smoke, Prisma generation and Next compilation, then failed on the same three missing preview modules: `lib/preview/http`, `lib/preview/runtime`, and `src/commerce/preview/types`.
+- `git diff --check` passed. Database submodule remained `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
+### Attempt 3 Publication Evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-029`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-029`
+- Mirrored branches: `task/ARCH-021-COMMERCE-029`
+- Implementation commit pushed: `4ab1cf1` (`fix(commerce): remove remaining studio test seams`)
+- Parent claim commit: `4c17ad6a0646bd147b5aa87330aa8e701e920ba4`
+- Architect Review was not modified.
 
 ### Attempt 2 Files Changed
 
