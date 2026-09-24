@@ -148,8 +148,8 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Complete | COMMERCE-028, COMMERCE-001..006 |
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
 | [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Complete | COMMERCE-025 |
-| [COMMERCE-032](COMMERCE-032-normalize-storefront-schema-graph.md) | Normalize real pinned Storefront introspection into one truthful schema graph contract | Ready | COMMERCE-029 |
-| [COMMERCE-033](COMMERCE-033-build-recursive-storefront-schema-browser.md) | Build recursive schema-driven Storefront browser and selection tree | Pending | COMMERCE-032 |
+| [COMMERCE-032](COMMERCE-032-normalize-storefront-schema-graph.md) | Normalize real pinned Storefront introspection into one truthful schema graph contract | Complete | COMMERCE-029 |
+| [COMMERCE-033](COMMERCE-033-build-recursive-storefront-schema-browser.md) | Build recursive schema-driven Storefront browser and selection tree | Ready | COMMERCE-032 |
 | [COMMERCE-034](COMMERCE-034-generate-storefront-graphql-from-schema-selection.md) | Generate/merge Storefront GraphQL from dynamic schema selections | Pending | COMMERCE-033 |
 | [COMMERCE-035](COMMERCE-035-render-shopify-documentation-readably.md) | Normalize Shopify docs into readable safe excerpts and structured article blocks | Pending | COMMERCE-034 |
 
@@ -157,16 +157,12 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 Current checkpoint frontier:
 
 ```text
-ARCH-021-COMMERCE-032
+ARCH-021-COMMERCE-033
 ```
 
-Manual validation of the accepted Studio boundary exposed a separate Storefront
-schema-builder contract defect: the production discovery response did not contain
-the synthetic `field.path` assumed by the UI. The correction is now decomposed as
-COMMERCE-032 -> COMMERCE-033 -> COMMERCE-034 -> COMMERCE-035.
-
-COMMERCE-032 is Ready. COMMERCE-033/034/035 are Pending on that chain.
-`ARCH-021-SYSTEM-TEST-001` remains Pending until all four correction tasks are
+COMMERCE-032 is architect-accepted Complete. COMMERCE-033 is Ready.
+COMMERCE-034 and COMMERCE-035 remain Pending on the correction chain.
+`ARCH-021-SYSTEM-TEST-001` remains Pending until all correction tasks are
 architect-accepted Complete.
 
 ### Documentation readability correction task materialised — 2026-09-24
@@ -324,3 +320,13 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 ### COMMERCE-013 Attempt 2 architect review — 2026-09-23
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
+
+### COMMERCE-032 Attempt 2 accepted — 2026-09-24
+
+COMMERCE-032 is architect-accepted **Complete**. The real pinned Storefront 2026-07
+introspection artifact is the sole field/type source, the obsolete hand-authored
+subset is absent and guarded against reintroduction, and the normalized discovery
+contract exposes no synthetic server path.
+
+COMMERCE-033 is now **Ready**. COMMERCE-034/035 and SYSTEM-TEST-001 remain
+dependency-gated.
