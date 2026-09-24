@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-24T15:38:15Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-030
@@ -139,10 +139,10 @@ If the private endpoint is unavailable, preserve the real unavailable/network er
 
 ## Work Items
 
-- [ ] Remove assertion key config/signing from `src/commerce/mcp-client.ts`.
-- [ ] Add context-only header construction.
-- [ ] Remove obsolete env/docs/tests.
-- [ ] Preserve current MCP call semantics and error propagation.
+- [x] Remove assertion key config/signing from `src/commerce/mcp-client.ts`.
+- [x] Add context-only header construction.
+- [x] Remove obsolete env/docs/tests.
+- [x] Preserve current MCP call semantics and error propagation.
 
 ## Interfaces / Contracts
 
@@ -158,18 +158,18 @@ Consumes COMMERCE-030 context-only private request contract.
 
 ## Acceptance Criteria
 
-- [ ] Background has no MCP RSA/JWT signing path.
-- [ ] Background has no MCP service token/API key/shared secret.
-- [ ] MCP requests carry the bounded context header and no Authorization header.
-- [ ] Existing grant/tool call semantics are unchanged.
-- [ ] Network/context failures remain explicit.
+- [x] Background has no MCP RSA/JWT signing path.
+- [x] Background has no MCP service token/API key/shared secret.
+- [x] MCP requests carry the bounded context header and no Authorization header.
+- [x] Existing grant/tool call semantics are unchanged.
+- [x] Network/context failures remain explicit.
 
 ## Validation
 
-- [ ] focused MCP client tests
-- [ ] repository test command covering CommerceAgent MCP calls
-- [ ] targeted lint/typecheck/build as declared by repository
-- [ ] `git diff --check`
+- [x] focused MCP client tests
+- [x] repository test command covering CommerceAgent MCP calls (repository suite run; unrelated baseline failures recorded)
+- [x] targeted lint/typecheck/build as declared by repository
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -188,7 +188,7 @@ Ready for Review
 ### Files Changed
 
 - `src/commerce/mcp-client.ts`
-- `tests/integration/commerce/host.test.ts`
+- `tests/integration/commerce/host.test.ts` (Attempt 1 implementation plus Attempt 2 fixture diagnostics)
 - `docs/commerce-host.md`
 
 ### Work Completed
@@ -202,15 +202,17 @@ Ready for Review
 
 - `npm run build`: passed, including Prisma generation and TypeScript compilation.
 - `git diff --check`: passed.
-- Focused `tests/integration/commerce/host.test.ts`: 38 passed, 2 existing concurrency cases failed with `Commerce host: UNAVAILABLE`; both fail in isolation and do not produce context/header or HTTP-response diagnostics.
-- Full `npm test`: 10 failures, including the same two host concurrency failures and unrelated existing failures for the missing ARCH-020 evidence fixture checkout, absent `moda_interact_test` database, stale shared-runtime version expectation, and unrelated maturation/billing/observability tests. No failure identified in the context-only request cases.
+- Exact reviewed concurrency cases reproduced individually with `--reporter=verbose`: `first-turn insert races retain the unique winner` passed; `uses a concurrently persisted different release instead of its losing resolve candidate` passed.
+- Added deterministic fixture error capture, cleared in `beforeEach`, and surfaced the original caught error from both concurrency cases. The captured fixture error remained null in both individual runs and the complete focused run.
+- Final focused `npx vitest run tests/integration/commerce/host.test.ts --reporter=verbose`: 1 file passed, 40 tests passed, 0 failed.
+- Full `npm test`: 10 failures remain outside this task: missing ARCH-020 evidence fixture checkout, absent `moda_interact_test` database (4 translation integration failures), stale shared-runtime version expectation, and 4 unrelated maturation/billing failures. The focused host fixture and changed slice are green.
 - No Background `jose` dependency or MCP service-token/API-key/shared-secret use remains. Remaining `Authorization` matches are unrelated WhatsApp/Shopify provider credentials.
-- Prepared launcher evidence: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-BACKGROUND-001`, parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-BACKGROUND-001`; recursive submodule sync/update passed and the database submodule was at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Implementation commit `49e8596` was pushed to `origin/task/ARCH-021-BACKGROUND-001`.
+- Attempt 2 launcher evidence: parent synchronization head `143da32a30c451bc625ccacaeac85d9f1a234a5a`; implementation head `49e8596b2acc0d778430e9d4a26af495a845f8ce`; parent claim commit `9597650a71109383cbad73462fc3b7d08f6f662e`; parent `origin/main` incorporated and implementation `origin/main` already current; recursive submodule sync/update passed with database at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commits `49e8596` and `a8dfda0` were pushed to `origin/task/ARCH-021-BACKGROUND-001`; final correction commit is `a8dfda0`.
 
 ### Deviations
 
-- The repository has no declared lint script; build and `git diff --check` were run as the available targeted static validation.
+- The repository has no declared lint script; `npm run build` and `git diff --check` were run as the available targeted static validation.
 
 ### Assumptions
 
@@ -218,11 +220,18 @@ Ready for Review
 
 ### Unresolved Issues
 
-- The two pre-existing Commerce host concurrency fixture failures remain for architect review; they are outside the context-authentication change and reproduce independently by test name.
+- The two concurrency failures reported in Attempt 1 were not reproducible in Attempt 2. After fixture exception capture was added, both exact tests passed individually and the full 40-test fixture passed with no captured fixture error. No production client change was needed, and no unsupported baseline waiver is being claimed.
 
 ### Architectural Concerns
 
 - None.
+
+### Attempt 2 Correction Mapping
+
+1. **Diagnose the two concurrency failures:** Reproduced both exact test names individually with verbose reporting; both passed. The complete host fixture passed 40/40.
+2. **Expose swallowed fixture errors:** `tests/integration/commerce/host.test.ts` now stores the caught error, clears it per test, and rethrows it from each reviewed concurrency case when present. No fixture error was captured in the required runs.
+3. **Preserve the accepted context-only design:** No production MCP client redesign or credential reintroduction; `COMMERCE_MCP_URL`, bounded context header, no MCP `Authorization`, and existing grant/tool semantics remain unchanged.
+4. **Reconcile evidence and status:** Attempt 2 preparation heads, submodule state, final implementation push, exact validation commands/results, and repository residual failures are recorded above. `ARCH-021-GATEWAY-001` remains unstarted.
 
 ## Architect Review
 
