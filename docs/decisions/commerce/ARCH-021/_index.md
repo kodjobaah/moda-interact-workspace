@@ -144,20 +144,31 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-025](COMMERCE-025-simplify-agent-configuration-services.md) | Simplify Agent Configuration services and reconciliation | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Complete | DATABASE-002, COMMERCE-008, 015 |
 | [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Complete | DATABASE-002 |
-| [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Ready | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
-| [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Pending | COMMERCE-028, COMMERCE-001..006 |
+| [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Complete | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
+| [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Ready | COMMERCE-028, COMMERCE-001..006 |
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
 | [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Complete | COMMERCE-025 |
 
 Current checkpoint frontier:
 
 ```text
-ARCH-021-COMMERCE-028
+ARCH-021-COMMERCE-029
 ARCH-021-GATEWAY-001
 ```
 
-COMMERCE-031 is architect-accepted Complete. COMMERCE-028 is Ready for Attempt 3;
-COMMERCE-029 remains Pending.
+COMMERCE-028 is architect-accepted Complete. All COMMERCE-029 dependencies are
+Complete, so COMMERCE-029 is Ready.
+
+### COMMERCE-028 Attempt 3 accepted — 2026-09-24
+
+COMMERCE-028 is **Complete / Accepted, Attempt 3**. The selected-shop UI now consumes
+the COMMERCE-031 retained configuration DTO as the canonical CAS source, preserves
+independent model/prompt versions across set/clear/set, rediscoveries exact-shop
+durable prompt lineage while inherited, and completes the required not-committed,
+reconciliation-rejection and Studio navigation-lock proofs. The exact six-file
+focused packet passed 18/18 with zero skips. All COMMERCE-029 dependencies are now
+Complete, so COMMERCE-029 is promoted to **Ready**. Current independent checkpoint
+frontier: COMMERCE-029 plus GATEWAY-001.
 
 ### COMMERCE-031 Attempt 2 accepted — 2026-09-24
 

@@ -892,15 +892,15 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
-| ARCH-021-COMMERCE-028 | moda_commerce | Ready | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
-| ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
+| ARCH-021-COMMERCE-028 | moda_commerce | Complete | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
+| ARCH-021-COMMERCE-029 | moda_commerce | Ready | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
 | ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-028` and `ARCH-021-GATEWAY-001`. COMMERCE-031 is architect-accepted Complete; COMMERCE-028 is Ready for Attempt 3 and COMMERCE-029 remains Pending. BACKGROUND-001 acceptance satisfies the remaining GATEWAY-001 dependency.
+Current checkpoint frontier: `ARCH-021-COMMERCE-029` and `ARCH-021-GATEWAY-001`. COMMERCE-028 is architect-accepted Complete and all COMMERCE-029 dependencies are Complete, so COMMERCE-029 is Ready. BACKGROUND-001 acceptance satisfies the remaining GATEWAY-001 dependency.
 
 ### Phase 4 — live single-tool testing
 
@@ -993,6 +993,20 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-028 Attempt 3 accepted
+
+- Accepted implementation `268eaa8`.
+- Confirmed selected-shop CAS state now comes from the retained COMMERCE-031
+  configuration DTO and survives set/clear/set independently for model and prompt.
+- Confirmed exact-shop durable prompt lineage remains discoverable while the active
+  prompt override is null.
+- Confirmed not-committed retry uses a new operation id, reconciliation rejection
+  preserves the original operation and controls, and the Studio navigation blocker
+  locks/unlocks from aggregate Agent Configuration UNCONFIRMED state.
+- Accepted the exact six-file focused packet: 18/18 passed with zero skips.
+- Marked COMMERCE-028 Complete and promoted COMMERCE-029 to Ready. Current
+  independent checkpoint frontier: COMMERCE-029 plus GATEWAY-001.
 
 ### 2026-09-24 — COMMERCE-031 Attempt 2 accepted
 
