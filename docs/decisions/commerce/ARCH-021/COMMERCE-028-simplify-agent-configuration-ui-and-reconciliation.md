@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: blocked
 priority: 20
 executor: null
 claimed_at: null
@@ -22,6 +22,7 @@ depends_on:
   - ARCH-021-COMMERCE-012
   - ARCH-021-COMMERCE-013
   - ARCH-021-COMMERCE-014
+  - ARCH-021-COMMERCE-031
 enables:
   - ARCH-021-COMMERCE-029
 created: 2026-09-24
@@ -184,6 +185,7 @@ Consumes COMMERCE-025/026 mutation/reconciliation contracts and COMMERCE-027 pla
 - ARCH-021-COMMERCE-012
 - ARCH-021-COMMERCE-013
 - ARCH-021-COMMERCE-014
+- ARCH-021-COMMERCE-031
 
 ## Enables
 
@@ -280,296 +282,209 @@ Implementation commit `354c06b` on `task/ARCH-021-COMMERCE-028`:
 
 ### Review Status
 
-Changes Requested
+Blocked — Attempt 2
 
 ### Review Notes
 
-Attempt 1 is **not accepted**. The direct named-Server-Action / serializable `UNCONFIRMED` refactor is directionally correct and must be preserved, but the submitted implementation is incomplete against R1-R8 and is not ready to enable COMMERCE-029.
+#### Attempt 2 review — 2026-09-24
 
-The next claim is Attempt 2. Implement **only** the correction contract below. Do not redesign COMMERCE-025/026/027 services, restore function-valued action bundles, restore `kind:'unknown'`, store mutation closures, or begin COMMERCE-029.
+Reviewed implementation `354c06b` and parent report `7f18953b` against the
+Attempt 1 correction contract.
 
-#### CR-1 — Restore the reduced selected-shop Agent Configuration surface
+Attempt 2 correctly restores the server-validated selected-shop handoff, direct named
+Server Actions, independent dirty/unconfirmed aggregation, Studio navigation locking,
+and the transport-safe reconciliation state machine. Those changes must be preserved.
 
-Files:
+The task cannot be accepted or returned directly for UI-only rework because review
+identified a missing prerequisite read contract in the already-completed
+COMMERCE-025 boundary.
 
-```text
-components/production-studio-page.tsx
-components/studio-workspace.tsx
-src/studio/agent-configuration/agent-configuration-screen.tsx
-src/studio/agent-configuration/shop-agent-configuration.tsx   # restore/create
-```
+##### B1 — retained shop configuration CAS state is not readable after clear
 
-Required behavior:
-
-1. In the `page === 'agent-configuration'` branch of `ProductionStudioPage`, derive exactly:
-
-   ```ts
-   const validatedShopId = shopSelection.selectedShop?.id;
-   ```
-
-2. Pass `validatedShopId` to `StudioWorkspace` as `shopId`. **Do not pass the raw query-string `shopId`** into Agent Configuration.
-3. `StudioWorkspace` passes that validated `shopId` to `AgentConfigurationScreen`.
-4. `AgentConfigurationScreen` renders the platform surfaces plus a reduced `ShopAgentConfiguration` when `shopId` is present. When it is absent, render a bounded "Select a shop to configure shop overrides" state and do not fabricate a shop id.
-5. `ShopAgentConfiguration` imports named Server Actions directly. It must not receive function-valued action bundles.
-6. The shop surface consumes the reduced DATABASE-002 contract only:
-
-   ```text
-   modelId / modelEditVersion
-   activePromptRevisionId / promptEditVersion
-   ```
-
-   It must not reintroduce `generationId`, selection/pointer-table DTOs, stored-result replay, or `kind:'unknown'`.
-7. Clearing a shop model/prompt override must visibly return to platform inheritance while preserving the retained configuration-row CAS token returned by the service.
-
-#### CR-2 — Aggregate dirty state; one clean surface must never clear another dirty surface
-
-Files:
+`ShopAgentConfiguration.load()` currently derives CAS state from:
 
 ```text
-src/studio/agent-configuration/agent-configuration-screen.tsx
-src/studio/agent-configuration/prompt-template-library.tsx
-src/studio/agent-configuration/platform-prompt-configuration.tsx
-src/studio/agent-configuration/shop-agent-configuration.tsx
-components/studio-workspace.tsx
+getShopModelSelection(shopId)
+getShopPromptPointer(shopId)
 ```
 
-`AgentConfigurationScreen` must own independent dirty flags at minimum:
+and then does:
 
 ```text
-templateDirty
-platformPromptDirty
-shopPromptDirty
+modelVersion  = selection?.editVersion ?? 1
+promptVersion = pointer?.editVersion ?? 1
 ```
 
-and derive:
+The accepted DATABASE-002 model deliberately retains one `CommerceAgentConfiguration`
+row and clears nullable override fields instead of deleting/recreating the row.
 
-```ts
-const agentConfigurationDirty =
-  templateDirty || platformPromptDirty || shopPromptDirty;
-```
-
-A child reporting `false` must update only its own flag. It must **not** directly call the shared Studio dirty setter in a way that can clear another child's dirty state.
-
-Report only the derived `agentConfigurationDirty` to `StudioWorkspace`.
-
-#### CR-3 — UNCONFIRMED must lock Studio navigation, not only mutation buttons
-
-Files:
+The current service reads return `null` when the nullable override is absent:
 
 ```text
-src/studio/agent-configuration/agent-configuration-screen.tsx
-src/studio/agent-configuration/platform-model-configuration.tsx
-src/studio/agent-configuration/prompt-template-library.tsx
-src/studio/agent-configuration/platform-prompt-configuration.tsx
-src/studio/agent-configuration/shop-agent-configuration.tsx
-components/studio-workspace.tsx
+modelId == null                -> getShopModelSelection(...) returns null
+activePromptRevisionId == null -> getShopPromptPointer(...) returns null
 ```
 
-Each Agent Configuration surface that can mutate must report whether it currently owns an `UNCONFIRMED` operation. `AgentConfigurationScreen` aggregates those flags and reports one boolean to `StudioWorkspace`.
+while clear mutations increment the retained row's corresponding CAS version.
 
-`StudioWorkspace` navigation blocking must satisfy:
+Concrete failure:
 
 ```text
-blocked = existingDirty || agentConfigurationDirty || existingUnknown || agentConfigurationUnconfirmed
-locked  = existingUnknown || agentConfigurationUnconfirmed
+existing shop model row modelEditVersion = 2
+clear with expectedEditVersion = 2
+database row remains, modelId = null, modelEditVersion = 3
+ShopAgentConfiguration reloads
+getShopModelSelection(...) returns null
+UI resets modelVersion to 1
+next set sends expectedEditVersion = 1
+service correctly returns CAS_CONFLICT
 ```
 
-Consequences:
+The same defect exists for `promptEditVersion`.
 
-- dirty state may be explicitly discarded by the existing Composer flow;
-- `UNCONFIRMED` is locked and cannot be discarded through ordinary navigation;
-- reconciliation to `committed` / `not-committed`, or explicit **Abandon**, clears the owning component's unconfirmed flag and therefore unlocks navigation;
-- navigation state contains booleans only; never store a mutation closure in it.
+This violates R6 and Attempt 1 CR-1 step 7: clearing an override must return visibly
+to platform inheritance **while preserving the retained configuration-row CAS
+token**.
 
-#### CR-4 — Make reconciliation deterministic and transport-safe in every Agent Configuration mutating component
+COMMERCE-028 must not read Prisma directly or reconstruct an edit version locally.
+The missing canonical read belongs to the COMMERCE-025 service boundary.
 
-Files:
+##### B2 — durable shop prompt lineage cannot be rediscovered while inherited
+
+The simplified shop UI obtains prompt choices only after
+`getShopPromptPointer(shopId)` returns an active pointer. When the shop inherits the
+platform prompt, that pointer is `null`, so the component has no prompt id from which
+to load the shop's durable lineage. The selector therefore has no published
+shop-specific revisions to select after a clear/reload even if a durable shop prompt
+lineage exists.
+
+COMMERCE-025 originally specified a `getShopPrompt` read. The current reduced service
+snapshot exposes `getPrompt({promptId})`, `getPlatformPrompt()` and pointer reads but
+does not expose a durable `getShopPrompt(shopId)` lookup.
+
+The UI task must not query `CommerceAgentPrompt` directly to repair this.
+
+##### Blocking dependency
+
+Create and complete:
 
 ```text
-src/studio/agent-configuration/platform-model-configuration.tsx
-src/studio/agent-configuration/prompt-template-library.tsx
-src/studio/agent-configuration/platform-prompt-configuration.tsx
-src/studio/agent-configuration/shop-agent-configuration.tsx
+ARCH-021-COMMERCE-031
+Complete retained Agent Configuration read contract
 ```
 
-Every `reconcile()` implementation must use this state machine:
+COMMERCE-031 owns only the missing read capability. It does not change mutation,
+audit, CAS, reconciliation, schema or UI semantics.
+
+After COMMERCE-031 is architect-accepted Complete, return this same task to `ready`.
+The next authorized claim will be Attempt 3.
+
+#### Attempt 3 correction contract after COMMERCE-031 completes
+
+Attempt 3 remains a COMMERCE-028 UI task. Implement only the following:
+
+##### A3-R1 — consume the retained configuration DTO as the CAS source of truth
+
+`ShopAgentConfiguration` must call the COMMERCE-031 named
+`getShopAgentConfiguration(shopId)` read and use exactly:
 
 ```text
-no UNCONFIRMED -> return
-set pending=true
-call reconcileAgentConfigurationOperation({ original operationId })
-
-committed:
-  reload canonical DTOs
-  clear UNCONFIRMED
-  set final message exactly: "Committed; state refreshed"
-
-not-committed:
-  clear UNCONFIRMED
-  set final message exactly: "Not committed"
-  next explicit mutation retry generates a NEW operationId
-
-error / DATABASE_UNAVAILABLE / FORBIDDEN / INTERNAL_ERROR:
-  retain original UNCONFIRMED operationId
-  render returned `code` + bounded `message`
-  keep mutation retry disabled
-  Reconcile remains available
-  Abandon remains available
-
-reconciliation Promise rejects:
-  retain original UNCONFIRMED operationId
-  set bounded message exactly: "Reconciliation unavailable; try reconciliation again"
-  keep mutation retry disabled
-  Reconcile remains available
-  Abandon remains available
-
-always:
-  pending=false in `finally`
+modelId
+activePromptRevisionId
+modelEditVersion
+promptEditVersion
 ```
 
-For the committed path, call/reload canonical state **before** assigning the final `"Committed; state refreshed"` message so a loader that clears status text cannot erase the required final message.
+as its persisted override/CAS state.
 
-A typed mutation result `DATABASE_UNAVAILABLE` is **not** `UNCONFIRMED`; display its real code/message directly. Only a rejected mutation Promise creates `UNCONFIRMED`.
+Rules:
 
-#### CR-5 — Preserve operation identity and explicit retry semantics
+1. `modelId === null` means inherit the platform model; it does **not** mean
+   `modelEditVersion = 1`.
+2. `activePromptRevisionId === null` means inherit the platform prompt; it does
+   **not** mean `promptEditVersion = 1`.
+3. A missing configuration row may use the deterministic first-write baseline
+   defined by COMMERCE-025.
+4. After every successful set/clear and after reconciliation `committed`, reload the
+   retained configuration DTO before enabling another mutation.
+5. Do not synthesize, decrement or reset an existing row's CAS version in browser
+   state.
 
-For every mutating Agent Configuration component:
+Add exact regression:
 
 ```text
-mutation starts -> generate operationId once
-Promise rejects -> retain exactly that operationId in serializable UNCONFIRMED state
-Reconcile -> use exactly that operationId
-Reconcile not-committed -> clear it
-next mutation retry -> generate a different/new operationId
+initial retained model version = 1
+set model expected=1 -> reload version=2
+clear model expected=2 -> reload modelId=null, version=3
+set model again expected=3
 ```
 
-Do not retain the original mutation function/closure and do not replay the original mutation during reconciliation.
+and the equivalent independent prompt sequence.
 
-#### CR-6 — Migrate the stale UI tests to the direct-action / UNCONFIRMED architecture
+Also prove clearing model leaves `promptEditVersion` unchanged and clearing prompt
+leaves `modelEditVersion` unchanged.
 
-Files that must be migrated and active:
+##### A3-R2 — rediscover durable shop prompt lineage independently of active pointer
+
+Use the COMMERCE-031 `getShopPrompt(shopId)` read when loading the selected shop.
+
+- The durable shop prompt lineage must remain discoverable when
+  `activePromptRevisionId` is null.
+- Published revisions from that exact shop lineage may populate the shop prompt
+  override control.
+- Never use a platform prompt lineage as a shop override candidate.
+- Shop id remains the validated id supplied by `ProductionStudioPage`.
+- Do not add Prisma access or a second shop-selection store in the client.
+
+##### A3-R3 — complete the missing mandatory Attempt 1 reconciliation proofs
+
+The current 14-test packet does not prove all mandatory CR-6 cases. Add active
+focused regressions for:
 
 ```text
-tests/agent-configuration-model-ui.test.tsx
-tests/agent-configuration-platform-prompt-ui.test.tsx
-tests/agent-configuration-template-ui.test.tsx
+1. reconcile not-committed:
+   - original UNCONFIRMED clears
+   - exact "Not committed" message
+   - retry controls re-enable
+   - next mutation uses a DIFFERENT operationId
+
+2. reconciliation Promise rejection:
+   - original operationId remains visible/unchanged
+   - exact "Reconciliation unavailable; try reconciliation again" message
+   - pending returns false
+   - mutation retry remains disabled
+   - Reconcile and Abandon remain available
+
+3. Studio navigation lock:
+   - any Agent Configuration child UNCONFIRMED => Composer blocker locked=true
+   - ordinary discard cannot bypass that lock
+   - Abandon OR committed/not-committed reconciliation clears the aggregate
+     unconfirmed state and unlocks navigation
 ```
 
-Create:
+Do not satisfy these only by testing the child aggregate callback; prove the
+`StudioWorkspace` navigation-blocker composition for the lock/unlock case.
+
+##### A3-R4 — preserve all accepted Attempt 2 behavior
+
+Do not regress:
 
 ```text
-tests/agent-configuration-shop-ui.test.tsx
-tests/agent-configuration-screen-state.test.tsx
+server-validated selected shop only
+direct named Server Actions
+no function-valued action bundles
+no kind:'unknown'
+typed DATABASE_UNAVAILABLE stays a typed error
+exact original operationId used for Reconcile
+committed reload occurs before "Committed; state refreshed"
+independent template/platform/shop dirty flags
+ADMIN read-only behavior
+no live provider/model execution
 ```
 
-The tests must **not** import or construct:
+##### A3-R5 — deterministic validation
 
-```text
-ModelConfigurationActions
-TemplateConfigurationActions
-PromptConfigurationActions
-actions={...}
-promptActions={...}
-templateActions={...}
-kind:'unknown'
-Check original operation
-stored/replayed invoke closures
-```
-
-Instead, use `vi.mock(...)` on the named modules used by production code:
-
-```text
-src/studio/agent-configuration/model-server-actions.ts
-src/studio/agent-configuration/prompt-server-actions.ts
-src/studio/agent-configuration/template-server-actions.ts
-src/studio/agent-configuration/effective-server-actions.ts
-src/studio/agent-configuration/reconciliation-server-actions.ts
-```
-
-Required focused proofs:
-
-1. rejected mutation Promise -> visible `UNCONFIRMED` + exact operationId retained + mutation controls disabled;
-2. reconcile `committed` -> canonical reload -> `Committed; state refreshed` -> writes enabled;
-3. reconcile `not-committed` -> `Not committed` -> retry enabled -> retry uses a new operationId;
-4. reconcile Promise rejection -> original operation remains UNCONFIRMED, `pending` returns false, Reconcile remains available;
-5. typed `DATABASE_UNAVAILABLE` mutation result -> exact code/message rendered, no UNCONFIRMED state;
-6. one dirty child + another clean child -> Studio remains dirty;
-7. any UNCONFIRMED child -> Studio navigation blocker is `locked`; Abandon/reconciled outcome unlocks;
-8. shop UI uses only the supplied validated shop id and reduced CAS DTOs.
-
-#### CR-7 — Tighten production composition tests around selected-shop validation
-
-File:
-
-```text
-tests/agent-configuration-production.test.tsx
-```
-
-For a resolver result containing `selectedShop.id === 'shop-01'`, assert:
-
-```ts
-expect(state.workspaceProps).toMatchObject({
-  page: 'agent-configuration',
-  agentConfigurationEnvironment: 'STAGING',
-  shopId: 'shop-01',
-});
-```
-
-Add a negative case:
-
-```text
-raw query shopId = "attacker-or-missing-shop"
-resolveStudioShopSelection(...) returns selectedShop = null/undefined
-StudioWorkspace shopId is undefined
-raw query value is never forwarded to AgentConfigurationScreen
-```
-
-Continue asserting that production Agent Configuration props contain none of:
-
-```text
-agentConfigurationActions
-agentConfigurationTemplateActions
-agentConfigurationPromptActions
-```
-
-#### CR-8 — Reconcile task/report state before resubmission
-
-The supplied parent task snapshot still contains `Completion Report -> Status: Not Started` and unchecked task/validation boxes despite implementation changes. Attempt 2 must update all executor-owned task state honestly:
-
-- Work Items: check only actually completed items;
-- Acceptance Criteria: check every satisfied criterion;
-- Validation: record exact commands/results;
-- Completion Report Status: `Ready for Review`;
-- Files Changed: complete list;
-- Validation Results: include focused tests, ESLint, typecheck result/baseline and `git diff --check`;
-- Deviations / Assumptions / Unresolved Issues / Architectural Concerns: explicit values;
-- physical parent + implementation worktree paths, start-of-attempt synchronization and recursive submodule evidence;
-- final implementation commit, final parent report commit, push parity and clean-worktree evidence.
-
-### Reviewed Files
-
-```text
-components/production-studio-page.tsx
-components/studio-workspace.tsx
-src/studio/agent-configuration/agent-configuration-screen.tsx
-src/studio/agent-configuration/platform-model-configuration.tsx
-src/studio/agent-configuration/platform-prompt-configuration.tsx
-src/studio/agent-configuration/prompt-template-library.tsx
-src/studio/agent-configuration/model-server-actions.ts
-src/studio/agent-configuration/prompt-server-actions.ts
-src/studio/agent-configuration/template-server-actions.ts
-src/studio/agent-configuration/reconciliation-server-actions.ts
-tests/agent-configuration-production.test.tsx
-tests/agent-configuration-model-ui.test.tsx
-tests/agent-configuration-platform-prompt-ui.test.tsx
-tests/agent-configuration-template-ui.test.tsx
-```
-
-### Validation Reviewed
-
-The partial implementation reports targeted production/template validation, ESLint and `git diff --check`, but the legacy model/prompt suites still encode removed action-bundle / `kind:'unknown'` contracts and the required shop/navigation reconciliation cases are missing. This is insufficient for acceptance.
-
-Attempt 2 must execute exactly:
+Run exactly:
 
 ```bash
 npm exec vitest run \
@@ -581,54 +496,86 @@ npm exec vitest run \
   tests/agent-configuration-production.test.tsx
 ```
 
-All six files must pass with **zero skipped tests**.
+All six files must pass with zero skipped tests.
 
-Then run targeted ESLint:
+Run targeted ESLint over every COMMERCE-028 changed TypeScript/TSX file and the six
+focused tests. Run `npm run typecheck` and retain the full diagnostics. No diagnostic
+caused by the retained configuration DTO, shop-prompt read, CAS version flow or
+Agent Configuration files changed by Attempt 3 may be classified as baseline.
 
-```bash
-npm exec eslint \
-  components/production-studio-page.tsx \
-  components/studio-workspace.tsx \
-  src/studio/agent-configuration/agent-configuration-screen.tsx \
-  src/studio/agent-configuration/platform-model-configuration.tsx \
-  src/studio/agent-configuration/platform-prompt-configuration.tsx \
-  src/studio/agent-configuration/prompt-template-library.tsx \
-  src/studio/agent-configuration/shop-agent-configuration.tsx \
-  tests/agent-configuration-model-ui.test.tsx \
-  tests/agent-configuration-platform-prompt-ui.test.tsx \
-  tests/agent-configuration-template-ui.test.tsx \
-  tests/agent-configuration-shop-ui.test.tsx \
-  tests/agent-configuration-screen-state.test.tsx \
-  tests/agent-configuration-production.test.tsx
-```
-
-Required result: **0 errors**.
-
-Run typecheck and retain the complete diagnostic output:
-
-```bash
-npm run typecheck > /tmp/arch021-c028-typecheck.log 2>&1 || true
-```
-
-There must be **no diagnostics** in the following task-owned paths:
-
-```text
-components/production-studio-page.tsx
-components/studio-workspace.tsx
-src/studio/agent-configuration/
-tests/agent-configuration-*.test.tsx
-```
-
-Finally:
+Finally run:
 
 ```bash
 git diff --check
 ```
 
+##### A3-R6 — execution/report evidence
+
+The Attempt 3 Completion Report must record exact launcher-provided:
+
+```text
+parent worktree path
+implementation worktree path
+matching task branches
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 3 claim evidence
+recursive submodule materialization
+database submodule commit
+implementation commit
+parent report commit
+push parity
+clean-worktree evidence
+```
+
+Do not reuse or infer values from Attempt 2.
+
+### Reviewed Files
+
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/platform-model-configuration.tsx`
+- `src/studio/agent-configuration/platform-prompt-configuration.tsx`
+- `src/studio/agent-configuration/prompt-template-library.tsx`
+- `src/studio/agent-configuration/shop-agent-configuration.tsx`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `src/studio/agent-configuration/prompt-contracts.ts`
+- `src/studio/agent-configuration/prompt-server-actions.ts`
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/commerce/agent-configuration/prompt-service.ts`
+- the six COMMERCE-028 focused UI/production tests
+- COMMERCE-025 accepted task contract and review
+
+### Validation Reviewed
+
+Submitted Attempt 2 evidence:
+
+```text
+focused packet: 6 files / 14 tests PASS
+targeted ESLint: PASS
+git diff --check: PASS
+typecheck: non-zero with reported sibling/baseline diagnostics
+build: blocked before compilation by missing QuickJS package metadata
+```
+
+Static review confirms the focused packet does not currently contain the mandatory
+not-committed/new-operation-id proof, reconciliation-rejection proof, or actual
+Studio navigation blocker lock/unlock proof required by Attempt 1 CR-6.
+
 ### Architecture Conformance
 
-Changes Requested. The direct-action and serializable UNCONFIRMED direction conforms to the simplification checkpoint, but the submitted state currently removes the shop configuration surface, does not lock Studio navigation on UNCONFIRMED operations, allows dirty-state overwrite between independent surfaces, and leaves stale bundle/replay tests. Those gaps violate R3, R4, R6 and R8.
+Blocked. The direct named-Server-Action and serializable `UNCONFIRMED` direction
+conforms, but COMMERCE-028 cannot correctly round-trip the reduced retained-row CAS
+contract using the currently exposed COMMERCE-025 reads. Fixing that inside the UI
+would cross the accepted service ownership boundary. COMMERCE-031 is therefore a
+required bounded prerequisite.
 
 ### Follow-up
 
-Return the **same** task through `/moda-task ARCH-021-COMMERCE-028`. The next authorized claim increments `attempt: 1` to Attempt 2. Do not start COMMERCE-029.
+- `ARCH-021-COMMERCE-031` becomes Ready.
+- `ARCH-021-COMMERCE-028` remains Blocked at `attempt: 2`.
+- `ARCH-021-COMMERCE-029` remains Pending.
+- After COMMERCE-031 is accepted Complete, architect must explicitly return
+  COMMERCE-028 to Ready. Do not start COMMERCE-029.

@@ -892,14 +892,15 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-025 | moda_commerce | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
 | ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
-| ARCH-021-COMMERCE-028 | moda_commerce | Ready | COMMERCE-025, 026, 027, 011..014 |
+| ARCH-021-COMMERCE-028 | moda_commerce | Blocked | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
+| ARCH-021-COMMERCE-031 | moda_commerce | Ready | COMMERCE-025 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Ready | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-028` and `ARCH-021-GATEWAY-001`. All COMMERCE-028 dependencies are Complete; BACKGROUND-001 acceptance also satisfies the remaining GATEWAY-001 dependency.
+Current checkpoint frontier: `ARCH-021-COMMERCE-031` and `ARCH-021-GATEWAY-001`. COMMERCE-028 is Blocked on COMMERCE-031; COMMERCE-029 remains Pending. BACKGROUND-001 acceptance satisfies the remaining GATEWAY-001 dependency.
 
 ### Phase 4 — live single-tool testing
 
@@ -992,6 +993,20 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-028 Attempt 2 blocked on retained read contract
+
+- Retained the direct named-Server-Action, serializable UNCONFIRMED, dirty aggregation,
+  Studio navigation lock and server-validated selected-shop corrections from Attempt 2.
+- Identified prerequisite drift in the completed COMMERCE-025 read boundary:
+  cleared nullable overrides make the current selection/pointer reads return `null`,
+  hiding the retained row's advanced `modelEditVersion` / `promptEditVersion`.
+- Identified the related durable shop-prompt read gap: an inherited shop prompt cannot
+  rediscover its existing shop lineage when no active pointer exists.
+- Added COMMERCE-031 as a bounded read-contract completion task; no mutation, schema,
+  audit, CAS or reconciliation semantics move into that task.
+- Marked COMMERCE-028 Blocked at Attempt 2 and kept COMMERCE-029 Pending. Current
+  independent checkpoint frontier: COMMERCE-031 plus GATEWAY-001.
 
 ### 2026-09-24 — COMMERCE-028 Attempt 1 architect review
 

@@ -144,16 +144,30 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-025](COMMERCE-025-simplify-agent-configuration-services.md) | Simplify Agent Configuration services and reconciliation | Complete | DATABASE-002, COMMERCE-007, 009, 010 |
 | [COMMERCE-026](COMMERCE-026-simplify-prompt-template-authoring.md) | Simplify prompt-template authoring while retaining categories | Complete | DATABASE-002, COMMERCE-008, 015 |
 | [COMMERCE-027](COMMERCE-027-unify-authjs-studio-authorization.md) | Unify Auth.js authorization across PlatformAdmin and shop-scoped merchant access | Complete | DATABASE-002 |
-| [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Ready | COMMERCE-025, 026, 027, 011..014 |
+| [COMMERCE-028](COMMERCE-028-simplify-agent-configuration-ui-and-reconciliation.md) | Simplify Agent Configuration UI and explicit reconciliation | Blocked | COMMERCE-025, 026, 027, 011..014, COMMERCE-031 |
 | [COMMERCE-029](COMMERCE-029-remove-production-studio-service-function-props.md) | Remove production function-valued Studio service props | Pending | COMMERCE-028, COMMERCE-001..006 |
 | [COMMERCE-030](COMMERCE-030-simplify-private-mcp-authentication.md) | Remove application-layer auth from private MCP; keep DB authorization | Complete | ARCH-020-COMMERCE-024 |
+| [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Ready | COMMERCE-025 |
 
 Current checkpoint frontier:
 
 ```text
-ARCH-021-COMMERCE-028
+ARCH-021-COMMERCE-031
 ARCH-021-GATEWAY-001
 ```
+
+COMMERCE-028 is Blocked on COMMERCE-031. COMMERCE-029 remains Pending.
+
+### COMMERCE-028 Attempt 2 blocked on retained-read contract — 2026-09-24
+
+COMMERCE-028 Attempt 2 preserves the direct named-Server-Action, serializable
+UNCONFIRMED, dirty aggregation and validated-shop direction, but review found a
+prerequisite service-read gap: nullable cleared overrides hide the retained
+`modelEditVersion` / `promptEditVersion`, causing the UI to reset CAS to `1`, and an
+inherited shop prompt cannot rediscover its durable shop lineage. COMMERCE-031 is
+created **Ready** to complete only those reads. COMMERCE-028 is **Blocked** at
+Attempt 2 until COMMERCE-031 is accepted; COMMERCE-029 remains Pending. The
+independent checkpoint frontier is COMMERCE-031 plus GATEWAY-001.
 
 ### Checkpoint frontier reconciled after BACKGROUND-001 acceptance — 2026-09-24
 
