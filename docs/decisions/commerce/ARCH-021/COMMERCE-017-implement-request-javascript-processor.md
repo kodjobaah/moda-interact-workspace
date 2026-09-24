@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-24T08:04:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -200,20 +200,20 @@ Produces a server-only processor consumed by COMMERCE-023. The External HTTP UI 
 
 ## Acceptance Criteria
 
-- [ ] One QuickJS sandbox implementation serves response and request code.
-- [ ] Request code cannot perform I/O or receive secrets/context.
-- [ ] Only canonical Commerce-valid request descriptors escape the sandbox.
-- [ ] Existing response code behavior/package proof remains intact.
+- [x] One QuickJS sandbox implementation serves response and request code.
+- [x] Request code cannot perform I/O or receive secrets/context.
+- [x] Only canonical Commerce-valid request descriptors escape the sandbox.
+- [x] Existing response code behavior/package proof remains intact.
 
 ## Validation
 
-- [ ] `npm run test:arch021-code-request`
-- [ ] `npm run test:arch020-code-processor`
-- [ ] `npm run test:arch020-code-runtime-proof`
-- [ ] `npm run code-runtime:package`
-- [ ] `npm run code-runtime:smoke`
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-code-request` (5/5)
+- [x] `npm run test:arch020-code-processor` (6/6)
+- [x] `npm run test:arch020-code-runtime-proof` (10/10)
+- [x] `npm run code-runtime:package`
+- [x] `npm run code-runtime:smoke` (packaged transform/request/memory proof passed)
+- [x] targeted lint/typecheck (lint: 0 errors, 4 existing warnings; no task-owned type diagnostics)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -226,15 +226,26 @@ No second worker implementation is permitted. Preserve the current packaged-runt
 ## Completion Report
 
 ### Status
-Not Started
+Ready for architect review.
 ### Files Changed
-None
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-017`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-017`
+- Generic runtime: `src/commerce/code-runtime/{types.ts,kernel.ts,worker.mjs}`; removed the previous response-only runtime.
+- Request processor: `src/commerce/code-request/processor.ts` and focused tests.
+- Response adapter, packaging manifest/smoke proof, package script, and local request contract type exports.
 ### Work Completed
-None
+- Extracted one mode-aware QuickJS sandbox supporting response/request compile and run modes plus packaged memory probing, preserving the existing limits and host-capability restrictions.
+- Added bounded `buildRequest({ args })` processing with canonical Commerce `ExternalRequestConstructionSchema` and `ExternalRequestDescriptorSchema` validation, strict JSON-safe argument admission, cancellation/deadline/throttling mapping, and no HTTP/credential/context wiring.
+- Updated the packaged worker proof to execute both `transform(response)` and `buildRequest({ args })` using the same WASM artifact and ceiling.
 ### Validation Results
-None
+- Launcher claim: attempt 1, executor `copilot`, claim commit `6b51809407cb6514821a34ffa15c2c3344c20504`, pushed successfully, claimed `2026-09-24T08:04:15Z`.
+- Start synchronization: parent `remote_task_branch_fast_forwarded: not-needed`, `origin_main_incorporated: already-current`, head `658a90db39c07c0c79cca61a65d6792059d00d6b`; implementation `remote_task_branch_fast_forwarded: not-needed`, `origin_main_incorporated: already-current`, head `63d06822385984fc060f21fdb924203f8e71a61f`.
+- Recursive submodule sync/update passed; database submodule commit `98fdf715e54fe6df92ac6951facd104e410068f2`.
+- Implementation commit pushed: `23bcecc`.
+- Focused request, response, runtime-proof, packaging, smoke, lint, and whitespace validation passed as recorded above.
+- Full typecheck exits nonzero on unrelated baseline diagnostics; no diagnostics were reported in `src/commerce/code-request`, `src/commerce/code-runtime`, `src/commerce/code-response/processor.ts`, or the focused runtime tests.
 ### Deviations
-None
+- Full repository typecheck remains baseline-non-clean and was not broadened into unrelated remediation. Lint reported four existing warnings and zero errors.
 ### Assumptions
 None
 ### Unresolved Issues
@@ -253,6 +264,6 @@ None
 ### Validation Reviewed
 None
 ### Architecture Conformance
-Pending
+Conforms: one generic QuickJS worker serves both modes; request code receives only validated `{ args }`, cannot perform I/O or access credentials/context, and only canonical Commerce-valid descriptors escape. No live external HTTP wiring, Studio UI, publication policy, or second sandbox was added.
 ### Follow-up
 None
