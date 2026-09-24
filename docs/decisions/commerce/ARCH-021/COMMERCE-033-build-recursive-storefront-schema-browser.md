@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 25
-executor: copilot
-claimed_at: 2026-09-24T22:22:45Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-032
@@ -370,37 +370,40 @@ Ready for Review
 
 ### Correction Checklist
 
-- [x] Correct depth parity: use actual ancestry length, allow terminal fields at depth 8, and block expansion that would expose depth 9.
-- [x] Correct selected-field parity: count every `SelectionNode`, including object ancestors, and reject candidate trees over 100 nodes.
-- [x] Preserve the restored architect-authored contract, checklists and required `tests/discovery.test.ts` validation without editing this Architect Review.
-- [x] Add the required real-contract UI regressions for root/cache, independent selection/pruning, restrictions, unsupported kinds, arguments, depth, total-node bounds and schema identity reset.
+- [x] Preserved the Attempt 2 production correction: actual ancestry depth parity, terminal depth 8, depth-9 expansion blocked, and 100-node validation counting every `SelectionNode` including ancestors.
+- [x] Added a genuinely nested pure `selectedFieldCount()` regression proving root, child, and two sibling leaves count as four nodes.
+- [x] Added real-contract browser regressions for the exact 99-to-100 acceptance and 100-to-101 rejection boundary, including unchanged selection, unchecked leaf, and exact bounded status.
+- [x] Added schema identity reset coverage for both `schemaHash` and `apiVersion`, including selection clearing, collapsed expansion, and reset status.
+- [x] Preserved the restored architect-authored contract, required three-file validation and `tests/discovery.test.ts` coverage without editing this Architect Review.
 
 ### Files Changed
 
-Attempt 2 implementation commit `5bfbaaf` on `task/ARCH-021-COMMERCE-033` in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-033` changed:
+Attempt 3 changes are limited to `tests/storefront-schema-browser.test.tsx` in implementation commit `3453240` on `task/ARCH-021-COMMERCE-033`. The Attempt 2 production implementation remains unchanged in this attempt:
 
 - `src/studio/discovery/selection-tree.ts`
 - `src/studio/discovery/storefront-schema-browser.tsx`
-- `tests/storefront-schema-browser.test.tsx`
 
-The prior implementation files remain part of the branch at `d8ed6b9d415f393ac50a8a939ff1171759d9201c`; no unrelated source files were changed in Attempt 2.
+No unrelated source files, database schema/migrations or submodule gitlinks were changed.
 
 ### Work Completed
 
-Implemented the requested Attempt 2 corrections. `selectedFieldCount()` now counts every selected ancestor and leaf; the browser validates the candidate tree against 100 total fields. Expansion and terminal selection use the actual ancestry length, so depth 8 is the final selectable field depth and depth 9 cannot be exposed. The focused browser tests now exercise the real pinned schema contract, including the compiler-boundary regression cases.
+Attempt 3 completed the missing deterministic regression evidence identified by Architect Review. The browser harness now accepts an initial `SelectionTree` for boundary setup and exposes its recursive selected-node count for assertions. The tests use the real named `browseShopifySchema` action mock and real C032 `browseSchema()` pages for the interacted field, while the boundary setup uses structurally valid selection nodes. The reset regression covers both schema identity dimensions without passing the synthetic API version through `browseSchema()`.
 
 ### Validation Results
 
-Required focused validation passed: `npx vitest run tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts --reporter=verbose` passed 3 files and 44 tests. Targeted ESLint passed for `src/studio/discovery/selection-tree.ts`, `src/studio/discovery/storefront-schema-browser.tsx` and `tests/storefront-schema-browser.test.tsx`. The source audit `rg -n "field\.path|selected\.includes\(field\.path\)" components src/studio` returned no matches, and `git diff --check` passed. `npm run typecheck` reached `tsc` but remains blocked by the unchanged baseline of 15 errors across 7 unrelated files; no task-owned file is named in those diagnostics.
+- Required focused validation passed: `npx vitest run tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts --reporter=verbose` — 3 files, 46 tests passed.
+- Targeted ESLint passed for `tests/storefront-schema-browser.test.tsx`, `src/studio/discovery/selection-tree.ts` and `src/studio/discovery/storefront-schema-browser.tsx` with zero errors and warnings.
+- `npm run typecheck` reached `tsc` but reproduced the unchanged documented baseline: 15 diagnostics across 7 unrelated files. No Attempt 3-owned file appears in the diagnostics.
+- Source audit `rg -n "field\.path|selected\.includes\(field\.path\)" components src/studio` returned no Storefront schema-builder matches.
+- `git diff --check` passed.
 
 ### Git / VCS Evidence
 
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-033`, branch `task/ARCH-021-COMMERCE-033`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-033`, branch `task/ARCH-021-COMMERCE-033`.
-- Prepared sync/base evidence: parent sync head `560fa26560e6174684f21a2f17a9813941277ae8`; implementation prior head `d8ed6b9d415f393ac50a8a939ff1171759d9201c`; Attempt 2 claim commit `840a942e0ad2c6a72ba266632bd4a24ed9adf4be`.
-- Implementation commit `5bfbaaf` is pushed and matches `origin/task/ARCH-021-COMMERCE-033`.
-- Database submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Publication scope: only this parent task report is to be committed on the parent branch; the implementation branch contains the source/test correction commit above. No submodule gitlink is staged.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-033`, branch `task/ARCH-021-COMMERCE-033`; launcher claim commit `b290710028ba1119b73b9e898c547e83389f2ada`, parent head after claim `56aaa03ba6bfa8713a1a41bc19a75657df56dac1`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-033`, branch `task/ARCH-021-COMMERCE-033`; implementation head before Attempt 3 `5bfbaaf68354e9db27194a20625245e1940a18ce`; published Attempt 3 commit `3453240`.
+- Both repositories use the launcher-provided physical worktrees and same task branch. Prepared synchronization and dependency gating were completed by the launcher; dependency `ARCH-021-COMMERCE-032` was complete.
+- Database submodule is synchronized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Parent publication scope is only this task report. No implementation submodule gitlink is staged.
 
 ### Deviations
 
@@ -408,7 +411,7 @@ The repository-wide typecheck remains non-zero only because of the unchanged doc
 
 ### Assumptions
 
-The implementation branch and database submodule supplied in the handoff are the authoritative inputs: prior implementation `d8ed6b9d415f393ac50a8a939ff1171759d9201c`, Attempt 2 implementation `5bfbaaf`, database submodule `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+The launcher-provided implementation branch and database submodule are authoritative. The Attempt 2 implementation commit is `5bfbaaf68354e9db27194a20625245e1940a18ce`; Attempt 3 adds only the published test evidence commit `3453240`.
 
 ### Unresolved Issues
 
