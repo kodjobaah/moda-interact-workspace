@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 30
-executor: null
-claimed_at: null
-attempt: 2
+executor: copilot
+claimed_at: 2026-09-24T23:45:06Z
+attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-033
 enables:
   - ARCH-021-COMMERCE-035
 created: 2026-09-24
-updated: 2026-09-25
+updated: 2026-09-24
 ---
 
 # Generate Storefront GraphQL from dynamic schema selections
