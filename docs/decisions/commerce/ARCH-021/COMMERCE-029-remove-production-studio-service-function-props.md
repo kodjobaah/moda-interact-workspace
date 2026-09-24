@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-24T17:39:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-028
@@ -199,35 +199,66 @@ Do not remove interfaces around Shopify, external HTTP transport, model provider
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `app/connections/[id]/page.tsx`
+- `app/connections/page.tsx`
+- `app/preview/page.tsx`
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `components/unavailable-studio-workspace.tsx`
+- `src/studio/connections/connections-route-client.tsx`
+- `src/studio/connections/connections-ui.tsx`
+- `src/studio/selected-shop.ts`
+- `tests/agent-configuration-screen-state.test.tsx`
+- `tests/browser-evidence/main.tsx`
+- `tests/connections-route-composition.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/studio-workspace.test.tsx`
 
 ### Work Completed
 
-None
+- Removed production `StudioServices` function-bundle composition from `StudioWorkspace`; production pages now pass serializable initial page/detail DTOs and client mutations use named Studio Server Actions.
+- Removed production ConnectionPort composition from Connections routes. Connection pages hydrate serializable initial list/detail data and use `src/studio/connections/server-actions.ts` for production reads and mutations; fixture ports remain available only through explicit test props.
+- Removed production ExternalHttpUiPort construction from route composition. External HTTP authoring retains its local interface for client editor behavior and fixture tests, while production mutations use named Server Actions.
+- Kept `renderCodePanel={composedCodePanel}` as internal client-to-client composition inside `StudioWorkspace`; no Server Component creates or passes it, so it does not cross the production server/client boundary and preserves the shell/editor responsibility in R1/R7.
+- Updated focused route, Connections, agent-configuration, external-editor, browser-evidence and StudioWorkspace tests to use explicit fixture adapters and serializable production composition.
+
+### Requirements Mapping
+
+- R1/R2: `components/production-studio-page.tsx`, `components/studio-workspace.tsx`, `app/preview/page.tsx`, and the Studio route wrappers pass DTOs/serializable values only; the public `services` prop is removed.
+- R3/R6/R7: existing named actions remain the production mutation/read path; StudioWorkspace remains shared shell/composition and preserves typed result handling.
+- R4: `app/connections/page.tsx`, `app/connections/[id]/page.tsx`, `src/studio/connections/connections-route-client.tsx`, and `src/studio/connections/connections-ui.tsx` use serializable initial data and direct named connection actions; fixture ports are test-only.
+- R5: `components/studio-workspace.tsx` and `src/studio/external-http/ports.ts` retain only the local editor/fixture interface path; production route composition no longer creates or passes a server-created external HTTP port.
 
 ### Validation Results
 
-None
+- Focused tests: `npm exec vitest run tests/connections-route-composition.test.tsx tests/connections-ui.test.tsx tests/external-tools-ui.test.tsx tests/studio-workspace.test.tsx tests/agent-configuration-screen-state.test.tsx` passed: 5 files, 59 tests.
+- Production-boundary static check found no production `StudioWorkspace` service/port/action prop composition and no production `ConnectionsPage port` prop composition.
+- `npm run lint` passed with 0 errors and 8 existing warnings in unrelated files/components.
+- `git diff --check` passed.
+- `npm run typecheck` is blocked by 15 pre-existing errors in `app/api/studio/code-response/validate/route.ts` and unrelated tests (`agent-configuration-effective`, `agent-configuration-prompts-postgres`, `c20-integration-fixture`, `connections-production`, `external-wiring`, `local-external-mcp-diagnostic`). None are in the changed 14-file implementation set.
+- `npm run build` is blocked by the same pre-existing missing preview modules referenced by `app/api/studio/code-response/validate/route.ts`: `lib/preview/http`, `lib/preview/runtime`, and `src/commerce/preview/types`.
 
 ### Deviations
 
-None
+- `renderCodePanel` remains a client-to-client prop used internally by `StudioWorkspace`; it is not server-created or passed by `ProductionStudioPage`, and removing it would violate the intended shared editor composition without improving R1/R7 conformance.
+- Repository-wide typecheck and production build could not pass because of the documented existing preview-module/type errors outside this task's changed files. Focused behavior and lint validation passed.
 
 ### Assumptions
 
-None
+- The canonical implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-029` and the canonical parent worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-029`.
+- The implementation repository's committed/pushed branch is `task/ARCH-021-COMMERCE-029` at `2adb933742d884b6434277d2263f75da46f06d0a`.
 
 ### Unresolved Issues
 
-None
+- Repository baseline preview-module failures remain for architect/developer follow-up; no task-owned repair was made because the missing modules and unrelated type errors are outside this bounded task.
 
 ### Architectural Concerns
 
-None
+- None identified. The parent worktree's `moda-interact-commerce` gitlink remains at recorded commit `01c550c3e3f55dd23a4ecc9514c846bb88cf2067`; the implementation branch is intentionally published separately and the parent gitlink was not changed.
 
 ## Architect Review
 
