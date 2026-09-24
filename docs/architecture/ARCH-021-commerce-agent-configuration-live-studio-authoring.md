@@ -889,6 +889,9 @@ COMMERCE-033  recursive schema browser + selection tree
 COMMERCE-034  GraphQL AST generation + existing compiler validation
         |
         v
+COMMERCE-035  readable/safe Shopify documentation normalization
+        |
+        v
 SYSTEM-TEST-001
 ```
 
@@ -946,6 +949,8 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-032 | moda_commerce | Ready | COMMERCE-029 |
 | ARCH-021-COMMERCE-033 | moda_commerce | Pending | COMMERCE-032 |
 | ARCH-021-COMMERCE-034 | moda_commerce | Pending | COMMERCE-033 |
+| ARCH-021-COMMERCE-035 | moda_commerce | Pending | COMMERCE-034 |
+| ARCH-021-COMMERCE-035 | moda_commerce | Pending | COMMERCE-034 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
 | ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
 | ARCH-021-COMMERCE-032 | moda_commerce | Ready | COMMERCE-029 |
@@ -954,7 +959,7 @@ Checkpoint tasks:
 
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
-| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks, including COMMERCE-032..034 |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks, including COMMERCE-032..035 |
 
 Current checkpoint frontier: `ARCH-021-COMMERCE-032`. Manual validation after COMMERCE-029 acceptance exposed the Storefront schema-builder contract mismatch, so SYSTEM-TEST-001 is Pending again. COMMERCE-032 is Ready; COMMERCE-033 and COMMERCE-034 are dependency-gated behind it. Phase-3 tasks remain paused until this correction chain and terminal checkpoint validation are architect-accepted Complete.
 
@@ -1049,6 +1054,46 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### Shopify documentation readability correction — 2026-09-24
+
+Manual Explore validation identified a second independent discovery defect.
+
+Current behavior:
+
+```text
+search_docs_chunks.content
+    -> exposed almost verbatim
+    -> <p>{item.text}</p>
+    -> markdown/HTML/code syntax visible in results
+
+verified shopify.dev HTML
+    -> readableText(...)
+    -> global whitespace collapse
+    -> <p>{document.text}</p>
+    -> headings/lists/code/paragraphs lost
+```
+
+The accepted correction is intentionally small and safe:
+
+```text
+search MCP content
+    -> server plain-text excerpt normalizer
+    -> bounded readable result excerpt
+
+verified canonical Shopify HTML
+    -> server structured block normalizer
+    -> HEADING / PARAGRAPH / LIST / CODE / BLOCKQUOTE
+    -> semantic React rendering
+```
+
+Remote HTML remains untrusted. The Studio must not use `dangerouslySetInnerHTML`.
+Inline formatting may be flattened in this checkpoint; preserving safe block
+structure is the requirement.
+
+COMMERCE-035 is sequenced after COMMERCE-034 to avoid concurrent edits in the
+Explore workspace. SYSTEM-TEST-001 remains Pending until COMMERCE-035 is
+architect-accepted Complete.
 
 ### 2026-09-24 — Dynamic Storefront schema correction decomposed
 

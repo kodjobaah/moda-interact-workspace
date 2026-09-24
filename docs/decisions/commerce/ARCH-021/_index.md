@@ -151,6 +151,7 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-032](COMMERCE-032-normalize-storefront-schema-graph.md) | Normalize real pinned Storefront introspection into one truthful schema graph contract | Ready | COMMERCE-029 |
 | [COMMERCE-033](COMMERCE-033-build-recursive-storefront-schema-browser.md) | Build recursive schema-driven Storefront browser and selection tree | Pending | COMMERCE-032 |
 | [COMMERCE-034](COMMERCE-034-generate-storefront-graphql-from-schema-selection.md) | Generate/merge Storefront GraphQL from dynamic schema selections | Pending | COMMERCE-033 |
+| [COMMERCE-035](COMMERCE-035-render-shopify-documentation-readably.md) | Normalize Shopify docs into readable safe excerpts and structured article blocks | Pending | COMMERCE-034 |
 
 
 Current checkpoint frontier:
@@ -162,11 +163,23 @@ ARCH-021-COMMERCE-032
 Manual validation of the accepted Studio boundary exposed a separate Storefront
 schema-builder contract defect: the production discovery response did not contain
 the synthetic `field.path` assumed by the UI. The correction is now decomposed as
-COMMERCE-032 -> COMMERCE-033 -> COMMERCE-034.
+COMMERCE-032 -> COMMERCE-033 -> COMMERCE-034 -> COMMERCE-035.
 
-COMMERCE-032 is Ready. COMMERCE-033/034 are Pending on that chain.
-`ARCH-021-SYSTEM-TEST-001` returns to Pending until all three correction tasks are
+COMMERCE-032 is Ready. COMMERCE-033/034/035 are Pending on that chain.
+`ARCH-021-SYSTEM-TEST-001` remains Pending until all four correction tasks are
 architect-accepted Complete.
+
+### Documentation readability correction task materialised — 2026-09-24
+
+Manual Explore validation also found that documentation search chunks were rendered
+nearly verbatim and opened Shopify pages were flattened into one paragraph. The
+cause is contractual: search exposes raw-ish MCP `content`, while direct HTML
+extraction removes all block structure and globally collapses whitespace.
+
+COMMERCE-035 is dependency-gated after COMMERCE-034 to avoid conflicting edits in
+the Explore UI. It will normalize search content to safe plain-text excerpts and
+verified Shopify HTML to bounded structured blocks, then render those blocks
+semantically without `dangerouslySetInnerHTML`.
 
 ### Storefront dynamic-schema correction tasks materialised — 2026-09-24
 
