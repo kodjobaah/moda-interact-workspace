@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -220,45 +220,35 @@ None.
 
 ## Architect Review
 
-
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 resolves the only implementation defect from Attempt 1. The private MCP deployment runbook now:
+Attempt 3 completes the report-only reconciliation requested after Attempt 2. No Gateway implementation files changed in Attempt 3.
 
-- uses one ordinary JSON-RPC request body that contains no caller context;
-- sends `X-Moda-Commerce-Context` explicitly for valid, malformed and stale probes;
-- varies only the context-header value between the malformed/stale probes;
-- rejects every 2xx malformed/stale response without imposing an undocumented fixed HTTP 401;
-- prints a bounded rejection body for operator diagnosis;
-- retains the private Render service-link trust boundary and public `/api/mcp` denial;
-- introduces no replacement Bearer token, API key, JWT, assertion, shared secret or MCP credential.
+The accepted implementation preserves the ARCH-021 context-only private MCP trust boundary:
 
-The Gateway-owned validator now also fails if the smoke section loses the literal `X-Moda-Commerce-Context` header or reintroduces service-credential wording.
+- Commerce MCP remains reachable only through the Render private service link.
+- `COMMERCE_MCP_URL` remains the only MCP-specific runtime configuration and is attached only to the Background messaging worker.
+- public `/api/mcp` access remains denied by Gateway routing;
+- RSA/JWT assertion-key wiring is removed;
+- no Bearer token, API key, service token, shared secret or replacement MCP credential was introduced;
+- the private MCP runbook sends an ordinary JSON-RPC body separately from `X-Moda-Commerce-Context`;
+- malformed/stale context probes reject every 2xx result without assuming an undocumented fixed HTTP 401;
+- validator coverage protects the context-header smoke contract and obsolete/replacement credential absence.
 
-Architect independently reran the implementation validation from the supplied Attempt 2 snapshot:
+The Attempt 3 durable task record is now reconciled:
 
-```text
-bash tests/validate-render-blueprints.sh            PASS
-bash tests/validate-render-blueprints-negative.sh   PASS
-Ruby Psych parse render.test.yaml                   PASS
-Ruby Psych parse render.production.yaml             PASS
-```
-
-Architect also inspected both Blueprints and confirmed that the only MCP-specific runtime configuration is `COMMERCE_MCP_URL` on the messaging worker in each environment. The legacy credential strings remain only in validator absence guards / intentional negative fixtures.
-
-No Gateway source, Blueprint, topology or deployment-runbook correction remains.
-
-The task cannot yet be accepted because the durable task record was not reconciled as required by the Attempt 1 correction contract:
-
-1. all four task-owned `## Validation` checkboxes remain unchecked even though the Completion Report says they passed;
-2. the task frontmatter still carried an active executor/claim on return to review;
-3. the Completion Report does not record the Attempt 2 launcher-prepared parent/implementation worktree evidence, start-of-attempt synchronization evidence, recursive submodule/materialization evidence where applicable, or final implementation/report commit-and-push evidence.
-
-Those are task-protocol/reporting defects only. Do not modify Gateway implementation files to address this review.
+- task returned with `status: review`, `attempt: 3`, `executor: null`, `claimed_at: null`;
+- all task-owned Validation items are checked;
+- launcher-resolved dedicated parent and implementation worktrees are recorded;
+- start-of-attempt synchronization and submodule/materialisation evidence is recorded;
+- implementation commit `fc25bfc` and the earlier Attempt 2 report commit `0c18805e` are recorded;
+- submitted Attempt 3 parent report commit is `2fa17a3`;
+- final parent and implementation branches are recorded clean and equal to their upstream task refs;
+- no follow-on task was started.
 
 ### Reviewed Files
 
@@ -270,11 +260,12 @@ Those are task-protocol/reporting defects only. Do not modify Gateway implementa
 - `moda-interact-gateway/tests/validate-render-blueprints.sh`
 - `moda-interact-gateway/tests/validate-render-blueprints-negative.sh`
 - `docs/decisions/gateway/ARCH-021/GATEWAY-001-simplify-private-commerce-mcp-secret-wiring.md`
+- `docs/decisions/gateway/ARCH-021/_index.md`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-Architect independently verified:
+Implementation validation already independently reviewed after Attempt 2:
 
 ```text
 bash tests/validate-render-blueprints.sh            PASS
@@ -283,65 +274,26 @@ Ruby Psych parse render.test.yaml                   PASS
 Ruby Psych parse render.production.yaml             PASS
 ```
 
-The submitted Completion Report records `git diff --check` and the semantic credential audit as PASS. The supplied review archive contains no Git metadata, so commit ancestry/upstream cleanliness could not be independently reconstructed from the archive.
+Attempt 3 report-only validation:
+
+```text
+git diff --check                                  PASS
+```
+
+The Completion Report also records the semantic credential audit as PASS.
 
 ### Architecture Conformance
 
-Implementation conforms to the ARCH-021 context-only private MCP trust boundary. The remaining work is report/task-state reconciliation only.
+Conforms.
+
+The Gateway implementation preserves private-only MCP transport, removes obsolete application-layer assertion credentials without replacing them, and leaves PostgreSQL-backed Commerce context authorization at the Commerce boundary as required by ARCH-021.
+
+Long-running integrated validation remains correctly assigned to the terminal developer/system-test workflow and is not an implementation blocker for this Gateway task.
 
 ### Follow-up
 
-Reclaim this same task as Attempt 3 and perform **only** the following deterministic report correction. Do not modify Gateway source, Blueprint, HAProxy, runbook or validator files unless the report reconciliation itself exposes a factual mismatch.
+`ARCH-021-GATEWAY-001` is Complete.
 
-1. Immediately after the Attempt 3 launcher claim, verify the task is `in_progress`, `attempt: 3`, and that the launcher resolved dedicated parent and implementation worktrees from the canonical primary workspace. Record the actual prepared packet evidence; do not invent paths or SHAs.
+`ARCH-021-SYSTEM-TEST-001` remains Pending because its full checkpoint dependency set is not yet Complete; in particular `ARCH-021-COMMERCE-028` and `ARCH-021-COMMERCE-029` remain outstanding.
 
-2. In `## Validation`, change exactly these four existing checkboxes from `[ ]` to `[x]`, because Attempt 2 already executed them successfully:
-
-   ```text
-   bash tests/validate-render-blueprints.sh
-   bash tests/validate-render-blueprints-negative.sh
-   repository-declared YAML/config validation
-   git diff --check
-   ```
-
-   Do not rerun the Gateway validators solely to reproduce evidence already obtained in Attempt 2 unless the task record correction unexpectedly changes a Gateway-owned implementation file.
-
-3. Reconcile `## Completion Report` so it durably records the actual Attempt 2 execution evidence:
-
-   - launcher-resolved parent task worktree;
-   - launcher-resolved implementation worktree;
-   - start-of-attempt parent synchronization/base evidence;
-   - start-of-attempt implementation synchronization/base evidence;
-   - recursive submodule/materialization evidence where applicable;
-   - implementation commit: `fc25bfc`;
-   - parent Completion Report commit: `0c18805e`;
-   - final implementation branch clean and equal to its upstream;
-   - final parent task branch clean and equal to its upstream;
-   - no follow-on task started.
-
-   If any of those facts cannot be established from Git/launcher evidence, do not guess. Record the exact missing evidence and return the task `blocked`.
-
-4. Preserve the existing successful Attempt 2 validation results and semantic credential audit in the Completion Report. Remove no valid implementation evidence.
-
-5. After the report-only correction is complete, set:
-
-   ```yaml
-   status: review
-   executor: null
-   claimed_at: null
-   attempt: 3
-   ```
-
-   Set Completion Report status to `Ready for architect review`.
-
-6. Run only the report-level final check required by the files changed in Attempt 3:
-
-   ```text
-   git diff --check
-   ```
-
-   Record the result.
-
-7. Commit and push the parent task-report correction according to the normal task workflow, verify the parent branch is clean and equals its upstream, return to `moda_architect`, and STOP. Do not start `ARCH-021-SYSTEM-TEST-001`.
-
-No further Gateway implementation work is authorized by this review.
+Do not start system-test work solely because this Gateway task is now Complete.
