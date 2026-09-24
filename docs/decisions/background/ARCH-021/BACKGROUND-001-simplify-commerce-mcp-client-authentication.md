@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-24T15:08:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-030
@@ -183,35 +183,46 @@ This task removes caller authentication because the private link is the agreed t
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/commerce/mcp-client.ts`
+- `tests/integration/commerce/host.test.ts`
+- `docs/commerce-host.md`
 
 ### Work Completed
 
-None
+- Removed RSA private-key parsing, JWT assertion construction, assertion credentials and the `Authorization` header from the Background Commerce MCP client.
+- Reused `CommerceAssertionSchema` to validate the bounded resolve/execute context, encoded it as UTF-8 base64url and sent it through `X-Moda-Commerce-Context` with `Content-Type: application/json`.
+- Preserved endpoint validation, JSON-RPC/MCP transport behavior, grant/release selection, retry and timeout behavior, response validation, tool behavior and explicit Commerce host failures.
+- Updated the focused host interoperability fixture to validate context-only requests and reject an auth header; removed obsolete assertion credential documentation.
 
 ### Validation Results
 
-None
+- `npm run build`: passed, including Prisma generation and TypeScript compilation.
+- `git diff --check`: passed.
+- Focused `tests/integration/commerce/host.test.ts`: 38 passed, 2 existing concurrency cases failed with `Commerce host: UNAVAILABLE`; both fail in isolation and do not produce context/header or HTTP-response diagnostics.
+- Full `npm test`: 10 failures, including the same two host concurrency failures and unrelated existing failures for the missing ARCH-020 evidence fixture checkout, absent `moda_interact_test` database, stale shared-runtime version expectation, and unrelated maturation/billing/observability tests. No failure identified in the context-only request cases.
+- No Background `jose` dependency or MCP service-token/API-key/shared-secret use remains. Remaining `Authorization` matches are unrelated WhatsApp/Shopify provider credentials.
+- Prepared launcher evidence: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-BACKGROUND-001`, parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-BACKGROUND-001`; recursive submodule sync/update passed and the database submodule was at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commit `49e8596` was pushed to `origin/task/ARCH-021-BACKGROUND-001`.
 
 ### Deviations
 
-None
+- The repository has no declared lint script; build and `git diff --check` were run as the available targeted static validation.
 
 ### Assumptions
 
-None
+- `CommerceAssertionSchema` is the authoritative published bounded context schema and its resolve/execute fields remain unchanged by COMMERCE-030.
 
 ### Unresolved Issues
 
-None
+- The two pre-existing Commerce host concurrency fixture failures remain for architect review; they are outside the context-authentication change and reproduce independently by test name.
 
 ### Architectural Concerns
 
-None
+- None.
 
 ## Architect Review
 
