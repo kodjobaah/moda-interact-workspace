@@ -900,7 +900,7 @@ Checkpoint tasks:
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-029` and `ARCH-021-GATEWAY-001`. COMMERCE-028 is architect-accepted Complete and all COMMERCE-029 dependencies are Complete, so COMMERCE-029 is Ready. BACKGROUND-001 acceptance satisfies the remaining GATEWAY-001 dependency.
+Current checkpoint frontier: `ARCH-021-COMMERCE-029`. GATEWAY-001 is architect-accepted Complete. COMMERCE-028 is architect-accepted Complete and all COMMERCE-029 dependencies are Complete, so COMMERCE-029 is Ready. SYSTEM-TEST-001 remains Pending until COMMERCE-029 is architect-accepted Complete.
 
 ### Phase 4 — live single-tool testing
 
@@ -993,6 +993,18 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-029 Attempt 1 changes requested
+
+- Retained the serializable production composition: server pages pass DTOs and
+  production clients invoke named Server Actions directly.
+- Returned COMMERCE-029 to Ready because `StudioWorkspace` still exposes a
+  function-valued `StudioServices` fixture prop, task-owned catches still collapse
+  unexpected failures without the required structured logging / visible failure
+  class, and the Agent Configuration production regression still encodes the old
+  `getStudioServices()` composition.
+- Attempt 2 is bounded to boundary/error/test correction plus task-report
+  reconciliation. SYSTEM-TEST-001 remains Pending.
 
 ### 2026-09-24 — COMMERCE-028 Attempt 3 accepted
 

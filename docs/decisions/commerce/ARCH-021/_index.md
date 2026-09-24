@@ -153,11 +153,21 @@ Current checkpoint frontier:
 
 ```text
 ARCH-021-COMMERCE-029
-ARCH-021-GATEWAY-001
 ```
 
-COMMERCE-028 is architect-accepted Complete. All COMMERCE-029 dependencies are
-Complete, so COMMERCE-029 is Ready.
+GATEWAY-001 is architect-accepted Complete. COMMERCE-028 is architect-accepted
+Complete and all COMMERCE-029 dependencies are Complete, so COMMERCE-029 is Ready.
+
+### COMMERCE-029 Attempt 1 changes requested — 2026-09-24
+
+The production Server/Client function-prop removal is retained, but COMMERCE-029
+returns to **Ready** for Attempt 2. `StudioWorkspace` must no longer accept
+`StudioServices` even under a renamed fixture prop; task-owned client/server
+exception paths must stop swallowing arbitrary failures and use the approved
+shared structured logger on the server while rendering a bounded failure class
+on the client; and stale production-composition tests must be migrated to the
+new serializable DTO + named Server Action architecture. SYSTEM-TEST-001 remains
+Pending.
 
 ### COMMERCE-028 Attempt 3 accepted — 2026-09-24
 
