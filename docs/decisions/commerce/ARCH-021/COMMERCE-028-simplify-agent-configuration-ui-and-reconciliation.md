@@ -228,7 +228,7 @@ Ready for Review
 
 ### Files Changed
 
-Implementation commit `354c06b` on `task/ARCH-021-COMMERCE-028`:
+Historical Attempt 2 implementation commit `354c06b` on `task/ARCH-021-COMMERCE-028`:
 
 - `components/production-studio-page.tsx`
 - `components/studio-workspace.tsx`
@@ -298,7 +298,7 @@ Implementation commit `354c06b` on `task/ARCH-021-COMMERCE-028`:
 - Attempt 3 claim: prepared launcher evidence recorded `execution_state: claimed`, executor `copilot`, attempt `3`, with parent claim committed/pushed before execution.
 - Recursive submodule sync/update passed; database submodule commit: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Implementation branch publication: `268eaa8` pushed to `origin/task/ARCH-021-COMMERCE-028`.
-- Parent report publication: pending this report commit/push.
+- Parent report publication: commit `529cef36` pushed to `origin/task/ARCH-021-COMMERCE-028`; this wording correction is the final report follow-up.
 - No token, secret, database schema, or follow-on task was touched.
 
 ## Architect Review
