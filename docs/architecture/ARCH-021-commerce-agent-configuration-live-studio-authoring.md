@@ -891,7 +891,7 @@ Checkpoint tasks:
 | ARCH-021-DATABASE-002 | moda_database | Complete | DATABASE-001 |
 | ARCH-021-COMMERCE-025 | moda_commerce | Ready | DATABASE-002, COMMERCE-007, 009, 010 |
 | ARCH-021-COMMERCE-026 | moda_commerce | Complete | DATABASE-002, COMMERCE-008, 015 |
-| ARCH-021-COMMERCE-027 | moda_commerce | Ready | DATABASE-002 |
+| ARCH-021-COMMERCE-027 | moda_commerce | Complete | DATABASE-002 |
 | ARCH-021-COMMERCE-028 | moda_commerce | Pending | COMMERCE-025, 026, 027, 011..014 |
 | ARCH-021-COMMERCE-029 | moda_commerce | Pending | COMMERCE-028, COMMERCE-001..006 |
 | ARCH-021-COMMERCE-030 | moda_commerce | Complete | ARCH-020-COMMERCE-024 |
@@ -899,7 +899,7 @@ Checkpoint tasks:
 | ARCH-021-GATEWAY-001 | moda_gateway | Pending | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-025`, `ARCH-021-COMMERCE-027` and `ARCH-021-BACKGROUND-001`. COMMERCE-026 is Complete; COMMERCE-028 remains Pending until COMMERCE-025 and COMMERCE-027 are Complete.
+Current checkpoint frontier: `ARCH-021-COMMERCE-025` and `ARCH-021-BACKGROUND-001`. COMMERCE-026 and COMMERCE-027 are Complete; COMMERCE-028 remains Pending until COMMERCE-025 is Complete.
 
 ### Phase 4 — live single-tool testing
 
@@ -992,6 +992,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-24 — COMMERCE-027 Attempt 5 accepted
+
+- Accepted the hierarchical Auth.js Studio authorization implementation and final SUPER_ADMIN-only global merchant-access administration boundary.
+- Confirmed platform `ADMIN` still inherits all shop-scoped merchant authority, including shop publication, while explicit global-sensitive operations remain `PLATFORM_SUPER_ADMIN`-only.
+- Accepted focused authorization validation (62/62) and disposable PostgreSQL validation (3/3), including denied platform-ADMIN administration with no merchant/audit mutation, successful SUPER_ADMIN lifecycle, and concurrent subject-binding.
+- Marked COMMERCE-027 Complete. COMMERCE-028 remains Pending only on COMMERCE-025.
 
 ### 2026-09-24 — COMMERCE-027 Attempt 4 changes requested
 
