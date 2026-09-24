@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-24T11:59:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-002
@@ -215,13 +215,13 @@ Do not log access tokens, session tokens or provider credentials.
 
 ## Work Items
 
-- [ ] Implement unified principal types/resolver.
-- [ ] Update Auth.js signIn admission for platform-or-merchant access.
-- [ ] Implement deterministic subject binding.
-- [ ] Add shop-scoped permission helpers.
-- [ ] Preserve platform-only compatibility wrappers.
-- [ ] Add manual step-up CLI and audit.
-- [ ] Add focused auth/security tests.
+- [x] Implement unified principal types/resolver.
+- [x] Update Auth.js signIn admission for platform-or-merchant access.
+- [x] Implement deterministic subject binding.
+- [x] Add shop-scoped permission helpers.
+- [x] Preserve platform-only compatibility wrappers.
+- [x] Add manual step-up CLI and audit.
+- [x] Add focused auth/security tests.
 
 ## Interfaces / Contracts
 
@@ -237,13 +237,13 @@ Consumes `CommerceStudioMerchantAccess` from DATABASE-002. No new external auth 
 
 ## Acceptance Criteria
 
-- [ ] PlatformAdmin and merchant users authenticate through the same Auth.js Google flow.
-- [ ] PlatformAdmin takes precedence when both authorization sources match.
-- [ ] Merchant access is exact-shop scoped.
-- [ ] One merchant Google identity may hold multiple manually granted shop-access rows.
-- [ ] Provider subject binds once and cannot be reassigned.
-- [ ] Development bypass remains sufficient by itself.
-- [ ] No merchant self-service escalation exists.
+- [x] PlatformAdmin and merchant users authenticate through the same Auth.js Google flow.
+- [x] PlatformAdmin takes precedence when both authorization sources match.
+- [x] Merchant access is exact-shop scoped.
+- [x] One merchant Google identity may hold multiple manually granted shop-access rows.
+- [x] Provider subject binds once and cannot be reassigned.
+- [x] Development bypass remains sufficient by itself.
+- [x] No merchant self-service escalation exists.
 
 ## Validation
 
@@ -270,31 +270,47 @@ Authentication proves identity; authorization comes from PlatformAdmin or Mercha
 
 ### Status
 
-Not Started
+Review requested
 
 ### Files Changed
 
-None
+- `auth.ts`
+- `lib/auth/index.ts`
+- `lib/auth/merchant-access.ts`
+- `lib/auth/security-policy.ts`
+- `scripts/merchant-studio-access.mjs`
+- `tests/auth-platform-admin.test.ts`
+- `tests/auth-security-policy.test.ts`
+- `tests/auth-merchant-access.test.ts`
 
 ### Work Completed
 
-None
+- Unified Auth.js Google sign-in now admits active platform admins or active merchant access rows, with platform precedence.
+- Merchant provider subjects bind atomically across all active rows for a normalized email and conflicting subjects are denied without mutation.
+- Added exact-shop principal resolution, permission enforcement, unified platform/super-admin guards, and the VIEWER/EDITOR/ADMIN matrix.
+- Added an operator-only grant/update/disable/enable command with normalized email, exact shop resolution, no provider-subject input, and transactional audit events.
+- Existing platform-admin compatibility helpers and platform-only authorization boundaries remain available.
 
 ### Validation Results
 
-None
+- `npx vitest run tests/auth-merchant-access.test.ts tests/auth-security-policy.test.ts tests/auth-platform-admin.test.ts`: 3 files, 34 tests passed.
+- `npx eslint auth.ts lib/auth/index.ts lib/auth/merchant-access.ts lib/auth/security-policy.ts scripts/merchant-studio-access.mjs tests/auth-security-policy.test.ts tests/auth-merchant-access.test.ts tests/auth-platform-admin.test.ts`: passed.
+- `node --check scripts/merchant-studio-access.mjs`: passed.
+- CLI rejects unknown `--providerSubject` before database access.
+- `git diff --check`: passed.
+- `npm run typecheck`: existing unrelated failures remain in preview routes and generated commerce agent-configuration Prisma model surfaces; no task-owned diagnostics remain.
 
 ### Deviations
 
-None
+The disposable PostgreSQL CLI integration validation was not run because no disposable database was available in this worktree; CLI syntax, fail-closed actor resolution, and forbidden-flag behavior were validated locally.
 
 ### Assumptions
 
-None
+Prisma schema/client generation from DATABASE-002 is already available and the implementation uses the existing `CommerceStudioMerchantAccess` and `CommerceAuditEvent` contracts.
 
 ### Unresolved Issues
 
-None
+No task-owned unresolved implementation issues. Full-repository typecheck remains blocked by pre-existing preview and generated-schema failures documented above.
 
 ### Architectural Concerns
 
