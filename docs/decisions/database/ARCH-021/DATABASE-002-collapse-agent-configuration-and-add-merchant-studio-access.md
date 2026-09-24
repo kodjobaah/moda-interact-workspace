@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 5
 executor: null
 claimed_at: null
@@ -587,24 +587,68 @@ The implementation is bounded to the database repository and preserves the requi
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 substantially implements the intended schema reduction, but it cannot be accepted yet. Direct inspection of the migration found an upgrade blocker that the current structural-only migration validator cannot detect.
+
+1. `CommerceAuditEvent` is already protected by the ARCH-020 `arch020_audit_immutable` `BEFORE UPDATE OR DELETE` trigger. This migration executes `UPDATE commerce."CommerceAuditEvent"` to backfill `actorType` / `operationId` without first making a bounded migration-only exception. Any seeded Phase-2 upgrade containing an affected audit row will therefore fail. Preserve runtime audit immutability, but make the one-time migration backfill possible and restore/preserve the same immutable behaviour before migration completion.
+2. The migration adds `CommerceAuditEvent_actor_admin_fkey` on `actorAdminId`, but the predecessor schema already contains `CommerceAuditEvent_actorAdminId_fkey` on the same column/reference. Do not leave two equivalent actor-admin foreign keys in the resulting schema; retain exactly one.
+3. R14 is not implemented. `scripts/validate-arch021-simplification-migration.mjs` currently checks SQL text/order only. It must become an executable migration rehearsal that we can run manually against isolated PostgreSQL in both `fresh` and `upgrade` modes. The validator must prove the `arch020_audit_immutable` migration interaction, not merely search the SQL text.
+4. The task was submitted with every Work Item, Acceptance Criterion and Validation checkbox still unchecked. On the correction attempt, reconcile those agent-owned checklists with the actual completed evidence before returning to review.
 
 ### Reviewed Files
 
-None
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260924103000_arch021_simplify_agent_configuration/migration.sql`
+- `moda-interact-database/scripts/validate-arch021-simplification-schema.mjs`
+- `moda-interact-database/scripts/validate-arch021-simplification-migration.mjs`
+- `moda-interact-database/scripts/validate-arch021-agent-configuration-migration.mjs`
+- `moda-interact-database/scripts/validate-arch020-commerce-capability-migration.mjs`
+- `moda-interact-database/prisma/migrations/20260920182429_arch020_commerce_capability_releases/migration.sql`
+- `moda-interact-database/package.json`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `docs/decisions/database/ARCH-021/DATABASE-002-collapse-agent-configuration-and-add-merchant-studio-access.md`
 
 ### Validation Reviewed
 
-None
+- PASS (review environment): `node scripts/validate-arch021-simplification-schema.mjs`.
+- PASS (review environment): current `node scripts/validate-arch021-simplification-migration.mjs`; this is structural-only and is not sufficient for R14.
+- Completion Report records PASS for Prisma format/validate/client generation and `git diff --check`; the supplied snapshot has no installed dependency tree or authoritative Git worktrees, so those repository-agent results were inspected but not independently rerun here.
+- FAIL / missing acceptance evidence: no executable fresh migration rehearsal against isolated PostgreSQL.
+- FAIL / missing acceptance evidence: no executable seeded Phase-2 upgrade rehearsal against isolated PostgreSQL.
+- Static review confirms the seeded upgrade path reaches the existing `arch020_audit_immutable` trigger when the audit backfill performs `UPDATE`.
 
 ### Architecture Conformance
 
-Pending
+Changes required. The final Prisma schema is broadly aligned with the simplification checkpoint: one `CommerceAgentConfiguration`, independent model/prompt edit versions, retained template categories, simplified template content, prompt source-template lineage, merchant Studio access and actor-compatible audit fields are present. However, migration correctness is part of the architecture contract. The current upgrade path cannot safely backfill existing audit receipts, creates a redundant actor-admin FK, and lacks the required executable fresh/upgrade proof.
 
 ### Follow-up
 
-None
+Correction contract for Attempt 2:
+
+1. Fix `20260924103000_arch021_simplify_agent_configuration/migration.sql` so the one-time `CommerceAuditEvent` backfill can run despite `arch020_audit_immutable`. The exception must be migration-local only. Before the migration completes, `CommerceAuditEvent` must again reject both `UPDATE` and `DELETE`; do not weaken runtime audit immutability.
+2. Remove the duplicate actor-admin FK addition (or otherwise deterministically end with exactly one FK from `CommerceAuditEvent.actorAdminId` to `PlatformAdmin.id`).
+3. Replace `scripts/validate-arch021-simplification-migration.mjs` with a manual executable PostgreSQL migration validator, following the fail-closed safety pattern already used by the ARCH-020/ARCH-021 migration validators. It must support exactly:
+
+   `DATABASE_URL=<isolated-local-url>/arch021_simplification_test_fresh npm run test:arch021-simplification-migration -- --mode fresh`
+
+   `DATABASE_URL=<isolated-local-url>/arch021_simplification_test_upgrade npm run test:arch021-simplification-migration -- --mode upgrade`
+
+   The validator must:
+   - require an explicit `DATABASE_URL`; never fall back to a configured/shared database;
+   - accept only loopback PostgreSQL hosts (`localhost`, `127.0.0.1`, `[::1]`) and the exact mode-specific database names above;
+   - reject URL query/hash overrides and refuse any non-empty target database;
+   - never reset, drop or automatically clean the database, so we can inspect it manually after a failure;
+   - in `fresh` mode, deploy the complete migration chain to an empty database and assert the final simplified schema and guards;
+   - in `upgrade` mode, stage every predecessor migration except `20260924103000_arch021_simplify_agent_configuration`, seed representative Phase-2 platform/shop model selections, prompt pointers, template revisions and at least one affected `CommerceAuditEvent`, then apply only the simplification migration through normal Prisma migration deployment;
+   - before applying the simplification migration in `upgrade` mode, prove `arch020_audit_immutable` exists on `commerce."CommerceAuditEvent"` and rejects an attempted `UPDATE`/`DELETE` in a rollback-safe validation step;
+   - after migration, assert exact mapped model/prompt IDs, text and edit versions, template published/latest precedence, `sourceTemplateId`, audit `operationId = id`, prompt-scope guards, merchant identity guards and absence of all five obsolete tables;
+   - after migration, prove `arch020_audit_immutable` (or the architecture-equivalent immutable audit trigger if intentionally renamed) exists/enabled and still rejects both `UPDATE` and `DELETE`;
+   - emit concise deterministic PASS markers for each major phase and exit non-zero on any mismatch so the developer and architect can run and inspect the same rehearsal together.
+
+   A bounded fixture helper under `scripts/fixtures/` may be added if needed, but the authoritative entry point remains `scripts/validate-arch021-simplification-migration.mjs` and the existing `npm run test:arch021-simplification-migration` command.
+4. Keep the existing structural SQL-order/backfill assertions where useful as preflight checks; executable PostgreSQL proof is additional and authoritative for migration correctness.
+5. Run and record every required Validation item, including both manual validator modes, and reconcile all Work Item / Acceptance Criteria / Validation checkboxes.
+6. Resubmit the SAME task as Attempt 2. Keep dependants gated. Do not start `ARCH-021-COMMERCE-025`, `026` or `027`.
