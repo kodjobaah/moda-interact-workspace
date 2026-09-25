@@ -11,7 +11,7 @@ updated: 2026-09-25
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016 is Complete; COMMERCE-017, 018, 019 and 020 are Ready.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016 and COMMERCE-017 are Complete; COMMERCE-018, 019 and 020 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -782,7 +782,7 @@ Phase 3 tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-017 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
 | ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
 | ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
@@ -804,7 +804,7 @@ COMMERCE-016
     |
     +--> COMMERCE-020 -------- Tool UI extraction ------------+
 
-COMMERCE-016 is architect-accepted Complete. COMMERCE-017 through COMMERCE-024 are paused/Blocked by the pre-Phase-3 simplification checkpoint and must not be claimed. `moda_architect` will reconcile/reissue the Phase-3 frontier after the simplification implementation is architect-accepted.
+COMMERCE-016 and COMMERCE-017 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-018, COMMERCE-019 and COMMERCE-020 are currently Ready; COMMERCE-021 through COMMERCE-024 remain dependency-gated. COMMERCE-023 specifically remains Pending until COMMERCE-019 is Complete.
 ```
 
 Phase 3 exit criteria:
@@ -1015,7 +1015,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-017 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
 | ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
 | ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
@@ -1049,6 +1049,19 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-25 — COMMERCE-017 Attempt 3 accepted
+
+- Accepted implementation `06416de1`.
+- Confirmed request-focused QuickJS proof now covers non-finite, custom-prototype,
+  accessor and >48 KiB output rejection with the required `INVALID_OUTPUT`
+  diagnostic.
+- Confirmed the minimum R5 host/global set is explicitly proved unavailable while
+  preserving the existing response/runtime/package safety proofs.
+- Attempt 2 -> Attempt 3 changed only the request regression file plus generated
+  TypeScript metadata; runtime source remained unchanged.
+- Marked COMMERCE-017 Complete. COMMERCE-023 remains Pending because COMMERCE-019 is
+  still Ready, not Complete.
 
 ### 2026-09-25 — Phase 3 reconciled onto simplified Studio
 
