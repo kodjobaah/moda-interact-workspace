@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 40
-executor: copilot
-claimed_at: 2026-09-25T13:39:43Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -183,14 +183,176 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested
+
 ### Review Notes
-None
+
+Attempt 1 establishes the intended zero-provider-I/O Shopify Admin authoring-validation boundary and is otherwise directionally correct. Preserve the production design in `src/commerce/tool-authoring/admin-validation.ts` and `src/studio/tools/admin-validation-server-actions.ts`: local COMMERCE-018 compiler only, pinned server-owned API version/schema hash, COMMERCE-019 `ToolAuthoringValidation` / `ToolAuthoringActionResult`, and `requireStudioPlatformRole('ADMIN')`. Do not add Shopify session/token lookup, Admin API execution, Dev MCP calls, live-test receipts, browser-selectable schema metadata, another auth helper, or a function-valued production port.
+
+Attempt 2 is limited to the following deterministic corrections.
+
+#### CR-1 — normalize compiler diagnostic paths to the canonical slash path contract
+
+Modify exactly:
+
+```text
+src/commerce/tool-authoring/admin-validation.ts
+tests/shopify-admin-authoring-validation.test.ts
+```
+
+COMMERCE-018 compiler errors use internal dotted paths such as:
+
+```text
+execution.operationName
+execution.schemaHash
+execution.document.products.first
+execution.variables.query
+```
+
+C024 R3 requires the authoring boundary to expose bounded paths under `/execution/...`. The current adapter prepends `/` without converting dot separators, producing invalid public paths such as `/execution.schemaHash`.
+
+Implement one local path-normalization helper with these exact rules:
+
+```text
+input already begins with '/'
+  -> preserve it unchanged
+
+otherwise
+  -> split on '.'
+  -> discard empty segments
+  -> join segments with '/'
+  -> prefix one leading '/'
+
+missing/non-string compiler path
+  -> '/execution'
+```
+
+Required examples:
+
+```text
+execution.operationName
+  -> /execution/operationName
+
+execution.schemaHash
+  -> /execution/schemaHash
+
+execution.document.products.first
+  -> /execution/document/products/first
+
+execution.variables.query
+  -> /execution/variables/query
+```
+
+Do not change COMMERCE-018 compiler error codes/messages and do not modify `lib/discovery/admin-compiler.ts` merely to satisfy this adapter contract. `parsedIssue()` paths created from Zod issue arrays remain slash-delimited as they are today.
+
+Update the focused tests so they assert the exact slash paths above. At minimum the existing mutation/subscription, wrong-schema-hash and invalid-connection-bound assertions MUST use slash paths. Add one variable-mapping/compiler-path regression asserting `/execution/variables/...` when the compiler provides a variable-specific path.
+
+#### CR-2 — preserve zero-provider-I/O and explicit action-result behavior
+
+Do not broaden Attempt 2. The final implementation MUST still satisfy all of the following:
+
+```text
+validateShopifyAdminDefinition()
+  -> no auth lookup
+  -> no shop/session lookup
+  -> no Shopify Admin transport
+  -> no Dev MCP invocation
+
+validateShopifyAdminDefinitionAction()
+getShopifyAdminAuthoringMetadataAction()
+  -> call requireStudioPlatformRole('ADMIN')
+  -> return ToolAuthoringActionResult
+  -> never return kind:'unknown' / UNCONFIRMED
+
+metadata
+  apiVersion = 2026-07
+  schemaHash = committed COMMERCE-018 adminSchemaHash
+```
+
+Do not create publication evidence or a live-test receipt. C019 continues to own `LIVE_TEST_REQUIRED`.
+
+#### CR-3 — reconcile the task execution record before review handoff
+
+The supplied parent snapshot is not a valid review handoff: YAML is `in_progress` with an active claim and the formal Completion Report is still `Not Started`. Attempt 2 MUST complete the existing task protocol rather than placing execution evidence in chat only.
+
+Before returning to Architect Review, update the executor-owned task fields/checklists and Completion Report so the task file records all of the following:
+
+```text
+status: review
+executor: null
+claimed_at: null
+attempt: 2
+```
+
+Completion Report MUST include:
+
+```text
+- dedicated parent worktree path
+- dedicated implementation worktree path
+- launcher/start-of-attempt synchronization evidence for both worktrees
+- recursive submodule materialization evidence
+- database submodule commit
+- exact implementation commit SHA
+- exact parent report commit SHA
+- changed-file list
+- exact validation commands/results
+- branch/remote parity and clean-worktree evidence
+- Deviations / Assumptions / Unresolved Issues / Architectural Concerns
+```
+
+Do not mark the task Complete.
+
 ### Reviewed Files
-None
+
+```text
+src/commerce/tool-authoring/admin-validation.ts
+src/studio/tools/admin-validation-server-actions.ts
+src/commerce/tool-authoring/contracts.ts
+src/commerce/tool-definition/publication.ts
+lib/discovery/admin-compiler.ts
+tests/shopify-admin-authoring-validation.test.ts
+package.json
+docs/decisions/commerce/ARCH-021/COMMERCE-024-implement-shopify-admin-authoring-validation.md
+```
+
 ### Validation Reviewed
-None
+
+Submitted Attempt 1 evidence:
+
+```text
+focused C024 tests: 9/9 reported passing
+COMMERCE-018 compiler suite: 22/22 reported passing
+new-file lint: reported passing
+git diff --check: reported passing
+full typecheck: unrelated baseline failures reported
+```
+
+The attached parent snapshot does not contain a completed Completion Report, so this evidence is not yet durably reconciled into the task record. The linked GitHub connector available to this review session did not expose `kodjobaah/moda-interact-commerce`, so remote commit/branch state could not be independently fetched; the Attempt 2 Completion Report must therefore carry the required Git/worktree/push evidence.
+
+Attempt 2 MUST run exactly:
+
+```bash
+npm run test:arch021-shopify-admin-authoring-validation
+npm run test:arch021-shopify-admin-compiler
+
+npm exec eslint \
+  src/commerce/tool-authoring/admin-validation.ts \
+  src/studio/tools/admin-validation-server-actions.ts \
+  tests/shopify-admin-authoring-validation.test.ts
+
+npm run typecheck
+git diff --check
+```
+
+For `npm run typecheck`, documented unrelated baseline diagnostics remain non-blocking only if there are zero diagnostics in the C024 task-owned files above. Record that distinction explicitly in the Completion Report.
+
 ### Architecture Conformance
-Pending
+
+Changes Requested. The zero-I/O validation architecture, pinned metadata ownership, COMMERCE-019 action envelope and COMMERCE-027 authorization boundary conform. Public compiler diagnostic paths currently violate C024 R3, and the durable task handoff is incomplete.
+
 ### Follow-up
-None
+
+1. Apply CR-1 through CR-3 only.
+2. Preserve all already-correct Attempt 1 behavior.
+3. After the defined corrections and required validation are complete, set the task to `review`, clear the claim, finish the Completion Report and STOP.
+4. Do not begin ARCH-021-COMMERCE-022 or any adjacent Tool UI/provider-execution work.
