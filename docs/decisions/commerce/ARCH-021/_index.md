@@ -117,7 +117,7 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-016](COMMERCE-016-establish-commerce-tool-definition-contract.md) | Establish canonical Commerce-owned Tool-definition contract | Complete | ARCH-020-COMMERCE-021, 030 |
-| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Ready | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
+| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Complete | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
 | [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Ready | COMMERCE-016, ARCH-020-COMMERCE-011 |
 | [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth/error contract and `LIVE_TEST_REQUIRED` publication gate | Ready | COMMERCE-016, COMMERCE-027, ARCH-020-COMMERCE-030 |
 | [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Ready | COMMERCE-016, 005, 006, 027, 029 |
@@ -136,7 +136,6 @@ Current Phase 3 Ready frontier:
 ```text
 COMMERCE-020   priority 32   Tool extraction + named Server Actions/reconciliation
 COMMERCE-019   priority 34   common validation/auth/error/publication contract
-COMMERCE-017   priority 35   request JavaScript processor
 COMMERCE-018   priority 35   Shopify Admin compiler
 ```
 
@@ -168,9 +167,18 @@ Current checkpoint implementation frontier: none.
 
 COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. All terminal checkpoint implementation dependencies are Complete, so `ARCH-021-SYSTEM-TEST-001` remains Ready. The developer is intentionally holding terminal system tests until the implementation phases are finished and is using manual validation meanwhile; this Ready system-test task is not an implementation dependency and does not pause Phase 3.
 
+### COMMERCE-017 Attempt 3 accepted — 2026-09-25
+
+COMMERCE-017 is **Complete / Accepted, Attempt 3**. The request-focused QuickJS suite
+now explicitly proves non-finite, custom-prototype, accessor and oversized output
+rejection plus the full minimum host/global unavailability set, while preserving the
+existing response/runtime/package proofs. Runtime source was unchanged from Attempt
+2. COMMERCE-023 remains Pending because COMMERCE-019 is still Ready rather than
+Complete.
+
 ### Phase 3 resumed on simplified architecture — 2026-09-25
 
-- COMMERCE-017/018 remain technically unchanged and are Ready.
+- COMMERCE-017 is architect-accepted Complete at Attempt 3; COMMERCE-018 remains Ready.
 - COMMERCE-019 now consumes the COMMERCE-027 hierarchical Auth.js authorization boundary and exposes explicit validation/action failures with no generic unknown result.
 - COMMERCE-020 now consumes the COMMERCE-029 named Server Action/serializable DTO boundary and owns Tool mutation UNCONFIRMED reconciliation through audit lookup without replay.
 - COMMERCE-021..024 are revised to use those boundaries; validation/read errors remain explicit, and global Tool publication remains SUPER_ADMIN-only.
