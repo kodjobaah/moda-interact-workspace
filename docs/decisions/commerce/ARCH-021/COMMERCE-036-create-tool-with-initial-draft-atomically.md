@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 45
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-021-COMMERCE-037
 created: 2026-09-25
-updated: 2026-09-25
+updated: 2026-09-26
 ---
 
 # Create a Tool and its initial draft as one lifecycle operation
@@ -315,9 +315,46 @@ None
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — 2026-09-26
+
+Reviewed the preserved implementation `4fb736076901639b17b3d2f93061fc4b8c225173` and the submitted report-only parent handoff `4ac637f0` against the complete Attempt 1 correction contract.
+
+Accepted. Attempt 1 had already established that the implementation is architecturally conformant. Attempt 2 correctly performs only the requested durable-record reconciliation:
+
+- all 8/8 Work Items are checked against the already-reviewed implementation;
+- all 11/11 Acceptance Criteria are checked against the already-reviewed implementation/tests;
+- all 5/5 required Validation items are reconciled to the recorded Attempt 1 evidence;
+- Completion Report status is exactly `Ready for Review`;
+- final execution metadata is `status: review`, `attempt: 2`, `executor: null`, `claimed_at: null` before this acceptance;
+- the implementation commit remains `4fb736076901639b17b3d2f93061fc4b8c225173`;
+- comparison of the submitted Attempt 1 and Attempt 2 workspace snapshots shows that the task markdown is the only changed file; `src/commerce/publication/lifecycle.ts` and `tests/commerce-lifecycle.test.ts` are unchanged.
+
+The accepted implementation therefore remains exactly the lifecycle capability reviewed in Attempt 1: one `CREATE_TOOL` operation creates the Tool plus revision-1 `DRAFT`, validates the canonical draft definition/name relationship, returns both durable identifiers, preserves replay/conflict semantics, and rolls back atomically at the lifecycle transaction boundary.
+
+No additional implementation rerun is required for this report-only correction. The accepted validation evidence remains:
+
+```text
+npm run test:arch021-tool-authoring-common
+  -> 7 files / 81 tests passed
+
+focused tests/commerce-lifecycle.test.ts
+  -> 34 tests passed
+
+targeted ESLint
+  -> passed with zero warnings
+
+npm run typecheck
+  -> repository baseline exited 2; zero diagnostics in task-owned files
+
+git diff --check
+  -> passed
+```
+
+`ARCH-021-COMMERCE-036` is Complete. Its direct dependent `ARCH-021-COMMERCE-037` is promoted from Pending to Ready. `ARCH-021-COMMERCE-038` and `ARCH-021-COMMERCE-039` remain dependency-gated.
 
 #### Attempt 1 review — 2026-09-25
 
@@ -446,10 +483,8 @@ Record the final parent report commit/push parity and clean parent/implementatio
 
 ### Architecture Conformance
 
-Implementation: Conformant.
-
-Durable task/report state: Non-conformant until Attempt 2 reconciles the required Work Items, Acceptance Criteria, Validation checkboxes and canonical Completion Report status.
+Accepted. The implementation conforms to the COMMERCE-036 lifecycle scope and the Attempt 2 durable task/report state now conforms to the execution protocol. The narrow PostgreSQL persistence optimization remains correctly deferred to COMMERCE-037.
 
 ### Follow-up
 
-Return the same task through `/moda-task ARCH-021-COMMERCE-036` for the report-only Attempt 2 correction above. Do not start COMMERCE-037.
+`ARCH-021-COMMERCE-037` is promoted to `ready`. COMMERCE-038 and COMMERCE-039 remain dependency-gated.
