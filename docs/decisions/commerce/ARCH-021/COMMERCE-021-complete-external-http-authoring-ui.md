@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-25T17:36:47Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-019
@@ -222,22 +222,22 @@ None in Phase 3. Phase 4 live-test tasks will depend on this completed authoring
 
 ## Acceptance Criteria
 
-- [ ] Admin can author every canonical EXTERNAL_HTTP request/response mode.
-- [ ] Request JS sees only tool arguments and produces only a safe descriptor.
-- [ ] Request preview performs zero provider I/O.
-- [ ] Direct/Visual/JavaScript response modes persist losslessly.
-- [ ] Incomplete drafts can be saved without full-definition validation or a live test.
-- [ ] Production UI communicates that live testing is required before publication.
-- [ ] Explicit server failures remain visible; only lost/rejected mutation responses enter reconcilable UNCONFIRMED state.
-- [ ] Publish authority remains PLATFORM_SUPER_ADMIN-only through the accepted hierarchy.
+- [x] Admin can author every canonical EXTERNAL_HTTP request/response mode.
+- [x] Request JS sees only tool arguments and produces only a safe descriptor.
+- [x] Request preview performs zero provider I/O.
+- [x] Direct/Visual/JavaScript response modes persist losslessly.
+- [x] Incomplete drafts can be saved without full-definition validation or a live test.
+- [x] Production UI communicates that live testing is required before publication.
+- [x] Explicit server failures remain visible; only lost/rejected mutation responses enter reconcilable UNCONFIRMED state.
+- [x] Publish authority remains PLATFORM_SUPER_ADMIN-only through the accepted hierarchy.
 
 ## Validation
 
-- [ ] `npm run test:arch020-external-tools-ui`
-- [ ] focused Phase 3 external authoring UI tests
-- [ ] request-preview test proving zero transport calls
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] `npm run test:arch020-external-tools-ui`
+- [x] focused Phase 3 external authoring UI tests
+- [x] request-preview test proving zero transport calls
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -250,30 +250,41 @@ The model/CommerceAgent supplies runtime arguments; this UI only authors `inputS
 ## Completion Report
 
 ### Status
-Implemented; review requested
+Implemented; Attempt 2 review requested
 ### Files Changed
 - `src/studio/external-http/editor.tsx`
 - `src/studio/tools/tool-editor.tsx`
+- `src/studio/contracts.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/commerce/publication/lifecycle.ts`
 - `tests/external-tools-ui.test.tsx`
 ### Work Completed
 - Added Declarative and JavaScript request authoring, static safe headers, bounded tool-argument JSON, and non-network request descriptor preview.
 - Added Direct response processing alongside Visual and JavaScript modes, with JSON enforcement and destructive mode-switch confirmation.
 - Changed draft persistence to `CommerceToolDraftDefinitionSchema` and added a distinct authoritative Validate action.
 - Removed synthetic response fixture controls from the production Tool editor.
-- Added focused regressions for fixture removal, request preview presentation, and JavaScript request/Direct response persistence.
+- Corrected the COMMERCE-023 Server Action import boundary and separated local JSON parsing from action failures.
+- Preserved incomplete draft definitions through the Studio read boundary while keeping publication full-definition validation strict.
+- Added focused regressions for authoring-only JavaScript response editing, request preview presentation, and JavaScript request/Direct response persistence.
 ### Validation Results
-- `get_errors`: no diagnostics in the touched source and test files.
+- `get_errors`: no diagnostics in the touched source files.
 - `git diff --check`: passed.
-- `npm run test:arch020-external-tools-ui`: not run successfully because `vitest` is unavailable in the prepared worktree (`sh: vitest: command not found`).
-- Physical isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021` on `task/ARCH-021-COMMERCE-021`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021` on the same task branch; recursive submodules ready at the launcher-recorded commits.
+- `npm run test:arch020-external-tools-ui`: passed, 10 tests.
+- `npm exec vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`: passed, 24 tests.
+- Targeted ESLint: passed; `git diff --check`: passed.
+- `npm run typecheck`: exits on unrelated repository baseline diagnostics after Prisma generation; no diagnostics remain in the touched source files.
+- Attempt 2 launcher claim commit: `f15d0625f0006cdf333281699d67f7381157f`.
+- Implementation commit: `2662d939cade780d8599f48d35b4b7189caa9b25`, pushed with remote parity.
+- Final parent report commit: the final pushed tip of `task/ARCH-021-COMMERCE-021` after this metadata-only amend.
+- Physical isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021` on `task/ARCH-021-COMMERCE-021`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021` on the same task branch; start-of-attempt synchronization completed; recursive submodules materialized; database submodule at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 ### Deviations
-- Executable UI validation is environment-blocked by missing dependencies; no provider or live HTTP call was introduced.
+- Full repository typecheck remains affected by unrelated pre-existing diagnostics; no provider or live HTTP call was introduced.
 ### Assumptions
 - The existing `SUPER_ADMIN` role value is the repository representation of `PLATFORM_SUPER_ADMIN` for the publication control.
 ### Unresolved Issues
-- Focused Vitest execution remains outstanding until the worktree has its declared dependencies installed.
+- Full typecheck cleanup is outside this task because remaining failures are unrelated to the touched files.
 ### Architectural Concerns
-The implementation remains bounded to `moda-interact-commerce`; no cross-repository changes were required.
+The implementation remains bounded to `moda-interact-commerce`; no cross-repository changes were required. Parent report evidence is fresh for Attempt 2; parent and implementation worktrees were clean before this report edit, and the final parent report commit is recorded below after commit.
 
 ## Architect Review
 
