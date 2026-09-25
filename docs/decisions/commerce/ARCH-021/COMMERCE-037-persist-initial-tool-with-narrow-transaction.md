@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 46
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-25T23:22:01Z
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-036
 enables:
   - ARCH-021-COMMERCE-038
 created: 2026-09-25
-updated: 2026-09-26
+updated: 2026-09-25
 ---
 
 # Persist initial Tool creation with a narrow PostgreSQL transaction
