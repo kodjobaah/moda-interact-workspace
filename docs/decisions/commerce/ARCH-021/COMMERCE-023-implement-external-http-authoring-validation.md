@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -235,9 +235,120 @@ No new architectural concerns. Attempt 3 preserves the accepted Attempt 2 behavi
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 2
+Accepted — Attempt 3
 
 ### Review Notes
+
+#### Attempt 3 review — Accepted — 2026-09-25
+
+Reviewed implementation `1b1e3484eb4446c5ae2e002ec7f85706c073a2db` and the
+submitted Attempt 3 Completion Report against the complete Attempt 2 correction
+contract.
+
+Attempt 3 is accepted.
+
+A2-R1 is satisfied. The preview `source` trust boundary now uses
+`TextEncoder().encode(value).length <= 16_384`, matching the canonical COMMERCE-016
+UTF-8 byte ceiling rather than JavaScript string length. The focused Server Action
+regression uses multibyte source and proves an over-limit value returns
+`INVALID_INPUT` before request processor creation.
+
+A2-R2 is satisfied. Executable preview regressions now prove:
+
+```text
+missing declarative mapped input -> INVALID_INPUT
+invalid JavaScript descriptor    -> INVALID_INPUT
+missing JavaScript descriptor    -> INVALID_INPUT
+```
+
+through the real `previewExternalRequestAction()` path, while the accepted safe
+descriptor and runtime-failure classifications remain green.
+
+A2-R3 is satisfied. The focused definition-validation path injects a request
+processor that returns `RUNTIME_UNAVAILABLE`; the real
+`processorDiagnostic(...) -> ExternalAuthoringRuntimeError -> named Server Action`
+boundary returns `INTERNAL_ERROR` rather than a structural validation issue.
+
+A2-R4 is satisfied. The strict top-level preview DTO is table-tested for
+`unknownField`, `origin`, `credential`, `token`, `authorization`,
+`providerResponse` and `body`; each returns `INVALID_INPUT` before processor
+creation.
+
+A2-R5 is satisfied. The production
+`createExternalIntegration(...).authoringValidation.validate(...)` proof injects
+throwing/spied DNS, transport and Prisma credential-read boundaries. Validation
+completes structurally while:
+
+```text
+dns.resolve                              = 0 calls
+transport.execute                        = 0 calls
+commerceExternalCredential.findFirst     = 0 calls
+```
+
+No execution/credential-resolution/live-provider path is invoked.
+
+A2-R6 is satisfied. Both OBJECT and LIST incompatible visual projections produce the
+canonical bounded issue:
+
+```text
+path = /execution/responseProcessing
+code = incompatible_response_processing
+```
+
+while valid DIRECT/OBJECT/LIST and response-template/response-JavaScript behavior
+remain intact.
+
+The submitted focused validation reports:
+
+```text
+test:arch021-external-tool-authoring-validation: 2 files / 37 tests PASS
+test:arch020-external-publication:               1 file / 13 tests PASS
+COMMERCE-016/017/019 contract/auth packet:       6 files / 42 tests PASS
+targeted ESLint:                                 PASS
+git diff --check:                                PASS
+```
+
+Inspection of the submitted `tsconfig.tsbuildinfo` shows zero semantic diagnostics in:
+
+```text
+src/commerce/tool-authoring/external-validation.ts
+src/commerce/integration/external/index.ts
+src/studio/tools/external-validation-server-actions.ts
+tests/external-tool-authoring-validation.test.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+The remaining 15 TypeScript diagnostics are confined to the documented unrelated
+preview, Agent Configuration, COMMERCE-020 fixture, external-wiring, local MCP and
+selected-shop-context baseline surfaces.
+
+Attempt 2 -> Attempt 3 is narrowly scoped: runtime source changes only the canonical
+UTF-8-byte preview-source refinement; the remaining task-owned changes are the exact
+focused regressions/proofs required by the Architect Review. The additional Shopify
+Admin authoring script visible in `package.json` is synchronized COMMERCE-024 state,
+not COMMERCE-023 scope expansion.
+
+The Completion Report records the fresh Attempt 3 launcher packet: canonical parent
+and implementation worktrees, matching task branches, start synchronization,
+fresh claim commit, recursive submodule materialization, database submodule
+`0a8d3b9feade69690b6c1e33aeda051ea588bd45`, pushed implementation commit and clean
+implementation worktree.
+
+The final handoff identifies parent report commit
+`7a889f629c8d582c610c1ae108bfbe0a8292b165`, while the embedded Completion Report
+states that the final report commit is published after reconciliation without
+recording that hash inline. The archive contains no Git metadata from which the
+architect can reconstruct the final self-referential publication step. The durable
+task content, cleared claim, reported branch parity and worktree evidence are
+otherwise coherent, so this bookkeeping distinction does not block acceptance.
+
+No live HTTP request, credential display/decryption, Tool UI, Shopify Admin
+validation implementation or publication/live-test receipt was added.
+
+`ARCH-021-COMMERCE-021` remains Pending after this acceptance because
+`ARCH-021-COMMERCE-020` is still not Complete.
+
+#### Historical Attempt 2 Changes Requested
 
 #### Attempt 2 review — 2026-09-25
 
@@ -1053,42 +1164,43 @@ Do not begin COMMERCE-021.
 - `src/commerce/tool-authoring/contracts.ts`
 - `src/commerce/tool-definition/contracts.ts`
 - `src/commerce/tool-definition/publication.ts`
-- `src/commerce/external-publication/index.ts`
 - `src/commerce/code-request/processor.ts`
 - `src/commerce/code-response/processor.ts`
 - `tests/external-tool-authoring-validation.test.ts`
+- `tests/external-tool-authoring-server-actions.test.ts`
 - `package.json`
 - submitted `tsconfig.tsbuildinfo`
-- Attempt 1 Completion Report
+- Attempt 3 Completion Report
+- Attempt 2 and Attempt 3 submitted snapshots for scoped diff comparison
 
 ### Validation Reviewed
 
-Submitted evidence:
-
-```text
-focused COMMERCE-023 validation: 1 file / 6 tests PASS
-COMMERCE-016/017/019 packet:     9 files / 95 tests PASS
-targeted ESLint:                 PASS
-git diff --check:                PASS
-full typecheck:                  15 unrelated diagnostics reported; 0 task-owned
-integration packet:              67 passed / 2 reported COMMERCE-013 baseline failures
-```
-
-Independent source inspection confirms the current Visual compatibility exception is
-misclassified as `/responseTemplate`, and the current local `transport` spy in the
-focused test is never passed into the validator/integration composition.
+- `npm run test:arch021-external-tool-authoring-validation`: 37/37 passed across
+  2 files, zero skipped.
+- `npm run test:arch020-external-publication`: 13/13 passed.
+- Required COMMERCE-016/017/019 contract/auth packet: 42/42 passed across 6 files.
+- Targeted ESLint over the COMMERCE-023 source/tests: passed.
+- `git diff --check`: passed.
+- Submitted full typecheck: 15 diagnostics on documented unrelated baseline files.
+- Independent `tsconfig.tsbuildinfo` inspection: zero semantic diagnostics in all
+  COMMERCE-023 task-owned source/test files.
+- Independent Attempt 2 -> Attempt 3 diff inspection confirms only the UTF-8 source
+  refinement plus required focused regression/proof changes in COMMERCE-023-owned
+  code.
 
 ### Architecture Conformance
 
-Changes Requested. Ownership, canonical contracts, authorization direction and
-zero-live-provider architecture conform, but the deterministic diagnostic boundary,
-strict request-preview trust boundary, runtime-failure classification and focused
-zero-provider-I/O proof are incomplete. No schema, Shared, database or cross-repository
-redesign is required.
+Conforms. External HTTP authoring validation remains server-authoritative and
+zero-provider-I/O, reuses the canonical Commerce definition/request/descriptor
+contracts and accepted QuickJS processors, returns bounded deterministic diagnostic
+paths, and keeps preview errors explicit without mutation reconciliation. Structural
+validation creates no live-test/publication evidence; COMMERCE-019
+`LIVE_TEST_REQUIRED` remains the publication gate.
 
 ### Follow-up
 
-Return this same task through `/moda-task ARCH-021-COMMERCE-023` for Attempt 2.
+`ARCH-021-COMMERCE-023` is Complete / Accepted at Attempt 3.
 
-`ARCH-021-COMMERCE-021` remains Pending because COMMERCE-020 is not Complete and
-COMMERCE-023 is not yet Complete. Do not start downstream work.
+`ARCH-021-COMMERCE-021` remains Pending because
+`ARCH-021-COMMERCE-020` is not yet Complete. Do not start COMMERCE-021 from this
+review.
