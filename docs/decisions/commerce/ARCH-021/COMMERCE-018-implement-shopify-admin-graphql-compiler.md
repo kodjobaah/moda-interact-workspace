@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T12:40:52Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -295,6 +295,39 @@ Implementation commits `db18555446f0c8f3a9601397941451bdb20b3714`, synchronizati
 - Existing repository-wide typecheck/build baseline remains for the owning tasks; no Admin compiler or discovery-slice diagnostics remain.
 ### Architectural Concerns
 None
+
+### Attempt 4 Completion Addendum
+
+#### Status
+Ready for Review
+
+#### Correction Checklist
+- CR-1 implemented in `lib/discovery/admin-compiler.ts`: compiled variable metadata now preserves the schema-backed expected type and whether the GraphQL variable is non-null without a default. Optional/defaulted variables may omit mappings; required variables still fail closed; unknown mapping keys remain rejected.
+- CR-1 regressions added in `tests/admin-graphql-compiler.test.ts` for omitted nullable, omitted non-null-with-default, and omitted required non-null variables.
+- CR-2 implemented in `lib/discovery/admin-compiler.ts`: nullable input-schema branches are accepted only for nullable GraphQL variables, while non-null variables reject any schema that admits `null`; all non-null branch compatibility checks remain unchanged.
+- CR-2 regressions added in `tests/admin-graphql-compiler.test.ts` for nullable and non-null GraphQL variables mapped from `['string', 'null']`.
+- CR-3 accepted Attempt 3 boundaries preserved: no changes to the oracle bridge/scripts, Storefront compiler or artifact, discovery dispatch, Admin artifact/provenance, or query safety limits.
+
+#### Implementation Evidence
+- Implementation commit: `a6df0f193606bd14d31d3a46989ad284a81a6b3c`.
+- Implementation branch: `task/ARCH-021-COMMERCE-018`, local/remote parity at the implementation commit.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-018`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-018`.
+- Launcher preparation evidence: claim commit `b73d2c1ea3915a8e52e1377cdf3a142d03e2ca95`; parent origin-main already current; implementation origin-main already current; task-branch fast-forward not needed; recursive submodule sync/update passed; database submodule at exact recorded commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Artifact integrity preserved: `admin-2026-07.json` SHA-256 remains `2b507dc1f74c6157e0eb98500db0f3c3e238d69eaf0d98fd7657ac7ed3f6900b`, matching `admin-2026-07.provenance.json`.
+
+#### Attempt 4 Validation
+- `npm run test:arch021-shopify-admin-compiler`: PASS, 2 files and 22 tests.
+- `npm run validate:arch021-shopify-admin-oracle`: PASS; valid products, unknown field, unknown argument, mutation safety divergence, and wrong variable type all matched the expected local/upstream outcomes; local verdicts used the production compiler bridge.
+- Exact architect-requested `npm exec eslint` command over all compiler/discovery/scripts/tests: PASS with no warnings or errors.
+- `git diff --check`: PASS.
+- Relevant `npm run test:arch021-commerce-tool-contract`: PASS, 1 file and 12 tests.
+- Source audit: no network calls, credentials, authorization headers, or telemetry dependencies in the touched compiler/tests.
+- `npm run typecheck`: repository baseline failure, 242 diagnostics across 19 unrelated files; no diagnostics were reported for the touched Admin compiler, discovery, route, scripts, or focused tests.
+- Implementation worktree was clean after commit and push; no live Shopify request, credential execution, mutation, or out-of-scope UI/publication work was performed.
+
+#### Attempt 4 Report State
+The task is ready for Architect Review. No downstream task was started.
 
 ## Architect Review
 
