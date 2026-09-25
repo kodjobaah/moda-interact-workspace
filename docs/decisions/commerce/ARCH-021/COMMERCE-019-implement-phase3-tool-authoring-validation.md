@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 34
 executor: null
 claimed_at: null
@@ -393,9 +393,80 @@ Ready for Review
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 2
+Accepted — Attempt 3
 
 ### Review Notes
+
+#### Attempt 3 review — Accepted — 2026-09-25
+
+Reviewed implementation `fe3bcf40` and the submitted Attempt 3 Completion Report
+against the complete Attempt 2 proof/report correction contract.
+
+Attempt 3 is accepted.
+
+The Attempt 2 runtime/publication corrections remain intact: canonical EXTERNAL_HTTP
+DIRECT/OBJECT-LIST/JAVASCRIPT and SHOPIFY_ADMIN_GRAPHQL definitions reach the exact
+`LIVE_TEST_REQUIRED` publication gate; validation issue fields are bounded to 512
+UTF-8 bytes on code-point boundaries; known argument-mapping validation failures map
+to `INVALID_INPUT`; the accepted hierarchical authorization/bypass cases execute; the
+lifecycle and Studio boundaries preserve the identifiable gate code; synthetic
+ARCH-020 evidence cannot satisfy the gate; already-published revisions remain readable
+history.
+
+Attempt 3 adds the one missing A1-R6 proof without changing runtime/publication
+behavior. `tests/tool-authoring-no-provider-io.test.ts`:
+
+- invokes the real `validateToolDefinitionAction()` and
+  `validateToolArgumentsAction()` Server Actions through the accepted mocked
+  `requireStudioPlatformRole('ADMIN')` seam;
+- installs a throwing `globalThis.fetch` spy and proves neither action performs
+  provider I/O;
+- audits `src/commerce/tool-authoring/contracts.ts` and
+  `src/commerce/tool-authoring/server-actions.ts` for request-JavaScript runtime,
+  external HTTP transport, Shopify Admin compiler, integration-backend,
+  `prisma.session` and `/admin/api/` dependencies.
+
+The focused script includes this proof and reports:
+
+```text
+test:arch021-tool-authoring-common:      7 files / 77 tests PASS, 0 skipped
+test:arch021-tool-authoring-validation: 1 file / 6 tests PASS
+test:arch020-external-publication:      1 file / 13 tests PASS
+authorization packet:                   2 files / 14 tests PASS
+lint:                                   PASS
+git diff --check:                       PASS
+```
+
+Inspection of the submitted `tsconfig.tsbuildinfo` shows 16 diagnostics across eight
+documented baseline files and zero semantic diagnostics in
+`src/commerce/tool-authoring/**` or the three task-owned Tool-authoring focused test
+files.
+
+Attempt 2 -> Attempt 3 task-owned implementation is proof-only:
+`tests/tool-authoring-no-provider-io.test.ts` plus package-script registration. The
+additional Shopify Admin compiler/oracle files visible in the submitted snapshot are
+the already-accepted COMMERCE-018 state incorporated during start-of-attempt
+synchronization, not COMMERCE-019 scope expansion.
+
+The Completion Report records the fresh Attempt 3 launcher-resolved parent and
+implementation worktrees, matching branches, start synchronization, claim evidence,
+recursive submodule materialization, database submodule commit `0a8d3b9`, pushed
+implementation commit and clean/push-parity state.
+
+The final user handoff identifies parent report commit `fa3b26d2`, while the embedded
+Completion Report records `465745d1` as the report-publication commit before final
+self-reference reconciliation. The supplied archive contains no Git metadata from
+which the architect can reconstruct the relationship between those hashes. The
+durable report content, cleared claim and reported branch parity are coherent, so
+this bookkeeping difference does not block acceptance.
+
+No COMMERCE-021/022/023/024 implementation or Phase 4 live-test work was started.
+
+All dependencies of COMMERCE-023 and COMMERCE-024 are now Complete, so both become
+Ready. COMMERCE-021 and COMMERCE-022 remain Pending because COMMERCE-020 and their
+respective domain validator dependencies are not yet Complete.
+
+#### Historical Attempt 2 Changes Requested
 
 #### Attempt 2 review — 2026-09-25
 
@@ -956,50 +1027,50 @@ Do not start COMMERCE-021, COMMERCE-022, COMMERCE-023 or COMMERCE-024.
 
 - `src/commerce/tool-authoring/contracts.ts`
 - `src/commerce/tool-authoring/server-actions.ts`
-- `src/commerce/external-publication/contracts.ts`
-- `src/commerce/external-publication/index.ts`
-- `src/commerce/publication/lifecycle.ts`
-- `src/commerce/integration/studio/services.ts`
-- `src/studio/contracts.ts`
-- `lib/auth/merchant-access.ts`
-- `lib/auth/role-hierarchy.ts`
+- `tests/tool-authoring-no-provider-io.test.ts`
 - `tests/tool-authoring-validation.test.ts`
+- `tests/tool-authoring-server-actions.test.ts`
 - `tests/external-publication.test.ts`
 - `tests/auth-role-requirements.test.ts`
 - `tests/auth-permissions.test.ts`
+- `tests/commerce-lifecycle.test.ts`
+- `tests/studio-integration.test.ts`
 - `package.json`
 - submitted `tsconfig.tsbuildinfo`
-- Attempt 1 Completion Report
+- Attempt 3 Completion Report
+- Attempt 2 and Attempt 3 submitted snapshots for scope comparison
 
 ### Validation Reviewed
 
-Submitted evidence:
-
-```text
-authoring tests:             6 passed
-external publication tests: 12 passed
-authorization tests:        10 passed
-targeted ESLint:            PASS
-git diff --check:           PASS
-full typecheck:             unrelated baseline diagnostics reported
-```
-
-Independent inspection confirms no semantic TypeScript diagnostic in the
-COMMERCE-019 task-owned source/test files.
-
-However, the submitted focused test does not execute all R7 bullets and relies on
-source-text assertions for the lifecycle gate. It also does not cover UTF-8
-multibyte truncation, known `mapToolArguments()` validation errors, DIRECT-mode
-publication, or executable Studio propagation.
+- `npm run test:arch021-tool-authoring-common`: 77 passed across 7 files, zero skipped.
+- `npm run test:arch021-tool-authoring-validation`: 6 passed.
+- `npm run test:arch020-external-publication`: 13 passed.
+- Authorization packet: 14 passed across 2 files.
+- Submitted lint: passed.
+- Submitted `git diff --check`: passed.
+- Submitted full typecheck: 16 errors across 8 documented unrelated baseline files.
+- Independent `tsconfig.tsbuildinfo` inspection: zero semantic diagnostics in
+  `src/commerce/tool-authoring/**`, `tests/tool-authoring-validation.test.ts`,
+  `tests/tool-authoring-server-actions.test.ts` and
+  `tests/tool-authoring-no-provider-io.test.ts`.
+- Static inspection confirms real common Server Actions execute with a throwing
+  `fetch` spy untouched and the common-layer dependency audit excludes the prohibited
+  provider/compiler/session boundaries.
 
 ### Architecture Conformance
 
-Changes Requested. The common authorization/result direction conforms, but the exact
-R1 byte bound, R3 validation classification and R4 all-mode publication gate are not
-yet satisfied. No cross-repository or schema redesign is required.
+Conforms. COMMERCE-019 now provides one bounded common validation/action-result
+contract over the accepted COMMERCE-027 role hierarchy, exact fail-closed
+`LIVE_TEST_REQUIRED` publication semantics, no synthetic-receipt shortcut, explicit
+errors and zero provider I/O. External HTTP and Shopify Admin domain validators remain
+independent downstream tasks. No live testing, Tool UI, provider execution or new
+authorization layer was introduced.
 
 ### Follow-up
 
-Return this same task through `/moda-task ARCH-021-COMMERCE-019` for Attempt 2.
-COMMERCE-023 and COMMERCE-024 remain dependency-gated until COMMERCE-019 is
-architect-accepted Complete. Do not start downstream work.
+`ARCH-021-COMMERCE-019` is Complete / Accepted at Attempt 3.
+
+All dependencies of `ARCH-021-COMMERCE-023` and `ARCH-021-COMMERCE-024` are now
+Complete, so both become Ready. `ARCH-021-COMMERCE-021` and
+`ARCH-021-COMMERCE-022` remain Pending. Do not start downstream tasks implicitly from
+this review.
