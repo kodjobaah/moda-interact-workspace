@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 34
 executor: null
 claimed_at: null
@@ -336,9 +336,214 @@ Ready for Review
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Changes Requested — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — 2026-09-25
+
+Reviewed implementation `47fa255b` and the submitted Attempt 2 report against the
+complete Attempt 1 correction contract.
+
+The substantive Attempt 1 defects are corrected and must be preserved:
+
+- structurally valid EXTERNAL_HTTP `DIRECT`, `OBJECT/LIST` and `JAVASCRIPT` response
+  modes now reach the exact Phase 3 `LIVE_TEST_REQUIRED` gate;
+- validation issue `path`, `code` and `message` values are truncated on Unicode
+  code-point boundaries and remain <= 512 UTF-8 bytes without replacement-character
+  truncation;
+- known `mapToolArguments()` validation TypeErrors map to `INVALID_INPUT` rather than
+  `INTERNAL_ERROR`;
+- the common focused command executes PLATFORM_ADMIN, PLATFORM_SUPER_ADMIN, all three
+  merchant-role denials and development bypass, including proof that bypass performs
+  no auth/platform/merchant identity lookup;
+- executable lifecycle tests preserve the exact `LIVE_TEST_REQUIRED` code/message for
+  EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL, and the Studio translation preserves the
+  identifiable code;
+- an already-published revision remains readable history;
+- ARCH-020 sample/publication receipts do not satisfy the Phase 3 publication gate;
+- submitted `tsconfig.tsbuildinfo` contains no semantic diagnostic in the task-owned
+  COMMERCE-019 source/test surfaces;
+- the Attempt 2 Completion Report contains the launcher-resolved worktree,
+  synchronization, claim, recursive submodule and database-submodule evidence.
+
+Attempt 2 is not accepted only because A1-R6 explicitly required a **focused
+spy/assertion** proving the common authoring validation layer performs zero provider
+I/O/domain-compiler invocation. The submitted report records a source audit, but the
+focused tests do not execute such a proof.
+
+The following is the complete Attempt 3 correction contract. It is intentionally
+proof/report-only. Do not redesign runtime/publication behavior and do not begin
+COMMERCE-021/022/023/024.
+
+##### A2-R1 — add one focused zero-provider-I/O proof
+
+Create:
+
+```text
+tests/tool-authoring-no-provider-io.test.ts
+```
+
+The test must invoke the real:
+
+```text
+validateToolDefinitionAction(...)
+validateToolArgumentsAction(...)
+```
+
+from:
+
+```text
+src/commerce/tool-authoring/server-actions.ts
+```
+
+Use the existing Vitest mock seam for `requireStudioPlatformRole` so the calls execute
+as an admitted platform ADMIN without requiring real auth/database access.
+
+The test MUST:
+
+1. install a `globalThis.fetch` spy that throws if called;
+2. invoke `validateToolDefinitionAction()` with one valid canonical definition;
+3. invoke `validateToolArgumentsAction()` with one valid definition/input pair;
+4. assert both actions return their expected non-provider results;
+5. assert the fetch spy was never called.
+
+Also add a deterministic dependency-boundary assertion over:
+
+```text
+src/commerce/tool-authoring/contracts.ts
+src/commerce/tool-authoring/server-actions.ts
+```
+
+proving those common-layer files do **not** import or reference any of:
+
+```text
+src/commerce/code-request
+createCodeRequestProcessor
+src/commerce/external-http
+createExternalHttpExecutionPort
+createNodeHttpsTransport
+Shopify Admin compiler implementation
+src/commerce/integration/backend
+prisma.session
+/admin/api/
+```
+
+Do not invent a fake COMMERCE-018 compiler module merely for this proof. COMMERCE-018
+may not yet exist in the current branch; absence from the common-layer dependency
+boundary is the intended invariant.
+
+The dependency-boundary assertion may use `readFileSync` because it proves an import /
+reference invariant. The fetch assertion must remain executable and must invoke the
+real Server Actions.
+
+Do not apply this audit to `src/commerce/external-publication/index.ts`: that accepted
+ARCH-020 boundary may compile response JavaScript for structural publication
+validation. A2-R1 concerns the new **common Tool authoring layer** only.
+
+##### A2-R2 — keep the entire Attempt 2 focused contract green
+
+Update:
+
+```text
+test:arch021-tool-authoring-common
+```
+
+so it also executes:
+
+```text
+tests/tool-authoring-no-provider-io.test.ts
+```
+
+Retain every current focused file. Do not remove any existing authorization,
+publication, lifecycle, Studio, UTF-8 or `INVALID_INPUT` proof.
+
+Then run exactly:
+
+```bash
+npm run test:arch021-tool-authoring-common
+npm run test:arch021-tool-authoring-validation
+npm run test:arch020-external-publication
+npm run test -- --run \
+  tests/auth-role-requirements.test.ts \
+  tests/auth-permissions.test.ts
+npm run lint
+npm run typecheck
+git diff --check
+```
+
+All focused tests must execute with zero skips.
+
+No diagnostic in:
+
+```text
+src/commerce/tool-authoring/**
+tests/tool-authoring-validation.test.ts
+tests/tool-authoring-server-actions.test.ts
+tests/tool-authoring-no-provider-io.test.ts
+```
+
+may be classified as baseline.
+
+No runtime source change is required for Attempt 3 unless the new executable
+zero-provider-I/O proof fails and demonstrates a task-owned defect.
+
+##### A2-R3 — reconcile Attempt 3 report metadata
+
+The final user handoff for Attempt 2 identifies parent report commit `8be86bae`, while
+the embedded Completion Report currently records `93b3bdef`. The review archive
+contains no Git metadata with which to reconstruct that relationship.
+
+Attempt 3 must record the exact final parent report commit that is actually pushed,
+along with the fresh Attempt 3 prepared-execution packet:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-019
+implementation branch = task/ARCH-021-COMMERCE-019
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 3 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Also reconcile the human-readable `## Validation` text/counts to the current focused
+commands/results instead of retaining the older Attempt 1 counts.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+##### Attempt 3 stop condition
+
+Return to architect review only when:
+
+```text
+real common Server Actions execute with fetch spy untouched
+AND common-layer dependency audit shows no request-JS/Admin/provider transport/session dependency
+AND every Attempt 2 correction proof remains green
+AND all focused tests execute with zero skips
+AND no task-owned type diagnostic remains
+AND the fresh Attempt 3 launcher/report evidence is complete
+```
+
+Then push both branches, return control to `moda_architect`, and STOP.
+
+Do not start COMMERCE-021, COMMERCE-022, COMMERCE-023 or COMMERCE-024.
+
+#### Historical Attempt 1 review
 
 #### Attempt 1 review — 2026-09-25
 
