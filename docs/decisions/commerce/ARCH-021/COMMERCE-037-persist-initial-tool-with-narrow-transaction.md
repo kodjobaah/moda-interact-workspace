@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 46
 executor: null
 claimed_at: null
@@ -384,19 +384,214 @@ Implemented and ready for Architect Review.
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
-None
+
+#### Attempt 1 review — 2026-09-26
+
+Reviewed implementation `d6b20ae` and parent report `d78779b6` against the complete COMMERCE-037 contract and the accepted COMMERCE-036 lifecycle boundary.
+
+The core implementation direction is correct and MUST be preserved:
+
+- `createToolWithInitialDraft` is now routed through a dedicated persistence port instead of the generic whole-publication state transaction;
+- the new Prisma path reads only the exact operation/audit record, inserts one `CommerceTool`, one revision-1 `DRAFT`, and one `CommerceAuditEvent`;
+- the new path does not call `readState()`, `writeState()` or `snapshot()` and does not acquire the legacy `moda-commerce-publication` advisory lock;
+- operation-scoped locking is keyed from `operationId`;
+- identical direct-path replay returns the recorded composite result;
+- same-name races use the database uniqueness boundary;
+- the post-write failure hook is inside the Prisma transaction and the submitted PostgreSQL regression proves rollback;
+- the generic publication transaction remains unchanged for unrelated commands;
+- no schema/migration change was introduced.
+
+The submitted common packet (81/81), focused lifecycle packet (34/34), focused PostgreSQL regression and changed-file lint/diff evidence are consistent with the implementation inspected. The two `tests/backend-integration.test.ts` failures match the previously documented backend-singleton baseline recorded under COMMERCE-016; preserve that exact baseline classification only if Attempt 2 observes the same two failures and no new causal failure.
+
+Attempt 1 is not accepted because one mandatory PostgreSQL proof is missing, one error-mapping boundary is too broad, and the durable Completion Report does not contain the required execution-isolation/synchronization evidence. The following is the complete Attempt 2 correction contract.
+
+##### A1-R1 — prove the narrow path is independent of the legacy global publication lock
+
+Change:
+
+```text
+tests/backend-postgres-rehearsal.test.ts
+```
+
+R8 requires executable PostgreSQL evidence that unrelated operation IDs creating different Tool names are not serialized behind:
+
+```sql
+pg_advisory_xact_lock(hashtext('moda-commerce-publication'))
+```
+
+The current focused test proves same-operation replay, changed-payload reuse, same-name racing and rollback, but it never holds the legacy global lock while invoking the narrow command. Source inspection alone does not satisfy this explicit real-PostgreSQL acceptance requirement.
+
+Add a deterministic regression using an independent Prisma client/transaction that:
+
+1. acquires the exact legacy global publication advisory transaction lock;
+2. keeps that transaction open;
+3. while the global lock is still held, invokes `createToolWithInitialDraft` using a distinct operation ID and distinct Tool name;
+4. proves the narrow create resolves successfully before the global-lock transaction is released;
+5. releases/rolls back the blocker in `finally` so failure cannot strand the rehearsal;
+6. verifies the created Tool/revision/audit result normally.
+
+A bounded `Promise.race`/timeout may be used only as the assertion mechanism; always release the blocker before the test exits. Do not weaken the production transaction timeout and do not acquire the global lock in the narrow implementation.
+
+Also add a direct real-PostgreSQL assertion that reusing the committed operation ID with a different `actorId` yields `OPERATION_REUSE_CONFLICT`. The existing changed-payload proof must remain. The conflicting actor need not be a valid database principal because the committed audit row must be rejected before any new write is attempted.
+
+##### A1-R2 — map only the Tool-name unique constraint to lifecycle `CONFLICT`
+
+Change:
+
+```text
+src/commerce/integration/backend/publication-storage.ts
+```
+
+The current catch block does this for every Prisma unique violation:
+
+```ts
+if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+  throw new LifecycleError('CONFLICT', 'tool already exists');
+}
+```
+
+That is broader than R4. `CONFLICT / tool already exists` is authorized only for the `CommerceTool.name` uniqueness boundary. A unique failure on an audit/operation identity or another invariant must not be mislabeled as a Tool-name collision.
+
+Narrow the translation so only the Prisma `P2002` identifying the `CommerceTool.name` unique constraint becomes:
+
+```text
+LifecycleError('CONFLICT', 'tool already exists')
+```
+
+For every other `P2002`, preserve the underlying failure unless the existing operation-replay contract can deterministically resolve it from the exact audit row. Do not turn unknown unique failures into `CONFLICT`.
+
+Preserve the current real same-name race regression and make it prove the narrowed mapping still returns lifecycle `CONFLICT`. If a small local helper is introduced for constraint classification, add a focused deterministic assertion for its non-name case rather than depending on an unrelated database corruption scenario.
+
+##### A1-R3 — preserve the accepted narrow persistence behavior
+
+Do not regress:
+
+```text
+operation-scoped advisory locking
+exact audit lookup by operation identity
+identical replay -> original composite result
+changed payload -> OPERATION_REUSE_CONFLICT
+one Tool + revision 1 DRAFT + one CREATE_TOOL audit
+toolId + toolRevisionId recorded in audit metadata/result and FK columns
+post-write rollback
+no readState/writeState/snapshot on the narrow path
+no legacy global publication lock on the narrow path
+no schema/migration change
+generic publication transaction unchanged
+```
+
+Do not expose the command through Studio Server Actions and do not modify browser authoring; those remain COMMERCE-038/039.
+
+##### A1-R4 — reconcile the durable Completion Report and execution evidence
+
+No implementation churn is required for this item beyond the corrections above. Update the task-owned Work Items, Acceptance Criteria, Validation and Completion Report to the final Attempt 2 evidence.
+
+The Completion Report status must be exactly:
+
+```text
+Ready for Review
+```
+
+The durable report must record the fresh Attempt 2 launcher/preparation evidence required by the architect workflow, including:
+
+```text
+parent task worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-037
+implementation branch = task/ARCH-021-COMMERCE-037
+start-of-attempt parent synchronization evidence
+start-of-attempt implementation synchronization evidence
+recursive submodule materialization evidence
+database submodule commit used for validation
+Attempt 2 claim evidence
+implementation commit
+final parent report commit
+local/remote push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not infer or reuse Attempt 1 preparation values for Attempt 2.
+
+##### A1-R5 — Attempt 2 validation
+
+Run:
+
+```bash
+npm run test:arch021-tool-authoring-common
+
+npx vitest run tests/backend-postgres-rehearsal.test.ts \
+  -t "persists initial Tool creation narrowly across independent clients"
+
+npm run test:arch020-backend-integration
+
+npm exec eslint \
+  src/commerce/publication/ports.ts \
+  src/commerce/publication/lifecycle.ts \
+  src/commerce/integration/backend/publication-storage.ts \
+  tests/fixtures/publication-store.ts \
+  tests/backend-postgres-rehearsal.test.ts
+
+npm run typecheck
+
+git diff --check
+```
+
+The focused PostgreSQL command must run against the same architecture-approved isolated/disposable PostgreSQL target used for Attempt 1.
+
+Acceptance requires:
+
+```text
+common Tool authoring packet green
+AND focused PostgreSQL test green with the new global-lock-independence + actor-reuse cases
+AND same-name race still maps to CONFLICT
+AND no non-name P2002 is blanket-mapped to Tool-name CONFLICT
+AND no task-owned lint/typecheck diagnostic
+AND git diff --check passes
+AND any retained backend/typecheck baseline is byte-for-byte/equivalent to the documented pre-existing baseline and not caused by COMMERCE-037
+AND the durable Attempt 2 execution/report evidence is complete
+```
+
+##### Attempt 2 stop condition
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+Return control to `moda_architect` and STOP. Do not begin COMMERCE-038.
 
 ### Reviewed Files
-None
+
+- `src/commerce/publication/ports.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/integration/backend/publication-storage.ts`
+- `tests/fixtures/publication-store.ts`
+- `tests/backend-postgres-rehearsal.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-037-persist-initial-tool-with-narrow-transaction.md`
 
 ### Validation Reviewed
-None
+
+- Submitted `npm run test:arch021-tool-authoring-common`: 81/81 passed.
+- Submitted focused lifecycle packet: 34/34 passed.
+- Submitted focused PostgreSQL narrow-persistence test: passed, but missing the required explicit global-lock-independence case.
+- Submitted `npm run test:arch020-backend-integration`: 67/69 with the same two previously documented backend-singleton baseline failures.
+- Submitted changed-file ESLint: passed.
+- Submitted full typecheck: 16 unrelated baseline diagnostics reported; no task-owned diagnostic reported.
+- Submitted `git diff --check`: passed.
+- Source inspection confirms the narrow path does not invoke `readState`, `writeState`, `snapshot` or the legacy global lock.
 
 ### Architecture Conformance
-Pending
+
+Changes Requested. The dedicated narrow persistence architecture is substantially correct, but R8's explicit PostgreSQL non-global-serialization proof is incomplete and the current blanket `P2002 -> tool already exists` translation exceeds the Tool-name conflict contract.
 
 ### Follow-up
-None
+
+Reclaim the same task for Attempt 2. COMMERCE-038 remains dependency-gated until COMMERCE-037 is architect-accepted Complete.
