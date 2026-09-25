@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 34
-executor: copilot
-claimed_at: 2026-09-25T13:09:19Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -247,10 +247,12 @@ Produces `ToolAuthoringValidation` and `ToolAuthoringActionResult<T>` consumed b
 
 ## Validation
 
-- [x] `npm run test:arch021-tool-authoring-validation` (focused authoring suite: 6 tests passed)
-- [x] `npm run test:arch020-external-publication` (12 tests passed)
-- [x] `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts` (10 tests passed)
-- [x] targeted lint/typecheck (targeted ESLint passed; task-owned diagnostics clean; full `tsc --noEmit` retains unrelated baseline errors)
+- [x] `npm run test:arch021-tool-authoring-common` (7 files, 77 tests passed, zero skipped; includes the executable zero-provider-I/O proof)
+- [x] `npm run test:arch021-tool-authoring-validation` (1 file, 6 tests passed)
+- [x] `npm run test:arch020-external-publication` (1 file, 13 tests passed)
+- [x] `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts` (2 files, 14 tests passed)
+- [x] `npm run lint` (0 errors; 6 existing warnings in unrelated files)
+- [x] `npm run typecheck` (known unrelated baseline failures only; 16 errors in 8 unrelated files; no task-owned diagnostic)
 - [x] `git diff --check`
 
 ## Stop Condition
@@ -331,6 +333,61 @@ Ready for Review
 - None task-owned.
 
 ### Architectural Concerns
+- None.
+
+### Attempt 3 Completion Report
+
+#### Status
+Ready for Review
+
+#### Launcher and Worktree Evidence
+- Task: `ARCH-021-COMMERCE-019`, attempt `3`, logical agent `moda_commerce`, execution mode `agent`, completion mode `automatic`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-019`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-019`.
+- Parent and implementation branches: `task/ARCH-021-COMMERCE-019`.
+- Start-of-attempt parent synchronization: launcher completed; origin-main incorporation `already-current`; task-branch fast-forward `not-needed`; parent head after claim `6c5c10dfcbd7ba86e212377f35b964a1e8ffd996`.
+- Start-of-attempt implementation synchronization: launcher completed; origin-main incorporation `already-current`; task-branch fast-forward `not-needed`; prepared implementation head `8375766c0c188e365903d5214c40b38779ba7bf3`.
+- Required package-script merge resolution: implementation merge commit `8375766c0c188e365903d5214c40b38779ba7bf3`; both Commerce-019 authoring scripts and origin/main Shopify compiler/oracle scripts are preserved.
+- Attempt 3 claim evidence: parent claim commit `6d179f2a613d865f4095ac9f708016c8abd07b99`, pushed.
+- Recursive submodule materialization: launcher recursive sync/update passed.
+- Database submodule commit: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
+#### Correction-to-File/Test Mapping
+- A2-R1: added `tests/tool-authoring-no-provider-io.test.ts`; it executes the real `validateToolDefinitionAction()` and `validateToolArgumentsAction()` with the existing role mock, asserts successful results, and proves a throwing `globalThis.fetch` spy is untouched. The same test audits `contracts.ts` and `server-actions.ts` for request-JS, Admin compiler, provider transport, integration backend, session and `/admin/api/` references.
+- A2-R2: updated `package.json` so `test:arch021-tool-authoring-common` runs all prior six focused files plus the new provider-boundary file; all 77 tests execute with zero skips and all prior authorization, publication, lifecycle, Studio, UTF-8 and `INVALID_INPUT` proofs remain green.
+- A2-R3: this report records the fresh Attempt 3 packet, implementation commit `fe3bcf40ed928c1ee5b668a02d83b4a177d01067`, final parent report commit after publication, push parity, and clean worktrees.
+
+#### Work Completed
+- Added only the review-required executable proof and focused script registration. No runtime/publication behavior or out-of-scope domain validator was changed.
+- Preserved exact `LIVE_TEST_REQUIRED` behavior, synthetic-receipt rejection, bounded UTF-8 issues, explicit action errors, hierarchy authorization, client-safe DTOs, and zero provider I/O in the common layer.
+
+#### Validation Results
+- `npm run test:arch021-tool-authoring-common`: passed, 7 files and 77 tests, zero skipped.
+- `npm run test:arch021-tool-authoring-validation`: passed, 6 tests.
+- `npm run test:arch020-external-publication`: passed, 13 tests.
+- `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts`: passed, 14 tests across 2 files.
+- `npm run lint`: passed with 0 errors and 6 existing warnings in unrelated files: `scripts/code-runtime-manifest.mjs`, `src/studio/code-response/code-response-panel.tsx`, `tests/agent-configuration-model.test.ts`, and `tests/mcp-service.test.ts`.
+- `npm run typecheck`: known unrelated baseline failures only, 16 errors in 8 unrelated files; no diagnostic in `src/commerce/tool-authoring/**`, `tests/tool-authoring-validation.test.ts`, `tests/tool-authoring-server-actions.test.ts` or `tests/tool-authoring-no-provider-io.test.ts`.
+- `git diff --check`: passed.
+
+#### Implementation and VCS Evidence
+- Implementation commit: `fe3bcf40ed928c1ee5b668a02d83b4a177d01067`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
+- Implementation worktree: clean after the implementation commit.
+- Final parent report commit: recorded after this report edit and pushed to `origin/task/ARCH-021-COMMERCE-019`.
+- Parent worktree: clean after the parent report commit.
+- Push parity: implementation and parent report pushes passed.
+
+#### Deviations
+- None from the Attempt 3 correction contract.
+
+#### Assumptions
+- The existing mocked `requireStudioPlatformRole('ADMIN')` seam is the accepted test boundary; this proof does not introduce a second authorization path or fake compiler module.
+
+#### Unresolved Issues
+- None task-owned.
+
+#### Architectural Concerns
 - None.
 
 ## Architect Review
