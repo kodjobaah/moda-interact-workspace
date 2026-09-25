@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -238,9 +238,38 @@ None identified. No shop, session, token, provider, or live Shopify request is u
 ## Architect Review
 
 ### Review Status
-Changes Requested
+Accepted — Attempt 4
+
 
 ### Review Notes
+
+#### Attempt 4 review — 2026-09-25
+
+Reviewed final implementation `af421e1` and final parent handoff `4b013b6d` against the complete Attempt 3 correction contract.
+
+Accepted. Attempt 4 makes Admin variable-mapping validity a pure function of the current visible GraphQL variables, current mapping modes, current top-level input-schema properties and current literal text. The implementation no longer carries stale literal validity across mapping-mode changes, treats unmapped current variables as invalid, invalidates input-property mappings immediately when the property disappears, keeps independently invalid literals invalid, and ignores stale validity for variables removed from the current GraphQL document. Type compatibility remains compiler-owned; the browser does not duplicate COMMERCE-018.
+
+The accepted Attempt 3 behavior remains intact: authoritative pinned Admin metadata, exact shared Save/Validate candidates, exact result-schema/response-template persistence, SUPER_ADMIN-only publication handoff with typed `LIVE_TEST_REQUIRED`, Admin-specific two-operation create/draft recovery, historical Storefront read-only support and zero shop/session/provider I/O.
+
+Validation accepted:
+
+```text
+Admin UI mapping-state regressions: 15/15 passed
+Affected C022/C020/workspace packet: 53/54 passed
+  - sole failure: unrelated historical Storefront stale-CAS baseline
+COMMERCE-018 Admin compiler:       22/22 passed
+COMMERCE-024 authoring validation:  9/9 passed
+Targeted ESLint:                    passed
+Targeted TypeScript diagnostics:    zero task-owned diagnostics
+git diff --check:                   passed
+```
+
+The repository-wide typecheck retains unrelated baseline diagnostics documented in the Completion Report. No remaining failure or diagnostic is attributable to C022-owned Admin GraphQL source/tests.
+
+COMMERCE-022 is Complete. No materialised Phase 3 task depends on C022, so no downstream task is promoted by this acceptance. COMMERCE-021 remains the sole Ready Phase 3 Commerce implementation task.
+
+
+#### Attempt 3 review — 2026-09-25
 
 Attempt 3 closes the substantive Attempt 2 corrections around metadata identity, exact Save/Validate candidates, SUPER_ADMIN publication gating, and Admin-specific composite create/draft recovery. Preserve those changes.
 
