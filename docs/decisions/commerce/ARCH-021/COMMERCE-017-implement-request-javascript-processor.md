@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T12:02:40Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -603,4 +603,57 @@ Ready for architect review.
 ### Deviations and Unresolved Issues
 - Full typecheck remains baseline-non-clean as documented above; no unrelated remediation was attempted.
 - No network, credential, Shopify GraphQL, Studio UI, publication policy, live HTTP wiring, or downstream ARCH-021-COMMERCE-023 work was added.
+- None unresolved.
+
+## Attempt 3 Completion Report
+
+### Status
+Ready for architect review.
+
+### Correction Checklist
+- [x] A2-R1: Added active request-processor QuickJS regressions for non-finite output, null-prototype output, accessor output, and output larger than the 48 KiB ceiling; all assert `INVALID_REQUEST` with `INVALID_OUTPUT` diagnostics.
+- [x] A2-R2: Explicitly proved `eval`, `Function`, `Date`, `fetch`, `XMLHttpRequest`, `require`, `process`, `importScripts`, and `WebAssembly` are unavailable to request code; preserved the existing `Math.random` unusable-descriptor proof and literal `XMLHttpRequest` source rejection proof.
+- [x] A2-R3: Preserved deterministic descriptor, nested-array input, unsafe descriptor fields, absolute URL/origin/method/body, reserved header, oversized input, prototype-pollution input, compile-entrypoint, cancellation, deadline and throttling coverage; response and generic runtime proofs remained green.
+- [x] A2-R4: Ran every required validation command with zero skipped focused tests and no task-owned type diagnostics.
+- [x] A2-R5: Recorded fresh Attempt 3 launcher, worktree, synchronization, submodule, commit and push evidence below.
+
+### Files Changed
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-017`
+- Implementation file: `tests/code-request-processor.test.ts`
+- Parent report: this task file only.
+
+### Correction-to-Test Mapping
+- A2-R1: `tests/code-request-processor.test.ts`, `rejects unsafe request output values through the processor`.
+- A2-R2: `tests/code-request-processor.test.ts`, `does not expose network or host capabilities`.
+- A2-R3: Existing request test cases were retained; no runtime source was changed.
+
+### Validation Results
+- `npm run test:arch021-code-request`: passed, 6/6 tests, 0 skipped; includes all four new output-safety cases.
+- `npm run test:arch020-code-processor`: passed, 6/6 tests, 0 skipped.
+- `npm run test:arch020-code-runtime-proof`: passed, 10/10 tests, 0 skipped.
+- `npm run code-runtime:package`: passed; runtime `quickjs-sync.v1`, artifact SHA-256 `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, WASM ceiling `67108864` bytes.
+- `npm run code-runtime:smoke`: passed for packaged response transform, request proof and memory ceiling using the same artifact/hash.
+- `npm run lint`: passed with 0 errors and 6 existing warnings; no task-owned lint error was introduced.
+- `npm run typecheck`: nonzero on the known unrelated baseline; the captured log had 268 TypeScript diagnostics and zero matches in the task-owned request/runtime/response/script/focused-test surfaces.
+- `git diff --check`: passed.
+- Focused editor diagnostics for `tests/code-request-processor.test.ts`: no errors.
+
+### Attempt 3 Launcher and VCS Evidence
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-017`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-017`.
+- Parent branch: `task/ARCH-021-COMMERCE-017`.
+- Implementation branch: `task/ARCH-021-COMMERCE-017`.
+- Start-of-attempt parent synchronization: remote task branch fast-forward `not-needed`; `origin/main` incorporation `already-current`; parent head after claim `ed46249bd1f122afca3eb3eeb5a9b429dfb5628d`.
+- Start-of-attempt implementation synchronization: remote task branch fast-forward `not-needed`; `origin/main` incorporation `already-current`; implementation head before correction `87bca07d55d259b8c75cf06d978ff5912969c91d`.
+- Attempt 3 claim: parent claim commit `f4678f237558fc0718e602d4a6ce4864aea7ffce`, pushed; claimed at `2026-09-25T12:02:40Z`.
+- Recursive submodule materialization: sync/update passed; database submodule commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commit: `06416de14bdb91d3de5c4af1c9547e6b81738c4d`, pushed to `origin/task/ARCH-021-COMMERCE-017`; local and remote implementation hashes match.
+- Parent report commit: pending until this report update is committed and pushed.
+- Push parity: implementation task branch is published; parent report branch will be published with this report commit.
+- Worktree state before parent report update: implementation worktree clean; parent worktree clean before this report edit.
+
+### Deviations and Unresolved Issues
+- Full typecheck remains baseline-non-clean with only unrelated diagnostics; no unrelated remediation was attempted.
+- The `XMLHttpRequest` runtime proof uses computed global access because the canonical Commerce-016 source validator intentionally rejects the literal identifier; the existing literal-source rejection test remains unchanged.
+- No network, credentials, Shopify GraphQL, Studio UI, publication policy, live HTTP wiring, or downstream ARCH-021-COMMERCE-023 work was added.
 - None unresolved.
