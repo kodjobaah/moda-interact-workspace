@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-25T14:10:35Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -164,19 +164,33 @@ Shopify Dev MCP remains an explicit developer oracle owned by COMMERCE-018; it i
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review — Attempt 2
 ### Files Changed
-None
+- `src/commerce/tool-authoring/admin-validation.ts`
+- `src/studio/tools/admin-validation-server-actions.ts`
+- `tests/shopify-admin-authoring-validation.test.ts`
 ### Work Completed
-None
+- Normalized compiler-origin Admin GraphQL diagnostics to the canonical slash-delimited `/execution/...` path contract.
+- Preserved the zero-provider-I/O local compiler boundary, server-owned API version/schema hash metadata, explicit COMMERCE-019 action results, and ADMIN platform-role authorization.
+- Added exact operation, schema-hash, connection-bound, and variable compiler-path regression assertions.
 ### Validation Results
-None
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-024`; launcher synchronized `task/ARCH-021-COMMERCE-024`, remote parity was `not-needed`, and parent head before report work was `2fd3e0f1c406f8069a124fe2e32b407c283e8289`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-024`; launcher synchronized `task/ARCH-021-COMMERCE-024`, remote parity was `not-needed`, and implementation head before correction was `c98cd0b27e07d441a0561552888d5d96f7501cfa`.
+- Launcher claim: `--prepare --executor copilot --json` succeeded; dependency gate passed; Attempt 2 claimed; parent claim commit `2fd3e0f1c406f8069a124fe2e32b407c283e8289` was committed and pushed.
+- Recursive submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; status `ready`; database submodule commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commit: `eb1c658c0cb9b77b38f3e1df82c9e89d3328f3cd`; implementation branch pushed to `origin/task/ARCH-021-COMMERCE-024` and matched its remote tip after push.
+- `npm run test:arch021-shopify-admin-authoring-validation`: 1 file passed, 9 tests passed.
+- `npm run test:arch021-shopify-admin-compiler`: 2 files passed, 22 tests passed.
+- `npm exec eslint src/commerce/tool-authoring/admin-validation.ts src/studio/tools/admin-validation-server-actions.ts tests/shopify-admin-authoring-validation.test.ts`: passed.
+- `npm run typecheck`: blocked by 267 pre-existing diagnostics across 34 unrelated files; zero diagnostics were reported in the three C024 task-owned files.
+- `git diff --check`: passed.
+- Final implementation worktree was clean after commit/push; parent worktree was clean before this report update. Branch/remote parity was verified with `git rev-parse HEAD` and `git rev-parse @{u}`.
 ### Deviations
-None
+- Full typecheck remains non-blocking only because diagnostics are outside the C024 task-owned files and include existing generated-Prisma/module baseline failures.
 ### Assumptions
-None
+- COMMERCE-019 remains authoritative for publication gating and `LIVE_TEST_REQUIRED`; this task creates no live-test receipt or publication evidence.
 ### Unresolved Issues
-None
+- None within C024 scope.
 ### Architectural Concerns
 None
 
