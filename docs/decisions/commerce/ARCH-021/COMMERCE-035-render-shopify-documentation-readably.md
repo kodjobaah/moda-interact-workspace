@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T08:33:35Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-034
@@ -705,6 +705,12 @@ Attempt 3 changed:
 
 - `tests/discovery-document.test.ts`
 
+Attempt 4 changed:
+
+- `lib/discovery/document.ts`
+- `lib/discovery/upstream.ts`
+- `tests/discovery-document.test.ts`
+
 ### Work Completed
 
 Attempt 1 delivered the structured documentation contract, verified HTML block normalization and bounds, the extracted documentation components, semantic rendering, readable CSS, production fixture parity and component-boundary regressions.
@@ -721,12 +727,20 @@ Attempt 3 correction checklist, all implemented:
 - Added whitespace/control/stripped-markup normalized-empty fallback coverage.
 - Reconciled the Work Items, Acceptance Criteria and Validation checklists with the submitted evidence.
 
+Attempt 4 correction checklist, all implemented:
+
+- Finding 1: parser attributes are retained only for server-side classification; hidden, accessibility-only and control nodes are excluded before DTO creation.
+- Finding 2: local hash-link anchor helpers and semantic Shopify chrome, including version selectors and feedback controls, are removed without global prose stripping.
+- Finding 3: decorative-only blocks and the duplicate top-level page H1 are omitted; consecutive identical short heading/paragraph blocks are collapsed locally.
+- Finding 4: search excerpts receive bounded helper/chrome cleanup while retaining the real product sentence.
+- Finding 5: representative collection-document and search regressions cover the manual-validation defect and visible anchor-helper form.
+
 Architect Review was preserved unchanged.
 
 ### Validation Results
 
-- Focused Vitest command: PASS, 6 files and 71 tests.
-- Targeted ESLint for `tests/discovery-document.test.ts`: PASS, 0 errors.
+- Focused Vitest command: PASS, 6 files and 73 tests.
+- Targeted ESLint for `lib/discovery/document.ts`, `lib/discovery/upstream.ts` and `tests/discovery-document.test.ts`: PASS, 0 errors.
 - `npm run typecheck`: exits 1 on unchanged unrelated baseline diagnostics; `C035_OWNED_DIAGNOSTICS=none` for `lib/discovery`, `components/studio-workspace`, documentation components and focused documentation tests.
 - Raw rendering audit: PASS for documentation rendering. The only matches are allowed unrelated `item.text` uses in MCP transport (`lib/discovery/upstream.ts`) and preview UI (`src/studio/preview/preview-screen.tsx`).
 - StudioWorkspace ownership audit: PASS with no matches.
@@ -740,15 +754,15 @@ Architect Review was preserved unchanged.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-035`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-035`.
 - Mirrored branch: `task/ARCH-021-COMMERCE-035`.
-- Launcher claim commit: parent `d461868dbbf4dc447bb9d090827c20dd50e63f0a`.
+- Launcher claim commit: parent `d242d0d6345a7dab553c0113d12702397a7c1d3f`.
 - Dependency `ARCH-021-COMMERCE-034`: complete.
 - Database submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Implementation commit: `a03b618`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
+- Implementation commit: `7dcfefb`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
 - No downstream task was started.
 
 ### Deviations
 
-- Typecheck remains blocked by the documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics. No C035-owned diagnostic was reported.
+- Typecheck exits 1 on the documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics; no diagnostic references the Attempt 4-owned parser, upstream normalizer or focused test file.
 
 ### Assumptions
 
