@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
-executor: copilot
-claimed_at: 2026-09-25T22:47:33Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -274,25 +274,38 @@ Do not add a `CREATE_TOOL_WITH_INITIAL_DRAFT` Prisma enum value. The business/au
 ## Completion Report
 
 ### Status
-Not Started
+Attempt 1 implementation complete; returned to architect review.
 
 ### Files Changed
-None
+- `src/commerce/publication/lifecycle.ts`
+- `tests/commerce-lifecycle.test.ts`
 
 ### Work Completed
-None
+- Added `createToolWithInitialDraft`, using one `CREATE_TOOL` lifecycle command and transaction for Tool plus revision-one `DRAFT` creation.
+- Applied canonical `CommerceToolDraftDefinitionSchema` validation and required the definition name to match the Tool name.
+- Returned `toolId`, `toolRevisionId`, `editVersion: 1`, and the Tool `updatedAt` from the single operation.
+- Preserved replay/conflict behavior and recorded both created identifiers in one audit/result envelope.
+- Added atomic rollback, replay, conflict, mismatch, revision-shape, and legacy compatibility coverage.
 
 ### Validation Results
-None
+- `npm run test:arch021-tool-authoring-common`: 7 files passed, 81 tests passed.
+- Focused `tests/commerce-lifecycle.test.ts`: 34 tests passed.
+- Targeted ESLint for changed files: passed with zero warnings.
+- `git diff --check`: passed.
+- `npm run typecheck`: repository baseline exited 2; no diagnostics referenced task-owned files.
+- No database migration, Prisma persistence-path change, Studio Server Action, or browser authoring refactor was introduced.
 
 ### Deviations
-None
+- The fresh implementation worktree required `npm ci` before validation because dependencies were not materialized; package installation completed successfully with existing peer/engine/audit warnings.
 
 ### Assumptions
-None
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-036`, branch `task/ARCH-021-COMMERCE-036`, claim commit `81239640d90371611fd0fafab1750e8339a8154c`, synchronized with its remote branch.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-036`, branch `task/ARCH-021-COMMERCE-036`, implementation commit `4fb736076901639b17b3d2f93061fc4b8c225173`, synchronized with `origin/task/ARCH-021-COMMERCE-036`.
+- Recursive database submodule evidence: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 ### Unresolved Issues
-None
+Repository-wide typecheck remains baseline-bearing outside the task-owned files and was not altered.
 
 ### Architectural Concerns
 None
