@@ -1542,6 +1542,21 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-25 — COMMERCE-034 Attempt 4 changes requested
+
+- Confirmed Attempt 4 fixes the shared scalar compatibility matrix, uses the real
+  `products.reverse: Boolean` rejection case, genuinely generates the nested
+  `product(handle: $input_handle)` candidate from a product-free base and passes
+  that same candidate through the real compiler.
+- Confirmed the connected schema-identity regression deep-compares the complete
+  composer-applied Tool definition with the exact definition sent to validation.
+- Returned COMMERCE-034 to Ready because a pre-existing deterministic generated
+  GraphQL variable with no execution mapping can still silently acquire a new
+  mapping, violating the previously explicit collision contract.
+- Also required Int literal UI parsing to stop truncating decimal/exponent text
+  before the typed AST builder can reject invalid Int values.
+- COMMERCE-035 remains Pending.
+
 ### 2026-09-25 — COMMERCE-034 Attempt 3 changes requested
 
 - Confirmed Attempt 3 resolves LIST-wrapper authoring, first-only/last connection

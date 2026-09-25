@@ -321,6 +321,19 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
 
+### COMMERCE-034 Attempt 4 changes requested — 2026-09-25
+
+Attempt 4 fixes scalar input-compatibility parity, genuinely generates the nested
+`product.handle` candidate through the real compiler, and proves full-definition
+validated/applied identity. COMMERCE-034 remains **Ready** for a narrow Attempt 5
+because an existing deterministic generated-name GraphQL variable with no
+`execution.variables` mapping can still silently acquire a new mapping, contrary
+to the explicit collision contract.
+
+Attempt 5 must also stop the Int argument editor from truncating values such as
+`1.5`/`1e2` with `parseInt()` before the typed AST builder can reject them.
+COMMERCE-035 remains Pending.
+
 ### COMMERCE-034 Attempt 3 changes requested — 2026-09-25
 
 Attempt 3 fixes LIST-wrapper detection, first-only/last authoring parity and the
