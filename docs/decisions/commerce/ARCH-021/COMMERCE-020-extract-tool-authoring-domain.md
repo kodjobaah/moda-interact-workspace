@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 32
-executor: copilot
-claimed_at: 2026-09-25T14:23:54Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -314,37 +314,40 @@ This is the Tool-domain continuation of the accepted COMMERCE-029 simplification
 ### Status
 Ready for Review
 ### Files Changed
-- `components/studio-workspace.tsx`
 - `src/commerce/integration/studio/services.ts`
-- `src/studio/server-actions.ts`
-- `src/studio/server-services.ts`
 - `src/studio/tools/tool-authoring-screen.tsx`
 - `src/studio/tools/tool-library.tsx`
-- `src/studio/tools/tool-editor.tsx`
-- `src/studio/tools/contracts.ts`
-- `src/studio/tools/reconciliation-server-actions.ts`
 - `tests/tool-authoring-screen.test.tsx`
-- `tests/tool-operation-reconciliation.test.ts`
-- `tests/studio-workspace.test.tsx`
+### Correction Checklist
+- A3-R1: implemented direct lifecycle `CONFLICT` and `OPERATION_REUSE_CONFLICT` mapping in `services.ts`; focused Tool tests remain green.
+- A3-R2: implemented action-await-only transport boundary and confirmed-save refresh fallback in `tool-authoring-screen.tsx`; executable tests cover rejection and refresh failure without UNCONFIRMED replay.
+- A3-R3: implemented serializable external creation intent retention and draft-only continuation/reconciliation state in `tool-library.tsx` and `tool-authoring-screen.tsx`.
+- A3-R4: added executable deterministic-error, transport uncertainty, write-lock and post-success refresh regressions; existing reconciliation/workspace tests remain green.
+- A3-R5: ran required focused suite, external UI suite, lint, typecheck, full suite, source audits and diff check.
+- A3-R6: reconciled Attempt 4 metadata and mirrored-branch evidence below; Architect Review preserved unchanged.
 ### Work Completed
-- Routed the Tools page through a serializable Tool authoring screen and named Server Actions.
-- Moved the complete legacy Tool library/editor behavior into the Tool domain, including external HTTP authoring, code response panels, discovery handoff, dirty navigation, revision history, and draft lifecycle actions.
-- Added bounded Tool mutation result classification and audit-only reconciliation with structured unexpected-error logging.
-- Added focused deterministic-error and non-replay reconciliation tests.
+- Preserved the accepted serializable Tool boundary and named Server Action architecture.
+- Kept deterministic Tool results distinct from transport uncertainty and prevented canonical refresh errors from creating UNCONFIRMED.
+- Retained external creation intent without storing mutation closures or replaying `createTool`.
 ### Validation Results
-- Focused editor diagnostics: no lint errors in changed source/test files.
-- `git diff --check`: passed.
-- Focused tests: 3 files passed, 24 tests passed.
-- `npm run test:arch020-external-tools-ui`: 1 file passed, 13 tests passed.
-- Targeted lint: passed.
-- Full `npm test -- --run`: 88 files passed, 20 failed, 2 skipped; failures are outside this task's focused Tool checks and include missing disposable C20 targets plus existing unrelated integration/auth/configuration failures.
-- Full `npm run typecheck`: remains blocked by existing generated-Prisma/module diagnostics and unrelated workspace errors; the Attempt 3 server-services contract errors are resolved.
+- Focused suite: `npm exec vitest run tests/tool-authoring-screen.test.tsx tests/tool-operation-reconciliation.test.ts tests/studio-workspace.test.tsx` passed, 3 files and 29 tests, zero skipped.
+- External UI suite: `npm run test:arch020-external-tools-ui` passed, 13 tests.
+- Task-owned ESLint command passed.
+- Required source invariants passed: no `controlled` Tool prop, nested composer injection, reconciliation console logging, or prefix action allow-list.
+- `git diff --check` passed.
+- `npm run typecheck` failed only on existing unrelated diagnostics in C20/external wiring/selected-shop tests; zero diagnostics referenced COMMERCE-020-owned changed files.
+- `npm test -- --run` reported 89 passed, 19 failed, 2 skipped; failures were environment/configuration/integration baseline failures, with no failures in the three focused files or changed Tool source paths.
+### Handoff Evidence
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-020`; branch `task/ARCH-021-COMMERCE-020`; clean before report update; claim commit `0613ec06`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-020`; branch `task/ARCH-021-COMMERCE-020`; clean after implementation; implementation commit `f62ccba6762312a144c40054e811996211544fcb`; pushed to matching origin branch.
+- Recursive submodule materialization: launcher-provided; database submodule `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Parent report commit: `8adbaefa`; parent branch pushed to matching `origin/task/ARCH-021-COMMERCE-020`; implementation and parent heads both match their respective origin task branches.
 ### Deviations
-- Full workspace typecheck retains pre-existing generated-Prisma/module diagnostics and unrelated integration/test diagnostics.
+- Full typecheck and full test suite remain blocked by unrelated repository baseline diagnostics and environment-dependent integration failures listed above.
 ### Assumptions
-- Named Tool Server Actions continue to use the existing service/auth boundary for role enforcement.
+- Existing launcher synchronization and recursive submodule preparation evidence remains authoritative for this prepared Attempt 4 handoff.
 ### Unresolved Issues
-- Full workspace validation remains environment/configuration constrained as recorded above.
+- No COMMERCE-020-owned focused test, lint, diff or source-audit failure remains.
 ### Architectural Concerns
 None
 
