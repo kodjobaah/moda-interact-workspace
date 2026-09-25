@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T10:39:19Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-021-COMMERCE-034
@@ -583,10 +583,10 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 - [x] Update in-memory fixtures to exact production DTO shape.
 - [x] Mock the production named documentation Server Actions in component tests.
 - [x] Add raw-markup, structured-rendering and component-boundary regressions.
-- [ ] Ensure documentation search results have unique canonical `path` identities before React rendering.
-- [ ] Raise only the semantic document-block ceiling from 256 to 512 while retaining the 64 KiB serialized-output cap.
-- [ ] Make parser bound failures distinguish block-count/list/text/code causes from the final serialized-output bound.
-- [ ] Add duplicate-result and large-semantic-document regressions from developer manual validation.
+- [x] Ensure documentation search results have unique canonical `path` identities before React rendering.
+- [x] Raise only the semantic document-block ceiling from 256 to 512 while retaining the 64 KiB serialized-output cap.
+- [x] Make parser bound failures distinguish block-count/list/text/code causes from the final serialized-output bound.
+- [x] Add duplicate-result and large-semantic-document regressions from developer manual validation.
 - [x] Remove task-file conflict-marker residue and reconcile the final Validation record.
 
 ## Interfaces / Contracts
@@ -639,56 +639,56 @@ No cross-service contract is introduced.
 - [x] `ShopifyDocumentationExplorer` uses the production named Server Action imports directly.
 - [x] `ShopifyDocumentationArticle` is a pure renderer with no Server Action/provider/network dependency.
 - [x] No production documentation port/service/action-bundle prop or test-only React context/provider is introduced.
-- [ ] `DocumentationItem.path` values presented to `ShopifyDocumentationExplorer` are unique within one search result set.
-- [ ] Duplicate upstream/canonical search hits preserve the first-ranked result and do not render duplicate cards/React keys.
-- [ ] A semantic document with more than 256 but at most 512 small blocks can be opened when its serialized DTO remains under 64 KiB.
-- [ ] More than 512 semantic blocks still fail closed with a block-count-specific bounded error.
-- [ ] The existing 64 KiB serialized full-document output bound remains unchanged and enforced.
+- [x] `DocumentationItem.path` values presented to `ShopifyDocumentationExplorer` are unique within one search result set.
+- [x] Duplicate upstream/canonical search hits preserve the first-ranked result and do not render duplicate cards/React keys.
+- [x] A semantic document with more than 256 but at most 512 small blocks can be opened when its serialized DTO remains under 64 KiB.
+- [x] More than 512 semantic blocks still fail closed with a block-count-specific bounded error.
+- [x] The existing 64 KiB serialized full-document output bound remains unchanged and enforced.
 - [x] The task file contains no Git conflict markers.
 
 ## Validation
 
-- [ ] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
-- [ ] targeted ESLint for every Attempt 5 changed source/test file
-- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
-- [ ] raw-rendering source audit:
+- [x] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
+- [x] targeted ESLint for every Attempt 5 changed source/test file
+- [x] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
+- [x] raw-rendering source audit:
   ```text
   rg -n "dangerouslySetInnerHTML|<p>\{document\.text\}</p>|item\.text" \
     components src/studio lib/discovery
   ```
   expected: no documentation-rendering matches; unrelated transport/preview `item.text` matches may be recorded explicitly.
-- [ ] `StudioWorkspace` ownership audit:
+- [x] `StudioWorkspace` ownership audit:
   ```text
   rg -n \
     "DocumentationItem|DocumentationDocument|searchDocumentation|getDocumentation|setItems|setDocument|async function search\(|async function open\(" \
     components/studio-workspace.tsx
   ```
   expected: no documentation implementation matches
-- [ ] production test-only seam audit:
+- [x] production test-only seam audit:
   ```text
   rg -n \
     "DocumentationPort|DocumentationServices|documentationActions|NODE_ENV.*test|fixture.*Documentation|documentation.*fixture.*prop" \
     components src/studio
   ```
   expected: no production documentation test-injection matches
-- [ ] component existence audit:
+- [x] component existence audit:
   ```text
   test -f src/studio/discovery/shopify-documentation-explorer.tsx
   test -f src/studio/discovery/shopify-documentation-article.tsx
   ```
   expected: both pass
-- [ ] duplicate-result identity audit:
+- [x] duplicate-result identity audit:
   ```text
   rg -n "key=\{item\.path\}" src/studio/discovery/shopify-documentation-explorer.tsx
   ```
   expected: this key remains valid only because the production search boundary now guarantees unique `path` values; accompanying regression must prove that invariant.
-- [ ] conflict-marker audit:
+- [x] conflict-marker audit:
   ```text
   ! rg -n "^(<<<<<<<|=======|>>>>>>>)" \
     docs/decisions/commerce/ARCH-021/COMMERCE-035-render-shopify-documentation-readably.md
   ```
   expected: PASS
-- [ ] `git diff --check`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -737,6 +737,13 @@ Attempt 4 changed:
 - `lib/discovery/upstream.ts`
 - `tests/discovery-document.test.ts`
 
+Attempt 5 changed:
+
+- `lib/discovery/document.ts`
+- `src/commerce/integration/studio/services.ts`
+- `tests/discovery-document.test.ts`
+- `tests/studio-integration.test.ts`
+
 ### Work Completed
 
 Attempt 1 delivered the structured documentation contract, verified HTML block normalization and bounds, the extracted documentation components, semantic rendering, readable CSS, production fixture parity and component-boundary regressions.
@@ -761,17 +768,26 @@ Attempt 4 correction checklist, all implemented:
 - Finding 4: search excerpts receive bounded helper/chrome cleanup while retaining the real product sentence.
 - Finding 5: representative collection-document and search regressions cover the manual-validation defect and visible anchor-helper form.
 
+Attempt 5 correction checklist, all implemented:
+
+- Finding 1: the Studio search service de-duplicates normalized canonical paths before returning `DocumentationItem[]`, preserving the first-ranked title/excerpt and unique result order; the React `key={item.path}` invariant is now server-enforced.
+- Finding 2: the semantic document ceiling is 512 while the 64 KiB serialized service bound remains unchanged; parser errors distinguish text-block, code-block, list-item-count and 512-block failures from the service-level output error.
+- Required regressions cover duplicate canonical hits, first-ranked retention, ordering, 300 accepted semantic blocks under 64 KiB, 513 rejected blocks, parser-bound causes and the existing serialized-output rejection.
+
 Architect Review was preserved unchanged.
 
 ### Validation Results
 
-- Focused Vitest command: PASS, 6 files and 73 tests.
-- Targeted ESLint for `lib/discovery/document.ts`, `lib/discovery/upstream.ts` and `tests/discovery-document.test.ts`: PASS, 0 errors.
-- `npm run typecheck`: exits 1 on unchanged unrelated baseline diagnostics; `C035_OWNED_DIAGNOSTICS=none` for `lib/discovery`, `components/studio-workspace`, documentation components and focused documentation tests.
+- Focused Vitest command: PASS, 6 files and 78 tests.
+- Duplicate-path Studio integration regression: PASS, 1 file and 10 tests.
+- Targeted ESLint for `lib/discovery/document.ts`, `src/commerce/integration/studio/services.ts`, `tests/discovery-document.test.ts` and `tests/studio-integration.test.ts`: PASS, 0 errors and 0 warnings.
+- `npm run typecheck`: exits 2 on unchanged unrelated Commerce/generated/database and integration/test baseline diagnostics; no diagnostics reference `lib/discovery/document.ts`, the changed `searchDocumentation` expression, `tests/discovery-document.test.ts` or `tests/studio-integration.test.ts`.
 - Raw rendering audit: PASS for documentation rendering. The only matches are allowed unrelated `item.text` uses in MCP transport (`lib/discovery/upstream.ts`) and preview UI (`src/studio/preview/preview-screen.tsx`).
 - StudioWorkspace ownership audit: PASS with no matches.
 - Production test-seam audit: PASS with no matches.
 - Component existence audit: PASS for both required modules.
+- Duplicate-result identity audit: PASS; `key={item.path}` remains in the explorer and the Studio service regression proves unique canonical paths with first-ranked retention and stable order.
+- Conflict-marker audit: PASS against the parent task report.
 - `git diff --check`: PASS.
 
 ### Branch and Topology Evidence
@@ -780,10 +796,10 @@ Architect Review was preserved unchanged.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-035`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-035`.
 - Mirrored branch: `task/ARCH-021-COMMERCE-035`.
-- Launcher claim commit: parent `d242d0d6345a7dab553c0113d12702397a7c1d3f`.
+- Launcher claim commit: parent `88e2d8887e0a908edcc3e3de86e4693d526c3856`.
 - Dependency `ARCH-021-COMMERCE-034`: complete.
 - Database submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Implementation commit: `7dcfefb`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
+- Implementation commit: `564ad58`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
 - No downstream task was started.
 
 ### Deviations
@@ -796,7 +812,7 @@ Architect Review was preserved unchanged.
 
 ### Unresolved Issues
 
-- None within the bounded Commerce-035 scope.
+- None within the bounded Commerce-035 scope. The task is ready for architect review; no downstream task was started.
 
 ### Architectural Concerns
 
