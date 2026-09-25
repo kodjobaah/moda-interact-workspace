@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -269,3 +269,17 @@ None
 Conforms: one generic QuickJS worker serves both modes; request code receives only validated `{ args }`, cannot perform I/O or access credentials/context, and only canonical Commerce-valid descriptors escape. No live external HTTP wiring, Studio UI, publication policy, or second sandbox was added.
 ### Follow-up
 None
+
+## Developer Override - Reopened
+
+### Previous Status
+review
+
+### Previous Attempt
+1
+
+### Decision
+The developer requested that this task be reopened for another implementation and review cycle. Preserve the existing implementation, completion report, validation evidence and Architect Review history; do not increment the attempt or claim the task as part of this transition.
+
+### Result
+The task is ready for the next authorized execution workflow. Execution mode, completion mode, executor and claim state remain unchanged.
