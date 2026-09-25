@@ -321,6 +321,16 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
 
+### COMMERCE-035 Attempt 2 changes requested — 2026-09-25
+
+Attempt 2 fixes the three production normalization/readability defects correctly.
+COMMERCE-035 remains **Ready** for a narrow Attempt 3 because the explicitly
+required `No preview available.` fallback regression is still absent and the task
+returned with the remaining Acceptance Criteria / Validation checklist
+unreconciled.
+
+Attempt 3 is expected to be test/evidence-only. SYSTEM-TEST-001 remains Pending.
+
 ### COMMERCE-035 Attempt 1 changes requested — 2026-09-25
 
 The structured documentation DTO and extracted

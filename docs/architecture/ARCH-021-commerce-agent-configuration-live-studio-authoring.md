@@ -1542,6 +1542,18 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-25 — COMMERCE-035 Attempt 2 changes requested
+
+- Confirmed entity-encoded tags are decoded before removal, Unicode excerpt
+  truncation is code-point safe, and `<br>` now preserves readable
+  paragraph/preformatted separators.
+- Returned COMMERCE-035 to Ready only because the previously required
+  `No preview available.` fallback regression is still absent and the task
+  Acceptance Criteria / Validation checklist was not reconciled to the reported
+  passing evidence.
+- Attempt 3 is expected to be regression/evidence-only.
+- SYSTEM-TEST-001 remains Pending.
+
 ### 2026-09-25 — COMMERCE-035 Attempt 1 changes requested
 
 - Accepted the structured documentation contract, safe direct Shopify document

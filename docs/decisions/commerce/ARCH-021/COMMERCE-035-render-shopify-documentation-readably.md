@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -582,7 +582,7 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 - [x] Add readable documentation CSS.
 - [x] Update in-memory fixtures to exact production DTO shape.
 - [x] Mock the production named documentation Server Actions in component tests.
-- [x] Add raw-markup, structured-rendering and component-boundary regressions.
+- [ ] Add raw-markup, structured-rendering and component-boundary regressions.
 
 ## Interfaces / Contracts
 
@@ -765,298 +765,222 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 implements the intended C035 architecture correctly in substance:
+Attempt 2 correctly resolves all three production-code findings from Attempt 1.
 
-- search result DTOs now distinguish `excerpt` from full document content;
-- opened Shopify documents use a structured `HEADING | PARAGRAPH | LIST | CODE | BLOCKQUOTE` DTO;
-- the verified direct `shopify.dev/docs` fetch remains the opened-document trust boundary;
-- script/style/navigation/form/browser-only elements are excluded from the structured DTO;
-- per-block, list-item, block-count, input-size, redirect and serialized-output bounds are present;
-- `StudioWorkspace` no longer owns documentation query/result/document state or rendering;
-- `ShopifyDocumentationExplorer` owns search/open/loading/status state and imports the real named Server Actions directly;
-- `ShopifyDocumentationArticle` is a pure semantic renderer and does not use `dangerouslySetInnerHTML`;
-- the article CSS provides bounded readable line length, list spacing and horizontally scrollable whitespace-preserving code blocks;
-- tests use the real production components and named Server Action module boundary rather than a documentation test port/context.
+Architect review confirms:
 
-There are three bounded normalization/readability defects to correct before acceptance.
+1. `normalizeSearchExcerpt()` now decodes HTML entities before removing decoded
+   tags, so entity-encoded markup such as:
 
-#### Finding 1 — entity-encoded HTML tags reappear as raw markup in search excerpts
+   ```text
+   &lt;h2&gt;Heading&lt;/h2&gt;
+   ```
 
-`normalizeSearchExcerpt()` currently performs:
+   is reduced to readable plain text rather than resurfacing as `<h2>...</h2>`.
+
+2. Search excerpt byte bounding now iterates Unicode code points and stops before
+   the 2 KiB UTF-8 limit, so the previous UTF-16 code-unit truncation defect is
+   removed.
+
+3. `readableText()` now gives `<br>` explicit semantics:
+
+   ```text
+   normal text -> space
+   preformatted text -> newline
+   ```
+
+   so paragraph words are not joined and code/preformatted line breaks remain
+   readable.
+
+4. The existing component/data architecture remains intact:
+
+   ```text
+   StudioWorkspace
+     -> ShopifyDocumentationExplorer
+         -> named searchDocumentation/getDocumentation
+         -> ShopifyDocumentationArticle
+   ```
+
+   No raw-HTML renderer, documentation port/service bundle or test-only React
+   context has been introduced.
+
+The submitted focused packet reports 6 files / 70 tests passing, targeted ESLint,
+all source/component audits and `git diff --check` passing, with zero C035-owned
+typecheck diagnostics.
+
+There is one remaining deterministic evidence/task-record blocker.
+
+#### Finding — the explicitly required empty-excerpt regression is still absent
+
+The Attempt 1 Architect Review required the Attempt 2 regression packet to prove
+all of the following, including:
 
 ```text
-strip <...> tags
-then decode &lt; / &gt; / numeric entities
+3. empty normalized input returns `No preview available.`
 ```
 
-For an upstream chunk containing:
+The final `tests/discovery-document.test.ts` contains the new regressions for:
 
 ```text
-&lt;h2&gt;Heading&lt;/h2&gt;
+entity-encoded tags
+Unicode byte-bound truncation
+paragraph/code <br> behavior
 ```
 
-the tag-stripping pass sees no literal `<...>` tag.
-
-The later entity decoding then produces:
-
-```text
-<h2>Heading</h2>
-```
-
-which is returned to the React result card and displayed literally as raw HTML
-syntax.
-
-That directly violates R2/R9 and the original manual-validation defect this task
-exists to fix.
-
-Attempt 2 must decode common HTML entities **before** the HTML-tag removal pass.
-
-A conformant order is:
-
-```text
-Markdown image/link normalization
-fence/inline Markdown normalization as appropriate
-HTML entity decoding
-HTML tag removal
-Markdown heading/list marker cleanup
-control removal
-whitespace collapse
-bounded truncation
-```
-
-Equivalent ordering is acceptable provided entity-encoded tags cannot survive as
-literal `<tag>` markup in the returned excerpt.
-
-Do not render or trust decoded HTML. It must still be reduced to plain text.
-
-Required regression:
+but contains no invocation such as:
 
 ```ts
-normalizeSearchExcerpt(
-  '&lt;h2&gt;Heading&lt;/h2&gt; ' +
-  '&lt;strong&gt;Product&lt;/strong&gt;'
-)
+normalizeSearchExcerpt('')
 ```
 
-must contain readable:
+or another input that normalizes to empty, and no assertion for:
 
 ```text
-Heading
-Product
+No preview available.
 ```
 
-and must contain none of:
-
-```text
-<h2>
-</h2>
-<strong>
-</strong>
-&lt;h2&gt;
-```
-
-Retain the existing raw-HTML/Markdown-link/fence regression.
-
-#### Finding 2 — the 2 KiB excerpt bound can return a dangling UTF-16 surrogate
-
-The current byte-bound fallback does:
+The production source does currently contain:
 
 ```ts
-while (Buffer.byteLength(result, 'utf8') > 2 * 1024) {
-  result = result.slice(0, -1);
-}
+if (!normalized) return 'No preview available.';
 ```
 
-`slice(0, -1)` removes one UTF-16 code unit, not one Unicode code point.
+so this is an evidence gap rather than a newly discovered production design
+problem.
 
-A concrete input such as:
-
-```ts
-'😀'.repeat(511) + 'a' + '😀'
-```
-
-is 513 visible code points / 2049 UTF-8 bytes.
-
-Removing one UTF-16 unit from the final emoji can leave a lone high surrogate.
-That malformed string can happen to encode at exactly 2048 bytes, causing the
-loop to stop and return a replacement/malformed character at the boundary.
-
-R2 requires a bounded **readable** plain-text excerpt. The byte-bound operation
-must therefore be code-point safe.
-
-Implement the bound by iterating code points, for example:
+The task record also returned with:
 
 ```text
-for each Array.from(normalized) code point:
-  stop after 600 visible code points
-  stop before adding a code point would exceed 2 KiB UTF-8
+Acceptance Criteria:
+  Search results no longer display raw HTML/Markdown syntax   [ ]
+  Search results show bounded readable excerpts               [ ]
+
+Validation:
+  every item                                                  [ ]
 ```
 
-or an equivalent code-point-safe algorithm.
+despite the Completion Report claiming those validations passed.
 
-Do not truncate by individual UTF-16 code units.
+The task protocol requires Work Items, Acceptance Criteria and Validation to
+remain a durable representation of what has actually been proved.
 
-Required regression must prove for the boundary case:
+### Attempt 3 deterministic correction
+
+Reclaim the same task as Attempt 3.
+
+No production-code change is authorized unless the missing regression exposes an
+actual defect.
+
+#### 1. Add the missing fallback regression
+
+In:
 
 ```text
-visible characters <= 600
-UTF-8 bytes <= 2048
-no dangling surrogate code point
-```
-
-A valid check for the final property is to iterate with `Array.from()` and reject
-a resulting code point in `0xD800..0xDFFF`; do not use a raw surrogate regex over
-a valid emoji string because valid astral characters are represented by surrogate
-pairs internally.
-
-#### Finding 3 — `<br>` is discarded rather than flattened readably
-
-The structured HTML normalizer creates a void `br` node, but `readableText()`
-currently gives that node no text/separator.
-
-Therefore:
-
-```html
-<p>First<br>Second</p>
-```
-
-normalizes to:
-
-```text
-FirstSecond
-```
-
-instead of readable text.
-
-Likewise a `<br>` inside a preformatted block loses the intended line break.
-
-R4 permits inline elements to be flattened, but the result still needs to be
-readable and code/pre whitespace must remain meaningful.
-
-Attempt 2 must give `br` explicit separator semantics:
-
-```text
-normal paragraph/list/blockquote text -> space
-preserveWhitespace/pre text          -> newline
-```
-
-or equivalent behavior that does not join adjacent words.
-
-Required regressions:
-
-```html
-<p>First<br>Second</p>
-<pre>line one<br>line two</pre>
-```
-
-must produce:
-
-```text
-PARAGRAPH: "First Second"
-CODE:      "line one\nline two"
-```
-
-Do not introduce a general HTML renderer to solve this.
-
-### Attempt 2 deterministic correction
-
-Reclaim the same task as Attempt 2.
-
-The correction is bounded to:
-
-```text
-lib/discovery/upstream.ts
-lib/discovery/document.ts
 tests/discovery-document.test.ts
 ```
 
-Change another production file only if one of the required regressions exposes a
-directly related defect.
-
-Preserve the accepted Attempt 1 component/data architecture:
+add a focused test that proves both an actually empty input and markup/control
+content that normalizes to empty return exactly:
 
 ```text
-StudioWorkspace
-  -> ShopifyDocumentationExplorer
-      -> named searchDocumentation/getDocumentation
-      -> ShopifyDocumentationArticle
-
-search:
-  pinned Dev MCP -> server plain-text excerpt normalizer
-
-open:
-  canonical verified shopify.dev/docs fetch
-  -> structured server blocks
-  -> semantic React renderer
+No preview available.
 ```
 
-Do not move normalization to the browser.
+At minimum:
 
-Do not use `dangerouslySetInnerHTML`.
+```ts
+expect(normalizeSearchExcerpt('')).toBe('No preview available.');
+```
 
-Do not add a documentation port/service/action bundle/test-only React context.
+Also include one normalized-empty case such as whitespace / stripped markup so
+the fallback is proved after normalization rather than only before it.
 
-Do not broaden the canonical documentation origin or redirect policy.
+Do not change the fallback wording.
 
-### Required Attempt 2 regressions
+#### 2. Preserve all Attempt 2 regressions
 
-In `tests/discovery-document.test.ts` add/retain all of:
-
-1. raw HTML + Markdown links/fences become plain readable text;
-2. entity-encoded HTML tags are decoded then removed rather than displayed;
-3. empty normalized input returns `No preview available.`;
-4. Unicode boundary case remains <=600 code points and <=2 KiB UTF-8 with no dangling surrogate;
-5. paragraph `<br>` becomes a readable separator;
-6. pre/code `<br>` becomes a newline;
-7. existing structured h2 / paragraphs / ordered+unordered lists / blockquote / multiline code / script+style exclusion remains passing;
-8. serialized full-document output over 64 KiB is still rejected rather than truncated.
-
-No new hand-written browser DTO may bypass the production normalizers.
-
-### Validation
-
-Run the restored task Validation section exactly.
-
-The typecheck checkbox may be marked satisfied under the task's explicit rule when:
+Retain and keep passing:
 
 ```text
-only unchanged documented unrelated baseline diagnostics remain
-zero C035-owned diagnostics remain
+raw HTML + Markdown link/fence -> readable plain text
+entity-encoded tags -> decoded then removed
+Unicode excerpt <= 600 code points / <= 2 KiB / no dangling surrogate
+<p>First<br>Second</p> -> "First Second"
+<pre>line one<br>line two</pre> -> newline-preserving CODE
+structured headings/paragraphs/lists/blockquote/code
+script/style/browser-noise exclusion
+64 KiB full-document rejection
 ```
 
-For the raw-rendering audit, unrelated `item.text` usages in MCP transport or
-preview code may be recorded explicitly; there must be no documentation-rendering
-match.
+#### 3. Re-run the exact Validation packet
 
-### Completion Report
+Run:
+
+```bash
+npx vitest run \
+  tests/discovery-document.test.ts \
+  tests/discovery.test.ts \
+  tests/studio-services.test.ts \
+  tests/studio-workspace.test.tsx \
+  tests/shopify-documentation-explorer.test.tsx \
+  tests/shopify-documentation-article.test.tsx \
+  --reporter=verbose
+```
+
+Run targeted ESLint for every Attempt 3 changed file.
+
+Run:
+
+```bash
+npm run typecheck
+```
+
+The documented unchanged unrelated baseline remains permitted only when there are
+zero C035-owned diagnostics.
+
+Run every source/component audit already defined in the task and:
+
+```bash
+git diff --check
+```
+
+#### 4. Reconcile the task record
+
+After the regression and validation pass:
+
+- mark the regression Work Item `[x]`;
+- mark the first two remaining Acceptance Criteria `[x]`;
+- mark every Validation item `[x]` when its required evidence is satisfied;
+- under the allowed typecheck rule, mark typecheck `[x]` when only the documented
+  unchanged unrelated baseline remains and zero C035-owned diagnostics exist.
 
 Update the Completion Report to distinguish:
 
 ```text
 Attempt 1:
-  structured documentation contract
-  component extraction
-  semantic renderer
-  base normalization/bounds
+  structured documentation contract/component extraction
 
 Attempt 2:
-  encoded-tag normalization order
-  Unicode-safe 2 KiB excerpt truncation
-  <br> readable separator preservation
+  encoded-tag order
+  Unicode-safe bound
+  <br> preservation
+
+Attempt 3:
+  missing fallback regression
+  final checklist/evidence reconciliation
 ```
 
 Record:
 
 ```text
-Attempt 2 implementation commit
+Attempt 3 implementation/test commit
 final parent report commit
 focused test file/test count
-targeted ESLint
-typecheck baseline and zero task-owned diagnostics
-source audits
-component existence audit
+ESLint
+typecheck baseline + zero task-owned diagnostics
+all source/component audits
 git diff --check
-branch/worktree synchronization
+clean/upstream branch state
 database submodule synchronization
 ```
 
@@ -1066,7 +990,7 @@ Return:
 status: review
 executor: null
 claimed_at: null
-attempt: 2
+attempt: 3
 ```
 
 and STOP.
@@ -1077,54 +1001,42 @@ Do not start `ARCH-021-SYSTEM-TEST-001`.
 
 - `lib/discovery/upstream.ts`
 - `lib/discovery/document.ts`
-- `lib/discovery/service.ts`
-- `src/studio/contracts.ts`
-- `src/commerce/integration/studio/services.ts`
+- `tests/discovery-document.test.ts`
 - `src/studio/discovery/shopify-documentation-explorer.tsx`
 - `src/studio/discovery/shopify-documentation-article.tsx`
 - `components/studio-workspace.tsx`
-- `app/styles.css`
-- `src/studio/testing/in-memory-studio-services.ts`
-- `tests/discovery-document.test.ts`
-- `tests/discovery-process.test.ts`
-- `tests/discovery.test.ts`
-- `tests/shopify-documentation-explorer.test.tsx`
-- `tests/shopify-documentation-article.test.tsx`
 - task Completion Report
 
 ### Validation Reviewed
 
-Submitted Attempt 1 evidence:
+Submitted Attempt 2 evidence:
 
 ```text
-focused tests: 6 files / 67 passed
+focused tests: 6 files / 70 passed
 targeted ESLint: PASS
+raw-rendering audit: PASS with documented unrelated `item.text` matches
 StudioWorkspace ownership audit: PASS
 production documentation seam audit: PASS
 component existence audit: PASS
 git diff --check: PASS
-typecheck: unchanged Prisma/generated baseline only
+typecheck: unchanged unrelated baseline only
            zero C035-owned diagnostics
 ```
 
-Architect source audit confirms there is no documentation
-`dangerouslySetInnerHTML` path and no old inline Documentation-tab implementation
-remaining in `StudioWorkspace`.
+Architect static review confirms the three Attempt 1 production defects are fixed.
 
-The review archive does not include installed dependencies, so the architect did
-not independently rerun Vitest/ESLint/typecheck.
+Acceptance is blocked only on the explicitly required missing fallback regression
+and final task-checklist reconciliation.
 
 ### Architecture Conformance
 
-Partial.
+Production implementation conforms.
 
-The component and structured-document architecture conforms. Acceptance is
-blocked only on the three bounded server-side normalization/readability edge
-cases above.
+The remaining correction is deterministic regression/task evidence only.
 
 ### Follow-up
 
-Reclaim the same task as Attempt 2.
+Reclaim the same task as Attempt 3.
 
 `ARCH-021-SYSTEM-TEST-001` remains Pending until C035 is architect-accepted
 Complete.
