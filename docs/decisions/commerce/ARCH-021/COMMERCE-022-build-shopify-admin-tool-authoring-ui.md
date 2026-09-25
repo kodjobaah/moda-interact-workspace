@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -240,223 +240,70 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 2 completes most of the C022 foundation and preserves the accepted C018/C019/C020/C024 boundaries. Preserve the current direct named Server Actions, pinned local compiler metadata, historical Storefront read-only rendering, serializable staged composite-create state, C020 audit-only reconciliation, and zero shop/session/provider I/O.
+Attempt 3 closes the substantive Attempt 2 corrections around metadata identity, exact Save/Validate candidates, SUPER_ADMIN publication gating, and Admin-specific composite create/draft recovery. Preserve those changes.
 
-Attempt 3 is limited to the deterministic corrections below. Do not redesign the Admin compiler, publication gate, Tool mutation/reconciliation kernel, Explore UI or Phase 4 runtime.
+One remaining functional defect prevents acceptance: Admin variable-mapping validity is stored as stale historical state instead of being derived from the mappings currently visible in the editor. The current implementation can therefore both (a) keep a now-valid mapping blocked after switching away from an invalid literal and (b) treat an unmapped GraphQL variable rendered as a blank literal as valid before that literal has ever parsed successfully.
 
-#### CR-1 — use the metadata action as the only source of both Admin API identity fields
+Attempt 4 is limited to the deterministic correction contract below. Do not redesign the Admin compiler, Tool mutation/reconciliation kernel, metadata action, publication gate, historical Storefront rendering, or Phase 4 runtime.
 
-Files:
-
-```text
-src/studio/tools/tool-library.tsx
-tests/shopify-admin-tools-ui.test.tsx
-```
-
-The submitted new-Tool flow stores only `schemaHash` from `getShopifyAdminAuthoringMetadataAction()` and still hard-codes:
-
-```text
-apiVersion = 2026-07
-```
-
-inside `adminDefinition()`.
-
-Required behavior:
-
-1. Store the successful metadata result as one bounded value containing BOTH:
-
-```text
-apiVersion
-schemaHash
-```
-
-2. `adminDefinition()` MUST use exactly that returned `apiVersion` and `schemaHash`. Do not duplicate either value in browser code.
-3. While metadata is loading, Admin creation remains disabled.
-4. A typed metadata action error remains visible as exactly `<CODE>: <message>` and `createTool()` MUST NOT run.
-5. If the metadata action Promise itself rejects, Admin creation remains disabled and show exactly:
-
-```text
-Admin authoring metadata is unavailable.
-```
-
-This non-mutating metadata failure MUST NOT create Tool `UNCONFIRMED` state.
-
-Focused regression:
-
-```text
-metadata action returns apiVersion="2099-01", schemaHash="b...b"
-→ created Admin proposedDefinition contains exactly apiVersion="2099-01"
-→ schemaHash exactly equals returned hash
-```
-
-The test uses a deliberately non-default API version to prove there is no browser hard-code.
-
-#### CR-2 — Save and Validate must build the same exact visible candidate
-
-Files:
-
-```text
-src/studio/tools/tool-editor.tsx
-src/studio/tools/shopify-admin-editor.tsx
-tests/shopify-admin-tools-ui.test.tsx
-```
-
-The submitted Save path parses visible `responseTemplateText`, but the Admin `Validate` path currently validates `definition.responseTemplate`, which may be the previously persisted value. This violates CR-3 from Attempt 1.
-
-Create one deterministic Admin candidate-building boundary. Save and Validate MUST consume the same candidate composed from the current visible values:
-
-```text
-definitionVersion
-description
-inputSchemaText
-Admin execution.document
-Admin execution.operationName
-Admin execution.variables
-Admin execution.resultPath
-adminResultSchemaText
-responseTemplateText
-```
-
-Required behavior:
-
-1. Parse `inputSchemaText`, `adminResultSchemaText` and `responseTemplateText` for BOTH Save and Validate.
-2. Invalid JSON in any of those three editors remains visible and blocks both Save and Validate from calling their Server Action.
-3. `validateShopifyAdminDefinitionAction()` receives exactly the same `CommerceToolDefinition` that `updateToolDraft()` would persist at that instant.
-4. Successful Validate of an unchanged saved candidate MUST NOT mark the editor dirty.
-5. Successful Save sets `adminValidated=false` because validation evidence is stale after persistence.
-6. Save followed by Validate with no later edit MUST end in exactly:
-
-```text
-dirty = false
-adminValidated = true
-```
-
-7. Any later persisted-field edit sets `adminValidated=false`.
-
-Required regression:
-
-```text
-edit visible response template
-→ Validate
-→ validation action receives the edited response template, not the old persisted template
-
-edit visible result schema + response template
-→ Save
-→ updateToolDraft receives those exact visible values
-```
-
-#### CR-3 — literal validity is aggregate state; blank/invalid visible literals may never be silently persisted
+#### CR-1 — derive Admin mapping validity from the current visible mapping set
 
 Files:
 
 ```text
 src/studio/tools/shopify-admin-editor.tsx
-src/studio/tools/tool-editor.tsx
 tests/shopify-admin-tools-ui.test.tsx
 ```
 
-The submitted editor currently sets `{ literal: "" }` when `Bounded literal` is selected while leaving the parent validity flag potentially `true`. With multiple literal mappings, editing one valid literal can also set the shared boolean `true` while another literal remains invalid.
-
-Required behavior:
-
-1. Selecting `Bounded literal` creates visible literal text but the mapping is INVALID until that text parses as JSON.
-2. Empty text is invalid JSON and MUST block Save and Validate.
-3. Track validity across ALL currently visible literal mappings. Parent `adminMappingValid` is true only when every literal-mode mapping has valid JSON.
-4. Editing one valid literal MUST NOT clear an invalid state from another literal mapping.
-5. Invalid literal text remains visible; do not replace it with the last valid literal.
-6. Save and Validate MUST NOT call their Server Actions while any literal is invalid.
-7. Once all literals are valid, the exact parsed JSON values are included in the candidate.
-
-Required regressions:
+The current editor stores `literalValidity` entries independently from the current mapping mode. That produces stale state. For example:
 
 ```text
-select Bounded literal and leave blank
-→ Save blocked
-→ Validate blocked
+$query mapped as Bounded literal
+→ literal text blank
+→ literalValidity.query = false
 
-$query literal = "TITLE"
-$first literal = 10
-→ both mappings persisted exactly
-
-$query invalid
-$first valid
-→ overall mapping state remains invalid
+user changes $query to input:query
+→ execution.variables.query is now valid
+→ stale literalValidity.query remains false
+→ parent adminMappingValid remains false
+→ Save/Validate remain blocked incorrectly
 ```
 
-#### CR-4 — make the required SUPER_ADMIN publication handoff executable
-
-Files:
+The reverse edge also exists:
 
 ```text
-src/studio/tools/tool-editor.tsx
-tests/shopify-admin-tools-ui.test.tsx
+GraphQL document introduces $query
+execution.variables.query is absent
+UI renders Bounded literal with blank text
+literalValidity has no query entry
+→ aggregate check can incorrectly remain true
+→ Save can persist an unmapped/blank visible variable state
 ```
 
-The Attempt 2 tests only render the explanatory live-test paragraph. They do not prove the actual C019 publication handoff.
+Required implementation rule:
 
-Required executable cases:
+1. Compute mapping validity from the CURRENT GraphQL variable names, CURRENT `execution.variables`, CURRENT parsed top-level `inputSchema` properties, and CURRENT visible literal text.
+2. For every current GraphQL variable:
+   - no mapping => invalid;
+   - `{ input: name }` => valid only when `name` exists in the current top-level inputSchema properties;
+   - `{ literal: ... }` => valid only when the visible literal text for that variable exists and parses as JSON.
+3. Variables no longer present in the current GraphQL document MUST NOT contribute stale validity state.
+4. Switching `literal -> input` MUST immediately stop considering the old literal text/validity for that variable.
+5. Switching `input -> literal` MUST immediately make the mapping invalid until the visible literal text parses as JSON.
+6. Editing one literal MUST NOT clear an invalid state belonging to another currently literal-mapped variable.
+7. Changing `inputSchemaText` so an input-mapped property disappears MUST immediately make the mapping aggregate invalid; Save and Validate MUST NOT call their Server Actions while that mapping is invalid.
+8. The parent callback `onInputValidityChange(...)` MUST always receive the aggregate validity of the CURRENT visible mapping set. Do not set it from one variable's latest event in isolation.
+9. Do not duplicate the COMMERCE-018 GraphQL type-compatibility compiler in the browser. This UI validity check owns only mapping presence, current input-property existence, and JSON literal parse validity. Type compatibility remains server/compiler-owned.
+
+A deterministic implementation may use a derived helper such as:
 
 ```text
-ADMIN + saved/validated Admin draft
-→ no enabled Publish action
-
-SUPER_ADMIN + dirty=false + adminValidated=true
-→ Publish enabled
-→ click Publish
-→ publishToolRevision returns LIVE_TEST_REQUIRED
-→ UI shows exactly:
-   LIVE_TEST_REQUIRED: Run a successful live tool test for the current saved revision before publishing.
-→ Tool UNCONFIRMED is NOT created
-→ draft definition/validation baseline remains unchanged
+isCurrentMappingSetValid(variableNames, execution.variables, inputProperties, literalText)
 ```
 
-The test MUST reach `dirty=false/adminValidated=true` through the real Save -> Validate sequence, not by manually injecting validation state.
+provided it is pure/bounded and is used consistently after document, mapping-mode, literal-text, and input-schema changes.
 
-#### CR-5 — add Admin-specific composite create/recovery proof
-
-Files:
-
-```text
-src/studio/tools/tool-authoring-screen.tsx
-src/studio/tools/tool-library.tsx
-tests/tool-authoring-screen.test.tsx
-tests/shopify-admin-tools-ui.test.tsx
-```
-
-The production staged state is correctly generalized to Admin/External, but the submitted tests mainly prove C020's generic/external recovery. Add explicit Admin cases.
-
-Required cases:
-
-```text
-successful Admin create
-→ createTool operationId A
-→ createToolDraft operationId B
-→ A != B
-→ draft definition contains the exact metadata/candidate staged before createTool
-
-Admin createTool(A) response lost
-→ reconciliation committed
-→ canonical Tool resolved by immutable name
-→ createTool is never called again
-→ only createToolDraft(B) may proceed
-
-Admin createToolDraft(B) response lost
-→ reconciliation not-committed
-→ Retry draft remains staged
-→ retry generates NEW operationId C
-→ createTool call count remains exactly 1
-
-Admin createToolDraft(B) response lost
-→ reconciliation committed
-→ canonical DRAFT resolved
-→ staged state cleared
-→ navigate to canonical revision
-→ createToolDraft call count remains exactly 1
-```
-
-No staged state may contain a function/mutation closure.
-
-#### CR-6 — complete the C022-owned UI regression contract
+#### CR-2 — add the missing executable mapping-state regressions
 
 File:
 
@@ -464,81 +311,44 @@ File:
 tests/shopify-admin-tools-ui.test.tsx
 ```
 
-The file exists in Attempt 2, but only six tests are present. Expand it so the required C022 behavior is explicitly executable rather than inferred from other suites.
-
-At minimum the final file MUST prove all of these observable cases:
+Add focused production-component regressions for ALL of these exact cases:
 
 ```text
-1. selector offers Admin GraphQL + External HTTP; Storefront absent
-2. Admin create disabled while metadata loads
-3. metadata typed error prevents createTool
-4. metadata apiVersion + schemaHash are the exact create-definition values
-5. historical Storefront revision remains readable
-6. apiVersion/schemaHash have no editable input
-7. input-property mapping persists exactly
-8. string and numeric JSON literals persist exactly
-9. blank/invalid literal blocks Save/Validate
-10. inputSchema change causes stale mapping validation failure
-11. mutation GraphQL cannot validate and bounded issue is visible
-12. visible resultSchema + responseTemplate are both used by Save
-13. visible responseTemplate is also used by Validate
-14. Save -> Validate yields clean validated publication state
-15. ADMIN cannot publish
-16. SUPER_ADMIN Publish returns LIVE_TEST_REQUIRED without UNCONFIRMED
-17. normal authoring/validation performs no shop/session/provider operation
+1. $query has no mapping
+   → UI shows the literal editor as blank/invalid (or another explicit unmapped state)
+   → Save does not call updateToolDraft
+   → Validate does not call validateShopifyAdminDefinitionAction
+
+2. $query = blank Bounded literal
+   → invalid
+   → switch Mapping for query to input:query
+   → aggregate mapping validity becomes true
+   → Save may call updateToolDraft
+   → Validate may call validateShopifyAdminDefinitionAction
+
+3. two GraphQL variables use literals
+   → $query invalid
+   → $first valid JSON `10`
+   → aggregate remains invalid
+   → Save/Validate blocked
+   → fix $query to `"TITLE"`
+   → aggregate becomes valid
+
+4. $query uses input:query
+   → remove `query` from visible Input JSON Schema
+   → aggregate becomes invalid immediately
+   → Save/Validate blocked before either Server Action is called
+
+5. a variable with stale invalid literal state is removed from the GraphQL document
+   → that removed variable no longer contributes to aggregate mapping validity
+   → remaining current mappings determine validity
 ```
 
-Cases may share setup, but each assertion must execute the production component path with named Server Action mocks. Do not restore function-valued action bundles.
+Keep the existing Attempt 3 metadata, exact visible Save/Validate, LIVE_TEST_REQUIRED and Admin composite-recovery regressions green.
 
-#### CR-7 — reconcile executor-owned task state before review
+#### CR-3 — validation and handoff
 
-The Completion Report is populated, but the Work Items, Acceptance Criteria and Validation checklists at the top of the task are still unchecked. Those sections belong to the implementing agent.
-
-Before returning Attempt 3 to Architect Review:
-
-1. Check every Work Item actually completed.
-2. Check every Acceptance Criterion actually satisfied.
-3. Check every required Validation item actually run.
-4. Update the Completion Report with the final Attempt 3 implementation commit and final parent report commit.
-5. Record exact focused test counts, exact lint/typecheck outcome, branch/remote parity and clean worktree evidence.
-6. Return exactly:
-
-```yaml
-status: review
-attempt: 3
-executor: null
-claimed_at: null
-```
-
-### Reviewed Files
-
-```text
-src/studio/tools/tool-library.tsx
-src/studio/tools/tool-authoring-screen.tsx
-src/studio/tools/tool-editor.tsx
-src/studio/tools/shopify-admin-editor.tsx
-src/studio/tools/admin-validation-server-actions.ts
-src/commerce/tool-authoring/admin-validation.ts
-tests/shopify-admin-tools-ui.test.tsx
-tests/tool-authoring-screen.test.tsx
-tests/studio-workspace.test.tsx
-docs/decisions/commerce/ARCH-021/COMMERCE-022-build-shopify-admin-tool-authoring-ui.md
-```
-
-### Validation Reviewed
-
-Attempt 2 reports and the submitted snapshot support:
-
-```text
-Admin/C020/validation focused packet: 29/29 passed
-COMMERCE-018 compiler:                22/22 passed
-COMMERCE-024 authoring validation:     9/9 passed
-targeted lint/diff checks:             passed
-```
-
-Those results support the retained foundation, but they do not prove CR-1 through CR-6 above. The current C022-owned UI file contains only six tests and does not execute the required Save->Validate->Publish handoff or exact visible-candidate validation contract.
-
-Attempt 3 MUST run exactly:
+Attempt 4 MUST run exactly:
 
 ```bash
 npm run test:arch021-shopify-admin-compiler
@@ -562,19 +372,15 @@ npm run typecheck
 git diff --check
 ```
 
-If repository-wide typecheck retains baseline diagnostics, the Completion Report MUST prove zero diagnostics in these C022-owned source/test files.
-
-Required source audits:
+Required source audits remain:
 
 ```bash
-# New creation selector must not expose Storefront.
 if rg -n '<option[^>]*SHOPIFY_STOREFRONT_QUERY|value="SHOPIFY_STOREFRONT_QUERY"' \
   src/studio/tools/tool-library.tsx; then
   echo 'ERROR: new Tool creation still exposes Storefront' >&2
   exit 1
 fi
 
-# Normal Admin authoring/validation must not introduce live shop/session/provider access.
 if rg -n 'offline session|accessToken|shopifySession|/admin/api/' \
   src/studio/tools/shopify-admin-editor.tsx \
   src/studio/tools/admin-validation-server-actions.ts; then
@@ -582,7 +388,6 @@ if rg -n 'offline session|accessToken|shopifySession|/admin/api/' \
   exit 1
 fi
 
-# C022 must not restore function-valued production action bundles.
 if rg -n 'actions=\{|adminActions=|service=\{|controlled=' \
   src/studio/tools/tool-library.tsx \
   src/studio/tools/tool-authoring-screen.tsx \
@@ -592,10 +397,50 @@ if rg -n 'actions=\{|adminActions=|service=\{|controlled=' \
 fi
 ```
 
+If repository-wide typecheck retains baseline diagnostics, the Completion Report MUST record zero diagnostics in C022-owned source/test files.
+
+Before returning to review, reconcile the executor-owned Work Items, Acceptance Criteria and Validation checklists with what actually ran, update the Completion Report with the final Attempt 4 implementation commit and final parent handoff commit, and return exactly:
+
+```yaml
+status: review
+attempt: 4
+executor: null
+claimed_at: null
+```
+
+### Reviewed Files
+
+```text
+src/studio/tools/tool-library.tsx
+src/studio/tools/tool-authoring-screen.tsx
+src/studio/tools/tool-editor.tsx
+src/studio/tools/shopify-admin-editor.tsx
+src/studio/tools/admin-validation-server-actions.ts
+src/commerce/tool-authoring/admin-validation.ts
+tests/shopify-admin-tools-ui.test.tsx
+tests/tool-authoring-screen.test.tsx
+tests/studio-workspace.test.tsx
+docs/decisions/commerce/ARCH-021/COMMERCE-022-build-shopify-admin-tool-authoring-ui.md
+```
+
+### Validation Reviewed
+
+Attempt 3 reports:
+
+```text
+Focused Admin/C020/UI packet: 38/38 passed
+COMMERCE-018 compiler:         22/22 passed
+COMMERCE-024 validation:        9/9 passed
+targeted lint/type diagnostics: passed
+git diff --check:               passed
+```
+
+Those results support the accepted Attempt 3 foundation, but the current focused tests do not execute the stale mapping-mode transitions described in CR-1/CR-2.
+
 ### Architecture Conformance
 
-Not yet conformant. Attempt 2 establishes the correct Admin authoring foundation and preserves C018/C019/C020/C024 boundaries, but the browser still duplicates the pinned `apiVersion`, Validate does not yet use the exact visible response-template candidate, literal validity is not aggregated fail-closed, and the required publication/composite-recovery behavior is not yet executable in the C022 regression suite.
+Not yet conformant. The Admin GraphQL authoring boundary now conforms on metadata identity, exact Save/Validate candidates, publication gating, zero-provider-I/O behavior and composite recovery. The remaining defect is local UI mapping-state correctness: mapping validity can still reflect stale literal history rather than the current visible mapping set.
 
 ### Follow-up
 
-Reclaim the SAME task as Attempt 3. Implement CR-1 through CR-7 only. Preserve all accepted Attempt 2 foundation work. Do not add live Shopify/session/provider I/O, do not modify Explore/discovery UI, and do not begin Phase 4. After all required validation passes, complete the executor-owned checklists and Completion Report, set the task to `review`, clear the claim, return to `moda_architect`, and STOP.
+Reclaim the SAME task as Attempt 4. Implement CR-1 through CR-3 only. Preserve all accepted Attempt 3 work. Do not add live Shopify/session/provider I/O, do not modify Explore/discovery UI, and do not begin Phase 4. After required validation passes, set the task to `review`, clear the claim, return to `moda_architect`, and STOP.
