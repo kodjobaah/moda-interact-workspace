@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-25T14:16:01Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -165,11 +165,13 @@ Produces the authoritative External HTTP validation/preview boundary consumed by
 - [x] Validation/preview errors remain explicit and never become mutation UNCONFIRMED state.
 - [x] Validation creates no evidence that can satisfy the Phase 3 publication gate.
 
-## Validation
-
-- [x] `npm run test:arch021-external-tool-authoring-validation` (equivalent local Vitest binary: 6 passed; pnpm wrapper was blocked by ignored build scripts)
-- [x] `npm run test:arch020-external-publication` (included in the 95-test Commerce-016/017/019 suite)
-- [x] targeted lint/typecheck (lint passed; task-owned files have zero type diagnostics; repository-wide typecheck has unrelated baseline errors)
+### Validation
+- [x] `npm run test:arch021-external-tool-authoring-validation` (2 files, 24 tests passed, zero skipped)
+- [x] `npm run test:arch020-external-publication` (1 file, 13 tests passed)
+- [x] required Commerce-016/017/019 contract and authorization suite (6 files, 42 tests passed)
+- [x] required ESLint scope (clean)
+- [x] `git diff --check` (clean)
+- [x] `npm run typecheck` (15 unrelated baseline diagnostics remain; zero diagnostics in task-owned files)
 - [x] `git diff --check`
 
 ## Stop Condition
@@ -191,37 +193,42 @@ Ready for Review
 - `src/commerce/tool-authoring/external-validation.ts`
 - `src/studio/tools/external-validation-server-actions.ts`
 - `tests/external-tool-authoring-validation.test.ts`
+- `tests/external-tool-authoring-server-actions.test.ts`
 
 ### Work Completed
 - Added authoritative, zero-provider-I/O EXTERNAL_HTTP definition validation with canonical schema parsing, immutable connection-revision metadata checks, request/response processor compilation, visual/DIRECT structural validation, and bounded common authoring issues.
 - Added the platform-role-authorized request-construction Server Action. It validates CommerceAgent arguments before declarative or JavaScript construction, returns only the safe external request descriptor, and maps explicit action errors without creating mutation evidence.
 - Exposed the validator through the existing external integration facade without adding a transport, credential, or publication receipt path.
-- Focused repair mapping: `src/commerce/tool-authoring/external-validation.ts` validates arguments before request parsing and keeps compiler error codes on stable source paths; `tests/external-tool-authoring-validation.test.ts` covers that ordering and response-template rejection. No Architect Review correction was present; the Architect Review section below is unchanged.
+- Attempt 2 correction mapping: strict preview DTO parsing now occurs before processor construction; only known template incompatibilities map to `/responseTemplate`, while visual projection incompatibilities remain under `/execution/responseProcessing`; runtime processor failures remain explicit internal errors.
+- Added executable Server Action tests for authorization denial, database/error mapping, strict DTO rejection, safe descriptor output, and runtime error mapping.
+- Added production integration proof with injected DNS and transport spies; authoring validation performs neither provider operation.
 
 ### Validation Results
-- Launcher evidence: prepared execution was resumed in parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-023`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-023`, branch `task/ARCH-021-COMMERCE-023`, Attempt 1, `execution_mode: agent`; existing handoff changes were preserved.
-- `node_modules/.bin/vitest run tests/external-tool-authoring-validation.test.ts`: PASS, 1 file and 6 tests.
-- Commerce-016/017/019 contract, authorization, publication, and integration command covering 9 files: PASS, 9 files and 95 tests.
-- `node_modules/.bin/eslint src/commerce/tool-authoring/external-validation.ts src/commerce/integration/external/index.ts src/studio/tools/external-validation-server-actions.ts tests/external-tool-authoring-validation.test.ts`: PASS.
+- Launcher packet: deterministic prepare was invoked for `ARCH-021-COMMERCE-023 --prepare --executor copilot --json`; it returned `TASK_NOT_READY` because the task was already claimed by `copilot` in `in_progress`. Work resumed in parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-023` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-023`, branch `task/ARCH-021-COMMERCE-023`, Attempt 2, `execution_mode: agent`; no claim was overwritten.
+- Start synchronization evidence: the existing Attempt 2 claim and dedicated implementation worktree were verified before edits; implementation HEAD was `fb5ed5b` before the Attempt 2 correction commit.
+- Recursive submodule evidence: implementation validation was run from the dedicated commerce worktree with the database dependency at launcher-packet SHA `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Claim/implementation publication: implementation commit `9612be2b1cbcb5b0d34c863e2bf1f4bd568c2314` is pushed to `origin/task/ARCH-021-COMMERCE-023`; local and remote SHAs match and the implementation worktree is clean.
+- `npm run test:arch021-external-tool-authoring-validation`: PASS, 2 files and 24 tests.
+- `npm run test:arch020-external-publication`: PASS, 1 file and 13 tests.
+- Required contract/authorization command: PASS, 6 files and 42 tests.
+- Required ESLint scope: PASS.
 - `git diff --check`: PASS.
-- Source audit for provider transport, network, credential, and provider calls in the new authoring/preview boundary: PASS; no forbidden calls found.
-- `npm run typecheck`: non-zero with 15 existing diagnostics in 7 untouched route/test files; zero diagnostics in task-owned files. See Unresolved Issues for the unrelated baseline condition.
-- Commerce integration command `tests/backend-integration.test.ts tests/commerce-lifecycle.test.ts tests/definition-execution.test.ts tests/mcp-service.test.ts tests/external-wiring.test.ts`: 67 passed, 2 failed in existing Commerce-013 backend bootstrap expectations in `tests/backend-integration.test.ts`; no task-owned file is involved.
-- Initial `pnpm run test:arch021-external-tool-authoring-validation` was blocked before execution by the environment's `ERR_PNPM_IGNORED_BUILDS`; the equivalent local Vitest binary ran successfully after the prepared dependencies were available.
+- `npm run typecheck`: non-zero only for 15 unrelated diagnostics in 7 untouched files; zero diagnostics remain in task-owned files.
 
 ### Deviations
 - None from the bounded Commerce-023 scope. No Shopify Admin validation, live HTTP request, credential display/decryption, live-test receipt, or Tool UI was added.
 
 ### Assumptions
 - The existing `requireStudioPlatformRole('ADMIN')` hierarchy helper is the authoritative admission contract for platform administrators and super administrators and denial for merchant roles.
-- The implementation branch commit is `fb5ed5ba1ad9269a00ecb5ef74275b980f9d453c`.
+- The Attempt 2 implementation branch commit is `9612be2b1cbcb5b0d34c863e2bf1f4bd568c2314`.
 
 ### Unresolved Issues
 - Repository-wide typecheck remains non-zero because of 15 unrelated existing diagnostics in untouched files: the code-response preview route imports, agent-configuration tests, C20 fixture test, external wiring test, local MCP diagnostic test, and selected-shop-context tests.
-- Two existing Commerce-013 backend integration expectations fail because `getCommerceBackend()` does not throw after reset; this is outside the task-owned diff and requires the owning integration task/architect decision.
+- Repository-wide typecheck remains non-zero because of 15 unrelated existing diagnostics in untouched preview, agent-configuration, C20 fixture, external-wiring, local MCP diagnostic, and selected-shop-context files.
+- No C023-owned unresolved issue remains. The previously recorded Commerce-013 integration failures were not part of the Attempt 2 required validation command and remain outside this task-owned diff.
 
 ### Architectural Concerns
-None.
+No new architectural concerns. Attempt 2 addresses the requested visual diagnostic boundary, strict preview DTO ordering, runtime error classification, and executable Server Action/provider-I/O proofs.
 
 ## Architect Review
 
