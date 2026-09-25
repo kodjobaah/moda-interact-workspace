@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 46
-executor: copilot
-claimed_at: 2026-09-25T23:41:32Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-036
@@ -275,9 +275,9 @@ If the generic transaction timeout is changed for an independently justified rea
 
 - [x] Define the narrow initial Tool persistence port/method.
 - [x] Route only the COMMERCE-036 initial-create lifecycle command through it.
-- [x] Implement operation-scoped replay synchronization without the global publication lock.
+- [x] Implement operation-scoped replay synchronization without the global publication lock, with real PostgreSQL proof while the legacy lock is held.
 - [x] Insert Tool, revision 1 and audit directly in one Prisma transaction.
-- [x] Map Tool-name uniqueness to bounded `CONFLICT` semantics.
+- [x] Map only the `CommerceTool.name` unique constraint to bounded `CONFLICT` semantics.
 - [x] Preserve identical replay and conflicting-reuse semantics.
 - [x] Add rollback regressions.
 - [x] Add real PostgreSQL concurrency/replay coverage.
@@ -323,10 +323,10 @@ No Shared-package or cross-repository contract is introduced.
 ## Validation
 
 - [x] `npm run test:arch021-tool-authoring-common` passed: 7 files, 81 tests.
-- [ ] `npm run test:arch020-backend-integration` completed 67/69; two pre-existing backend-global expectation tests failed in `tests/backend-integration.test.ts`.
-- [x] focused initial-create PostgreSQL concurrency/replay/rollback test passed: 1 test.
+- [ ] `npm run test:arch020-backend-integration` completed 67/69; the same two pre-existing backend-global expectation tests failed in `tests/backend-integration.test.ts`.
+- [x] focused initial-create PostgreSQL correction test passed: 1 test, including actor mismatch and successful create while the legacy global lock was held.
 - [x] `npm run prisma:generate` completed successfully.
-- [x] targeted ESLint passed for all five changed files; full typecheck has 16 unrelated baseline errors and no task-owned diagnostics.
+- [x] targeted ESLint passed for all five changed files; full typecheck has the same 16 unrelated baseline errors and no task-owned diagnostics.
 - [x] source audit confirms the dedicated method uses only the operation audit, Tool and ToolRevision tables and operation-keyed advisory locking.
 - [x] `git diff --check` passed.
 
@@ -343,7 +343,7 @@ An operation-keyed PostgreSQL advisory transaction lock is acceptable because it
 ## Completion Report
 
 ### Status
-Implemented and ready for Architect Review.
+Ready for Review
 
 ### Files Changed
 - `src/commerce/publication/ports.ts`
@@ -354,29 +354,36 @@ Implemented and ready for Architect Review.
 
 ### Work Completed
 - Added a dedicated initial Tool + draft persistence contract and routed only `createToolWithInitialDraft` through it.
-- Added a bounded Prisma transaction with operation-keyed advisory locking, exact audit replay lookup, direct Tool/revision/audit inserts, unique-name conflict mapping, and rollback hook coverage.
+- Added a bounded Prisma transaction with operation-keyed advisory locking, exact audit replay lookup, direct Tool/revision/audit inserts, Tool.name-only unique-conflict mapping, and rollback hook coverage.
+- Added real PostgreSQL evidence that a distinct narrow create completes while the legacy global publication lock is held, plus actor-mismatch replay rejection.
 - Preserved the generic publication transaction for all unrelated lifecycle commands.
 
 ### Validation Results
-- Implementation commit: `d6b20ae` (`feat(commerce): persist initial tool draft narrowly`), pushed to `task/ARCH-021-COMMERCE-037`.
-- Claim commit: `1c90eae2fd6243f28d3a2442938bb10f923dc2e8`.
+- Implementation commits: `d6b20ae` and `8748595` (`test(commerce): prove narrow lock independence`), both pushed to `task/ARCH-021-COMMERCE-037`.
+- Attempt 2 claim commit: `e5a36f92f2a5a39781c0dd5afad1711ebc259027`; correction-request commit: `63ba7312f1a52aa2bad11befce592fff2b76b99d`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-037`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-037`.
+- Parent and implementation branches: `task/ARCH-021-COMMERCE-037`.
+- Attempt 2 start synchronization: launcher refreshed/fetched and synchronized the parent and implementation branches before claiming `e5a36f92`; final local/remote parity is parent `e5a36f92` and implementation `8748595`.
+- Recursive submodules materialized successfully; database submodule commit used for validation: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Final parent report commit: the pushed commit containing this report; parent worktree clean and implementation worktree clean at handoff.
 - Common authoring packet: 81/81 passed.
 - Focused lifecycle packet: 34/34 passed.
-- Focused PostgreSQL narrow persistence test: passed, including independent-client replay, altered replay conflict, same-name race, and post-write rollback.
+- Focused PostgreSQL correction test: passed, including independent-client replay, altered payload and actor conflicts, same-name race, post-write rollback, and completion while the legacy global lock was held.
 - Changed-file ESLint and `git diff --check`: passed.
 - Backend integration packet: 67/69 passed; the two failures are existing `getCommerceBackend()` expectation failures in `tests/backend-integration.test.ts`.
 - Full typecheck: existing 16 diagnostics in unrelated files; no task-owned diagnostic was reported.
 
 ### Deviations
 - No schema or migration changes.
-- The existing broad PostgreSQL rehearsal test timed out at 60 seconds in this environment; the new focused PostgreSQL test passed independently.
+- The existing broad PostgreSQL rehearsal test timed out at 60 seconds in this environment; the focused Attempt 2 PostgreSQL test passed independently.
 
 ### Assumptions
 - Existing `CommerceAuditEvent.id` remains the durable operation identity, with `operationId` populated for the new direct audit row.
 - The existing production authorization adapter's development-principal guard remains a no-op, while lifecycle role authorization and canonical definition validation remain enforced before persistence.
 
 ### Unresolved Issues
-- Architect review should confirm whether the two backend integration failures and broad rehearsal timeout are baseline environment issues or require separate follow-up tasks.
+- Architect review should confirm whether the same two backend integration failures and broad rehearsal timeout remain baseline environment issues or require separate follow-up tasks.
 
 ### Architectural Concerns
 - None within the COMMERCE-037 scope. The generic publication transaction remains unchanged for unrelated commands.
