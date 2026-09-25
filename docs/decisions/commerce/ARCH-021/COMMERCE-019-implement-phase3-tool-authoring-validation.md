@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-COMMERCE-019
 architecture_id: ARCH-021
-title: Establish Phase 3 authoring validation contract and publication gate
+title: Establish Phase 3 authoring validation and publication gate
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -16,15 +16,16 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-021-COMMERCE-016
+  - ARCH-021-COMMERCE-027
   - ARCH-020-COMMERCE-030
 enables:
   - ARCH-021-COMMERCE-023
   - ARCH-021-COMMERCE-024
 created: 2026-09-23
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
-# Establish Phase 3 authoring validation contract and publication gate
+# Establish Phase 3 authoring validation and publication gate
 
 ## Architecture
 
@@ -36,13 +37,19 @@ Coordinator: moda_architect
 
 ## Objective
 
-Define one common server-side validation result/authentication contract for Phase 3 Tool authoring and install the fail-closed `LIVE_TEST_REQUIRED` publication gate, without coupling External HTTP validation to Shopify Admin compiler work.
+Define one common server-side validation/result/authorization contract for Phase 3 Tool authoring and install the fail-closed `LIVE_TEST_REQUIRED` publication gate, consuming the simplified Auth.js role hierarchy and explicit error model without introducing another auth layer, function-valued production port or generic `unknown` validation result.
 
 ## Context
 
-The existing ARCH-020 external publication validator uses synthetic response samples/receipts. ARCH-021 requires a successful real selected-shop/provider test for the exact saved revision before a newly authored Phase 3 Tool can publish.
+COMMERCE-016 owns the canonical Commerce-local Tool definition. COMMERCE-027 established the hierarchical Studio authorization model:
 
-External HTTP and Shopify Admin authoring are independently useful capabilities with different compiler dependencies. This task therefore owns only their common validation/publication semantics. COMMERCE-023 owns External HTTP authoring validation; COMMERCE-024 owns Shopify Admin authoring validation.
+```text
+PLATFORM_SUPER_ADMIN > PLATFORM_ADMIN > MERCHANT_ADMIN > MERCHANT_EDITOR > MERCHANT_VIEWER
+```
+
+Phase 3 Tools remain platform-owned in this phase. Merchant Tool ownership is not introduced here. The simplification terminal system test remains Ready by developer choice and is not a dependency of this implementation task.
+
+The existing ARCH-020 external publication validator uses synthetic response samples/receipts. ARCH-021 requires a successful real selected-shop/provider test for the exact saved revision before a newly authored Phase 3 Tool can publish. Phase 4 owns that live-test receipt.
 
 ## Scope
 
@@ -50,13 +57,17 @@ Primary files:
 
 ```text
 src/commerce/tool-authoring/contracts.ts
-src/commerce/tool-authoring/auth.ts              # only if a shared helper is required
 src/commerce/external-publication/index.ts
 src/commerce/external-publication/contracts.ts
-src/commerce/publication/validation.ts            # only if central dispatch needs exact new-kind handling
+src/commerce/publication/validation.ts            # only exact gate/error propagation needed
+lib/auth/merchant-access.ts                       # consume existing helper; no new role model
+lib/auth/role-hierarchy.ts                        # consume only; modify only if a task-owned defect is proven
 tests/tool-authoring-common-validation.test.ts
+tests/tool-authoring-authorization.test.ts
 package.json
 ```
+
+Do NOT create `src/commerce/tool-authoring/auth.ts` or another authorization matrix. Use the accepted COMMERCE-027 helpers directly.
 
 ## Out of Scope
 
@@ -66,14 +77,15 @@ package.json
 - Real Shopify/external requests.
 - Live-test receipt implementation (Phase 4).
 - Tool editor UI.
+- Merchant-owned Tool libraries.
 - Provider credentials in browser/client contracts.
-- Replacing old ARCH-020 historical publication evidence for already-published development revisions.
+- Replacing historical ARCH-020 publication evidence for already-published development revisions.
 
 ## Requirements
 
 ### R1 — exact common validation result
 
-Expose the canonical result consumed by both domain validators and both Phase 3 editors:
+Export exactly one bounded structural-validation envelope:
 
 ```ts
 type ToolAuthoringValidation =
@@ -91,29 +103,76 @@ type ToolAuthoringValidation =
     };
 ```
 
-Maximum 32 issues. Messages MUST NOT contain raw credentials, tokens or provider response payloads.
+Maximum 32 issues. Each `path`, `code` and `message` is bounded to 512 UTF-8 bytes. Messages MUST NOT contain credentials, access tokens, authorization headers, provider response payloads or raw database connection details.
 
-### R2 — common authenticated server boundary
+### R2 — exact Phase 3 authorization policy
 
-Provide/reuse one server-side ADMIN/SUPER_ADMIN authorization helper for Phase 3 authoring actions. Preserve the accepted development rule:
+Every new Phase 3 platform Tool authoring Server Action MUST use the already-accepted helper:
 
-```text
-developmentBypass === true
-    -> trusted development path is sufficient
+```ts
+requireStudioPlatformRole('ADMIN')
 ```
 
-Do not reintroduce ID/role cross-validation under bypass. Domain validators may compose this helper but remain separate server actions/ports.
+from `lib/auth/merchant-access.ts`.
 
-### R3 — Phase 3 publication gate
-
-For a DRAFT using either canonical Phase 3 kind:
+This means:
 
 ```text
-EXTERNAL_HTTP             (new request-based contract)
+PLATFORM_ADMIN        allowed
+PLATFORM_SUPER_ADMIN  allowed through hierarchy
+MERCHANT_ADMIN        denied
+MERCHANT_EDITOR       denied
+MERCHANT_VIEWER       denied
+```
+
+`developmentBypass === true` is already resolved by COMMERCE-027 to the development `PLATFORM_SUPER_ADMIN`; Phase 3 MUST NOT re-check bypass id, role, email, provider subject or `PlatformAdmin` membership.
+
+Publishing/enabling/disabling remains subject to the existing lifecycle `SUPER_ADMIN` requirement. This task MUST NOT weaken that requirement.
+
+### R3 — exact Server Action failure contract
+
+For non-mutating Phase 3 validation/metadata/request-preview Server Actions, export/reuse this exact envelope:
+
+```ts
+type ToolAuthoringActionCode =
+  | 'FORBIDDEN'
+  | 'INVALID_INPUT'
+  | 'NOT_FOUND'
+  | 'DATABASE_UNAVAILABLE'
+  | 'INTERNAL_ERROR';
+
+type ToolAuthoringActionResult<T> =
+  | { kind: 'ok'; value: T }
+  | {
+      kind: 'error';
+      code: ToolAuthoringActionCode;
+      message: string;
+      retryable: boolean;
+    };
+```
+
+Rules:
+
+1. known validation errors are `INVALID_INPUT`;
+2. missing durable authoring resources are `NOT_FOUND`;
+3. authorization denial is `FORBIDDEN`;
+4. Prisma connectivity/timeout/disconnect classes `P1001`, `P1002`, `P1008`, `P1017` are `DATABASE_UNAVAILABLE` with `retryable: true`;
+5. unexpected exceptions are logged server-side through the approved shared structured logger and returned as bounded `INTERNAL_ERROR`;
+6. the result MUST NOT contain `kind: 'unknown'`;
+7. a validation/read action MUST NOT create UI `UNCONFIRMED` state because it makes no durable mutation.
+
+Transport uncertainty for Tool mutations is owned by COMMERCE-020 and is reconciled through `CommerceAuditEvent.operationId`; it is not represented by this validation result.
+
+### R4 — exact Phase 3 publication gate
+
+For an otherwise structurally valid DRAFT using either canonical Phase 3 kind:
+
+```text
+EXTERNAL_HTTP
 SHOPIFY_ADMIN_GRAPHQL
 ```
 
-`validateForPublication` MUST return exactly the stable non-success result:
+`validateForPublication` MUST preserve/return exactly:
 
 ```text
 code: LIVE_TEST_REQUIRED
@@ -121,47 +180,55 @@ path: /liveTest
 message: Run a successful live tool test for the current saved revision before publishing.
 ```
 
-This gate applies only after the definition is otherwise structurally valid according to its owning domain validator. Phase 4 will replace the fail-closed gate with exact live-test receipt validation.
+The publication lifecycle must preserve `LIVE_TEST_REQUIRED` as an identifiable failure code through the Server Action/UI boundary; do not collapse it into a generic `UNAVAILABLE`/`INTERNAL_ERROR` message.
 
-### R4 — synthetic evidence cannot satisfy publication
+Phase 4 will replace this fail-closed gate with exact live-test receipt validation.
+
+### R5 — synthetic evidence cannot satisfy publication
 
 Synthetic fixture/sample validation MUST NOT create, translate into or reuse a receipt that satisfies the Phase 3 publication gate. Existing automated fixture utilities remain test assets only.
 
 Already-published historical revisions are read-only history; this task MUST NOT retroactively unpublish them.
 
-### R5 — domain-validator contract
+### R6 — domain-validator boundary
 
-COMMERCE-023 and COMMERCE-024 MUST return `ToolAuthoringValidation` and use the common authorization convention. This task MUST NOT import or invoke either domain compiler and MUST perform zero provider I/O.
+COMMERCE-023 and COMMERCE-024 MUST return `ToolAuthoringActionResult<ToolAuthoringValidation>` from their named Server Actions and use `requireStudioPlatformRole('ADMIN')` directly. This common task MUST NOT import or invoke either domain compiler and MUST perform zero provider I/O.
 
-### R6 — exact focused validation
+### R7 — focused validation
 
-Add `test:arch021-tool-authoring-common` proving:
+Add `test:arch021-tool-authoring-common` proving all of:
 
-- exact common validation result is bounded to 32 safe issues;
-- canonical EXTERNAL_HTTP publication returns `LIVE_TEST_REQUIRED`;
-- canonical SHOPIFY_ADMIN_GRAPHQL publication returns `LIVE_TEST_REQUIRED`;
-- synthetic ARCH-020 sample evidence cannot satisfy either new Phase 3 gate;
+- validation result is bounded to 32 safe issues;
+- PLATFORM_ADMIN is admitted;
+- PLATFORM_SUPER_ADMIN is admitted through hierarchy;
+- all merchant roles are denied for platform Tool authoring;
+- development bypass is admitted without a second identity/role lookup;
+- `DATABASE_UNAVAILABLE` is returned explicitly and is not converted to unknown;
+- unexpected errors are logged and returned as bounded `INTERNAL_ERROR`;
+- canonical EXTERNAL_HTTP publication returns exact `LIVE_TEST_REQUIRED`;
+- canonical SHOPIFY_ADMIN_GRAPHQL publication returns exact `LIVE_TEST_REQUIRED`;
+- synthetic ARCH-020 evidence cannot satisfy either gate;
 - already-published historical revisions are not retroactively invalidated;
-- development bypass does not consult PlatformAdmin authorization;
 - no request-JS/Admin compiler/provider transport is invoked by this common layer.
 
 ## Work Items
 
-- [ ] Add the common authoring-validation result contract.
-- [ ] Centralize/reuse the Phase 3 authorization helper where needed.
-- [ ] Install the fail-closed live-test publication gate for both canonical Phase 3 kinds.
+- [ ] Add the bounded common validation and action-result contracts.
+- [ ] Consume COMMERCE-027 `requireStudioPlatformRole('ADMIN')`; create no alternate auth helper.
+- [ ] Install/preserve exact `LIVE_TEST_REQUIRED` propagation for both canonical Phase 3 kinds.
 - [ ] Ensure synthetic evidence cannot satisfy the new gate.
-- [ ] Add focused common-contract/publication tests.
+- [ ] Add hierarchy/error/publication focused tests.
 
 ## Interfaces / Contracts
 
-Consumes the COMMERCE-016 canonical Tool-definition contract and accepted ARCH-020 publication lifecycle.
+Consumes COMMERCE-016 Tool-definition contracts, COMMERCE-027 authorization hierarchy and the accepted ARCH-020 publication lifecycle.
 
-Produces the common validation/auth/publication contract consumed by COMMERCE-023 and COMMERCE-024 and surfaced by COMMERCE-021/022.
+Produces `ToolAuthoringValidation` and `ToolAuthoringActionResult<T>` consumed by COMMERCE-023/024 and surfaced by COMMERCE-021/022.
 
 ## Dependencies
 
 - ARCH-021-COMMERCE-016
+- ARCH-021-COMMERCE-027
 - ARCH-020-COMMERCE-030
 
 ## Enables
@@ -171,25 +238,28 @@ Produces the common validation/auth/publication contract consumed by COMMERCE-02
 
 ## Acceptance Criteria
 
-- [ ] External and Admin validators can evolve independently behind one validation result contract.
+- [ ] Phase 3 platform Tool authoring uses the accepted role hierarchy and no duplicate auth model.
+- [ ] Validation/read failures are explicit; no common validation path returns generic unknown.
+- [ ] External and Admin validators evolve independently behind one bounded validation result.
 - [ ] Both canonical Phase 3 kinds fail publication with exact `LIVE_TEST_REQUIRED` until Phase 4.
-- [ ] Synthetic evidence cannot satisfy the Phase 3 publication gate.
+- [ ] Synthetic evidence cannot satisfy the gate.
 - [ ] Common validation/publication code performs zero provider I/O.
 
 ## Validation
 
 - [ ] `npm run test:arch021-tool-authoring-common`
 - [ ] `npm run test:arch020-external-publication`
+- [ ] `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts`
 - [ ] targeted lint/typecheck
 - [ ] `git diff --check`
 
 ## Stop Condition
 
-Set to `review`, return Completion Report and STOP. Do not implement either domain validator, Tool UI or live tests.
+Set task to `review`, return Completion Report and STOP. Do not implement either domain validator, Tool UI or live tests.
 
 ## Implementation Notes
 
-Keep historical ARCH-020 fixture utilities for automated tests; they cease to be proof for publishing new Phase 3 definitions.
+The simplification `ARCH-021-SYSTEM-TEST-001` remains a terminal Ready task and is intentionally not a dependency. The developer is holding terminal system tests until the implementation phases are finished.
 
 ## Completion Report
 

@@ -22,7 +22,7 @@ depends_on:
   - ARCH-021-COMMERCE-006
 enables: []
 created: 2026-09-23
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Complete External HTTP request and response authoring UI
@@ -43,6 +43,8 @@ Allow admins to author the complete canonical EXTERNAL_HTTP draft—exact connec
 
 Phase 1 connected the Tool editor to real immutable connection revisions and installed response JavaScript composition. Phase 3 adds request construction and DIRECT response handling. Real provider execution remains Phase 4.
 
+The accepted simplification is authoritative for this UI: Tool components consume named Server Actions, receive serializable props only, use the platform-role hierarchy, preserve deterministic server errors, and use COMMERCE-020 audit reconciliation only for genuinely unconfirmed mutation responses.
+
 ## Scope
 
 Primary files:
@@ -52,7 +54,8 @@ src/studio/tools/tool-authoring-screen.tsx
 src/studio/tools/tool-editor.tsx
 src/studio/external-http/editor.tsx
 src/studio/code-response/code-editor.tsx       # reuse only; behavior changes only if required for generic label/props
-src/studio/tools/validation-server-actions.ts
+src/studio/tools/external-validation-server-actions.ts
+src/studio/tools/reconciliation-server-actions.ts
 tests/external-tools-ui.test.tsx
 tests/tool-authoring-screen.test.tsx
 ```
@@ -178,6 +181,16 @@ Browser-only validation remains advisory. Save MUST NOT require the draft to sat
 
 Save persists the exact Commerce-owned draft representation. No compatibility conversion is allowed. `LIVE_TEST_REQUIRED` must be shown clearly rather than treated as a generic failure.
 
+Mutation/error handling follows COMMERCE-020 exactly:
+
+- Save/create/update/publish use named Server Actions;
+- explicit `FORBIDDEN`, `INVALID_INPUT`, `NOT_FOUND`, `CONFLICT`, `CAS_CONFLICT`, `LIVE_TEST_REQUIRED`, `DATABASE_UNAVAILABLE` and `INTERNAL_ERROR` remain visible;
+- only a rejected/lost mutation response may enter `UNCONFIRMED`;
+- `Reconcile` uses COMMERCE-020 audit lookup and never replays the original mutation;
+- validation/request-preview failures never create `UNCONFIRMED` because they are non-mutating.
+
+Publishing remains visible/enabled only for `PLATFORM_SUPER_ADMIN`; PLATFORM_ADMIN may author/save/validate drafts but does not gain publication authority.
+
 ### R6 — no fixture-led human test
 
 The production Tool editor must no longer present synthetic external response fixtures as the *normal* "test this tool" workflow. Fixture UI may remain in explicit developer/test-only paths used by automated suites. Real live Tool Test arrives in Phase 4.
@@ -215,6 +228,8 @@ None in Phase 3. Phase 4 live-test tasks will depend on this completed authoring
 - [ ] Direct/Visual/JavaScript response modes persist losslessly.
 - [ ] Incomplete drafts can be saved without full-definition validation or a live test.
 - [ ] Production UI communicates that live testing is required before publication.
+- [ ] Explicit server failures remain visible; only lost/rejected mutation responses enter reconcilable UNCONFIRMED state.
+- [ ] Publish authority remains PLATFORM_SUPER_ADMIN-only through the accepted hierarchy.
 
 ## Validation
 
