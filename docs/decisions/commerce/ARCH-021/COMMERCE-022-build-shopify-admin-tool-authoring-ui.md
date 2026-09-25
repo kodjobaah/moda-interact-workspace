@@ -229,7 +229,7 @@ The connected workspace test suite retains one baseline failure in the historica
 ### Assumptions
 The task's accepted platform-role aliases include `ADMIN`/`SUPER_ADMIN` in this repository's Studio test harness. The pinned compiler metadata and provider-free validation action are authoritative for Phase 3; live Shopify testing remains a Phase 4 concern.
 ### Unresolved Issues
-The historical Storefront stale-CAS test expectation should be reconciled with the fixture/service behavior in a separate focused maintenance change. No unresolved Admin authoring or publication-handoff issue remains. The final implementation commit is `889b3e4`; the final parent report commit is recorded after this report is committed.
+The historical Storefront stale-CAS test expectation should be reconciled with the fixture/service behavior in a separate focused maintenance change. No unresolved Admin authoring or publication-handoff issue remains. The final implementation commit is `889b3e4`; the parent report handoff commit is `6b737e9`.
 ### Architectural Concerns
 None identified. No shop, session, token, provider, or live Shopify request is used during Admin authoring or validation. Explore/discovery UI was not modified.
 
