@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-09-25T17:15:29Z
@@ -197,12 +197,12 @@ The production Tool editor must no longer present synthetic external response fi
 
 ## Work Items
 
-- [ ] Add request mode UI and safe descriptor preview.
-- [ ] Add DIRECT response mode.
-- [ ] Preserve Visual/response JS modes.
-- [ ] Wire authoritative validation/save and LIVE_TEST_REQUIRED presentation.
-- [ ] Remove fixture-first human test affordance from production flow.
-- [ ] Add focused UI regressions.
+- [x] Add request mode UI and safe descriptor preview.
+- [x] Add DIRECT response mode.
+- [x] Preserve Visual/response JS modes.
+- [x] Wire authoritative validation/save and LIVE_TEST_REQUIRED presentation.
+- [x] Remove fixture-first human test affordance from production flow.
+- [x] Add focused UI regressions.
 
 ## Interfaces / Contracts
 
@@ -250,21 +250,30 @@ The model/CommerceAgent supplies runtime arguments; this UI only authors `inputS
 ## Completion Report
 
 ### Status
-Not Started
+Implemented; review requested
 ### Files Changed
-None
+- `src/studio/external-http/editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
 ### Work Completed
-None
+- Added Declarative and JavaScript request authoring, static safe headers, bounded tool-argument JSON, and non-network request descriptor preview.
+- Added Direct response processing alongside Visual and JavaScript modes, with JSON enforcement and destructive mode-switch confirmation.
+- Changed draft persistence to `CommerceToolDraftDefinitionSchema` and added a distinct authoritative Validate action.
+- Removed synthetic response fixture controls from the production Tool editor.
+- Added focused regressions for fixture removal, request preview presentation, and JavaScript request/Direct response persistence.
 ### Validation Results
-None
+- `get_errors`: no diagnostics in the touched source and test files.
+- `git diff --check`: passed.
+- `npm run test:arch020-external-tools-ui`: not run successfully because `vitest` is unavailable in the prepared worktree (`sh: vitest: command not found`).
+- Physical isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021` on `task/ARCH-021-COMMERCE-021`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021` on the same task branch; recursive submodules ready at the launcher-recorded commits.
 ### Deviations
-None
+- Executable UI validation is environment-blocked by missing dependencies; no provider or live HTTP call was introduced.
 ### Assumptions
-None
+- The existing `SUPER_ADMIN` role value is the repository representation of `PLATFORM_SUPER_ADMIN` for the publication control.
 ### Unresolved Issues
-None
+- Focused Vitest execution remains outstanding until the worktree has its declared dependencies installed.
 ### Architectural Concerns
-None
+The implementation remains bounded to `moda-interact-commerce`; no cross-repository changes were required.
 
 ## Architect Review
 
