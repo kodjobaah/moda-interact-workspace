@@ -11,7 +11,7 @@ updated: 2026-09-25
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-023 and COMMERCE-024 are Complete; COMMERCE-021 and COMMERCE-022 are Ready.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023 and COMMERCE-024 are Complete; COMMERCE-021 is Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -787,7 +787,7 @@ Phase 3 tasks:
 | ARCH-021-COMMERCE-019 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Ready | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
-| ARCH-021-COMMERCE-022 | moda_commerce | Ready | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 | ARCH-021-COMMERCE-023 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-024 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019 |
 
@@ -804,7 +804,7 @@ COMMERCE-016
     |
     +--> COMMERCE-020 -------- Tool UI extraction ------------+
 
-COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-021 and COMMERCE-022 are independently Ready.
+COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-021 is the sole Ready Phase 3 Commerce implementation task.
 ```
 
 Phase 3 exit criteria:
@@ -1020,7 +1020,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-019 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Ready | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
-| ARCH-021-COMMERCE-022 | moda_commerce | Ready | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1824,6 +1824,13 @@ architect-accepted Complete.
 - Marked COMMERCE-032 Complete and promoted COMMERCE-033 to Ready.
 - Reconciled duplicate correction-task rows in the architect-owned checkpoint
   table; this was coordination-document drift, not a C032 implementation issue.
+
+### 2026-09-25 — COMMERCE-022 Attempt 4 accepted
+
+- Accepted the final Shopify Admin GraphQL authoring UI with authoritative pinned metadata, exact visible Save/Validate candidates, bounded literal/input mappings and typed `LIVE_TEST_REQUIRED` publication handoff.
+- Accepted current-state mapping validity: unmapped/current-invalid mappings block Save/Validate, literal/input transitions cannot retain stale validity, removed variables stop contributing, and input-schema property removal invalidates mappings immediately.
+- Accepted the final validation packet: Admin UI 15/15, affected C022/C020/workspace 53/54 with only the unrelated historical Storefront stale-CAS baseline, Admin compiler 22/22, authoring validation 9/9, targeted lint/diagnostics and diff checks passed.
+- Marked COMMERCE-022 Complete. No materialised Phase 3 task depends on it; COMMERCE-021 remains the sole Ready Phase 3 Commerce implementation task.
 
 ### 2026-09-25 — COMMERCE-020 Attempt 5 accepted
 

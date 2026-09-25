@@ -122,7 +122,7 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth/error contract and `LIVE_TEST_REQUIRED` publication gate | Complete | COMMERCE-016, COMMERCE-027, ARCH-020-COMMERCE-030 |
 | [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Complete | COMMERCE-016, 005, 006, 027, 029 |
 | [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Ready | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
-| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Ready | COMMERCE-019, 020, 024 |
+| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Complete | COMMERCE-019, 020, 024 |
 | [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Complete | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
 | [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Complete | COMMERCE-016, 018, 019 |
 
@@ -135,11 +135,10 @@ Current Phase 3 Ready frontier:
 
 ```text
 COMMERCE-021   priority 50   External HTTP request/response authoring UI
-COMMERCE-022   priority 50   Shopify Admin GraphQL authoring UI
 ```
 
-COMMERCE-019, COMMERCE-020, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete.
-COMMERCE-021 and COMMERCE-022 are independently Ready.
+COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete.
+COMMERCE-021 is the sole Ready Phase 3 Commerce implementation task.
 ```
 
 
@@ -545,6 +544,10 @@ contract exposes no synthetic server path.
 
 COMMERCE-033 is now **Ready**. COMMERCE-034/035 and SYSTEM-TEST-001 remain
 dependency-gated.
+
+### COMMERCE-022 Attempt 4 accepted — 2026-09-25
+
+COMMERCE-022 is **Complete / Accepted, Attempt 4**. Admin variable-mapping validity is now derived exclusively from current visible GraphQL variables/mapping modes/input-schema properties/literal text, eliminating stale literal-history state while keeping type compatibility compiler-owned. The final Admin UI mapping packet passed 15/15; the affected C022/C020/workspace packet passed 53/54 with only the unrelated historical Storefront stale-CAS baseline remaining; compiler 22/22, authoring validation 9/9, targeted lint/diagnostics and diff checks passed. COMMERCE-021 remains the sole Ready Phase 3 Commerce implementation task.
 
 ### COMMERCE-020 Attempt 5 accepted — 2026-09-25
 
