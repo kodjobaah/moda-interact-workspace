@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 45
-executor: copilot
-claimed_at: 2026-09-25T23:09:46Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -199,14 +199,14 @@ This task introduces the new atomic capability without opportunistically deletin
 
 ## Work Items
 
-- [ ] Add the initial Tool + draft command schema/type.
-- [ ] Add the lifecycle operation using the canonical draft-definition validator.
-- [ ] Create Tool and revision 1 in one lifecycle transaction/state mutation.
-- [ ] Record one replay/audit result containing `toolId` and `toolRevisionId`.
-- [ ] Add identical-replay and conflicting-reuse tests.
-- [ ] Add Tool-name conflict and definition-name mismatch tests.
-- [ ] Add atomic rollback regression coverage.
-- [ ] Preserve existing Tool lifecycle operations unchanged.
+- [x] Add the initial Tool + draft command schema/type.
+- [x] Add the lifecycle operation using the canonical draft-definition validator.
+- [x] Create Tool and revision 1 in one lifecycle transaction/state mutation.
+- [x] Record one replay/audit result containing `toolId` and `toolRevisionId`.
+- [x] Add identical-replay and conflicting-reuse tests.
+- [x] Add Tool-name conflict and definition-name mismatch tests.
+- [x] Add atomic rollback regression coverage.
+- [x] Preserve existing Tool lifecycle operations unchanged.
 
 ## Interfaces / Contracts
 
@@ -241,25 +241,25 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] One lifecycle call creates the Tool and revision 1 `DRAFT` together.
-- [ ] A successful result contains both `toolId` and `toolRevisionId`.
-- [ ] No successful initial-creation command can produce a Tool with zero revisions.
-- [ ] The initial revision uses `revisionNumber: 1`, `editVersion: 1` and `status: DRAFT`.
-- [ ] The canonical draft-definition validator is used and definition name must equal Tool name.
-- [ ] One operation/audit result records both created identifiers.
-- [ ] Identical operation replay creates no duplicate Tool/revision and returns the original result.
-- [ ] Altered operation reuse is rejected deterministically.
-- [ ] Injected transaction failure leaves neither created object committed in fixture state.
-- [ ] Existing Tool lifecycle methods and their tests remain valid.
-- [ ] No database migration is introduced.
+- [x] One lifecycle call creates the Tool and revision 1 `DRAFT` together.
+- [x] A successful result contains both `toolId` and `toolRevisionId`.
+- [x] No successful initial-creation command can produce a Tool with zero revisions.
+- [x] The initial revision uses `revisionNumber: 1`, `editVersion: 1` and `status: DRAFT`.
+- [x] The canonical draft-definition validator is used and definition name must equal Tool name.
+- [x] One operation/audit result records both created identifiers.
+- [x] Identical operation replay creates no duplicate Tool/revision and returns the original result.
+- [x] Altered operation reuse is rejected deterministically.
+- [x] Injected transaction failure leaves neither created object committed in fixture state.
+- [x] Existing Tool lifecycle methods and their tests remain valid.
+- [x] No database migration is introduced.
 
 ## Validation
 
-- [ ] `npm run test:arch021-tool-authoring-common`
-- [ ] focused `tests/commerce-lifecycle.test.ts` initial-create/replay/rollback cases
-- [ ] targeted TypeScript diagnostics for changed files or `npm run typecheck` when repository baseline permits
-- [ ] targeted ESLint for changed files or `npm run lint` when repository baseline permits
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-tool-authoring-common`
+- [x] focused `tests/commerce-lifecycle.test.ts` initial-create/replay/rollback cases
+- [x] targeted TypeScript diagnostics for changed files or `npm run typecheck` when repository baseline permits
+- [x] targeted ESLint for changed files or `npm run lint` when repository baseline permits
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -274,7 +274,7 @@ Do not add a `CREATE_TOOL_WITH_INITIAL_DRAFT` Prisma enum value. The business/au
 ## Completion Report
 
 ### Status
-Attempt 1 implementation complete; returned to architect review.
+Ready for Review
 
 ### Files Changed
 - `src/commerce/publication/lifecycle.ts`
@@ -303,6 +303,8 @@ Attempt 1 implementation complete; returned to architect review.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-036`, branch `task/ARCH-021-COMMERCE-036`, claim commit `81239640d90371611fd0fafab1750e8339a8154c`, synchronized with its remote branch.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-036`, branch `task/ARCH-021-COMMERCE-036`, implementation commit `4fb736076901639b17b3d2f93061fc4b8c225173`, synchronized with `origin/task/ARCH-021-COMMERCE-036`.
 - Recursive database submodule evidence: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Attempt 2 claim commit: `86ac3dd2490f6f7e65c9e823fe6dced0d1351863`, pushed and synchronized before this report-only correction.
+- Parent report branch is clean and will be verified at local/remote parity after this report-only correction is pushed.
 
 ### Unresolved Issues
 Repository-wide typecheck remains baseline-bearing outside the task-owned files and was not altered.
