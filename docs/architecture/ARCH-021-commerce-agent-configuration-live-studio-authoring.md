@@ -1796,6 +1796,13 @@ architect-accepted Complete.
 - Reconciled duplicate correction-task rows in the architect-owned checkpoint
   table; this was coordination-document drift, not a C032 implementation issue.
 
+### 2026-09-25 — COMMERCE-020 Attempt 4 changes requested
+
+- Preserved the corrected bounded Tool mutation mapping, transport-only UNCONFIRMED state, named Server Action boundary, audit-only reconciliation and independent external create/draft operation ids.
+- Returned COMMERCE-020 to Ready because the mandatory R8 behavior suite still does not execute the real reconciliation Server Action or the committed/not-committed/authorization/composite-recovery cases required by the task.
+- Required committed EXTERNAL_HTTP recovery to remain fail closed when canonical Tool/DRAFT state cannot be resolved after an audit-proved commit, preventing duplicate create/draft retries.
+- COMMERCE-021/022 remain Pending.
+
 ### 2026-09-25 — COMMERCE-020 Attempt 3 changes requested
 
 - Accepted the direct Tool-domain outer-composer boundary, Tool-local

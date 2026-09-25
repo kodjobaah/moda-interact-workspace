@@ -525,6 +525,10 @@ contract exposes no synthetic server path.
 COMMERCE-033 is now **Ready**. COMMERCE-034/035 and SYSTEM-TEST-001 remain
 dependency-gated.
 
+### COMMERCE-020 Attempt 4 changes requested — 2026-09-25
+
+Attempt 4 preserves the corrected Tool mutation/result and transport-only UNCONFIRMED boundaries, but the required executable R8 suite is still incomplete: the reconciliation test does not invoke the real Server Action and the Tool screen lacks committed/not-committed/authorization/composite-recovery regressions. Committed external-create recovery also clears UNCONFIRMED when canonical Tool/DRAFT identity cannot be resolved, which can expose a duplicate retry after the audit row proves the original operation committed. COMMERCE-020 remains **Ready** for Attempt 5; COMMERCE-021/022 remain Pending.
+
 ### COMMERCE-020 Attempt 3 changes requested — 2026-09-25
 
 Attempt 3 completes the direct outer-composer boundary, Tool-local UNCONFIRMED

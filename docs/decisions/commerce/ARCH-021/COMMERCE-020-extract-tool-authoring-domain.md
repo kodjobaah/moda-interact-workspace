@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -354,9 +354,356 @@ None
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 3
+Changes Requested — Attempt 4
 
 ### Review Notes
+
+#### Attempt 4 review — 2026-09-25
+
+Reviewed implementation `f62ccba6762312a144c40054e811996211544fcb` and the submitted Attempt 4 Completion Report against the complete Attempt 3 correction contract.
+
+Attempt 4 contains corrections that MUST be preserved:
+
+- direct lifecycle `CONFLICT` and `OPERATION_REUSE_CONFLICT` now map to the bounded Tool `CONFLICT` result;
+- only rejection of the named mutation Server Action invocation enters Tool UNCONFIRMED; a confirmed mutation followed by canonical refresh failure remains confirmed and reports `Saved; canonical refresh unavailable.`;
+- Tool UNCONFIRMED remains serializable `{ operationId, label }` state and stores no mutation closure;
+- `createTool` and `createToolDraft` still use independent operation ids and staged external-create intent remains serializable;
+- the Tool route still crosses no `controlled`/service/action-bundle function boundary from `StudioWorkspace`;
+- reconciliation still uses the exact Tool audit-action allow-list, current environment and `requireStudioPlatformRole('ADMIN')`;
+- deterministic Tool results remain separate from transport uncertainty;
+- the submitted task metadata is correctly `review`, Attempt 4, with no executor/claim.
+
+Attempt 4 is not accepted because the required executable R8 behavior suite is still absent and committed composite recovery does not fail closed when canonical state cannot be resolved after an audit-proved commit. The Completion Report claims the Attempt 4 R8 contract is covered, but the submitted files do not support that claim:
+
+```text
+tests/tool-authoring-screen.test.tsx
+-> 4 Tool-domain tests
+
+tests/tool-operation-reconciliation.test.ts
+-> 2 contract-shape tests
+-> does not import or invoke reconcileToolOperation()
+```
+
+The following is the complete and authoritative Attempt 5 correction contract. Preserve every accepted Attempt 4 mechanism above. Do not infer additional work from chat history. Do not begin COMMERCE-021 or COMMERCE-022.
+
+##### A4-R1 — committed composite recovery must not unlock until canonical identity is resolved
+
+Change:
+
+```text
+src/studio/tools/tool-authoring-screen.tsx
+tests/tool-authoring-screen.test.tsx
+```
+
+Current committed reconciliation clears `unconfirmed` even when a staged EXTERNAL_HTTP create cannot resolve the canonical Tool or committed DRAFT after `reloadCanonical()`. That can expose a retry after the audit row has already proved the original operation committed.
+
+Required exact behavior:
+
+```text
+STEP 1 createTool(A) response lost
+reconcile(A) = committed
+reload listTools()
+
+canonical Tool with staged immutable name found
+-> retain canonical toolId
+-> clear UNCONFIRMED
+-> exact message "Committed; state refreshed"
+-> continuation may call only createToolDraft with a fresh operationId
+
+canonical Tool NOT found OR listTools returns non-ok/rejects
+-> DO NOT clear UNCONFIRMED
+-> DO NOT clear staged creation intent
+-> pending=false
+-> exact message "Reconciliation unavailable; try reconciliation again"
+-> createTool remains impossible while unresolved
+```
+
+And for step 2:
+
+```text
+STEP 2 createToolDraft(B) response lost
+reconcile(B) = committed
+reload canonical Tool
+
+committed DRAFT found
+-> clear staged draft state
+-> clear UNCONFIRMED
+-> navigate to the canonical revision
+-> exact message "Committed; state refreshed"
+-> createToolDraft call count remains exactly 1
+
+committed DRAFT NOT found OR canonical read non-ok/rejects
+-> retain staged toolId + proposedDefinition
+-> retain original UNCONFIRMED operationId B
+-> pending=false
+-> exact message "Reconciliation unavailable; try reconciliation again"
+-> Retry draft remains disabled while unresolved
+```
+
+Do not introduce a replay closure or automatically re-call either mutation.
+
+`reloadCanonical()` must make canonical-read failure observable to reconciliation. A `StudioResult` other than `kind:'ok'` is not a successful canonical refresh.
+
+##### A4-R2 — replace contract-shape reconciliation tests with real action tests
+
+Change:
+
+```text
+tests/tool-operation-reconciliation.test.ts
+```
+
+This file MUST import and invoke the real exported:
+
+```ts
+reconcileToolOperation
+```
+
+Use bounded `vi.mock(...)` modules for exactly the external boundaries required by that Server Action, including:
+
+```text
+next/headers
+lib/auth/origin
+lib/auth/merchant-access
+lib/server/config
+lib/server/connections
+@modainteract/moda-interact-shared/logging
+```
+
+Do not satisfy any case by constructing result objects directly.
+
+Required executable cases:
+
+```text
+1. matching Tool audit row + PLATFORM_ADMIN same actorAdminId
+   -> committed
+
+2. matching Tool audit row + PLATFORM_ADMIN different non-null actorAdminId
+   -> FORBIDDEN
+
+3. matching Tool audit row + SUPER_ADMIN different actorAdminId
+   -> committed
+
+4. matching Tool audit row + developmentBypass=true + different actorAdminId
+   -> committed
+
+5. no matching audit row
+   -> not-committed
+
+6. matching operationId but non-Tool action
+   -> not-committed
+
+7. origin/auth/role denial throws StudioAuthError
+   -> FORBIDDEN
+   -> shared unexpected-error logger not called
+
+8. Prisma P1001/P1002/P1008/P1017
+   -> DATABASE_UNAVAILABLE
+   -> UNEXPECTED logger not required
+
+9. unexpected Error
+   -> INTERNAL_ERROR
+   -> shared logger called exactly once with original error value
+```
+
+For every case assert the action performs zero mutation and never calls a Tool mutation Server Action/service.
+
+##### A4-R3 — implement the missing ToolAuthoringScreen R8 behaviors
+
+Change:
+
+```text
+tests/tool-authoring-screen.test.tsx
+```
+
+Keep the existing deterministic-error, transport-rejection and refresh-failure tests, then add executable UI tests for all missing behaviors below. Use named Server Action mocks; do not pass action bundles/functions as production props.
+
+Required cases:
+
+```text
+A. rejected Tool mutation
+   -> UNCONFIRMED visible
+   -> original operationId retained
+   -> mutation controls disabled
+   -> Studio navigation request is blocked
+
+B. committed reconciliation for ordinary mutation
+   -> original mutation call count unchanged
+   -> listTools reloads
+   -> current getTool reloads when detailId exists
+   -> UNCONFIRMED clears
+   -> exact "Committed; state refreshed"
+
+C. not-committed reconciliation
+   -> original mutation call count unchanged
+   -> UNCONFIRMED clears
+   -> exact "Not committed"
+   -> explicit retry uses a NEW operationId
+
+D. reconciliation DATABASE_UNAVAILABLE
+   -> UNCONFIRMED remains
+   -> original operationId retained
+   -> exact bounded code/message visible
+
+E. reconciliation Promise rejects
+   -> UNCONFIRMED remains
+   -> pending=false
+   -> exact "Reconciliation unavailable; try reconciliation again"
+
+F. EXTERNAL_HTTP step-1 committed recovery
+   -> createTool call count exactly 1
+   -> canonical Tool resolved by immutable staged name
+   -> continuation submits only createToolDraft with a fresh id
+
+G. EXTERNAL_HTTP step-1 committed but canonical Tool absent/non-ok
+   -> UNCONFIRMED remains
+   -> createTool cannot be retried
+   -> exact reconciliation-unavailable message
+
+H. EXTERNAL_HTTP step-2 not-committed
+   -> createTool call count exactly 1
+   -> next explicit retry calls only createToolDraft
+   -> retry operationId differs from original draft operationId
+
+I. EXTERNAL_HTTP step-2 committed recovery
+   -> createToolDraft call count exactly 1
+   -> committed DRAFT resolved
+   -> staged retry state cleared
+   -> navigation targets canonical DRAFT revision
+
+J. EXTERNAL_HTTP step-2 committed but DRAFT absent/non-ok
+   -> UNCONFIRMED remains
+   -> Retry draft remains disabled
+   -> createToolDraft cannot be duplicated
+
+K. edit after save submission
+   -> later edit remains dirty after earlier confirmed save completes
+```
+
+The test must inspect actual generated operation ids only for equality/inequality. Do not depend on timestamp/random literal contents.
+
+##### A4-R4 — preserve and prove the production navigation boundary
+
+Change only if a regression is found:
+
+```text
+tests/studio-workspace.test.tsx
+components/studio-workspace.tsx
+```
+
+Preserve the existing production invariant:
+
+```text
+StudioWorkspace page='tools'
+-> ToolAuthoringScreen receives serializable context only
+-> no controlled/navigate/runCommand/services/action-bundle prop
+-> no nested Tool-route StudioComposerProvider injection
+```
+
+Add/retain one executable navigation-lock regression showing Tool UNCONFIRMED prevents a Studio route navigation until reconciliation resolves or an explicit supported abandon path is used.
+
+##### A4-R5 — deterministic validation commands
+
+Run exactly:
+
+```bash
+npm exec vitest run \
+  tests/tool-authoring-screen.test.tsx \
+  tests/tool-operation-reconciliation.test.ts \
+  tests/studio-workspace.test.tsx
+
+npm run test:arch020-external-tools-ui
+
+npm exec eslint \
+  components/studio-workspace.tsx \
+  src/studio/tools/tool-authoring-screen.tsx \
+  src/studio/tools/tool-library.tsx \
+  src/studio/tools/tool-editor.tsx \
+  src/studio/tools/contracts.ts \
+  src/studio/tools/reconciliation-server-actions.ts \
+  src/studio/server-actions.ts \
+  src/commerce/integration/studio/services.ts \
+  tests/tool-authoring-screen.test.tsx \
+  tests/tool-operation-reconciliation.test.ts \
+  tests/studio-workspace.test.tsx
+
+npm run typecheck
+git diff --check
+```
+
+The three focused files MUST pass with zero skipped tests.
+
+Then run:
+
+```bash
+npm test -- --run
+```
+
+Any failure whose test/stack references a COMMERCE-020-owned file is task-owned and MUST be fixed before review. Unrelated repository baseline failures may be documented only when zero C020-owned failures/diagnostics remain.
+
+Required source audits:
+
+```bash
+! rg -n 'controlled=' components/studio-workspace.tsx
+! rg -n 'controlled\?:' src/studio/tools/tool-authoring-screen.tsx
+! rg -n 'StudioComposerProvider navigate=.*composer\.requestNavigation' \
+  components/studio-workspace.tsx
+! rg -n 'console\.(log|error)' \
+  src/studio/tools/reconciliation-server-actions.ts
+! rg -n 'startsWith:.*TOOL_' \
+  src/studio/tools/reconciliation-server-actions.ts
+```
+
+##### A4-R6 — reconcile the Attempt 5 Completion Report with actual evidence
+
+The Attempt 4 Completion Report incorrectly states that the required R8 behavior suite is complete. Attempt 5 must replace that statement with the actual final evidence.
+
+Record:
+
+```text
+dedicated parent worktree path
+dedicated implementation worktree path
+launcher/start-of-attempt synchronization evidence
+recursive submodule materialization evidence
+database submodule commit
+exact implementation commit
+exact parent report commit
+focused test counts, zero skipped
+external UI test result
+targeted ESLint result
+typecheck task-owned diagnostic result
+full-suite task-owned regression result
+source-audit results
+git diff --check
+branch/remote parity
+clean worktree evidence
+```
+
+Before returning to architect review, set exactly:
+
+```yaml
+status: review
+attempt: 5
+executor: null
+claimed_at: null
+```
+
+Do not return with an active claim.
+
+##### Attempt 5 stop condition
+
+Return to architect review only when:
+
+```text
+audit-proved committed composite recovery cannot expose a duplicate retry
+AND tool-operation-reconciliation.test.ts invokes the real reconciliation Server Action
+AND required R8 Tool UI/reconciliation/navigation cases execute and pass
+AND the three focused files have zero skipped tests
+AND zero C020-owned focused/full-suite/lint/type/diff/source-audit failures remain
+AND the Completion Report records the actual final evidence
+```
+
+Then push both mirrored branches, return control to `moda_architect`, and STOP. Do not begin COMMERCE-021 or COMMERCE-022.
+
 
 #### Attempt 3 review — 2026-09-25
 
