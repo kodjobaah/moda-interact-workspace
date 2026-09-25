@@ -951,12 +951,12 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-032 | moda_commerce | Complete | COMMERCE-029 |
 | ARCH-021-COMMERCE-033 | moda_commerce | Complete | COMMERCE-032 |
 | ARCH-021-COMMERCE-034 | moda_commerce | Complete | COMMERCE-033 |
-| ARCH-021-COMMERCE-035 | moda_commerce | Ready | COMMERCE-034 |
+| ARCH-021-COMMERCE-035 | moda_commerce | Complete | COMMERCE-034 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
-| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks, including COMMERCE-032..035 |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Ready | all checkpoint implementation tasks, including COMMERCE-032..035 |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-035`. COMMERCE-032, COMMERCE-033 and COMMERCE-034 are architect-accepted Complete, and COMMERCE-035 is Ready. SYSTEM-TEST-001 remains Pending until COMMERCE-035 is architect-accepted Complete. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
+Current checkpoint implementation frontier: none. COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. Every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete, so SYSTEM-TEST-001 is Ready. The developer may leave that terminal system-test task Ready while manually validating the completed checkpoint. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
 
 ### Phase 4 — live single-tool testing
 
@@ -1541,6 +1541,47 @@ architect-accepted Complete.
 - Confirmed the private MCP remains context-only over the private service link with server-derived environment, local ten-second tool deadline and PostgreSQL shop/turn/grant/release/tool authorization intact.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
+
+### 2026-09-25 — COMMERCE-035 Attempt 3 accepted
+
+- Confirmed the final fallback regression covers both genuinely empty input and
+  content that normalizes to empty, returning exactly `No preview available.`.
+- Accepted COMMERCE-035 Complete with all Work Items, Acceptance Criteria and
+  Validation evidence reconciled.
+- Final C035 production behavior preserves encoded-tag stripping,
+  Unicode/code-point-safe excerpt bounds, readable `<br>` handling, structured
+  safe document blocks and the separate
+  `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle` UI boundary.
+- All SYSTEM-TEST-001 implementation dependencies are now architect-accepted
+  Complete, so terminal SYSTEM-TEST-001 is Ready.
+- Phase-3 tasks remain paused pending terminal checkpoint
+  validation/reconciliation.
+
+### 2026-09-25 — COMMERCE-035 Attempt 2 changes requested
+
+- Confirmed entity-encoded tags are decoded before removal, Unicode excerpt
+  truncation is code-point safe, and `<br>` now preserves readable
+  paragraph/preformatted separators.
+- Returned COMMERCE-035 to Ready only because the previously required
+  `No preview available.` fallback regression is still absent and the task
+  Acceptance Criteria / Validation checklist was not reconciled to the reported
+  passing evidence.
+- Attempt 3 is expected to be regression/evidence-only.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-25 — COMMERCE-035 Attempt 1 changes requested
+
+- Accepted the structured documentation contract, safe direct Shopify document
+  fetch, separate `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle`
+  UI boundary and semantic no-raw-HTML renderer in substance.
+- Returned COMMERCE-035 to Ready because entity-encoded HTML tags are decoded
+  after tag stripping and can therefore reappear as literal markup in search
+  excerpts.
+- Required Unicode/code-point-safe 2 KiB excerpt bounding instead of UTF-16
+  code-unit slicing, which can return a dangling surrogate at the byte boundary.
+- Required `<br>` to flatten to a readable separator/newline rather than joining
+  adjacent words.
+- SYSTEM-TEST-001 remains Pending.
 
 ### 2026-09-25 — COMMERCE-034 Attempt 5 accepted
 

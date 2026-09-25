@@ -16,7 +16,17 @@ Coordinator:
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-001](SYSTEM-TEST-001-validate-simplified-studio-and-private-mcp.md) | Validate reduced configuration, dynamic Storefront schema authoring, readable Shopify documentation, unified authorization and context-only private MCP | Pending | DATABASE-002, COMMERCE-025..030, COMMERCE-032..035, BACKGROUND-001, GATEWAY-001 |
+| [SYSTEM-TEST-001](SYSTEM-TEST-001-validate-simplified-studio-and-private-mcp.md) | Validate reduced configuration, dynamic Storefront schema authoring, readable Shopify documentation, unified authorization and context-only private MCP | Ready | DATABASE-002, COMMERCE-025..030, COMMERCE-032..035, BACKGROUND-001, GATEWAY-001 |
+
+### SYSTEM-TEST-001 ready — 2026-09-25
+
+COMMERCE-035 Attempt 3 is architect-accepted Complete. Every implementation task
+listed under SYSTEM-TEST-001 `depends_on` is now Complete, so the terminal
+architecture-validation task is **Ready**.
+
+The developer may intentionally leave it Ready while manually exercising the
+completed checkpoint. Phase-3 implementation remains paused until terminal
+checkpoint validation/reconciliation.
 
 ### SYSTEM-TEST-001 returned Pending — 2026-09-24
 
