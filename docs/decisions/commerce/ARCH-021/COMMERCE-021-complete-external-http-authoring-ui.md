@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -299,9 +299,413 @@ The implementation remains bounded to `moda-interact-commerce`; no cross-reposit
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 3
+Changes Requested — Attempt 4
 
 ### Review Notes
+
+#### Attempt 4 review — 2026-09-25
+
+Reviewed implementation `cb1b1579624b48353abc82ab35522ad087ec6f5a` and the
+submitted Attempt 4 Completion Report against the complete Attempt 3 correction
+contract.
+
+Attempt 4 fixes the stale-CAS test boundary and those changes MUST be preserved:
+
+- Tool mutation test mocks now adapt the legacy in-memory `StudioResult` boundary to
+  the current COMMERCE-020 `ToolMutationResult` envelope for Tool mutation actions;
+- stale CAS is proved as `kind:'error' / code:'CAS_CONFLICT'`, the exact server
+  message remains visible, user input is retained, the editor remains dirty and
+  navigation remains guarded;
+- the focused four-file packet is green (63/63) and the external UI suite is green
+  (16/16);
+- the response-mode discard, preview-error separation, production fixture removal,
+  incomplete-DRAFT service read, ADMIN/SUPER_ADMIN controls and LIVE_TEST_REQUIRED
+  presentation regressions remain present;
+- submitted TypeScript metadata contains no semantic diagnostics in the causal
+  COMMERCE-021 files listed by the Attempt 3 contract.
+
+Attempt 4 is not accepted because two runtime/type-boundary defects remain and two
+mandatory end-to-end proofs from the prior correction contract are still not exact.
+
+The following is the complete and authoritative Attempt 5 correction contract. Keep
+the correction narrow. Do not implement Phase 4 live HTTP execution/testing.
+
+##### A4-R1 — stop representing an incomplete DRAFT as the full ToolDefinition type
+
+Change the minimum required files:
+
+```text
+src/studio/tools/tool-editor.tsx
+src/studio/external-http/editor.tsx
+tests/external-tools-ui.test.tsx
+```
+
+The current Tool editor still does all of the following for a DRAFT:
+
+```ts
+return { ...selectedBase, execution: execution.data } as ToolDefinition;
+return selectedBase as ToolDefinition;
+
+const [definition, setDefinition] = useState<ToolDefinition>(...);
+const [savedDefinition, setSavedDefinition] = useState<ToolDefinition>(...);
+
+setDefinition(structuredClone(saved.definition as ToolDefinition));
+setSavedDefinition(structuredClone(saved.definition as ToolDefinition));
+```
+
+`ToolDefinition` is the full published `CommerceToolDefinition`, while a DRAFT is
+allowed to contain:
+
+```text
+inputSchema: unknown bounded object
+responseTemplate: unknown bounded object
+execution: unknown bounded object until the authoring surface narrows it
+```
+
+Those casts reintroduce the exact semantic lie the DRAFT/full-definition separation
+was created to remove.
+
+Required result:
+
+1. For an EXTERNAL_HTTP DRAFT, narrow only the execution field through
+   `ExternalHttpExecutionSchema`.
+2. Keep the surrounding authoring state typed as a DRAFT-capable type. A suitable
+   local type is:
+
+```ts
+type ExternalHttpDraftDefinition =
+  Omit<CommerceToolDraftDefinition, 'execution'> & {
+    execution: ExternalHttpExecution;
+  };
+```
+
+or an equivalent exact type.
+
+3. `ExternalHttpEditor` must accept only the definition shape it actually needs. It
+   currently reads `definition.execution` / `savedDefinition.execution`; therefore
+   it may accept `ExternalHttpDraftDefinition` or a smaller explicit execution-owned
+   interface. It must not require a full `ToolDefinition` merely to edit execution.
+4. On save success, keep the returned DRAFT as the DRAFT-capable state. Do not cast
+   it to `CommerceToolDefinition`.
+5. PUBLISHED/read-only branches continue to use the full
+   `CommerceToolDefinition` contract.
+
+Do not weaken `CommerceToolDefinitionSchema` and do not introduce a compatibility
+adapter that upgrades an incomplete DRAFT.
+
+Required static invariant after the correction:
+
+```bash
+! rg -n 'as ToolDefinition' \
+  src/studio/tools/tool-editor.tsx \
+  src/studio/external-http/editor.tsx
+```
+
+If another unrelated published-only `ToolDefinition` cast exists, document it
+explicitly; no DRAFT path may rely on one.
+
+##### A4-R2 — clear stale authoritative-validation success whenever authored content changes
+
+Change:
+
+```text
+src/studio/tools/tool-editor.tsx
+tests/external-tools-ui.test.tsx
+```
+
+The current implementation correctly sets:
+
+```ts
+externalValidated = false
+```
+
+when execution, description, input schema or response template changes, but it leaves
+the old `validationMessage` intact.
+
+Concrete failure:
+
+```text
+Validate current saved definition
+-> status =
+   "Definition passed authoritative validation. Live test is required before publication."
+
+Edit Description/Input JSON/Response template/execution
+-> externalValidated=false
+-> publish disabled correctly
+-> SAME success message remains visible          # WRONG
+
+Save the changed but not revalidated draft
+-> message becomes "Saved."
+-> status precedence still displays the stale validation success message
+```
+
+The visible validation message MUST describe the current authored content.
+
+Required behavior:
+
+```text
+any change that makes externalValidated=false
+-> clear the previous authoritative validation result/message
+   OR replace it with an explicit bounded "Validation is stale" message
+
+successful Save of a changed/unvalidated candidate
+-> MUST NOT display the old successful-validation message
+
+Validate current content again
+-> exact success message may reappear
+
+Save after validating the exact same candidate
+-> validation MAY remain current when the persisted definition is byte/canonical
+   equivalent to the validated candidate
+```
+
+Use one local helper for validation invalidation if practical so execution edits,
+description edits and JSON-buffer edits cannot drift.
+
+Required regression:
+
+```text
+Validate -> success message visible
+edit Description
+-> success message no longer visible
+-> publish disabled
+
+Save changed definition successfully
+-> "Saved." (or another non-validation save message) visible
+-> old validation-success message absent
+-> publish still disabled
+
+Validate again
+-> validation-success message visible
+-> after nonblank reason SUPER_ADMIN publish becomes enabled
+```
+
+Also cover at least one execution-field edit or input-schema edit invalidating the
+message.
+
+##### A4-R3 — complete the production-reread -> editor proof with the ACTUAL production DTO
+
+Keep:
+
+```text
+tests/studio-integration.test.ts
+  "round-trips an incomplete DRAFT through the production Studio read boundary"
+```
+
+The current UI test named:
+
+```text
+"round-trips an incomplete production draft through the editor without replacing its JSON"
+```
+
+still constructs the DRAFT using `InMemoryStudioServices`. That does not prove the
+UI consumes the exact DTO returned by the production Studio read boundary.
+
+Create a small shared test helper or extend the focused test so the UI half receives
+the exact `ToolSummary` value returned by:
+
+```ts
+createCommerceStudioServices(backend).getTool(toolId, draftRevisionId)
+```
+
+for an incomplete DRAFT.
+
+The test MUST execute this chain in one regression or through a helper whose returned
+value is used directly:
+
+```text
+production publication snapshot contains incomplete DRAFT
+-> createCommerceStudioServices(...).getTool(...) returns ToolSummary
+-> pass that exact ToolSummary into ToolAuthoringScreen/ToolEditor initial detail
+-> Input JSON Schema retains exact incomplete JSON
+-> Response template retains exact incomplete JSON
+-> Save draft emits the same incomplete payload
+-> Validate returns structural issues
+-> publish remains disabled
+```
+
+Do not recreate a second equivalent DRAFT manually after the production read and do
+not use `InMemoryStudioServices` as the source of the UI DTO for this proof.
+
+##### A4-R4 — prove dirty -> Save -> Validate -> publish gating in the SUPER_ADMIN lifecycle
+
+Extend:
+
+```text
+tests/external-tools-ui.test.tsx
+```
+
+The current SUPER_ADMIN test starts from an already-clean saved DRAFT, validates it,
+adds a reason and publishes. It therefore does not prove the required transition
+through a newly edited/saved candidate.
+
+Required exact regression:
+
+```text
+role = SUPER_ADMIN
+initial clean saved DRAFT
+
+edit Description (or another canonical field)
+-> dirty=true
+-> Publish validated revision disabled
+
+click Save draft
+-> updateToolDraft exactly once
+-> dirty=false after success
+-> publish STILL disabled because the changed candidate is not currently validated
+-> validateExternalToolDefinitionAction has not been called by Save
+
+click Validate
+-> validateExternalToolDefinitionAction exactly once for the current saved candidate
+-> exact success message:
+   "Definition passed authoritative validation. Live test is required before publication."
+
+enter nonblank publication reason
+-> Publish validated revision enabled
+
+publishToolRevision returns LIVE_TEST_REQUIRED
+-> exact LIVE_TEST_REQUIRED code/message visible
+-> no INTERNAL_ERROR
+-> no UNCONFIRMED
+-> editor remains available
+```
+
+If the implementation intentionally preserves validation across a Save only when the
+EXACT candidate was already validated before Save and the persisted canonical
+definition is identical, add a second regression proving that optimization
+separately. It must not weaken the required edited -> Save -> Validate sequence above.
+
+Retain the ADMIN case proving Save does not invoke Validate and publish is absent.
+
+##### A4-R5 — preserve every green Attempt 4 regression
+
+Do not regress:
+
+```text
+CAS_CONFLICT current ToolMutationResult boundary
+retained dirty text and navigation guard after stale CAS
+malformed Tool arguments JSON separation
+malformed Input JSON Schema separation
+explicit preview action errors
+preview Promise rejection
+persisted DIRECT selector
+destructive response-mode Keep editing / Discard behavior
+fixture-free production JavaScript response authoring
+COMMERCE-023 Preview/Validate action routing
+ADMIN authoring without publish authority
+LIVE_TEST_REQUIRED explicit presentation
+production DRAFT read/write parsing
+preview only for full-schema-valid definitions
+```
+
+No Phase 4 live test/run button may be introduced.
+
+##### A4-R6 — deterministic validation
+
+Run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+
+npm exec vitest run \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/studio-workspace.test.tsx \
+  tests/studio-integration.test.ts
+
+npm run typecheck
+
+npm exec eslint \
+  src/studio/external-http/editor.tsx \
+  src/studio/tools/tool-editor.tsx \
+  src/studio/contracts.ts \
+  src/commerce/integration/studio/services.ts \
+  src/commerce/publication/lifecycle.ts \
+  src/studio/testing/in-memory-studio-services.ts \
+  app/preview/page.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/studio-workspace.test.tsx \
+  tests/studio-integration.test.ts
+
+git diff --check
+```
+
+All focused tests MUST pass with zero skips.
+
+No diagnostic in the files above may be classified as baseline when it is caused by
+the DRAFT/full-definition boundary or COMMERCE-021 changes.
+
+The existing unrelated repository diagnostics may remain only when their exact
+file/error does not involve COMMERCE-021 causal state.
+
+##### A4-R7 — fresh Attempt 5 launcher/report evidence
+
+The final user handoff identifies:
+
+```text
+implementation commit = cb1b157
+parent report commit  = 19bb73b7
+```
+
+while the embedded Completion Report records the implementation commit but does not
+durably record the final parent report commit/push parity after the self-referential
+report publication.
+
+Attempt 5 must record the exact fresh launcher-prepared:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-021
+implementation branch = task/ARCH-021-COMMERCE-021
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 5 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not reuse or infer Attempt 4 claim/synchronization values.
+
+Reconcile Work Items, Acceptance Criteria, Validation and Completion Report to the
+final Attempt 5 evidence.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 5
+executor: null
+claimed_at: null
+```
+
+##### Attempt 5 stop condition
+
+Return to architect review only when:
+
+```text
+no incomplete DRAFT is typed/cast as full ToolDefinition
+AND stale validation success cannot survive an authoring edit
+AND the UI consumes the exact production-reread incomplete DRAFT DTO
+AND dirty -> Save -> Validate -> SUPER_ADMIN publish gating is explicitly proved
+AND every Attempt 4 regression remains green
+AND the complete four-file focused packet passes with zero skips
+AND zero COMMERCE-021 task-owned type/lint/diff diagnostics remain
+AND fresh Attempt 5 launcher/report evidence is complete
+```
+
+Then push implementation and parent task branches, return control to
+`moda_architect`, and STOP.
+
+Do not implement Phase 4 live HTTP execution/testing.
+
+#### Historical Attempt 3 review
 
 #### Attempt 3 review — 2026-09-25
 
