@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 34
 executor: null
 claimed_at: null
@@ -304,14 +304,408 @@ Ready for Review
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-None
+
+#### Attempt 1 review — 2026-09-25
+
+Reviewed implementation `a20397d3` and parent report `80ca697e` against the exact
+COMMERCE-019 task contract and ARCH-021 Phase 3 invariants.
+
+The implementation direction is correct and must be preserved:
+
+- the bounded `ToolAuthoringValidation` / `ToolAuthoringActionResult<T>` contracts
+  exist under `src/commerce/tool-authoring/`;
+- the new validation Server Actions call the accepted
+  `requireStudioPlatformRole('ADMIN')` helper directly;
+- there is no new authorization matrix or browser/provider credential path;
+- synthetic ARCH-020 external-publication receipts no longer satisfy the Phase 3
+  gate;
+- `LIVE_TEST_REQUIRED` is carried as an identifiable lifecycle/Studio failure code;
+- Shopify Admin publication is fail-closed before provider I/O;
+- common validation performs no live provider request;
+- submitted typecheck metadata contains no semantic diagnostic in the COMMERCE-019
+  task-owned source/test files.
+
+Attempt 1 is not accepted because the exact R1/R3/R4/R7 contracts still have
+observable gaps. The following is the complete Attempt 2 correction contract. Do
+not implement COMMERCE-023/024 domain validators or Phase 4 live testing.
+
+##### A1-R1 — every structurally valid EXTERNAL_HTTP response mode must reach LIVE_TEST_REQUIRED
+
+Change:
+
+```text
+src/commerce/external-publication/index.ts
+tests/external-publication.test.ts
+```
+
+ARCH-021 Phase 3 explicitly includes all three EXTERNAL_HTTP response-processing
+modes:
+
+```text
+DIRECT
+OBJECT/LIST
+JAVASCRIPT
+```
+
+and R4 requires an otherwise structurally valid Phase 3 EXTERNAL_HTTP DRAFT to fail
+publication with exactly:
+
+```text
+code: LIVE_TEST_REQUIRED
+path: /liveTest
+message: Run a successful live tool test for the current saved revision before publishing.
+```
+
+The current `validateForPublication()` still contains:
+
+```ts
+if (processing.kind === 'DIRECT')
+  return invalid([
+    issue('/execution/responseProcessing', 'DIRECT processing is not publishable yet')
+  ]);
+```
+
+That is no longer valid under ARCH-021 Phase 3.
+
+Remove that historical ARCH-020 DIRECT prohibition. Preserve all structural
+definition, saved-definition identity, connection metadata, JavaScript compilation
+and response-template validation performed before the gate.
+
+Add an active regression constructing a canonical, structurally valid
+`EXTERNAL_HTTP` definition with:
+
+```ts
+responseFormat: { mode: 'JSON', ... }
+responseProcessing: { kind: 'DIRECT' }
+```
+
+and assert `validateForPublication()` returns exactly the `LIVE_TEST_REQUIRED`
+envelope above.
+
+Do not make DIRECT publishable. It must be blocked by `LIVE_TEST_REQUIRED`, not by
+`INVALID_DEFINITION`.
+
+##### A1-R2 — enforce the 512-byte limit by UTF-8 bytes, including multibyte boundaries
+
+Change:
+
+```text
+src/commerce/tool-authoring/contracts.ts
+tests/tool-authoring-validation.test.ts
+```
+
+The current implementation performs:
+
+```ts
+new TextDecoder().decode(bytes.slice(0, 512))
+```
+
+When byte 512 cuts a multibyte code point, `TextDecoder` inserts U+FFFD and the
+returned UTF-8 string can become 513/514 bytes. This violates R1.
+
+Replace `bounded()` with deterministic code-point-safe UTF-8 truncation:
+
+```text
+for each Unicode code point:
+  compute encoded byte length
+  append only when total remains <= 512
+```
+
+or another implementation that produces the same observable guarantee.
+
+Do not truncate by UTF-16 code units.
+
+Add exact regressions for `path`, `code` and `message` containing multibyte input
+near the boundary. At minimum prove:
+
+```ts
+new TextEncoder().encode(resultField).byteLength <= 512
+```
+
+for input equivalent to:
+
+```text
+"x" repeated 510 times + "😀"
+```
+
+Also prove the returned string does not end with the replacement character `�`
+introduced solely by truncation.
+
+Retain the 32-issue cap.
+
+##### A1-R3 — known argument-mapping failures are INVALID_INPUT, not INTERNAL_ERROR
+
+Change:
+
+```text
+src/commerce/tool-authoring/server-actions.ts
+tests/tool-authoring-server-actions.test.ts   # create if absent
+```
+
+`mapToolArguments()` intentionally rejects invalid authoring arguments with
+validation-domain `TypeError`s such as:
+
+```text
+Missing mapped input
+Invalid external mapped scalar
+Validated input must be an object
+```
+
+Those are known authoring validation failures. R3 requires known validation failures
+to return:
+
+```ts
+{
+  kind: 'error',
+  code: 'INVALID_INPUT',
+  retryable: false
+}
+```
+
+The current action handles `ZodError` as `INVALID_INPUT` but sends mapping
+`TypeError` through `toolAuthoringActionError()`, which returns `INTERNAL_ERROR`.
+
+Wrap only the definition/argument parsing/mapping boundary needed to distinguish
+these expected validation failures. Do not convert arbitrary unexpected application
+`TypeError`s globally into `INVALID_INPUT`.
+
+Add Server Action regressions that invoke the real action with
+`requireStudioPlatformRole` mocked/controlled and prove:
+
+```text
+invalid definition schema -> INVALID_INPUT
+invalid input schema value -> INVALID_INPUT
+missing mapped input      -> INVALID_INPUT
+invalid external scalar   -> INVALID_INPUT
+```
+
+No case above may produce `INTERNAL_ERROR` or `kind:'unknown'`.
+
+##### A1-R4 — prove the authorization contract through the actual accepted hierarchy
+
+The focused common validation script must directly prove every R7 authorization
+bullet, not only inspect source text.
+
+Update/add focused tests so `npm run test:arch021-tool-authoring-common` proves:
+
+```text
+PLATFORM_ADMIN       -> allowed
+PLATFORM_SUPER_ADMIN -> allowed
+MERCHANT_ADMIN       -> denied
+MERCHANT_EDITOR      -> denied
+MERCHANT_VIEWER      -> denied
+development bypass   -> allowed as PLATFORM_SUPER_ADMIN
+```
+
+Use the accepted COMMERCE-027 `requireStudioPlatformRole('ADMIN')` boundary. Do not
+create another role matrix.
+
+The development-bypass proof must also prove that platform/merchant database identity
+lookups are not performed after the development bypass has resolved.
+
+It is acceptable for the common script to run an existing authorization test file in
+addition to the COMMERCE-019-specific test files, but all six cases above must execute
+under the `test:arch021-tool-authoring-common` command.
+
+##### A1-R5 — replace static gate-source checks with executable lifecycle/Studio propagation proof
+
+Add focused executable coverage for both canonical Phase 3 kinds:
+
+```text
+EXTERNAL_HTTP
+SHOPIFY_ADMIN_GRAPHQL
+```
+
+For each structurally valid DRAFT, prove publication produces the exact lifecycle
+code/message:
+
+```text
+LIVE_TEST_REQUIRED
+Run a successful live tool test for the current saved revision before publishing.
+```
+
+Also prove the existing Studio translation boundary preserves the identifiable code:
+
+```ts
+{
+  kind: 'unavailable',
+  code: 'LIVE_TEST_REQUIRED',
+  message: 'Run a successful live tool test for the current saved revision before publishing.'
+}
+```
+
+Do not satisfy this item with `readFileSync(...).toContain(...)` assertions alone.
+
+The test may extend an existing lifecycle/Studio service test rather than creating a
+new fixture framework.
+
+Also add explicit proof that a revision which is already `PUBLISHED` remains readable
+history and is not retroactively changed/unpublished by this Phase 3 validation
+policy.
+
+##### A1-R6 — retain synthetic-receipt rejection and zero-provider-I/O behavior
+
+Keep the existing external-publication regressions proving that a successfully
+recorded synthetic visual/code sample receipt still results in
+`LIVE_TEST_REQUIRED`.
+
+Add/retain a focused spy/assertion showing the common authoring validation layer does
+not invoke:
+
+```text
+request-JavaScript processor/compiler
+Shopify Admin compiler
+external HTTP transport
+Shopify transport/session
+```
+
+COMMERCE-019 defines the common contract only. COMMERCE-023/024 own the independent
+domain validators.
+
+##### A1-R7 — deterministic validation commands
+
+Update `test:arch021-tool-authoring-common` so it executes every focused
+COMMERCE-019 contract test required above.
+
+Then run exactly:
+
+```bash
+npm run test:arch021-tool-authoring-common
+npm run test:arch020-external-publication
+npm run test -- --run \
+  tests/auth-role-requirements.test.ts \
+  tests/auth-permissions.test.ts
+npm run lint
+npm run typecheck
+git diff --check
+```
+
+The common focused command must have zero skipped tests.
+
+No TypeScript diagnostic in these task-owned surfaces may be classified as baseline:
+
+```text
+src/commerce/tool-authoring/**
+src/commerce/external-publication/contracts.ts
+src/commerce/external-publication/index.ts
+src/commerce/publication/lifecycle.ts
+src/commerce/integration/studio/services.ts
+src/studio/contracts.ts
+tests/tool-authoring-validation.test.ts
+tests/tool-authoring-server-actions.test.ts
+tests/external-publication.test.ts
+```
+
+Other diagnostics may remain documented only when their exact file/error is unrelated
+to COMMERCE-019.
+
+##### A1-R8 — record the exact Attempt 2 launcher/worktree packet
+
+The submitted Attempt 1 Completion Report records commits and validation but does not
+record the mandatory prepared-execution packet.
+
+Attempt 2 must record the exact launcher-provided:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-019
+implementation branch = task/ARCH-021-COMMERCE-019
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 2 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not reuse/infer Attempt 1 values.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+##### Attempt 2 stop condition
+
+Return to architect review only when:
+
+```text
+DIRECT EXTERNAL_HTTP -> exact LIVE_TEST_REQUIRED
+AND UTF-8 issue fields are <=512 bytes without replacement-character truncation
+AND known argument mapping failures -> INVALID_INPUT
+AND all six required authorization cases execute
+AND executable EXTERNAL_HTTP + SHOPIFY_ADMIN lifecycle/Studio gate propagation passes
+AND synthetic receipts still cannot satisfy the gate
+AND zero provider I/O is proved
+AND all required focused/regression suites pass
+AND no task-owned type diagnostic remains
+AND the exact Attempt 2 launcher/report packet is recorded
+```
+
+Then push both task branches, return control to `moda_architect`, and STOP.
+
+Do not start COMMERCE-021, COMMERCE-022, COMMERCE-023 or COMMERCE-024.
+
 ### Reviewed Files
-None
+
+- `src/commerce/tool-authoring/contracts.ts`
+- `src/commerce/tool-authoring/server-actions.ts`
+- `src/commerce/external-publication/contracts.ts`
+- `src/commerce/external-publication/index.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/contracts.ts`
+- `lib/auth/merchant-access.ts`
+- `lib/auth/role-hierarchy.ts`
+- `tests/tool-authoring-validation.test.ts`
+- `tests/external-publication.test.ts`
+- `tests/auth-role-requirements.test.ts`
+- `tests/auth-permissions.test.ts`
+- `package.json`
+- submitted `tsconfig.tsbuildinfo`
+- Attempt 1 Completion Report
+
 ### Validation Reviewed
-None
+
+Submitted evidence:
+
+```text
+authoring tests:             6 passed
+external publication tests: 12 passed
+authorization tests:        10 passed
+targeted ESLint:            PASS
+git diff --check:           PASS
+full typecheck:             unrelated baseline diagnostics reported
+```
+
+Independent inspection confirms no semantic TypeScript diagnostic in the
+COMMERCE-019 task-owned source/test files.
+
+However, the submitted focused test does not execute all R7 bullets and relies on
+source-text assertions for the lifecycle gate. It also does not cover UTF-8
+multibyte truncation, known `mapToolArguments()` validation errors, DIRECT-mode
+publication, or executable Studio propagation.
+
 ### Architecture Conformance
-Pending
+
+Changes Requested. The common authorization/result direction conforms, but the exact
+R1 byte bound, R3 validation classification and R4 all-mode publication gate are not
+yet satisfied. No cross-repository or schema redesign is required.
+
 ### Follow-up
-None
+
+Return this same task through `/moda-task ARCH-021-COMMERCE-019` for Attempt 2.
+COMMERCE-023 and COMMERCE-024 remain dependency-gated until COMMERCE-019 is
+architect-accepted Complete. Do not start downstream work.
