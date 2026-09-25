@@ -157,9 +157,10 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 Current checkpoint implementation frontier: none.
 
 COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted
-Complete. All terminal checkpoint implementation dependencies are now Complete,
-so `ARCH-021-SYSTEM-TEST-001` is Ready. The developer may leave the terminal
-system-test task Ready while manually validating the completed checkpoint.
+Complete. All terminal checkpoint implementation dependencies are Complete, so
+`ARCH-021-SYSTEM-TEST-001` is Ready. The developer may leave the terminal
+system-test task Ready while manually re-checking the real Shopify documentation
+pages that exposed the latest defects.
 
 ### Documentation readability correction task materialised — 2026-09-24
 
@@ -316,6 +317,41 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 ### COMMERCE-013 Attempt 2 architect review — 2026-09-23
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
+
+### COMMERCE-035 Attempt 5 accepted — 2026-09-25
+
+COMMERCE-035 is architect-accepted **Complete**. Attempt 5 enforces unique
+canonical documentation paths before React, raises only the semantic block ceiling
+to 512, adds cause-specific parser-bound diagnostics and preserves the independent
+64 KiB service-output limit.
+
+All terminal implementation dependencies are Complete, so
+SYSTEM-TEST-001 becomes **Ready** again.
+
+### COMMERCE-035 Attempt 4 changes requested — 2026-09-25
+
+Attempt 4 satisfies the semantic Shopify page-chrome/accessibility cleanup.
+COMMERCE-035 remains **Ready** for Attempt 5 because additional developer manual
+logs prove duplicate canonical documentation paths still reach React as duplicate
+keys, and the parser still uses the original 256-block ceiling with an
+indistinguishable generic parser-bound error.
+
+Attempt 5 raises only the semantic block ceiling to 512 while retaining the
+64 KiB serialized-output cap, enforces unique documentation paths before React
+rendering, adds bound-specific diagnostics/regressions, and removes conflict-marker
+residue from the task record.
+
+SYSTEM-TEST-001 remains Pending.
+
+### COMMERCE-035 reopened after manual validation — 2026-09-25
+
+Developer manual validation showed that safe structured blocks still included
+Shopify documentation chrome/accessibility text such as `Choose a version`,
+`Anchor to ...`, feedback controls and duplicated anchor labels. The same C035
+task is reopened **Ready** for Attempt 4; the accepted component/safety
+architecture remains unchanged.
+
+SYSTEM-TEST-001 returns to Pending until C035 is Complete again.
 
 ### COMMERCE-035 Attempt 3 accepted — 2026-09-25
 

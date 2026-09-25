@@ -13,7 +13,7 @@ status: complete
 priority: 35
 executor: null
 claimed_at: null
-attempt: 3
+attempt: 5
 depends_on:
   - ARCH-021-COMMERCE-034
 enables:
@@ -310,7 +310,7 @@ The structured serialized full-document output must remain bounded to:
 Additionally enforce:
 
 ```text
-maximum blocks:          256
+maximum blocks:          512
 maximum list items/block: 100
 maximum normal text/block: 8 KiB UTF-8
 maximum code block:      16 KiB UTF-8
@@ -583,6 +583,11 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 - [x] Update in-memory fixtures to exact production DTO shape.
 - [x] Mock the production named documentation Server Actions in component tests.
 - [x] Add raw-markup, structured-rendering and component-boundary regressions.
+- [x] Ensure documentation search results have unique canonical `path` identities before React rendering.
+- [x] Raise only the semantic document-block ceiling from 256 to 512 while retaining the 64 KiB serialized-output cap.
+- [x] Make parser bound failures distinguish block-count/list/text/code causes from the final serialized-output bound.
+- [x] Add duplicate-result and large-semantic-document regressions from developer manual validation.
+- [x] Remove task-file conflict-marker residue and reconcile the final Validation record.
 
 ## Interfaces / Contracts
 
@@ -634,11 +639,17 @@ No cross-service contract is introduced.
 - [x] `ShopifyDocumentationExplorer` uses the production named Server Action imports directly.
 - [x] `ShopifyDocumentationArticle` is a pure renderer with no Server Action/provider/network dependency.
 - [x] No production documentation port/service/action-bundle prop or test-only React context/provider is introduced.
+- [x] `DocumentationItem.path` values presented to `ShopifyDocumentationExplorer` are unique within one search result set.
+- [x] Duplicate upstream/canonical search hits preserve the first-ranked result and do not render duplicate cards/React keys.
+- [x] A semantic document with more than 256 but at most 512 small blocks can be opened when its serialized DTO remains under 64 KiB.
+- [x] More than 512 semantic blocks still fail closed with a block-count-specific bounded error.
+- [x] The existing 64 KiB serialized full-document output bound remains unchanged and enforced.
+- [x] The task file contains no Git conflict markers.
 
 ## Validation
 
 - [x] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
-- [x] targeted ESLint for every Attempt 3 changed source/test file
+- [x] targeted ESLint for every Attempt 5 changed source/test file
 - [x] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
 - [x] raw-rendering source audit:
   ```text
@@ -654,15 +665,30 @@ No cross-service contract is introduced.
   ```
   expected: no documentation implementation matches
 - [x] production test-only seam audit:
+  ```text
+  rg -n \
+    "DocumentationPort|DocumentationServices|documentationActions|NODE_ENV.*test|fixture.*Documentation|documentation.*fixture.*prop" \
     components src/studio
+  ```
   expected: no production documentation test-injection matches
 - [x] component existence audit:
   ```text
   test -f src/studio/discovery/shopify-documentation-explorer.tsx
   test -f src/studio/discovery/shopify-documentation-article.tsx
   ```
-=======
->>>>>>> 10ca1cd886db9e4bfb77e7a747b176a6b4b2ab36
+  expected: both pass
+- [x] duplicate-result identity audit:
+  ```text
+  rg -n "key=\{item\.path\}" src/studio/discovery/shopify-documentation-explorer.tsx
+  ```
+  expected: this key remains valid only because the production search boundary now guarantees unique `path` values; accompanying regression must prove that invariant.
+- [x] conflict-marker audit:
+  ```text
+  ! rg -n "^(<<<<<<<|=======|>>>>>>>)" \
+    docs/decisions/commerce/ARCH-021/COMMERCE-035-render-shopify-documentation-readably.md
+  ```
+  expected: PASS
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -705,6 +731,19 @@ Attempt 3 changed:
 
 - `tests/discovery-document.test.ts`
 
+Attempt 4 changed:
+
+- `lib/discovery/document.ts`
+- `lib/discovery/upstream.ts`
+- `tests/discovery-document.test.ts`
+
+Attempt 5 changed:
+
+- `lib/discovery/document.ts`
+- `src/commerce/integration/studio/services.ts`
+- `tests/discovery-document.test.ts`
+- `tests/studio-integration.test.ts`
+
 ### Work Completed
 
 Attempt 1 delivered the structured documentation contract, verified HTML block normalization and bounds, the extracted documentation components, semantic rendering, readable CSS, production fixture parity and component-boundary regressions.
@@ -721,17 +760,34 @@ Attempt 3 correction checklist, all implemented:
 - Added whitespace/control/stripped-markup normalized-empty fallback coverage.
 - Reconciled the Work Items, Acceptance Criteria and Validation checklists with the submitted evidence.
 
+Attempt 4 correction checklist, all implemented:
+
+- Finding 1: parser attributes are retained only for server-side classification; hidden, accessibility-only and control nodes are excluded before DTO creation.
+- Finding 2: local hash-link anchor helpers and semantic Shopify chrome, including version selectors and feedback controls, are removed without global prose stripping.
+- Finding 3: decorative-only blocks and the duplicate top-level page H1 are omitted; consecutive identical short heading/paragraph blocks are collapsed locally.
+- Finding 4: search excerpts receive bounded helper/chrome cleanup while retaining the real product sentence.
+- Finding 5: representative collection-document and search regressions cover the manual-validation defect and visible anchor-helper form.
+
+Attempt 5 correction checklist, all implemented:
+
+- Finding 1: the Studio search service de-duplicates normalized canonical paths before returning `DocumentationItem[]`, preserving the first-ranked title/excerpt and unique result order; the React `key={item.path}` invariant is now server-enforced.
+- Finding 2: the semantic document ceiling is 512 while the 64 KiB serialized service bound remains unchanged; parser errors distinguish text-block, code-block, list-item-count and 512-block failures from the service-level output error.
+- Required regressions cover duplicate canonical hits, first-ranked retention, ordering, 300 accepted semantic blocks under 64 KiB, 513 rejected blocks, parser-bound causes and the existing serialized-output rejection.
+
 Architect Review was preserved unchanged.
 
 ### Validation Results
 
-- Focused Vitest command: PASS, 6 files and 71 tests.
-- Targeted ESLint for `tests/discovery-document.test.ts`: PASS, 0 errors.
-- `npm run typecheck`: exits 1 on unchanged unrelated baseline diagnostics; `C035_OWNED_DIAGNOSTICS=none` for `lib/discovery`, `components/studio-workspace`, documentation components and focused documentation tests.
+- Focused Vitest command: PASS, 6 files and 78 tests.
+- Duplicate-path Studio integration regression: PASS, 1 file and 10 tests.
+- Targeted ESLint for `lib/discovery/document.ts`, `src/commerce/integration/studio/services.ts`, `tests/discovery-document.test.ts` and `tests/studio-integration.test.ts`: PASS, 0 errors and 0 warnings.
+- `npm run typecheck`: exits 2 on unchanged unrelated Commerce/generated/database and integration/test baseline diagnostics; no diagnostics reference `lib/discovery/document.ts`, the changed `searchDocumentation` expression, `tests/discovery-document.test.ts` or `tests/studio-integration.test.ts`.
 - Raw rendering audit: PASS for documentation rendering. The only matches are allowed unrelated `item.text` uses in MCP transport (`lib/discovery/upstream.ts`) and preview UI (`src/studio/preview/preview-screen.tsx`).
 - StudioWorkspace ownership audit: PASS with no matches.
 - Production test-seam audit: PASS with no matches.
 - Component existence audit: PASS for both required modules.
+- Duplicate-result identity audit: PASS; `key={item.path}` remains in the explorer and the Studio service regression proves unique canonical paths with first-ranked retention and stable order.
+- Conflict-marker audit: PASS against the parent task report.
 - `git diff --check`: PASS.
 
 ### Branch and Topology Evidence
@@ -740,15 +796,15 @@ Architect Review was preserved unchanged.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-035`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-035`.
 - Mirrored branch: `task/ARCH-021-COMMERCE-035`.
-- Launcher claim commit: parent `d461868dbbf4dc447bb9d090827c20dd50e63f0a`.
+- Launcher claim commit: parent `88e2d8887e0a908edcc3e3de86e4693d526c3856`.
 - Dependency `ARCH-021-COMMERCE-034`: complete.
 - Database submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Implementation commit: `a03b618`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
+- Implementation commit: `564ad58`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
 - No downstream task was started.
 
 ### Deviations
 
-- Typecheck remains blocked by the documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics. No C035-owned diagnostic was reported.
+- Typecheck exits 2 on the documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics; no diagnostic references the Attempt 4-owned parser, upstream normalizer or focused test file.
 
 ### Assumptions
 
@@ -756,7 +812,7 @@ Architect Review was preserved unchanged.
 
 ### Unresolved Issues
 
-- None within the bounded Commerce-035 scope.
+- None within the bounded Commerce-035 scope. The task is ready for architect review; no downstream task was started.
 
 ### Architectural Concerns
 
@@ -770,117 +826,205 @@ Accepted
 
 ### Review Notes
 
-Attempt 3 completes the only remaining evidence/task-record correction from Attempt 2.
+Attempt 5 resolves the two additional developer-manual-validation issues reported
+while Attempt 4 was already running.
 
-Architect review confirms the final regression now proves both fallback cases:
+#### Duplicate documentation result identity
 
-```ts
-expect(normalizeSearchExcerpt('')).toBe('No preview available.');
-
-expect(
-  normalizeSearchExcerpt(' \u0000\n <script> </script> ')
-).toBe('No preview available.');
-```
-
-This proves the fallback both for genuinely empty input and for content that becomes empty after normalization.
-
-The production normalization/parser source remains the accepted Attempt 2 implementation:
-
-- HTML entities are decoded before tag removal, so encoded tags cannot reappear as visible raw markup;
-- search excerpts are bounded by Unicode code point and UTF-8 byte size without leaving a dangling surrogate;
-- `<br>` becomes a readable space in normal text and a newline in preformatted/code text;
-- opened Shopify documentation remains a bounded structured block DTO;
-- raw remote HTML is never rendered with `dangerouslySetInnerHTML`;
-- canonical direct document fetch remains constrained to `https://shopify.dev/docs/...`;
-- script/style/navigation/form/browser-only noise remains excluded;
-- full-document output remains rejected when it exceeds the defined bound rather than being silently truncated.
-
-The required UI boundary also remains intact:
+Architect review confirms the production Studio boundary now canonicalizes each
+backend documentation `sourceUrl` to its documentation `path` and de-duplicates
+before returning `DocumentationItem[]`:
 
 ```text
-StudioWorkspace
+backend ranked hits
+  -> canonical path
+  -> first occurrence wins
+  -> stable unique ordering
   -> ShopifyDocumentationExplorer
-      -> named searchDocumentation/getDocumentation Server Actions
-      -> ShopifyDocumentationArticle
 ```
 
-`StudioWorkspace` does not own a second documentation implementation, and no production documentation test port/service/context has been introduced.
+The existing React identity:
 
-### Final C035 evidence
-
-The task Work Items, Acceptance Criteria and Validation checklist are reconciled as complete.
-
-Submitted validation:
-
-```text
-focused tests: 6 files / 71 passed
-targeted ESLint: PASS
-raw-rendering audit: PASS
-StudioWorkspace ownership audit: PASS
-production documentation seam audit: PASS
-component existence audit: PASS
-git diff --check: PASS
-typecheck: unchanged unrelated baseline only
-           zero C035-owned diagnostics
+```tsx
+key={item.path}
 ```
 
-Implementation/test commit reviewed:
+is therefore now valid because the server-side contract guarantees path
+uniqueness.
+
+The focused integration regression proves duplicate query/object hits collapse to
+one result each, preserve the first-ranked title/excerpt and preserve unique result
+order.
+
+#### Parser/document bounds
+
+The semantic block ceiling is now:
 
 ```text
-a03b6187
+512 blocks
+```
+
+while all other accepted safety bounds remain unchanged:
+
+```text
+HTML input:          1 MiB
+redirects:           2
+list items/block:    100
+normal text/block:   8 KiB
+code block:          16 KiB
+serialized document: 64 KiB
+```
+
+Parser-level failure causes are now distinguishable:
+
+```text
+text block exceeded bounded size
+code block exceeded bounded size
+list exceeded bounded item count
+document exceeded 512-block limit
+```
+
+and remain distinct from the final Studio/service transport guard:
+
+```text
+Documentation result exceeded the bounded size.
+```
+
+The final regressions prove:
+
+```text
+300 small semantic blocks
+  -> parser accepts
+  -> serialized DTO remains below 64 KiB
+
+513 semantic blocks
+  -> parser rejects with the 512-block-specific error
+
+serialized DTO above 64 KiB
+  -> service still rejects with the service-level bounded-size error
+```
+
+The 64 KiB service-output ceiling was not increased.
+
+#### Previously accepted C035 behavior remains intact
+
+Attempt 5 preserves all accepted documentation behavior from Attempts 1-4:
+
+- search excerpts are safe bounded plain text;
+- encoded HTML tags do not reappear as raw markup;
+- Unicode excerpt truncation is code-point safe;
+- `<br>` remains readable in paragraph and preformatted content;
+- Shopify page chrome/accessibility helpers are filtered server-side;
+- decorative/duplicate generated page blocks are cleaned up conservatively;
+- opened documents remain structured `HEADING | PARAGRAPH | LIST | CODE |
+  BLOCKQUOTE` DTOs;
+- no remote/raw HTML reaches `dangerouslySetInnerHTML`;
+- canonical opened-document origin remains `https://shopify.dev/docs/...`;
+- `StudioWorkspace` does not contain a second documentation implementation;
+- `ShopifyDocumentationExplorer` owns search/open state and uses the production
+  named Server Actions;
+- `ShopifyDocumentationArticle` remains a pure semantic renderer;
+- no production documentation test port/service/context was introduced.
+
+The task record contains no Git conflict-marker residue.
+
+### Submitted validation
+
+Attempt 5 reports:
+
+```text
+focused tests:     6 files / 78 passed
+integration tests: 1 file / 10 passed
+targeted ESLint:   PASS
+source/UI audits:  PASS
+conflict audit:    PASS
+git diff --check:  PASS
+typecheck:         unchanged unrelated baseline only
+                   zero C035-owned diagnostics
+```
+
+Architect static review confirms the required duplicate-result and parser-bound
+regressions are present in the submitted snapshot.
+
+The archive does not contain installed dependencies suitable for independently
+rerunning the full Vitest/ESLint/typecheck packet, so acceptance is based on the
+submitted validation evidence plus direct source/test inspection.
+
+Implementation reviewed:
+
+```text
+564ad58f
 ```
 
 Final parent report supplied:
 
 ```text
-65922578
+cdc5d0cd
 ```
-
-The Completion Report records the implementation commit in abbreviated form as
-`a03b618`, which matches the supplied implementation SHA.
 
 ### Reviewed Files
 
-- `lib/discovery/upstream.ts`
 - `lib/discovery/document.ts`
+- `lib/discovery/upstream.ts`
 - `lib/discovery/service.ts`
-- `src/studio/contracts.ts`
 - `src/commerce/integration/studio/services.ts`
 - `src/studio/discovery/shopify-documentation-explorer.tsx`
 - `src/studio/discovery/shopify-documentation-article.tsx`
-- `components/studio-workspace.tsx`
-- documentation CSS
-- `src/studio/testing/in-memory-studio-services.ts`
 - `tests/discovery-document.test.ts`
-- `tests/discovery.test.ts`
-- `tests/studio-services.test.ts`
-- `tests/studio-workspace.test.tsx`
-- `tests/shopify-documentation-explorer.test.tsx`
-- `tests/shopify-documentation-article.test.tsx`
+- `tests/studio-integration.test.ts`
 - task Completion Report
+- Commerce ARCH-021 index/frontier
+- terminal SYSTEM-TEST-001 dependency state
 
 ### Validation Reviewed
 
-Architect inspected the final Attempt 3 test source and confirmed the missing fallback regression is present exactly as required.
+Architect directly confirmed in the submitted source:
 
-All other Attempt 2 production fixes and regressions remain intact in the supplied review snapshot.
+```text
+maxBlocks = 512
+duplicate search paths are filtered via seenPaths before Studio response
+text/code/list/block-count parser errors are distinct
+64 KiB service-output guard remains unchanged
+```
 
-The archive does not contain installed dependencies, so the architect did not independently rerun Vitest/ESLint/typecheck. Acceptance is based on the submitted validation evidence plus direct source/test review.
+Architect directly confirmed regressions for:
+
+```text
+300 blocks accepted below 64 KiB
+513 blocks rejected at parser
+duplicate canonical query/object paths retain first occurrence and order
+existing >64 KiB service-output rejection
+```
 
 ### Architecture Conformance
 
 Conforms.
 
-The Documentation tab now has a bounded, safe, readable server normalization contract and a separate semantic UI renderer. The original manual-validation defects—raw markup in search results and opened documentation flattened into one unreadable paragraph—are addressed without introducing raw HTML rendering or a competing data-access/test architecture.
+C035 now safely normalizes, semantically cleans, bounds and renders Shopify
+documentation while maintaining stable search-result identity and useful
+diagnostics for bounded failures.
 
 ### Follow-up
 
 `ARCH-021-COMMERCE-035` is Complete.
 
-All dependencies of terminal `ARCH-021-SYSTEM-TEST-001` are now architect-accepted Complete, so `ARCH-021-SYSTEM-TEST-001` becomes Ready.
+Every implementation dependency of terminal `ARCH-021-SYSTEM-TEST-001` is again
+architect-accepted Complete, so `ARCH-021-SYSTEM-TEST-001` becomes Ready.
 
-The developer may intentionally leave the terminal system-test task Ready while manually validating the completed checkpoint.
+The developer may intentionally leave SYSTEM-TEST-001 Ready while manually
+re-checking the real Shopify Collection query/object pages that originally
+surfaced the formatting, duplicate-key and bounded-size defects.
 
-Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
+If those real pages now fail with the **service-level** message:
 
-Do not start any Phase-3 implementation task from this acceptance.
+```text
+Documentation result exceeded the bounded size.
+```
+
+return that new manual evidence rather than increasing the 64 KiB transport bound
+automatically.
+
+Phase-3 implementation remains paused until terminal checkpoint
+validation/reconciliation.
+
+Do not start a Phase-3 implementation task from this acceptance.
