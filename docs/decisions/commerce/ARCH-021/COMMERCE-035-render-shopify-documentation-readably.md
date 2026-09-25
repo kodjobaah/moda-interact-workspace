@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -822,324 +822,145 @@ Architect Review was preserved unchanged.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 4 satisfies the semantic page-chrome/accessibility cleanup requested after
-developer manual validation.
+Attempt 5 resolves the two additional developer-manual-validation issues reported
+while Attempt 4 was already running.
 
-Architect review confirms the submitted source now:
+#### Duplicate documentation result identity
 
-- preserves only minimal parser-internal attributes needed for classification;
-- excludes hidden/accessibility/navigation/control nodes;
-- removes local `Anchor to ...` helpers without globally deleting ordinary prose;
-- removes bounded Shopify version/feedback/copy/show-fields chrome;
-- suppresses decorative-only blocks and the duplicate top-level page H1;
-- collapses only consecutive identical short heading/paragraph blocks;
-- keeps meaningful arguments/type/descriptions intact;
-- applies bounded helper/chrome cleanup to search excerpts;
-- preserves the accepted `ShopifyDocumentationExplorer` /
-  `ShopifyDocumentationArticle` component boundary.
-
-The representative collection-page and search-excerpt regressions are present and
-the Completion Report records 6 focused files / 73 passing tests.
-
-Two additional developer-manual-validation issues were reported while Attempt 4
-was already in progress. They were intentionally not injected into the running
-claim. Both remain visible in the submitted Attempt 4 source and must be resolved
-before terminal system testing.
-
-There is also architect/task-file conflict residue in the submitted task record.
-
-#### Finding 1 — duplicate documentation paths still reach React as duplicate keys
-
-The browser warning reported:
+Architect review confirms the production Studio boundary now canonicalizes each
+backend documentation `sourceUrl` to its documentation `path` and de-duplicates
+before returning `DocumentationItem[]`:
 
 ```text
-Encountered two children with the same key,
-`api/storefront/2026-07/objects/Collection`
-
-Encountered two children with the same key,
-`api/storefront/2026-07/queries/collection`
-```
-
-is legitimate.
-
-The final production explorer still renders:
-
-```tsx
-{items.map((item) => (
-  <li key={item.path}>
-```
-
-and no production boundary currently guarantees that the returned
-`DocumentationItem.path` values are unique.
-
-The Studio adapter derives `path` deterministically from `sourceUrl`, but it maps
-every backend result without de-duplication.
-
-Attempt 5 must enforce uniqueness **before React rendering**.
-
-Preferred boundary:
-
-```text
-backend discovery search results
-  -> canonical sourceUrl/path
-  -> first-occurrence de-duplication by canonical path
-  -> DocumentationItem[]
+backend ranked hits
+  -> canonical path
+  -> first occurrence wins
+  -> stable unique ordering
   -> ShopifyDocumentationExplorer
 ```
 
-Implement this at the production Studio service boundary that creates `path`
-(`src/commerce/integration/studio/services.ts`) or an equivalently authoritative
-server boundary.
+The existing React identity:
 
-Required behavior:
-
-```text
-same canonical path repeated 3 times
-  -> exactly 1 DocumentationItem
-  -> preserve the first-ranked item's title/excerpt
-  -> preserve relative order of all unique items
+```tsx
+key={item.path}
 ```
 
-Do not merely change the React key to:
+is therefore now valid because the server-side contract guarantees path
+uniqueness.
+
+The focused integration regression proves duplicate query/object hits collapse to
+one result each, preserve the first-ranked title/excerpt and preserve unique result
+order.
+
+#### Parser/document bounds
+
+The semantic block ceiling is now:
 
 ```text
-path + index
+512 blocks
 ```
 
-because that hides the warning while still displaying duplicate search cards.
-
-`key={item.path}` may remain once the server-side uniqueness invariant is
-deterministically enforced and tested.
-
-Required regression must provide duplicate backend search hits for:
+while all other accepted safety bounds remain unchanged:
 
 ```text
-api/storefront/2026-07/queries/collection
-api/storefront/2026-07/queries/collection
-api/storefront/2026-07/objects/Collection
-api/storefront/2026-07/objects/Collection
+HTML input:          1 MiB
+redirects:           2
+list items/block:    100
+normal text/block:   8 KiB
+code block:          16 KiB
+serialized document: 64 KiB
 ```
 
-and prove the Studio search response contains each path exactly once with the
-first occurrence retained.
-
-#### Finding 2 — the logged bounded-size error is a parser-level bound, not the final 64 KiB service bound
-
-The developer log reported exactly:
+Parser-level failure causes are now distinguishable:
 
 ```text
-Shopify documentation result exceeded the bounded size.
+text block exceeded bounded size
+code block exceeded bounded size
+list exceeded bounded item count
+document exceeded 512-block limit
 ```
 
-That wording originates from `lib/discovery/document.ts`.
-
-The later 64 KiB serialized service guard uses a different message:
+and remain distinct from the final Studio/service transport guard:
 
 ```text
 Documentation result exceeded the bounded size.
 ```
 
-Therefore the reported failure was triggered by one of the parser-level limits:
+The final regressions prove:
 
 ```text
-normal text block: 8 KiB
-code block:        16 KiB
-list items:        100
-semantic blocks:   256
+300 small semantic blocks
+  -> parser accepts
+  -> serialized DTO remains below 64 KiB
+
+513 semantic blocks
+  -> parser rejects with the 512-block-specific error
+
+serialized DTO above 64 KiB
+  -> service still rejects with the service-level bounded-size error
 ```
 
-rather than by the final 64 KiB serialized DTO guard.
+The 64 KiB service-output ceiling was not increased.
 
-The manually tested Shopify `Collection` object/query documentation is a
-legitimate comprehensive document. A hard 256-block ceiling is too restrictive
-when the final DTO is still independently bounded to 64 KiB.
+#### Previously accepted C035 behavior remains intact
 
-Attempt 5 must change only:
+Attempt 5 preserves all accepted documentation behavior from Attempts 1-4:
+
+- search excerpts are safe bounded plain text;
+- encoded HTML tags do not reappear as raw markup;
+- Unicode excerpt truncation is code-point safe;
+- `<br>` remains readable in paragraph and preformatted content;
+- Shopify page chrome/accessibility helpers are filtered server-side;
+- decorative/duplicate generated page blocks are cleaned up conservatively;
+- opened documents remain structured `HEADING | PARAGRAPH | LIST | CODE |
+  BLOCKQUOTE` DTOs;
+- no remote/raw HTML reaches `dangerouslySetInnerHTML`;
+- canonical opened-document origin remains `https://shopify.dev/docs/...`;
+- `StudioWorkspace` does not contain a second documentation implementation;
+- `ShopifyDocumentationExplorer` owns search/open state and uses the production
+  named Server Actions;
+- `ShopifyDocumentationArticle` remains a pure semantic renderer;
+- no production documentation test port/service/context was introduced.
+
+The task record contains no Git conflict-marker residue.
+
+### Submitted validation
+
+Attempt 5 reports:
 
 ```text
-maximum semantic blocks: 256 -> 512
+focused tests:     6 files / 78 passed
+integration tests: 1 file / 10 passed
+targeted ESLint:   PASS
+source/UI audits:  PASS
+conflict audit:    PASS
+git diff --check:  PASS
+typecheck:         unchanged unrelated baseline only
+                   zero C035-owned diagnostics
 ```
 
-The following remain unchanged:
+Architect static review confirms the required duplicate-result and parser-bound
+regressions are present in the submitted snapshot.
+
+The archive does not contain installed dependencies suitable for independently
+rerunning the full Vitest/ESLint/typecheck packet, so acceptance is based on the
+submitted validation evidence plus direct source/test inspection.
+
+Implementation reviewed:
 
 ```text
-max HTML input:           1 MiB
-max redirects:            2
-max list items/block:     100
-max normal text/block:    8 KiB
-max code block:           16 KiB
-max serialized document:  64 KiB
+564ad58f
 ```
 
-This is an architecture correction based on developer manual validation. The
-64 KiB serialized-output bound remains the final transport/UI safety ceiling.
-
-Also stop using the same generic parser error for every parser-level bound.
-
-Use bounded cause-specific messages, for example:
+Final parent report supplied:
 
 ```text
-Shopify documentation text block exceeded the bounded size.
-Shopify documentation code block exceeded the bounded size.
-Shopify documentation list exceeded the bounded item count.
-Shopify documentation exceeded the 512-block limit.
+cdc5d0cd
 ```
-
-Equivalent deterministic wording is acceptable, but each parser-level limit must
-be distinguishable from the final service error:
-
-```text
-Documentation result exceeded the bounded size.
-```
-
-This is required so a future manual-validation log identifies which safety bound
-actually failed.
-
-#### Required large-document regressions
-
-Add a parser/service regression using small semantic paragraphs so no per-block
-limit is involved.
-
-Prove:
-
-```text
-300 semantic paragraph blocks
-serialized DTO < 64 KiB
--> accepted
-```
-
-This specifically proves a legitimate document is no longer rejected solely
-because it crossed the previous 256-block ceiling.
-
-Also prove:
-
-```text
-513 semantic paragraph blocks
--> rejected with the new block-count-specific error
-```
-
-Retain the existing regression:
-
-```text
-serialized DTO > 64 KiB
--> rejected by createDiscoveryService.document()
--> "Documentation result exceeded the bounded size."
-```
-
-Do not increase the 64 KiB service-output bound in Attempt 5.
-
-If developer manual validation after this correction still produces the **service**
-message:
-
-```text
-Documentation result exceeded the bounded size.
-```
-
-for the cleaned real Shopify page, return that new evidence to the architect
-rather than increasing the transport bound automatically.
-
-#### Coordination-record reconciliation — conflict-marker residue already cleared
-
-The previous review snapshot contained Git conflict-marker residue inside
-`## Validation`. In the current developer snapshot that residue has already been
-removed.
-
-Architect verification of this exact snapshot finds no standalone line
-beginning with any standard Git conflict-marker prefix (seven less-than signs,
-seven equals signs, or seven greater-than signs).
-
-The explicit conflict-marker Validation audit remains part of Attempt 5 so this
-coordination invariant is proved again before review, but no further source/task
-edit is required solely for conflict-marker cleanup.
-
-### Attempt 5 deterministic correction
-
-Reclaim the same task as Attempt 5.
-
-Preserve all accepted Attempt 1-4 production behavior.
-
-Expected production files are limited to:
-
-```text
-src/commerce/integration/studio/services.ts
-lib/discovery/document.ts
-```
-
-with directly related tests.
-
-`ShopifyDocumentationExplorer` should not require redesign if the server-side
-unique-path invariant is correctly enforced.
-
-Change another production file only if a required regression exposes a directly
-related defect.
-
-### Required tests
-
-Update/add focused coverage for:
-
-1. duplicate canonical documentation paths are returned once;
-2. first-ranked duplicate content is preserved;
-3. unique result ordering is preserved;
-4. 300 small semantic blocks are accepted below the 64 KiB service cap;
-5. 513 semantic blocks fail with the block-count-specific parser error;
-6. the existing >64 KiB serialized-output regression still fails with the
-   service-level error;
-7. all Attempt 4 semantic chrome/accessibility regressions remain passing.
-
-### Validation
-
-Run the restored task Validation section exactly.
-
-Typecheck acceptance remains:
-
-```text
-unchanged documented unrelated baseline is permitted
-zero C035-owned diagnostics are required
-```
-
-### Completion Report
-
-Record:
-
-```text
-Attempt 1:
-  structured docs + component extraction
-
-Attempt 2:
-  encoded-tag / Unicode / <br> correctness
-
-Attempt 3:
-  fallback regression + evidence reconciliation
-  architect-accepted Complete
-
-Manual validation / Attempt 4:
-  semantic Shopify page chrome/accessibility cleanup
-
-Additional manual logs / Attempt 5:
-  duplicate search-result identity
-  parser block-bound correction and bound-specific diagnostics
-  task-record conflict cleanup
-```
-
-Record implementation/report commits, focused test count, ESLint, typecheck,
-all audits, clean/upstream branch state and database submodule synchronization.
-
-Return:
-
-```yaml
-status: review
-executor: null
-claimed_at: null
-attempt: 5
-```
-
-and STOP.
-
-Do not start `ARCH-021-SYSTEM-TEST-001`.
 
 ### Reviewed Files
 
@@ -1148,43 +969,62 @@ Do not start `ARCH-021-SYSTEM-TEST-001`.
 - `lib/discovery/service.ts`
 - `src/commerce/integration/studio/services.ts`
 - `src/studio/discovery/shopify-documentation-explorer.tsx`
+- `src/studio/discovery/shopify-documentation-article.tsx`
 - `tests/discovery-document.test.ts`
-- `tests/studio-services.test.ts`
-- `tests/shopify-documentation-explorer.test.tsx`
+- `tests/studio-integration.test.ts`
 - task Completion Report
+- Commerce ARCH-021 index/frontier
+- terminal SYSTEM-TEST-001 dependency state
 
 ### Validation Reviewed
 
-Submitted Attempt 4 evidence:
+Architect directly confirmed in the submitted source:
 
 ```text
-focused tests: 6 files / 73 passed
-targeted ESLint: PASS
-documentation source/component audits: PASS
-git diff --check: PASS
-typecheck: unchanged unrelated baseline only
-           zero C035-owned diagnostics
+maxBlocks = 512
+duplicate search paths are filtered via seenPaths before Studio response
+text/code/list/block-count parser errors are distinct
+64 KiB service-output guard remains unchanged
 ```
 
-Architect static review confirms the Attempt 4 semantic cleanup implementation is
-present.
+Architect directly confirmed regressions for:
 
-Architect static review also confirms the duplicate-key path remains possible,
-the parser still uses a 256-block ceiling with generic parser-level error text,
-and the task record contains conflict-marker residue.
+```text
+300 blocks accepted below 64 KiB
+513 blocks rejected at parser
+duplicate canonical query/object paths retain first occurrence and order
+existing >64 KiB service-output rejection
+```
 
 ### Architecture Conformance
 
-Partial.
+Conforms.
 
-Attempt 4's semantic documentation cleanup conforms.
-
-Acceptance is blocked by the additional manually reported duplicate-result
-identity bug, the legitimate parser block-bound limitation, and task-record
-conflict residue.
+C035 now safely normalizes, semantically cleans, bounds and renders Shopify
+documentation while maintaining stable search-result identity and useful
+diagnostics for bounded failures.
 
 ### Follow-up
 
-Reclaim the same C035 task as Attempt 5.
+`ARCH-021-COMMERCE-035` is Complete.
 
-`ARCH-021-SYSTEM-TEST-001` remains Pending.
+Every implementation dependency of terminal `ARCH-021-SYSTEM-TEST-001` is again
+architect-accepted Complete, so `ARCH-021-SYSTEM-TEST-001` becomes Ready.
+
+The developer may intentionally leave SYSTEM-TEST-001 Ready while manually
+re-checking the real Shopify Collection query/object pages that originally
+surfaced the formatting, duplicate-key and bounded-size defects.
+
+If those real pages now fail with the **service-level** message:
+
+```text
+Documentation result exceeded the bounded size.
+```
+
+return that new manual evidence rather than increasing the 64 KiB transport bound
+automatically.
+
+Phase-3 implementation remains paused until terminal checkpoint
+validation/reconciliation.
+
+Do not start a Phase-3 implementation task from this acceptance.

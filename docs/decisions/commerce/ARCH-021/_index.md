@@ -151,20 +151,16 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-032](COMMERCE-032-normalize-storefront-schema-graph.md) | Normalize real pinned Storefront introspection into one truthful schema graph contract | Complete | COMMERCE-029 |
 | [COMMERCE-033](COMMERCE-033-build-recursive-storefront-schema-browser.md) | Build recursive schema-driven Storefront browser and selection tree | Complete | COMMERCE-032 |
 | [COMMERCE-034](COMMERCE-034-generate-storefront-graphql-from-schema-selection.md) | Generate/merge Storefront GraphQL from dynamic schema selections | Complete | COMMERCE-033 |
-| [COMMERCE-035](COMMERCE-035-render-shopify-documentation-readably.md) | Normalize Shopify docs into readable safe excerpts and structured article blocks | Ready | COMMERCE-034 |
+| [COMMERCE-035](COMMERCE-035-render-shopify-documentation-readably.md) | Normalize Shopify docs into readable safe excerpts and structured article blocks | Complete | COMMERCE-034 |
 
 
-Current checkpoint frontier:
+Current checkpoint implementation frontier: none.
 
-```text
-ARCH-021-COMMERCE-035
-```
-
-Developer manual validation after Attempt 3 acceptance exposed remaining Shopify
-page-chrome/accessibility text in the rendered documentation article.
-COMMERCE-035 is reopened Ready for Attempt 4.
-`ARCH-021-SYSTEM-TEST-001` returns to Pending until the correction is
-architect-accepted Complete.
+COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted
+Complete. All terminal checkpoint implementation dependencies are Complete, so
+`ARCH-021-SYSTEM-TEST-001` is Ready. The developer may leave the terminal
+system-test task Ready while manually re-checking the real Shopify documentation
+pages that exposed the latest defects.
 
 ### Documentation readability correction task materialised — 2026-09-24
 
@@ -321,6 +317,16 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 ### COMMERCE-013 Attempt 2 architect review — 2026-09-23
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
+
+### COMMERCE-035 Attempt 5 accepted — 2026-09-25
+
+COMMERCE-035 is architect-accepted **Complete**. Attempt 5 enforces unique
+canonical documentation paths before React, raises only the semantic block ceiling
+to 512, adds cause-specific parser-bound diagnostics and preserves the independent
+64 KiB service-output limit.
+
+All terminal implementation dependencies are Complete, so
+SYSTEM-TEST-001 becomes **Ready** again.
 
 ### COMMERCE-035 Attempt 4 changes requested — 2026-09-25
 
