@@ -321,6 +321,18 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
 
+### COMMERCE-035 Attempt 1 changes requested — 2026-09-25
+
+The structured documentation DTO and extracted
+`ShopifyDocumentationExplorer`/`ShopifyDocumentationArticle` component boundary
+are accepted in substance. COMMERCE-035 remains **Ready** for a narrow Attempt 2
+because entity-encoded HTML tags can reappear as literal markup after
+normalization, UTF-8 byte trimming can stop on a dangling UTF-16 surrogate, and
+`<br>` currently joins adjacent words instead of producing a readable separator.
+
+Attempt 2 is bounded to those server-side normalization/parser cases and their
+regressions. SYSTEM-TEST-001 remains Pending.
+
 ### COMMERCE-034 Attempt 5 accepted — 2026-09-25
 
 COMMERCE-034 is architect-accepted **Complete**. Attempt 5 closes the final

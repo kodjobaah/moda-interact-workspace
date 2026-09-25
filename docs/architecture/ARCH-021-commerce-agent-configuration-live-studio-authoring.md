@@ -1542,6 +1542,20 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-25 — COMMERCE-035 Attempt 1 changes requested
+
+- Accepted the structured documentation contract, safe direct Shopify document
+  fetch, separate `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle`
+  UI boundary and semantic no-raw-HTML renderer in substance.
+- Returned COMMERCE-035 to Ready because entity-encoded HTML tags are decoded
+  after tag stripping and can therefore reappear as literal markup in search
+  excerpts.
+- Required Unicode/code-point-safe 2 KiB excerpt bounding instead of UTF-16
+  code-unit slicing, which can return a dangling surrogate at the byte boundary.
+- Required `<br>` to flatten to a readable separator/newline rather than joining
+  adjacent words.
+- SYSTEM-TEST-001 remains Pending.
+
 ### 2026-09-25 — COMMERCE-034 Attempt 5 accepted
 
 - Confirmed fail-closed reuse of deterministic generated variable names now
