@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -226,14 +226,494 @@ None.
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-None
+
+#### Attempt 1 review — 2026-09-25
+
+Reviewed implementation `fb5ed5ba` and parent report `c27bc7e1` against the complete
+COMMERCE-023 task contract and ARCH-021 Phase 3 invariants.
+
+The implementation direction is correct and MUST be preserved:
+
+- the authoritative validator lives under `src/commerce/tool-authoring/`;
+- canonical COMMERCE-016 `CommerceToolDefinitionSchema`,
+  `ExternalRequestConstructionSchema`, `ExternalRequestDescriptorSchema` and
+  `compileSubset()` are reused rather than redefined;
+- exact immutable connection revision metadata and owning connection `enabled` state
+  are read server-side;
+- declarative request mappings/static headers remain schema-bounded;
+- request JavaScript compiles through COMMERCE-017;
+- response JavaScript compiles through the accepted response processor;
+- request preview validates CommerceAgent arguments before request construction and
+  returns only the safe descriptor shape;
+- the named Server Actions use `requireStudioPlatformRole('ADMIN')`;
+- no live HTTP request, DNS lookup, credential decryption/display or publication
+  receipt was added;
+- submitted typecheck metadata contains zero semantic diagnostics in the task-owned
+  COMMERCE-023 source/test files.
+
+Attempt 1 is not accepted because the Visual/response-template diagnostic boundary,
+preview action input/error boundary, and the required focused zero-provider-I/O /
+Server Action proof are incomplete.
+
+The following is the complete and authoritative Attempt 2 correction contract.
+Do not infer additional work from chat history and do not begin COMMERCE-021.
+
+##### A1-R1 — distinguish Visual projection incompatibility from response-template incompatibility
+
+Change:
+
+```text
+src/commerce/tool-authoring/external-validation.ts
+tests/external-tool-authoring-validation.test.ts
+```
+
+The current validator does:
+
+```ts
+try {
+  validateDefinitionForPublication(...);
+} catch {
+  issues.push(
+    issue(
+      '/responseTemplate',
+      'incompatible_response_template',
+      'Response template is incompatible with the result schema'
+    )
+  );
+}
+```
+
+This is incorrect because `validateDefinitionForPublication()` also throws:
+
+```text
+External visual projection is incompatible with resultSchema
+```
+
+for OBJECT/LIST projection/resultSchema incompatibility. That failure belongs under
+the execution boundary, not `/responseTemplate`.
+
+Required observable result:
+
+```text
+Visual OBJECT/LIST projection incompatible with resultSchema
+-> valid=false
+-> issue.path    = /execution/responseProcessing
+-> issue.code    = incompatible_response_processing
+-> safe bounded message describing response-processing/result-schema incompatibility
+
+Response template path/token incompatible with the resulting output schema
+-> valid=false
+-> issue.path    = /responseTemplate
+-> issue.code    = incompatible_response_template
+```
+
+Continue to use the accepted COMMERCE-016 publication helper as the canonical
+compatibility rule. Do NOT copy/reimplement `visualPublicationCompatible()` inside
+COMMERCE-023.
+
+A bounded wrapper may classify the accepted helper's known `TypeError` reason, or the
+canonical helper may expose a compatible tagged reason while preserving all existing
+COMMERCE-016 behavior/tests. Do not create a second visual-validation algorithm.
+
+Add active regressions proving:
+
+```text
+valid DIRECT definition passes
+valid OBJECT definition passes
+valid LIST definition passes
+incompatible OBJECT/LIST projection -> /execution/responseProcessing
+valid projection + invalid template -> /responseTemplate
+response JavaScript compile failure -> /execution/responseProcessing/source
+```
+
+The focused suite must no longer satisfy the "Visual" R5 bullet only indirectly.
+
+##### A1-R2 — make the request-preview Server Action input an exact runtime contract
+
+Change:
+
+```text
+src/commerce/tool-authoring/external-validation.ts
+src/studio/tools/external-validation-server-actions.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+The TypeScript `ExternalRequestPreviewInput` type is not a runtime trust boundary.
+The named Server Action MUST strictly validate the top-level request DTO before
+request construction.
+
+Accept exactly:
+
+```ts
+{
+  source?: string;
+  request: unknown;
+  arguments: unknown;
+  inputSchema: unknown;
+}
+```
+
+Requirements:
+
+```text
+unknown top-level keys -> INVALID_INPUT
+top-level origin       -> INVALID_INPUT
+top-level credential/token/auth value -> INVALID_INPUT
+top-level provider response/body      -> INVALID_INPUT
+```
+
+If `source` remains supported, bound it to the same persisted request-JavaScript
+source size ceiling. Do not log or echo rejected extra values.
+
+Do not add connection origin, credential, method, body or provider-response fields to
+the preview DTO.
+
+The canonical nested request object must still be parsed through
+`ExternalRequestConstructionSchema`, which remains responsible for rejecting
+absolute origin/method/body/reserved-header capabilities.
+
+##### A1-R3 — do not classify QuickJS runtime/infrastructure failure as INVALID_INPUT
+
+Change:
+
+```text
+src/commerce/tool-authoring/external-validation.ts
+src/studio/tools/external-validation-server-actions.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+Current preview behavior collapses every `TypeError` into `INVALID_INPUT`.
+
+That incorrectly turns runtime failures such as:
+
+```text
+RUNTIME_UNAVAILABLE
+DEADLINE
+THROTTLED
+CANCELLED
+```
+
+into browser-input failures.
+
+Required preview classification:
+
+```text
+Zod / strict DTO / schema-validation failure -> INVALID_INPUT
+missing declarative mapped input             -> INVALID_INPUT
+invalid JavaScript descriptor/output         -> INVALID_INPUT
+request JavaScript syntax/entrypoint error    -> INVALID_INPUT
+
+RUNTIME_UNAVAILABLE                           -> INTERNAL_ERROR
+DEADLINE                                      -> INTERNAL_ERROR
+THROTTLED                                     -> INTERNAL_ERROR
+CANCELLED                                     -> INTERNAL_ERROR
+unexpected processor/application failure      -> INTERNAL_ERROR
+```
+
+Use a small typed local error/result boundary rather than treating arbitrary
+application `TypeError`s globally as invalid input.
+
+For full-definition validation, request/response code **authoring errors** remain
+bounded validation issues. If a compiler reports an infrastructure/runtime failure
+rather than an authoring diagnostic, fail the Server Action explicitly as
+`INTERNAL_ERROR`; do not present runtime unavailability as a structurally invalid
+Tool definition.
+
+Unexpected/internal failures must continue through the approved COMMERCE-019 shared
+logger/error translator and MUST NOT become `unknown` or `UNCONFIRMED`.
+
+Add executable tests for at least:
+
+```text
+preview invalid DTO                -> INVALID_INPUT
+preview missing mapped input       -> INVALID_INPUT
+preview invalid JS descriptor      -> INVALID_INPUT
+preview RUNTIME_UNAVAILABLE        -> INTERNAL_ERROR
+preview DEADLINE/THROTTLED         -> INTERNAL_ERROR
+```
+
+##### A1-R4 — prove the named Server Action authorization/error boundary
+
+Add:
+
+```text
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+Use module mocks only at the accepted named boundaries:
+
+```text
+requireStudioPlatformRole
+getCommerceBackend
+createCodeRequestProcessor
+```
+
+Required executable cases:
+
+```text
+authorization denied
+-> FORBIDDEN
+-> backend validation not called
+-> request processor not called
+
+validate action + Prisma P1001/P1002/P1008/P1017
+-> DATABASE_UNAVAILABLE
+-> retryable=true
+
+missing external authoring validator
+-> DATABASE_UNAVAILABLE
+-> retryable=true
+
+valid full-definition validation
+-> kind:'ok'
+-> bounded ToolAuthoringValidation returned
+
+valid request preview
+-> kind:'ok'
+-> only {path, query, headers} descriptor returned
+-> no unknown/UNCONFIRMED field exists
+```
+
+The role hierarchy itself remains owned/proved by COMMERCE-019/027. Do not create a
+new role matrix.
+
+##### A1-R5 — replace the fake transport assertion with an executable zero-provider-I/O proof
+
+Change/add focused validation so R5 genuinely proves provider transport is untouched.
+
+The current focused test:
+
+```ts
+const transport = vi.fn();
+...
+expect(transport).not.toHaveBeenCalled();
+```
+
+does not pass that spy into the implementation and therefore proves nothing.
+
+Add one executable integration-boundary regression around the production
+`createExternalIntegration(...).authoringValidation.validate(...)` composition.
+
+Inject throwing/spied:
+
+```text
+ExternalHttpTransport.execute
+DnsResolver.resolve
+```
+
+and call ONLY:
+
+```text
+integration.authoringValidation.validate(candidateDefinition)
+```
+
+Provide the minimum Prisma connection-revision metadata fixture required for that
+validation.
+
+Assert:
+
+```text
+validation completes deterministically
+transport.execute call count = 0
+dns.resolve call count        = 0
+```
+
+No connection credential resolution/decryption method may be invoked by
+`authoringValidation.validate`.
+
+If a small existing integration fixture already exposes suitable spies, reuse it.
+Do not introduce a second production validation composition.
+
+Also remove the current unused local `transport = vi.fn()` assertion from
+`tests/external-tool-authoring-validation.test.ts`.
+
+##### A1-R6 — retain all required structural branches and publication relationship
+
+Do not regress the existing proof for:
+
+```text
+missing connection
+disabled connection
+declarative argument validation before request construction
+request JavaScript compile errors
+response JavaScript compile errors
+safe descriptor output
+responseTemplate compatibility
+```
+
+Add explicit valid Visual OBJECT/LIST coverage from A1-R1.
+
+Validation remains structural only. It MUST NOT create or write any live-test/sample
+receipt. Keep the COMMERCE-019 publication regression proving a successfully
+validated new definition still fails publication with the exact
+`LIVE_TEST_REQUIRED` gate.
+
+##### A1-R7 — deterministic validation commands
+
+Update:
+
+```text
+test:arch021-external-tool-authoring-validation
+```
+
+so it executes both:
+
+```text
+tests/external-tool-authoring-validation.test.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+plus the zero-provider-I/O integration proof if it is placed in a separate file.
+
+Then run exactly:
+
+```bash
+npm run test:arch021-external-tool-authoring-validation
+npm run test:arch020-external-publication
+
+npm exec vitest run \
+  tests/arch021-commerce-tool-contract.test.ts \
+  tests/code-request-processor.test.ts \
+  tests/tool-authoring-validation.test.ts \
+  tests/tool-authoring-server-actions.test.ts \
+  tests/auth-role-requirements.test.ts \
+  tests/auth-permissions.test.ts
+
+npm exec eslint \
+  src/commerce/tool-authoring/external-validation.ts \
+  src/commerce/integration/external/index.ts \
+  src/studio/tools/external-validation-server-actions.ts \
+  tests/external-tool-authoring-validation.test.ts \
+  tests/external-tool-authoring-server-actions.test.ts
+
+npm run typecheck
+git diff --check
+```
+
+All COMMERCE-023 focused tests must execute with zero skips.
+
+No diagnostic in these surfaces may be classified as baseline:
+
+```text
+src/commerce/tool-authoring/external-validation.ts
+src/commerce/integration/external/index.ts
+src/studio/tools/external-validation-server-actions.ts
+tests/external-tool-authoring-validation.test.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+The two reported COMMERCE-013/backend bootstrap expectation failures may remain
+documented only if they reproduce unchanged and no stack/task-owned source is
+involved.
+
+##### A1-R8 — record the exact Attempt 2 prepared-execution packet
+
+The Attempt 1 Completion Report gives worktree paths and branch but does not record
+the complete required launcher packet.
+
+Attempt 2 must record the exact launcher-provided:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-023
+implementation branch = task/ARCH-021-COMMERCE-023
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 2 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not reuse/infer Attempt 1 values.
+
+Reconcile the human-readable Validation section and Completion Report to the final
+Attempt 2 command counts rather than retaining the Attempt 1 6-test count.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+##### Attempt 2 stop condition
+
+Return to architect review only when:
+
+```text
+Visual structural failures have /execution/responseProcessing paths
+AND template failures remain /responseTemplate
+AND the preview top-level DTO is strict
+AND expected authoring failures -> INVALID_INPUT
+AND runtime/infrastructure failures -> INTERNAL_ERROR
+AND named Server Action auth/database/result mapping is executable
+AND real production validation composition proves zero transport + zero DNS
+AND DIRECT/OBJECT/LIST/response-JS branches are all focused-tested
+AND structural validation still creates no publication evidence
+AND no task-owned type/lint/diff diagnostic remains
+AND the fresh Attempt 2 launcher/report packet is complete
+```
+
+Then push implementation and parent task branches, return control to
+`moda_architect`, and STOP.
+
+Do not begin COMMERCE-021.
+
 ### Reviewed Files
-None
+
+- `src/commerce/tool-authoring/external-validation.ts`
+- `src/studio/tools/external-validation-server-actions.ts`
+- `src/commerce/integration/external/index.ts`
+- `src/commerce/tool-authoring/contracts.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `src/commerce/external-publication/index.ts`
+- `src/commerce/code-request/processor.ts`
+- `src/commerce/code-response/processor.ts`
+- `tests/external-tool-authoring-validation.test.ts`
+- `package.json`
+- submitted `tsconfig.tsbuildinfo`
+- Attempt 1 Completion Report
+
 ### Validation Reviewed
-None
+
+Submitted evidence:
+
+```text
+focused COMMERCE-023 validation: 1 file / 6 tests PASS
+COMMERCE-016/017/019 packet:     9 files / 95 tests PASS
+targeted ESLint:                 PASS
+git diff --check:                PASS
+full typecheck:                  15 unrelated diagnostics reported; 0 task-owned
+integration packet:              67 passed / 2 reported COMMERCE-013 baseline failures
+```
+
+Independent source inspection confirms the current Visual compatibility exception is
+misclassified as `/responseTemplate`, and the current local `transport` spy in the
+focused test is never passed into the validator/integration composition.
+
 ### Architecture Conformance
-Pending
+
+Changes Requested. Ownership, canonical contracts, authorization direction and
+zero-live-provider architecture conform, but the deterministic diagnostic boundary,
+strict request-preview trust boundary, runtime-failure classification and focused
+zero-provider-I/O proof are incomplete. No schema, Shared, database or cross-repository
+redesign is required.
+
 ### Follow-up
-None
+
+Return this same task through `/moda-task ARCH-021-COMMERCE-023` for Attempt 2.
+
+`ARCH-021-COMMERCE-021` remains Pending because COMMERCE-020 is not Complete and
+COMMERCE-023 is not yet Complete. Do not start downstream work.
