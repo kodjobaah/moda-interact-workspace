@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-25T00:36:40Z
+executor: null
+claimed_at: null
 attempt: 5
 depends_on:
   - ARCH-021-COMMERCE-033
@@ -307,8 +307,8 @@ No production Storefront query generation may depend on `path.split(".")`.
 
 - [x] Add pure Storefront AST query builder.
 - [x] Add schema-driven argument-binding state/controls.
-- [ ] Add inputSchema-property variable mapping.
-- [ ] Add bounded literal argument generation.
+- [x] Add inputSchema-property variable mapping.
+- [x] Add bounded literal argument generation.
 - [x] Add connection-first handling.
 - [x] Merge selections safely into existing query AST.
 - [x] Preserve aliases/unrelated existing selections.
@@ -342,7 +342,7 @@ Produces no new cross-service contract.
 
 - [x] GraphQL is generated/merged from real schema metadata and selection tree.
 - [x] Required schema arguments cannot be bypassed.
-- [ ] Input-property variable mappings remain the Tool's persisted argument contract.
+- [x] Input-property variable mappings remain the Tool's persisted argument contract.
 - [x] Connection pagination obeys existing bounded compiler policy.
 - [x] Existing aliases/unrelated selections survive deterministic merge.
 - [x] No dot-path split builder remains.
@@ -408,6 +408,7 @@ Ready for Review
 - Attempt 2 implementation commit: `9e180cc2956d50f064825f3e13a2cc72115b7782`
 - Attempt 3 implementation commit: `cf3c75b19760329914cfeff41c7056a9e068d18c`
 - Attempt 4 implementation commit: `caa900a`
+- Attempt 5 implementation/test commit: `2a49b270cf12d74b88c807c5156029786b09c65f`
 
 ### Work Completed
 
@@ -419,25 +420,27 @@ Attempt 3 corrected LIST wrapper detection and the first-only/last connection UI
 
 Attempt 4 corrected scalar compatibility parity so String is no longer accepted for GraphQL Boolean, Int or Float; retained integer/number compatibility for Int and integer/number compatibility for Float; added the required compatibility matrix; added a real `products.reverse: Boolean` builder regression; changed the nested product compiler proof to start from a product-free document and verify generated `product(handle: $input_handle)` plus its persisted mapping; and changed the schema-identity connected regression to deep-compare the complete validated definition with the definition applied in the real composer context.
 
+Attempt 5 now fails closed when a deterministic generated variable already exists without the exact persisted input mapping, while retaining exact type-and-mapping reuse without duplicate definitions or mappings. The argument editor preserves non-truncating GraphQL Int values, and real `predictiveSearch.limit` regressions prove `1.5` reaches the typed builder and is rejected while `5` remains valid.
+
 ### Validation Results
 
-Focused validation passed: `npx vitest run tests/storefront-input-compatibility.test.ts tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose` completed with 7 test files and 80 tests passing. This includes the scalar compatibility matrix, real `products.reverse: Boolean` rejection for a string input property, generated nested product mapping through the real compiler from a product-free base document, connection `first=1` and `first=20`, LIST/first-only/last UI behavior, fail-closed required/wrong-input workflows, exact complete-definition schema-identity application, and invalid result-path behavior. No provider or network request was used.
+Focused validation passed: `npx vitest run tests/storefront-input-compatibility.test.ts tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose` completed with 7 test files and 82 tests passing. This includes the Attempt 5 missing-mapping rejection/document-preservation and exact reuse regressions, non-truncating real `predictiveSearch.limit` Int literal regressions (`1.5` rejected and `5` accepted), scalar compatibility matrix, real `products.reverse: Boolean` rejection for a string input property, generated nested product mapping through the real compiler from a product-free base document, connection `first=1` and `first=20`, LIST/first-only/last UI behavior, fail-closed required/wrong-input workflows, exact complete-definition schema-identity application, and invalid result-path behavior. No provider or network request was used.
 
-Targeted ESLint over every Attempt 4 changed source/test file passed with zero errors/warnings. `npm run typecheck` exits non-zero with the unchanged documented repository baseline, including missing preview modules, Prisma generated-type drift, and existing implicit-any/strictness diagnostics outside the C034-owned files. The full output contains no diagnostics for the changed C034 helper, builder, workspace, or tests.
+Targeted ESLint over every Attempt 5 changed source/test file passed with zero errors/warnings. `npm run typecheck` exits non-zero with the unchanged documented repository baseline, including missing preview modules, Prisma generated-type drift, and existing implicit-any/strictness diagnostics outside the C034-owned files. The full output contains no diagnostics for the changed C034 helper, builder, workspace, or tests.
 
 The legacy path-string source audit passed: no `buildQueryDefinition`, `path.split(".")`, or `selectedPaths` matches remain in `components` or `src/studio`. The client artifact-boundary audit passed: no runtime Storefront artifact/schema value import remains in the client query-builder/UI surface. `git diff --check` passed.
 
 `npm run typecheck` exits non-zero with the unchanged documented repository baseline, including missing preview modules, Prisma generated-type drift, and existing implicit-any/strictness diagnostics outside the C034-owned files. No diagnostics remain in `components/studio-workspace.tsx`, `src/studio/discovery/storefront-argument-bindings.tsx`, `src/studio/discovery/storefront-query-builder.ts`, or the changed C034 tests; the Attempt 2-owned TS2367 is absent.
 
-Launcher topology evidence: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-034` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-034` both use `task/ARCH-021-COMMERCE-034`. Attempt 4 implementation commit `caa900a` is pushed to `origin/task/ARCH-021-COMMERCE-034`. The database submodule remains pinned at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`). No ARCH-021-COMMERCE-035 worktree, branch, or implementation was started.
+Launcher topology evidence: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-034` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-034` both use `task/ARCH-021-COMMERCE-034`. Attempt 5 implementation commit `2a49b270cf12d74b88c807c5156029786b09c65f` is pushed to `origin/task/ARCH-021-COMMERCE-034`; the implementation worktree is clean. The database submodule remains pinned at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`). No ARCH-021-COMMERCE-035 worktree, branch, or implementation was started.
 
 ### Deviations
 
-The full repository typecheck remains non-zero only because of unchanged documented baseline diagnostics; zero C034-owned diagnostics are present. Focused tests, targeted ESLint, both source audits, and `git diff --check` passed. No live provider/network request was added or used.
+The full repository typecheck remains non-zero only because of unchanged documented baseline diagnostics; zero C034-owned diagnostics are present. Focused tests (7 files / 82 tests), targeted ESLint, both source audits, and `git diff --check` passed. No live provider/network request was added or used.
 
 ### Assumptions
 
-The accepted Storefront compiler and COMMERCE-032 pinned artifact remain the validation authority. Attempt 4 implementation commit `caa900a` is pushed to `origin/task/ARCH-021-COMMERCE-034`.
+The accepted Storefront compiler and COMMERCE-032 pinned artifact remain the validation authority. Attempt 5 implementation commit `2a49b270cf12d74b88c807c5156029786b09c65f` is pushed to `origin/task/ARCH-021-COMMERCE-034`.
 
 ### Unresolved Issues
 
