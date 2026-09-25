@@ -126,8 +126,8 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Complete | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
 | [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Complete | COMMERCE-016, 018, 019 |
 | [COMMERCE-036](COMMERCE-036-create-tool-with-initial-draft-atomically.md) | Create Tool + revision-1 DRAFT as one lifecycle operation | Complete | COMMERCE-016, COMMERCE-020 |
-| [COMMERCE-037](COMMERCE-037-persist-initial-tool-with-narrow-transaction.md) | Persist initial Tool creation with a narrow PostgreSQL transaction | Ready | COMMERCE-036 |
-| [COMMERCE-038](COMMERCE-038-expose-atomic-tool-creation-boundary.md) | Expose atomic initial Tool creation through the Studio boundary | Pending | COMMERCE-037 |
+| [COMMERCE-037](COMMERCE-037-persist-initial-tool-with-narrow-transaction.md) | Persist initial Tool creation with a narrow PostgreSQL transaction | Complete | COMMERCE-036 |
+| [COMMERCE-038](COMMERCE-038-expose-atomic-tool-creation-boundary.md) | Expose atomic initial Tool creation through the Studio boundary | Ready | COMMERCE-037 |
 | [COMMERCE-039](COMMERCE-039-keep-new-tool-authoring-local-until-create.md) | Keep new Tool authoring local until final creation | Pending | COMMERCE-021, COMMERCE-022, COMMERCE-038 |
 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
@@ -138,12 +138,12 @@ COMMERCE-016 is architect-accepted Complete and the simplification implementatio
 Current Phase 3 Ready frontier:
 
 ```text
-COMMERCE-037   priority 46   Narrow initial-Tool PostgreSQL persistence
+COMMERCE-038   priority 47   Atomic initial-Tool Studio mutation boundary
 COMMERCE-021   priority 50   External HTTP request/response authoring UI
 ```
 
-COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024 and COMMERCE-036 are architect-accepted Complete.
-COMMERCE-037 and COMMERCE-021 are independent Ready Phase 3 Commerce implementation tasks. COMMERCE-038 remains gated by COMMERCE-037; COMMERCE-039 remains gated by COMMERCE-021 and COMMERCE-038.
+COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036 and COMMERCE-037 are architect-accepted Complete.
+COMMERCE-038 and COMMERCE-021 are independent Ready Phase 3 Commerce implementation tasks. COMMERCE-039 remains gated by COMMERCE-021 and COMMERCE-038.
 ```
 
 
@@ -170,6 +170,10 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 Current checkpoint implementation frontier: none.
 
 COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. All terminal checkpoint implementation dependencies are Complete, so `ARCH-021-SYSTEM-TEST-001` remains Ready. The developer is intentionally holding terminal system tests until the implementation phases are finished and is using manual validation meanwhile; this Ready system-test task is not an implementation dependency and does not pause Phase 3.
+
+### COMMERCE-037 Attempt 2 accepted — 2026-09-26
+
+COMMERCE-037 is **Complete / Accepted, Attempt 2**. The dedicated initial-Tool persistence path now uses one narrow Prisma transaction with operation-scoped advisory locking, exact audit replay lookup and direct Tool/revision/audit inserts. Attempt 2 proves a distinct narrow create completes while the legacy global publication lock is held, adds changed-actor replay rejection, and limits `P2002 -> CONFLICT` translation to the `CommerceTool.name` unique target. The common packet passed 81/81; the focused PostgreSQL correction test, changed-file ESLint and diff checks passed; retained backend/typecheck failures match the documented baseline. COMMERCE-038 is promoted to **Ready**.
 
 ### COMMERCE-036 Attempt 2 accepted — 2026-09-26
 
