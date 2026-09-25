@@ -318,8 +318,8 @@ Ready for Review
 ### Implementation and VCS Evidence
 - Implementation commit: `47fa255`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
 - Implementation worktree was clean after the implementation commit.
-- Parent report commit: pending immediately after this report edit; parent worktree will be clean after that commit.
-- Push parity: implementation push passed; parent report push will be performed before handoff.
+- Parent report commit: `93b3bdef`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
+- Push parity: implementation push and parent report push both passed.
 
 ### Deviations
 - None from the Attempt 2 correction contract. Full typecheck remains limited by the unrelated baseline diagnostics listed above.
