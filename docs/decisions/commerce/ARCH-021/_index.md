@@ -120,9 +120,9 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Complete | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
 | [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Complete | COMMERCE-016, ARCH-020-COMMERCE-011 |
 | [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth/error contract and `LIVE_TEST_REQUIRED` publication gate | Complete | COMMERCE-016, COMMERCE-027, ARCH-020-COMMERCE-030 |
-| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Ready | COMMERCE-016, 005, 006, 027, 029 |
-| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Pending | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
-| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Pending | COMMERCE-019, 020, 024 |
+| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Complete | COMMERCE-016, 005, 006, 027, 029 |
+| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Ready | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
+| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Ready | COMMERCE-019, 020, 024 |
 | [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Complete | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
 | [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Complete | COMMERCE-016, 018, 019 |
 
@@ -134,11 +134,12 @@ COMMERCE-016 is architect-accepted Complete and the simplification implementatio
 Current Phase 3 Ready frontier:
 
 ```text
-COMMERCE-020   priority 32   Tool extraction + named Server Actions/reconciliation
+COMMERCE-021   priority 50   External HTTP request/response authoring UI
+COMMERCE-022   priority 50   Shopify Admin GraphQL authoring UI
 ```
 
-COMMERCE-019, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete.
-COMMERCE-021 and COMMERCE-022 both remain Pending on COMMERCE-020.
+COMMERCE-019, COMMERCE-020, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete.
+COMMERCE-021 and COMMERCE-022 are independently Ready.
 ```
 
 
@@ -544,6 +545,10 @@ contract exposes no synthetic server path.
 
 COMMERCE-033 is now **Ready**. COMMERCE-034/035 and SYSTEM-TEST-001 remain
 dependency-gated.
+
+### COMMERCE-020 Attempt 5 accepted — 2026-09-25
+
+COMMERCE-020 is **Complete / Accepted, Attempt 5**. The extracted Tool domain now owns named Server Action mutation handling and transport-only serializable UNCONFIRMED state without mutation replay; real audit reconciliation is actor-authorized and fail closed; committed composite EXTERNAL_HTTP recovery cannot expose duplicate create/draft retries when canonical identity cannot be resolved; and newer edits remain dirty across earlier save completion. The final Tool/reconciliation packet passed 26 focused tests, the ARCH-020 external UI packet passed 13 tests, targeted lint/source audits/diff checks passed, and task-owned TypeScript diagnostics are zero. With C019/C023/C024 already Complete, COMMERCE-021 and COMMERCE-022 are promoted to **Ready**.
 
 ### COMMERCE-020 Attempt 4 changes requested — 2026-09-25
 

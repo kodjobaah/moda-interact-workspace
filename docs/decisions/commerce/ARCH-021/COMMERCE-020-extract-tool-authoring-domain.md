@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 32
 executor: null
 claimed_at: null
@@ -382,9 +382,43 @@ Ready for Review
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 4
+Accepted — Attempt 5
 
 ### Review Notes
+
+#### Attempt 5 review — 2026-09-25
+
+Reviewed final implementation `09a5d0ea2d37b6be63bff41bb80cc2b054300721` and final parent review handoff `99719186` against the complete Attempt 4 correction contract.
+
+Accepted. The final implementation preserves the serializable Tool boundary and closes the remaining transport-uncertainty/reconciliation requirements:
+
+- deterministic Tool lifecycle/auth/validation errors remain bounded server results and do not enter UNCONFIRMED;
+- only rejection of the named mutation Server Action invocation creates client-local `{ operationId, label }` UNCONFIRMED state;
+- confirmed mutations remain confirmed when canonical refresh fails and report `Saved; canonical refresh unavailable.`;
+- reconciliation invokes the real `reconcileToolOperation()` Server Action, uses the explicit Tool audit-action allow-list, performs no Tool mutation/replay, enforces actor authorization, maps database connectivity failures to `DATABASE_UNAVAILABLE`, and logs unexpected failures through the shared logger;
+- EXTERNAL_HTTP create and draft operations retain independent operation ids and serializable staged intent;
+- audit-proved committed step-1/step-2 recovery remains UNCONFIRMED when canonical Tool/DRAFT identity cannot be resolved, so a duplicate create/draft retry is never exposed;
+- not-committed reconciliation clears uncertainty and the next explicit retry generates a new operation id;
+- newer edits remain dirty when an earlier confirmed save completes;
+- `StudioWorkspace` passes only serializable Tool context and the Tool domain owns the outer Composer navigation blocker through `dirty || unconfirmed`, with `unconfirmed` locked; no `controlled`, action-bundle, service-port or mutation-closure boundary was reintroduced.
+
+The executable Tool-domain regression packet now exercises deterministic result handling, transport rejection, committed/not-committed reconciliation, database/reconciliation failure, actor authorization, composite external recovery and no-replay behavior. Source inspection additionally confirms the production navigation blocker remains `blocked`/`locked` while Tool UNCONFIRMED is present.
+
+Validation accepted:
+
+```text
+Tool authoring + real reconciliation tests: 26 passed
+ARCH-020 external Tool UI suite:            13 passed
+Targeted ESLint:                            passed
+Required source audits:                     passed
+git diff --check:                           passed
+Task-owned TypeScript diagnostics:          zero
+```
+
+The repository-wide suite/typecheck retain unrelated baseline failures documented in the Completion Report; no remaining failure or diagnostic is attributable to the final C020-owned Tool source/tests reviewed here.
+
+COMMERCE-020 is Complete. All other dependencies of COMMERCE-021 and COMMERCE-022 are already Complete, so both dependants are promoted to Ready.
+
 
 #### Attempt 4 review — 2026-09-25
 
@@ -1945,42 +1979,25 @@ Use `vi.mock(...)` for the same named Server Action modules used by production. 
 
 ### Validation Reviewed
 
-Submitted evidence accepted as useful but insufficient for the missing R1/R4/R5/R6/R8 behavior:
+Accepted final evidence:
 
 ```text
-focused tests: 26 passed
-ARCH-020 external-tools UI: 13 passed
-targeted lint: passed
+implementation: 09a5d0ea2d37b6be63bff41bb80cc2b054300721
+parent review handoff: 99719186
+Tool authoring + reconciliation tests: 26 passed
+ARCH-020 external Tool UI suite: 13 passed
+targeted ESLint: passed
+source audits: passed
 git diff --check: passed
+task-owned TypeScript diagnostics: zero
 ```
 
-Attempt 2 MUST run exactly:
-
-```bash
-npm exec vitest run   tests/tool-authoring-screen.test.tsx   tests/tool-operation-reconciliation.test.ts   tests/studio-workspace.test.tsx
-
-npm run test:arch020-external-tools-ui
-
-npm exec eslint   components/studio-workspace.tsx   src/studio/tools/tool-authoring-screen.tsx   src/studio/tools/tool-library.tsx   src/studio/tools/tool-editor.tsx   src/studio/tools/contracts.ts   src/studio/tools/reconciliation-server-actions.ts   src/studio/server-actions.ts   src/commerce/integration/studio/services.ts   tests/tool-authoring-screen.test.tsx   tests/tool-operation-reconciliation.test.ts   tests/studio-workspace.test.tsx
-
-git diff --check
-```
-
-Then run the repository typecheck command declared by `package.json`. Existing unrelated baseline diagnostics may be documented, but there must be zero diagnostics in the files above.
-
-Before returning to review, also prove these source invariants:
-
-```bash
-! rg -n 'controlled=' components/studio-workspace.tsx
-! rg -n 'controlled\?:' src/studio/tools/tool-authoring-screen.tsx
-! rg -n 'console\.(log|error)' src/studio/tools/reconciliation-server-actions.ts
-! rg -n 'startsWith:.*TOOL_' src/studio/tools/reconciliation-server-actions.ts
-```
+The final source was also reviewed directly for the production no-replay and fail-closed committed-recovery invariants.
 
 ### Architecture Conformance
 
-Changes Requested. The component extraction is present, but production still crosses the Tool boundary with function-valued orchestration state and still uses the generic workspace unknown/replay mechanism. The server mutation boundary and reconciliation action also do not yet satisfy the exact bounded-error and no-replay contracts.
+Accepted. The implementation conforms to the ARCH-021 Tool-domain extraction, serializable React boundary, hierarchical authorization, bounded Tool mutation-result contract, transport-only UNCONFIRMED model, audit-only no-replay reconciliation contract, composite external-operation identity rules, and behavior-neutral extraction scope.
 
 ### Follow-up
 
-Return this SAME task through `/moda-task ARCH-021-COMMERCE-020`. The next authorized claim becomes Attempt 2. Preserve all accepted extraction/editor behavior above. Do not start COMMERCE-021 or COMMERCE-022.
+COMMERCE-020 is Complete. Promote ARCH-021-COMMERCE-021 and ARCH-021-COMMERCE-022 to Ready; do not otherwise expand C020 scope.
