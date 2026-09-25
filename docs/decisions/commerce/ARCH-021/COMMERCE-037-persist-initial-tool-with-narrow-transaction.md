@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 46
-executor: copilot
-claimed_at: 2026-09-25T23:22:01Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-036
@@ -273,15 +273,15 @@ If the generic transaction timeout is changed for an independently justified rea
 
 ## Work Items
 
-- [ ] Define the narrow initial Tool persistence port/method.
-- [ ] Route only the COMMERCE-036 initial-create lifecycle command through it.
-- [ ] Implement operation-scoped replay synchronization without the global publication lock.
-- [ ] Insert Tool, revision 1 and audit directly in one Prisma transaction.
-- [ ] Map Tool-name uniqueness to bounded `CONFLICT` semantics.
-- [ ] Preserve identical replay and conflicting-reuse semantics.
-- [ ] Add rollback regressions.
-- [ ] Add real PostgreSQL concurrency/replay coverage.
-- [ ] Prove the new path does not invoke whole-state read/write helpers.
+- [x] Define the narrow initial Tool persistence port/method.
+- [x] Route only the COMMERCE-036 initial-create lifecycle command through it.
+- [x] Implement operation-scoped replay synchronization without the global publication lock.
+- [x] Insert Tool, revision 1 and audit directly in one Prisma transaction.
+- [x] Map Tool-name uniqueness to bounded `CONFLICT` semantics.
+- [x] Preserve identical replay and conflicting-reuse semantics.
+- [x] Add rollback regressions.
+- [x] Add real PostgreSQL concurrency/replay coverage.
+- [x] Prove the new path does not invoke whole-state read/write helpers.
 
 ## Interfaces / Contracts
 
@@ -308,27 +308,27 @@ No Shared-package or cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Initial Tool creation performs no `readState()`, `writeState()` or whole-publication `snapshot()` operation.
-- [ ] Initial Tool creation does not acquire the global `moda-commerce-publication` advisory lock.
-- [ ] One transaction creates exactly one Tool, revision 1 DRAFT and audit record.
-- [ ] The transaction returns both created identifiers without a broad reread.
-- [ ] Tool-name uniqueness is database-enforced and mapped to `CONFLICT`.
-- [ ] Identical concurrent operation replay returns one durable result and creates one set of business rows.
-- [ ] Conflicting operation reuse remains rejected.
-- [ ] Failure of any write rolls back Tool, revision and audit together.
-- [ ] Different operationIds are not globally serialized solely by publication locking.
-- [ ] No Prisma schema/migration change is required.
-- [ ] The existing generic storage path for unrelated publication commands remains behaviourally unchanged.
+- [x] Initial Tool creation performs no `readState()`, `writeState()` or whole-publication `snapshot()` operation.
+- [x] Initial Tool creation does not acquire the global `moda-commerce-publication` advisory lock.
+- [x] One transaction creates exactly one Tool, revision 1 DRAFT and audit record.
+- [x] The transaction returns both created identifiers without a broad reread.
+- [x] Tool-name uniqueness is database-enforced and mapped to `CONFLICT`.
+- [x] Identical concurrent operation replay returns one durable result and creates one set of business rows.
+- [x] Conflicting operation reuse remains rejected.
+- [x] Failure of any write rolls back Tool, revision and audit together.
+- [x] Different operationIds are not globally serialized solely by publication locking.
+- [x] No Prisma schema/migration change is required.
+- [x] The existing generic storage path for unrelated publication commands remains behaviourally unchanged.
 
 ## Validation
 
-- [ ] `npm run test:arch021-tool-authoring-common`
-- [ ] `npm run test:arch020-backend-integration`
-- [ ] focused initial-create PostgreSQL concurrency/replay/rollback test
-- [ ] `npm run prisma:generate` when generated Prisma client state is required by the repository checkout
-- [ ] targeted lint/typecheck with zero new task-owned diagnostics
-- [ ] source audit proving the initial-create path does not call `readState`, `writeState`, `snapshot` or the global publication advisory lock
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-tool-authoring-common` passed: 7 files, 81 tests.
+- [ ] `npm run test:arch020-backend-integration` completed 67/69; two pre-existing backend-global expectation tests failed in `tests/backend-integration.test.ts`.
+- [x] focused initial-create PostgreSQL concurrency/replay/rollback test passed: 1 test.
+- [x] `npm run prisma:generate` completed successfully.
+- [x] targeted ESLint passed for all five changed files; full typecheck has 16 unrelated baseline errors and no task-owned diagnostics.
+- [x] source audit confirms the dedicated method uses only the operation audit, Tool and ToolRevision tables and operation-keyed advisory locking.
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -343,28 +343,43 @@ An operation-keyed PostgreSQL advisory transaction lock is acceptable because it
 ## Completion Report
 
 ### Status
-Not Started
+Implemented and ready for Architect Review.
 
 ### Files Changed
-None
+- `src/commerce/publication/ports.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/integration/backend/publication-storage.ts`
+- `tests/fixtures/publication-store.ts`
+- `tests/backend-postgres-rehearsal.test.ts`
 
 ### Work Completed
-None
+- Added a dedicated initial Tool + draft persistence contract and routed only `createToolWithInitialDraft` through it.
+- Added a bounded Prisma transaction with operation-keyed advisory locking, exact audit replay lookup, direct Tool/revision/audit inserts, unique-name conflict mapping, and rollback hook coverage.
+- Preserved the generic publication transaction for all unrelated lifecycle commands.
 
 ### Validation Results
-None
+- Implementation commit: `d6b20ae` (`feat(commerce): persist initial tool draft narrowly`), pushed to `task/ARCH-021-COMMERCE-037`.
+- Claim commit: `1c90eae2fd6243f28d3a2442938bb10f923dc2e8`.
+- Common authoring packet: 81/81 passed.
+- Focused lifecycle packet: 34/34 passed.
+- Focused PostgreSQL narrow persistence test: passed, including independent-client replay, altered replay conflict, same-name race, and post-write rollback.
+- Changed-file ESLint and `git diff --check`: passed.
+- Backend integration packet: 67/69 passed; the two failures are existing `getCommerceBackend()` expectation failures in `tests/backend-integration.test.ts`.
+- Full typecheck: existing 16 diagnostics in unrelated files; no task-owned diagnostic was reported.
 
 ### Deviations
-None
+- No schema or migration changes.
+- The existing broad PostgreSQL rehearsal test timed out at 60 seconds in this environment; the new focused PostgreSQL test passed independently.
 
 ### Assumptions
-None
+- Existing `CommerceAuditEvent.id` remains the durable operation identity, with `operationId` populated for the new direct audit row.
+- The existing production authorization adapter's development-principal guard remains a no-op, while lifecycle role authorization and canonical definition validation remain enforced before persistence.
 
 ### Unresolved Issues
-None
+- Architect review should confirm whether the two backend integration failures and broad rehearsal timeout are baseline environment issues or require separate follow-up tasks.
 
 ### Architectural Concerns
-None
+- None within the COMMERCE-037 scope. The generic publication transaction remains unchanged for unrelated commands.
 
 ## Architect Review
 
