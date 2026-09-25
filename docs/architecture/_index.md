@@ -970,17 +970,8 @@ Phase 1's six Commerce-only tasks for real Connections composition, server-valid
 `shopId` context, production external connection selection and JavaScript response-panel
 installation are architect-accepted Complete.
 
-Phase 2 is architect-accepted Complete across its Database and Commerce tasks, including
-the bounded COMMERCE-015 prompt-template revision-history read contract and the accepted Agent
-Configuration, prompt-template and platform-prompt authoring surfaces. Shop override CAS uses
-immutable row-generation tokens plus edit versions so clear/recreate cannot ABA-match stale
-mutations.
+Phase 2 is architect-accepted Complete. The subsequent simplification checkpoint replaced the fragmented model/prompt selection/pointer lifecycle with retained `CommerceAgentConfiguration` rows, independent model/prompt CAS fields and nullable shop overrides; simplified prompt templates while retaining first-class categories; established hierarchical Auth.js platform/merchant authorization; removed production function-valued Studio service props; preserved explicit UI reconciliation without swallowing deterministic errors; and removed RSA/JWT/token exchange from the private MCP path. All simplification implementation tasks, including COMMERCE-032..035 corrections, are Complete.
 
-Phase 3 is materialised for complete Tool authoring without live provider execution.
-COMMERCE-016 is architect-accepted Complete: Commerce now owns the canonical persisted Tool
-definition while Shared remains pinned at exact 0.14.2. The independent current Ready frontier is
-COMMERCE-017 (bounded request JavaScript), COMMERCE-018 (Shopify Admin GraphQL compiler),
-COMMERCE-019 (common authoring validation/publication gate), and COMMERCE-020 (Tool authoring
-domain extraction).
+Terminal `ARCH-021-SYSTEM-TEST-001` remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Phase 3 therefore resumes on the simplified architecture. COMMERCE-016 is Complete. COMMERCE-020, COMMERCE-019, COMMERCE-017 and COMMERCE-018 are the current Ready frontier; COMMERCE-021..024 remain dependency-gated.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)

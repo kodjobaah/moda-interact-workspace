@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-021-COMMERCE-021
 created: 2026-09-24
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Implement External HTTP authoring validation and request preview
@@ -85,7 +85,7 @@ No DNS, HTTP, provider or credential operation is permitted.
 
 ### R2 — request-construction preview
 
-Expose an authenticated ADMIN/SUPER_ADMIN server action/port accepting exactly:
+Expose the named Server Action `src/studio/tools/external-validation-server-actions.ts` and require exactly `requireStudioPlatformRole('ADMIN')` before any database-backed validation/preview work. Do not create a function-valued production port or duplicate role matrix. The action accepts exactly:
 
 ```ts
 {
@@ -103,11 +103,14 @@ Before request construction:
 1. validate `arguments` through `compileSubset(inputSchema, 'input')`;
 2. execute declarative mapping or COMMERCE-017 `buildRequest({args})`;
 3. parse the result through COMMERCE-016 `ExternalRequestDescriptorSchema`;
-4. return only the safe descriptor or bounded COMMERCE-019 diagnostics.
+4. return only `ToolAuthoringActionResult<ExternalRequestDescriptor>` using the COMMERCE-019 explicit error contract;
+5. map database connectivity failures to `DATABASE_UNAVAILABLE`; never return `unknown`/`UNCONFIRMED` from this non-mutating action.
 
 Preview performs no connection transport call.
 
-### R3 — deterministic issue paths
+### R3 — explicit errors and deterministic issue paths
+
+Validation/preview are non-mutating. `FORBIDDEN`, `INVALID_INPUT`, `NOT_FOUND`, `DATABASE_UNAVAILABLE` and `INTERNAL_ERROR` must remain explicit COMMERCE-019 action results. A rejected validation/preview call MUST NOT be reconciled as a Tool mutation and MUST NOT create `UNCONFIRMED`. Unexpected errors are logged server-side through the approved shared structured logger.
 
 External validation issues use stable paths under `/execution/...`, `/inputSchema` or `/responseTemplate` as appropriate. Maximum issue count and message-safety rules come from COMMERCE-019.
 
@@ -131,9 +134,9 @@ Add `test:arch021-external-tool-authoring-validation` proving:
 ## Work Items
 
 - [ ] Add External HTTP full-definition validator.
-- [ ] Add authenticated request-construction preview.
+- [ ] Add named, hierarchy-authorized request-construction preview.
 - [ ] Compose request/response JS and visual/DIRECT structural validation.
-- [ ] Use the common COMMERCE-019 result/auth contract.
+- [ ] Use COMMERCE-019 explicit action-result and COMMERCE-027 platform-role authorization contracts.
 - [ ] Add focused zero-provider-I/O tests.
 
 ## Interfaces / Contracts
@@ -158,6 +161,8 @@ Produces the authoritative External HTTP validation/preview boundary consumed by
 - [ ] External HTTP authoring validation is server authoritative and zero-provider-I/O.
 - [ ] Request preview receives only schema-validated Tool arguments and returns only a safe descriptor.
 - [ ] Connection/request/response/template failures use the common bounded diagnostics contract.
+- [ ] PLATFORM_ADMIN and PLATFORM_SUPER_ADMIN are admitted through hierarchy; merchant roles are denied.
+- [ ] Validation/preview errors remain explicit and never become mutation UNCONFIRMED state.
 - [ ] Validation creates no evidence that can satisfy the Phase 3 publication gate.
 
 ## Validation

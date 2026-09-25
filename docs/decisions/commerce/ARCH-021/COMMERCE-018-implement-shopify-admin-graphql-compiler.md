@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-021-COMMERCE-024
 created: 2026-09-23
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Implement pinned Shopify Admin GraphQL authoring compiler
@@ -40,6 +40,8 @@ Add a server-side, offline Shopify Admin GraphQL 2026-07 compiler for `SHOPIFY_A
 ## Context
 
 Commerce already pins `@shopify/dev-mcp@1.15.4`, starts `shopify-dev-mcp` with telemetry disabled, and contains a Storefront compiler plus tests that directly load `dist/data/admin_2026-07.json.gz`. Phase 3 promotes the Admin schema into an explicit authored-tool validator. Shopify Dev MCP remains a development/schema oracle, not the deployed execution path.
+
+The 2026-09-24 simplification checkpoint is implementation-complete. Its terminal system test remains Ready by developer choice and is not an implementation dependency. This task is restored to Ready because its source dependencies are Complete and its technical contract is unaffected by the simplification.
 
 ## Scope
 
