@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -209,7 +209,7 @@ Produces a server-only processor consumed by COMMERCE-023. The External HTTP UI 
 
 ## Validation
 
-- [x] `npm run test:arch021-code-request` (5/5)
+- [x] `npm run test:arch021-code-request` (6/6)
 - [x] `npm run test:arch020-code-processor` (6/6)
 - [x] `npm run test:arch020-code-runtime-proof` (10/10)
 - [x] `npm run code-runtime:package`
@@ -258,9 +258,106 @@ None
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 2
+Accepted — Attempt 3
 
 ### Review Notes
+
+#### Attempt 3 review — Accepted — 2026-09-25
+
+Reviewed implementation `06416de1` and the submitted Attempt 3 Completion Report
+against the complete Attempt 2 correction contract.
+
+Attempt 3 is accepted.
+
+The runtime implementation is unchanged from the already-reviewed Attempt 2
+implementation. Attempt 2 -> Attempt 3 differs substantively only in
+`tests/code-request-processor.test.ts` (plus regenerated TypeScript build metadata),
+so the correction remained proof-only as requested.
+
+The request-focused suite now proves all four previously missing output-safety cases
+through the real `createCodeRequestProcessor().process(...)` QuickJS path:
+
+```text
+non-finite output        -> INVALID_REQUEST / INVALID_OUTPUT
+custom prototype output  -> INVALID_REQUEST / INVALID_OUTPUT
+accessor output          -> INVALID_REQUEST / INVALID_OUTPUT
+>48 KiB output           -> INVALID_REQUEST / INVALID_OUTPUT
+```
+
+The host-capability regression explicitly proves the required R5 set:
+
+```text
+eval
+Function
+Date
+fetch
+XMLHttpRequest
+require
+process
+importScripts
+WebAssembly
+Math.random
+```
+
+`XMLHttpRequest` is inspected through computed global access because the canonical
+COMMERCE-016 persisted-source validator intentionally rejects the literal identifier;
+the existing literal-source rejection proof is retained. `Math.random` remains unable
+to produce a valid descriptor.
+
+All previously required request proofs remain active: deterministic descriptor,
+nested-array input, unsafe extra descriptor fields, absolute URL/origin/method/body,
+reserved authorization header, oversized input, prototype-pollution input, missing
+and non-callable `buildRequest`, pre-cancellation, deadline and throttling. Existing
+response and generic runtime proofs remain unchanged and green.
+
+Submitted validation:
+
+```text
+request tests:       6/6 PASS, 0 skipped
+response tests:      6/6 PASS, 0 skipped
+runtime proof:      10/10 PASS, 0 skipped
+runtime package:     PASS
+packaged smoke:      PASS
+lint:                PASS
+git diff --check:    PASS
+```
+
+The packaged proof continues to use QuickJS runtime `quickjs-sync.v1`, artifact
+SHA-256 `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`
+and the existing 64 MiB WASM ceiling.
+
+Inspection of the submitted `tsconfig.tsbuildinfo` finds zero semantic diagnostics in:
+
+```text
+src/commerce/code-request/**
+src/commerce/code-runtime/**
+src/commerce/code-response/processor.ts
+tests/code-request-processor.test.ts
+tests/code-response-processor.test.ts
+tests/code-runtime-proof.test.ts
+```
+
+The remaining diagnostics are the documented unrelated baseline surfaces.
+
+The Completion Report records the canonical Attempt 3 parent and implementation
+worktrees, matching task branches, start synchronization, fresh Attempt 3 claim,
+recursive submodule materialization, database submodule commit `0a8d3b9`, pushed
+implementation commit and clean/synchronized worktree state.
+
+The final handoff identifies parent report commit `147252fc`, while the embedded
+Attempt 3 report records `d0217724` before its final report publication. The review
+archive contains no Git metadata from which the architect can reconstruct the
+relationship between those two parent hashes. The durable report content, cleared
+claim and reported branch parity are coherent, so this bookkeeping difference does
+not block acceptance.
+
+No live HTTP, credential, Shopify GraphQL, Studio UI, publication policy or
+COMMERCE-023 implementation was introduced.
+
+`ARCH-021-COMMERCE-023` remains Pending after this acceptance because its independent
+`ARCH-021-COMMERCE-019` dependency is still Ready rather than Complete.
+
+#### Historical Attempt 2 Changes Requested
 
 #### Attempt 2 review — 2026-09-25
 
@@ -502,158 +599,49 @@ Do not start `ARCH-021-COMMERCE-023`.
 
 ### Reviewed Files
 
+- `tests/code-request-processor.test.ts`
+- `src/commerce/code-request/processor.ts`
 - `src/commerce/code-runtime/types.ts`
 - `src/commerce/code-runtime/kernel.ts`
 - `src/commerce/code-runtime/worker.mjs`
-- `src/commerce/code-request/processor.ts`
 - `src/commerce/code-response/processor.ts`
 - `scripts/code-runtime-manifest.mjs`
 - `scripts/code-runtime-packaged-smoke.mjs`
-- `tests/code-request-processor.test.ts`
 - `tests/code-response-processor.test.ts`
 - `tests/code-runtime-proof.test.ts`
 - `package.json`
 - submitted `tsconfig.tsbuildinfo`
-- Attempt 2 Completion Report
+- Attempt 3 Completion Report
+- Attempt 2 and Attempt 3 submitted snapshots for scoped diff comparison
 
 ### Validation Reviewed
 
-Submitted evidence:
-
-```text
-request tests: 5/5 PASS
-response tests: 6/6 PASS
-runtime proof: 10/10 PASS
-code-runtime:package PASS
-code-runtime:smoke PASS
-lint PASS
-git diff --check PASS
-full typecheck non-zero on unrelated baseline files only
-```
-
-Independent inspection of the submitted TypeScript build artifact finds no semantic
-diagnostic in the COMMERCE-017-owned runtime/request/response/scripts/focused-test
-surfaces.
-
-The missing R8 proof is specific: the request suite currently does not execute
-non-finite output, custom-prototype output, accessor output or >48 KiB output cases.
+- `npm run test:arch021-code-request`: 6/6 passed, zero skipped.
+- `npm run test:arch020-code-processor`: 6/6 passed, zero skipped.
+- `npm run test:arch020-code-runtime-proof`: 10/10 passed, zero skipped.
+- `npm run code-runtime:package`: passed.
+- `npm run code-runtime:smoke`: passed.
+- Submitted lint: passed.
+- Submitted `git diff --check`: passed.
+- Submitted full typecheck: non-zero only on documented unrelated baseline
+  diagnostics.
+- Independent `tsconfig.tsbuildinfo` inspection: zero semantic diagnostics in the
+  COMMERCE-017 task-owned runtime/request/response/focused-test surfaces.
+- Independent Attempt 2 -> Attempt 3 comparison: no runtime source changes; only
+  request-focused safety proof plus generated TypeScript metadata.
 
 ### Architecture Conformance
 
-Runtime architecture conforms. Acceptance is deferred only because mandatory
-request-focused safety proof is incomplete. No architecture redesign is requested.
+Conforms. One bounded QuickJS sandbox serves request and response processing;
+request code receives only validated `{args}`, has no I/O/credential/context access,
+and only canonical Commerce-valid request descriptors escape. Runtime limits,
+packaging and response behavior remain unchanged. No live provider execution or
+downstream authoring-validation/UI scope was pulled into this task.
 
 ### Follow-up
 
-Return this same task through `/moda-task ARCH-021-COMMERCE-017` for Attempt 3.
-`ARCH-021-COMMERCE-023` remains Pending because COMMERCE-017 is not yet Complete and
-COMMERCE-019 is also not Complete. Do not start downstream work.
+`ARCH-021-COMMERCE-017` is Complete / Accepted at Attempt 3.
 
-## Developer Override - Reopened
-
-### Previous Status
-review
-
-### Previous Attempt
-1
-
-### Decision
-The developer requested that this task be reopened for another implementation and review cycle. Preserve the existing implementation, completion report, validation evidence and Architect Review history; do not increment the attempt or claim the task as part of this transition.
-
-### Result
-The task is ready for the next authorized execution workflow. Execution mode, completion mode, executor and claim state remain unchanged.
-
-## Attempt 2 Completion Report
-
-### Status
-Ready for architect review.
-
-### Correction Checklist
-- [x] Preserve one generic QuickJS worker and explicit response/request modes; the packaged response proof now invokes `run-response`.
-- [x] Prove the request entrypoint is callable during request compilation, not only syntactically present.
-- [x] Admit bounded JSON-safe request arguments including nested arrays while retaining prototype, accessor, symbol, non-finite number and pollution-key rejection.
-- [x] Declare the exact QuickJS release-sync WASM package required by the worker so local and packaged execution resolve the same runtime artifact.
-
-### Files Changed
-- `package.json`
-- `scripts/code-runtime-packaged-smoke.mjs`
-- `src/commerce/code-request/processor.ts`
-- `src/commerce/code-runtime/worker.mjs`
-- `tests/code-request-processor.test.ts`
-
-### Validation Results
-- `npm run test:arch021-code-request`: passed, 5/5 tests.
-- `npm run test:arch020-code-processor`: passed, 6/6 tests.
-- `npm run test:arch020-code-runtime-proof`: passed, 10/10 tests.
-- `npm run code-runtime:package`: passed; runtime `quickjs-sync.v1`, artifact SHA-256 `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, WASM ceiling `67108864` bytes.
-- `npm run code-runtime:smoke`: passed for packaged response transform, request descriptor, and memory ceiling proof using the same artifact/hash.
-- `npm run lint`: passed with 0 errors and 6 existing warnings; no task-owned warning was introduced.
-- `npm run typecheck`: remains nonzero on known unrelated baseline Prisma/Studio/test diagnostics; no diagnostics were reported for the task-owned runtime, request processor, response adapter, scripts, or focused tests.
-- `git diff --check`: passed.
-
-### Git Evidence
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-017`.
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-017`.
-- Implementation branch: `task/ARCH-021-COMMERCE-017`; commit `87bca07`, pushed to `origin/task/ARCH-021-COMMERCE-017`.
-- Launcher claim commit: `5a2eae5d5ba7a0a026f61f79baa03d425264947c`, pushed.
-- Parent synchronization: remote task branch fast-forward not needed; current `origin/main` incorporated before execution; parent head after claim `cbe7cef2fb11a51a94ce722b79709dd2ff8b4da2`.
-- Implementation synchronization: remote task branch fast-forward not needed; current `origin/main` incorporated before execution; prepared implementation head `c33c3633ed733dd5df5745fc3ef363344f25963e`.
-- Recursive database submodule sync/update passed at commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-
-### Deviations and Unresolved Issues
-- Full typecheck remains baseline-non-clean as documented above; no unrelated remediation was attempted.
-- No network, credential, Shopify GraphQL, Studio UI, publication policy, live HTTP wiring, or downstream ARCH-021-COMMERCE-023 work was added.
-- None unresolved.
-
-## Attempt 3 Completion Report
-
-### Status
-Ready for architect review.
-
-### Correction Checklist
-- [x] A2-R1: Added active request-processor QuickJS regressions for non-finite output, null-prototype output, accessor output, and output larger than the 48 KiB ceiling; all assert `INVALID_REQUEST` with `INVALID_OUTPUT` diagnostics.
-- [x] A2-R2: Explicitly proved `eval`, `Function`, `Date`, `fetch`, `XMLHttpRequest`, `require`, `process`, `importScripts`, and `WebAssembly` are unavailable to request code; preserved the existing `Math.random` unusable-descriptor proof and literal `XMLHttpRequest` source rejection proof.
-- [x] A2-R3: Preserved deterministic descriptor, nested-array input, unsafe descriptor fields, absolute URL/origin/method/body, reserved header, oversized input, prototype-pollution input, compile-entrypoint, cancellation, deadline and throttling coverage; response and generic runtime proofs remained green.
-- [x] A2-R4: Ran every required validation command with zero skipped focused tests and no task-owned type diagnostics.
-- [x] A2-R5: Recorded fresh Attempt 3 launcher, worktree, synchronization, submodule, commit and push evidence below.
-
-### Files Changed
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-017`
-- Implementation file: `tests/code-request-processor.test.ts`
-- Parent report: this task file only.
-
-### Correction-to-Test Mapping
-- A2-R1: `tests/code-request-processor.test.ts`, `rejects unsafe request output values through the processor`.
-- A2-R2: `tests/code-request-processor.test.ts`, `does not expose network or host capabilities`.
-- A2-R3: Existing request test cases were retained; no runtime source was changed.
-
-### Validation Results
-- `npm run test:arch021-code-request`: passed, 6/6 tests, 0 skipped; includes all four new output-safety cases.
-- `npm run test:arch020-code-processor`: passed, 6/6 tests, 0 skipped.
-- `npm run test:arch020-code-runtime-proof`: passed, 10/10 tests, 0 skipped.
-- `npm run code-runtime:package`: passed; runtime `quickjs-sync.v1`, artifact SHA-256 `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, WASM ceiling `67108864` bytes.
-- `npm run code-runtime:smoke`: passed for packaged response transform, request proof and memory ceiling using the same artifact/hash.
-- `npm run lint`: passed with 0 errors and 6 existing warnings; no task-owned lint error was introduced.
-- `npm run typecheck`: nonzero on the known unrelated baseline; the captured log had 268 TypeScript diagnostics and zero matches in the task-owned request/runtime/response/script/focused-test surfaces.
-- `git diff --check`: passed.
-- Focused editor diagnostics for `tests/code-request-processor.test.ts`: no errors.
-
-### Attempt 3 Launcher and VCS Evidence
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-017`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-017`.
-- Parent branch: `task/ARCH-021-COMMERCE-017`.
-- Implementation branch: `task/ARCH-021-COMMERCE-017`.
-- Start-of-attempt parent synchronization: remote task branch fast-forward `not-needed`; `origin/main` incorporation `already-current`; parent head after claim `ed46249bd1f122afca3eb3eeb5a9b429dfb5628d`.
-- Start-of-attempt implementation synchronization: remote task branch fast-forward `not-needed`; `origin/main` incorporation `already-current`; implementation head before correction `87bca07d55d259b8c75cf06d978ff5912969c91d`.
-- Attempt 3 claim: parent claim commit `f4678f237558fc0718e602d4a6ce4864aea7ffce`, pushed; claimed at `2026-09-25T12:02:40Z`.
-- Recursive submodule materialization: sync/update passed; database submodule commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Implementation commit: `06416de14bdb91d3de5c4af1c9547e6b81738c4d`, pushed to `origin/task/ARCH-021-COMMERCE-017`; local and remote implementation hashes match.
-- Parent report commit: `d0217724`, pushed to `origin/task/ARCH-021-COMMERCE-017`.
-- Push parity: implementation task branch is published; parent report branch will be published with this report commit.
-- Worktree state before parent report update: implementation worktree clean; parent worktree clean before this report edit.
-
-### Deviations and Unresolved Issues
-- Full typecheck remains baseline-non-clean with only unrelated diagnostics; no unrelated remediation was attempted.
-- The `XMLHttpRequest` runtime proof uses computed global access because the canonical Commerce-016 source validator intentionally rejects the literal identifier; the existing literal-source rejection test remains unchanged.
-- No network, credentials, Shopify GraphQL, Studio UI, publication policy, live HTTP wiring, or downstream ARCH-021-COMMERCE-023 work was added.
-- None unresolved.
+`ARCH-021-COMMERCE-023` remains Pending because
+`ARCH-021-COMMERCE-019` is not yet Complete. Do not start COMMERCE-023 from this
+review.
