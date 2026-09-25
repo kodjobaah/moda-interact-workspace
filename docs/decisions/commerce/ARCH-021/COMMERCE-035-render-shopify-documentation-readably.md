@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T01:26:38Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-034
@@ -582,7 +582,7 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 - [x] Add readable documentation CSS.
 - [x] Update in-memory fixtures to exact production DTO shape.
 - [x] Mock the production named documentation Server Actions in component tests.
-- [ ] Add raw-markup, structured-rendering and component-boundary regressions.
+- [x] Add raw-markup, structured-rendering and component-boundary regressions.
 
 ## Interfaces / Contracts
 
@@ -620,8 +620,8 @@ No cross-service contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Search results no longer display raw HTML/Markdown syntax.
-- [ ] Search results show bounded readable excerpts.
+- [x] Search results no longer display raw HTML/Markdown syntax.
+- [x] Search results show bounded readable excerpts.
 - [x] Opened documentation is not rendered as one giant paragraph.
 - [x] Headings, paragraphs, lists, code and blockquotes retain separate structure.
 - [x] Code/preformatted text retains meaningful newlines/whitespace.
@@ -637,36 +637,36 @@ No cross-service contract is introduced.
 
 ## Validation
 
-- [ ] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
-- [ ] targeted ESLint for every Attempt 2 changed source/test file
-- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
-- [ ] raw-rendering source audit:
+- [x] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
+- [x] targeted ESLint for every Attempt 3 changed source/test file
+- [x] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
+- [x] raw-rendering source audit:
   ```text
   rg -n "dangerouslySetInnerHTML|<p>\{document\.text\}</p>|item\.text" \
     components src/studio lib/discovery
   ```
   expected: no documentation-rendering matches; unrelated transport/preview `item.text` matches may be recorded explicitly.
-- [ ] `StudioWorkspace` ownership audit:
+- [x] `StudioWorkspace` ownership audit:
   ```text
   rg -n \
     "DocumentationItem|DocumentationDocument|searchDocumentation|getDocumentation|setItems|setDocument|async function search\(|async function open\(" \
     components/studio-workspace.tsx
   ```
   expected: no documentation implementation matches
-- [ ] production test-only seam audit:
+- [x] production test-only seam audit:
   ```text
   rg -n \
     "DocumentationPort|DocumentationServices|documentationActions|NODE_ENV.*test|fixture.*Documentation|documentation.*fixture.*prop" \
     components src/studio
   ```
   expected: no production documentation test-injection matches
-- [ ] component existence audit:
+- [x] component existence audit:
   ```text
   test -f src/studio/discovery/shopify-documentation-explorer.tsx
   test -f src/studio/discovery/shopify-documentation-article.tsx
   ```
   expected: both pass
-- [ ] `git diff --check`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -699,10 +699,14 @@ Ready for Review
 
 ### Files Changed
 
-Attempt 1 files remain as previously recorded. Attempt 2 changed only:
+Attempt 1 files remain as previously recorded. Attempt 2 changed:
 
 - `lib/discovery/upstream.ts`
 - `lib/discovery/document.ts`
+- `tests/discovery-document.test.ts`
+
+Attempt 3 changed:
+
 - `tests/discovery-document.test.ts`
 
 ### Work Completed
@@ -711,19 +715,24 @@ Attempt 1 delivered the structured documentation contract, verified HTML block n
 
 Attempt 2 correction checklist, all implemented:
 
-- Finding 1: `normalizeSearchExcerpt` now decodes HTML entities before removing tags, preventing entity-encoded tags from reappearing as literal markup; regression added.
-- Finding 2: excerpt truncation now iterates Unicode code points and stops before the 600-code-point or 2 KiB UTF-8 bound, preventing dangling UTF-16 surrogates; boundary regression added.
-- Finding 3: `readableText` now maps `<br>` to a space in normal text and a newline in preformatted text; paragraph/code regressions added.
+- Finding 1: `normalizeSearchExcerpt` decodes HTML entities before removing tags; regression added.
+- Finding 2: excerpt truncation iterates Unicode code points and stops before the 600-code-point or 2 KiB UTF-8 bound; boundary regression added.
+- Finding 3: `readableText` maps `<br>` to a space in normal text and a newline in preformatted text; paragraph/code regressions added.
+
+Attempt 3 correction checklist, all implemented:
+
+- Added `normalizeSearchExcerpt('')` fallback coverage.
+- Added whitespace/control/stripped-markup normalized-empty fallback coverage.
+- Reconciled the Work Items, Acceptance Criteria and Validation checklists with the submitted evidence.
 
 Architect Review was preserved unchanged.
 
 ### Validation Results
 
-- Focused Vitest command: PASS, 6 files and 70 tests.
-- Focused discovery-document regressions: PASS, 21 tests.
-- Targeted ESLint for all Attempt 2 changed files: PASS, 0 errors.
-- `npm run typecheck`: exits 2 on unchanged unrelated baseline diagnostics; zero diagnostics reference Attempt 2-owned files.
-- Raw rendering audit: no documentation `dangerouslySetInnerHTML` or `<p>{document.text}</p>` matches. Allowed unrelated `item.text` matches remain in MCP transport (`lib/discovery/upstream.ts`) and preview UI (`src/studio/preview/preview-screen.tsx`).
+- Focused Vitest command: PASS, 6 files and 71 tests.
+- Targeted ESLint for `tests/discovery-document.test.ts`: PASS, 0 errors.
+- `npm run typecheck`: exits 1 on unchanged unrelated baseline diagnostics; `C035_OWNED_DIAGNOSTICS=none` for `lib/discovery`, `components/studio-workspace`, documentation components and focused documentation tests.
+- Raw rendering audit: PASS for documentation rendering. The only matches are allowed unrelated `item.text` uses in MCP transport (`lib/discovery/upstream.ts`) and preview UI (`src/studio/preview/preview-screen.tsx`).
 - StudioWorkspace ownership audit: PASS with no matches.
 - Production test-seam audit: PASS with no matches.
 - Component existence audit: PASS for both required modules.
@@ -735,15 +744,15 @@ Architect Review was preserved unchanged.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-035`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-035`.
 - Mirrored branch: `task/ARCH-021-COMMERCE-035`.
-- Launcher claim commit: parent `cecf138c74d118ba86c26282fc8600a1d3e9be73`.
+- Launcher claim commit: parent `d461868dbbf4dc447bb9d090827c20dd50e63f0a`.
 - Dependency `ARCH-021-COMMERCE-034`: complete.
 - Database submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Implementation commit: `2e3c8a84cbc101b272e0e6c42ff556580304d1cf`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
+- Implementation commit: `a03b618`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
 - No downstream task was started.
 
 ### Deviations
 
-- The full typecheck remains blocked by documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics. No Attempt 2-owned file appears in the typecheck output.
+- Typecheck remains blocked by the documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics. No C035-owned diagnostic was reported.
 
 ### Assumptions
 
