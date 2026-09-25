@@ -123,7 +123,7 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Ready | COMMERCE-016, 005, 006, 027, 029 |
 | [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Pending | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
 | [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Pending | COMMERCE-019, 020, 024 |
-| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Ready | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
+| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Complete | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
 | [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Complete | COMMERCE-016, 018, 019 |
 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
@@ -135,12 +135,10 @@ Current Phase 3 Ready frontier:
 
 ```text
 COMMERCE-020   priority 32   Tool extraction + named Server Actions/reconciliation
-COMMERCE-023   priority 40   External HTTP validation + safe request preview
 ```
 
-COMMERCE-019 and COMMERCE-024 are architect-accepted Complete. COMMERCE-021 remains
-Pending on COMMERCE-020 + COMMERCE-023; COMMERCE-022 remains Pending on
-COMMERCE-020.
+COMMERCE-019, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete.
+COMMERCE-021 and COMMERCE-022 both remain Pending on COMMERCE-020.
 ```
 
 
@@ -167,6 +165,18 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 Current checkpoint implementation frontier: none.
 
 COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. All terminal checkpoint implementation dependencies are Complete, so `ARCH-021-SYSTEM-TEST-001` remains Ready. The developer is intentionally holding terminal system tests until the implementation phases are finished and is using manual validation meanwhile; this Ready system-test task is not an implementation dependency and does not pause Phase 3.
+
+### COMMERCE-023 Attempt 3 accepted — 2026-09-25
+
+COMMERCE-023 is **Complete / Accepted, Attempt 3**. Preview source now obeys the
+canonical 16,384 UTF-8-byte ceiling; the focused Server Action suite proves missing
+mapping / invalid descriptor / missing descriptor and compiler-runtime
+classifications; strict forbidden top-level DTO fields are rejected; production
+authoring validation proves zero DNS, transport and credential reads; and both OBJECT
+and LIST incompatible visual projections use the canonical response-processing issue
+path. The focused packet passed 37/37 with zero task-owned TypeScript diagnostics.
+COMMERCE-021 remains Pending because COMMERCE-020 is still Ready rather than
+Complete. Phase 3 Ready frontier is now COMMERCE-020 only.
 
 ### COMMERCE-024 Attempt 2 accepted — 2026-09-25
 
