@@ -374,7 +374,7 @@ Ready for Review
 #### Implementation and VCS Evidence
 - Implementation commit: `fe3bcf40ed928c1ee5b668a02d83b4a177d01067`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
 - Implementation worktree: clean after the implementation commit.
-- Final parent report commit: recorded after this report edit and pushed to `origin/task/ARCH-021-COMMERCE-019`.
+- Final parent report commit: `465745d10ff100bc02354e14628c73828bd1b11d` (the report publication commit before this self-reference reconciliation), pushed to `origin/task/ARCH-021-COMMERCE-019`.
 - Parent worktree: clean after the parent report commit.
 - Push parity: implementation and parent report pushes passed.
 
