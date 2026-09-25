@@ -762,7 +762,7 @@ Architect Review was preserved unchanged.
 
 ### Deviations
 
-- Typecheck exits 1 on the documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics; no diagnostic references the Attempt 4-owned parser, upstream normalizer or focused test file.
+- Typecheck exits 2 on the documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics; no diagnostic references the Attempt 4-owned parser, upstream normalizer or focused test file.
 
 ### Assumptions
 
