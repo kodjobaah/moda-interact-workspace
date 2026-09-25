@@ -654,19 +654,15 @@ No cross-service contract is introduced.
   ```
   expected: no documentation implementation matches
 - [x] production test-only seam audit:
-  ```text
-  rg -n \
-    "DocumentationPort|DocumentationServices|documentationActions|NODE_ENV.*test|fixture.*Documentation|documentation.*fixture.*prop" \
     components src/studio
-  ```
   expected: no production documentation test-injection matches
 - [x] component existence audit:
   ```text
   test -f src/studio/discovery/shopify-documentation-explorer.tsx
   test -f src/studio/discovery/shopify-documentation-article.tsx
   ```
-  expected: both pass
-- [x] `git diff --check`
+=======
+>>>>>>> 10ca1cd886db9e4bfb77e7a747b176a6b4b2ab36
 
 ## Stop Condition
 
