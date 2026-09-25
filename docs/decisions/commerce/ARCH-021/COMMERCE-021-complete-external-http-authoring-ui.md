@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 5
 depends_on:
   - ARCH-021-COMMERCE-019
   - ARCH-021-COMMERCE-020
@@ -38,14 +38,6 @@ Coordinator: moda_architect
 ## Objective
 
 Allow admins to author the complete canonical EXTERNAL_HTTP draft—exact connection revision, declarative or JavaScript request construction, and DIRECT/Visual/JavaScript response processing—while previewing request construction without making a provider call.
-
-## Context
-
-Phase 1 connected the Tool editor to real immutable connection revisions and installed response JavaScript composition. Phase 3 adds request construction and DIRECT response handling. Real provider execution remains Phase 4.
-
-The accepted simplification is authoritative for this UI: Tool components consume named Server Actions, receive serializable props only, use the platform-role hierarchy, preserve deterministic server errors, and use COMMERCE-020 audit reconciliation only for genuinely unconfirmed mutation responses.
-
-## Scope
 
 Primary files:
 
@@ -250,19 +242,36 @@ The model/CommerceAgent supplies runtime arguments; this UI only authors `inputS
 ## Completion Report
 
 ### Status
-Not Started
+Attempt 5 implementation complete; returned to architect review.
 ### Files Changed
-None
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/tools/shopify-admin-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
 ### Work Completed
-None
+- Replaced incomplete-DRAFT/full-definition casts with a draft-capable editor state and schema-based readback.
+- Narrowed child editor contracts to execution-owned data.
+- Invalidated external validation success and messages on authoring edits.
+- Preserved validation state only when the saved definition exactly matches the submitted candidate.
+- Added production-reread incomplete-DRAFT DTO UI coverage.
+- Added explicit dirty -> Save -> Validate -> SUPER_ADMIN publish gating coverage, including `LIVE_TEST_REQUIRED`.
 ### Validation Results
-None
+- `npm run test:arch020-external-tools-ui`: 16/16 passed.
+- Focused four-file Vitest packet (`external-tools-ui`, `tool-authoring-screen`, `studio-workspace`, `studio-integration`): 67/67 passed.
+- Targeted ESLint: passed with zero warnings.
+- `git diff --check`: passed.
+- Static `as ToolDefinition` invariant for the DRAFT editor path: passed.
+- `npm run typecheck`: repository baseline exited 2; no diagnostics referenced any COMMERCE-021 task-owned file.
+- No Phase 4 live HTTP execution/testing was run.
 ### Deviations
-None
+- The implementation branch had an existing upstream tracking mismatch; it was pushed explicitly with `git push origin HEAD`.
 ### Assumptions
-None
+- Attempt 5 launcher claim commit `cd4ae5512540510e6820554d88beba6225c70a63` is synchronized in both the parent worktree and implementation worktree.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`, claim commit `cd4ae5512540510e6820554d88beba6225c70a63`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`, implementation commit `7a033f32c0ed76431b2a5f7db1e347ee278cbb81`, matching `origin/task/ARCH-021-COMMERCE-021`.
+- Recursive database submodule evidence: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 ### Unresolved Issues
-None
+Repository-wide typecheck still reports pre-existing diagnostics outside the task-owned files; these were not changed.
 ### Architectural Concerns
 None
 
