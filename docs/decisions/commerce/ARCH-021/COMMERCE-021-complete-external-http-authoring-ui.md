@@ -250,7 +250,7 @@ The model/CommerceAgent supplies runtime arguments; this UI only authors `inputS
 ## Completion Report
 
 ### Status
-Implemented; Attempt 2 review requested
+Attempt 3 implementation pushed; architect review pending after one focused regression is resolved
 ### Files Changed
 - `src/studio/external-http/editor.tsx`
 - `src/studio/tools/tool-editor.tsx`
@@ -266,7 +266,15 @@ Implemented; Attempt 2 review requested
 - Corrected the COMMERCE-023 Server Action import boundary and separated local JSON parsing from action failures.
 - Preserved incomplete draft definitions through the Studio read boundary while keeping publication full-definition validation strict.
 - Added focused regressions for authoring-only JavaScript response editing, request preview presentation, and JavaScript request/Direct response persistence.
-### Validation Results
+### Attempt 3 Validation Results
+- Implementation commit: `4fc5034`, pushed to `origin/task/ARCH-021-COMMERCE-021`.
+- `npm run test:arch020-external-tools-ui`: 11 passed, 1 failed; the new destructive response-mode test passes, while the suite still reports the stale-CAS workspace regression.
+- `npm exec vitest run tests/studio-integration.test.ts`: 12 passed, including the production incomplete-DRAFT round-trip.
+- `npm exec vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/studio-workspace.test.tsx tests/studio-integration.test.ts`: blocked by `tests/studio-workspace.test.tsx` stale-CAS expectation; the rendered status is `Saved.` instead of `changed elsewhere`.
+- Targeted ESLint and `git diff --check`: passed.
+- `npm run typecheck`: no diagnostics in Attempt 3 task-owned files; the repository still has unrelated baseline diagnostics in `app/api/studio/code-response/validate/route.ts` and several existing tests.
+
+### Previous Validation Results
 - `get_errors`: no diagnostics in the touched source files.
 - `git diff --check`: passed.
 - `npm run test:arch020-external-tools-ui`: passed, 10 tests.
