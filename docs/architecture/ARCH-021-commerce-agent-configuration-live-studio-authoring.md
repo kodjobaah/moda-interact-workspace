@@ -1795,6 +1795,22 @@ architect-accepted Complete.
 - Marked COMMERCE-032 Complete and promoted COMMERCE-033 to Ready.
 - Reconciled duplicate correction-task rows in the architect-owned checkpoint
   table; this was coordination-document drift, not a C032 implementation issue.
+
+### 2026-09-25 — COMMERCE-020 Attempt 3 changes requested
+
+- Accepted the direct Tool-domain outer-composer boundary, Tool-local
+  UNCONFIRMED state, audit-only reconciliation authorization/explicit Tool
+  action allow-list, monotonic dirty revision and independent external
+  create/draft operation identities.
+- Returned COMMERCE-020 to Ready because direct lifecycle `CONFLICT` still maps
+  to `INTERNAL_ERROR`, a post-success canonical refresh failure can still be
+  misclassified as transport uncertainty, committed composite-create recovery
+  is incomplete, and the required executable R8 reconciliation/authorization
+  regressions are still largely absent.
+- Required the Attempt 4 handoff to clear the active executor/claim recorded in
+  the submitted Attempt 3 task metadata.
+- COMMERCE-021/022 remain Pending.
+
 ### 2026-09-25 — COMMERCE-020 Attempt 1 changes requested
 
 - Accepted the Tool-domain component extraction and client-local External HTTP sample port in substance.

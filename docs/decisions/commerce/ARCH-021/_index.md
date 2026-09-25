@@ -524,6 +524,18 @@ contract exposes no synthetic server path.
 
 COMMERCE-033 is now **Ready**. COMMERCE-034/035 and SYSTEM-TEST-001 remain
 dependency-gated.
+
+### COMMERCE-020 Attempt 3 changes requested — 2026-09-25
+
+Attempt 3 completes the direct outer-composer boundary, Tool-local UNCONFIRMED
+state, audit-only reconciliation authorization/allow-list and independent
+external create/draft operation identities. COMMERCE-020 remains **Ready** for
+Attempt 4 because direct lifecycle `CONFLICT` still maps to `INTERNAL_ERROR`,
+post-success canonical refresh failure can still be misclassified as
+UNCONFIRMED, composite committed recovery is incomplete, and the required R8
+executable behavior suite is still largely absent. COMMERCE-021/022 remain
+Pending.
+
 ### COMMERCE-020 Attempt 1 changes requested — 2026-09-25
 
 The Tool-domain extraction is accepted in substance, but COMMERCE-020 remains **Ready** for Attempt 2 because production still supplies the extracted screen with `StudioWorkspace` function-valued `controlled` orchestration and therefore still uses the old catch-to-unknown / replay-the-original-mutation path. Attempt 2 must complete the serializable Tool boundary, exact bounded Tool mutation results, audit-only reconciliation, composite external-create operation identity and the executable R8 regressions. COMMERCE-021/022 remain Pending.
