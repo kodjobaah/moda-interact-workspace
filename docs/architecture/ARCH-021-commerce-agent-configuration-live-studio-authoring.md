@@ -950,13 +950,13 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
 | ARCH-021-COMMERCE-032 | moda_commerce | Complete | COMMERCE-029 |
 | ARCH-021-COMMERCE-033 | moda_commerce | Complete | COMMERCE-032 |
-| ARCH-021-COMMERCE-034 | moda_commerce | Ready | COMMERCE-033 |
-| ARCH-021-COMMERCE-035 | moda_commerce | Pending | COMMERCE-034 |
+| ARCH-021-COMMERCE-034 | moda_commerce | Complete | COMMERCE-033 |
+| ARCH-021-COMMERCE-035 | moda_commerce | Ready | COMMERCE-034 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks, including COMMERCE-032..035 |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-034`. COMMERCE-032 and COMMERCE-033 are architect-accepted Complete, and COMMERCE-034 is Ready. COMMERCE-035 remains dependency-gated on COMMERCE-034. SYSTEM-TEST-001 remains Pending until the complete correction chain is architect-accepted Complete. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
+Current checkpoint frontier: `ARCH-021-COMMERCE-035`. COMMERCE-032, COMMERCE-033 and COMMERCE-034 are architect-accepted Complete, and COMMERCE-035 is Ready. SYSTEM-TEST-001 remains Pending until COMMERCE-035 is architect-accepted Complete. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
 
 ### Phase 4 — live single-tool testing
 
@@ -1541,6 +1541,22 @@ architect-accepted Complete.
 - Confirmed the private MCP remains context-only over the private service link with server-derived environment, local ten-second tool deadline and PostgreSQL shop/turn/grant/release/tool authorization intact.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
+
+### 2026-09-25 — COMMERCE-034 Attempt 5 accepted
+
+- Confirmed fail-closed reuse of deterministic generated variable names now
+  requires both the existing GraphQL type and persisted input mapping to match;
+  a pre-existing variable with no mapping is rejected.
+- Confirmed GraphQL Int editor input no longer uses `parseInt()` and preserves
+  decimal input for the typed AST builder to reject.
+- Accepted COMMERCE-034 Complete after 7 focused files / 82 passing tests,
+  targeted ESLint, both source audits and `git diff --check`; typecheck retains
+  only the documented unrelated baseline with zero C034-owned diagnostics.
+- Promoted COMMERCE-035 to Ready.
+- Reconciled COMMERCE-035 with the previously requested separate
+  `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle` component
+  boundary before execution.
+- SYSTEM-TEST-001 remains Pending.
 
 ### 2026-09-25 — COMMERCE-034 Attempt 4 changes requested
 

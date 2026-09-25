@@ -150,19 +150,19 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 | [COMMERCE-031](COMMERCE-031-complete-retained-agent-configuration-read-contract.md) | Complete retained Agent Configuration read contract | Complete | COMMERCE-025 |
 | [COMMERCE-032](COMMERCE-032-normalize-storefront-schema-graph.md) | Normalize real pinned Storefront introspection into one truthful schema graph contract | Complete | COMMERCE-029 |
 | [COMMERCE-033](COMMERCE-033-build-recursive-storefront-schema-browser.md) | Build recursive schema-driven Storefront browser and selection tree | Complete | COMMERCE-032 |
-| [COMMERCE-034](COMMERCE-034-generate-storefront-graphql-from-schema-selection.md) | Generate/merge Storefront GraphQL from dynamic schema selections | Ready | COMMERCE-033 |
-| [COMMERCE-035](COMMERCE-035-render-shopify-documentation-readably.md) | Normalize Shopify docs into readable safe excerpts and structured article blocks | Pending | COMMERCE-034 |
+| [COMMERCE-034](COMMERCE-034-generate-storefront-graphql-from-schema-selection.md) | Generate/merge Storefront GraphQL from dynamic schema selections | Complete | COMMERCE-033 |
+| [COMMERCE-035](COMMERCE-035-render-shopify-documentation-readably.md) | Normalize Shopify docs into readable safe excerpts and structured article blocks | Ready | COMMERCE-034 |
 
 
 Current checkpoint frontier:
 
 ```text
-ARCH-021-COMMERCE-034
+ARCH-021-COMMERCE-035
 ```
 
-COMMERCE-032 and COMMERCE-033 are architect-accepted Complete.
-COMMERCE-034 is Ready. COMMERCE-035 remains Pending on COMMERCE-034.
-`ARCH-021-SYSTEM-TEST-001` remains Pending until all correction tasks are
+COMMERCE-032, COMMERCE-033 and COMMERCE-034 are architect-accepted Complete.
+COMMERCE-035 is Ready.
+`ARCH-021-SYSTEM-TEST-001` remains Pending until COMMERCE-035 is
 architect-accepted Complete.
 
 ### Documentation readability correction task materialised — 2026-09-24
@@ -320,6 +320,19 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 ### COMMERCE-013 Attempt 2 architect review — 2026-09-23
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
+
+### COMMERCE-034 Attempt 5 accepted — 2026-09-25
+
+COMMERCE-034 is architect-accepted **Complete**. Attempt 5 closes the final
+generated-variable/mapping collision and non-truncating Int literal-authoring
+cases. The full Storefront query-builder path is now schema-driven and validated
+against the accepted compiler before application.
+
+COMMERCE-035 is now **Ready**. Before promotion, its architect-owned task
+definition was reconciled with the previously requested component boundary:
+`ShopifyDocumentationExplorer` owns search/open state and
+`ShopifyDocumentationArticle` is the pure structured document renderer.
+SYSTEM-TEST-001 remains Pending.
 
 ### COMMERCE-034 Attempt 4 changes requested — 2026-09-25
 

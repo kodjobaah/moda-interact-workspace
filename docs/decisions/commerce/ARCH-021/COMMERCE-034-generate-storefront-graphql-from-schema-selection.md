@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -353,22 +353,22 @@ Produces no new cross-service contract.
 
 ## Validation
 
-- [ ] `npx vitest run tests/storefront-input-compatibility.test.ts tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose`
-- [ ] Existing Storefront compiler/definition tests directly affected by generated queries pass.
-- [ ] Targeted ESLint for every Attempt 5 changed source/test file.
-- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required).
-- [ ] Legacy path-string source audit:
+- [x] `npx vitest run tests/storefront-input-compatibility.test.ts tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose`
+- [x] Existing Storefront compiler/definition tests directly affected by generated queries pass.
+- [x] Targeted ESLint for every Attempt 5 changed source/test file.
+- [x] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required).
+- [x] Legacy path-string source audit:
   ```text
   rg -n "buildQueryDefinition|path\.split\(\"\\\.\"\)|selectedPaths" components src/studio
   ```
   expected: no legacy Storefront path-string builder matches.
-- [ ] Client artifact-boundary audit:
+- [x] Client artifact-boundary audit:
   ```text
   rg -n "storefrontSchemaHash|storefrontArtifact|storefrontSchema" \
     src/studio/discovery components
   ```
   expected: no runtime Storefront artifact/schema value import in client query-builder/UI code.
-- [ ] `git diff --check`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -454,332 +454,166 @@ None identified within the bounded task scope.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 4 successfully resolves the three findings from Attempt 3.
+Attempt 5 resolves the final two bounded correctness findings from Attempt 4.
 
-Architect review confirms:
-
-- `storefrontInputSchemaCompatible()` now distinguishes GraphQL scalar names correctly:
-  - String/custom scalar -> string;
-  - Boolean -> boolean;
-  - Int -> integer/number;
-  - Float -> integer/number;
-  - enum -> string;
-- the dedicated compatibility matrix covers the required scalar/list cases;
-- the real `products.reverse: Boolean` builder regression rejects a string Tool input;
-- the nested `product -> priceRange -> minVariantPrice -> amount` compiler regression now starts from a product-free document, generates `product(handle: $input_handle)`, persists `input_handle -> handle`, and sends that exact generated candidate to the real compiler;
-- the connected schema-identity regression now reads the real composer context after `Use in tool` and deep-compares the complete applied Tool definition with the complete definition previously sent to `validateToolDefinition`;
-- the Attempt 4 focused packet reports 7 files / 80 tests passing with zero C034-owned typecheck diagnostics.
-
-Those corrections are accepted.
-
-There are two remaining bounded C034 correctness issues.
-
-#### Finding 1 — an existing generated-name GraphQL variable with no mapping is silently assigned a new input mapping
-
-The Attempt 1 correction contract explicitly required that, before reusing a generated variable name already present in the current operation, **both** of these must already agree:
-
-```text
-existing GraphQL variable type == generated expected type
-existing execution.variables mapping == requested INPUT_PROPERTY
-```
-
-and:
-
-```text
-if either differs, fail visibly
-```
-
-The current source checks the existing variable type and checks an existing mapping only when one is already present:
+Architect review confirms the production query builder now fails closed when the deterministic generated variable name already exists in the authored GraphQL operation but the corresponding persisted Tool input mapping is missing:
 
 ```ts
-const existing = existingDefinitions.get(name);
-const existingMapping = definition.execution.variables[name];
-
-if (existing && print(existing.type) !== print(generated.type)) {
-  throw ...
-}
-
-if (existingMapping && (...mapping differs...)) {
-  throw ...
-}
-
-if (existingMapping && !existing) {
-  throw ...
+if (
+  existing &&
+  (
+    !existingMapping ||
+    !('input' in existingMapping) ||
+    existingMapping.input !== generated.property
+  )
+) {
+  throw new Error(
+    `Generated variable ${name} conflicts with the existing input mapping.`,
+  );
 }
 ```
 
-If:
+This preserves the required collision invariant:
 
 ```text
-$input_handle already exists in the authored GraphQL operation
-execution.variables.input_handle is absent
+existing variable definition
+  -> same GraphQL type required
+  -> existing INPUT_PROPERTY mapping required
+  -> same requested input property required
+  -> otherwise reject
 ```
 
-the code does not fail.
+The accepted reuse case is also covered: an existing variable with the same GraphQL type and the exact existing input mapping is reused without adding a duplicate variable definition or mapping.
 
-Later it executes:
+The Int literal editor now preserves the authored numeric value using:
 
 ```ts
-if (!nextMappings[name]) {
-  nextMappings[name] = { input: value.property };
-}
+Number(value)
 ```
 
-so the existing variable silently acquires a new Tool input mapping.
+rather than `Number.parseInt(...)`.
 
-That can change the semantics of every existing use of `$input_handle` in the preserved query. It violates R6 ("do not silently rewrite an existing argument binding") and the explicit generated-variable collision contract from Attempt 1.
-
-Attempt 5 must fail closed when an existing variable definition occupies the deterministic generated name but the matching execution mapping is missing.
-
-A conformant structure is:
+Therefore:
 
 ```text
-if existing GraphQL variable exists:
-    require same GraphQL type
-    require existing execution mapping exists
-    require mapping kind is INPUT_PROPERTY
-    require mapping input == requested property
-    otherwise throw bounded conflict
-
-if existing execution mapping exists but GraphQL variable does not:
-    throw bounded conflict
-
-only when neither exists:
-    create both definition and mapping
+"1.5" -> 1.5
 ```
 
-Use the existing bounded conflict wording where practical. Do not silently invent a mapping for a pre-existing variable.
-
-Required regression:
-
-```graphql
-query ProductDetails($input_handle: String) {
-  shop {
-    name
-  }
-}
-```
-
-with:
+reaches the typed AST builder and is rejected by the existing:
 
 ```text
-execution.variables = {}
-product.handle -> INPUT_PROPERTY(handle)
+Literal for Int must be a finite integer.
 ```
 
-must fail visibly and leave the original definition unchanged.
+rule rather than being silently changed to `1`.
 
-Also retain/prove the allowed reuse case:
+A valid integer such as:
 
 ```text
-existing $input_handle: String
-existing execution.variables.input_handle -> input "handle"
-new product.handle expects String
+"5" -> 5
 ```
 
-must reuse the existing definition/mapping without duplication.
+remains valid.
 
-#### Finding 2 — the Int literal editor truncates invalid decimal/exponent input before the AST builder can reject it
+### Final C034 architecture accepted
 
-The production argument editor currently parses Int text with:
-
-```ts
-Number.parseInt(value, 10)
-```
-
-Therefore user-entered values such as:
+Across Attempts 1-5, the final Storefront query-authoring path now provides:
 
 ```text
-1.5
-1e2
+real C032 schema graph
+        +
+C033 nested selection tree
+        +
+schema-driven argument bindings
+        +
+C032 apiVersion/schemaHash
+        |
+        v
+GraphQL AST generation/merge
+        |
+        v
+exact ToolDefinition candidate
+        |
+        v
+named validateToolDefinition Server Action
+        |
+        v
+accepted Storefront compiler
+        |
+        v
+Use in tool only for the exact validated candidate
 ```
 
-can be converted before C034's typed literal validator sees the original number:
+The final accepted behavior includes:
+
+- no legacy dot-path query builder;
+- schema-driven `INPUT_PROPERTY` and `LITERAL` argument authoring;
+- shared client/server input-schema compatibility;
+- typed scalar/enum literal generation;
+- LIST/input-object literal rejection;
+- connection `first` literal bound from 1 through 20;
+- no authored `last`;
+- alias/unrelated selection preservation;
+- duplicate/ambiguous existing field rejection;
+- deterministic variable naming and ordering;
+- fail-closed variable type/mapping collision handling;
+- C032 schema identity applied to both API version and schema hash;
+- visible schema-identity rebuild/revalidation;
+- real compiler as final validation authority;
+- resultPath preservation/failure through the existing validation path;
+- complete validated/applied Tool definition identity;
+- no normal provider/network request during schema authoring.
+
+### Attempt 5 evidence
+
+Architect inspected the final production source and tests and confirmed the required regressions are present:
 
 ```text
-"1.5" -> 1
-"1e2" -> 1
+existing generated-name variable + missing mapping -> rejected
+existing generated-name variable + identical mapping/type -> reused
+no duplicate generated variable/mapping introduced
+predictiveSearch.limit literal 1.5 retained as 1.5 and rejected by builder
+predictiveSearch.limit literal 5 retained and accepted
 ```
 
-The AST builder then sees a valid integer and cannot report that the authored literal was invalid.
-
-This violates R3's requirement that scalar literals be type checked against the actual GraphQL argument type rather than heuristically coerced.
-
-Attempt 5 must preserve the numeric value faithfully and let the existing `valueNode()` checks decide validity.
-
-For numeric scalar editor input:
+Submitted validation:
 
 ```text
-empty string -> non-finite/invalid sentinel that builder rejects when candidate is built
-otherwise -> Number(value)
+focused tests: 7 files / 82 passed
+targeted ESLint: PASS
+legacy path-string audit: PASS
+client artifact-boundary audit: PASS
+git diff --check: PASS
+typecheck: unchanged unrelated repository baseline only
+           zero C034-owned diagnostics
 ```
 
-or an equivalent non-truncating implementation is acceptable.
+The review archive does not contain `node_modules`, so the architect did not independently rerun Vitest/ESLint/typecheck. The final implementation and focused regression source were inspected directly.
 
-Do not use `parseInt()` for GraphQL Int authoring.
-
-Required regressions:
-
-1. Use the real C032 argument:
-
-   ```text
-   predictiveSearch.limit: Int
-   ```
-
-   or another real non-connection Int argument.
-
-2. In the production argument editor test, enter:
-
-   ```text
-   1.5
-   ```
-
-   and prove the emitted binding retains `1.5` rather than becoming `1`.
-
-3. Pass that binding through `buildStorefrontQueryDefinition()` and prove candidate generation fails with the existing typed error:
-
-   ```text
-   Literal for Int must be a finite integer.
-   ```
-
-4. Retain a valid integer literal regression proving `5` remains `5`.
-
-Do not change connection `first` semantics; the existing literal `1..20` policy remains accepted.
-
-### Attempt 5 deterministic correction
-
-Reclaim the same task as Attempt 5.
-
-This is a narrow final correctness pass. Preserve all accepted Attempt 1-4 behavior:
+Implementation reviewed:
 
 ```text
-AST merge
-C033 selection tree
-argument-binding editor
-shared input compatibility
-typed enum/scalar literals
-LIST/input-object literal rejection
-first-only/last authoring policy
-connection first 1..20
-C032 schema identity
-generated-variable type/mapping collision protection
-validation token/hash behavior
-real compiler validation
-resultPath preservation
-full-definition validated/applied identity
+2a49b270
 ```
 
-Expected production source changes are limited to:
+Final parent report supplied by the handoff:
 
 ```text
-src/studio/discovery/storefront-query-builder.ts
-src/studio/discovery/storefront-argument-bindings.tsx
+869af5d3
 ```
 
-Change another production file only if the required regressions expose a directly related defect.
-
-#### Required tests
-
-Update `tests/storefront-query-builder.test.ts` to prove:
-
-```text
-existing generated-name variable + missing execution mapping -> rejected
-existing generated-name variable + identical existing mapping/type -> reused
-no duplicate variable definition/mapping is introduced
-real Int argument with literal 1.5 -> typed builder rejection
-real Int argument with literal 5 -> accepted as Int
-```
-
-Update `tests/storefront-argument-bindings.test.tsx` to prove the real Int editor does not truncate `1.5` to `1`.
-
-Retain all Attempt 4 regressions, especially:
-
-```text
-scalar compatibility matrix
-products.reverse Boolean/string rejection
-exact generated nested product through real compiler
-first=1 / first=20 through real compiler
-LIST literal UI
-first-only/last UI behavior
-missing required argument blocks server validation
-wrong input type blocks server validation
-full-definition schema-identity validate/apply equality
-invalid resultPath keeps Use in tool disabled
-```
-
-#### Validation
-
-Run the task Validation section exactly.
-
-Typecheck acceptance remains:
-
-```text
-unchanged documented unrelated baseline is permitted
-zero C034-owned diagnostics are required
-```
-
-Run both source audits and `git diff --check`.
-
-#### Completion Report
-
-Update the report to distinguish:
-
-```text
-Attempt 1:
-  AST/merge foundation
-
-Attempt 2:
-  argument binding + schema identity + compiler integration
-
-Attempt 3:
-  LIST/first-only/last parity + TS2367 cleanup + connected regressions
-
-Attempt 4:
-  scalar compatibility parity
-  genuinely generated nested candidate
-  full-definition validated/applied identity
-
-Attempt 5:
-  fail-closed existing-variable/missing-mapping collision
-  non-truncating GraphQL Int literal authoring
-```
-
-Record:
-
-```text
-Attempt 5 implementation/test commit
-final parent report commit
-focused test files/count
-ESLint
-typecheck baseline and zero task-owned diagnostics
-both source audits
-git diff --check
-branch/worktree synchronization
-database submodule synchronization
-```
-
-Return:
-
-```yaml
-status: review
-executor: null
-claimed_at: null
-attempt: 5
-```
-
-and STOP.
-
-Do not start `ARCH-021-COMMERCE-035`.
+As with prior task reports, the final parent-report SHA is supplied by the handoff because the report file cannot reliably contain the SHA of the commit that subsequently publishes that same final report.
 
 ### Reviewed Files
 
 - `components/studio-workspace.tsx`
 - `lib/discovery/compiler.ts`
 - `lib/discovery/storefront-input-compatibility.ts`
+- `src/studio/discovery/selection-tree.ts`
 - `src/studio/discovery/storefront-argument-bindings.tsx`
 - `src/studio/discovery/storefront-query-builder.ts`
 - `src/studio/testing/in-memory-studio-services.ts`
@@ -794,34 +628,35 @@ Do not start `ARCH-021-COMMERCE-035`.
 
 ### Validation Reviewed
 
-Submitted Attempt 4 evidence:
+The task Validation checklist is reconciled as satisfied under the explicit allowed typecheck rule:
 
 ```text
-focused tests: 7 files / 80 passed
-targeted ESLint: PASS
-legacy path-string audit: PASS
-client artifact-boundary audit: PASS
-git diff --check: PASS
-typecheck: unchanged unrelated baseline only
-           zero C034-owned diagnostics
+unchanged unrelated baseline diagnostics are permitted
+zero task-owned diagnostics are required
 ```
 
-Architect static review confirms the Attempt 3 scalar compatibility defect is fixed,
-the generated nested product regression now genuinely uses the supplied binding,
-and the complete validated/applied definition identity assertion is present.
-
-The remaining variable/mapping collision and Int parsing findings are directly
-visible in the final production source described above.
+All submitted Attempt 5 focused validation satisfies that contract.
 
 ### Architecture Conformance
 
-Partial.
+Conforms.
 
-The complete C034 architecture now conforms except for the two bounded correctness
-cases in Attempt 5.
+C034 now deterministically builds and merges Storefront GraphQL from the real schema-backed selection/binding state and validates the exact candidate against the accepted compiler before application.
 
 ### Follow-up
 
-Reclaim the same task as Attempt 5.
+`ARCH-021-COMMERCE-034` is Complete.
 
-`ARCH-021-COMMERCE-035` remains Pending until C034 is architect-accepted Complete.
+`ARCH-021-COMMERCE-035` becomes Ready.
+
+The previously requested C035 UI-component boundary is materialized before promotion:
+
+```text
+StudioWorkspace
+  -> ShopifyDocumentationExplorer
+      -> ShopifyDocumentationArticle
+```
+
+`ARCH-021-SYSTEM-TEST-001` remains Pending until C035 is architect-accepted Complete.
+
+Do not start SYSTEM-TEST-001.
