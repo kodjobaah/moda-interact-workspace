@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 32
 executor: copilot
 claimed_at: 2026-09-25T13:57:01Z
@@ -315,6 +315,9 @@ This is the Tool-domain continuation of the accepted COMMERCE-029 simplification
 Ready for Review
 ### Files Changed
 - `components/studio-workspace.tsx`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
 - `src/studio/tools/tool-authoring-screen.tsx`
 - `src/studio/tools/tool-library.tsx`
 - `src/studio/tools/tool-editor.tsx`
@@ -322,24 +325,26 @@ Ready for Review
 - `src/studio/tools/reconciliation-server-actions.ts`
 - `tests/tool-authoring-screen.test.tsx`
 - `tests/tool-operation-reconciliation.test.ts`
+- `tests/studio-workspace.test.tsx`
 ### Work Completed
 - Routed the Tools page through a serializable Tool authoring screen and named Server Actions.
 - Moved the complete legacy Tool library/editor behavior into the Tool domain, including external HTTP authoring, code response panels, discovery handoff, dirty navigation, revision history, and draft lifecycle actions.
 - Added bounded Tool mutation result classification and audit-only reconciliation with structured unexpected-error logging.
 - Added focused deterministic-error and non-replay reconciliation tests.
 ### Validation Results
-- Editor diagnostics: no errors in changed source/test files.
+- Focused editor diagnostics: no lint errors in changed source/test files.
 - `git diff --check`: passed.
-- Focused tests: 3 files passed, 26 tests passed.
+- Focused tests: 3 files passed, 24 tests passed.
 - `npm run test:arch020-external-tools-ui`: 1 file passed, 13 tests passed.
 - Targeted lint: passed.
-- Full `npx tsc --noEmit --pretty false`: remains blocked by unrelated existing test/integration diagnostics outside the changed files; changed-file diagnostics are clean.
+- Full `npm test -- --run`: 88 files passed, 20 failed, 2 skipped; failures are outside this task's focused Tool checks and include missing disposable C20 targets plus existing unrelated integration/auth/configuration failures.
+- Full `npm run typecheck`: remains blocked by existing generated-Prisma/module diagnostics and unrelated workspace errors; the Attempt 3 server-services contract errors are resolved.
 ### Deviations
-- Full workspace typecheck retains pre-existing diagnostics in unrelated integration and test files; no changed-file diagnostics remain.
+- Full workspace typecheck retains pre-existing generated-Prisma/module diagnostics and unrelated integration/test diagnostics.
 ### Assumptions
 - Named Tool Server Actions continue to use the existing service/auth boundary for role enforcement.
 ### Unresolved Issues
-- None for this task scope.
+- Full workspace validation remains environment/configuration constrained as recorded above.
 ### Architectural Concerns
 None
 
