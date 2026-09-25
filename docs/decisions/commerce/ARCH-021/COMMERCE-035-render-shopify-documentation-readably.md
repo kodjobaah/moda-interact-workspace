@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 35
 executor: null
 claimed_at: null
@@ -770,260 +770,56 @@ Architect Review was preserved unchanged.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 correctly resolves all three production-code findings from Attempt 1.
+Attempt 3 completes the only remaining evidence/task-record correction from Attempt 2.
 
-Architect review confirms:
-
-1. `normalizeSearchExcerpt()` now decodes HTML entities before removing decoded
-   tags, so entity-encoded markup such as:
-
-   ```text
-   &lt;h2&gt;Heading&lt;/h2&gt;
-   ```
-
-   is reduced to readable plain text rather than resurfacing as `<h2>...</h2>`.
-
-2. Search excerpt byte bounding now iterates Unicode code points and stops before
-   the 2 KiB UTF-8 limit, so the previous UTF-16 code-unit truncation defect is
-   removed.
-
-3. `readableText()` now gives `<br>` explicit semantics:
-
-   ```text
-   normal text -> space
-   preformatted text -> newline
-   ```
-
-   so paragraph words are not joined and code/preformatted line breaks remain
-   readable.
-
-4. The existing component/data architecture remains intact:
-
-   ```text
-   StudioWorkspace
-     -> ShopifyDocumentationExplorer
-         -> named searchDocumentation/getDocumentation
-         -> ShopifyDocumentationArticle
-   ```
-
-   No raw-HTML renderer, documentation port/service bundle or test-only React
-   context has been introduced.
-
-The submitted focused packet reports 6 files / 70 tests passing, targeted ESLint,
-all source/component audits and `git diff --check` passing, with zero C035-owned
-typecheck diagnostics.
-
-There is one remaining deterministic evidence/task-record blocker.
-
-#### Finding — the explicitly required empty-excerpt regression is still absent
-
-The Attempt 1 Architect Review required the Attempt 2 regression packet to prove
-all of the following, including:
-
-```text
-3. empty normalized input returns `No preview available.`
-```
-
-The final `tests/discovery-document.test.ts` contains the new regressions for:
-
-```text
-entity-encoded tags
-Unicode byte-bound truncation
-paragraph/code <br> behavior
-```
-
-but contains no invocation such as:
-
-```ts
-normalizeSearchExcerpt('')
-```
-
-or another input that normalizes to empty, and no assertion for:
-
-```text
-No preview available.
-```
-
-The production source does currently contain:
-
-```ts
-if (!normalized) return 'No preview available.';
-```
-
-so this is an evidence gap rather than a newly discovered production design
-problem.
-
-The task record also returned with:
-
-```text
-Acceptance Criteria:
-  Search results no longer display raw HTML/Markdown syntax   [ ]
-  Search results show bounded readable excerpts               [ ]
-
-Validation:
-  every item                                                  [ ]
-```
-
-despite the Completion Report claiming those validations passed.
-
-The task protocol requires Work Items, Acceptance Criteria and Validation to
-remain a durable representation of what has actually been proved.
-
-### Attempt 3 deterministic correction
-
-Reclaim the same task as Attempt 3.
-
-No production-code change is authorized unless the missing regression exposes an
-actual defect.
-
-#### 1. Add the missing fallback regression
-
-In:
-
-```text
-tests/discovery-document.test.ts
-```
-
-add a focused test that proves both an actually empty input and markup/control
-content that normalizes to empty return exactly:
-
-```text
-No preview available.
-```
-
-At minimum:
+Architect review confirms the final regression now proves both fallback cases:
 
 ```ts
 expect(normalizeSearchExcerpt('')).toBe('No preview available.');
+
+expect(
+  normalizeSearchExcerpt(' \u0000\n <script> </script> ')
+).toBe('No preview available.');
 ```
 
-Also include one normalized-empty case such as whitespace / stripped markup so
-the fallback is proved after normalization rather than only before it.
+This proves the fallback both for genuinely empty input and for content that becomes empty after normalization.
 
-Do not change the fallback wording.
+The production normalization/parser source remains the accepted Attempt 2 implementation:
 
-#### 2. Preserve all Attempt 2 regressions
+- HTML entities are decoded before tag removal, so encoded tags cannot reappear as visible raw markup;
+- search excerpts are bounded by Unicode code point and UTF-8 byte size without leaving a dangling surrogate;
+- `<br>` becomes a readable space in normal text and a newline in preformatted/code text;
+- opened Shopify documentation remains a bounded structured block DTO;
+- raw remote HTML is never rendered with `dangerouslySetInnerHTML`;
+- canonical direct document fetch remains constrained to `https://shopify.dev/docs/...`;
+- script/style/navigation/form/browser-only noise remains excluded;
+- full-document output remains rejected when it exceeds the defined bound rather than being silently truncated.
 
-Retain and keep passing:
+The required UI boundary also remains intact:
 
 ```text
-raw HTML + Markdown link/fence -> readable plain text
-entity-encoded tags -> decoded then removed
-Unicode excerpt <= 600 code points / <= 2 KiB / no dangling surrogate
-<p>First<br>Second</p> -> "First Second"
-<pre>line one<br>line two</pre> -> newline-preserving CODE
-structured headings/paragraphs/lists/blockquote/code
-script/style/browser-noise exclusion
-64 KiB full-document rejection
+StudioWorkspace
+  -> ShopifyDocumentationExplorer
+      -> named searchDocumentation/getDocumentation Server Actions
+      -> ShopifyDocumentationArticle
 ```
 
-#### 3. Re-run the exact Validation packet
+`StudioWorkspace` does not own a second documentation implementation, and no production documentation test port/service/context has been introduced.
 
-Run:
+### Final C035 evidence
 
-```bash
-npx vitest run \
-  tests/discovery-document.test.ts \
-  tests/discovery.test.ts \
-  tests/studio-services.test.ts \
-  tests/studio-workspace.test.tsx \
-  tests/shopify-documentation-explorer.test.tsx \
-  tests/shopify-documentation-article.test.tsx \
-  --reporter=verbose
-```
+The task Work Items, Acceptance Criteria and Validation checklist are reconciled as complete.
 
-Run targeted ESLint for every Attempt 3 changed file.
-
-Run:
-
-```bash
-npm run typecheck
-```
-
-The documented unchanged unrelated baseline remains permitted only when there are
-zero C035-owned diagnostics.
-
-Run every source/component audit already defined in the task and:
-
-```bash
-git diff --check
-```
-
-#### 4. Reconcile the task record
-
-After the regression and validation pass:
-
-- mark the regression Work Item `[x]`;
-- mark the first two remaining Acceptance Criteria `[x]`;
-- mark every Validation item `[x]` when its required evidence is satisfied;
-- under the allowed typecheck rule, mark typecheck `[x]` when only the documented
-  unchanged unrelated baseline remains and zero C035-owned diagnostics exist.
-
-Update the Completion Report to distinguish:
+Submitted validation:
 
 ```text
-Attempt 1:
-  structured documentation contract/component extraction
-
-Attempt 2:
-  encoded-tag order
-  Unicode-safe bound
-  <br> preservation
-
-Attempt 3:
-  missing fallback regression
-  final checklist/evidence reconciliation
-```
-
-Record:
-
-```text
-Attempt 3 implementation/test commit
-final parent report commit
-focused test file/test count
-ESLint
-typecheck baseline + zero task-owned diagnostics
-all source/component audits
-git diff --check
-clean/upstream branch state
-database submodule synchronization
-```
-
-Return:
-
-```yaml
-status: review
-executor: null
-claimed_at: null
-attempt: 3
-```
-
-and STOP.
-
-Do not start `ARCH-021-SYSTEM-TEST-001`.
-
-### Reviewed Files
-
-- `lib/discovery/upstream.ts`
-- `lib/discovery/document.ts`
-- `tests/discovery-document.test.ts`
-- `src/studio/discovery/shopify-documentation-explorer.tsx`
-- `src/studio/discovery/shopify-documentation-article.tsx`
-- `components/studio-workspace.tsx`
-- task Completion Report
-
-### Validation Reviewed
-
-Submitted Attempt 2 evidence:
-
-```text
-focused tests: 6 files / 70 passed
+focused tests: 6 files / 71 passed
 targeted ESLint: PASS
-raw-rendering audit: PASS with documented unrelated `item.text` matches
+raw-rendering audit: PASS
 StudioWorkspace ownership audit: PASS
 production documentation seam audit: PASS
 component existence audit: PASS
@@ -1032,20 +828,63 @@ typecheck: unchanged unrelated baseline only
            zero C035-owned diagnostics
 ```
 
-Architect static review confirms the three Attempt 1 production defects are fixed.
+Implementation/test commit reviewed:
 
-Acceptance is blocked only on the explicitly required missing fallback regression
-and final task-checklist reconciliation.
+```text
+a03b6187
+```
+
+Final parent report supplied:
+
+```text
+65922578
+```
+
+The Completion Report records the implementation commit in abbreviated form as
+`a03b618`, which matches the supplied implementation SHA.
+
+### Reviewed Files
+
+- `lib/discovery/upstream.ts`
+- `lib/discovery/document.ts`
+- `lib/discovery/service.ts`
+- `src/studio/contracts.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/discovery/shopify-documentation-explorer.tsx`
+- `src/studio/discovery/shopify-documentation-article.tsx`
+- `components/studio-workspace.tsx`
+- documentation CSS
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/discovery-document.test.ts`
+- `tests/discovery.test.ts`
+- `tests/studio-services.test.ts`
+- `tests/studio-workspace.test.tsx`
+- `tests/shopify-documentation-explorer.test.tsx`
+- `tests/shopify-documentation-article.test.tsx`
+- task Completion Report
+
+### Validation Reviewed
+
+Architect inspected the final Attempt 3 test source and confirmed the missing fallback regression is present exactly as required.
+
+All other Attempt 2 production fixes and regressions remain intact in the supplied review snapshot.
+
+The archive does not contain installed dependencies, so the architect did not independently rerun Vitest/ESLint/typecheck. Acceptance is based on the submitted validation evidence plus direct source/test review.
 
 ### Architecture Conformance
 
-Production implementation conforms.
+Conforms.
 
-The remaining correction is deterministic regression/task evidence only.
+The Documentation tab now has a bounded, safe, readable server normalization contract and a separate semantic UI renderer. The original manual-validation defects—raw markup in search results and opened documentation flattened into one unreadable paragraph—are addressed without introducing raw HTML rendering or a competing data-access/test architecture.
 
 ### Follow-up
 
-Reclaim the same task as Attempt 3.
+`ARCH-021-COMMERCE-035` is Complete.
 
-`ARCH-021-SYSTEM-TEST-001` remains Pending until C035 is architect-accepted
-Complete.
+All dependencies of terminal `ARCH-021-SYSTEM-TEST-001` are now architect-accepted Complete, so `ARCH-021-SYSTEM-TEST-001` becomes Ready.
+
+The developer may intentionally leave the terminal system-test task Ready while manually validating the completed checkpoint.
+
+Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
+
+Do not start any Phase-3 implementation task from this acceptance.
