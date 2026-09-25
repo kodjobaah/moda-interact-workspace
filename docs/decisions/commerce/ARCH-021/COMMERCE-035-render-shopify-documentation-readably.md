@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T01:15:57Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-034
@@ -566,10 +566,10 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 
 ## Work Items
 
-- [ ] Add plain-text search-excerpt normalizer.
+- [x] Add plain-text search-excerpt normalizer.
 - [x] Replace `DocumentationItem.text` with bounded `excerpt`.
 - [x] Add structured documentation block contract.
-- [ ] Refactor verified HTML extraction to preserve block structure.
+- [x] Refactor verified HTML extraction to preserve block structure.
 - [x] Preserve code/pre whitespace.
 - [x] Enforce structured-document bounds.
 - [x] Update Studio service adapter/contracts.
@@ -582,7 +582,7 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 - [x] Add readable documentation CSS.
 - [x] Update in-memory fixtures to exact production DTO shape.
 - [x] Mock the production named documentation Server Actions in component tests.
-- [ ] Add raw-markup, structured-rendering and component-boundary regressions.
+- [x] Add raw-markup, structured-rendering and component-boundary regressions.
 
 ## Interfaces / Contracts
 
@@ -699,56 +699,59 @@ Ready for Review
 
 ### Files Changed
 
-- `app/styles.css`
-- `components/studio-workspace.tsx`
-- `lib/discovery/document.ts`
-- `lib/discovery/service.ts`
+Attempt 1 files remain as previously recorded. Attempt 2 changed only:
+
 - `lib/discovery/upstream.ts`
-- `src/studio/contracts.ts`
-- `src/studio/discovery/shopify-documentation-article.tsx`
-- `src/studio/discovery/shopify-documentation-explorer.tsx`
-- `src/studio/testing/in-memory-studio-services.ts`
+- `lib/discovery/document.ts`
 - `tests/discovery-document.test.ts`
-- `tests/discovery-process.test.ts`
-- `tests/discovery.test.ts`
-- `tests/shopify-documentation-article.test.tsx`
-- `tests/shopify-documentation-explorer.test.tsx`
 
 ### Work Completed
 
-- Added bounded `normalizeSearchExcerpt` output for MCP search chunks and replaced the public search `text` field with `excerpt`.
-- Added the structured `HEADING`, `PARAGRAPH`, `LIST`, `CODE` and `BLOCKQUOTE` DTO and verified HTML block normalizer with sensitive/browser-only tag exclusion and per-block/document bounds.
-- Extracted the Documentation tab into `ShopifyDocumentationExplorer` and `ShopifyDocumentationArticle`; the workspace now owns only the existing tab state and schema-switch callback.
-- Updated the in-memory fixture and added raw-markup, structure, component-boundary and named Server Action tests.
+Attempt 1 delivered the structured documentation contract, verified HTML block normalization and bounds, the extracted documentation components, semantic rendering, readable CSS, production fixture parity and component-boundary regressions.
 
-Correction checklist: the current authoritative task file contained no Architect Review section with a `Changes Requested` outcome or review notes, despite the launcher rework flag. There were therefore no review corrections to apply; all original bounded requirements were implemented and validated. Architect Review remains unchanged.
+Attempt 2 correction checklist, all implemented:
+
+- Finding 1: `normalizeSearchExcerpt` now decodes HTML entities before removing tags, preventing entity-encoded tags from reappearing as literal markup; regression added.
+- Finding 2: excerpt truncation now iterates Unicode code points and stops before the 600-code-point or 2 KiB UTF-8 bound, preventing dangling UTF-16 surrogates; boundary regression added.
+- Finding 3: `readableText` now maps `<br>` to a space in normal text and a newline in preformatted text; paragraph/code regressions added.
+
+Architect Review was preserved unchanged.
 
 ### Validation Results
 
-- Focused Vitest command: PASS, 6 files and 67 tests.
-- Targeted ESLint: PASS, 0 errors; `app/styles.css` was reported as ignored because the repository ESLint config has no CSS matcher.
-- `npm run typecheck`: full command exits 2 on unchanged Prisma/generated baseline diagnostics; filtered task-owned diagnostics are zero.
-- Raw rendering audit: no `dangerouslySetInnerHTML` or `document.text` rendering matches. The broad `item.text` token still appears in unrelated MCP transport and preview code, so it was recorded as an audit-pattern collision rather than changed.
+- Focused Vitest command: PASS, 6 files and 70 tests.
+- Focused discovery-document regressions: PASS, 21 tests.
+- Targeted ESLint for all Attempt 2 changed files: PASS, 0 errors.
+- `npm run typecheck`: exits 2 on unchanged unrelated baseline diagnostics; zero diagnostics reference Attempt 2-owned files.
+- Raw rendering audit: no documentation `dangerouslySetInnerHTML` or `<p>{document.text}</p>` matches. Allowed unrelated `item.text` matches remain in MCP transport (`lib/discovery/upstream.ts`) and preview UI (`src/studio/preview/preview-screen.tsx`).
 - StudioWorkspace ownership audit: PASS with no matches.
 - Production test-seam audit: PASS with no matches.
 - Component existence audit: PASS for both required modules.
 - `git diff --check`: PASS.
 
-Implementation commit: `df27465ed40323cab3c8fac5bd7503912694b639`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
+### Branch and Topology Evidence
 
-Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-035`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-035`; mirrored branch `task/ARCH-021-COMMERCE-035`; implementation base `79db476b6674059accaff9e93192e11df2a55fa1`; parent claim commit `d26194f0b14f8dcde0cbb58cb285109779cbc195`; dependency `ARCH-021-COMMERCE-034` complete; database submodule `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-035`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-035`.
+- Mirrored branch: `task/ARCH-021-COMMERCE-035`.
+- Launcher claim commit: parent `cecf138c74d118ba86c26282fc8600a1d3e9be73`.
+- Dependency `ARCH-021-COMMERCE-034`: complete.
+- Database submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commit: `2e3c8a84cbc101b272e0e6c42ff556580304d1cf`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
+- No downstream task was started.
 
 ### Deviations
 
-- No Architect Review correction was present in the authoritative report to map. The launcher metadata and report disagree on review presence; this report records the discrepancy without editing the Architect Review section.
+- The full typecheck remains blocked by documented unchanged Prisma/generated and unrelated Commerce integration/test diagnostics. No Attempt 2-owned file appears in the typecheck output.
 
 ### Assumptions
 
-- The existing verified direct Shopify HTML fetch remains the only opened-document source; `parseDocumentResult` accepts only an already structured block payload and is not used as a trust boundary for opened documents.
+- The verified direct Shopify HTML fetch remains the only opened-document source, and the pinned MCP path remains search-only.
 
 ### Unresolved Issues
 
-- Full repository typecheck remains blocked by unchanged Prisma/generated baseline diagnostics; no diagnostics point to task-owned files after filtering.
+- None within the bounded Commerce-035 scope.
 
 ### Architectural Concerns
 
