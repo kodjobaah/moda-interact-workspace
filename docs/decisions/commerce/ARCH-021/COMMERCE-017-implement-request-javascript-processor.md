@@ -648,7 +648,7 @@ Ready for architect review.
 - Attempt 3 claim: parent claim commit `f4678f237558fc0718e602d4a6ce4864aea7ffce`, pushed; claimed at `2026-09-25T12:02:40Z`.
 - Recursive submodule materialization: sync/update passed; database submodule commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Implementation commit: `06416de14bdb91d3de5c4af1c9547e6b81738c4d`, pushed to `origin/task/ARCH-021-COMMERCE-017`; local and remote implementation hashes match.
-- Parent report commit: pending until this report update is committed and pushed.
+- Parent report commit: `d0217724`, pushed to `origin/task/ARCH-021-COMMERCE-017`.
 - Push parity: implementation task branch is published; parent report branch will be published with this report commit.
 - Worktree state before parent report update: implementation worktree clean; parent worktree clean before this report edit.
 
