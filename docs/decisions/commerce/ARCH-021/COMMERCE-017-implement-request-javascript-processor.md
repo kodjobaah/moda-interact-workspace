@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T11:42:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -178,11 +178,11 @@ using the same packaged WASM artifact/hash and memory ceiling.
 
 ## Work Items
 
-- [ ] Extract one generic QuickJS runtime.
-- [ ] Add request compile/run mode and processor.
-- [ ] Validate request output through the canonical Commerce schema.
-- [ ] Update packaged runtime proof.
-- [ ] Add focused request regressions.
+- [x] Extract one generic QuickJS runtime.
+- [x] Add request compile/run mode and processor.
+- [x] Validate request output through the canonical Commerce schema.
+- [x] Update packaged runtime proof.
+- [x] Add focused request regressions.
 
 ## Interfaces / Contracts
 
@@ -283,3 +283,45 @@ The developer requested that this task be reopened for another implementation an
 
 ### Result
 The task is ready for the next authorized execution workflow. Execution mode, completion mode, executor and claim state remain unchanged.
+
+## Attempt 2 Completion Report
+
+### Status
+Ready for architect review.
+
+### Correction Checklist
+- [x] Preserve one generic QuickJS worker and explicit response/request modes; the packaged response proof now invokes `run-response`.
+- [x] Prove the request entrypoint is callable during request compilation, not only syntactically present.
+- [x] Admit bounded JSON-safe request arguments including nested arrays while retaining prototype, accessor, symbol, non-finite number and pollution-key rejection.
+- [x] Declare the exact QuickJS release-sync WASM package required by the worker so local and packaged execution resolve the same runtime artifact.
+
+### Files Changed
+- `package.json`
+- `scripts/code-runtime-packaged-smoke.mjs`
+- `src/commerce/code-request/processor.ts`
+- `src/commerce/code-runtime/worker.mjs`
+- `tests/code-request-processor.test.ts`
+
+### Validation Results
+- `npm run test:arch021-code-request`: passed, 5/5 tests.
+- `npm run test:arch020-code-processor`: passed, 6/6 tests.
+- `npm run test:arch020-code-runtime-proof`: passed, 10/10 tests.
+- `npm run code-runtime:package`: passed; runtime `quickjs-sync.v1`, artifact SHA-256 `0c031dd404df00f2d1ed9491a6590d014e88a50424996e5fd70feff1c931c045`, WASM ceiling `67108864` bytes.
+- `npm run code-runtime:smoke`: passed for packaged response transform, request descriptor, and memory ceiling proof using the same artifact/hash.
+- `npm run lint`: passed with 0 errors and 6 existing warnings; no task-owned warning was introduced.
+- `npm run typecheck`: remains nonzero on known unrelated baseline Prisma/Studio/test diagnostics; no diagnostics were reported for the task-owned runtime, request processor, response adapter, scripts, or focused tests.
+- `git diff --check`: passed.
+
+### Git Evidence
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-017`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-017`.
+- Implementation branch: `task/ARCH-021-COMMERCE-017`; commit `87bca07`, pushed to `origin/task/ARCH-021-COMMERCE-017`.
+- Launcher claim commit: `5a2eae5d5ba7a0a026f61f79baa03d425264947c`, pushed.
+- Parent synchronization: remote task branch fast-forward not needed; current `origin/main` incorporated before execution; parent head after claim `cbe7cef2fb11a51a94ce722b79709dd2ff8b4da2`.
+- Implementation synchronization: remote task branch fast-forward not needed; current `origin/main` incorporated before execution; prepared implementation head `c33c3633ed733dd5df5745fc3ef363344f25963e`.
+- Recursive database submodule sync/update passed at commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
+### Deviations and Unresolved Issues
+- Full typecheck remains baseline-non-clean as documented above; no unrelated remediation was attempted.
+- No network, credential, Shopify GraphQL, Studio UI, publication policy, live HTTP wiring, or downstream ARCH-021-COMMERCE-023 work was added.
+- None unresolved.
