@@ -950,13 +950,13 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-031 | moda_commerce | Complete | COMMERCE-025 |
 | ARCH-021-COMMERCE-032 | moda_commerce | Complete | COMMERCE-029 |
 | ARCH-021-COMMERCE-033 | moda_commerce | Complete | COMMERCE-032 |
-| ARCH-021-COMMERCE-034 | moda_commerce | Ready | COMMERCE-033 |
-| ARCH-021-COMMERCE-035 | moda_commerce | Pending | COMMERCE-034 |
+| ARCH-021-COMMERCE-034 | moda_commerce | Complete | COMMERCE-033 |
+| ARCH-021-COMMERCE-035 | moda_commerce | Complete | COMMERCE-034 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
-| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks, including COMMERCE-032..035 |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Ready | all checkpoint implementation tasks, including COMMERCE-032..035 |
 
-Current checkpoint frontier: `ARCH-021-COMMERCE-034`. COMMERCE-032 and COMMERCE-033 are architect-accepted Complete, and COMMERCE-034 is Ready. COMMERCE-035 remains dependency-gated on COMMERCE-034. SYSTEM-TEST-001 remains Pending until the complete correction chain is architect-accepted Complete. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
+Current checkpoint implementation frontier: none. COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. Every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete, so SYSTEM-TEST-001 is Ready. The developer may leave that terminal system-test task Ready while manually validating the completed checkpoint. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
 
 ### Phase 4 — live single-tool testing
 
@@ -1541,6 +1541,127 @@ architect-accepted Complete.
 - Confirmed the private MCP remains context-only over the private service link with server-derived environment, local ten-second tool deadline and PostgreSQL shop/turn/grant/release/tool authorization intact.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
+
+### 2026-09-25 — COMMERCE-035 Attempt 3 accepted
+
+- Confirmed the final fallback regression covers both genuinely empty input and
+  content that normalizes to empty, returning exactly `No preview available.`.
+- Accepted COMMERCE-035 Complete with all Work Items, Acceptance Criteria and
+  Validation evidence reconciled.
+- Final C035 production behavior preserves encoded-tag stripping,
+  Unicode/code-point-safe excerpt bounds, readable `<br>` handling, structured
+  safe document blocks and the separate
+  `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle` UI boundary.
+- All SYSTEM-TEST-001 implementation dependencies are now architect-accepted
+  Complete, so terminal SYSTEM-TEST-001 is Ready.
+- Phase-3 tasks remain paused pending terminal checkpoint
+  validation/reconciliation.
+
+### 2026-09-25 — COMMERCE-035 Attempt 2 changes requested
+
+- Confirmed entity-encoded tags are decoded before removal, Unicode excerpt
+  truncation is code-point safe, and `<br>` now preserves readable
+  paragraph/preformatted separators.
+- Returned COMMERCE-035 to Ready only because the previously required
+  `No preview available.` fallback regression is still absent and the task
+  Acceptance Criteria / Validation checklist was not reconciled to the reported
+  passing evidence.
+- Attempt 3 is expected to be regression/evidence-only.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-25 — COMMERCE-035 Attempt 1 changes requested
+
+- Accepted the structured documentation contract, safe direct Shopify document
+  fetch, separate `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle`
+  UI boundary and semantic no-raw-HTML renderer in substance.
+- Returned COMMERCE-035 to Ready because entity-encoded HTML tags are decoded
+  after tag stripping and can therefore reappear as literal markup in search
+  excerpts.
+- Required Unicode/code-point-safe 2 KiB excerpt bounding instead of UTF-16
+  code-unit slicing, which can return a dangling surrogate at the byte boundary.
+- Required `<br>` to flatten to a readable separator/newline rather than joining
+  adjacent words.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-25 — COMMERCE-034 Attempt 5 accepted
+
+- Confirmed fail-closed reuse of deterministic generated variable names now
+  requires both the existing GraphQL type and persisted input mapping to match;
+  a pre-existing variable with no mapping is rejected.
+- Confirmed GraphQL Int editor input no longer uses `parseInt()` and preserves
+  decimal input for the typed AST builder to reject.
+- Accepted COMMERCE-034 Complete after 7 focused files / 82 passing tests,
+  targeted ESLint, both source audits and `git diff --check`; typecheck retains
+  only the documented unrelated baseline with zero C034-owned diagnostics.
+- Promoted COMMERCE-035 to Ready.
+- Reconciled COMMERCE-035 with the previously requested separate
+  `ShopifyDocumentationExplorer` / `ShopifyDocumentationArticle` component
+  boundary before execution.
+- SYSTEM-TEST-001 remains Pending.
+
+### 2026-09-25 — COMMERCE-034 Attempt 4 changes requested
+
+- Confirmed Attempt 4 fixes the shared scalar compatibility matrix, uses the real
+  `products.reverse: Boolean` rejection case, genuinely generates the nested
+  `product(handle: $input_handle)` candidate from a product-free base and passes
+  that same candidate through the real compiler.
+- Confirmed the connected schema-identity regression deep-compares the complete
+  composer-applied Tool definition with the exact definition sent to validation.
+- Returned COMMERCE-034 to Ready because a pre-existing deterministic generated
+  GraphQL variable with no execution mapping can still silently acquire a new
+  mapping, violating the previously explicit collision contract.
+- Also required Int literal UI parsing to stop truncating decimal/exponent text
+  before the typed AST builder can reject invalid Int values.
+- COMMERCE-035 remains Pending.
+
+### 2026-09-25 — COMMERCE-034 Attempt 3 changes requested
+
+- Confirmed Attempt 3 resolves LIST-wrapper authoring, first-only/last connection
+  UI parity and the task-owned TS2367.
+- Returned COMMERCE-034 to Ready because the C034-owned shared
+  `storefrontInputSchemaCompatible()` helper currently treats any string input as
+  compatible with any GraphQL scalar, including Boolean/Int/Float; builder and
+  compiler therefore share the same incorrect compatibility result.
+- Required the nested-product compiler regression to start from a product-free
+  document so it genuinely proves generated `product.handle` mapping.
+- Required the connected schema-identity regression to compare the complete
+  composer-applied definition with the exact definition sent to validation, as
+  specified by the previous correction contract.
+- COMMERCE-035 remains Pending.
+
+### 2026-09-25 — COMMERCE-034 Attempt 2 changes requested
+
+- Accepted the main C034 production argument-binding, shared input compatibility,
+  C032 schema-identity, variable-collision and real-compiler integration
+  architecture in substance.
+- Returned COMMERCE-034 to Ready because one C034-owned `TS2367` remains and
+  exposes a real LIST-literal UI bug.
+- Identified compiler/UI pagination drift for real first-only Storefront fields:
+  the compiler treats any `first`/`last` schema argument as pagination, while the
+  editor special-cases `first` only when `last` also exists.
+- Required the remaining explicit Attempt-2 connected regressions: exact generated
+  nested candidate through the real compiler, `first=20` through the compiler,
+  fail-closed required/wrong-input UI behavior, exact schema-identity
+  validate/apply behavior and invalid-resultPath disablement.
+- COMMERCE-035 remains Pending.
+
+### 2026-09-24 — COMMERCE-034 Attempt 1 changes requested
+
+- Accepted the AST-based query merge, alias preservation, ambiguity detection,
+  legacy dot-path removal and exact-candidate validation-token foundation in
+  substance.
+- Returned COMMERCE-034 to Ready because argument binding exists only as a pure
+  builder type with no production UI/state; literal construction is not
+  schema-aware; connection `first`/`last` policy is deferred to the compiler; and
+  the client builder imports schema identity from the artifact module instead of
+  consuming the C032 `SchemaPage`.
+- Also required generated-variable collision safety so an existing mapping cannot
+  be silently rewritten, and real-compiler integrated regressions rather than a
+  hand-authored in-memory Storefront validator.
+- Corrected the R11 source-of-truth wording: C032 shows
+  `product(handle: String, id: ID)` as optional. `productByHandle(handle: String!)`
+  is the required-root regression.
+- COMMERCE-035 remains Pending.
 
 ### 2026-09-24 — COMMERCE-033 Attempt 3 accepted
 
