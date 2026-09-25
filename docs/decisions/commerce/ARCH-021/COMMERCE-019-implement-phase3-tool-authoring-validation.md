@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 34
-executor: copilot
-claimed_at: 2026-09-25T12:25:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -213,11 +213,11 @@ Add `test:arch021-tool-authoring-common` proving all of:
 
 ## Work Items
 
-- [ ] Add the bounded common validation and action-result contracts.
-- [ ] Consume COMMERCE-027 `requireStudioPlatformRole('ADMIN')`; create no alternate auth helper.
-- [ ] Install/preserve exact `LIVE_TEST_REQUIRED` propagation for both canonical Phase 3 kinds.
-- [ ] Ensure synthetic evidence cannot satisfy the new gate.
-- [ ] Add hierarchy/error/publication focused tests.
+- [x] Add the bounded common validation and action-result contracts.
+- [x] Consume COMMERCE-027 `requireStudioPlatformRole('ADMIN')`; create no alternate auth helper.
+- [x] Install/preserve exact `LIVE_TEST_REQUIRED` propagation for both canonical Phase 3 kinds.
+- [x] Ensure synthetic evidence cannot satisfy the new gate.
+- [x] Add hierarchy/error/publication focused tests.
 
 ## Interfaces / Contracts
 
@@ -238,20 +238,20 @@ Produces `ToolAuthoringValidation` and `ToolAuthoringActionResult<T>` consumed b
 
 ## Acceptance Criteria
 
-- [ ] Phase 3 platform Tool authoring uses the accepted role hierarchy and no duplicate auth model.
-- [ ] Validation/read failures are explicit; no common validation path returns generic unknown.
-- [ ] External and Admin validators evolve independently behind one bounded validation result.
-- [ ] Both canonical Phase 3 kinds fail publication with exact `LIVE_TEST_REQUIRED` until Phase 4.
-- [ ] Synthetic evidence cannot satisfy the gate.
-- [ ] Common validation/publication code performs zero provider I/O.
+- [x] Phase 3 platform Tool authoring uses the accepted role hierarchy and no duplicate auth model.
+- [x] Validation/read failures are explicit; no common validation path returns generic unknown.
+- [x] External and Admin validators evolve independently behind one bounded validation result.
+- [x] Both canonical Phase 3 kinds fail publication with exact `LIVE_TEST_REQUIRED` until Phase 4.
+- [x] Synthetic evidence cannot satisfy the gate.
+- [x] Common validation/publication code performs zero provider I/O.
 
 ## Validation
 
-- [ ] `npm run test:arch021-tool-authoring-common`
-- [ ] `npm run test:arch020-external-publication`
-- [ ] `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts`
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-tool-authoring-validation` (focused authoring suite: 6 tests passed)
+- [x] `npm run test:arch020-external-publication` (12 tests passed)
+- [x] `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts` (10 tests passed)
+- [x] targeted lint/typecheck (targeted ESLint passed; task-owned diagnostics clean; full `tsc --noEmit` retains unrelated baseline errors)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -264,21 +264,41 @@ The simplification `ARCH-021-SYSTEM-TEST-001` remains a terminal Ready task and 
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review
 ### Files Changed
-None
+- `package.json`
+- `src/commerce/tool-authoring/contracts.ts`
+- `src/commerce/tool-authoring/server-actions.ts`
+- `src/commerce/external-publication/contracts.ts`
+- `src/commerce/external-publication/index.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/contracts.ts`
+- `tests/tool-authoring-validation.test.ts`
+- `tests/external-publication.test.ts`
 ### Work Completed
-None
+- Added the exact bounded `ToolAuthoringValidation` and `ToolAuthoringActionResult<T>` envelopes, capped at 32 issues and 512 UTF-8 bytes per issue field.
+- Added named server actions for definition and argument validation using `requireStudioPlatformRole('ADMIN')` directly; no alternate auth model, client credentials, or browser-side provider access.
+- Added exact `/liveTest` and `LIVE_TEST_REQUIRED` propagation for `EXTERNAL_HTTP` and `SHOPIFY_ADMIN_GRAPHQL`; synthetic receipts no longer satisfy the Phase 3 gate.
+- Preserved sample/receipt storage tests as test assets and retained historical published revisions unchanged.
+- Implementation commit: `b4d023d0e59894b99ebc2ed929c26f5e63e6c981`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
 ### Validation Results
-None
+- `npm run test:arch021-tool-authoring-validation`: passed, 6 tests.
+- `npm run test:arch020-external-publication`: passed, 12 tests.
+- `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts`: passed, 10 tests.
+- Targeted ESLint: passed.
+- Task-owned editor diagnostics: none.
+- `git diff --check`: passed.
+- Full TypeScript check: reports only known unrelated baseline failures in preview route imports, agent-configuration tests, integration fixture/MCP diagnostics, and selected-shop tests; no Commerce-019 file is implicated.
+- Prisma client generated successfully with the repository `prisma:generate` script before publication-suite validation; nested database remained pinned at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 ### Deviations
-None
+- The task’s declared validation script name was `test:arch021-tool-authoring-common`, while the execution request required `test:arch021-tool-authoring-validation`; the required request name was added and used.
 ### Assumptions
-None
+- The launcher packet’s claimed Architect Review was not present in the authoritative task file or its task-file history; the explicit correction requirements in the execution request and task contract were treated as authoritative. The existing Architect Review section was not edited.
 ### Unresolved Issues
-None
+- Full repository typecheck remains blocked by the documented unrelated baseline diagnostics listed above.
 ### Architectural Concerns
-None
+- None.
 
 ## Architect Review
 
