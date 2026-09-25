@@ -11,7 +11,7 @@ updated: 2026-09-25
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016 and COMMERCE-017 are Complete; COMMERCE-018, 019 and 020 are Ready.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017 and COMMERCE-018 are Complete; COMMERCE-019 and COMMERCE-020 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -783,7 +783,7 @@ Phase 3 tasks:
 |---|---|---|---|
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
-| ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
 | ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 023, ARCH-021-COMMERCE-005, 006 |
@@ -804,7 +804,7 @@ COMMERCE-016
     |
     +--> COMMERCE-020 -------- Tool UI extraction ------------+
 
-COMMERCE-016 and COMMERCE-017 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-018, COMMERCE-019 and COMMERCE-020 are currently Ready; COMMERCE-021 through COMMERCE-024 remain dependency-gated. COMMERCE-023 specifically remains Pending until COMMERCE-019 is Complete.
+COMMERCE-016, COMMERCE-017 and COMMERCE-018 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-019 and COMMERCE-020 are currently Ready; COMMERCE-021 through COMMERCE-024 remain dependency-gated. COMMERCE-023 and COMMERCE-024 specifically remain Pending until COMMERCE-019 is Complete.
 ```
 
 Phase 3 exit criteria:
@@ -1016,7 +1016,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
-| ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
 | ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
@@ -1049,6 +1049,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-25 — COMMERCE-018 Attempt 4 accepted
+
+- Accepted implementation `a6df0f193606bd14d31d3a46989ad284a81a6b3c`.
+- Confirmed the production Admin compiler permits omitted mappings only for nullable variables or variables with GraphQL defaults, while non-null variables without defaults remain mapping-required.
+- Confirmed nullable input-schema unions are accepted only for nullable GraphQL variables and remain rejected for non-null variables.
+- Preserved the production-compiler-backed Dev MCP oracle, fail-closed enum/scalar/list/object compatibility, Storefront behavior, explicit Admin discovery dispatch, and exact Admin artifact/provenance hash.
+- Marked COMMERCE-018 Complete. COMMERCE-024 remains Pending because COMMERCE-019 is still Ready rather than Complete.
 
 ### 2026-09-25 — COMMERCE-017 Attempt 3 accepted
 
