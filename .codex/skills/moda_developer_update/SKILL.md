@@ -1,6 +1,6 @@
 ---
 name: moda_developer_update
-description: Reconcile, self-review, complete, or reopen a developer-controlled Moda Interact architecture task.
+description: Reconcile, self-review, complete, or developer-override/reopen any Moda Interact architecture task.
 disable-model-invocation: true
 ---
 
