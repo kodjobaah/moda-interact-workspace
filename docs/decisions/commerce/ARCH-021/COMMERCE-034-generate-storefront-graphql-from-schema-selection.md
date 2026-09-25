@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 5
 depends_on:
   - ARCH-021-COMMERCE-033
 enables:
   - ARCH-021-COMMERCE-035
 created: 2026-09-24
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Generate Storefront GraphQL from dynamic schema selections
@@ -65,12 +65,15 @@ It must reuse the existing accepted Storefront compiler/validation boundary. It 
 Primary files:
 
 ```text
-src/studio/discovery/storefront-query-builder.ts   # new pure AST generator/merge logic
-src/studio/discovery/storefront-schema-browser.tsx # argument-binding controls + generated preview
+src/studio/discovery/storefront-query-builder.ts          # pure AST generator/merge logic
+src/studio/discovery/storefront-schema-browser.tsx         # preserve C033 navigation/selection behavior
+src/studio/discovery/storefront-argument-bindings.tsx      # new required selected-argument editor
 src/studio/discovery/selection-tree.ts
-components/studio-workspace.tsx                    # remove old buildQueryDefinition/addPath path-string builder
-lib/discovery/compiler.ts                          # expose/reuse bounded helpers only if needed
-tests/storefront-query-builder.test.ts             # new
+components/studio-workspace.tsx                           # compose selection + argument bindings + validation
+lib/discovery/storefront-input-compatibility.ts            # new client-safe shared compatibility helper
+lib/discovery/compiler.ts                                  # reuse the same compatibility helper
+tests/storefront-query-builder.test.ts
+tests/storefront-argument-bindings.test.tsx                # new required
 tests/storefront-schema-browser.test.tsx
 tests/studio-workspace.test.tsx
 tests/discovery.test.ts
@@ -259,9 +262,19 @@ QueryRoot.product
       -> MoneyV2.amount
 ```
 
-with `product`'s required argument bound to a top-level Tool input property.
+with `product.handle` explicitly bound to a top-level Tool input property.
 
-The resulting candidate must contain a valid named query and pass the existing Storefront compiler.
+The C032 artifact shows `QueryRoot.product(handle: String, id: ID)` as optional arguments, so this binding proves dynamic input-property mapping but MUST NOT be treated as a required Shopify argument.
+
+Separately use the real required root:
+
+```text
+QueryRoot.productByHandle(handle: String!)
+```
+
+to prove that an unresolved required argument blocks the candidate/application path.
+
+The resulting nested `product` candidate must contain a valid named query and pass the existing Storefront compiler.
 
 Also prove:
 
@@ -292,17 +305,17 @@ No production Storefront query generation may depend on `path.split(".")`.
 
 ## Work Items
 
-- [ ] Add pure Storefront AST query builder.
-- [ ] Add schema-driven argument-binding state/controls.
-- [ ] Add inputSchema-property variable mapping.
-- [ ] Add bounded literal argument generation.
-- [ ] Add connection-first handling.
-- [ ] Merge selections safely into existing query AST.
-- [ ] Preserve aliases/unrelated existing selections.
-- [ ] Make pinned schema identity authoritative.
-- [ ] Wire exact candidate through existing `validateToolDefinition`.
-- [ ] Remove old dot-path query-generation code.
-- [ ] Add real-artifact integrated regressions.
+- [x] Add pure Storefront AST query builder.
+- [x] Add schema-driven argument-binding state/controls.
+- [x] Add inputSchema-property variable mapping.
+- [x] Add bounded literal argument generation.
+- [x] Add connection-first handling.
+- [x] Merge selections safely into existing query AST.
+- [x] Preserve aliases/unrelated existing selections.
+- [x] Make pinned schema identity authoritative.
+- [x] Wire exact candidate through existing `validateToolDefinition`.
+- [x] Remove old dot-path query-generation code.
+- [x] Add real-artifact integrated regressions.
 
 ## Interfaces / Contracts
 
@@ -327,29 +340,35 @@ Produces no new cross-service contract.
 
 ## Acceptance Criteria
 
-- [ ] GraphQL is generated/merged from real schema metadata and selection tree.
-- [ ] Required schema arguments cannot be bypassed.
-- [ ] Input-property variable mappings remain the Tool's persisted argument contract.
-- [ ] Connection pagination obeys existing bounded compiler policy.
-- [ ] Existing aliases/unrelated selections survive deterministic merge.
-- [ ] No dot-path split builder remains.
-- [ ] Candidate uses the pinned API version/schema hash.
-- [ ] `Use in tool` can apply only the exact candidate that passed existing server validation.
-- [ ] Real-artifact nested product regression passes.
-- [ ] No provider/network request occurs during schema authoring/validation.
+- [x] GraphQL is generated/merged from real schema metadata and selection tree.
+- [x] Required schema arguments cannot be bypassed.
+- [x] Input-property variable mappings remain the Tool's persisted argument contract.
+- [x] Connection pagination obeys existing bounded compiler policy.
+- [x] Existing aliases/unrelated selections survive deterministic merge.
+- [x] No dot-path split builder remains.
+- [x] Candidate uses the pinned API version/schema hash.
+- [x] `Use in tool` can apply only the exact candidate that passed existing server validation.
+- [x] Real-artifact nested product regression passes.
+- [x] No provider/network request occurs during schema authoring/validation.
 
 ## Validation
 
-- [ ] `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts --reporter=verbose`
-- [ ] existing Storefront compiler/definition tests directly affected by the generated query
-- [ ] targeted ESLint for every changed source/test file
-- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
-- [ ] source audit:
+- [x] `npx vitest run tests/storefront-input-compatibility.test.ts tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose`
+- [x] Existing Storefront compiler/definition tests directly affected by generated queries pass.
+- [x] Targeted ESLint for every Attempt 5 changed source/test file.
+- [x] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required).
+- [x] Legacy path-string source audit:
   ```text
-  rg -n "buildQueryDefinition|path\.split\(\"\\.\"\)|selectedPaths" components src/studio
+  rg -n "buildQueryDefinition|path\.split\(\"\\\.\"\)|selectedPaths" components src/studio
   ```
-  expected: no legacy Storefront path-string builder matches
-- [ ] `git diff --check`
+  expected: no legacy Storefront path-string builder matches.
+- [x] Client artifact-boundary audit:
+  ```text
+  rg -n "storefrontSchemaHash|storefrontArtifact|storefrontSchema" \
+    src/studio/discovery components
+  ```
+  expected: no runtime Storefront artifact/schema value import in client query-builder/UI code.
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -369,58 +388,275 @@ Do not broaden Storefront access or compiler limits merely to make a generated q
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `components/studio-workspace.tsx`
+- `lib/discovery/compiler.ts`
+- `lib/discovery/storefront-input-compatibility.ts`
+- `src/studio/discovery/selection-tree.ts`
+- `src/studio/discovery/storefront-argument-bindings.tsx`
+- `src/studio/discovery/storefront-query-builder.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/storefront-input-compatibility.test.ts`
+- `tests/storefront-argument-bindings.test.tsx`
+- `tests/storefront-query-builder.test.ts`
+- `tests/storefront-schema-browser.test.tsx`
+- `tests/studio-services.test.ts`
+- `tests/studio-workspace.test.tsx`
+- Attempt 2 implementation commit: `9e180cc2956d50f064825f3e13a2cc72115b7782`
+- Attempt 3 implementation commit: `cf3c75b19760329914cfeff41c7056a9e068d18c`
+- Attempt 4 implementation commit: `caa900a`
+- Attempt 5 implementation/test commit: `2a49b270cf12d74b88c807c5156029786b09c65f`
 
 ### Work Completed
 
-None
+Attempt 1 established the AST/merge foundation.
+
+Attempt 2 added production schema-driven argument-binding state and controls; shared client-safe inputSchema compatibility with the accepted compiler; typed scalar/enum literal generation with explicit unsupported input-object/list rejection; bounded connection `first` handling; authoritative C032 API-version/schema-hash identity; generated-variable collision protection; real compiler-backed validation regressions; and result-path/alias/selection merge safety.
+
+Attempt 3 corrected LIST wrapper detection and the first-only/last connection UI policy, removed the task-owned TS2367, and added the required connected Studio regressions. The legacy dot-path builder remained removed.
+
+Attempt 4 corrected scalar compatibility parity so String is no longer accepted for GraphQL Boolean, Int or Float; retained integer/number compatibility for Int and integer/number compatibility for Float; added the required compatibility matrix; added a real `products.reverse: Boolean` builder regression; changed the nested product compiler proof to start from a product-free document and verify generated `product(handle: $input_handle)` plus its persisted mapping; and changed the schema-identity connected regression to deep-compare the complete validated definition with the definition applied in the real composer context.
+
+Attempt 5 now fails closed when a deterministic generated variable already exists without the exact persisted input mapping, while retaining exact type-and-mapping reuse without duplicate definitions or mappings. The argument editor preserves non-truncating GraphQL Int values, and real `predictiveSearch.limit` regressions prove `1.5` reaches the typed builder and is rejected while `5` remains valid.
 
 ### Validation Results
 
-None
+Focused validation passed: `npx vitest run tests/storefront-input-compatibility.test.ts tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose` completed with 7 test files and 82 tests passing. This includes the Attempt 5 missing-mapping rejection/document-preservation and exact reuse regressions, non-truncating real `predictiveSearch.limit` Int literal regressions (`1.5` rejected and `5` accepted), scalar compatibility matrix, real `products.reverse: Boolean` rejection for a string input property, generated nested product mapping through the real compiler from a product-free base document, connection `first=1` and `first=20`, LIST/first-only/last UI behavior, fail-closed required/wrong-input workflows, exact complete-definition schema-identity application, and invalid result-path behavior. No provider or network request was used.
+
+Targeted ESLint over every Attempt 5 changed source/test file passed with zero errors/warnings. `npm run typecheck` exits non-zero with the unchanged documented repository baseline, including missing preview modules, Prisma generated-type drift, and existing implicit-any/strictness diagnostics outside the C034-owned files. The full output contains no diagnostics for the changed C034 helper, builder, workspace, or tests.
+
+The legacy path-string source audit passed: no `buildQueryDefinition`, `path.split(".")`, or `selectedPaths` matches remain in `components` or `src/studio`. The client artifact-boundary audit passed: no runtime Storefront artifact/schema value import remains in the client query-builder/UI surface. `git diff --check` passed.
+
+`npm run typecheck` exits non-zero with the unchanged documented repository baseline, including missing preview modules, Prisma generated-type drift, and existing implicit-any/strictness diagnostics outside the C034-owned files. No diagnostics remain in `components/studio-workspace.tsx`, `src/studio/discovery/storefront-argument-bindings.tsx`, `src/studio/discovery/storefront-query-builder.ts`, or the changed C034 tests; the Attempt 2-owned TS2367 is absent.
+
+Launcher topology evidence: implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-034` and parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-034` both use `task/ARCH-021-COMMERCE-034`. Attempt 5 implementation commit `2a49b270cf12d74b88c807c5156029786b09c65f` is pushed to `origin/task/ARCH-021-COMMERCE-034`; the implementation worktree is clean. The database submodule remains pinned at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`). No ARCH-021-COMMERCE-035 worktree, branch, or implementation was started.
 
 ### Deviations
 
-None
+The full repository typecheck remains non-zero only because of unchanged documented baseline diagnostics; zero C034-owned diagnostics are present. Focused tests (7 files / 82 tests), targeted ESLint, both source audits, and `git diff --check` passed. No live provider/network request was added or used.
 
 ### Assumptions
 
-None
+The accepted Storefront compiler and COMMERCE-032 pinned artifact remain the validation authority. Attempt 5 implementation commit `2a49b270cf12d74b88c807c5156029786b09c65f` is pushed to `origin/task/ARCH-021-COMMERCE-034`.
 
 ### Unresolved Issues
 
-None
+Repository-wide typecheck remains non-zero on unrelated baseline diagnostics; zero task-owned diagnostics are present.
 
 ### Architectural Concerns
 
-None
+None identified within the bounded task scope.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 5 resolves the final two bounded correctness findings from Attempt 4.
+
+Architect review confirms the production query builder now fails closed when the deterministic generated variable name already exists in the authored GraphQL operation but the corresponding persisted Tool input mapping is missing:
+
+```ts
+if (
+  existing &&
+  (
+    !existingMapping ||
+    !('input' in existingMapping) ||
+    existingMapping.input !== generated.property
+  )
+) {
+  throw new Error(
+    `Generated variable ${name} conflicts with the existing input mapping.`,
+  );
+}
+```
+
+This preserves the required collision invariant:
+
+```text
+existing variable definition
+  -> same GraphQL type required
+  -> existing INPUT_PROPERTY mapping required
+  -> same requested input property required
+  -> otherwise reject
+```
+
+The accepted reuse case is also covered: an existing variable with the same GraphQL type and the exact existing input mapping is reused without adding a duplicate variable definition or mapping.
+
+The Int literal editor now preserves the authored numeric value using:
+
+```ts
+Number(value)
+```
+
+rather than `Number.parseInt(...)`.
+
+Therefore:
+
+```text
+"1.5" -> 1.5
+```
+
+reaches the typed AST builder and is rejected by the existing:
+
+```text
+Literal for Int must be a finite integer.
+```
+
+rule rather than being silently changed to `1`.
+
+A valid integer such as:
+
+```text
+"5" -> 5
+```
+
+remains valid.
+
+### Final C034 architecture accepted
+
+Across Attempts 1-5, the final Storefront query-authoring path now provides:
+
+```text
+real C032 schema graph
+        +
+C033 nested selection tree
+        +
+schema-driven argument bindings
+        +
+C032 apiVersion/schemaHash
+        |
+        v
+GraphQL AST generation/merge
+        |
+        v
+exact ToolDefinition candidate
+        |
+        v
+named validateToolDefinition Server Action
+        |
+        v
+accepted Storefront compiler
+        |
+        v
+Use in tool only for the exact validated candidate
+```
+
+The final accepted behavior includes:
+
+- no legacy dot-path query builder;
+- schema-driven `INPUT_PROPERTY` and `LITERAL` argument authoring;
+- shared client/server input-schema compatibility;
+- typed scalar/enum literal generation;
+- LIST/input-object literal rejection;
+- connection `first` literal bound from 1 through 20;
+- no authored `last`;
+- alias/unrelated selection preservation;
+- duplicate/ambiguous existing field rejection;
+- deterministic variable naming and ordering;
+- fail-closed variable type/mapping collision handling;
+- C032 schema identity applied to both API version and schema hash;
+- visible schema-identity rebuild/revalidation;
+- real compiler as final validation authority;
+- resultPath preservation/failure through the existing validation path;
+- complete validated/applied Tool definition identity;
+- no normal provider/network request during schema authoring.
+
+### Attempt 5 evidence
+
+Architect inspected the final production source and tests and confirmed the required regressions are present:
+
+```text
+existing generated-name variable + missing mapping -> rejected
+existing generated-name variable + identical mapping/type -> reused
+no duplicate generated variable/mapping introduced
+predictiveSearch.limit literal 1.5 retained as 1.5 and rejected by builder
+predictiveSearch.limit literal 5 retained and accepted
+```
+
+Submitted validation:
+
+```text
+focused tests: 7 files / 82 passed
+targeted ESLint: PASS
+legacy path-string audit: PASS
+client artifact-boundary audit: PASS
+git diff --check: PASS
+typecheck: unchanged unrelated repository baseline only
+           zero C034-owned diagnostics
+```
+
+The review archive does not contain `node_modules`, so the architect did not independently rerun Vitest/ESLint/typecheck. The final implementation and focused regression source were inspected directly.
+
+Implementation reviewed:
+
+```text
+2a49b270
+```
+
+Final parent report supplied by the handoff:
+
+```text
+869af5d3
+```
+
+As with prior task reports, the final parent-report SHA is supplied by the handoff because the report file cannot reliably contain the SHA of the commit that subsequently publishes that same final report.
 
 ### Reviewed Files
 
-None
+- `components/studio-workspace.tsx`
+- `lib/discovery/compiler.ts`
+- `lib/discovery/storefront-input-compatibility.ts`
+- `src/studio/discovery/selection-tree.ts`
+- `src/studio/discovery/storefront-argument-bindings.tsx`
+- `src/studio/discovery/storefront-query-builder.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/storefront-input-compatibility.test.ts`
+- `tests/storefront-argument-bindings.test.tsx`
+- `tests/storefront-query-builder.test.ts`
+- `tests/storefront-schema-browser.test.tsx`
+- `tests/studio-workspace.test.tsx`
+- `tests/discovery.test.ts`
+- `tests/studio-services.test.ts`
+- task Completion Report
 
 ### Validation Reviewed
 
-None
+The task Validation checklist is reconciled as satisfied under the explicit allowed typecheck rule:
+
+```text
+unchanged unrelated baseline diagnostics are permitted
+zero task-owned diagnostics are required
+```
+
+All submitted Attempt 5 focused validation satisfies that contract.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C034 now deterministically builds and merges Storefront GraphQL from the real schema-backed selection/binding state and validates the exact candidate against the accepted compiler before application.
 
 ### Follow-up
 
-None
+`ARCH-021-COMMERCE-034` is Complete.
+
+`ARCH-021-COMMERCE-035` becomes Ready.
+
+The previously requested C035 UI-component boundary is materialized before promotion:
+
+```text
+StudioWorkspace
+  -> ShopifyDocumentationExplorer
+      -> ShopifyDocumentationArticle
+```
+
+`ARCH-021-SYSTEM-TEST-001` remains Pending until C035 is architect-accepted Complete.
+
+Do not start SYSTEM-TEST-001.
