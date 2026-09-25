@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 35
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-25T00:51:31Z
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-034
 enables:
   - ARCH-021-SYSTEM-TEST-001
 created: 2026-09-24
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Normalize and render Shopify documentation readably
