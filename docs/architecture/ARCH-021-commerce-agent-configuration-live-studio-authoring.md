@@ -951,12 +951,12 @@ Checkpoint tasks:
 | ARCH-021-COMMERCE-032 | moda_commerce | Complete | COMMERCE-029 |
 | ARCH-021-COMMERCE-033 | moda_commerce | Complete | COMMERCE-032 |
 | ARCH-021-COMMERCE-034 | moda_commerce | Complete | COMMERCE-033 |
-| ARCH-021-COMMERCE-035 | moda_commerce | Complete | COMMERCE-034 |
+| ARCH-021-COMMERCE-035 | moda_commerce | Ready | COMMERCE-034 |
 | ARCH-021-BACKGROUND-001 | moda_background | Complete | COMMERCE-030 |
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
-| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Ready | all checkpoint implementation tasks, including COMMERCE-032..035 |
+| ARCH-021-SYSTEM-TEST-001 | moda_system_test | Pending | all checkpoint implementation tasks, including COMMERCE-032..035 |
 
-Current checkpoint implementation frontier: none. COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. Every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete, so SYSTEM-TEST-001 is Ready. The developer may leave that terminal system-test task Ready while manually validating the completed checkpoint. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
+Current checkpoint frontier: `ARCH-021-COMMERCE-035`. Developer manual validation after C035 Attempt 3 acceptance exposed Shopify page-chrome/accessibility text in the otherwise safe structured documentation renderer. C035 is reopened Ready for Attempt 4. SYSTEM-TEST-001 returns to Pending until C035 is architect-accepted Complete again. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
 
 ### Phase 4 — live single-tool testing
 
@@ -1541,6 +1541,19 @@ architect-accepted Complete.
 - Confirmed the private MCP remains context-only over the private service link with server-derived environment, local ten-second tool deadline and PostgreSQL shop/turn/grant/release/tool authorization intact.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
+
+### 2026-09-25 — COMMERCE-035 reopened after manual validation
+
+- Developer manual validation showed the accepted safe/structured renderer still
+  surfaced Shopify-generated page chrome and accessibility helper text:
+  version-picker labels, `Anchor to ...`, feedback controls and duplicate anchor
+  labels.
+- Reopened the same C035 task for Attempt 4 rather than creating a new capability;
+  the accepted `ShopifyDocumentationExplorer` /
+  `ShopifyDocumentationArticle` boundary remains unchanged.
+- Correction is server-side semantic filtering/de-duplication, with representative
+  Shopify query-page regression coverage.
+- SYSTEM-TEST-001 returns to Pending because C035 is no longer Complete.
 
 ### 2026-09-25 — COMMERCE-035 Attempt 3 accepted
 

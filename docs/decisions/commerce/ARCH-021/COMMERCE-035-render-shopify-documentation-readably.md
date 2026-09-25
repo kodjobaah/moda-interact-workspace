@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -770,121 +770,613 @@ Architect Review was preserved unchanged.
 
 ### Review Status
 
-Accepted
+Changes Requested After Manual Validation
 
 ### Review Notes
 
-Attempt 3 completes the only remaining evidence/task-record correction from Attempt 2.
+COMMERCE-035 Attempt 3 was architect-accepted Complete, but developer manual
+validation before terminal SYSTEM-TEST exposed an additional readability defect in
+the same documentation capability.
 
-Architect review confirms the final regression now proves both fallback cases:
+The accepted Attempt 1-3 implementation solved:
+
+```text
+raw HTML/Markdown leakage
+one giant flattened document paragraph
+unsafe raw HTML rendering
+encoded-tag normalization order
+Unicode-safe excerpt bounds
+<br> separator preservation
+```
+
+Those accepted behaviors must remain unchanged.
+
+The new manual-validation screenshot shows that the structured parser still
+includes Shopify documentation **page chrome and accessibility helper text** as if
+it were article content.
+
+Observed examples include:
+
+```text
+Choose a version:
+2026-07
+latest
+Anchor to collection
+Anchor to Arguments
+Anchor to handle
+•
+Was this section helpful?
+Anchor to Possible returnsPossible returns
+```
+
+This matches the current Shopify generated documentation representation: the
+source page itself contains version-selector text, "Anchor to ..." helper labels,
+feedback controls, "Show fields"/"Copy" controls and similar documentation chrome.
+
+This is not primarily a CSS problem. The server parser must separate semantic
+article content from Shopify page/navigation/accessibility chrome before producing
+the public `DocumentationBlock[]`.
+
+### Attempt 4 objective
+
+Produce a **clean semantic article** from the already-verified Shopify HTML while
+preserving the accepted safe block contract.
+
+Target presentation for a query page should resemble:
+
+```text
+collection
+
+Retrieves a single Collection by its ID or handle.
+Use the products field to access items in the collection.
+
+Arguments
+
+• handle (String)
+  The handle of the Collection.
+
+• id (ID)
+  The ID of the Collection.
+
+Possible returns
+
+• Collection
+  A group of products organized by a merchant ...
+```
+
+It must not expose:
+
+```text
+Choose a version
+latest
+Anchor to ...
+Was this section helpful?
+Show fields
+Show input fields
+Show enum values
+Copy
+Copy MD
+Install AI Toolkit
+Ask about this page
+Hide content
+Full index
+standalone decorative bullets
+```
+
+as article paragraphs/headings.
+
+### Deterministic correction contract
+
+#### 1. Preserve minimal HTML attributes for server-side classification only
+
+The current `HtmlNode` keeps only:
 
 ```ts
-expect(normalizeSearchExcerpt('')).toBe('No preview available.');
-
-expect(
-  normalizeSearchExcerpt(' \u0000\n <script> </script> ')
-).toBe('No preview available.');
+{ tag, children }
 ```
 
-This proves the fallback both for genuinely empty input and for content that becomes empty after normalization.
+so the parser cannot distinguish visually-hidden/accessibility/navigation nodes
+from meaningful inline content.
 
-The production normalization/parser source remains the accepted Attempt 2 implementation:
-
-- HTML entities are decoded before tag removal, so encoded tags cannot reappear as visible raw markup;
-- search excerpts are bounded by Unicode code point and UTF-8 byte size without leaving a dangling surrogate;
-- `<br>` becomes a readable space in normal text and a newline in preformatted/code text;
-- opened Shopify documentation remains a bounded structured block DTO;
-- raw remote HTML is never rendered with `dangerouslySetInnerHTML`;
-- canonical direct document fetch remains constrained to `https://shopify.dev/docs/...`;
-- script/style/navigation/form/browser-only noise remains excluded;
-- full-document output remains rejected when it exceeds the defined bound rather than being silently truncated.
-
-The required UI boundary also remains intact:
+Extend the **server-only internal parser node** to preserve only the minimal
+attributes required for classification, for example:
 
 ```text
+class
+aria-hidden
+aria-label
+role
+href
+```
+
+You may use an equivalent minimal set if inspection of the real Shopify markup
+shows another attribute is required.
+
+Requirements:
+
+- these attributes are parser-internal only;
+- they must never be exposed in `DocumentationBlock`;
+- event-handler/style/raw-HTML attributes remain irrelevant and must not be
+  surfaced;
+- do not introduce `dangerouslySetInnerHTML`;
+- do not switch the browser UI to remote HTML rendering.
+
+#### 2. Exclude visually-hidden/accessibility helper nodes
+
+Add one pure server-side classification helper, for example:
+
+```ts
+isNonContentNode(node): boolean
+```
+
+It must exclude at minimum:
+
+```text
+aria-hidden="true"
+role="navigation"
+role="menu"
+role="button"
+role="tab"
+role="combobox"
+```
+
+and common visually-hidden class tokens case-insensitively, including at least:
+
+```text
+visually-hidden
+visuallyhidden
+sr-only
+screen-reader
+screenreader
+```
+
+Do not exclude arbitrary content merely because it has a CSS class.
+
+If real Shopify markup uses another clearly accessibility-only class/token for the
+"Anchor to ..." helper, add that exact bounded token and record it in the
+Completion Report.
+
+#### 3. Suppress local section-anchor helper text
+
+For local hash-link/accessibility helper content, do not emit the helper label.
+
+At minimum these must never survive as article text:
+
+```text
+Anchor to collection
+Anchor to Arguments
+Anchor to handle
+Anchor to Possible returns
+```
+
+Prefer structural classification from the parsed attributes.
+
+Add a bounded textual fallback only for a standalone/helper fragment matching:
+
+```text
+^Anchor to\s+
+```
+
+Do not globally remove those words from normal prose paragraphs.
+
+A heading represented by accessibility helper + visible label:
+
+```text
+Anchor to Possible returnsPossible returns
+```
+
+must normalize to exactly:
+
+```text
+Possible returns
+```
+
+not to an empty heading and not to the duplicated text.
+
+#### 4. Suppress Shopify documentation UI chrome
+
+Create one bounded semantic-chrome predicate operating on complete candidate block
+text / classified container, not on arbitrary substrings in prose.
+
+Exclude standalone/control content for at least:
+
+```text
+Choose a version:
+Install AI Toolkit
+Ask about this page
+Copy MD
+Copy
+Full index
+Show fields
+Show input fields
+Show enum values
+Show filters
+Hide content
+Was this section helpful?
+Query Reference
+```
+
+Also suppress the version-selector values belonging to the same selector
+container, including:
+
+```text
+2026-07
+latest
+```
+
+Do **not** globally remove `2026-07` or `latest` from ordinary prose. Suppress the
+version selector as a semantic container/group.
+
+Likewise, feedback controls such as `Yes` / `No` are excluded only within the
+identified feedback-control container; do not globally remove those words.
+
+#### 5. Do not emit decorative-only blocks
+
+Do not produce article blocks whose normalized text is only decoration, including:
+
+```text
+•
+·
+*
+---
+```
+
+or equivalent single-glyph separators.
+
+Horizontal rules may simply be omitted for this checkpoint.
+
+#### 6. Suppress the duplicate page H1 already represented by the article header
+
+`ShopifyDocumentationArticle` already renders:
+
+```text
+document.title
+```
+
+in its own header.
+
+Do not emit the page's duplicate top-level `<h1>` as a second article block.
+
+For a title such as:
+
+```text
+collection - Storefront API
+```
+
+a page H1 of:
+
+```text
+collection
+```
+
+must not appear again as a standalone paragraph/heading immediately beneath the
+article header.
+
+Do not suppress normal later headings that happen to contain the same word.
+
+#### 7. Consecutive short duplicate block cleanup
+
+After semantic chrome removal, collapse **consecutive identical short textual
+blocks** produced from the same Shopify generated field/type widget.
+
+This is specifically to avoid patterns such as:
+
+```text
+Collection
+Collection
+```
+
+that result only from the page widget's duplicated visible/accessibility labels.
+
+Bound the rule:
+
+```text
+same normalized text
+consecutive blocks
+text <= 128 characters
+same block family (heading/paragraph or explicit compatible rule)
+```
+
+Do not perform global document-wide de-duplication.
+
+#### 8. Preserve useful content and accepted block semantics
+
+The cleanup must retain real documentation such as:
+
+```text
+Arguments
+handle (String)
+id (ID)
+The handle of the Collection.
+The ID of the Collection.
+Possible returns
+Collection
+A group of products organized by a merchant ...
+Examples
+code blocks
+ordered/unordered lists
+blockquotes
+```
+
+Do not remove a block merely because it is short.
+
+Do not remove actual GraphQL type names such as:
+
+```text
+String
+ID
+Collection
+Product
+```
+
+unless it is an exact consecutive duplicate under rule 7.
+
+#### 9. Apply equivalent bounded cleanup to search excerpts
+
+Search excerpts can contain the same generated Shopify chrome.
+
+After the existing safe plain-text normalization, suppress standalone/bounded
+Shopify helper/chrome phrases such as:
+
+```text
+Anchor to ...
+Choose a version:
+Was this section helpful?
+Show fields
+Copy MD
+```
+
+without deleting those words when they occur naturally inside normal prose.
+
+Do not fetch result pages to perform this cleanup.
+
+#### 10. Keep UI changes minimal
+
+This correction is primarily server normalization.
+
+Do not redesign:
+
+```text
+ShopifyDocumentationExplorer
+ShopifyDocumentationArticle
 StudioWorkspace
-  -> ShopifyDocumentationExplorer
-      -> named searchDocumentation/getDocumentation Server Actions
-      -> ShopifyDocumentationArticle
 ```
 
-`StudioWorkspace` does not own a second documentation implementation, and no production documentation test port/service/context has been introduced.
+unless a directly required presentation regression exposes a small CSS defect.
 
-### Final C035 evidence
+The current semantic `<article>`, heading/list/code/blockquote rendering boundary
+is accepted.
 
-The task Work Items, Acceptance Criteria and Validation checklist are reconciled as complete.
+### Required representative regression
 
-Submitted validation:
+Add a fixture representing the semantic content visible in manual validation,
+including at minimum:
+
+```html
+<main>
+  <div>
+    <span>Choose a version:</span>
+    <select><option>2026-07</option></select>
+    <span>latest</span>
+  </div>
+
+  <a href="#collection">
+    <span class="visually-hidden">Anchor to collection</span>
+  </a>
+  <h1>collection</h1>
+  <span>query</span>
+
+  <p>Retrieves a single Collection by its ID or handle.</p>
+
+  <a href="#arguments">
+    <span class="visually-hidden">Anchor to Arguments</span>
+  </a>
+  <h2>Arguments</h2>
+
+  <ul>
+    <li>handle (String)</li>
+    <li>id (ID)</li>
+  </ul>
+
+  <a href="#handle">
+    <span class="visually-hidden">Anchor to handle</span>
+  </a>
+  <p>handle</p>
+  <p>•</p>
+  <p>String</p>
+  <p>The handle of the Collection.</p>
+
+  <div>
+    <span>Was this section helpful?</span>
+    <button>Yes</button>
+    <button>No</button>
+  </div>
+
+  <h2>
+    <span class="visually-hidden">Anchor to Possible returns</span>
+    Possible returns
+  </h2>
+
+  <p>Collection</p>
+  <p>•</p>
+  <p>Collection</p>
+  <p>A group of products organized by a merchant.</p>
+</main>
+```
+
+Use the actual parser-compatible surrounding `<html><head><title>...</title>...`
+wrapper required by `fetchShopifyDocument()`.
+
+The normalized result must contain useful article content but none of:
 
 ```text
-focused tests: 6 files / 71 passed
-targeted ESLint: PASS
-raw-rendering audit: PASS
-StudioWorkspace ownership audit: PASS
-production documentation seam audit: PASS
-component existence audit: PASS
-git diff --check: PASS
-typecheck: unchanged unrelated baseline only
-           zero C035-owned diagnostics
+Choose a version
+latest
+Anchor to
+Was this section helpful
+Yes
+No
+standalone •
 ```
 
-Implementation/test commit reviewed:
+and the `Possible returns` heading must occur once, not as:
 
 ```text
-a03b6187
+Anchor to Possible returnsPossible returns
 ```
 
-Final parent report supplied:
+#### Search-excerpt regression
+
+Provide representative search content containing:
 
 ```text
-65922578
+Anchor to ProductsProducts
+Show fields
+Was this section helpful?
+A product represents an item a merchant sells.
 ```
 
-The Completion Report records the implementation commit in abbreviated form as
-`a03b618`, which matches the supplied implementation SHA.
+The resulting excerpt must retain the actual product sentence and must not expose
+the standalone generated UI/helper phrases.
 
-### Reviewed Files
+### Manual-validation acceptance examples
 
-- `lib/discovery/upstream.ts`
-- `lib/discovery/document.ts`
-- `lib/discovery/service.ts`
-- `src/studio/contracts.ts`
-- `src/commerce/integration/studio/services.ts`
-- `src/studio/discovery/shopify-documentation-explorer.tsx`
-- `src/studio/discovery/shopify-documentation-article.tsx`
-- `components/studio-workspace.tsx`
-- documentation CSS
-- `src/studio/testing/in-memory-studio-services.ts`
-- `tests/discovery-document.test.ts`
-- `tests/discovery.test.ts`
-- `tests/studio-services.test.ts`
-- `tests/studio-workspace.test.tsx`
-- `tests/shopify-documentation-explorer.test.tsx`
-- `tests/shopify-documentation-article.test.tsx`
-- task Completion Report
+For the Shopify collection query page, the developer-facing rendered article
+should no longer begin with:
 
-### Validation Reviewed
+```text
+Choose a version:
+2026-07
+latest
+Anchor to collection
+collection
+query
+```
 
-Architect inspected the final Attempt 3 test source and confirmed the missing fallback regression is present exactly as required.
+It should begin with the meaningful query description / article content beneath
+the existing document header.
 
-All other Attempt 2 production fixes and regressions remain intact in the supplied review snapshot.
+A section should no longer render:
 
-The archive does not contain installed dependencies, so the architect did not independently rerun Vitest/ESLint/typecheck. Acceptance is based on the submitted validation evidence plus direct source/test review.
+```text
+Anchor to Possible returnsPossible returns
+```
+
+It should render:
+
+```text
+Possible returns
+```
+
+### Validation
+
+Run:
+
+```bash
+npx vitest run \
+  tests/discovery-document.test.ts \
+  tests/discovery.test.ts \
+  tests/studio-services.test.ts \
+  tests/studio-workspace.test.tsx \
+  tests/shopify-documentation-explorer.test.tsx \
+  tests/shopify-documentation-article.test.tsx \
+  --reporter=verbose
+```
+
+Run targeted ESLint for every Attempt 4 changed file.
+
+Run:
+
+```bash
+npm run typecheck
+```
+
+Only the documented unchanged unrelated baseline may remain; zero C035-owned
+diagnostics are required.
+
+Run all existing documentation source/component audits and:
+
+```bash
+git diff --check
+```
+
+All must pass under their existing allowed conditions.
+
+### Completion Report
+
+Record this as developer-manual-validation correction after the previously
+accepted Attempt 3:
+
+```text
+Attempt 1:
+  structured docs + component extraction
+
+Attempt 2:
+  encoded-tag / Unicode / <br> correctness
+
+Attempt 3:
+  fallback regression + evidence reconciliation
+  architect-accepted Complete
+
+Manual validation:
+  Shopify page chrome/accessibility text still visible
+
+Attempt 4:
+  semantic page-chrome filtering / de-duplication
+```
+
+Record:
+
+```text
+Attempt 4 implementation commit
+final parent report commit
+focused tests/count
+ESLint
+typecheck baseline + zero task-owned diagnostics
+source/component audits
+git diff --check
+branch/worktree synchronization
+database submodule synchronization
+```
+
+Return:
+
+```yaml
+status: review
+executor: null
+claimed_at: null
+attempt: 4
+```
+
+and STOP.
+
+Do not start `ARCH-021-SYSTEM-TEST-001`.
+
+### Reviewed Manual Evidence
+
+Developer manual validation screenshot showed the accepted structured renderer
+still surfacing Shopify page chrome/accessibility labels such as:
+
+```text
+Choose a version:
+Anchor to ...
+Was this section helpful?
+Anchor to Possible returnsPossible returns
+```
+
+This is sufficient to reopen the same documentation-normalization task before
+terminal system testing.
 
 ### Architecture Conformance
 
-Conforms.
+Previously accepted C035 safety/component architecture remains conformant.
 
-The Documentation tab now has a bounded, safe, readable server normalization contract and a separate semantic UI renderer. The original manual-validation defects—raw markup in search results and opened documentation flattened into one unreadable paragraph—are addressed without introducing raw HTML rendering or a competing data-access/test architecture.
+The reopened correction is limited to semantic server-side cleanup of Shopify
+generated documentation chrome.
 
 ### Follow-up
 
-`ARCH-021-COMMERCE-035` is Complete.
+`ARCH-021-COMMERCE-035` is reopened Ready for Attempt 4.
 
-All dependencies of terminal `ARCH-021-SYSTEM-TEST-001` are now architect-accepted Complete, so `ARCH-021-SYSTEM-TEST-001` becomes Ready.
-
-The developer may intentionally leave the terminal system-test task Ready while manually validating the completed checkpoint.
-
-Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
-
-Do not start any Phase-3 implementation task from this acceptance.
+`ARCH-021-SYSTEM-TEST-001` returns to Pending because a required implementation
+dependency is no longer Complete.

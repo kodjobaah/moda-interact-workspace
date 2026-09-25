@@ -16,7 +16,14 @@ Coordinator:
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-001](SYSTEM-TEST-001-validate-simplified-studio-and-private-mcp.md) | Validate reduced configuration, dynamic Storefront schema authoring, readable Shopify documentation, unified authorization and context-only private MCP | Ready | DATABASE-002, COMMERCE-025..030, COMMERCE-032..035, BACKGROUND-001, GATEWAY-001 |
+| [SYSTEM-TEST-001](SYSTEM-TEST-001-validate-simplified-studio-and-private-mcp.md) | Validate reduced configuration, dynamic Storefront schema authoring, readable Shopify documentation, unified authorization and context-only private MCP | Pending | DATABASE-002, COMMERCE-025..030, COMMERCE-032..035, BACKGROUND-001, GATEWAY-001 |
+
+### SYSTEM-TEST-001 returned Pending after manual validation — 2026-09-25
+
+Developer manual validation exposed remaining Shopify documentation page chrome
+after C035 Attempt 3 acceptance. C035 is reopened for Attempt 4, so terminal
+SYSTEM-TEST-001 returns to **Pending** until that implementation dependency is
+again architect-accepted Complete.
 
 ### SYSTEM-TEST-001 ready — 2026-09-25
 
