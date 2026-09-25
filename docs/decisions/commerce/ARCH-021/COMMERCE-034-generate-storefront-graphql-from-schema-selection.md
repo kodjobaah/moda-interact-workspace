@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -307,7 +307,7 @@ No production Storefront query generation may depend on `path.split(".")`.
 
 - [x] Add pure Storefront AST query builder.
 - [x] Add schema-driven argument-binding state/controls.
-- [x] Add inputSchema-property variable mapping.
+- [ ] Add inputSchema-property variable mapping.
 - [x] Add bounded literal argument generation.
 - [x] Add connection-first handling.
 - [x] Merge selections safely into existing query AST.
@@ -315,7 +315,7 @@ No production Storefront query generation may depend on `path.split(".")`.
 - [x] Make pinned schema identity authoritative.
 - [x] Wire exact candidate through existing `validateToolDefinition`.
 - [x] Remove old dot-path query-generation code.
-- [x] Add real-artifact integrated regressions.
+- [ ] Add real-artifact integrated regressions.
 
 ## Interfaces / Contracts
 
@@ -342,32 +342,33 @@ Produces no new cross-service contract.
 
 - [x] GraphQL is generated/merged from real schema metadata and selection tree.
 - [x] Required schema arguments cannot be bypassed.
-- [x] Input-property variable mappings remain the Tool's persisted argument contract.
+- [ ] Input-property variable mappings remain the Tool's persisted argument contract.
 - [x] Connection pagination obeys existing bounded compiler policy.
 - [x] Existing aliases/unrelated selections survive deterministic merge.
 - [x] No dot-path split builder remains.
 - [x] Candidate uses the pinned API version/schema hash.
-- [x] `Use in tool` can apply only the exact candidate that passed existing server validation.
-- [x] Real-artifact nested product regression passes.
+- [ ] `Use in tool` can apply only the exact candidate that passed existing server validation.
+- [ ] Real-artifact nested product regression passes.
 - [x] No provider/network request occurs during schema authoring/validation.
 
 ## Validation
 
-- [x] `npx vitest run tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts --reporter=verbose`
-- [x] Existing Storefront compiler/definition tests directly affected by generated queries pass.
-- [x] Targeted ESLint for every changed source/test file.
-- [x] `npm run typecheck` (unchanged unrelated baseline recorded; zero task-owned diagnostics).
-- [x] Legacy path-string source audit:
+- [ ] `npx vitest run tests/storefront-input-compatibility.test.ts tests/storefront-query-builder.test.ts tests/storefront-argument-bindings.test.tsx tests/storefront-schema-browser.test.tsx tests/studio-workspace.test.tsx tests/discovery.test.ts tests/studio-services.test.ts --reporter=verbose`
+- [ ] Existing Storefront compiler/definition tests directly affected by generated queries pass.
+- [ ] Targeted ESLint for every Attempt 4 changed source/test file.
+- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required).
+- [ ] Legacy path-string source audit:
   ```text
-  rg -n "buildQueryDefinition|path\.split\("\\\."\)|selectedPaths" components src/studio
+  rg -n "buildQueryDefinition|path\.split\(\"\\\.\"\)|selectedPaths" components src/studio
   ```
   expected: no legacy Storefront path-string builder matches.
-- [x] Client artifact-boundary audit:
+- [ ] Client artifact-boundary audit:
   ```text
-  rg -n "storefrontSchemaHash|storefrontArtifact|storefrontSchema"     src/studio/discovery components
+  rg -n "storefrontSchemaHash|storefrontArtifact|storefrontSchema" \
+    src/studio/discovery components
   ```
   expected: no runtime Storefront artifact/schema value import in client query-builder/UI code.
-- [x] `git diff --check`
+- [ ] `git diff --check`
 
 ## Stop Condition
 
@@ -444,515 +445,344 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 2 completes most of the substantive C034 authoring architecture.
+Attempt 3 successfully resolves the two production-source findings from Attempt 2:
 
-Accepted in substance:
+- LIST wrappers are now detected from the original `StorefrontTypeRef`, so the task-owned `TS2367` is gone and LIST literals no longer receive a scalar editor;
+- every real argument named `first`, including first-only Shopify fields such as `productTags(first: Int!)`, now receives the literal-only `1..20` UI policy;
+- normal UI authoring for `last` is removed while builder-side stale/manual rejection remains;
+- the Attempt 3 focused packet reports 70 passing tests and zero C034-owned typecheck diagnostics.
 
-- production Studio now owns real `StorefrontArgumentBindings` state;
-- a dedicated `storefront-argument-bindings.tsx` component renders selected schema arguments;
-- candidate construction consumes current Tool definition + C033 selection tree + bindings + C032 schema identity;
-- `INPUT_PROPERTY` mappings use the shared client-safe compatibility helper also used by the accepted compiler;
-- query generation remains AST-based;
-- required arguments fail before a candidate can be validated;
-- schema identity now comes from the C032 `SchemaPage`;
-- runtime client code no longer imports the pinned schema/hash artifact value;
-- deterministic variable collisions are rejected rather than silently rewriting existing mappings;
-- the in-memory Studio validator now delegates to the real Commerce compiler;
-- connection candidate generation enforces literal `first` 1..20 and rejects `last`;
-- exact validation-token/hash handling remains in place before `Use in tool`.
+Those corrections are accepted in substance.
 
-Attempt 2 is not acceptable yet for two source-code reasons and several explicit
-regression-evidence gaps.
+There is one remaining source correctness blocker and two regression-evidence defects.
 
-#### Finding 1 — task-owned `TS2367` is a required validation failure and reveals a real LIST-argument UI bug
+#### Finding 1 — the shared input compatibility helper accepts strings for Boolean/Int/Float
 
-The task contract explicitly permits a non-zero repository typecheck only when:
-
-```text
-all diagnostics are unchanged unrelated baseline
-zero task-owned diagnostics
-```
-
-The Attempt 2 Completion Report records one task-owned error:
-
-```text
-src/studio/discovery/storefront-argument-bindings.tsx:62
-TS2367
-```
-
-The relevant code is:
+The C034-owned shared helper currently contains:
 
 ```ts
-const named = namedType(argument.typeRef);
-const literalUnsupported =
-  named.kind === "INPUT_OBJECT" ||
-  named.kind === "LIST";
+if (expected.kind === 'ENUM' || expected.kind === 'SCALAR')
+  return propertySchema.type === 'string'
+    || (expected.name === 'Boolean' && propertySchema.type === 'boolean')
+    || (expected.name === 'Int' && (...))
+    || (expected.name === 'Float' && (...));
 ```
 
-`namedType()` recursively unwraps both `NON_NULL` and `LIST`, so `named.kind` can
-never be `"LIST"`. TypeScript is correct to flag the comparison.
-
-This is not merely a typing nuisance. It means a real argument such as:
-
-```text
-QueryRoot.predictiveSearch(types: [PredictiveSearchType!])
-```
-
-is not recognized by the argument editor as a LIST literal. The UI can therefore
-offer a scalar-looking literal editor for a binding type that C034 explicitly
-requires to be rejected as unsupported literal authoring.
-
-Attempt 3 must distinguish wrapper shape from named type.
-
-A conformant implementation may add a small client-safe pure helper such as:
+The first condition:
 
 ```ts
-function isListType(type: StorefrontTypeRef): boolean {
-  return type.kind === "LIST" ||
-    (type.kind === "NON_NULL" && isListType(type.ofType));
+propertySchema.type === 'string'
+```
+
+is unconditional for every `SCALAR`.
+
+Therefore these invalid mappings currently return `true`:
+
+```text
+Tool input type string -> GraphQL Boolean
+Tool input type string -> GraphQL Int
+Tool input type string -> GraphQL Float
+```
+
+This is a real C034 correctness defect because the builder and the accepted compiler now share this helper. A bad mapping can therefore pass both client candidate construction and server mapped-argument validation.
+
+The real pinned C032 graph contains concrete arguments affected by this, for example:
+
+```text
+QueryRoot.products.reverse: Boolean
+QueryRoot.predictiveSearch.limit: Int
+```
+
+This violates R3's requirement that `INPUT_PROPERTY` compatibility match the actual GraphQL argument type.
+
+Attempt 4 must preserve the intended compatibility matrix explicitly.
+
+Required scalar behavior:
+
+```text
+ENUM                  -> string
+Boolean               -> boolean
+Int                   -> integer OR number
+Float                 -> number OR integer
+String                -> string
+ID                    -> string
+URL                   -> string
+HTML                  -> string
+Date                  -> string
+DateTime              -> string
+other/custom SCALAR   -> string
+```
+
+Do not restore a separate compiler-only compatibility function. The same
+`storefrontInputSchemaCompatible()` helper remains authoritative for builder and
+compiler.
+
+Do not weaken list/input-object compatibility while fixing scalar handling.
+
+Create:
+
+```text
+tests/storefront-input-compatibility.test.ts
+```
+
+and prove at minimum:
+
+```text
+string -> String       true
+string -> Boolean      false
+boolean -> Boolean     true
+string -> Int          false
+integer -> Int         true
+number -> Int          true   # preserve accepted previous compiler semantics
+string -> Float        false
+number -> Float        true
+string -> enum         true
+array(items:string) -> [String] true
+```
+
+Also retain/add one real-schema builder regression using:
+
+```text
+products.reverse: Boolean
+```
+
+with:
+
+```text
+inputSchema.reverse.type = string
+products.first = literal 1
+products.reverse = INPUT_PROPERTY(reverse)
+```
+
+and prove candidate construction fails visibly with:
+
+```text
+Input property reverse is incompatible with GraphQL argument Boolean.
+```
+
+That proves the shared helper is actually used by the C034 builder rather than only unit-tested in isolation.
+
+#### Finding 2 — the "exact generated nested product candidate" regression still starts from an already-authored `product`
+
+Attempt 3 added:
+
+```text
+passes the exact generated nested product candidate through the real compiler
+```
+
+but it builds from:
+
+```ts
+fixtureToolDefinition('catalog_lookup')
+```
+
+whose existing document is already:
+
+```graphql
+query ProductDetails($handle: String!) {
+  product(handle: $handle) {
+    title
+    availableForSale
+  }
 }
 ```
 
-and then use:
-
-```ts
-const literalUnsupported =
-  isListType(argument.typeRef) ||
-  named.kind === "INPUT_OBJECT";
-```
-
-Do not import runtime helpers from `storefront-artifact.ts` into this Client
-Component, because that module owns the complete pinned JSON/provenance runtime
-values. A type-only import remains acceptable.
-
-The final UI must show the bounded existing guidance rather than a scalar editor:
-
-```text
-Use a Tool input property for <actual GraphQL type>.
-```
-
-for LIST and INPUT_OBJECT literal selection.
-
-#### Finding 2 — `first`-only schema fields are incorrectly offered INPUT_PROPERTY authoring
-
-The current argument editor decides that `first` is the special connection bound
-only when the same field also exposes `last`:
-
-```ts
-const isFirst =
-  argument.name === "first" &&
-  node.arguments.some((candidate) => candidate.name === "last");
-```
-
-That does not match the accepted compiler policy.
-
-The compiler treats a field as paginated whenever its schema exposes either:
-
-```text
-first
-last
-```
-
-The real pinned C032 Storefront 2026-07 artifact contains five `first`-only
-fields, including:
-
-```text
-Fulfillment.trackingInfo(first: Int)
-Order.successfulFulfillments(first: Int)
-Product.options(first: Int)
-QueryRoot.productTags(first: Int!)
-QueryRoot.productTypes(first: Int!)
-```
-
-Therefore the current UI incorrectly offers `Tool input` for those `first`
-arguments, while candidate generation/compiler policy later rejects that binding.
-
-Attempt 3 must make authoring parity exact.
-
-For every selected argument named:
-
-```text
-first
-```
-
-the editor must use the fixed connection-bound behavior:
-
-```text
-source: Literal only
-numeric control
-min=1
-max=20
-no INPUT_PROPERTY option
-```
-
-Do not require a sibling `last` argument before applying that rule.
-
-For an argument named:
-
-```text
-last
-```
-
-the normal authoring source selector must not permit creating a new binding.
-Render a bounded read-only explanation such as:
-
-```text
-Only a literal first connection bound is supported.
-```
-
-The query builder must retain its current defensive rejection of a stale/manual
-`last` binding.
-
-#### Finding 3 — the required nested-product regression still does not validate the exact generated candidate
-
-The current test:
-
-```text
-generates the real nested product price traversal ...
-```
-
-builds the required candidate with:
+Therefore the builder finds the existing `product` field and, correctly under R6,
+preserves its existing arguments. The supplied binding:
 
 ```text
 product.handle -> INPUT_PROPERTY(handle)
 ```
 
-but stops after inspecting the document/mapping.
+is not what creates the root argument in this test.
 
-A separate test validates a hand-authored nested query through
-`InMemoryStudioServices`.
+The resulting compiler success proves nested merge into an existing product, not
+the R11 requirement that C034 generate the mapped `product.handle` argument from
+the selected schema/binding state.
 
-The Attempt 2 correction contract explicitly required the **exact generated
-candidate** to pass the real accepted compiler.
+Attempt 4 must make this exact regression start from a document with **no existing
+`product` root**, for example:
 
-Attempt 3 must change/add the regression so this exact value:
-
-```ts
-const generated =
-  buildStorefrontQueryDefinition(...).definition;
+```graphql
+query ProductDetails {
+  shop {
+    name
+  }
+}
 ```
 
-is passed unchanged to:
+with an otherwise valid Tool definition and `resultPath: "shop"`.
+
+Build:
 
 ```text
-InMemoryStudioServices.validateToolDefinition()
+QueryRoot.product
+  -> Product.priceRange
+    -> ProductPriceRange.minVariantPrice
+      -> MoneyV2.amount
 ```
 
-(or the equivalent real `validateDefinition` path), and returns:
+with:
 
 ```text
-valid: true
-errors: []
+product.handle -> INPUT_PROPERTY(handle)
 ```
 
-Do not satisfy this with a separately hand-written query.
-
-#### Finding 4 — `first = 20` is not currently proved through the real compiler
-
-Attempt 2 validates the `first = 1` generated connection candidate through the
-real compiler.
-
-For:
-
-```text
-first = 20
-```
-
-the current test only proves the builder returns a Storefront execution kind.
-
-The correction contract explicitly required both boundary values to validate via
-the real compiler.
-
-Attempt 3 must pass the exact generated `first = 20` candidate through the same
-real compiler path and prove it is valid.
-
-#### Finding 5 — required-argument / wrong-input fail-closed UI evidence is still missing
-
-Builder-unit tests correctly prove:
-
-```text
-missing productByHandle.handle -> build error
-wrong inputSchema type -> build error
-```
-
-but the explicit Attempt 2 regression contract also required the connected Studio
-behavior:
-
-```text
-unbuildable candidate
-  -> Validate does not invoke validateToolDefinition
-  -> Use in tool cannot become enabled
-```
-
-Add a connected `StudioWorkspace` regression using the same named Server Action
-boundary production imports.
-
-Required case A:
-
-```text
-select productByHandle.title
-leave handle unconfigured
-click Validate
-```
-
-Prove:
-
-```text
-exact missing argument name/type is visible
-services.validateToolDefinition is not invoked
-Use in tool remains disabled
-```
-
-Required case B:
-
-```text
-current inputSchema.handle = integer
-bind productByHandle.handle -> Tool input "handle"
-click Validate
-```
-
-Prove:
-
-```text
-incompatibility is visible
-services.validateToolDefinition is not invoked
-Use in tool remains disabled
-```
-
-Do not add a test-only production port or callback.
-
-#### Finding 6 — schema-identity exact-candidate application evidence is incomplete
-
-The builder unit test proves:
-
-```text
-schemaIdentityChanged === true
-candidate apiVersion/hash == C032 SchemaPage
-```
-
-and production UI contains the visible identity-change note.
-
-The explicit correction contract also required proving that, in the connected
-Studio flow:
-
-```text
-the exact rebuilt candidate is sent to validateToolDefinition
-Use in tool remains disabled before that validation succeeds
-Use in tool applies the exact validated candidate
-```
-
-Add a `StudioWorkspace` regression starting from a Tool whose Storefront
-`schemaHash` is a different valid-looking 64-character hash.
-
-Spy on the same fixture-backed named `validateToolDefinition` action.
-
-Prove:
-
-1. the identity-change note is visible;
-2. before validation, `Use in tool` is disabled;
-3. the validation call receives the rebuilt candidate with exactly:
-   ```text
-   execution.apiVersion = schema.apiVersion
-   execution.schemaHash = schema.schemaHash
-   ```
-4. after success, `Use in tool` applies the same candidate definition that was
-   validated.
-
-Do not compare only the query string; compare the complete candidate definition
-or a stable structural clone/hash of it.
-
-#### Finding 7 — invalid `resultPath` connected behavior is not covered
-
-The final builder correctly preserves the current `resultPath` and the real
-compiler rejects an invalid path.
-
-However, the explicit Attempt 2 regression:
-
-```text
-invalid current resultPath cannot enable Use in tool
-```
-
-is absent.
-
-Add a connected Studio regression:
-
-1. start with a valid Storefront Tool except for a current `resultPath` that does
-   not resolve after the candidate query is built;
-2. select a valid real schema field;
-3. click Validate;
-4. prove the real server/compiler validation error is visible;
-5. prove `Use in tool` remains disabled.
-
-Do not make the builder silently rewrite the invalid resultPath.
-
-### Attempt 3 deterministic correction
-
-Reclaim the same task as Attempt 3.
-
-This is a bounded correction. Preserve the accepted AST merge, schema identity,
-variable-collision and real-compiler architecture.
-
-#### Source corrections
-
-1. Fix the task-owned `TS2367`.
-2. Correct LIST-vs-named-type detection in the argument editor.
-3. Apply literal-only `first` UI behavior to all real `first` arguments,
-   including first-only fields.
-4. Prevent normal UI authoring of `last` while retaining builder-side stale/manual
-   rejection.
-
-No other production redesign is authorized unless the stronger regressions expose
-a real defect.
-
-#### Required focused regressions
-
-Add/extend tests using the real C032 browse contract/artifact:
-
-**LIST literal editor**
-
-Use a real argument such as:
-
-```text
-QueryRoot.predictiveSearch.types: [PredictiveSearchType!]
-```
-
-Prove choosing Literal does not render a scalar literal input and displays the
-bounded Tool-input guidance.
-
-**First-only pagination UI**
-
-Use:
-
-```text
-QueryRoot.productTags(first: Int!)
-```
-
-Prove:
-
-```text
-first source is fixed to Literal
-no Tool input option exists
-numeric input has min=1
-numeric input has max=20
-```
-
-**Last UI**
-
-Using a real field that exposes `last`, prove the editor does not offer a normal
-binding source for `last` and displays the bounded first-only policy.
-
-**Generated nested candidate**
-
-Pass the exact generated:
+Then prove the exact generated candidate contains:
 
 ```text
 product(handle: $input_handle)
-  -> priceRange
-  -> minVariantPrice
-  -> amount
+execution.variables.input_handle -> input "handle"
 ```
 
-candidate through the real compiler and prove valid.
+and pass that **same unmodified generated candidate** through
+`InMemoryStudioServices.validateToolDefinition()` / the real compiler.
 
-**Connection boundary**
+The test name must not call `product.handle` required; C032 correctly defines it
+as optional.
 
-Pass exact generated candidates for both:
+#### Finding 3 — the connected schema-identity test still compares only the query after application
+
+Attempt 2's correction contract explicitly required:
 
 ```text
-first=1
-first=20
+Use in tool applies the same complete candidate definition that was validated
 ```
 
-through the real compiler and prove valid.
-
-Retain the existing builder rejections for:
+and explicitly said:
 
 ```text
-0
-21
-INPUT_PROPERTY first
-last
-missing first
+Do not compare only the query string; compare the complete candidate definition
+or a stable structural clone/hash of it.
 ```
 
-**Connected required/wrong-input behavior**
+Attempt 3 currently captures the complete definition sent to
+`validateToolDefinition`, but after `Use in tool` it asserts only:
 
-Prove unbuildable candidates never invoke `validateToolDefinition` and never
-enable `Use in tool`.
+```ts
+appliedQuery.value === validatedDefinition.execution.document
+```
 
-**Connected schema identity**
+The production source itself currently uses the same `proposed` object for both
+validation and `composer.setTool`, which is correct, but the required connected
+regression is still weaker than the correction contract.
 
-Prove the rebuilt exact candidate is what is validated and subsequently applied.
+Complete the regression without adding a production test seam.
 
-**Connected invalid resultPath**
+A conformant test-only harness can render a small probe inside the existing
+`StudioComposerProvider` using the existing exported `useStudioComposer()` hook,
+for example by serializing:
 
-Prove compiler rejection leaves `Use in tool` disabled.
+```text
+composer.tool?.definition
+```
+
+to a test-only `<output data-testid="...">`.
+
+Required proof:
+
+1. capture a structural clone of the exact definition passed to
+   `validateToolDefinition`;
+2. validation succeeds;
+3. click `Use in tool`;
+4. read the definition from the real composer context after application;
+5. assert deep structural equality with the captured validated definition.
+
+Do not modify `StudioWorkspace` to expose a test callback/port/prop.
+
+### Attempt 4 deterministic correction
+
+Reclaim the same task as Attempt 4.
+
+This is a narrow correctness/evidence pass. Preserve all accepted Attempt 1-3
+behavior:
+
+```text
+AST merge
+C033 selection tree
+argument-binding editor
+typed literal generation
+LIST/input-object literal rejection
+first-only/last UI policy
+connection first 1..20
+C032 schema identity
+variable collision protection
+validation token/hash behavior
+real compiler validation
+resultPath preservation
+```
+
+#### Source changes
+
+Expected production source change is primarily:
+
+```text
+lib/discovery/storefront-input-compatibility.ts
+```
+
+Change other production files only if the new regressions expose a real defect.
+
+#### Required tests
+
+Add:
+
+```text
+tests/storefront-input-compatibility.test.ts
+```
+
+with the compatibility matrix above.
+
+Update:
+
+```text
+tests/storefront-query-builder.test.ts
+```
+
+to:
+
+- prove real `products.reverse: Boolean` rejects a string Tool input;
+- make the nested product compiler regression genuinely generate
+  `product(handle: $input_handle)` from a product-free base document;
+- pass the exact generated candidate to the real compiler without substituting a
+  hand-authored query.
+
+Update:
+
+```text
+tests/studio-workspace.test.tsx
+```
+
+so the schema-identity flow compares the entire composer-applied definition with
+the exact complete definition previously sent to validation.
+
+Retain the already-passing Attempt 3 regressions:
+
+```text
+LIST literal UI
+first-only literal-only UI
+last authoring blocked
+first=1 and first=20 through real compiler
+missing required argument does not call validation
+wrong input type does not call validation
+invalid resultPath keeps Use in tool disabled
+```
 
 #### Validation
 
-Run:
+Run the task Validation section exactly, including the new compatibility test.
 
-```bash
-npx vitest run \
-  tests/storefront-query-builder.test.ts \
-  tests/storefront-argument-bindings.test.tsx \
-  tests/storefront-schema-browser.test.tsx \
-  tests/studio-workspace.test.tsx \
-  tests/discovery.test.ts \
-  tests/studio-services.test.ts \
-  --reporter=verbose
-```
-
-Run targeted ESLint for every Attempt 3-owned source/test file.
-
-Run:
-
-```bash
-npm run typecheck
-```
-
-Acceptance rule remains:
+Typecheck acceptance remains:
 
 ```text
-unchanged documented unrelated baseline diagnostics are permitted
-zero diagnostics in C034-owned files are required
+unchanged documented unrelated repository baseline is permitted
+zero C034-owned diagnostics are required
 ```
 
-The previous task-owned:
+Run both existing source audits and `git diff --check`.
 
-```text
-src/studio/discovery/storefront-argument-bindings.tsx TS2367
-```
+#### Completion Report
 
-must be absent.
-
-Run both audits:
-
-```bash
-rg -n "buildQueryDefinition|path\.split\(\"\\\.\"\)|selectedPaths" \
-  components src/studio
-
-rg -n "storefrontSchemaHash|storefrontArtifact|storefrontSchema" \
-  src/studio/discovery components
-```
-
-Expected: no prohibited production matches.
-
-Then run:
-
-```bash
-git diff --check
-```
-
-#### Task/report reconciliation
-
-The task Validation checkbox for `npm run typecheck` must remain unchecked until
-the Attempt 3 run proves zero task-owned diagnostics.
-
-Mark the re-opened Work Items / Acceptance Criteria complete only after the
-corrections and required regressions pass.
-
-Update the Completion Report to distinguish:
+Update the report to distinguish:
 
 ```text
 Attempt 1:
@@ -962,17 +792,20 @@ Attempt 2:
   production argument binding + schema identity + compiler integration
 
 Attempt 3:
-  LIST/connection UI parity
-  task-owned typecheck cleanup
-  exact connected regression evidence
+  LIST/first-only/last UI parity + TS2367 cleanup + connected regressions
+
+Attempt 4:
+  exact scalar input-compatibility parity
+  genuinely generated nested product compiler proof
+  full-definition validated/applied identity proof
 ```
 
 Record:
 
 ```text
-Attempt 3 implementation commit
+Attempt 4 implementation/test commit
 final parent report commit
-focused test file/count
+focused test files/count
 ESLint
 typecheck baseline and zero task-owned diagnostics
 both source audits
@@ -987,7 +820,7 @@ Return:
 status: review
 executor: null
 claimed_at: null
-attempt: 3
+attempt: 4
 ```
 
 and STOP.
@@ -999,7 +832,6 @@ Do not start `ARCH-021-COMMERCE-035`.
 - `components/studio-workspace.tsx`
 - `lib/discovery/compiler.ts`
 - `lib/discovery/storefront-input-compatibility.ts`
-- `src/studio/discovery/selection-tree.ts`
 - `src/studio/discovery/storefront-argument-bindings.tsx`
 - `src/studio/discovery/storefront-query-builder.ts`
 - `src/studio/testing/in-memory-studio-services.ts`
@@ -1013,49 +845,37 @@ Do not start `ARCH-021-COMMERCE-035`.
 
 ### Validation Reviewed
 
-Submitted Attempt 2 evidence:
+Submitted Attempt 3 evidence:
 
 ```text
-focused tests: 6 files / 62 passed
+focused tests: 6 files / 70 passed
 targeted ESLint: PASS
 legacy path-string audit: PASS
 client artifact-boundary audit: PASS
 git diff --check: PASS
-typecheck: non-zero
-  - unchanged unrelated repository baseline
-  - one task-owned TS2367 in storefront-argument-bindings.tsx
+typecheck: unchanged unrelated baseline only
+           zero C034-owned diagnostics
 ```
 
-Architect static review independently confirmed:
+Architect static review confirms the previous `TS2367`, LIST-wrapper bug and
+first-only pagination UI bug are resolved.
 
-- no legacy dot-path Storefront builder source remains;
-- no runtime `storefrontSchemaHash` / `storefrontArtifact` / `storefrontSchema`
-  value import exists in the client authoring surface;
-- the pinned artifact contains real first-only pagination arguments, so the
-  current `isFirst` UI test is not compiler-parity complete.
+Architect static review also confirms the remaining compatibility defect described
+above directly from `storefrontInputSchemaCompatible()`.
 
-The supplied review archive has no installed dependency tree suitable for
-independently rerunning the full Vitest/ESLint/typecheck packet.
+The supplied archive does not contain installed dependencies, so the architect
+did not independently rerun Vitest/ESLint/typecheck.
 
 ### Architecture Conformance
 
 Partial.
 
-The core C034 AST, binding-state, schema-identity and real-compiler architecture
-now conforms.
-
-Acceptance is blocked by:
-
-```text
-one task-owned TypeScript/source defect
-LIST literal UI parity
-first-only pagination UI parity
-explicit connected regression evidence required by the prior correction contract
-```
+The overall C034 architecture now conforms, but acceptance is blocked by one
+C034-owned shared compatibility defect and the two exact regression-evidence
+requirements above.
 
 ### Follow-up
 
-Reclaim the same task as Attempt 3.
+Reclaim the same task as Attempt 4.
 
-`ARCH-021-COMMERCE-035` remains Pending until C034 is architect-accepted
-Complete.
+`ARCH-021-COMMERCE-035` remains Pending until C034 is architect-accepted Complete.

@@ -1542,6 +1542,21 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-25 — COMMERCE-034 Attempt 3 changes requested
+
+- Confirmed Attempt 3 resolves LIST-wrapper authoring, first-only/last connection
+  UI parity and the task-owned TS2367.
+- Returned COMMERCE-034 to Ready because the C034-owned shared
+  `storefrontInputSchemaCompatible()` helper currently treats any string input as
+  compatible with any GraphQL scalar, including Boolean/Int/Float; builder and
+  compiler therefore share the same incorrect compatibility result.
+- Required the nested-product compiler regression to start from a product-free
+  document so it genuinely proves generated `product.handle` mapping.
+- Required the connected schema-identity regression to compare the complete
+  composer-applied definition with the exact definition sent to validation, as
+  specified by the previous correction contract.
+- COMMERCE-035 remains Pending.
+
 ### 2026-09-25 — COMMERCE-034 Attempt 2 changes requested
 
 - Accepted the main C034 production argument-binding, shared input compatibility,
