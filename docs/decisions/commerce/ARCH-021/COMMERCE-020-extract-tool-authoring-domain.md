@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -346,14 +346,352 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested
+
 ### Review Notes
-None
+Attempt 1 establishes the intended Tool-domain files and preserves much of the existing Tool editor behavior, but the production execution path still violates the task's central Server Action / reconciliation boundary.
+
+Accepted in substance and MUST be preserved in Attempt 2:
+
+- `src/studio/tools/` owns the extracted Tool library/editor surface.
+- `ToolLibrary` and `ToolEditor` import the existing named Tool Server Actions rather than receiving a server-created service/port object.
+- `createExternalHttpSamplePort(externalHttpCatalogue)` remains client-local and zero-network.
+- Existing external HTTP/code-response/discovery/revision-history behavior is retained.
+- `ToolMutationResult<T>` and `ToolOperationReconciliationResult` provide the correct target envelopes.
+
+Attempt 2 is limited to the deterministic correction contract below. Do not begin COMMERCE-021/022.
+
+#### CR-1 — Remove the production `controlled` escape hatch and generic Studio Tool command path
+
+Files:
+
+```text
+components/studio-workspace.tsx
+src/studio/tools/tool-authoring-screen.tsx
+```
+
+Current production behavior is non-conformant: `StudioWorkspace` passes `controlled={{ ... setDirty, runCommand, unknown.reconcile ... }}` into `ToolAuthoringScreen`. That means production Tool mutations still use the old workspace `runCommand()` implementation, which catches a rejected mutation into `kind: 'unknown'`, stores the original mutation closure, and `reconcile()` re-calls that closure.
+
+Required Attempt-2 behavior:
+
+1. Remove the `controlled` prop from `ToolAuthoringScreen`'s production API entirely.
+2. In the `page === 'tools'` branch, `StudioWorkspace` may pass only serializable Tool context/data:
+
+```text
+role
+returnTo
+detailId
+revisionId
+shopId
+externalHttpCatalogue
+productionCodePanel
+initialResult
+initialDetail
+```
+
+3. Do not pass `runCommand`, `setDirty`, `unknown`, `reconcile`, `services`, a Tool action bundle, or another function-valued dependency into `ToolAuthoringScreen`.
+4. Do not pass a `navigate` callback from `StudioWorkspace`; `ToolAuthoringScreen` already has `useStudioComposer()` and MUST use that domain-local navigation boundary.
+5. The generic `StudioWorkspace.runCommand` / `unknown` machinery may remain for non-Tool legacy surfaces, but the Tool route MUST NOT consume it.
+6. `ToolAuthoringScreen` owns its own Tool list/detail/pending/message/dirty/UNCONFIRMED state and named-action mutation lifecycle.
+
+Required regression: mock `ToolAuthoringScreen` in `tests/studio-workspace.test.tsx` and prove the Tools production branch passes no function-valued mutation/navigation/service prop and no `controlled` prop.
+
+#### CR-2 — Make the named Tool mutation Server Actions return the exact bounded mutation envelope
+
+Files:
+
+```text
+src/studio/server-actions.ts
+src/commerce/integration/studio/services.ts
+src/studio/tools/contracts.ts
+```
+
+The current production Tool path still receives generic `StudioResult<T>` and classifies it in the browser. That loses required codes because `services.translate()` collapses several `LifecycleError` values to generic `unavailable`/`unknown`.
+
+For these six mutation exports only:
+
+```text
+createTool
+updateTool
+createToolDraft
+updateToolDraft
+publishToolRevision
+setToolEnabled
+```
+
+return `Promise<ToolMutationResult<T>>` from the named Server Action boundary. Do not broaden/change the generic `StudioResult` contract for unrelated Studio domains.
+
+Required server-side mapping:
+
+```text
+LifecycleError FORBIDDEN                    -> FORBIDDEN, retryable=false
+LifecycleError INVALID_INPUT                -> INVALID_INPUT, retryable=false
+LifecycleError INVALID_DEFINITION           -> INVALID_INPUT, retryable=false
+LifecycleError NOT_FOUND                    -> NOT_FOUND, retryable=false
+LifecycleError CONFLICT                     -> CONFLICT, retryable=false
+LifecycleError OPERATION_REUSE_CONFLICT     -> CONFLICT, retryable=false
+LifecycleError CAS_CONFLICT                 -> CAS_CONFLICT, retryable=false
+LifecycleError LIVE_TEST_REQUIRED           -> LIVE_TEST_REQUIRED, retryable=false
+Prisma P1001/P1002/P1008/P1017             -> DATABASE_UNAVAILABLE, retryable=true
+all other unexpected/unsupported failures   -> INTERNAL_ERROR, retryable=false
+```
+
+Every returned mutation result MUST preserve the submitted `operationId`.
+
+Unexpected/unsupported failures MUST be emitted through the approved shared logger:
+
+```ts
+import { createLogger } from '@modainteract/moda-interact-shared/logging';
+```
+
+Do not use `console.log`, `console.error`, Pino/Winston, or a Commerce-local generic logger. Pass the original thrown `Error`/value to the shared logger; do not log `DATABASE_URL`, credentials, tokens, authorization headers or connection strings.
+
+No Tool mutation Server Action may return `kind: 'unknown'`.
+
+#### CR-3 — UNCONFIRMED must be transport-only and reconciliation must never replay the mutation
+
+File:
+
+```text
+src/studio/tools/tool-authoring-screen.tsx
+```
+
+Required state:
+
+```ts
+{ operationId: string; label: string } | null
+```
+
+Do not store the original mutation function/closure.
+
+Exact behavior:
+
+```text
+Server Action returns ok/error
+-> display exact result
+-> do not enter UNCONFIRMED
+
+Server Action Promise rejects after dispatch
+-> set UNCONFIRMED with the exact submitted operationId
+-> disable further Tool mutations
+-> lock Tool/Studio navigation
+-> never automatically call the original mutation again
+```
+
+Track a monotonic Tool content revision (or equivalent). Capture it when a mutation is submitted and clear dirty state on `ok` only if no newer edit was made while the request was pending. A completed earlier save MUST NOT mark later edits clean.
+
+Reconciliation behavior MUST be exactly:
+
+```text
+committed
+-> reload canonical listTools()
+-> if detailId exists, reload getTool(detailId, revisionId)
+-> update local canonical state
+-> clear UNCONFIRMED
+-> final message: "Committed; state refreshed"
+
+not-committed
+-> clear UNCONFIRMED
+-> final message: "Not committed"
+-> a later retry generates a NEW operationId
+
+error
+-> keep UNCONFIRMED
+-> display exact error code/message
+
+reconciliation Promise rejects
+-> keep the original UNCONFIRMED operationId
+-> pending=false
+-> final message: "Reconciliation unavailable; try reconciliation again"
+```
+
+#### CR-4 — Split composite external-tool creation into two independently reconcilable durable mutations
+
+File:
+
+```text
+src/studio/tools/tool-library.tsx
+```
+
+Current code uses one outer mutation operation id for `createTool()` and a derived `${operationId}:draft` for `createToolDraft()`, but UNCONFIRMED reconciliation stores only the first id. If Tool creation commits and the draft response is lost, reconciling the first id incorrectly reports the composite workflow committed.
+
+Required behavior for `EXTERNAL_HTTP` creation:
+
+```text
+1. createTool with operationId A
+2. after confirmed ok, createToolDraft as a SECOND mutation with a freshly generated operationId B
+3. navigate only after the draft mutation is confirmed ok
+4. if step 2 transport-rejects, UNCONFIRMED stores B, not A
+5. reconciliation of B observes only CREATE_TOOL_DRAFT
+6. retry after not-committed uses a new operationId C and does not recreate the Tool
+```
+
+Do not implement a replay closure or derive a second durable id that the UI cannot reconcile directly.
+
+#### CR-5 — Harden the reconciliation Server Action to the exact task contract
+
+File:
+
+```text
+src/studio/tools/reconciliation-server-actions.ts
+```
+
+Required corrections:
+
+1. Import and call exactly:
+
+```ts
+requireStudioPlatformRole('ADMIN')
+```
+
+from `lib/auth/merchant-access.ts`.
+2. Keep mutation-origin validation and `OperationIdSchema` validation.
+3. Query `CommerceAuditEvent` by exact operation id and current server-derived Commerce environment.
+4. Replace `action: { startsWith: 'TOOL_' }` with an explicit enum allow-list containing exactly:
+
+```text
+CREATE_TOOL
+UPDATE_TOOL
+CREATE_TOOL_DRAFT
+UPDATE_TOOL_DRAFT
+PUBLISH_TOOL_REVISION
+ENABLE_TOOL
+DISABLE_TOOL
+```
+
+Do not use prefix matching for the Prisma enum.
+5. Development bypass / SUPER_ADMIN may reconcile any matching Tool audit row.
+6. PLATFORM_ADMIN may reconcile only when `actorAdminId` is null or equals the current principal id; a different non-null actor id returns `FORBIDDEN`.
+7. P1001/P1002/P1008/P1017 return `DATABASE_UNAVAILABLE` and do not clear client UNCONFIRMED state.
+8. Unexpected failures use `@modainteract/moda-interact-shared/logging` and return `INTERNAL_ERROR`. Remove `console.error`.
+9. The action performs zero mutations and never invokes any Tool mutation Server Action/service method.
+
+#### CR-6 — Complete the R8 tests; the current two contract-shape assertions are insufficient
+
+Files:
+
+```text
+tests/tool-authoring-screen.test.tsx
+tests/tool-operation-reconciliation.test.ts
+tests/studio-workspace.test.tsx
+```
+
+The final focused tests MUST prove all of these executable behaviors:
+
+```text
+A. mutation returns DATABASE_UNAVAILABLE
+   -> DATABASE_UNAVAILABLE visible
+   -> no UNCONFIRMED
+
+B. mutation returns FORBIDDEN
+   -> FORBIDDEN visible
+   -> no UNCONFIRMED
+
+C. mutation returns CAS_CONFLICT
+   -> CAS_CONFLICT visible
+   -> no UNCONFIRMED
+
+D. mutation returns CONFLICT
+   -> CONFLICT visible
+   -> no UNCONFIRMED
+
+E. mutation Promise rejects
+   -> UNCONFIRMED visible
+   -> original operationId retained
+   -> further Tool mutation disabled
+   -> navigation locked
+
+F. committed reconciliation
+   -> mutation action call count does not increase
+   -> listTools reloads
+   -> current detail reloads when present
+   -> UNCONFIRMED clears
+   -> "Committed; state refreshed"
+
+G. not-committed reconciliation
+   -> mutation action call count does not increase
+   -> UNCONFIRMED clears
+   -> "Not committed"
+   -> next retry uses a different operationId
+
+H. reconciliation DATABASE_UNAVAILABLE
+   -> UNCONFIRMED remains
+   -> exact code/message visible
+
+I. reconciliation Promise rejects
+   -> UNCONFIRMED remains
+   -> original operationId unchanged
+   -> pending clears
+   -> "Reconciliation unavailable; try reconciliation again"
+
+J. PLATFORM_ADMIN + another non-null actorAdminId
+   -> FORBIDDEN
+
+K. SUPER_ADMIN + another actorAdminId
+   -> committed
+
+L. external Tool create step 2 rejects
+   -> reconciliation uses CREATE_TOOL_DRAFT operation id
+   -> does not replay/create a second Tool
+
+M. edits made after a save is submitted
+   -> earlier save completion does not clear dirty state
+```
+
+Use `vi.mock(...)` for the same named Server Action modules used by production. Do not add a test-only Tool action bundle/port.
+
 ### Reviewed Files
-None
+
+- `components/studio-workspace.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-library.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/contracts.ts`
+- `src/studio/tools/reconciliation-server-actions.ts`
+- `src/studio/server-actions.ts`
+- `src/commerce/integration/studio/services.ts`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/tool-operation-reconciliation.test.ts`
+- `tests/studio-workspace.test.tsx`
+
 ### Validation Reviewed
-None
+
+Submitted evidence accepted as useful but insufficient for the missing R1/R4/R5/R6/R8 behavior:
+
+```text
+focused tests: 26 passed
+ARCH-020 external-tools UI: 13 passed
+targeted lint: passed
+git diff --check: passed
+```
+
+Attempt 2 MUST run exactly:
+
+```bash
+npm exec vitest run   tests/tool-authoring-screen.test.tsx   tests/tool-operation-reconciliation.test.ts   tests/studio-workspace.test.tsx
+
+npm run test:arch020-external-tools-ui
+
+npm exec eslint   components/studio-workspace.tsx   src/studio/tools/tool-authoring-screen.tsx   src/studio/tools/tool-library.tsx   src/studio/tools/tool-editor.tsx   src/studio/tools/contracts.ts   src/studio/tools/reconciliation-server-actions.ts   src/studio/server-actions.ts   src/commerce/integration/studio/services.ts   tests/tool-authoring-screen.test.tsx   tests/tool-operation-reconciliation.test.ts   tests/studio-workspace.test.tsx
+
+git diff --check
+```
+
+Then run the repository typecheck command declared by `package.json`. Existing unrelated baseline diagnostics may be documented, but there must be zero diagnostics in the files above.
+
+Before returning to review, also prove these source invariants:
+
+```bash
+! rg -n 'controlled=' components/studio-workspace.tsx
+! rg -n 'controlled\?:' src/studio/tools/tool-authoring-screen.tsx
+! rg -n 'console\.(log|error)' src/studio/tools/reconciliation-server-actions.ts
+! rg -n 'startsWith:.*TOOL_' src/studio/tools/reconciliation-server-actions.ts
+```
+
 ### Architecture Conformance
-Pending
+
+Changes Requested. The component extraction is present, but production still crosses the Tool boundary with function-valued orchestration state and still uses the generic workspace unknown/replay mechanism. The server mutation boundary and reconciliation action also do not yet satisfy the exact bounded-error and no-replay contracts.
+
 ### Follow-up
-None
+
+Return this SAME task through `/moda-task ARCH-021-COMMERCE-020`. The next authorized claim becomes Attempt 2. Preserve all accepted extraction/editor behavior above. Do not start COMMERCE-021 or COMMERCE-022.

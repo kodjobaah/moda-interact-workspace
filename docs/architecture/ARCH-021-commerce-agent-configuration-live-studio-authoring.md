@@ -785,7 +785,7 @@ Phase 3 tasks:
 | ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
 | ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
 | ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-020 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 023, ARCH-021-COMMERCE-005, 006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 024 |
 | ARCH-021-COMMERCE-023 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
@@ -1773,3 +1773,9 @@ architect-accepted Complete.
 - Marked COMMERCE-032 Complete and promoted COMMERCE-033 to Ready.
 - Reconciled duplicate correction-task rows in the architect-owned checkpoint
   table; this was coordination-document drift, not a C032 implementation issue.
+### 2026-09-25 — COMMERCE-020 Attempt 1 changes requested
+
+- Accepted the Tool-domain component extraction and client-local External HTTP sample port in substance.
+- Returned COMMERCE-020 to Ready because the production Tools route still passes function-valued `controlled` orchestration from `StudioWorkspace`, preserving the old generic catch-to-unknown and mutation-replay reconciliation path.
+- Required exact Tool mutation Server Action results, audit-only reconciliation with explicit Tool audit actions/shared logging, independently reconcilable composite external creation, newer-edit dirty protection and executable R8 regressions.
+- COMMERCE-021/022 remain Pending.
