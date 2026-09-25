@@ -119,12 +119,12 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | [COMMERCE-016](COMMERCE-016-establish-commerce-tool-definition-contract.md) | Establish canonical Commerce-owned Tool-definition contract | Complete | ARCH-020-COMMERCE-021, 030 |
 | [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Complete | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
 | [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Complete | COMMERCE-016, ARCH-020-COMMERCE-011 |
-| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth/error contract and `LIVE_TEST_REQUIRED` publication gate | Ready | COMMERCE-016, COMMERCE-027, ARCH-020-COMMERCE-030 |
+| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth/error contract and `LIVE_TEST_REQUIRED` publication gate | Complete | COMMERCE-016, COMMERCE-027, ARCH-020-COMMERCE-030 |
 | [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Ready | COMMERCE-016, 005, 006, 027, 029 |
 | [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Pending | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
 | [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Pending | COMMERCE-019, 020, 024 |
-| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Pending | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
-| [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Pending | COMMERCE-016, 018, 019 |
+| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Ready | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
+| [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Ready | COMMERCE-016, 018, 019 |
 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
 
@@ -135,11 +135,12 @@ Current Phase 3 Ready frontier:
 
 ```text
 COMMERCE-020   priority 32   Tool extraction + named Server Actions/reconciliation
-COMMERCE-019   priority 34   common validation/auth/error/publication contract
-COMMERCE-018   priority 35   Shopify Admin compiler
+COMMERCE-023   priority 40   External HTTP validation + safe request preview
+COMMERCE-024   priority 40   Shopify Admin authoring validation
 ```
 
-COMMERCE-023/024 remain Pending on the above foundations. COMMERCE-021/022 remain Pending on the extracted Tool surface and their domain validators.
+COMMERCE-019 is architect-accepted Complete. COMMERCE-021/022 remain Pending on
+COMMERCE-020 and their corresponding domain validators.
 ```
 
 
@@ -166,6 +167,16 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 Current checkpoint implementation frontier: none.
 
 COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. All terminal checkpoint implementation dependencies are Complete, so `ARCH-021-SYSTEM-TEST-001` remains Ready. The developer is intentionally holding terminal system tests until the implementation phases are finished and is using manual validation meanwhile; this Ready system-test task is not an implementation dependency and does not pause Phase 3.
+
+### COMMERCE-019 Attempt 3 accepted — 2026-09-25
+
+COMMERCE-019 is **Complete / Accepted, Attempt 3**. The common validation layer now
+has executable proof that real validation Server Actions perform zero provider I/O,
+alongside the accepted exact UTF-8 bounds, `INVALID_INPUT` mapping, role/bypass
+authorization, `LIVE_TEST_REQUIRED` lifecycle/Studio propagation, synthetic-receipt
+rejection and history invariants. The common focused packet passed 77/77 with zero
+skips. All dependencies of COMMERCE-023 and COMMERCE-024 are now Complete, so both
+are promoted to **Ready**. COMMERCE-021/022 remain Pending.
 
 ### COMMERCE-017 Attempt 3 accepted — 2026-09-25
 

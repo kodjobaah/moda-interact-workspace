@@ -11,7 +11,7 @@ updated: 2026-09-25
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017 and COMMERCE-018 are Complete; COMMERCE-019 and COMMERCE-020 are Ready.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018 and COMMERCE-019 are Complete; COMMERCE-020, COMMERCE-023 and COMMERCE-024 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -784,12 +784,12 @@ Phase 3 tasks:
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
 | ARCH-021-COMMERCE-018 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-020 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
-| ARCH-021-COMMERCE-021 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 023, ARCH-021-COMMERCE-005, 006 |
-| ARCH-021-COMMERCE-022 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 024 |
-| ARCH-021-COMMERCE-023 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-024 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, 018, 019 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
+| ARCH-021-COMMERCE-023 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-024 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019 |
 
 Dependency graph:
 
@@ -804,7 +804,7 @@ COMMERCE-016
     |
     +--> COMMERCE-020 -------- Tool UI extraction ------------+
 
-COMMERCE-016, COMMERCE-017 and COMMERCE-018 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-019 and COMMERCE-020 are currently Ready; COMMERCE-021 through COMMERCE-024 remain dependency-gated. COMMERCE-023 and COMMERCE-024 specifically remain Pending until COMMERCE-019 is Complete.
+COMMERCE-016, COMMERCE-017, COMMERCE-018 and COMMERCE-019 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-020, COMMERCE-023 and COMMERCE-024 are currently Ready. COMMERCE-021 and COMMERCE-022 remain Pending until COMMERCE-020 and their respective domain validators are Complete.
 ```
 
 Phase 3 exit criteria:
@@ -1017,7 +1017,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-017 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
 | ARCH-021-COMMERCE-018 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
@@ -1057,6 +1057,20 @@ independent of features.
 - Confirmed nullable input-schema unions are accepted only for nullable GraphQL variables and remain rejected for non-null variables.
 - Preserved the production-compiler-backed Dev MCP oracle, fail-closed enum/scalar/list/object compatibility, Storefront behavior, explicit Admin discovery dispatch, and exact Admin artifact/provenance hash.
 - Marked COMMERCE-018 Complete. COMMERCE-024 remains Pending because COMMERCE-019 is still Ready rather than Complete.
+
+### 2026-09-25 — COMMERCE-019 Attempt 3 accepted
+
+- Accepted implementation `fe3bcf40`.
+- Confirmed executable zero-provider-I/O proof for the real common Tool authoring
+  Server Actions plus deterministic dependency-boundary proof excluding request-JS,
+  provider transport, Admin compiler, backend/session and `/admin/api/` dependencies.
+- Preserved the accepted UTF-8 byte bounds, `INVALID_INPUT` mapping, role/bypass
+  hierarchy, exact `LIVE_TEST_REQUIRED` publication/lifecycle/Studio propagation,
+  synthetic-receipt rejection and historical published-revision behavior.
+- Accepted the 77-test common focused packet with zero skips and zero task-owned
+  TypeScript diagnostics.
+- Marked COMMERCE-019 Complete and promoted COMMERCE-023 and COMMERCE-024 to Ready.
+  COMMERCE-021/022 remain Pending.
 
 ### 2026-09-25 — COMMERCE-017 Attempt 3 accepted
 
