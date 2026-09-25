@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-09-25T18:07:29Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-019
@@ -297,9 +297,423 @@ The implementation remains bounded to `moda-interact-commerce`; no cross-reposit
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 2
+Changes Requested — Attempt 3
 
 ### Review Notes
+
+#### Attempt 3 review — 2026-09-25
+
+Reviewed implementation `4fc5034` and the submitted Attempt 3 snapshot against the
+complete Attempt 2 correction contract.
+
+Attempt 3 contains important corrections that MUST be preserved:
+
+- JavaScript response authoring no longer has an independent mutation button; the
+  main Tool draft Save path persists the current response source through the
+  COMMERCE-020 `runCommand` coordinator;
+- the DRAFT/full-definition type fallout in preview, in-memory Studio services and
+  Studio tests is corrected; the submitted TypeScript artifact has no semantic
+  diagnostic in the COMMERCE-021 causal files;
+- response-mode "Discard changes and switch" now derives from the saved response
+  baseline rather than leaking dirty response-owned values;
+- the production Studio read boundary round-trips an incomplete DRAFT without
+  forcing the full CommerceToolDefinition parser;
+- malformed current input-schema JSON is classified locally before the COMMERCE-023
+  preview Server Action;
+- the authoring-only JavaScript response surface remains fixture-free;
+- COMMERCE-023 preview/validation action routing remains correct;
+- focused integration/external UI tests, targeted lint and `git diff --check` pass
+  apart from the explicitly reported stale-CAS workspace regression.
+
+Attempt 3 is not accepted because the required focused suite is knowingly red and the
+failing stale-CAS regression is caused by a task-owned obsolete test boundary, not an
+unrelated baseline. Two mandatory Attempt 2 lifecycle proofs are also still absent.
+
+The following is the complete and authoritative Attempt 4 correction contract.
+Runtime source should remain unchanged unless one of these tests exposes a genuine
+defect. Do not implement Phase 4 live HTTP execution/testing.
+
+##### A3-R1 — update the stale-CAS test to the COMMERCE-020 ToolMutationResult boundary
+
+Change:
+
+```text
+tests/studio-workspace.test.tsx
+```
+
+The failing test currently uses:
+
+```ts
+const services = new InMemoryStudioServices('stale');
+```
+
+The in-memory fixture's generic Studio mutation contract returns:
+
+```ts
+{
+  kind: 'conflict',
+  code: 'STALE_CAS',
+  message: 'This draft changed elsewhere. Refresh; your input has been retained.'
+}
+```
+
+That is the LEGACY generic `StudioResult` shape.
+
+The production Tool mutation Server Actions now return the accepted COMMERCE-020
+`ToolMutationResult` envelope instead:
+
+```ts
+{
+  kind: 'error',
+  operationId,
+  code: 'CAS_CONFLICT',
+  message: 'tool draft is stale',
+  retryable: false
+}
+```
+
+`ToolAuthoringScreen.mutate()` intentionally recognizes `kind:'error'`; feeding the
+old `kind:'conflict'` fixture into the mocked Server Action causes the test harness,
+not production, to treat the result as success and display `Saved.`.
+
+Do NOT change production `ToolAuthoringScreen` to understand the legacy generic
+`StudioResult` shape. Do NOT reintroduce `STALE_CAS` into the Tool mutation contract.
+
+Correct the test boundary in one of these bounded ways:
+
+```text
+preferred:
+  for this test, mock updateToolDraft so the mocked named Server Action returns the
+  exact ToolMutationResult error envelope above using the submitted operationId
+
+acceptable:
+  add a test-only Tool Server Action adapter in studio-workspace.test.tsx which
+  translates the generic InMemoryStudioServices result to the current
+  ToolMutationResult contract for Tool mutation action names only
+```
+
+If a shared test-only adapter is introduced, it must map at least:
+
+```text
+Studio ok                       -> Tool ok + submitted operationId
+Studio forbidden               -> FORBIDDEN
+Studio not-found               -> NOT_FOUND
+Studio conflict STALE_CAS      -> CAS_CONFLICT
+other Studio conflict          -> CONFLICT
+Studio unavailable             -> DATABASE_UNAVAILABLE, retryable=true
+```
+
+and a legacy `kind:'unknown'` must simulate transport uncertainty by REJECTING the
+mocked named Server Action rather than returning `kind:'unknown'`.
+
+Required stale-CAS regression:
+
+```text
+edit Description
+Save draft
+mocked Tool Server Action returns:
+  kind='error'
+  code='CAS_CONFLICT'
+  operationId=<submitted id>
+
+-> status contains CAS_CONFLICT
+-> exact server message remains visible
+-> Description still equals "Retained draft text"
+-> editor remains dirty
+-> navigating Back opens the unsaved-changes dialog
+-> NO "Saved." status
+-> NO Tool UNCONFIRMED state
+```
+
+This regression must test the current Tool Server Action contract, not the removed
+generic Studio mutation result.
+
+##### A3-R2 — complete the incomplete-DRAFT production-read -> editor round-trip proof
+
+Keep the existing production service regression:
+
+```text
+tests/studio-integration.test.ts
+  "round-trips an incomplete DRAFT through the production Studio read boundary"
+```
+
+Add the missing UI half in:
+
+```text
+tests/external-tools-ui.test.tsx
+```
+
+Use an incomplete EXTERNAL_HTTP DRAFT that satisfies:
+
+```text
+CommerceToolDraftDefinitionSchema.safeParse(...) -> success
+CommerceToolDefinitionSchema.safeParse(...)      -> failure
+```
+
+The test MUST prove:
+
+```text
+1. ToolEditor renders that DRAFT without throwing
+2. the exact incomplete Input JSON Schema buffer is visible in
+   "Input JSON Schema"
+3. the exact incomplete Response template buffer is visible in
+   "Response template"
+4. Save draft can be clicked again
+5. updateToolDraft receives the same incomplete draft payload; it is not silently
+   replaced by a full-valid default
+6. Validate invokes COMMERCE-023 and renders structural issues
+7. PLATFORM_SUPER_ADMIN publish control remains disabled while the definition is
+   invalid / validation is not current
+```
+
+The test may use the production-service result as `initialDetail` or construct an
+equivalent ToolSummary from the exact production-reread DTO. It must not satisfy this
+item with `InMemoryStudioServices` persistence alone.
+
+Do not cast the incomplete DRAFT through `CommerceToolDefinitionSchema`.
+
+##### A3-R3 — prove exact Save / Validate / Publish lifecycle and role separation
+
+Add focused executable tests in:
+
+```text
+tests/external-tools-ui.test.tsx
+```
+
+Use the existing COMMERCE-023 action mock and the named Tool mutation Server Action
+mock separately.
+
+Required ADMIN case:
+
+```text
+role=ADMIN
+Save draft visible
+Validate visible
+Publish validated revision ABSENT
+Save draft calls updateToolDraft
+Save draft does NOT call validateExternalToolDefinitionAction
+Save draft creates no UNCONFIRMED when the mutation returns an explicit error
+```
+
+Required Validate case:
+
+```text
+validateExternalToolDefinitionAction returns:
+  { kind:'ok', value:{ valid:true, issues:[] } }
+
+click Validate
+-> action called exactly once
+-> exact status:
+   "Definition passed authoritative validation. Live test is required before publication."
+-> updateToolDraft/publishToolRevision not called
+-> no Operation outcome unknown UI
+```
+
+Required SUPER_ADMIN case:
+
+```text
+role=SUPER_ADMIN
+Publish validated revision visible
+
+while dirty:
+  publish disabled
+
+after successful Save:
+  still disabled until authoritative Validate succeeds
+
+after current Validate succeeds + nonblank publication reason:
+  publish enabled
+
+publishToolRevision returns:
+  {
+    kind:'error',
+    operationId,
+    code:'LIVE_TEST_REQUIRED',
+    message:'Run a successful live tool test for the current saved revision before publishing.',
+    retryable:false
+  }
+
+-> status contains exact LIVE_TEST_REQUIRED code/message
+-> no generic INTERNAL_ERROR
+-> no Operation outcome unknown UI
+-> definition remains editable
+```
+
+Also retain the module-boundary proof:
+
+```text
+Preview request -> COMMERCE-023 previewExternalRequestAction
+Validate        -> COMMERCE-023 validateExternalToolDefinitionAction
+```
+
+##### A3-R4 — prove malformed argument JSON vs malformed schema vs action rejection
+
+Keep the current local parsing separation and add/retain focused regressions for all
+four observable branches:
+
+```text
+malformed Tool arguments JSON
+-> "Tool arguments must be valid JSON."
+-> previewExternalRequestAction call count = 0
+
+malformed current Input JSON Schema buffer
+-> "INVALID_INPUT: Input JSON Schema must be valid JSON."
+-> previewExternalRequestAction call count = 0
+
+previewExternalRequestAction returns explicit error
+-> exact code/message visible
+-> no UNCONFIRMED
+
+previewExternalRequestAction Promise rejects
+-> "INTERNAL_ERROR: Request preview could not be completed."
+-> no UNCONFIRMED
+```
+
+Do not report a Server Action transport failure as invalid JSON.
+
+##### A3-R5 — preserve response-mode and fixture-removal regressions
+
+Do not regress the existing Attempt 3 tests for:
+
+```text
+persisted DIRECT selector value
+DIRECT/Visual/JavaScript switching
+Keep editing preserving dirty response state
+Discard changes and switch dropping dirty response-owned values
+authoring-only JavaScript response CodeEditor
+Raw response sample absent
+Run sample absent
+Check run status absent
+Cancel run absent
+synthetic fixture selection/result absent
+```
+
+No Phase 4 live test button may be introduced.
+
+##### A3-R6 — run the entire required focused packet successfully
+
+Run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+
+npm exec vitest run \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/studio-workspace.test.tsx \
+  tests/studio-integration.test.ts
+
+npm run typecheck
+
+npm exec eslint \
+  src/studio/external-http/editor.tsx \
+  src/studio/tools/tool-editor.tsx \
+  src/studio/contracts.ts \
+  src/commerce/integration/studio/services.ts \
+  src/commerce/publication/lifecycle.ts \
+  src/studio/testing/in-memory-studio-services.ts \
+  app/preview/page.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/studio-workspace.test.tsx \
+  tests/studio-integration.test.ts
+
+git diff --check
+```
+
+All focused tests MUST pass with zero skips.
+
+The stale-CAS test failure is task-owned and MUST be gone.
+
+There must be zero TypeScript diagnostics in:
+
+```text
+src/studio/external-http/editor.tsx
+src/studio/tools/tool-editor.tsx
+src/studio/contracts.ts
+src/commerce/integration/studio/services.ts
+src/commerce/publication/lifecycle.ts
+src/studio/testing/in-memory-studio-services.ts
+app/preview/page.tsx
+tests/external-tools-ui.test.tsx
+tests/tool-authoring-screen.test.tsx
+tests/studio-workspace.test.tsx
+tests/studio-integration.test.ts
+```
+
+Other diagnostics may remain documented only when their exact file/error is unrelated
+to COMMERCE-021.
+
+##### A3-R7 — fresh Attempt 4 execution/report evidence
+
+The submitted Attempt 3 task is still:
+
+```yaml
+status: in_progress
+executor: copilot
+claimed_at: 2026-09-25T18:07:29Z
+attempt: 3
+```
+
+and its Completion Report explicitly states that focused validation is still blocked.
+It is therefore not a valid review-ready handoff.
+
+Attempt 4 must record the exact fresh launcher-prepared:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-021
+implementation branch = task/ARCH-021-COMMERCE-021
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 4 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not reuse or infer Attempt 3 claim/synchronization values.
+
+Reconcile all Work Items, Acceptance Criteria, Validation and the Completion Report to
+the final Attempt 4 results.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 4
+executor: null
+claimed_at: null
+```
+
+##### Attempt 4 stop condition
+
+Return to architect review only when:
+
+```text
+stale CAS uses the ToolMutationResult boundary and the editor stays dirty
+AND incomplete DRAFT production-read -> editor -> save/validate proof passes
+AND ADMIN Save/Validate separation passes
+AND SUPER_ADMIN clean+validated publish gating passes
+AND LIVE_TEST_REQUIRED remains explicit and never becomes UNCONFIRMED
+AND preview parse/action error branches are all proved
+AND response-mode/fixture-removal regressions remain green
+AND the complete four-file focused packet passes with zero skips
+AND zero COMMERCE-021 task-owned type/lint/diff diagnostics remain
+AND fresh Attempt 4 launcher/report evidence is complete
+```
+
+Then push implementation and parent task branches, return control to
+`moda_architect`, and STOP.
+
+Do not implement Phase 4 live HTTP execution/testing.
+
+#### Historical Attempt 2 review
 
 #### Attempt 2 review — 2026-09-25
 
