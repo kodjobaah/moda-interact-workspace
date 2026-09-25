@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T12:25:20Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -262,6 +262,7 @@ Implementation commits `db18555446f0c8f3a9601397941451bdb20b3714`, synchronizati
 - `package.json`
 - `scripts/sync-shopify-admin-schema.mjs`
 - `scripts/validate-shopify-admin-oracle.mjs`
+- `scripts/validate-shopify-admin-local.ts`
 - `tests/admin-graphql-compiler.test.ts`
 - `tests/discovery-route.test.ts`
 ### Work Completed
@@ -281,6 +282,9 @@ Implementation commits `db18555446f0c8f3a9601397941451bdb20b3714`, synchronizati
 - Attempt 2 launcher evidence: parent worktree reused at `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-018`, implementation worktree reused at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-018`, dependencies passed, and recursive submodule initialization completed with `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - Attempt 2 synchronization incorporated current `origin/main` in merge `ed0b0e9`; the Storefront artifact discovery refactor was retained while Admin validation dispatch was preserved. The resulting conflict-marker repair is committed and pushed as `bcb61f6`.
 - Attempt 2 focused validation: `npm run test:arch021-shopify-admin-compiler` passed 2 files and 17 tests; `npm run validate:arch021-shopify-admin-oracle` passed the valid, invalid, mutation, and wrong-variable fixtures; targeted ESLint passed; `git diff --check` passed.
+- Attempt 3 implementation commit `48d6ab0` tightened mapped Admin input/literal compatibility fail-closed for non-null, list, union, enum, scalar and object cases; added the required CR-2 regressions; and added a bounded `vite-node` bridge so every oracle local verdict executes the production Admin compiler.
+- Attempt 3 focused validation: `npm run test:arch021-shopify-admin-compiler` passed 2 files and 20 tests; `npm run validate:arch021-shopify-admin-oracle` passed all five fixture comparisons with local verdicts from the production compiler; the exact architect-requested ESLint command passed; and `git diff --check` passed.
+- Attempt 3 implementation branch local/remote parity: PASS at `48d6ab0`; accepted Storefront/discovery files and Admin artifact/provenance were unchanged.
 - Attempt 2 typecheck: full `npm run typecheck` remains non-zero on unrelated repository diagnostics; filtered output contains no diagnostics in the touched Admin compiler, discovery schema/service/route, scripts, or tests.
 - Attempt 2 implementation branch local/remote parity: PASS at `bcb61f6`.
 ### Deviations
