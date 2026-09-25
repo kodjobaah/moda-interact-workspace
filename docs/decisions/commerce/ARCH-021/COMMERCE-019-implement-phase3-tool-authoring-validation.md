@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 34
-executor: copilot
-claimed_at: 2026-09-25T12:50:43Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -265,39 +265,71 @@ The simplification `ARCH-021-SYSTEM-TEST-001` remains a terminal Ready task and 
 
 ### Status
 Ready for Review
+
+### Attempt 2 Launcher and Worktree Evidence
+- Task: `ARCH-021-COMMERCE-019`, attempt `2`, logical agent `moda_commerce`, execution mode `agent`, completion mode `automatic`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-019`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-019`.
+- Parent branch and implementation branch: `task/ARCH-021-COMMERCE-019`.
+- Start-of-attempt parent synchronization: launcher completed; parent head after claim `99223bd8ad937c4c46ba2365101deaa4f6148ccd`; origin-main incorporation `yes`; task-branch fast-forward `not-needed`.
+- Start-of-attempt implementation synchronization: launcher completed; implementation head after preparation `bbc106afdbe17cdc2b87bad78ed5cc9e9890330b`; origin-main incorporation `yes`; task-branch fast-forward `not-needed`.
+- Attempt 2 claim evidence: parent claim commit `b63f716028d2ff0bffde4603041c9f004d7055f1`, pushed.
+- Recursive submodule materialization: launcher recursive sync/update passed.
+- Database submodule commit: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
 ### Files Changed
 - `package.json`
+- `src/commerce/external-publication/index.ts`
 - `src/commerce/tool-authoring/contracts.ts`
 - `src/commerce/tool-authoring/server-actions.ts`
-- `src/commerce/external-publication/contracts.ts`
-- `src/commerce/external-publication/index.ts`
-- `src/commerce/publication/lifecycle.ts`
-- `src/commerce/integration/studio/services.ts`
-- `src/studio/contracts.ts`
-- `tests/tool-authoring-validation.test.ts`
+- `tests/auth-role-requirements.test.ts`
+- `tests/commerce-lifecycle.test.ts`
 - `tests/external-publication.test.ts`
+- `tests/studio-integration.test.ts`
+- `tests/tool-authoring-server-actions.test.ts`
+- `tests/tool-authoring-validation.test.ts`
+
+### Correction-to-File/Test Mapping
+- A1-R1: removed the historical DIRECT prohibition so canonical DIRECT, OBJECT/LIST and JAVASCRIPT EXTERNAL_HTTP modes reach exact `LIVE_TEST_REQUIRED`; covered in `tests/external-publication.test.ts` and `tests/commerce-lifecycle.test.ts`.
+- A1-R2: replaced byte-slice decoding with code-point-safe UTF-8 truncation retaining the 32-issue cap; covered in `tests/tool-authoring-validation.test.ts` with multibyte boundary and replacement-character assertions.
+- A1-R3: classified only the known `mapToolArguments()` validation TypeErrors as `INVALID_INPUT`; covered by real Server Action calls in `tests/tool-authoring-server-actions.test.ts` for invalid definition, invalid input value, missing mapping and invalid external scalar.
+- A1-R4: common command now executes the accepted hierarchy tests; `tests/auth-role-requirements.test.ts` directly proves PLATFORM_ADMIN, PLATFORM_SUPER_ADMIN, all merchant roles denied, and development bypass without identity lookups.
+- A1-R5: executable lifecycle coverage proves exact gate code/message for EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL; Studio translation preserves `{ kind: 'unavailable', code: 'LIVE_TEST_REQUIRED', ... }`; published history remains readable in `tests/commerce-lifecycle.test.ts` and `tests/studio-integration.test.ts`.
+- A1-R6: existing synthetic receipt rejection remains covered; common authoring files have no request-JavaScript/Admin compiler, external transport or Shopify transport invocation.
+- A1-R7: `test:arch021-tool-authoring-common` executes all focused Commerce-019 contract suites with zero skipped tests; required validation results are below.
+- A1-R8: this report records the exact Attempt 2 launcher packet, implementation/report commit hashes, push parity and clean-worktree evidence.
+
 ### Work Completed
-- Added the exact bounded `ToolAuthoringValidation` and `ToolAuthoringActionResult<T>` envelopes, capped at 32 issues and 512 UTF-8 bytes per issue field.
-- Added named server actions for definition and argument validation using `requireStudioPlatformRole('ADMIN')` directly; no alternate auth model, client credentials, or browser-side provider access.
-- Added exact `/liveTest` and `LIVE_TEST_REQUIRED` propagation for `EXTERNAL_HTTP` and `SHOPIFY_ADMIN_GRAPHQL`; synthetic receipts no longer satisfy the Phase 3 gate.
-- Preserved sample/receipt storage tests as test assets and retained historical published revisions unchanged.
-- Implementation commits: `b4d023d0e59894b99ebc2ed929c26f5e63e6c981` and final alias commit `a20397d3d20ffe4d8a54dbfbf7a3a63a0a49a721`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
+- Preserved the accepted bounded validation/action contracts and platform-role authorization boundary.
+- Enforced exact Phase 3 fail-closed publication behavior for both canonical kinds and all EXTERNAL_HTTP response modes.
+- Kept synthetic receipts from satisfying publication and did not alter already-published history or add provider/publication wiring beyond scope.
+
 ### Validation Results
+- `npm run test:arch021-tool-authoring-common`: passed, 75 tests across 6 files, zero skipped.
 - `npm run test:arch021-tool-authoring-validation`: passed, 6 tests.
-- `npm run test:arch021-tool-authoring-common`: passed, 6 tests.
-- `npm run test:arch020-external-publication`: passed, 12 tests.
-- `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts`: passed, 10 tests.
-- Targeted ESLint: passed.
-- Task-owned editor diagnostics: none.
+- `npm run test:arch020-external-publication`: passed, 13 tests.
+- `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts`: passed, 14 tests across 2 files.
+- `npm run lint`: passed with 0 errors and 6 existing warnings in unrelated files: `scripts/code-runtime-manifest.mjs`, `src/studio/code-response/code-response-panel.tsx`, `tests/agent-configuration-model.test.ts`, and `tests/mcp-service.test.ts`.
+- `npm run typecheck`: known unrelated baseline failures only, 16 errors in `app/api/studio/code-response/validate/route.ts`, `tests/agent-configuration-effective.test.ts`, `tests/agent-configuration-prompts-postgres.test.ts`, `tests/browser-evidence/vite.config.ts`, `tests/c20-integration-fixture.test.ts`, `tests/external-wiring.test.ts`, `tests/local-external-mcp-diagnostic.test.ts`, and `tests/selected-shop-context.test.ts`; no task-owned diagnostic remains.
 - `git diff --check`: passed.
-- Full TypeScript check: reports only known unrelated baseline failures in preview route imports, agent-configuration tests, integration fixture/MCP diagnostics, and selected-shop tests; no Commerce-019 file is implicated.
-- Prisma client generated successfully with the repository `prisma:generate` script before publication-suite validation; nested database remained pinned at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Source audit: no provider transport/compiler invocation in the common authoring layer or Server Actions.
+
+### Implementation and VCS Evidence
+- Implementation commit: `47fa255`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
+- Implementation worktree was clean after the implementation commit.
+- Parent report commit: pending immediately after this report edit; parent worktree will be clean after that commit.
+- Push parity: implementation push passed; parent report push will be performed before handoff.
+
 ### Deviations
-- The task’s declared validation script name was `test:arch021-tool-authoring-common`, while the execution request required `test:arch021-tool-authoring-validation`; the required request name was added and used.
+- None from the Attempt 2 correction contract. Full typecheck remains limited by the unrelated baseline diagnostics listed above.
+
 ### Assumptions
-- The launcher packet’s claimed Architect Review was not present in the authoritative task file or its task-file history; the explicit correction requirements in the execution request and task contract were treated as authoritative. The existing Architect Review section was not edited.
+- The injected external publication validator remains the accepted Phase 3 boundary; this task does not implement COMMERCE-023/024 validators or Phase 4 live-test receipts.
+
 ### Unresolved Issues
-- Full repository typecheck remains blocked by the documented unrelated baseline diagnostics listed above.
+- None task-owned.
+
 ### Architectural Concerns
 - None.
 
