@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-25T18:30:59Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-019
@@ -22,7 +22,7 @@ depends_on:
   - ARCH-021-COMMERCE-006
 enables: []
 created: 2026-09-23
-updated: 2026-09-25
+updated: 2026-09-26
 ---
 
 # Complete External HTTP request and response authoring UI
@@ -250,14 +250,19 @@ The model/CommerceAgent supplies runtime arguments; this UI only authors `inputS
 ## Completion Report
 
 ### Status
-Attempt 3 implementation pushed; architect review pending after one focused regression is resolved
+Attempt 4 implementation pushed; ready for architect review
 ### Files Changed
 - `src/studio/external-http/editor.tsx`
 - `src/studio/tools/tool-editor.tsx`
 - `src/studio/contracts.ts`
 - `src/commerce/integration/studio/services.ts`
 - `src/commerce/publication/lifecycle.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `app/preview/page.tsx`
 - `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/studio-workspace.test.tsx`
+- `tests/studio-integration.test.ts`
 ### Work Completed
 - Added Declarative and JavaScript request authoring, static safe headers, bounded tool-argument JSON, and non-network request descriptor preview.
 - Added Direct response processing alongside Visual and JavaScript modes, with JSON enforcement and destructive mode-switch confirmation.
@@ -265,34 +270,31 @@ Attempt 3 implementation pushed; architect review pending after one focused regr
 - Removed synthetic response fixture controls from the production Tool editor.
 - Corrected the COMMERCE-023 Server Action import boundary and separated local JSON parsing from action failures.
 - Preserved incomplete draft definitions through the Studio read boundary while keeping publication full-definition validation strict.
-- Added focused regressions for authoring-only JavaScript response editing, request preview presentation, and JavaScript request/Direct response persistence.
-### Attempt 3 Validation Results
-- Implementation commit: `4fc5034`, pushed to `origin/task/ARCH-021-COMMERCE-021`.
-- `npm run test:arch020-external-tools-ui`: 11 passed, 1 failed; the new destructive response-mode test passes, while the suite still reports the stale-CAS workspace regression.
-- `npm exec vitest run tests/studio-integration.test.ts`: 12 passed, including the production incomplete-DRAFT round-trip.
-- `npm exec vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/studio-workspace.test.tsx tests/studio-integration.test.ts`: blocked by `tests/studio-workspace.test.tsx` stale-CAS expectation; the rendered status is `Saved.` instead of `changed elsewhere`.
-- Targeted ESLint and `git diff --check`: passed.
-- `npm run typecheck`: no diagnostics in Attempt 3 task-owned files; the repository still has unrelated baseline diagnostics in `app/api/studio/code-response/validate/route.ts` and several existing tests.
+- Added focused regressions for incomplete drafts, lifecycle and role separation, preview error branches, response-mode reset behavior, fixture removal, and the exact stale-CAS/dirty-navigation contract.
 
-### Previous Validation Results
-- `get_errors`: no diagnostics in the touched source files.
+### Attempt 4 Validation Results
+- Implementation commit: `cb1b1579624b48353abc82ab35522ad087ec6f5a`, pushed to `origin/task/ARCH-021-COMMERCE-021`.
+- `npm run test:arch020-external-tools-ui`: 16 passed.
+- Focused packet `npm exec vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/studio-workspace.test.tsx tests/studio-integration.test.ts`: 63 passed.
+- `npm run typecheck`: exits only on unrelated baseline diagnostics in `app/api/studio/code-response/validate/route.ts`, `tests/agent-configuration-effective.test.ts`, `tests/agent-configuration-prompts-postgres.test.ts`, `tests/c20-integration-fixture.test.ts`, `tests/external-wiring.test.ts`, `tests/local-external-mcp-diagnostic.test.ts`, and `tests/selected-shop-context.test.ts`; no task-owned diagnostics.
+- Targeted ESLint: 0 errors and 0 warnings.
 - `git diff --check`: passed.
-- `npm run test:arch020-external-tools-ui`: passed, 10 tests.
-- `npm exec vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`: passed, 24 tests.
-- Targeted ESLint: passed; `git diff --check`: passed.
-- `npm run typecheck`: exits on unrelated repository baseline diagnostics after Prisma generation; no diagnostics remain in the touched source files.
-- Attempt 2 launcher claim commit: `f15d0625f0006cdf333281699d67f7381157f`.
-- Implementation commit: `2662d939cade780d8599f48d35b4b7189caa9b25`, pushed with remote parity.
-- Final parent report commit: the final pushed tip of `task/ARCH-021-COMMERCE-021` after this metadata-only amend.
-- Physical isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021` on `task/ARCH-021-COMMERCE-021`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021` on the same task branch; start-of-attempt synchronization completed; recursive submodules materialized; database submodule at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
+### Launcher Evidence
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`.
+- Start synchronization used implementation base `4fc5034`; Attempt 4 claim commit: `74f2b46d36f30e4f2de5e37ab1600a340ea6e0de`.
+- Recursive submodule status: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`heads/main`).
+- Both worktrees were clean before this report edit; final report commit, push parity, and final clean-state verification follow.
 ### Deviations
 - Full repository typecheck remains affected by unrelated pre-existing diagnostics; no provider or live HTTP call was introduced.
 ### Assumptions
 - The existing `SUPER_ADMIN` role value is the repository representation of `PLATFORM_SUPER_ADMIN` for the publication control.
 ### Unresolved Issues
-- Full typecheck cleanup is outside this task because remaining failures are unrelated to the touched files.
+- None within task scope.
 ### Architectural Concerns
-The implementation remains bounded to `moda-interact-commerce`; no cross-repository changes were required. Parent report evidence is fresh for Attempt 2; parent and implementation worktrees were clean before this report edit, and the final parent report commit is recorded below after commit.
+The implementation remains bounded to `moda-interact-commerce`; no cross-repository changes were required. Live external HTTP execution/testing remains out of scope per the task stop condition.
 
 ## Architect Review
 
