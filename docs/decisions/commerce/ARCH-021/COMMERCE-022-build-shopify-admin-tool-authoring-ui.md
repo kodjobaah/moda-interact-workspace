@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-25T18:01:38Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-019
@@ -144,11 +144,11 @@ Prove:
 
 ## Work Items
 
-- [ ] Add Admin authoring kind/editor.
-- [ ] Add inputSchema-to-variable mapping UI.
-- [ ] Wire local server validation and schemaHash.
-- [ ] Remove Storefront from new-tool choice while preserving history rendering.
-- [ ] Add focused UI regressions.
+- [x] Add Admin authoring kind/editor.
+- [x] Add inputSchema-to-variable mapping UI.
+- [x] Wire local server validation and schemaHash.
+- [x] Remove Storefront from new-tool choice while preserving history rendering.
+- [x] Add focused UI regressions.
 
 ## Interfaces / Contracts
 
@@ -166,21 +166,21 @@ None in Phase 3. Phase 4 live Shopify Tool testing will depend on this task.
 
 ## Acceptance Criteria
 
-- [ ] Admin can create a complete, pinned, query-only Shopify Admin tool DRAFT.
-- [ ] CommerceAgent argument contract remains the persisted inputSchema/variable mapping.
-- [ ] Authoring requires no shop token/session/provider I/O.
-- [ ] New Storefront authoring is removed without hiding historical definitions.
-- [ ] Explore/discovery UI is unchanged by this task.
-- [ ] Explicit server failures remain visible; only lost/rejected mutation responses enter reconcilable UNCONFIRMED state.
-- [ ] Publish authority remains PLATFORM_SUPER_ADMIN-only through the accepted hierarchy.
+- [x] Admin can create a complete, pinned, query-only Shopify Admin tool DRAFT.
+- [x] CommerceAgent argument contract remains the persisted inputSchema/variable mapping.
+- [x] Authoring requires no shop token/session/provider I/O.
+- [x] New Storefront authoring is removed without hiding historical definitions.
+- [x] Explore/discovery UI is unchanged by this task.
+- [x] Explicit server failures remain visible; only lost/rejected mutation responses enter reconcilable UNCONFIRMED state.
+- [x] Publish authority remains PLATFORM_SUPER_ADMIN-only through the accepted hierarchy.
 
 ## Validation
 
-- [ ] focused `tests/shopify-admin-tools-ui.test.tsx`
-- [ ] `npm run test:arch021-shopify-admin-compiler`
-- [ ] affected Studio workspace/tool-authoring tests
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused `tests/shopify-admin-tools-ui.test.tsx`
+- [x] `npm run test:arch021-shopify-admin-compiler`
+- [x] affected Studio workspace/tool-authoring tests
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -193,7 +193,7 @@ The eventual Phase 4 runtime will resolve the selected shop's offline session se
 ## Completion Report
 
 ### Status
-Implementation complete; ready for architect review.
+Attempt 3 implementation complete; ready for architect review.
 ### Files Changed
 Implementation worktree changes are committed and pushed on `task/ARCH-021-COMMERCE-022`:
 
@@ -204,29 +204,32 @@ Implementation worktree changes are committed and pushed on `task/ARCH-021-COMME
 - `tests/shopify-admin-tools-ui.test.tsx`
 - `tests/tool-authoring-screen.test.tsx`
 - `tests/studio-workspace.test.tsx`
-- Existing Attempt 1 additions also include `src/commerce/tool-definition/contracts.ts`, `src/commerce/tool-authoring/admin-validation.ts`, `src/commerce/tool-authoring/contracts.ts`, and `src/studio/tools/admin-validation-server-actions.ts`.
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-authoring/admin-validation.ts`
+- `src/commerce/tool-authoring/contracts.ts`
+- `src/studio/tools/admin-validation-server-actions.ts`
 ### Work Completed
 Implemented the pinned, query-only Shopify Admin GraphQL authoring flow. New Tool creation offers exactly Shopify Admin GraphQL and External HTTP; historical Storefront revisions remain readable. Admin metadata is loaded through the named metadata Server Action, gates creation, and supplies the pinned `2026-07` API version and compiler schema hash. The Admin editor persists the exact visible document, operation name, variable mappings or bounded JSON literals, result path, result schema, common Tool fields, and response template.
 
-Admin validation is provider-free and rejects mutation/subscription documents with bounded issues. Save/validate state is controlled so stale mappings, invalid JSON, metadata errors, and changed persisted fields block publication. Composite Admin creation and recovery use C020 serializable staged state, distinct operation IDs, draft-only retry, and no replay of a committed `createTool`. Publication remains `SUPER_ADMIN`-only and surfaces `LIVE_TEST_REQUIRED` without entering `UNCONFIRMED`.
+Admin validation is provider-free and rejects mutation/subscription documents with bounded issues. Save/validate state is controlled so stale mappings, invalid JSON, metadata errors, and changed persisted fields block publication. Composite Admin creation and recovery use C020 serializable staged state, distinct operation IDs, draft-only retry, and no replay of a committed `createTool`. Publication remains `SUPER_ADMIN`-only and surfaces `LIVE_TEST_REQUIRED` without entering `UNCONFIRMED`. Attempt 3 specifically makes metadata identity authoritative, shares one visible candidate builder between Save and Validate, aggregates literal validity, exposes typed publication errors, and proves Admin draft recovery paths.
 ### Validation Results
 Preparation used the deterministic launcher with `--prepare --executor copilot`; the implementation worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-022` and the parent worktree was `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-022`. Recursive materialization was verified with database submodule commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 - `npm exec eslint src/studio/tools/shopify-admin-editor.tsx src/studio/tools/tool-library.tsx src/studio/tools/tool-authoring-screen.tsx src/studio/tools/tool-editor.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/studio-workspace.test.tsx`: passed.
-- Focused Admin/C020/validation tests: 29/29 passed across `tests/shopify-admin-tools-ui.test.tsx`, `tests/tool-authoring-screen.test.tsx`, and `tests/shopify-admin-authoring-validation.test.ts`.
+- Focused Admin/C020/validation tests: 38/38 passed across `tests/shopify-admin-tools-ui.test.tsx`, `tests/tool-authoring-screen.test.tsx`, and `tests/shopify-admin-authoring-validation.test.ts`.
 - `npm run test:arch021-shopify-admin-compiler`: passed, 22/22.
 - `npm run test:arch021-shopify-admin-authoring-validation`: passed, 9/9.
 - Targeted TypeScript diagnostics for changed source/test files: no diagnostics.
 - `git diff --check`: passed.
 - `tests/studio-workspace.test.tsx`: 20/21 passed. One existing stale-CAS assertion still expects `changed elsewhere`, while the current historical Storefront fixture reports `Saved.`; no Admin flow assertion failed.
 
-Implementation commits: `ef3765c` and `934d897`. The latter is pushed to `origin/task/ARCH-021-COMMERCE-022` and matches the local branch.
+Implementation commits: `ef3765c`, `934d897`, and `889b3e4`. Attempt 3 commit `889b3e4` is pushed to `origin/task/ARCH-021-COMMERCE-022`; the implementation worktree was clean after push and local/remote branch heads matched.
 ### Deviations
-The connected workspace test suite retains one baseline failure in the historical Storefront stale-CAS scenario described above. It was not changed because the failure does not exercise the new Admin authoring path and the current fixture's update response is successful.
+The connected workspace test suite retains one baseline failure in the historical Storefront stale-CAS scenario described above. It was not changed because the failure does not exercise the new Admin authoring path and the current fixture's update response is successful. Attempt 3 otherwise completes all requested review corrections.
 ### Assumptions
 The task's accepted platform-role aliases include `ADMIN`/`SUPER_ADMIN` in this repository's Studio test harness. The pinned compiler metadata and provider-free validation action are authoritative for Phase 3; live Shopify testing remains a Phase 4 concern.
 ### Unresolved Issues
-The historical Storefront stale-CAS test expectation should be reconciled with the fixture/service behavior in a separate focused maintenance change. No unresolved Admin authoring or publication-handoff issue remains.
+The historical Storefront stale-CAS test expectation should be reconciled with the fixture/service behavior in a separate focused maintenance change. No unresolved Admin authoring or publication-handoff issue remains. The final implementation commit is `889b3e4`; the final parent report commit is recorded after this report is committed.
 ### Architectural Concerns
 None identified. No shop, session, token, provider, or live Shopify request is used during Admin authoring or validation. Explore/discovery UI was not modified.
 
