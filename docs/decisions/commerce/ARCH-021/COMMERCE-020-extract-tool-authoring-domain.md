@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 32
-executor: copilot
-claimed_at: 2026-09-25T13:19:48Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -346,9 +346,497 @@ None
 ## Architect Review
 
 ### Review Status
-Changes Requested
+Changes Requested — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — 2026-09-25
+
+Reviewed the submitted Attempt 2 implementation against the complete Attempt 1
+correction contract.
+
+Attempt 2 contains important corrections that MUST be preserved:
+
+- the `controlled` prop is removed from `ToolAuthoringScreen`;
+- Tool UNCONFIRMED state is local to the Tool domain and stores only
+  `{ operationId, label }`, not the original mutation closure;
+- rejected Server Action invocation enters transport-only UNCONFIRMED;
+- reconciliation observes `CommerceAuditEvent` and does not invoke a Tool mutation;
+- the reconciliation query uses an explicit Tool action allow-list rather than
+  `startsWith`;
+- `requireStudioPlatformRole('ADMIN')` is used at the reconciliation boundary;
+- unexpected reconciliation failures use
+  `@modainteract/moda-interact-shared/logging`;
+- Tool dirty state uses a monotonic content revision so an earlier successful save
+  does not automatically clear a later edit;
+- EXTERNAL_HTTP creation now submits `createTool()` and `createToolDraft()` with
+  independently generated operation ids.
+
+Attempt 2 is not accepted because the exact mutation-result boundary, Tool navigation
+boundary, composite-create recovery, reconciliation authorization result, and R8
+regressions are still incomplete.
+
+The following is the complete and authoritative Attempt 3 correction contract.
+Do not infer additional work from chat history. Do not begin COMMERCE-021 or
+COMMERCE-022.
+
+##### A2-R1 — remove the nested StudioWorkspace navigation injection from the Tool route
+
+Change:
+
+```text
+components/studio-workspace.tsx
+```
+
+The current Tools branch still does:
+
+```tsx
+<StudioComposerProvider navigate={navigate ?? composer.requestNavigation}>
+  <ToolAuthoringScreen ... />
+</StudioComposerProvider>
+```
+
+That still injects a StudioWorkspace-owned function-valued navigation boundary into
+the extracted Tool domain. Attempt 1 CR-1 explicitly required ToolAuthoringScreen to
+consume the existing domain-local `useStudioComposer()` boundary instead.
+
+Required result:
+
+```tsx
+if (page === 'tools') {
+  return (
+    <ToolAuthoringScreen
+      role={role}
+      returnTo={returnTo}
+      detailId={detailId}
+      revisionId={revisionId}
+      externalHttpCatalogue={externalHttpCatalogue}
+      productionCodePanel={productionCodePanel}
+      shopId={shopId}
+      initialResult={...}
+      initialDetail={...}
+    />
+  );
+}
+```
+
+Do not create a nested `StudioComposerProvider` for the Tool branch and do not pass a
+`navigate`, `controlled`, `runCommand`, `services`, action bundle or other
+function-valued orchestration prop into `ToolAuthoringScreen`.
+
+The application-level `StudioAppProvider` / caller's existing
+`StudioComposerProvider` remains the navigation owner.
+
+Required invariant:
+
+```bash
+! rg -n 'StudioComposerProvider navigate=.*composer\.requestNavigation' \
+  components/studio-workspace.tsx
+```
+
+##### A2-R2 — preserve the ORIGINAL Tool failure before generic Studio translation
+
+Change only as required:
+
+```text
+src/studio/server-actions.ts
+src/commerce/integration/studio/services.ts
+src/studio/tools/contracts.ts
+tests/tool-operation-reconciliation.test.ts
+```
+
+The current code is non-conformant because Tool mutations still pass through the
+generic `services.translate()` boundary before `toolResult()` classifies them.
+
+Concrete current failures:
+
+```text
+LifecycleError('INVALID_INPUT', ...)
+  -> services.translate() => { kind:'unavailable' }
+  -> toolResult()          => DATABASE_UNAVAILABLE     # WRONG
+
+LifecycleError('INVALID_DEFINITION', ...)
+  -> services.translate() => { kind:'unavailable' }
+  -> toolResult()          => DATABASE_UNAVAILABLE     # WRONG
+
+LifecycleError('LIVE_TEST_REQUIRED', ...)
+  -> services.translate() => { kind:'unavailable' }
+  -> toolResult()          => DATABASE_UNAVAILABLE     # WRONG
+
+Prisma { code:'P1001' }
+  -> services.translate(operationId) => { kind:'unknown', ... }
+  -> toolResult()                  => INTERNAL_ERROR   # WRONG
+```
+
+The six named Tool mutation Server Actions MUST classify the original failure before
+it is collapsed by the legacy generic Studio result translator:
+
+```text
+createTool
+updateTool
+createToolDraft
+updateToolDraft
+publishToolRevision
+setToolEnabled
+```
+
+Required observable mapping:
+
+```text
+LifecycleError FORBIDDEN                -> FORBIDDEN, retryable=false
+LifecycleError INVALID_INPUT            -> INVALID_INPUT, retryable=false
+LifecycleError INVALID_DEFINITION       -> INVALID_INPUT, retryable=false
+LifecycleError NOT_FOUND                -> NOT_FOUND, retryable=false
+LifecycleError CONFLICT                 -> CONFLICT, retryable=false
+LifecycleError OPERATION_REUSE_CONFLICT -> CONFLICT, retryable=false
+LifecycleError CAS_CONFLICT             -> CAS_CONFLICT, retryable=false
+LifecycleError LIVE_TEST_REQUIRED       -> LIVE_TEST_REQUIRED, retryable=false
+Prisma P1001/P1002/P1008/P1017         -> DATABASE_UNAVAILABLE, retryable=true
+unexpected/unsupported                  -> INTERNAL_ERROR, retryable=false
+```
+
+Every result MUST preserve the submitted operation id.
+
+Do NOT change the generic `StudioResult` contract for Feature/Capability/Release/
+Shop surfaces. Use a Tool-specific command/error path in
+`src/commerce/integration/studio/services.ts`, or classify the original error at the
+named Tool Server Action boundary before generic translation. Either implementation
+is acceptable if the observable contract above is exact.
+
+Unexpected failures MUST be logged once through the approved shared logger with the
+raw thrown error/value. Do not add a service-local generic logger.
+
+Add executable tests in `tests/tool-operation-reconciliation.test.ts` that prove at
+minimum:
+
+```text
+INVALID_INPUT             -> INVALID_INPUT
+INVALID_DEFINITION        -> INVALID_INPUT
+CAS_CONFLICT              -> CAS_CONFLICT
+OPERATION_REUSE_CONFLICT  -> CONFLICT
+LIVE_TEST_REQUIRED        -> LIVE_TEST_REQUIRED
+P1001                     -> DATABASE_UNAVAILABLE, retryable=true
+unexpected Error          -> INTERNAL_ERROR
+```
+
+Do not satisfy this item by constructing `ToolMutationResult` objects directly.
+
+##### A2-R3 — authentication/origin denial during reconciliation is FORBIDDEN
+
+Change:
+
+```text
+src/studio/tools/reconciliation-server-actions.ts
+tests/tool-operation-reconciliation.test.ts
+```
+
+`assertStudioMutationOrigin()` and `requireStudioPlatformRole('ADMIN')` throw
+`StudioAuthError`. The current catch block treats those failures as unexpected and
+returns `INTERNAL_ERROR`.
+
+Required behavior:
+
+```text
+origin denied / unauthenticated / platform-role denied
+-> { kind:'error', code:'FORBIDDEN', ... }
+```
+
+Do not log an expected authorization denial as an unexpected application error.
+
+Preserve:
+
+```text
+P1001/P1002/P1008/P1017 -> DATABASE_UNAVAILABLE
+unexpected              -> INTERNAL_ERROR + shared logger
+```
+
+Keep the explicit Tool action allow-list exactly:
+
+```text
+CREATE_TOOL
+UPDATE_TOOL
+CREATE_TOOL_DRAFT
+UPDATE_TOOL_DRAFT
+PUBLISH_TOOL_REVISION
+ENABLE_TOOL
+DISABLE_TOOL
+```
+
+Add executable reconciliation tests proving:
+
+```text
+PLATFORM_ADMIN + different non-null actorAdminId -> FORBIDDEN
+PLATFORM_SUPER_ADMIN + different actorAdminId    -> committed
+development bypass + different actorAdminId      -> committed
+origin/role denial                               -> FORBIDDEN
+```
+
+The reconciliation action must still perform zero mutations and invoke no Tool
+mutation service/Server Action.
+
+##### A2-R4 — make EXTERNAL_HTTP step-2 not-committed retry draft-only
+
+Change:
+
+```text
+src/studio/tools/tool-library.tsx
+tests/tool-authoring-screen.test.tsx
+```
+
+Attempt 2 correctly gives `createTool()` and `createToolDraft()` independent operation
+ids A and B, but the recovery flow is still incomplete.
+
+Current behavior after this sequence:
+
+```text
+createTool(A)       -> committed ok
+createToolDraft(B)  -> transport reject
+reconcile(B)        -> not-committed
+```
+
+returns the user to the normal `Create tool` form. Pressing the form submit again
+calls `createTool()` again, which violates Attempt 1 CR-4.
+
+Required domain-local state after Tool creation succeeds:
+
+```ts
+{
+  toolId: string;
+  proposedDefinition: CommerceToolDefinition;
+} | null
+```
+
+or an equivalent serializable state.
+
+Rules:
+
+1. capture the exact proposed EXTERNAL_HTTP definition used for step 2;
+2. after `createTool(A)` succeeds, retain the returned `toolId`;
+3. submit `createToolDraft(B)` as the independently reconcilable second mutation;
+4. if B transport-rejects, UNCONFIRMED contains B;
+5. if reconciliation of B returns not-committed, retain the staged `toolId` /
+   proposed definition;
+6. the next explicit retry calls **only** `createToolDraft(C)` with a newly generated
+   operation id C;
+7. `createTool` call count must remain exactly 1;
+8. after confirmed draft creation, clear the staged state and navigate to the
+   returned revision.
+
+Do not store B's mutation closure for reconciliation and do not derive C from B.
+
+##### A2-R5 — replace obsolete generic-replay tests; Tool-route failures are task-owned
+
+Change:
+
+```text
+tests/tool-authoring-screen.test.tsx
+tests/tool-operation-reconciliation.test.ts
+tests/studio-workspace.test.tsx
+```
+
+The reported full Workspace failures are NOT an unrelated baseline when they are
+caused by COMMERCE-020 removing the generic Tool orchestration path.
+
+`tests/studio-workspace.test.tsx` is explicitly part of this task and currently still
+contains obsolete assertions named:
+
+```text
+holds an unknown command and reconciles the original operation once
+keeps newer editor content dirty after unknown save reconciliation
+```
+
+Those tests exercise the removed `StudioWorkspace.runCommand` replay model and must
+be removed/replaced, not classified as legacy failures.
+
+The final focused suite MUST execute all Attempt 1 CR-6 behaviors A-M:
+
+```text
+A. DATABASE_UNAVAILABLE returned -> visible, no UNCONFIRMED
+B. FORBIDDEN returned            -> visible, no UNCONFIRMED
+C. CAS_CONFLICT returned         -> visible, no UNCONFIRMED
+D. CONFLICT returned             -> visible, no UNCONFIRMED
+
+E. Tool mutation Promise rejects
+   -> UNCONFIRMED visible
+   -> exact original operationId retained
+   -> further Tool mutation disabled
+   -> navigation locked
+
+F. committed reconciliation
+   -> original mutation call count unchanged
+   -> listTools reloads
+   -> current detail reloads when present
+   -> UNCONFIRMED clears
+   -> exact "Committed; state refreshed"
+
+G. not-committed reconciliation
+   -> original mutation call count unchanged
+   -> UNCONFIRMED clears
+   -> exact "Not committed"
+   -> retry uses a different operationId
+
+H. reconciliation DATABASE_UNAVAILABLE
+   -> UNCONFIRMED remains
+   -> exact code/message visible
+
+I. reconciliation Promise rejects
+   -> UNCONFIRMED remains
+   -> original operationId unchanged
+   -> pending=false
+   -> exact "Reconciliation unavailable; try reconciliation again"
+
+J. PLATFORM_ADMIN + different actorAdminId -> FORBIDDEN
+K. SUPER_ADMIN + different actorAdminId    -> committed
+
+L. external create step 2 transport rejects
+   -> reconciliation uses CREATE_TOOL_DRAFT operation B
+   -> not-committed retry uses new draft operation C
+   -> createTool call count remains 1
+
+M. edit after save submission
+   -> earlier successful save does not clear later dirty edit
+```
+
+Also add the production-boundary regression required by A2-R1:
+
+```text
+StudioWorkspace page='tools'
+-> ToolAuthoringScreen receives no controlled/navigate/runCommand/services/action-bundle prop
+-> no Tool-specific function-valued production dependency crosses the
+   StudioWorkspace -> ToolAuthoringScreen boundary
+```
+
+The generic StudioWorkspace unknown/replay machinery may remain tested for non-Tool
+legacy surfaces, but no Tool test may require or invoke it.
+
+##### A2-R6 — exact validation commands and zero task-owned Workspace failures
+
+Run exactly:
+
+```bash
+npm exec vitest run \
+  tests/tool-authoring-screen.test.tsx \
+  tests/tool-operation-reconciliation.test.ts \
+  tests/studio-workspace.test.tsx
+
+npm run test:arch020-external-tools-ui
+
+npm exec eslint \
+  components/studio-workspace.tsx \
+  src/studio/tools/tool-authoring-screen.tsx \
+  src/studio/tools/tool-library.tsx \
+  src/studio/tools/tool-editor.tsx \
+  src/studio/tools/contracts.ts \
+  src/studio/tools/reconciliation-server-actions.ts \
+  src/studio/server-actions.ts \
+  src/commerce/integration/studio/services.ts \
+  tests/tool-authoring-screen.test.tsx \
+  tests/tool-operation-reconciliation.test.ts \
+  tests/studio-workspace.test.tsx
+
+npm run typecheck
+git diff --check
+```
+
+The three focused test files MUST pass with zero skipped tests.
+
+Also run:
+
+```bash
+npm test -- --run
+```
+
+The full Workspace run may retain only failures demonstrably unrelated to
+COMMERCE-020. Any failure whose test or stack is in:
+
+```text
+tests/tool-authoring-screen.test.tsx
+tests/tool-operation-reconciliation.test.ts
+tests/studio-workspace.test.tsx
+src/studio/tools/**
+components/studio-workspace.tsx
+src/studio/server-actions.ts
+src/commerce/integration/studio/services.ts
+```
+
+is task-owned and MUST be corrected before review.
+
+Failures caused by tests expecting the removed generic Tool catch-to-unknown/replay
+path are task-owned and may not be reported as baseline.
+
+Required source invariants:
+
+```bash
+! rg -n 'controlled=' components/studio-workspace.tsx
+! rg -n 'controlled\?:' src/studio/tools/tool-authoring-screen.tsx
+! rg -n 'StudioComposerProvider navigate=.*composer\.requestNavigation' components/studio-workspace.tsx
+! rg -n 'console\.(log|error)' src/studio/tools/reconciliation-server-actions.ts
+! rg -n 'startsWith:.*TOOL_' src/studio/tools/reconciliation-server-actions.ts
+```
+
+There must be zero TypeScript diagnostics in every COMMERCE-020 changed source/test
+file.
+
+##### A2-R7 — Attempt 3 execution/report evidence
+
+The submitted archive still contains the Attempt 2 task as `in_progress` and its
+Completion Report is the earlier Attempt 1 report. Attempt 3 must reconcile the
+durable handoff completely.
+
+Record the exact launcher-provided:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-020
+implementation branch = task/ARCH-021-COMMERCE-020
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 3 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Update Work Items, Acceptance Criteria and Validation checkboxes to the actual
+Attempt 3 state and replace the stale Attempt 1 Completion Report with current
+Attempt 3 evidence.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+##### Attempt 3 stop condition
+
+Return to architect review only when:
+
+```text
+A2-R1 direct outer-composer boundary is complete
+AND A2-R2 exact Tool mutation codes are proved
+AND A2-R3 reconciliation authorization/error mapping is proved
+AND A2-R4 external step-2 retry never recreates the Tool
+AND A2-R5 all A-M executable regressions pass
+AND no COMMERCE-020-caused full-suite failure remains
+AND zero task-owned type/lint/diff diagnostics remain
+AND the fresh Attempt 3 launcher/report packet is complete
+```
+
+Then push implementation and parent task branches, return control to
+`moda_architect`, and STOP.
+
+Do not begin COMMERCE-021 or COMMERCE-022.
+
+#### Historical Attempt 1 review
+
 Attempt 1 establishes the intended Tool-domain files and preserves much of the existing Tool editor behavior, but the production execution path still violates the task's central Server Action / reconciliation boundary.
 
 Accepted in substance and MUST be preserved in Attempt 2:
