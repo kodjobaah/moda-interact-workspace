@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -115,11 +115,11 @@ Add `test:arch021-shopify-admin-authoring-validation` proving:
 
 ## Work Items
 
-- [ ] Add Shopify Admin full-definition validation boundary.
-- [ ] Expose pinned API version/schemaHash metadata for authoring UI.
-- [ ] Translate compiler diagnostics to the common validation result.
-- [ ] Use COMMERCE-019 explicit action results and COMMERCE-027 `requireStudioPlatformRole('ADMIN')`.
-- [ ] Add focused zero-provider-I/O tests.
+- [x] Add Shopify Admin full-definition validation boundary.
+- [x] Expose pinned API version/schemaHash metadata for authoring UI.
+- [x] Translate compiler diagnostics to the common validation result.
+- [x] Use COMMERCE-019 explicit action results and COMMERCE-027 `requireStudioPlatformRole('ADMIN')`.
+- [x] Add focused zero-provider-I/O tests.
 
 ## Interfaces / Contracts
 
@@ -139,19 +139,19 @@ Produces the authoritative Shopify Admin authoring-validation boundary consumed 
 
 ## Acceptance Criteria
 
-- [ ] Shopify Admin authoring validation is server authoritative and zero-provider-I/O.
-- [ ] Only compiler-proved pinned Admin 2026-07 query definitions can validate.
-- [ ] API version/schemaHash metadata is server owned and not user-selectable.
-- [ ] Validation creates no evidence that can satisfy the Phase 3 publication gate.
-- [ ] PLATFORM_ADMIN and PLATFORM_SUPER_ADMIN are admitted through hierarchy; merchant roles are denied.
-- [ ] Validation/metadata failures remain explicit and never become mutation UNCONFIRMED state.
+- [x] Shopify Admin authoring validation is server authoritative and zero-provider-I/O.
+- [x] Only compiler-proved pinned Admin 2026-07 query definitions can validate.
+- [x] API version/schemaHash metadata is server owned and not user-selectable.
+- [x] Validation creates no evidence that can satisfy the Phase 3 publication gate.
+- [x] PLATFORM_ADMIN and PLATFORM_SUPER_ADMIN are admitted through hierarchy; merchant roles are denied.
+- [x] Validation/metadata failures remain explicit and never become mutation UNCONFIRMED state.
 
 ## Validation
 
-- [ ] `npm run test:arch021-shopify-admin-authoring-validation`
-- [ ] `npm run test:arch021-shopify-admin-compiler`
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-shopify-admin-authoring-validation`
+- [x] `npm run test:arch021-shopify-admin-compiler`
+- [x] targeted lint/typecheck
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -198,9 +198,96 @@ None
 ## Architect Review
 
 ### Review Status
-Changes Requested
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-09-25
+
+Reviewed implementation `eb1c658c0cb9b77b38f3e1df82c9e89d3328f3cd` and the
+submitted Attempt 2 Completion Report against the complete Attempt 1 correction
+contract.
+
+Attempt 2 is accepted.
+
+CR-1 is satisfied. `src/commerce/tool-authoring/admin-validation.ts` now normalizes
+compiler-origin diagnostic paths through one local adapter with the exact public
+slash-path semantics required by the task:
+
+```text
+execution.operationName               -> /execution/operationName
+execution.schemaHash                   -> /execution/schemaHash
+execution.document.products.first      -> /execution/document/products/first
+execution.variables.query              -> /execution/variables/query
+already-slash-delimited path           -> preserved
+missing/non-string compiler path       -> /execution
+```
+
+The COMMERCE-018 compiler error codes/messages remain unchanged. The adapter does
+not modify `lib/discovery/admin-compiler.ts` and does not create a second compiler
+contract.
+
+The focused regression now asserts the exact variable-specific path
+`/execution/variables/missing`, in addition to the exact operation-name,
+schema-hash and connection-bound paths required by the Attempt 1 review.
+
+CR-2 is preserved. The authoring validator remains local/zero-provider-I/O: it
+parses through the Commerce-owned Tool definition, invokes only the pinned
+COMMERCE-018 Admin compiler, validates the result/template shape, and performs no
+shop/session lookup, Admin API request, Dev MCP call, credential access or
+live-test receipt creation. The named Server Actions continue to call
+`requireStudioPlatformRole('ADMIN')` and return the COMMERCE-019 explicit action
+envelope. Pinned authoring metadata remains server-owned:
+
+```text
+apiVersion = 2026-07
+schemaHash = committed COMMERCE-018 adminSchemaHash
+```
+
+The task therefore continues to rely on the accepted COMMERCE-027/019 hierarchy for
+PLATFORM_ADMIN / PLATFORM_SUPER_ADMIN admission and merchant denial rather than
+introducing or duplicating a role matrix.
+
+CR-3 is satisfied. The task is in `review` with the claim cleared, and the Completion
+Report records the dedicated parent/implementation worktrees, start-of-attempt
+synchronization, recursive submodule materialization, database submodule commit,
+implementation commit, parent report commit, validation commands/results, branch
+parity and clean-worktree evidence.
+
+Submitted validation:
+
+```text
+test:arch021-shopify-admin-authoring-validation: 1 file / 9 tests PASS
+test:arch021-shopify-admin-compiler:             2 files / 22 tests PASS
+targeted ESLint:                                 PASS
+git diff --check:                                PASS
+```
+
+The submitted `tsconfig.tsbuildinfo` contains zero semantic diagnostics in:
+
+```text
+src/commerce/tool-authoring/admin-validation.ts
+src/studio/tools/admin-validation-server-actions.ts
+tests/shopify-admin-authoring-validation.test.ts
+```
+
+The remaining TypeScript diagnostics are confined to documented unrelated
+generated-Prisma/module/baseline surfaces.
+
+The final user handoff identifies parent report commit
+`23bf78bfbd8bccfb4c71efe56b1df654bc832c3a` and a later final published parent tip
+`659249d9056980fee051b1225b8774c485a3e5a5`. The Completion Report durably records
+the former report commit and clean/push-parity evidence. The archive contains no
+Git metadata with which to reconstruct the final self-referential publication step,
+so this bookkeeping distinction does not block acceptance.
+
+No Shopify Admin provider execution, Tool UI, schema/database work or Phase 4
+live-test functionality was introduced.
+
+`ARCH-021-COMMERCE-022` remains Pending after this acceptance because
+`ARCH-021-COMMERCE-020` is still Ready rather than Complete.
+
+#### Historical Attempt 1 Changes Requested
 
 Attempt 1 establishes the intended zero-provider-I/O Shopify Admin authoring-validation boundary and is otherwise directionally correct. Preserve the production design in `src/commerce/tool-authoring/admin-validation.ts` and `src/studio/tools/admin-validation-server-actions.ts`: local COMMERCE-018 compiler only, pinned server-owned API version/schema hash, COMMERCE-019 `ToolAuthoringValidation` / `ToolAuthoringActionResult`, and `requireStudioPlatformRole('ADMIN')`. Do not add Shopify session/token lookup, Admin API execution, Dev MCP calls, live-test receipts, browser-selectable schema metadata, another auth helper, or a function-valued production port.
 
@@ -319,55 +406,42 @@ Do not mark the task Complete.
 
 ### Reviewed Files
 
-```text
-src/commerce/tool-authoring/admin-validation.ts
-src/studio/tools/admin-validation-server-actions.ts
-src/commerce/tool-authoring/contracts.ts
-src/commerce/tool-definition/publication.ts
-lib/discovery/admin-compiler.ts
-tests/shopify-admin-authoring-validation.test.ts
-package.json
-docs/decisions/commerce/ARCH-021/COMMERCE-024-implement-shopify-admin-authoring-validation.md
-```
+- `src/commerce/tool-authoring/admin-validation.ts`
+- `src/studio/tools/admin-validation-server-actions.ts`
+- `src/commerce/tool-authoring/contracts.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `lib/discovery/admin-compiler.ts`
+- `tests/shopify-admin-authoring-validation.test.ts`
+- `package.json`
+- submitted `tsconfig.tsbuildinfo`
+- Attempt 2 Completion Report
 
 ### Validation Reviewed
 
-Submitted Attempt 1 evidence:
-
-```text
-focused C024 tests: 9/9 reported passing
-COMMERCE-018 compiler suite: 22/22 reported passing
-new-file lint: reported passing
-git diff --check: reported passing
-full typecheck: unrelated baseline failures reported
-```
-
-The attached parent snapshot does not contain a completed Completion Report, so this evidence is not yet durably reconciled into the task record. The linked GitHub connector available to this review session did not expose `kodjobaah/moda-interact-commerce`, so remote commit/branch state could not be independently fetched; the Attempt 2 Completion Report must therefore carry the required Git/worktree/push evidence.
-
-Attempt 2 MUST run exactly:
-
-```bash
-npm run test:arch021-shopify-admin-authoring-validation
-npm run test:arch021-shopify-admin-compiler
-
-npm exec eslint \
-  src/commerce/tool-authoring/admin-validation.ts \
-  src/studio/tools/admin-validation-server-actions.ts \
-  tests/shopify-admin-authoring-validation.test.ts
-
-npm run typecheck
-git diff --check
-```
-
-For `npm run typecheck`, documented unrelated baseline diagnostics remain non-blocking only if there are zero diagnostics in the C024 task-owned files above. Record that distinction explicitly in the Completion Report.
+- `npm run test:arch021-shopify-admin-authoring-validation`: 9/9 passed.
+- `npm run test:arch021-shopify-admin-compiler`: 22/22 passed.
+- Targeted ESLint over both task-owned runtime files and the focused test: passed.
+- `git diff --check`: passed.
+- Submitted full typecheck: non-zero on documented unrelated baseline/generated
+  surfaces only.
+- Independent inspection of `tsconfig.tsbuildinfo`: zero semantic diagnostics in all
+  three COMMERCE-024 task-owned files.
+- Static inspection confirms exact slash-path normalization and preservation of the
+  zero-provider-I/O/auth/metadata boundaries.
 
 ### Architecture Conformance
 
-Changes Requested. The zero-I/O validation architecture, pinned metadata ownership, COMMERCE-019 action envelope and COMMERCE-027 authorization boundary conform. Public compiler diagnostic paths currently violate C024 R3, and the durable task handoff is incomplete.
+Conforms. COMMERCE-024 composes the Commerce-owned Tool definition, pinned
+COMMERCE-018 Admin 2026-07 compiler and COMMERCE-019 validation/action envelope
+without provider I/O. Compiler diagnostics are exposed under deterministic
+`/execution/...` paths, metadata remains server-owned, authorization remains on the
+accepted COMMERCE-027 hierarchy, and validation creates no publication/live-test
+evidence.
 
 ### Follow-up
 
-1. Apply CR-1 through CR-3 only.
-2. Preserve all already-correct Attempt 1 behavior.
-3. After the defined corrections and required validation are complete, set the task to `review`, clear the claim, finish the Completion Report and STOP.
-4. Do not begin ARCH-021-COMMERCE-022 or any adjacent Tool UI/provider-execution work.
+`ARCH-021-COMMERCE-024` is Complete / Accepted at Attempt 2.
+
+`ARCH-021-COMMERCE-022` remains Pending because
+`ARCH-021-COMMERCE-020` is not yet Complete. Do not start COMMERCE-022 from this
+review.

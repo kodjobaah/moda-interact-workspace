@@ -11,7 +11,7 @@ updated: 2026-09-25
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018 and COMMERCE-019 are Complete; COMMERCE-020, COMMERCE-023 and COMMERCE-024 are Ready.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-024 are Complete; COMMERCE-020 and COMMERCE-023 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -789,7 +789,7 @@ Phase 3 tasks:
 | ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 | ARCH-021-COMMERCE-023 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-024 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019 |
+| ARCH-021-COMMERCE-024 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019 |
 
 Dependency graph:
 
@@ -804,7 +804,7 @@ COMMERCE-016
     |
     +--> COMMERCE-020 -------- Tool UI extraction ------------+
 
-COMMERCE-016, COMMERCE-017, COMMERCE-018 and COMMERCE-019 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-020, COMMERCE-023 and COMMERCE-024 are currently Ready. COMMERCE-021 and COMMERCE-022 remain Pending until COMMERCE-020 and their respective domain validators are Complete.
+COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-024 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-020 and COMMERCE-023 are currently Ready. COMMERCE-021 remains Pending until COMMERCE-020 and COMMERCE-023 are Complete; COMMERCE-022 remains Pending until COMMERCE-020 is Complete.
 ```
 
 Phase 3 exit criteria:
@@ -1057,6 +1057,19 @@ independent of features.
 - Confirmed nullable input-schema unions are accepted only for nullable GraphQL variables and remain rejected for non-null variables.
 - Preserved the production-compiler-backed Dev MCP oracle, fail-closed enum/scalar/list/object compatibility, Storefront behavior, explicit Admin discovery dispatch, and exact Admin artifact/provenance hash.
 - Marked COMMERCE-018 Complete. COMMERCE-024 remains Pending because COMMERCE-019 is still Ready rather than Complete.
+
+### 2026-09-25 — COMMERCE-024 Attempt 2 accepted
+
+- Accepted implementation `eb1c658c0cb9b77b38f3e1df82c9e89d3328f3cd`.
+- Confirmed compiler-origin diagnostic paths are normalized to the exact canonical
+  slash-delimited `/execution/...` contract, including variable-specific paths.
+- Preserved the pinned Admin 2026-07 compiler, server-owned schema metadata,
+  COMMERCE-019 explicit action envelope, COMMERCE-027 authorization hierarchy and
+  zero-provider-I/O authoring boundary.
+- Accepted the 9/9 focused C024 tests and 22/22 Admin compiler tests with zero
+  task-owned TypeScript diagnostics.
+- Marked COMMERCE-024 Complete. COMMERCE-022 remains Pending because COMMERCE-020
+  is not yet Complete.
 
 ### 2026-09-25 — COMMERCE-019 Attempt 3 accepted
 
