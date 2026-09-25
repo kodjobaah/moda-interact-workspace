@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -302,124 +302,111 @@ None
 Changes Requested
 
 ### Review Notes
-Attempt 2 successfully reconciles the reopened task with current `origin/main`: the Storefront discovery refactor is retained, the Admin compiler dispatch remains present in `lib/discovery/schema.ts`, committed conflict markers are removed, and the Admin artifact SHA-256 still matches `admin-2026-07.provenance.json`. The synchronization/merge-repair work is accepted and MUST NOT be reworked.
+Attempt 3 satisfies the complete Attempt 2 correction contract. The production Admin compiler is now executed by the Dev MCP oracle through the bounded `vite-node` bridge, mapped enum/scalar/object/list compatibility is fail-closed for the requested cases, the Storefront synchronization result remains intact, `lib/discovery/schema.ts` is conflict-marker clean, and the committed Admin artifact still hashes exactly to the recorded provenance. These corrections are accepted and MUST NOT be reworked.
 
-Two task-contract gaps remain in the Admin compiler/oracle implementation. Attempt 3 is limited to the deterministic corrections below.
+One remaining R2 contract defect was identified during Attempt 3 review: `validateMappedArguments()` still requires a mapping for every used GraphQL variable. R2 only requires a mapping for a **non-null variable that has no GraphQL default**. A nullable variable or a variable with a GraphQL default is allowed to be omitted from `execution.variables`. The current compiler discards variable-default metadata and therefore rejects valid definitions that rely on GraphQL optional/default semantics. The same compatibility boundary also rejects a nullable input-schema branch (`type: ['string', 'null']`) for a nullable GraphQL variable. Attempt 4 is limited to the deterministic corrections below.
 
-#### CR-1 — make the Dev MCP oracle execute the actual local Admin compiler
+#### CR-1 — preserve mapping-required metadata from the GraphQL variable definition
 
-File: `scripts/validate-shopify-admin-oracle.mjs` (plus a bounded helper/test file only if required by the repository runtime).
+Files:
+- `lib/discovery/admin-compiler.ts`
+- `tests/admin-graphql-compiler.test.ts`
 
-Current defect: the script's `localValid()` uses only `graphql.parse()` + `graphql.validate()` and an operation-kind check. It never invokes `createAdminCommerceCompiler()` / the production Admin compiler path, so a passing oracle does not prove the local compiler agrees with Shopify Dev MCP as required by R6.
+Required implementation:
 
-Required behavior:
-
-1. The local verdict for every oracle fixture MUST be obtained by executing the same production Admin compiler used by Studio validation. Do not duplicate the compiler's structural/type rules inside the oracle.
-2. The bounded fixture set MUST remain exactly:
-   - valid products query -> local valid, upstream valid;
-   - unknown field -> local invalid, upstream invalid;
-   - unknown argument -> local invalid, upstream invalid;
-   - mutation -> local invalid regardless of whether the upstream schema accepts it;
-   - wrong variable type -> local invalid, upstream invalid.
-3. The valid fixture MUST use a complete `SHOPIFY_ADMIN_GRAPHQL` execution object with the committed `adminSchemaHash`, a compatible top-level input schema, `resultPath: products.nodes`, and a compatible declared result schema. Invalid fixtures MUST change only the field/argument/operation/variable condition under test.
-4. The script MUST continue to spawn Shopify Dev MCP with `SHOPIFY_DEV_MCP_TELEMETRY=0`.
-5. Normal Studio validation MUST remain local/artifact-backed; do not introduce Dev MCP into the request path.
-6. If direct Node import of the TypeScript compiler is not supported by the repository runtime, use the existing Vitest/toolchain as a bounded helper to obtain the production compiler verdicts. Do NOT copy the compiler logic into a second JavaScript implementation.
-
-Acceptance proof for CR-1:
-- temporarily breaking a local compiler-only rule (for example the local mutation/query-only guard) would make the oracle fail even when Shopify schema validation still succeeds;
-- the normal `npm run validate:arch021-shopify-admin-oracle` command reports the five fixture comparisons and exits zero only when the production compiler verdicts satisfy the table above.
-
-#### CR-2 — make mapped Admin variable compatibility fail closed
-
-Files: `lib/discovery/admin-compiler.ts`, `tests/admin-graphql-compiler.test.ts`.
-
-Current defect: `sameInputType()` and `literalMatches()` are more permissive than the accepted Storefront compatibility rules. Examples in the current source include accepting a numeric input schema for an enum variable, accepting a nullable union for a non-null variable because array branches use `some`, and accepting an object literal for scalar/enum variables. This violates R2's requirement that mapped inputs/literals be compatible with the GraphQL variable type.
-
-Required input-schema compatibility rules:
-
-- `NON_NULL`: reject a schema that permits `null`; then recurse into the wrapped type.
-- `LIST`: require array/list semantics with compatible `items`; recurse into the item type.
-- union/array schema types: every admitted branch must be compatible; do not accept because only one branch matches.
-- GraphQL `ENUM`: input schema must be string-compatible, not number/object.
-- GraphQL `Boolean`: input schema must be boolean.
-- GraphQL `Int`: input schema may be integer (or the already accepted numeric representation if required by the shared subset contract).
-- GraphQL `Float` / `Decimal`: input schema may be numeric.
-- other scalar/string-like Admin inputs: require their compatible scalar representation; do not treat arbitrary number/object schemas as compatible.
-- GraphQL `INPUT_OBJECT`: require an object-shaped input schema. Preserve the existing bounded subset contract; do not introduce `z.unknown()` or an unbounded proof.
-
-Required runtime-literal compatibility rules:
-
-- nullable variables may accept `null`; non-null variables may not;
-- LIST variables require arrays whose members are compatible recursively;
-- ENUM variables require a string/enum-compatible runtime value and MUST reject objects/numbers;
-- Boolean variables require boolean;
-- Int variables require an integer;
-- Float/Decimal variables require a number;
-- scalar/string-like variables MUST reject object/array values unless the pinned GraphQL type explicitly supports that shape;
-- INPUT_OBJECT variables require object-shaped values.
-
-Add focused regressions that prove at minimum:
+1. Replace the current `Map<string, SchemaType>` variable metadata with a bounded structure that records, for each **used** variable:
+   - the schema-backed expected `SchemaType`; and
+   - `mappingRequired: boolean`.
+2. Compute `mappingRequired` from the GraphQL variable definition itself, not from the argument type:
 
 ```text
-$query: String!
-inputSchema.query.type = [string, null]
--> validateMappedArguments = false
-
-$sortKey: ProductSortKeys
-inputSchema.sortKey.type = number
--> false
-
-$sortKey: ProductSortKeys
-inputSchema.sortKey.type = string
--> true
-
-$query: String
-variables.query.literal = {bad: value}
--> false
-
-$sortKey: ProductSortKeys
-variables.sortKey.literal = {bad: value}
--> false
-
-$sortKey: ProductSortKeys
-variables.sortKey.literal = "TITLE"
--> true
+mappingRequired =
+  variableDefinition.type.kind === 'NonNullType'
+  AND variableDefinition.defaultValue === undefined
 ```
 
-Use a real Admin query field from the pinned artifact for the enum case, for example `products(..., sortKey: ProductSortKeys)`.
+3. Preserve the existing rules that every declared variable is used and every used variable is declared/type-compatible with the pinned Admin schema.
+4. In `validateMappedArguments(candidate)`:
+   - if a known variable has no mapping and `mappingRequired === true`, return `false`;
+   - if a known variable has no mapping and `mappingRequired === false`, continue without failure;
+   - if a mapping is present, validate it exactly through the existing input/literal compatibility rules;
+   - reject every mapping key that is not one of the compiled operation variables.
+5. Do not synthesize a mapping or mutate the GraphQL document. Missing optional/defaulted variables are intentionally left absent so GraphQL can apply null/default semantics at execution time.
 
-#### CR-3 — preserve the accepted merge/discovery boundary
+Required focused regressions:
 
-Do not modify the already-correct synchronization result except where CR-1/CR-2 require imports/tests. In particular:
+```text
+query Products($query: String) { ... query: $query ... }
+execution.variables = {}
+-> validateMappedArguments = true
 
-- keep Storefront validation behavior unchanged;
-- keep explicit `storefront-graphql` / `admin-graphql` dispatch;
-- keep Admin runtime validation artifact-backed with no shop session/token/API request;
-- keep `admin-2026-07.json` and its provenance hash unchanged unless the deterministic sync script itself proves the pinned package artifact changed (it must not auto-upgrade);
-- do not reintroduce conflict markers into `lib/discovery/schema.ts`.
+query Products($query: String! = "tag:summer") { ... query: $query ... }
+execution.variables = {}
+-> validateMappedArguments = true
+
+query Products($query: String!) { ... query: $query ... }
+execution.variables = {}
+-> validateMappedArguments = false
+```
+
+#### CR-2 — permit `null` only when the GraphQL variable type is nullable
+
+Files:
+- `lib/discovery/admin-compiler.ts`
+- `tests/admin-graphql-compiler.test.ts`
+
+Required `sameInputType()` semantics:
+
+1. If `expected.kind === 'NON_NULL'`, any input schema that admits `null` MUST return `false`; otherwise recurse into `expected.ofType`.
+2. If the input schema type is a union/array, **every admitted branch** must be compatible.
+3. A branch whose schema type is exactly `null` is compatible only when the current GraphQL `expected` type is nullable (`expected.kind !== 'NON_NULL'`).
+4. Preserve all Attempt 3 enum/scalar/list/input-object checks unchanged for the non-null branches.
+
+Required focused regressions:
+
+```text
+$query: String
+inputSchema.query.type = ['string', 'null']
+with variables.query.input = 'query'
+-> true
+
+$query: String!
+inputSchema.query.type = ['string', 'null']
+with variables.query.input = 'query'
+-> false
+```
+
+#### CR-3 — preserve all accepted Attempt 3 boundaries
+
+Do not modify these accepted areas except for imports/types mechanically required by CR-1/CR-2:
+- `scripts/validate-shopify-admin-oracle.mjs`;
+- `scripts/validate-shopify-admin-local.ts`;
+- Storefront compiler/artifact behavior;
+- explicit `storefront-graphql` / `admin-graphql` discovery dispatch;
+- Admin artifact/provenance bytes/hash;
+- query-only, field/depth/cost/pagination/result-path/result-schema admission rules.
 
 ### Reviewed Files
 - `lib/discovery/admin-compiler.ts`
-- `lib/discovery/schema.ts`
-- `lib/discovery/service.ts`
-- `app/api/studio/discovery/route.ts`
-- `scripts/sync-shopify-admin-schema.mjs`
 - `scripts/validate-shopify-admin-oracle.mjs`
+- `scripts/validate-shopify-admin-local.ts`
 - `tests/admin-graphql-compiler.test.ts`
 - `tests/discovery-route.test.ts`
+- `lib/discovery/schema.ts`
 - `lib/discovery/artifacts/admin-2026-07.provenance.json`
-- `package.json`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-018-implement-shopify-admin-graphql-compiler.md`
 
 ### Validation Reviewed
-Accepted from Attempt 2:
-- `npm run test:arch021-shopify-admin-compiler`: 2 files / 17 tests passed;
-- `npm run validate:arch021-shopify-admin-oracle`: command completed, but its local side currently validates GraphQL directly rather than executing the production compiler, so it is not yet valid R6 conformance evidence;
-- targeted ESLint: passed;
+Accepted from Attempt 3:
+- `npm run test:arch021-shopify-admin-compiler`: 2 files / 20 tests passed;
+- `npm run validate:arch021-shopify-admin-oracle`: all five bounded fixtures passed with local verdicts obtained from the production compiler via `vite-node`;
+- exact targeted ESLint command: passed;
 - `git diff --check`: passed;
-- touched-file typecheck diagnostics: none; repository-wide/build baseline remains unrelated.
+- implementation branch pushed at `48d6ab0`; parent report pushed at `6f943702`; worktrees reported clean/synchronized.
 
-Attempt 3 MUST run exactly:
+The review archive does not contain installed runtime dependencies, so the focused commands could not be independently rerun inside this review environment. Source inspection confirms the submitted Attempt 3 corrections and provenance hash.
+
+Attempt 4 MUST run exactly:
 
 ```bash
 npm run test:arch021-shopify-admin-compiler
@@ -431,18 +418,19 @@ npm exec eslint \
   app/api/studio/discovery/route.ts \
   scripts/sync-shopify-admin-schema.mjs \
   scripts/validate-shopify-admin-oracle.mjs \
+  scripts/validate-shopify-admin-local.ts \
   tests/admin-graphql-compiler.test.ts \
   tests/discovery-route.test.ts
 git diff --check
 ```
 
-The focused Admin compiler suite must include the CR-2 regressions above. The oracle command must use actual production-compiler verdicts as CR-1 requires.
+The focused Admin compiler suite MUST include all CR-1/CR-2 regressions above. The Dev MCP oracle fixtures and production-compiler bridge must remain passing and unchanged unless a mechanical import/type update is required.
 
 ### Architecture Conformance
-Partial. The reopened merge/synchronization work conforms and is accepted. R1, R3-R5, R7 and the runtime-local compiler boundary remain intact. R2 mapped-type compatibility and R6 local-compiler oracle evidence require the corrections above before the task can return to Complete.
+Partial. Attempt 3 satisfies the prior oracle and fail-closed enum/scalar compatibility corrections and preserves R1, R3-R8. R2 remains incomplete only for GraphQL variables whose mapping is optional because the variable is nullable or has a GraphQL default, and for nullable input-schema union compatibility.
 
 ### Follow-up
-Return the SAME task through `/moda-task ARCH-021-COMMERCE-018`. Preserve `attempt: 2`; the next authorized claim becomes Attempt 3. After CR-1, CR-2 and the exact validation commands pass, set the task to `review`, complete the Completion Report with final implementation/report commits and worktree synchronization evidence, and STOP. Do not begin COMMERCE-024.
+Return the SAME task through `/moda-task ARCH-021-COMMERCE-018`. Preserve `attempt: 3`; the next authorized claim becomes Attempt 4. Implement only CR-1 and CR-2, run the exact validation commands above, update the Completion Report with final implementation/report commits and worktree synchronization evidence, set the task to `review`, and STOP. Do not begin COMMERCE-024.
 
 ## Developer Override
 
