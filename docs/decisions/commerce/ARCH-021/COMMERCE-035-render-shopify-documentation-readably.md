@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -310,7 +310,7 @@ The structured serialized full-document output must remain bounded to:
 Additionally enforce:
 
 ```text
-maximum blocks:          256
+maximum blocks:          512
 maximum list items/block: 100
 maximum normal text/block: 8 KiB UTF-8
 maximum code block:      16 KiB UTF-8
@@ -583,6 +583,11 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 - [x] Update in-memory fixtures to exact production DTO shape.
 - [x] Mock the production named documentation Server Actions in component tests.
 - [x] Add raw-markup, structured-rendering and component-boundary regressions.
+- [ ] Ensure documentation search results have unique canonical `path` identities before React rendering.
+- [ ] Raise only the semantic document-block ceiling from 256 to 512 while retaining the 64 KiB serialized-output cap.
+- [ ] Make parser bound failures distinguish block-count/list/text/code causes from the final serialized-output bound.
+- [ ] Add duplicate-result and large-semantic-document regressions from developer manual validation.
+- [x] Remove task-file conflict-marker residue and reconcile the final Validation record.
 
 ## Interfaces / Contracts
 
@@ -634,35 +639,56 @@ No cross-service contract is introduced.
 - [x] `ShopifyDocumentationExplorer` uses the production named Server Action imports directly.
 - [x] `ShopifyDocumentationArticle` is a pure renderer with no Server Action/provider/network dependency.
 - [x] No production documentation port/service/action-bundle prop or test-only React context/provider is introduced.
+- [ ] `DocumentationItem.path` values presented to `ShopifyDocumentationExplorer` are unique within one search result set.
+- [ ] Duplicate upstream/canonical search hits preserve the first-ranked result and do not render duplicate cards/React keys.
+- [ ] A semantic document with more than 256 but at most 512 small blocks can be opened when its serialized DTO remains under 64 KiB.
+- [ ] More than 512 semantic blocks still fail closed with a block-count-specific bounded error.
+- [ ] The existing 64 KiB serialized full-document output bound remains unchanged and enforced.
+- [x] The task file contains no Git conflict markers.
 
 ## Validation
 
-- [x] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
-- [x] targeted ESLint for every Attempt 3 changed source/test file
-- [x] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
-- [x] raw-rendering source audit:
+- [ ] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
+- [ ] targeted ESLint for every Attempt 5 changed source/test file
+- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
+- [ ] raw-rendering source audit:
   ```text
   rg -n "dangerouslySetInnerHTML|<p>\{document\.text\}</p>|item\.text" \
     components src/studio lib/discovery
   ```
   expected: no documentation-rendering matches; unrelated transport/preview `item.text` matches may be recorded explicitly.
-- [x] `StudioWorkspace` ownership audit:
+- [ ] `StudioWorkspace` ownership audit:
   ```text
   rg -n \
     "DocumentationItem|DocumentationDocument|searchDocumentation|getDocumentation|setItems|setDocument|async function search\(|async function open\(" \
     components/studio-workspace.tsx
   ```
   expected: no documentation implementation matches
-- [x] production test-only seam audit:
+- [ ] production test-only seam audit:
+  ```text
+  rg -n \
+    "DocumentationPort|DocumentationServices|documentationActions|NODE_ENV.*test|fixture.*Documentation|documentation.*fixture.*prop" \
     components src/studio
+  ```
   expected: no production documentation test-injection matches
-- [x] component existence audit:
+- [ ] component existence audit:
   ```text
   test -f src/studio/discovery/shopify-documentation-explorer.tsx
   test -f src/studio/discovery/shopify-documentation-article.tsx
   ```
-=======
->>>>>>> 10ca1cd886db9e4bfb77e7a747b176a6b4b2ab36
+  expected: both pass
+- [ ] duplicate-result identity audit:
+  ```text
+  rg -n "key=\{item\.path\}" src/studio/discovery/shopify-documentation-explorer.tsx
+  ```
+  expected: this key remains valid only because the production search boundary now guarantees unique `path` values; accompanying regression must prove that invariant.
+- [ ] conflict-marker audit:
+  ```text
+  ! rg -n "^(<<<<<<<|=======|>>>>>>>)" \
+    docs/decisions/commerce/ARCH-021/COMMERCE-035-render-shopify-documentation-readably.md
+  ```
+  expected: PASS
+- [ ] `git diff --check`
 
 ## Stop Condition
 
@@ -780,542 +806,288 @@ Architect Review was preserved unchanged.
 
 ### Review Status
 
-Changes Requested After Manual Validation
+Changes Requested
 
 ### Review Notes
 
-COMMERCE-035 Attempt 3 was architect-accepted Complete, but developer manual
-validation before terminal SYSTEM-TEST exposed an additional readability defect in
-the same documentation capability.
+Attempt 4 satisfies the semantic page-chrome/accessibility cleanup requested after
+developer manual validation.
 
-The accepted Attempt 1-3 implementation solved:
+Architect review confirms the submitted source now:
 
-```text
-raw HTML/Markdown leakage
-one giant flattened document paragraph
-unsafe raw HTML rendering
-encoded-tag normalization order
-Unicode-safe excerpt bounds
-<br> separator preservation
-```
+- preserves only minimal parser-internal attributes needed for classification;
+- excludes hidden/accessibility/navigation/control nodes;
+- removes local `Anchor to ...` helpers without globally deleting ordinary prose;
+- removes bounded Shopify version/feedback/copy/show-fields chrome;
+- suppresses decorative-only blocks and the duplicate top-level page H1;
+- collapses only consecutive identical short heading/paragraph blocks;
+- keeps meaningful arguments/type/descriptions intact;
+- applies bounded helper/chrome cleanup to search excerpts;
+- preserves the accepted `ShopifyDocumentationExplorer` /
+  `ShopifyDocumentationArticle` component boundary.
 
-Those accepted behaviors must remain unchanged.
+The representative collection-page and search-excerpt regressions are present and
+the Completion Report records 6 focused files / 73 passing tests.
 
-The new manual-validation screenshot shows that the structured parser still
-includes Shopify documentation **page chrome and accessibility helper text** as if
-it were article content.
+Two additional developer-manual-validation issues were reported while Attempt 4
+was already in progress. They were intentionally not injected into the running
+claim. Both remain visible in the submitted Attempt 4 source and must be resolved
+before terminal system testing.
 
-Observed examples include:
+There is also architect/task-file conflict residue in the submitted task record.
 
-```text
-Choose a version:
-2026-07
-latest
-Anchor to collection
-Anchor to Arguments
-Anchor to handle
-•
-Was this section helpful?
-Anchor to Possible returnsPossible returns
-```
+#### Finding 1 — duplicate documentation paths still reach React as duplicate keys
 
-This matches the current Shopify generated documentation representation: the
-source page itself contains version-selector text, "Anchor to ..." helper labels,
-feedback controls, "Show fields"/"Copy" controls and similar documentation chrome.
-
-This is not primarily a CSS problem. The server parser must separate semantic
-article content from Shopify page/navigation/accessibility chrome before producing
-the public `DocumentationBlock[]`.
-
-### Attempt 4 objective
-
-Produce a **clean semantic article** from the already-verified Shopify HTML while
-preserving the accepted safe block contract.
-
-Target presentation for a query page should resemble:
+The browser warning reported:
 
 ```text
-collection
+Encountered two children with the same key,
+`api/storefront/2026-07/objects/Collection`
 
-Retrieves a single Collection by its ID or handle.
-Use the products field to access items in the collection.
-
-Arguments
-
-• handle (String)
-  The handle of the Collection.
-
-• id (ID)
-  The ID of the Collection.
-
-Possible returns
-
-• Collection
-  A group of products organized by a merchant ...
+Encountered two children with the same key,
+`api/storefront/2026-07/queries/collection`
 ```
 
-It must not expose:
+is legitimate.
+
+The final production explorer still renders:
+
+```tsx
+{items.map((item) => (
+  <li key={item.path}>
+```
+
+and no production boundary currently guarantees that the returned
+`DocumentationItem.path` values are unique.
+
+The Studio adapter derives `path` deterministically from `sourceUrl`, but it maps
+every backend result without de-duplication.
+
+Attempt 5 must enforce uniqueness **before React rendering**.
+
+Preferred boundary:
 
 ```text
-Choose a version
-latest
-Anchor to ...
-Was this section helpful?
-Show fields
-Show input fields
-Show enum values
-Copy
-Copy MD
-Install AI Toolkit
-Ask about this page
-Hide content
-Full index
-standalone decorative bullets
+backend discovery search results
+  -> canonical sourceUrl/path
+  -> first-occurrence de-duplication by canonical path
+  -> DocumentationItem[]
+  -> ShopifyDocumentationExplorer
 ```
 
-as article paragraphs/headings.
+Implement this at the production Studio service boundary that creates `path`
+(`src/commerce/integration/studio/services.ts`) or an equivalently authoritative
+server boundary.
 
-### Deterministic correction contract
-
-#### 1. Preserve minimal HTML attributes for server-side classification only
-
-The current `HtmlNode` keeps only:
-
-```ts
-{ tag, children }
-```
-
-so the parser cannot distinguish visually-hidden/accessibility/navigation nodes
-from meaningful inline content.
-
-Extend the **server-only internal parser node** to preserve only the minimal
-attributes required for classification, for example:
+Required behavior:
 
 ```text
-class
-aria-hidden
-aria-label
-role
-href
+same canonical path repeated 3 times
+  -> exactly 1 DocumentationItem
+  -> preserve the first-ranked item's title/excerpt
+  -> preserve relative order of all unique items
 ```
 
-You may use an equivalent minimal set if inspection of the real Shopify markup
-shows another attribute is required.
-
-Requirements:
-
-- these attributes are parser-internal only;
-- they must never be exposed in `DocumentationBlock`;
-- event-handler/style/raw-HTML attributes remain irrelevant and must not be
-  surfaced;
-- do not introduce `dangerouslySetInnerHTML`;
-- do not switch the browser UI to remote HTML rendering.
-
-#### 2. Exclude visually-hidden/accessibility helper nodes
-
-Add one pure server-side classification helper, for example:
-
-```ts
-isNonContentNode(node): boolean
-```
-
-It must exclude at minimum:
+Do not merely change the React key to:
 
 ```text
-aria-hidden="true"
-role="navigation"
-role="menu"
-role="button"
-role="tab"
-role="combobox"
+path + index
 ```
 
-and common visually-hidden class tokens case-insensitively, including at least:
+because that hides the warning while still displaying duplicate search cards.
+
+`key={item.path}` may remain once the server-side uniqueness invariant is
+deterministically enforced and tested.
+
+Required regression must provide duplicate backend search hits for:
 
 ```text
-visually-hidden
-visuallyhidden
-sr-only
-screen-reader
-screenreader
+api/storefront/2026-07/queries/collection
+api/storefront/2026-07/queries/collection
+api/storefront/2026-07/objects/Collection
+api/storefront/2026-07/objects/Collection
 ```
 
-Do not exclude arbitrary content merely because it has a CSS class.
+and prove the Studio search response contains each path exactly once with the
+first occurrence retained.
 
-If real Shopify markup uses another clearly accessibility-only class/token for the
-"Anchor to ..." helper, add that exact bounded token and record it in the
-Completion Report.
+#### Finding 2 — the logged bounded-size error is a parser-level bound, not the final 64 KiB service bound
 
-#### 3. Suppress local section-anchor helper text
-
-For local hash-link/accessibility helper content, do not emit the helper label.
-
-At minimum these must never survive as article text:
+The developer log reported exactly:
 
 ```text
-Anchor to collection
-Anchor to Arguments
-Anchor to handle
-Anchor to Possible returns
+Shopify documentation result exceeded the bounded size.
 ```
 
-Prefer structural classification from the parsed attributes.
+That wording originates from `lib/discovery/document.ts`.
 
-Add a bounded textual fallback only for a standalone/helper fragment matching:
+The later 64 KiB serialized service guard uses a different message:
 
 ```text
-^Anchor to\s+
+Documentation result exceeded the bounded size.
 ```
 
-Do not globally remove those words from normal prose paragraphs.
-
-A heading represented by accessibility helper + visible label:
+Therefore the reported failure was triggered by one of the parser-level limits:
 
 ```text
-Anchor to Possible returnsPossible returns
+normal text block: 8 KiB
+code block:        16 KiB
+list items:        100
+semantic blocks:   256
 ```
 
-must normalize to exactly:
+rather than by the final 64 KiB serialized DTO guard.
+
+The manually tested Shopify `Collection` object/query documentation is a
+legitimate comprehensive document. A hard 256-block ceiling is too restrictive
+when the final DTO is still independently bounded to 64 KiB.
+
+Attempt 5 must change only:
 
 ```text
-Possible returns
+maximum semantic blocks: 256 -> 512
 ```
 
-not to an empty heading and not to the duplicated text.
-
-#### 4. Suppress Shopify documentation UI chrome
-
-Create one bounded semantic-chrome predicate operating on complete candidate block
-text / classified container, not on arbitrary substrings in prose.
-
-Exclude standalone/control content for at least:
+The following remain unchanged:
 
 ```text
-Choose a version:
-Install AI Toolkit
-Ask about this page
-Copy MD
-Copy
-Full index
-Show fields
-Show input fields
-Show enum values
-Show filters
-Hide content
-Was this section helpful?
-Query Reference
+max HTML input:           1 MiB
+max redirects:            2
+max list items/block:     100
+max normal text/block:    8 KiB
+max code block:           16 KiB
+max serialized document:  64 KiB
 ```
 
-Also suppress the version-selector values belonging to the same selector
-container, including:
+This is an architecture correction based on developer manual validation. The
+64 KiB serialized-output bound remains the final transport/UI safety ceiling.
+
+Also stop using the same generic parser error for every parser-level bound.
+
+Use bounded cause-specific messages, for example:
 
 ```text
-2026-07
-latest
+Shopify documentation text block exceeded the bounded size.
+Shopify documentation code block exceeded the bounded size.
+Shopify documentation list exceeded the bounded item count.
+Shopify documentation exceeded the 512-block limit.
 ```
 
-Do **not** globally remove `2026-07` or `latest` from ordinary prose. Suppress the
-version selector as a semantic container/group.
-
-Likewise, feedback controls such as `Yes` / `No` are excluded only within the
-identified feedback-control container; do not globally remove those words.
-
-#### 5. Do not emit decorative-only blocks
-
-Do not produce article blocks whose normalized text is only decoration, including:
+Equivalent deterministic wording is acceptable, but each parser-level limit must
+be distinguishable from the final service error:
 
 ```text
-•
-·
-*
----
+Documentation result exceeded the bounded size.
 ```
 
-or equivalent single-glyph separators.
+This is required so a future manual-validation log identifies which safety bound
+actually failed.
 
-Horizontal rules may simply be omitted for this checkpoint.
+#### Required large-document regressions
 
-#### 6. Suppress the duplicate page H1 already represented by the article header
+Add a parser/service regression using small semantic paragraphs so no per-block
+limit is involved.
 
-`ShopifyDocumentationArticle` already renders:
+Prove:
 
 ```text
-document.title
+300 semantic paragraph blocks
+serialized DTO < 64 KiB
+-> accepted
 ```
 
-in its own header.
+This specifically proves a legitimate document is no longer rejected solely
+because it crossed the previous 256-block ceiling.
 
-Do not emit the page's duplicate top-level `<h1>` as a second article block.
-
-For a title such as:
+Also prove:
 
 ```text
-collection - Storefront API
+513 semantic paragraph blocks
+-> rejected with the new block-count-specific error
 ```
 
-a page H1 of:
+Retain the existing regression:
 
 ```text
-collection
+serialized DTO > 64 KiB
+-> rejected by createDiscoveryService.document()
+-> "Documentation result exceeded the bounded size."
 ```
 
-must not appear again as a standalone paragraph/heading immediately beneath the
-article header.
+Do not increase the 64 KiB service-output bound in Attempt 5.
 
-Do not suppress normal later headings that happen to contain the same word.
-
-#### 7. Consecutive short duplicate block cleanup
-
-After semantic chrome removal, collapse **consecutive identical short textual
-blocks** produced from the same Shopify generated field/type widget.
-
-This is specifically to avoid patterns such as:
+If developer manual validation after this correction still produces the **service**
+message:
 
 ```text
-Collection
-Collection
+Documentation result exceeded the bounded size.
 ```
 
-that result only from the page widget's duplicated visible/accessibility labels.
+for the cleaned real Shopify page, return that new evidence to the architect
+rather than increasing the transport bound automatically.
 
-Bound the rule:
+#### Coordination-record reconciliation — conflict-marker residue already cleared
+
+The previous review snapshot contained Git conflict-marker residue inside
+`## Validation`. In the current developer snapshot that residue has already been
+removed.
+
+Architect verification of this exact snapshot finds no standalone line
+beginning with any standard Git conflict-marker prefix (seven less-than signs,
+seven equals signs, or seven greater-than signs).
+
+The explicit conflict-marker Validation audit remains part of Attempt 5 so this
+coordination invariant is proved again before review, but no further source/task
+edit is required solely for conflict-marker cleanup.
+
+### Attempt 5 deterministic correction
+
+Reclaim the same task as Attempt 5.
+
+Preserve all accepted Attempt 1-4 production behavior.
+
+Expected production files are limited to:
 
 ```text
-same normalized text
-consecutive blocks
-text <= 128 characters
-same block family (heading/paragraph or explicit compatible rule)
+src/commerce/integration/studio/services.ts
+lib/discovery/document.ts
 ```
 
-Do not perform global document-wide de-duplication.
+with directly related tests.
 
-#### 8. Preserve useful content and accepted block semantics
+`ShopifyDocumentationExplorer` should not require redesign if the server-side
+unique-path invariant is correctly enforced.
 
-The cleanup must retain real documentation such as:
+Change another production file only if a required regression exposes a directly
+related defect.
 
-```text
-Arguments
-handle (String)
-id (ID)
-The handle of the Collection.
-The ID of the Collection.
-Possible returns
-Collection
-A group of products organized by a merchant ...
-Examples
-code blocks
-ordered/unordered lists
-blockquotes
-```
+### Required tests
 
-Do not remove a block merely because it is short.
+Update/add focused coverage for:
 
-Do not remove actual GraphQL type names such as:
-
-```text
-String
-ID
-Collection
-Product
-```
-
-unless it is an exact consecutive duplicate under rule 7.
-
-#### 9. Apply equivalent bounded cleanup to search excerpts
-
-Search excerpts can contain the same generated Shopify chrome.
-
-After the existing safe plain-text normalization, suppress standalone/bounded
-Shopify helper/chrome phrases such as:
-
-```text
-Anchor to ...
-Choose a version:
-Was this section helpful?
-Show fields
-Copy MD
-```
-
-without deleting those words when they occur naturally inside normal prose.
-
-Do not fetch result pages to perform this cleanup.
-
-#### 10. Keep UI changes minimal
-
-This correction is primarily server normalization.
-
-Do not redesign:
-
-```text
-ShopifyDocumentationExplorer
-ShopifyDocumentationArticle
-StudioWorkspace
-```
-
-unless a directly required presentation regression exposes a small CSS defect.
-
-The current semantic `<article>`, heading/list/code/blockquote rendering boundary
-is accepted.
-
-### Required representative regression
-
-Add a fixture representing the semantic content visible in manual validation,
-including at minimum:
-
-```html
-<main>
-  <div>
-    <span>Choose a version:</span>
-    <select><option>2026-07</option></select>
-    <span>latest</span>
-  </div>
-
-  <a href="#collection">
-    <span class="visually-hidden">Anchor to collection</span>
-  </a>
-  <h1>collection</h1>
-  <span>query</span>
-
-  <p>Retrieves a single Collection by its ID or handle.</p>
-
-  <a href="#arguments">
-    <span class="visually-hidden">Anchor to Arguments</span>
-  </a>
-  <h2>Arguments</h2>
-
-  <ul>
-    <li>handle (String)</li>
-    <li>id (ID)</li>
-  </ul>
-
-  <a href="#handle">
-    <span class="visually-hidden">Anchor to handle</span>
-  </a>
-  <p>handle</p>
-  <p>•</p>
-  <p>String</p>
-  <p>The handle of the Collection.</p>
-
-  <div>
-    <span>Was this section helpful?</span>
-    <button>Yes</button>
-    <button>No</button>
-  </div>
-
-  <h2>
-    <span class="visually-hidden">Anchor to Possible returns</span>
-    Possible returns
-  </h2>
-
-  <p>Collection</p>
-  <p>•</p>
-  <p>Collection</p>
-  <p>A group of products organized by a merchant.</p>
-</main>
-```
-
-Use the actual parser-compatible surrounding `<html><head><title>...</title>...`
-wrapper required by `fetchShopifyDocument()`.
-
-The normalized result must contain useful article content but none of:
-
-```text
-Choose a version
-latest
-Anchor to
-Was this section helpful
-Yes
-No
-standalone •
-```
-
-and the `Possible returns` heading must occur once, not as:
-
-```text
-Anchor to Possible returnsPossible returns
-```
-
-#### Search-excerpt regression
-
-Provide representative search content containing:
-
-```text
-Anchor to ProductsProducts
-Show fields
-Was this section helpful?
-A product represents an item a merchant sells.
-```
-
-The resulting excerpt must retain the actual product sentence and must not expose
-the standalone generated UI/helper phrases.
-
-### Manual-validation acceptance examples
-
-For the Shopify collection query page, the developer-facing rendered article
-should no longer begin with:
-
-```text
-Choose a version:
-2026-07
-latest
-Anchor to collection
-collection
-query
-```
-
-It should begin with the meaningful query description / article content beneath
-the existing document header.
-
-A section should no longer render:
-
-```text
-Anchor to Possible returnsPossible returns
-```
-
-It should render:
-
-```text
-Possible returns
-```
+1. duplicate canonical documentation paths are returned once;
+2. first-ranked duplicate content is preserved;
+3. unique result ordering is preserved;
+4. 300 small semantic blocks are accepted below the 64 KiB service cap;
+5. 513 semantic blocks fail with the block-count-specific parser error;
+6. the existing >64 KiB serialized-output regression still fails with the
+   service-level error;
+7. all Attempt 4 semantic chrome/accessibility regressions remain passing.
 
 ### Validation
 
-Run:
+Run the restored task Validation section exactly.
 
-```bash
-npx vitest run \
-  tests/discovery-document.test.ts \
-  tests/discovery.test.ts \
-  tests/studio-services.test.ts \
-  tests/studio-workspace.test.tsx \
-  tests/shopify-documentation-explorer.test.tsx \
-  tests/shopify-documentation-article.test.tsx \
-  --reporter=verbose
+Typecheck acceptance remains:
+
+```text
+unchanged documented unrelated baseline is permitted
+zero C035-owned diagnostics are required
 ```
-
-Run targeted ESLint for every Attempt 4 changed file.
-
-Run:
-
-```bash
-npm run typecheck
-```
-
-Only the documented unchanged unrelated baseline may remain; zero C035-owned
-diagnostics are required.
-
-Run all existing documentation source/component audits and:
-
-```bash
-git diff --check
-```
-
-All must pass under their existing allowed conditions.
 
 ### Completion Report
 
-Record this as developer-manual-validation correction after the previously
-accepted Attempt 3:
+Record:
 
 ```text
 Attempt 1:
@@ -1328,26 +1100,17 @@ Attempt 3:
   fallback regression + evidence reconciliation
   architect-accepted Complete
 
-Manual validation:
-  Shopify page chrome/accessibility text still visible
+Manual validation / Attempt 4:
+  semantic Shopify page chrome/accessibility cleanup
 
-Attempt 4:
-  semantic page-chrome filtering / de-duplication
+Additional manual logs / Attempt 5:
+  duplicate search-result identity
+  parser block-bound correction and bound-specific diagnostics
+  task-record conflict cleanup
 ```
 
-Record:
-
-```text
-Attempt 4 implementation commit
-final parent report commit
-focused tests/count
-ESLint
-typecheck baseline + zero task-owned diagnostics
-source/component audits
-git diff --check
-branch/worktree synchronization
-database submodule synchronization
-```
+Record implementation/report commits, focused test count, ESLint, typecheck,
+all audits, clean/upstream branch state and database submodule synchronization.
 
 Return:
 
@@ -1355,38 +1118,57 @@ Return:
 status: review
 executor: null
 claimed_at: null
-attempt: 4
+attempt: 5
 ```
 
 and STOP.
 
 Do not start `ARCH-021-SYSTEM-TEST-001`.
 
-### Reviewed Manual Evidence
+### Reviewed Files
 
-Developer manual validation screenshot showed the accepted structured renderer
-still surfacing Shopify page chrome/accessibility labels such as:
+- `lib/discovery/document.ts`
+- `lib/discovery/upstream.ts`
+- `lib/discovery/service.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/discovery/shopify-documentation-explorer.tsx`
+- `tests/discovery-document.test.ts`
+- `tests/studio-services.test.ts`
+- `tests/shopify-documentation-explorer.test.tsx`
+- task Completion Report
+
+### Validation Reviewed
+
+Submitted Attempt 4 evidence:
 
 ```text
-Choose a version:
-Anchor to ...
-Was this section helpful?
-Anchor to Possible returnsPossible returns
+focused tests: 6 files / 73 passed
+targeted ESLint: PASS
+documentation source/component audits: PASS
+git diff --check: PASS
+typecheck: unchanged unrelated baseline only
+           zero C035-owned diagnostics
 ```
 
-This is sufficient to reopen the same documentation-normalization task before
-terminal system testing.
+Architect static review confirms the Attempt 4 semantic cleanup implementation is
+present.
+
+Architect static review also confirms the duplicate-key path remains possible,
+the parser still uses a 256-block ceiling with generic parser-level error text,
+and the task record contains conflict-marker residue.
 
 ### Architecture Conformance
 
-Previously accepted C035 safety/component architecture remains conformant.
+Partial.
 
-The reopened correction is limited to semantic server-side cleanup of Shopify
-generated documentation chrome.
+Attempt 4's semantic documentation cleanup conforms.
+
+Acceptance is blocked by the additional manually reported duplicate-result
+identity bug, the legitimate parser block-bound limitation, and task-record
+conflict residue.
 
 ### Follow-up
 
-`ARCH-021-COMMERCE-035` is reopened Ready for Attempt 4.
+Reclaim the same C035 task as Attempt 5.
 
-`ARCH-021-SYSTEM-TEST-001` returns to Pending because a required implementation
-dependency is no longer Complete.
+`ARCH-021-SYSTEM-TEST-001` remains Pending.

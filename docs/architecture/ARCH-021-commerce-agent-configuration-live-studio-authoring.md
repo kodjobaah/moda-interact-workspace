@@ -1542,6 +1542,21 @@ architect-accepted Complete.
 - Focused MCP suite (26 tests), persisted local external-MCP diagnostic, lint and `git diff --check` passed; repository-wide typecheck/build and one stale route-source assertion remain documented non-blocking baselines.
 - Marked COMMERCE-030 Complete and promoted BACKGROUND-001 to Ready. GATEWAY-001 remains Pending until BACKGROUND-001 is Complete.
 
+### 2026-09-25 — COMMERCE-035 Attempt 4 changes requested
+
+- Accepted the semantic Shopify page-chrome/accessibility cleanup in substance.
+- Additional developer manual logs show duplicate canonical documentation paths
+  still reach the React result list, causing duplicate-key warnings.
+- Distinguished the logged `Shopify documentation result exceeded the bounded
+  size.` error as a parser-level bound, not the later 64 KiB service-output
+  guard.
+- Raised the architecture's semantic block ceiling from 256 to 512 while retaining
+  the existing 64 KiB serialized-document ceiling and required cause-specific
+  parser-bound diagnostics.
+- Required removal of conflict-marker residue found in the C035 task Validation
+  record.
+- SYSTEM-TEST-001 remains Pending.
+
 ### 2026-09-25 — COMMERCE-035 reopened after manual validation
 
 - Developer manual validation showed the accepted safe/structured renderer still

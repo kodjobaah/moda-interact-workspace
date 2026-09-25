@@ -322,6 +322,21 @@ COMMERCE-013 is **Blocked** because the accepted COMMERCE-008 read port cannot e
 
 Attempt 2 accepts the COMMERCE-015 revision-history integration, DRAFT resume/history rendering, keyed template-editor reset, internal discard/stay guard and real production revision-history action handoff. The task returns to **Ready** for Attempt 3 because successful mutations currently clear the shared editor dirty state even when another independently persisted editor surface remains unsaved, and revision create/update/publish results do not reconcile `selected.revisions`, leaving history/published-hash presentation stale until reopen.
 
+### COMMERCE-035 Attempt 4 changes requested — 2026-09-25
+
+Attempt 4 satisfies the semantic Shopify page-chrome/accessibility cleanup.
+COMMERCE-035 remains **Ready** for Attempt 5 because additional developer manual
+logs prove duplicate canonical documentation paths still reach React as duplicate
+keys, and the parser still uses the original 256-block ceiling with an
+indistinguishable generic parser-bound error.
+
+Attempt 5 raises only the semantic block ceiling to 512 while retaining the
+64 KiB serialized-output cap, enforces unique documentation paths before React
+rendering, adds bound-specific diagnostics/regressions, and removes conflict-marker
+residue from the task record.
+
+SYSTEM-TEST-001 remains Pending.
+
 ### COMMERCE-035 reopened after manual validation — 2026-09-25
 
 Developer manual validation showed that safe structured blocks still included
