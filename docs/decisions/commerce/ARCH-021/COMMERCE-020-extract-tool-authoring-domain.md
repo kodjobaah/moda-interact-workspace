@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 32
-executor: copilot
-claimed_at: 2026-09-25T12:34:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -258,12 +258,12 @@ The extraction itself must not change Tool definition serialization.
 
 ## Work Items
 
-- [ ] Extract Tool library/editor components and state.
-- [ ] Make the Tool domain consume named Server Actions and serializable props only.
-- [ ] Add explicit Tool mutation-result classification.
-- [ ] Add audit-based Tool operation reconciliation.
-- [ ] Remove Tool usage of generic StudioWorkspace catch-to-unknown behavior.
-- [ ] Add behavior-equivalence and reconciliation tests.
+- [x] Extract Tool library/editor components and state.
+- [x] Make the Tool domain consume named Server Actions and serializable props only.
+- [x] Add explicit Tool mutation-result classification.
+- [x] Add audit-based Tool operation reconciliation.
+- [x] Remove Tool usage of generic StudioWorkspace catch-to-unknown behavior.
+- [x] Add behavior-equivalence and reconciliation tests.
 
 ## Interfaces / Contracts
 
@@ -286,22 +286,20 @@ Produces the Tool UI/mutation/reconciliation boundary extended by COMMERCE-021/0
 
 ## Acceptance Criteria
 
-- [ ] Tool-specific state/action code is no longer owned by StudioWorkspace.
-- [ ] Production Tool components receive no function-valued server/test dependency props.
-- [ ] Tool actions use the accepted platform-role hierarchy.
-- [ ] Deterministic Tool errors remain visible and are never rewritten to generic unknown.
-- [ ] Transport uncertainty is UI-reconcilable without mutation replay.
-- [ ] Existing Tool authoring behavior is unchanged before COMMERCE-021/022.
-- [ ] Unrelated Studio surfaces are not refactored.
+- [x] Tool-specific state/action code is no longer owned by StudioWorkspace.
+- [x] Production Tool components receive no function-valued server/test dependency props.
+- [x] Tool actions use the accepted platform-role hierarchy.
+- [x] Deterministic Tool errors remain visible and are never rewritten to generic unknown.
+- [x] Transport uncertainty is UI-reconcilable without mutation replay.
+- [x] Existing Tool authoring behavior is unchanged before COMMERCE-021/022.
+- [x] Unrelated Studio surfaces are not refactored.
 
 ## Validation
 
-- [ ] focused `tests/tool-authoring-screen.test.tsx`
-- [ ] `tests/tool-operation-reconciliation.test.ts`
-- [ ] existing `tests/studio-workspace.test.tsx`
-- [ ] `npm run test:arch020-external-tools-ui`
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] focused `tests/tool-authoring-screen.test.tsx` and `tests/tool-operation-reconciliation.test.ts` plus existing `tests/studio-workspace.test.tsx`: 26 tests passed.
+- [x] `npm run test:arch020-external-tools-ui`: 13 tests passed.
+- [x] targeted lint/typecheck: changed-file lint and TypeScript diagnostics passed.
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -314,19 +312,34 @@ This is the Tool-domain continuation of the accepted COMMERCE-029 simplification
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review
 ### Files Changed
-None
+- `components/studio-workspace.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-library.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/contracts.ts`
+- `src/studio/tools/reconciliation-server-actions.ts`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/tool-operation-reconciliation.test.ts`
 ### Work Completed
-None
+- Routed the Tools page through a serializable Tool authoring screen and named Server Actions.
+- Moved the complete legacy Tool library/editor behavior into the Tool domain, including external HTTP authoring, code response panels, discovery handoff, dirty navigation, revision history, and draft lifecycle actions.
+- Added bounded Tool mutation result classification and audit-only reconciliation with structured unexpected-error logging.
+- Added focused deterministic-error and non-replay reconciliation tests.
 ### Validation Results
-None
+- Editor diagnostics: no errors in changed source/test files.
+- `git diff --check`: passed.
+- Focused tests: 3 files passed, 26 tests passed.
+- `npm run test:arch020-external-tools-ui`: 1 file passed, 13 tests passed.
+- Targeted lint: passed.
+- Full `npx tsc --noEmit --pretty false`: remains blocked by unrelated existing test/integration diagnostics outside the changed files; changed-file diagnostics are clean.
 ### Deviations
-None
+- Full workspace typecheck retains pre-existing diagnostics in unrelated integration and test files; no changed-file diagnostics remain.
 ### Assumptions
-None
+- Named Tool Server Actions continue to use the existing service/auth boundary for role enforcement.
 ### Unresolved Issues
-None
+- None for this task scope.
 ### Architectural Concerns
 None
 
