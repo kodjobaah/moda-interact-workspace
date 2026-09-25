@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -233,9 +233,375 @@ No new architectural concerns. Attempt 2 addresses the requested visual diagnost
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Changes Requested — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — 2026-09-25
+
+Reviewed implementation `9612be2b1cbcb5b0d34c863e2bf1f4bd568c2314` and the
+submitted Attempt 2 Completion Report against the complete Attempt 1 correction
+contract.
+
+Attempt 2 fixes the core architectural defects and those changes MUST be preserved:
+
+- Visual OBJECT/LIST projection incompatibility is reported under
+  `/execution/responseProcessing` with `incompatible_response_processing`;
+- response-template incompatibility remains under `/responseTemplate`;
+- valid DIRECT, OBJECT and LIST processing are focused-tested;
+- request/response JavaScript authoring diagnostics retain their execution-source
+  paths;
+- the preview action parses a strict top-level DTO before request processor creation;
+- preview runtime/deadline/throttle/cancel failures map to `INTERNAL_ERROR`;
+- named Server Action authorization denial and Prisma connectivity mapping are
+  executable;
+- the production `createExternalIntegration(...).authoringValidation.validate(...)`
+  composition is exercised with injected DNS/transport spies and performs neither
+  provider call;
+- the focused command now executes both validation and Server Action suites;
+- submitted `tsconfig.tsbuildinfo` contains zero semantic diagnostics in the
+  COMMERCE-023 task-owned source/test files.
+
+Attempt 2 is not accepted because one runtime contract still differs from the
+canonical COMMERCE-016 boundary, several mandatory Attempt 1 proof cases are absent,
+and the durable Attempt 2 execution packet/report commit evidence is incomplete.
+
+The following is the complete and authoritative Attempt 3 correction contract. Do
+not redesign the External HTTP validator, add Tool UI, perform live HTTP, or begin
+COMMERCE-021.
+
+##### A2-R1 — bound preview `source` by the canonical 16,384 UTF-8 BYTES
+
+Change:
+
+```text
+src/commerce/tool-authoring/external-validation.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+The current preview DTO uses:
+
+```ts
+source: z.string().max(16_384).optional()
+```
+
+`z.string().max()` bounds JavaScript string length, not UTF-8 bytes. COMMERCE-016
+defines the persisted request-JavaScript source ceiling as:
+
+```ts
+new TextEncoder().encode(source).length <= 16_384
+```
+
+The preview trust boundary MUST use the same observable ceiling.
+
+Required schema behavior:
+
+```text
+ASCII source <= 16,384 bytes      -> allowed
+UTF-8 multibyte source <=16,384   -> allowed
+UTF-8 multibyte source >16,384    -> INVALID_INPUT
+```
+
+Use the canonical COMMERCE-016 source schema/helper if one is exported without
+broadening scope; otherwise use a local Zod refinement with `TextEncoder`. Do not
+truncate source and do not use UTF-16 code-unit count as a proxy.
+
+Add a Server Action regression using multibyte input (for example repeated `😀`) that
+would pass `.max(16_384)` by character count but exceeds 16,384 UTF-8 bytes, and
+assert:
+
+```ts
+{
+  kind: 'error',
+  code: 'INVALID_INPUT',
+  retryable: false
+}
+```
+
+The request processor must not be created/invoked for the oversized DTO.
+
+##### A2-R2 — complete the exact INVALID_INPUT preview proofs from A1-R3
+
+Change:
+
+```text
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+Add executable cases through the real `previewExternalRequestAction()` proving:
+
+```text
+1. declarative mapped input is absent after input-schema validation
+   -> INVALID_INPUT
+
+2. JavaScript request processor returns a descriptor that fails
+   ExternalRequestDescriptorSchema
+   -> INVALID_INPUT
+
+3. JavaScript request processor returns ok=true but no descriptor
+   -> INVALID_INPUT
+```
+
+For case 1, the input schema must validly permit omission of the mapped property so
+the failure occurs at the declarative mapping boundary rather than being rejected
+earlier by `compileSubset()`.
+
+For case 2, use a processor result such as:
+
+```ts
+{
+  ok: true,
+  descriptor: {
+    path: 'https://forbidden.example/path',
+    query: {},
+    headers: {}
+  }
+}
+```
+
+or another descriptor that the canonical COMMERCE-016
+`ExternalRequestDescriptorSchema` rejects.
+
+Retain the current strict DTO, safe-descriptor and
+RUNTIME_UNAVAILABLE/DEADLINE/THROTTLED/CANCELLED tests.
+
+##### A2-R3 — prove full-definition compiler infrastructure failure is INTERNAL_ERROR
+
+Change:
+
+```text
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+The Attempt 1 contract requires authoring defects to become validation issues while
+compiler/runtime infrastructure failures remain explicit internal action failures.
+
+Add executable `validateExternalToolDefinitionAction()` coverage for at least one
+request-processor or response-processor infrastructure result equivalent to:
+
+```text
+RUNTIME_UNAVAILABLE
+```
+
+through the real external authoring validator path, and assert:
+
+```ts
+{
+  kind: 'error',
+  code: 'INTERNAL_ERROR',
+  retryable: false
+}
+```
+
+Do not satisfy this by throwing an arbitrary Error directly from a mocked
+`authoringValidation.validate`; the test must prove the
+`processorDiagnostic(...) -> ExternalAuthoringRuntimeError -> Server Action`
+classification path.
+
+A bounded production-composition fixture with an injected failing processor is
+acceptable if that is the cleanest existing seam.
+
+##### A2-R4 — complete strict top-level DTO rejection coverage
+
+Keep `z.strictObject` and add table-driven Server Action proof for representative
+forbidden top-level values:
+
+```text
+unknownField
+origin
+credential
+token
+authorization
+providerResponse
+body
+```
+
+Each must return `INVALID_INPUT` before request processor creation.
+
+Do not log or echo the rejected values.
+
+##### A2-R5 — prove credential resolution/decryption remains outside authoring validation
+
+Strengthen the existing production integration test in:
+
+```text
+tests/external-tool-authoring-validation.test.ts
+```
+
+The current DNS/transport spies are valid and must remain.
+
+Also provide spy/throwing Prisma credential boundaries sufficient to prove
+`integration.authoringValidation.validate(...)` does not read or resolve credentials.
+At minimum expose spies for the credential persistence access used by the accepted
+credential service, for example:
+
+```text
+commerceExternalCredential.findFirst
+```
+
+and assert it remains uncalled during authoring validation.
+
+If the current credential service uses another exact Prisma credential read method in
+this repository revision, spy on that exact method instead.
+
+The test must continue to prove:
+
+```text
+transport.execute = 0 calls
+dns.resolve       = 0 calls
+credential read   = 0 calls
+```
+
+Do not invoke `integration.execution`, `credentials.resolveConnection`, or a live
+provider path merely to prove the negative.
+
+##### A2-R6 — add LIST-side incompatible visual projection proof
+
+The current focused test proves the OBJECT-side incompatible projection. Add the
+equivalent LIST-side structural failure and assert the same canonical boundary:
+
+```text
+path = /execution/responseProcessing
+code = incompatible_response_processing
+```
+
+Do not copy/reimplement COMMERCE-016 `visualPublicationCompatible()`.
+
+##### A2-R7 — retain all accepted Attempt 2 behavior
+
+Do not regress:
+
+```text
+valid DIRECT / OBJECT / LIST
+missing connection
+disabled connection
+request-JS syntax/entrypoint diagnostic path
+response-JS diagnostic path
+responseTemplate incompatibility path
+strict top-level preview DTO
+safe descriptor-only preview result
+runtime/deadline/throttle/cancel -> INTERNAL_ERROR
+authorization denial -> FORBIDDEN
+Prisma connectivity -> DATABASE_UNAVAILABLE retryable=true
+missing validator -> DATABASE_UNAVAILABLE retryable=true
+zero DNS/HTTP provider calls
+no live-test/publication receipt creation
+COMMERCE-019 LIVE_TEST_REQUIRED publication relationship
+```
+
+No schema/database/Shared/cross-repository change is authorized.
+
+##### A2-R8 — deterministic validation
+
+Keep:
+
+```text
+test:arch021-external-tool-authoring-validation
+```
+
+executing both COMMERCE-023 focused test files.
+
+Then run exactly:
+
+```bash
+npm run test:arch021-external-tool-authoring-validation
+npm run test:arch020-external-publication
+
+npm exec vitest run \
+  tests/arch021-commerce-tool-contract.test.ts \
+  tests/code-request-processor.test.ts \
+  tests/tool-authoring-validation.test.ts \
+  tests/tool-authoring-server-actions.test.ts \
+  tests/auth-role-requirements.test.ts \
+  tests/auth-permissions.test.ts
+
+npm exec eslint \
+  src/commerce/tool-authoring/external-validation.ts \
+  src/commerce/integration/external/index.ts \
+  src/studio/tools/external-validation-server-actions.ts \
+  tests/external-tool-authoring-validation.test.ts \
+  tests/external-tool-authoring-server-actions.test.ts
+
+npm run typecheck
+git diff --check
+```
+
+All COMMERCE-023 focused tests must execute with zero skips.
+
+No diagnostic in these task-owned surfaces may be classified as baseline:
+
+```text
+src/commerce/tool-authoring/external-validation.ts
+src/commerce/integration/external/index.ts
+src/studio/tools/external-validation-server-actions.ts
+tests/external-tool-authoring-validation.test.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+##### A2-R9 — reconcile the fresh Attempt 3 launcher/report packet
+
+Attempt 2 records the dedicated worktrees and implementation publication, but it does
+not durably record all required final parent/report evidence. In particular the final
+user handoff identifies parent report commit
+`944b277bbd0ce445e1f4088a275903531601b3de`, which is not recorded in the embedded
+Completion Report.
+
+Attempt 3 must record the exact fresh launcher-provided:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-023
+implementation branch = task/ARCH-021-COMMERCE-023
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 3 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not reuse or infer Attempt 2 claim/synchronization values.
+
+Reconcile `## Validation`, Work Items, Acceptance Criteria and Completion Report to
+the final Attempt 3 counts/evidence.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+##### Attempt 3 stop condition
+
+Return to architect review only when:
+
+```text
+preview source obeys the 16,384 UTF-8 byte ceiling
+AND missing mapped input -> INVALID_INPUT
+AND invalid/missing JavaScript descriptor -> INVALID_INPUT
+AND full-definition runtime/compiler infrastructure failure -> INTERNAL_ERROR
+AND strict top-level DTO representative forbidden fields -> INVALID_INPUT
+AND DNS + transport + credential reads are all zero during authoring validation
+AND incompatible OBJECT and LIST projections use /execution/responseProcessing
+AND every accepted Attempt 2 proof remains green
+AND zero task-owned type/lint/diff diagnostics remain
+AND the fresh Attempt 3 launcher/report packet is complete
+```
+
+Then push implementation and parent task branches, return control to
+`moda_architect`, and STOP.
+
+Do not begin COMMERCE-021.
+
+#### Historical Attempt 1 review
 
 #### Attempt 1 review — 2026-09-25
 
