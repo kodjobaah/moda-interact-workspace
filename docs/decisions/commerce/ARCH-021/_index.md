@@ -117,20 +117,30 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-016](COMMERCE-016-establish-commerce-tool-definition-contract.md) | Establish canonical Commerce-owned Tool-definition contract | Complete | ARCH-020-COMMERCE-021, 030 |
-| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Blocked | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
-| [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Blocked | COMMERCE-016, ARCH-020-COMMERCE-011 |
-| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth contract and `LIVE_TEST_REQUIRED` publication gate | Blocked | COMMERCE-016, ARCH-020-COMMERCE-030 |
-| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring domain from StudioWorkspace | Blocked | COMMERCE-016, COMMERCE-005, 006 |
-| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Blocked | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
-| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Blocked | COMMERCE-019, 020, 024 |
-| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Blocked | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
-| [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Blocked | COMMERCE-016, 018, 019 |
+| [COMMERCE-017](COMMERCE-017-implement-request-javascript-processor.md) | Implement bounded `buildRequest({args})` QuickJS processor | Ready | COMMERCE-016, ARCH-020-COMMERCE-029, 026 |
+| [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Ready | COMMERCE-016, ARCH-020-COMMERCE-011 |
+| [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth/error contract and `LIVE_TEST_REQUIRED` publication gate | Ready | COMMERCE-016, COMMERCE-027, ARCH-020-COMMERCE-030 |
+| [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Ready | COMMERCE-016, 005, 006, 027, 029 |
+| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Pending | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
+| [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Pending | COMMERCE-019, 020, 024 |
+| [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Pending | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
+| [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Pending | COMMERCE-016, 018, 019 |
 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
 
 ```text
-COMMERCE-016 is architect-accepted Complete.
-Phase 3 is paused for the pre-Phase-3 simplification checkpoint. COMMERCE-017 through COMMERCE-024 are Blocked until architect reconciliation after the checkpoint; COMMERCE-016 remains Complete.
+COMMERCE-016 is architect-accepted Complete and the simplification implementation is Complete. The developer is intentionally holding terminal `ARCH-021-SYSTEM-TEST-001` until the implementation phases are finished; terminal system testing does not gate implementation.
+
+Current Phase 3 Ready frontier:
+
+```text
+COMMERCE-020   priority 32   Tool extraction + named Server Actions/reconciliation
+COMMERCE-019   priority 34   common validation/auth/error/publication contract
+COMMERCE-017   priority 35   request JavaScript processor
+COMMERCE-018   priority 35   Shopify Admin compiler
+```
+
+COMMERCE-023/024 remain Pending on the above foundations. COMMERCE-021/022 remain Pending on the extracted Tool surface and their domain validators.
 ```
 
 
@@ -156,11 +166,15 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 
 Current checkpoint implementation frontier: none.
 
-COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted
-Complete. All terminal checkpoint implementation dependencies are Complete, so
-`ARCH-021-SYSTEM-TEST-001` is Ready. The developer may leave the terminal
-system-test task Ready while manually re-checking the real Shopify documentation
-pages that exposed the latest defects.
+COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. All terminal checkpoint implementation dependencies are Complete, so `ARCH-021-SYSTEM-TEST-001` remains Ready. The developer is intentionally holding terminal system tests until the implementation phases are finished and is using manual validation meanwhile; this Ready system-test task is not an implementation dependency and does not pause Phase 3.
+
+### Phase 3 resumed on simplified architecture — 2026-09-25
+
+- COMMERCE-017/018 remain technically unchanged and are Ready.
+- COMMERCE-019 now consumes the COMMERCE-027 hierarchical Auth.js authorization boundary and exposes explicit validation/action failures with no generic unknown result.
+- COMMERCE-020 now consumes the COMMERCE-029 named Server Action/serializable DTO boundary and owns Tool mutation UNCONFIRMED reconciliation through audit lookup without replay.
+- COMMERCE-021..024 are revised to use those boundaries; validation/read errors remain explicit, and global Tool publication remains SUPER_ADMIN-only.
+- Terminal SYSTEM-TEST-001 remains Ready by developer choice and is intentionally deferred; it is not added as a Phase 3 dependency.
 
 ### Documentation readability correction task materialised — 2026-09-24
 

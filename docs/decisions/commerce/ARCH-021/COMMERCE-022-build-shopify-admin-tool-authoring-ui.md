@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: pending
 priority: 50
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
   - ARCH-021-COMMERCE-024
 enables: []
 created: 2026-09-23
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Build Shopify Admin GraphQL tool-authoring UI
@@ -41,6 +41,8 @@ Allow admins to author and locally validate immutable `SHOPIFY_ADMIN_GRAPHQL` to
 
 ARCH-021's target Shopify execution path uses the selected shop's offline session at runtime. Phase 3 only defines/validates the query. Shopify AI Toolkit/Dev MCP helps prove the local compiler but is not invoked by normal Studio validation.
 
+The accepted simplification is authoritative for this UI: Tool components consume named Server Actions, receive serializable props only, use the platform-role hierarchy, preserve deterministic server errors, and use COMMERCE-020 audit reconciliation only for genuinely unconfirmed mutation responses.
+
 ## Scope
 
 Primary files:
@@ -49,7 +51,8 @@ Primary files:
 src/studio/tools/tool-authoring-screen.tsx
 src/studio/tools/tool-editor.tsx
 src/studio/tools/shopify-admin-editor.tsx
-src/studio/tools/validation-server-actions.ts
+src/studio/tools/admin-validation-server-actions.ts
+src/studio/tools/reconciliation-server-actions.ts
 lib/discovery/schema.ts                         # existing API-surface DTO only if needed
 app/api/studio/discovery/route.ts              # consume COMMERCE-018 compiler contract
 tests/shopify-admin-tools-ui.test.tsx
@@ -116,6 +119,16 @@ Authoring/validation does not require a selected shop because the GraphQL contra
 
 Save DRAFT normally. Publication validation must display COMMERCE-019 `LIVE_TEST_REQUIRED` until Phase 4 proves the exact saved revision against a selected shop's offline session.
 
+Mutation/error handling follows COMMERCE-020 exactly:
+
+- Save/create/update/publish use named Server Actions;
+- explicit server errors remain visible and are not converted to unknown;
+- only a rejected/lost mutation response may enter `UNCONFIRMED`;
+- reconciliation checks the original `operationId` audit receipt and never replays the mutation;
+- compiler/metadata validation is non-mutating and never creates `UNCONFIRMED`.
+
+Publishing remains visible/enabled only for `PLATFORM_SUPER_ADMIN`; PLATFORM_ADMIN may author/save/validate drafts.
+
 ### R7 — UI regression cases
 
 Prove:
@@ -158,6 +171,8 @@ None in Phase 3. Phase 4 live Shopify Tool testing will depend on this task.
 - [ ] Authoring requires no shop token/session/provider I/O.
 - [ ] New Storefront authoring is removed without hiding historical definitions.
 - [ ] Explore/discovery UI is unchanged by this task.
+- [ ] Explicit server failures remain visible; only lost/rejected mutation responses enter reconcilable UNCONFIRMED state.
+- [ ] Publish authority remains PLATFORM_SUPER_ADMIN-only through the accepted hierarchy.
 
 ## Validation
 

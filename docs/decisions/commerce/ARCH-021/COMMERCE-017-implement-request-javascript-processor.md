@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-021-COMMERCE-023
 created: 2026-09-23
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Implement bounded external request JavaScript processor
@@ -41,6 +41,8 @@ Extend the proven QuickJS runtime with a second bounded entrypoint, `buildReques
 ## Context
 
 ARCH-020 proved and packaged the QuickJS response transformer `transform(response)`. Phase 3 must reuse that exact isolation/runtime rather than introducing another JS engine or allowing `fetch()` from authored code.
+
+The 2026-09-24 simplification checkpoint is implementation-complete. Its terminal system test remains Ready by developer choice and is not an implementation dependency. This task is restored to Ready because its source dependencies are Complete and its technical contract is unaffected by the simplification.
 
 ## Scope
 

@@ -4,14 +4,14 @@ title: CommerceAgent configuration and live Studio authoring
 status: agreed
 coordinator: moda_architect
 created: 2026-09-23
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # ARCH-021: CommerceAgent configuration and live Studio authoring
 
 ## Status
 
-Agreed — Phase 1 and Phase 2 are architect-accepted Complete. Phase 3 contract task `ARCH-021-COMMERCE-016` is Complete, but remaining Phase 3 tasks are paused/Blocked while the 2026-09-24 simplification checkpoint reduces Agent Configuration, Studio composition and private-MCP complexity.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016 is Complete; COMMERCE-017, 018, 019 and 020 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -782,9 +782,9 @@ Phase 3 tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-017 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
-| ARCH-021-COMMERCE-018 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, 006 |
 | ARCH-021-COMMERCE-021 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 023, ARCH-021-COMMERCE-005, 006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Blocked | ARCH-021-COMMERCE-019, 020, 024 |
@@ -956,7 +956,7 @@ Checkpoint tasks:
 | ARCH-021-GATEWAY-001 | moda_gateway | Complete | COMMERCE-030, BACKGROUND-001 |
 | ARCH-021-SYSTEM-TEST-001 | moda_system_test | Ready | all checkpoint implementation tasks, including COMMERCE-032..035 |
 
-Current checkpoint implementation frontier: none. COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. Every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete, so SYSTEM-TEST-001 is Ready. The developer may leave the terminal task Ready while manually re-checking the real Shopify documentation pages that exposed the latest formatting/identity/bound defects. Phase-3 tasks remain paused until terminal checkpoint validation/reconciliation.
+Current checkpoint implementation frontier: none. COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. Every dependency of terminal `ARCH-021-SYSTEM-TEST-001` is Complete, so SYSTEM-TEST-001 remains Ready. The developer has explicitly chosen to hold terminal system tests until the implementation phases are finished and is performing manual validation meanwhile. This terminal task is not an implementation dependency and therefore no longer pauses Phase 3.
 
 ### Phase 4 — live single-tool testing
 
@@ -1015,12 +1015,12 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-014 | moda_commerce | Complete | ARCH-021-COMMERCE-008, ARCH-021-COMMERCE-009, ARCH-021-COMMERCE-011, ARCH-021-COMMERCE-015 |
 | ARCH-021-COMMERCE-015 | moda_commerce | Complete | ARCH-021-COMMERCE-008 |
 | ARCH-021-COMMERCE-016 | moda_commerce | Complete | ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-017 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
-| ARCH-021-COMMERCE-018 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
-| ARCH-021-COMMERCE-019 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-030 |
-| ARCH-021-COMMERCE-020 | moda_commerce | Blocked | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
-| ARCH-021-COMMERCE-021 | moda_commerce | Blocked | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
-| ARCH-021-COMMERCE-022 | moda_commerce | Blocked | ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-017 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-029, ARCH-020-COMMERCE-026 |
+| ARCH-021-COMMERCE-018 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
+| ARCH-021-COMMERCE-019 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
+| ARCH-021-COMMERCE-020 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-022 | moda_commerce | Pending | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1049,6 +1049,15 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-25 — Phase 3 reconciled onto simplified Studio
+
+- Preserved the completed simplification implementation while leaving terminal `ARCH-021-SYSTEM-TEST-001` Ready by developer choice; it is not an implementation dependency.
+- Restored COMMERCE-017, COMMERCE-018, COMMERCE-019 and COMMERCE-020 to Ready.
+- Revised Phase 3 to consume COMMERCE-027 hierarchical authorization and COMMERCE-029 serializable DTO + named Server Action boundaries.
+- Tool validation/read failures must remain explicit; only lost/rejected durable Tool mutation responses may enter UI `UNCONFIRMED`, reconciled by `CommerceAuditEvent.operationId` without replay.
+- Global Tool publication/enable/disable remains PLATFORM_SUPER_ADMIN-only; PLATFORM_ADMIN may author and validate.
+
 
 ### Shopify documentation readability correction — 2026-09-24
 

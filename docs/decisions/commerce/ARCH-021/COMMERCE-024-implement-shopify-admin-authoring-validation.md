@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: pending
 priority: 40
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-021-COMMERCE-022
 created: 2026-09-24
-updated: 2026-09-24
+updated: 2026-09-25
 ---
 
 # Implement Shopify Admin GraphQL authoring validation
@@ -79,7 +79,9 @@ The normal validation path performs no Dev MCP call, shop/session lookup or Admi
 
 ### R2 — schema metadata for authoring UI
 
-Expose the pinned authoring metadata needed by COMMERCE-022 through a server-owned read/action:
+Expose the pinned authoring metadata needed by COMMERCE-022 through the named Server Action `src/studio/tools/admin-validation-server-actions.ts`. Every action in that module MUST call `requireStudioPlatformRole('ADMIN')`; do not create a duplicate auth helper or function-valued production port. Return metadata through COMMERCE-019 `ToolAuthoringActionResult`.
+
+The metadata is:
 
 ```text
 apiVersion = 2026-07
@@ -88,9 +90,11 @@ schemaHash = exact committed COMMERCE-018 artifact SHA-256
 
 The browser cannot choose a schema path, package version or arbitrary hash.
 
-### R3 — deterministic diagnostics
+### R3 — explicit errors and deterministic diagnostics
 
 Compiler syntax/schema/operation/variable/result-shape failures are translated into the common bounded issue form with deterministic paths under `/execution/...`. No raw session/token/provider payload may appear in diagnostics.
+
+Validation/metadata actions are non-mutating. `FORBIDDEN`, `INVALID_INPUT`, `NOT_FOUND`, `DATABASE_UNAVAILABLE` and `INTERNAL_ERROR` remain explicit COMMERCE-019 action results; they MUST NOT become `unknown`/`UNCONFIRMED`. Unexpected errors are logged server-side through the approved shared structured logger.
 
 ### R4 — publication relationship
 
@@ -114,7 +118,7 @@ Add `test:arch021-shopify-admin-authoring-validation` proving:
 - [ ] Add Shopify Admin full-definition validation boundary.
 - [ ] Expose pinned API version/schemaHash metadata for authoring UI.
 - [ ] Translate compiler diagnostics to the common validation result.
-- [ ] Use the COMMERCE-019 auth/publication conventions.
+- [ ] Use COMMERCE-019 explicit action results and COMMERCE-027 `requireStudioPlatformRole('ADMIN')`.
 - [ ] Add focused zero-provider-I/O tests.
 
 ## Interfaces / Contracts
@@ -139,6 +143,8 @@ Produces the authoritative Shopify Admin authoring-validation boundary consumed 
 - [ ] Only compiler-proved pinned Admin 2026-07 query definitions can validate.
 - [ ] API version/schemaHash metadata is server owned and not user-selectable.
 - [ ] Validation creates no evidence that can satisfy the Phase 3 publication gate.
+- [ ] PLATFORM_ADMIN and PLATFORM_SUPER_ADMIN are admitted through hierarchy; merchant roles are denied.
+- [ ] Validation/metadata failures remain explicit and never become mutation UNCONFIRMED state.
 
 ## Validation
 

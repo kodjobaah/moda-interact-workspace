@@ -970,12 +970,8 @@ Phase 1's six Commerce-only tasks for real Connections composition, server-valid
 `shopId` context, production external connection selection and JavaScript response-panel
 installation are architect-accepted Complete.
 
-Phase 2 is architect-accepted Complete across its Database and Commerce tasks, including
-the bounded COMMERCE-015 prompt-template revision-history read contract and the accepted Agent
-Configuration, prompt-template and platform-prompt authoring surfaces. Shop override CAS uses
-immutable row-generation tokens plus edit versions so clear/recreate cannot ABA-match stale
-mutations.
+Phase 2 is architect-accepted Complete. The subsequent simplification checkpoint replaced the fragmented model/prompt selection/pointer lifecycle with retained `CommerceAgentConfiguration` rows, independent model/prompt CAS fields and nullable shop overrides; simplified prompt templates while retaining first-class categories; established hierarchical Auth.js platform/merchant authorization; removed production function-valued Studio service props; preserved explicit UI reconciliation without swallowing deterministic errors; and removed RSA/JWT/token exchange from the private MCP path. All simplification implementation tasks, including COMMERCE-032..035 corrections, are Complete.
 
-Phase 3 contract task COMMERCE-016 is architect-accepted Complete, but the remaining Phase-3 frontier is paused while a pre-Phase-3 simplification checkpoint runs. DATABASE-002, COMMERCE-025, COMMERCE-026, COMMERCE-027, COMMERCE-028, COMMERCE-030 and COMMERCE-031 are architect-accepted Complete. COMMERCE-029 is Ready now that all of its Agent Configuration and Phase-1 prerequisites are Complete. The independent checkpoint frontier is COMMERCE-029 plus GATEWAY-001. The checkpoint collapses Agent Configuration persistence, simplifies prompt templates while retaining first-class categories, establishes unified Auth.js platform/merchant authorization, removes production function-valued Studio service props, preserves explicit UI reconciliation without swallowing errors, and removes RSA/JWT/token exchange from the private MCP path.
+Terminal `ARCH-021-SYSTEM-TEST-001` remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Phase 3 therefore resumes on the simplified architecture. COMMERCE-016 is Complete. COMMERCE-020, COMMERCE-019, COMMERCE-017 and COMMERCE-018 are the current Ready frontier; COMMERCE-021..024 remain dependency-gated.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
