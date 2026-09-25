@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-25T13:36:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -133,11 +133,11 @@ Add `test:arch021-external-tool-authoring-validation` proving:
 
 ## Work Items
 
-- [ ] Add External HTTP full-definition validator.
-- [ ] Add named, hierarchy-authorized request-construction preview.
-- [ ] Compose request/response JS and visual/DIRECT structural validation.
-- [ ] Use COMMERCE-019 explicit action-result and COMMERCE-027 platform-role authorization contracts.
-- [ ] Add focused zero-provider-I/O tests.
+- [x] Add External HTTP full-definition validator.
+- [x] Add named, hierarchy-authorized request-construction preview.
+- [x] Compose request/response JS and visual/DIRECT structural validation.
+- [x] Use COMMERCE-019 explicit action-result and COMMERCE-027 platform-role authorization contracts.
+- [x] Add focused zero-provider-I/O tests.
 
 ## Interfaces / Contracts
 
@@ -158,19 +158,19 @@ Produces the authoritative External HTTP validation/preview boundary consumed by
 
 ## Acceptance Criteria
 
-- [ ] External HTTP authoring validation is server authoritative and zero-provider-I/O.
-- [ ] Request preview receives only schema-validated Tool arguments and returns only a safe descriptor.
-- [ ] Connection/request/response/template failures use the common bounded diagnostics contract.
-- [ ] PLATFORM_ADMIN and PLATFORM_SUPER_ADMIN are admitted through hierarchy; merchant roles are denied.
-- [ ] Validation/preview errors remain explicit and never become mutation UNCONFIRMED state.
-- [ ] Validation creates no evidence that can satisfy the Phase 3 publication gate.
+- [x] External HTTP authoring validation is server authoritative and zero-provider-I/O.
+- [x] Request preview receives only schema-validated Tool arguments and returns only a safe descriptor.
+- [x] Connection/request/response/template failures use the common bounded diagnostics contract.
+- [x] PLATFORM_ADMIN and PLATFORM_SUPER_ADMIN are admitted through hierarchy; merchant roles are denied.
+- [x] Validation/preview errors remain explicit and never become mutation UNCONFIRMED state.
+- [x] Validation creates no evidence that can satisfy the Phase 3 publication gate.
 
 ## Validation
 
-- [ ] `npm run test:arch021-external-tool-authoring-validation`
-- [ ] `npm run test:arch020-external-publication`
-- [ ] targeted lint/typecheck
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-external-tool-authoring-validation` (equivalent local Vitest binary: 6 passed; pnpm wrapper was blocked by ignored build scripts)
+- [x] `npm run test:arch020-external-publication` (included in the 95-test Commerce-016/017/019 suite)
+- [x] targeted lint/typecheck (lint passed; task-owned files have zero type diagnostics; repository-wide typecheck has unrelated baseline errors)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -183,21 +183,45 @@ Keep historical fixture utilities available for automated regressions only; they
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review
+
 ### Files Changed
-None
+- `package.json`
+- `src/commerce/integration/external/index.ts`
+- `src/commerce/tool-authoring/external-validation.ts`
+- `src/studio/tools/external-validation-server-actions.ts`
+- `tests/external-tool-authoring-validation.test.ts`
+
 ### Work Completed
-None
+- Added authoritative, zero-provider-I/O EXTERNAL_HTTP definition validation with canonical schema parsing, immutable connection-revision metadata checks, request/response processor compilation, visual/DIRECT structural validation, and bounded common authoring issues.
+- Added the platform-role-authorized request-construction Server Action. It validates CommerceAgent arguments before declarative or JavaScript construction, returns only the safe external request descriptor, and maps explicit action errors without creating mutation evidence.
+- Exposed the validator through the existing external integration facade without adding a transport, credential, or publication receipt path.
+- Focused repair mapping: `src/commerce/tool-authoring/external-validation.ts` validates arguments before request parsing and keeps compiler error codes on stable source paths; `tests/external-tool-authoring-validation.test.ts` covers that ordering and response-template rejection. No Architect Review correction was present; the Architect Review section below is unchanged.
+
 ### Validation Results
-None
+- Launcher evidence: prepared execution was resumed in parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-023`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-023`, branch `task/ARCH-021-COMMERCE-023`, Attempt 1, `execution_mode: agent`; existing handoff changes were preserved.
+- `node_modules/.bin/vitest run tests/external-tool-authoring-validation.test.ts`: PASS, 1 file and 6 tests.
+- Commerce-016/017/019 contract, authorization, publication, and integration command covering 9 files: PASS, 9 files and 95 tests.
+- `node_modules/.bin/eslint src/commerce/tool-authoring/external-validation.ts src/commerce/integration/external/index.ts src/studio/tools/external-validation-server-actions.ts tests/external-tool-authoring-validation.test.ts`: PASS.
+- `git diff --check`: PASS.
+- Source audit for provider transport, network, credential, and provider calls in the new authoring/preview boundary: PASS; no forbidden calls found.
+- `npm run typecheck`: non-zero with 15 existing diagnostics in 7 untouched route/test files; zero diagnostics in task-owned files. See Unresolved Issues for the unrelated baseline condition.
+- Commerce integration command `tests/backend-integration.test.ts tests/commerce-lifecycle.test.ts tests/definition-execution.test.ts tests/mcp-service.test.ts tests/external-wiring.test.ts`: 67 passed, 2 failed in existing Commerce-013 backend bootstrap expectations in `tests/backend-integration.test.ts`; no task-owned file is involved.
+- Initial `pnpm run test:arch021-external-tool-authoring-validation` was blocked before execution by the environment's `ERR_PNPM_IGNORED_BUILDS`; the equivalent local Vitest binary ran successfully after the prepared dependencies were available.
+
 ### Deviations
-None
+- None from the bounded Commerce-023 scope. No Shopify Admin validation, live HTTP request, credential display/decryption, live-test receipt, or Tool UI was added.
+
 ### Assumptions
-None
+- The existing `requireStudioPlatformRole('ADMIN')` hierarchy helper is the authoritative admission contract for platform administrators and super administrators and denial for merchant roles.
+- The implementation branch commit is `fb5ed5ba1ad9269a00ecb5ef74275b980f9d453c`.
+
 ### Unresolved Issues
-None
+- Repository-wide typecheck remains non-zero because of 15 unrelated existing diagnostics in untouched files: the code-response preview route imports, agent-configuration tests, C20 fixture test, external wiring test, local MCP diagnostic test, and selected-shop-context tests.
+- Two existing Commerce-013 backend integration expectations fail because `getCommerceBackend()` does not throw after reset; this is outside the task-owned diff and requires the owning integration task/architect decision.
+
 ### Architectural Concerns
-None
+None.
 
 ## Architect Review
 
