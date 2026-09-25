@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 35
-executor: copilot
-claimed_at: 2026-09-25T00:51:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-034
@@ -566,23 +566,23 @@ Do not replace the verified direct-document fetch with arbitrary URLs returned b
 
 ## Work Items
 
-- [ ] Add plain-text search-excerpt normalizer.
-- [ ] Replace `DocumentationItem.text` with bounded `excerpt`.
-- [ ] Add structured documentation block contract.
-- [ ] Refactor verified HTML extraction to preserve block structure.
-- [ ] Preserve code/pre whitespace.
-- [ ] Enforce structured-document bounds.
-- [ ] Update Studio service adapter/contracts.
-- [ ] Create `ShopifyDocumentationExplorer` with the exact production responsibilities/props in R7.
-- [ ] Create pure `ShopifyDocumentationArticle` with the exact production responsibilities/props in R7.
-- [ ] Remove documentation query/result/document/search/open/rendering state from `StudioWorkspace`.
-- [ ] Render search results as bounded readable cards/items in `ShopifyDocumentationExplorer`.
-- [ ] Render opened document as semantic structured article through `ShopifyDocumentationArticle`.
-- [ ] Add canonical `Open on Shopify` action in `ShopifyDocumentationArticle`.
-- [ ] Add readable documentation CSS.
-- [ ] Update in-memory fixtures to exact production DTO shape.
-- [ ] Mock the production named documentation Server Actions in component tests.
-- [ ] Add raw-markup, structured-rendering and component-boundary regressions.
+- [x] Add plain-text search-excerpt normalizer.
+- [x] Replace `DocumentationItem.text` with bounded `excerpt`.
+- [x] Add structured documentation block contract.
+- [x] Refactor verified HTML extraction to preserve block structure.
+- [x] Preserve code/pre whitespace.
+- [x] Enforce structured-document bounds.
+- [x] Update Studio service adapter/contracts.
+- [x] Create `ShopifyDocumentationExplorer` with the exact production responsibilities/props in R7.
+- [x] Create pure `ShopifyDocumentationArticle` with the exact production responsibilities/props in R7.
+- [x] Remove documentation query/result/document/search/open/rendering state from `StudioWorkspace`.
+- [x] Render search results as bounded readable cards/items in `ShopifyDocumentationExplorer`.
+- [x] Render opened document as semantic structured article through `ShopifyDocumentationArticle`.
+- [x] Add canonical `Open on Shopify` action in `ShopifyDocumentationArticle`.
+- [x] Add readable documentation CSS.
+- [x] Update in-memory fixtures to exact production DTO shape.
+- [x] Mock the production named documentation Server Actions in component tests.
+- [x] Add raw-markup, structured-rendering and component-boundary regressions.
 
 ## Interfaces / Contracts
 
@@ -620,53 +620,53 @@ No cross-service contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Search results no longer display raw HTML/Markdown syntax.
-- [ ] Search results show bounded readable excerpts.
-- [ ] Opened documentation is not rendered as one giant paragraph.
-- [ ] Headings, paragraphs, lists, code and blockquotes retain separate structure.
-- [ ] Code/preformatted text retains meaningful newlines/whitespace.
-- [ ] No raw HTML reaches `dangerouslySetInnerHTML`.
-- [ ] Non-content/script/style elements are absent from output.
-- [ ] Canonical source URL remains constrained to `shopify.dev/docs`.
-- [ ] Existing input/output/redirect bounds remain enforced.
-- [ ] Tests and fixtures consume the same final documentation DTO as production.
-- [ ] `StudioWorkspace` no longer owns documentation search/result/open-document state or document rendering markup.
-- [ ] `ShopifyDocumentationExplorer` uses the production named Server Action imports directly.
-- [ ] `ShopifyDocumentationArticle` is a pure renderer with no Server Action/provider/network dependency.
-- [ ] No production documentation port/service/action-bundle prop or test-only React context/provider is introduced.
+- [x] Search results no longer display raw HTML/Markdown syntax.
+- [x] Search results show bounded readable excerpts.
+- [x] Opened documentation is not rendered as one giant paragraph.
+- [x] Headings, paragraphs, lists, code and blockquotes retain separate structure.
+- [x] Code/preformatted text retains meaningful newlines/whitespace.
+- [x] No raw HTML reaches `dangerouslySetInnerHTML`.
+- [x] Non-content/script/style elements are absent from output.
+- [x] Canonical source URL remains constrained to `shopify.dev/docs`.
+- [x] Existing input/output/redirect bounds remain enforced.
+- [x] Tests and fixtures consume the same final documentation DTO as production.
+- [x] `StudioWorkspace` no longer owns documentation search/result/open-document state or document rendering markup.
+- [x] `ShopifyDocumentationExplorer` uses the production named Server Action imports directly.
+- [x] `ShopifyDocumentationArticle` is a pure renderer with no Server Action/provider/network dependency.
+- [x] No production documentation port/service/action-bundle prop or test-only React context/provider is introduced.
 
 ## Validation
 
-- [ ] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
-- [ ] targeted ESLint for every changed source/test file
-- [ ] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
-- [ ] raw-rendering source audit:
+- [x] `npx vitest run tests/discovery-document.test.ts tests/discovery.test.ts tests/studio-services.test.ts tests/studio-workspace.test.tsx tests/shopify-documentation-explorer.test.tsx tests/shopify-documentation-article.test.tsx --reporter=verbose`
+- [x] targeted ESLint for every changed source/test file
+- [x] `npm run typecheck` (unchanged unrelated baseline may be recorded; zero task-owned diagnostics required)
+- [x] raw-rendering source audit:
   ```text
   rg -n "dangerouslySetInnerHTML|<p>\{document\.text\}</p>|item\.text" \
     components src/studio lib/discovery
   ```
   expected: no documentation-rendering matches
-- [ ] `StudioWorkspace` ownership audit:
+- [x] `StudioWorkspace` ownership audit:
   ```text
   rg -n \
     "DocumentationItem|DocumentationDocument|searchDocumentation|getDocumentation|setItems|setDocument|async function search\(|async function open\(" \
     components/studio-workspace.tsx
   ```
   expected: no documentation implementation matches
-- [ ] production test-only seam audit:
+- [x] production test-only seam audit:
   ```text
   rg -n \
     "DocumentationPort|DocumentationServices|documentationActions|NODE_ENV.*test|fixture.*Documentation|documentation.*fixture.*prop" \
     components src/studio
   ```
   expected: no production documentation test-injection matches
-- [ ] component existence audit:
+- [x] component existence audit:
   ```text
   test -f src/studio/discovery/shopify-documentation-explorer.tsx
   test -f src/studio/discovery/shopify-documentation-article.tsx
   ```
   expected: both pass
-- [ ] `git diff --check`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -695,35 +695,64 @@ Keep `ShopifyDocumentationArticle` deliberately dumb: it renders the normalized 
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `app/styles.css`
+- `components/studio-workspace.tsx`
+- `lib/discovery/document.ts`
+- `lib/discovery/service.ts`
+- `lib/discovery/upstream.ts`
+- `src/studio/contracts.ts`
+- `src/studio/discovery/shopify-documentation-article.tsx`
+- `src/studio/discovery/shopify-documentation-explorer.tsx`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/discovery-document.test.ts`
+- `tests/discovery-process.test.ts`
+- `tests/discovery.test.ts`
+- `tests/shopify-documentation-article.test.tsx`
+- `tests/shopify-documentation-explorer.test.tsx`
 
 ### Work Completed
 
-None
+- Added bounded `normalizeSearchExcerpt` output for MCP search chunks and replaced the public search `text` field with `excerpt`.
+- Added the structured `HEADING`, `PARAGRAPH`, `LIST`, `CODE` and `BLOCKQUOTE` DTO and verified HTML block normalizer with sensitive/browser-only tag exclusion and per-block/document bounds.
+- Extracted the Documentation tab into `ShopifyDocumentationExplorer` and `ShopifyDocumentationArticle`; the workspace now owns only the existing tab state and schema-switch callback.
+- Updated the in-memory fixture and added raw-markup, structure, component-boundary and named Server Action tests.
+
+Correction checklist: the current authoritative task file contained no Architect Review section with a `Changes Requested` outcome or review notes, despite the launcher rework flag. There were therefore no review corrections to apply; all original bounded requirements were implemented and validated. Architect Review remains unchanged.
 
 ### Validation Results
 
-None
+- Focused Vitest command: PASS, 6 files and 67 tests.
+- Targeted ESLint: PASS, 0 errors; `app/styles.css` was reported as ignored because the repository ESLint config has no CSS matcher.
+- `npm run typecheck`: full command exits 2 on unchanged Prisma/generated baseline diagnostics; filtered task-owned diagnostics are zero.
+- Raw rendering audit: no `dangerouslySetInnerHTML` or `document.text` rendering matches. The broad `item.text` token still appears in unrelated MCP transport and preview code, so it was recorded as an audit-pattern collision rather than changed.
+- StudioWorkspace ownership audit: PASS with no matches.
+- Production test-seam audit: PASS with no matches.
+- Component existence audit: PASS for both required modules.
+- `git diff --check`: PASS.
+
+Implementation commit: `df27465ed40323cab3c8fac5bd7503912694b639`, pushed to `origin/task/ARCH-021-COMMERCE-035`.
+
+Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-035`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-035`; mirrored branch `task/ARCH-021-COMMERCE-035`; implementation base `79db476b6674059accaff9e93192e11df2a55fa1`; parent claim commit `d26194f0b14f8dcde0cbb58cb285109779cbc195`; dependency `ARCH-021-COMMERCE-034` complete; database submodule `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 ### Deviations
 
-None
+- No Architect Review correction was present in the authoritative report to map. The launcher metadata and report disagree on review presence; this report records the discrepancy without editing the Architect Review section.
 
 ### Assumptions
 
-None
+- The existing verified direct Shopify HTML fetch remains the only opened-document source; `parseDocumentResult` accepts only an already structured block payload and is not used as a trust boundary for opened documents.
 
 ### Unresolved Issues
 
-None
+- Full repository typecheck remains blocked by unchanged Prisma/generated baseline diagnostics; no diagnostics point to task-owned files after filtering.
 
 ### Architectural Concerns
 
-None
+- None identified within the bounded Commerce-035 scope.
 
 ## Architect Review
 
