@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-25T14:39:30Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -166,7 +166,7 @@ Produces the authoritative External HTTP validation/preview boundary consumed by
 - [x] Validation creates no evidence that can satisfy the Phase 3 publication gate.
 
 ### Validation
-- [x] `npm run test:arch021-external-tool-authoring-validation` (2 files, 24 tests passed, zero skipped)
+- [x] `npm run test:arch021-external-tool-authoring-validation` (2 files, 37 tests passed, zero skipped)
 - [x] `npm run test:arch020-external-publication` (1 file, 13 tests passed)
 - [x] required Commerce-016/017/019 contract and authorization suite (6 files, 42 tests passed)
 - [x] required ESLint scope (clean)
@@ -202,33 +202,35 @@ Ready for Review
 - Attempt 2 correction mapping: strict preview DTO parsing now occurs before processor construction; only known template incompatibilities map to `/responseTemplate`, while visual projection incompatibilities remain under `/execution/responseProcessing`; runtime processor failures remain explicit internal errors.
 - Added executable Server Action tests for authorization denial, database/error mapping, strict DTO rejection, safe descriptor output, and runtime error mapping.
 - Added production integration proof with injected DNS and transport spies; authoring validation performs neither provider operation.
+- Attempt 3 adds the canonical 16,384 UTF-8-byte preview-source ceiling, representative forbidden top-level DTO rejection, missing/invalid/absent JavaScript descriptor coverage, full-definition compiler infrastructure error classification, LIST projection diagnostics, and credential-read non-access proof.
 
 ### Validation Results
-- Launcher packet: deterministic prepare was invoked for `ARCH-021-COMMERCE-023 --prepare --executor copilot --json`; it returned `TASK_NOT_READY` because the task was already claimed by `copilot` in `in_progress`. Work resumed in parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-023` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-023`, branch `task/ARCH-021-COMMERCE-023`, Attempt 2, `execution_mode: agent`; no claim was overwritten.
-- Start synchronization evidence: the existing Attempt 2 claim and dedicated implementation worktree were verified before edits; implementation HEAD was `fb5ed5b` before the Attempt 2 correction commit.
-- Recursive submodule evidence: implementation validation was run from the dedicated commerce worktree with the database dependency at launcher-packet SHA `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Claim/implementation publication: implementation commit `9612be2b1cbcb5b0d34c863e2bf1f4bd568c2314` is pushed to `origin/task/ARCH-021-COMMERCE-023`; local and remote SHAs match and the implementation worktree is clean.
-- `npm run test:arch021-external-tool-authoring-validation`: PASS, 2 files and 24 tests.
+- Fresh Attempt 3 launcher packet: prepare succeeded with `prepared_execution: true`, `status: in_progress`, dependency gate passed, execution state claimed, and claim commit `29ef7fabe444984963f617c826aef8d7d9b6d06b` pushed. Claim changed status from `ready` to `in_progress`, incremented attempt from 2 to 3, and recorded executor `copilot` at `2026-09-25T14:39:30Z`.
+- Start synchronization evidence: parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-023`, branch `task/ARCH-021-COMMERCE-023`, was reused at launcher head `76c461c4617ff402fe75d9fb65666bde48579b71`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-023`, branch `task/ARCH-021-COMMERCE-023`, was reused at launcher head `3874a282ce400dac444aa86e9f4a4ce0431b9358`; both incorporated current `origin/main` and required no task-branch fast-forward.
+- Recursive submodule evidence: `git submodule sync --recursive` and `git submodule update --init --recursive` passed; recursive status was ready and database submodule commit was `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation publication: Attempt 3 commit `1b1e3484eb4446c5ae2e002ec7f85706c073a2db` is pushed to `origin/task/ARCH-021-COMMERCE-023`; local and remote SHAs match and the implementation worktree is clean.
+- `npm run test:arch021-external-tool-authoring-validation`: PASS, 2 files and 37 tests.
 - `npm run test:arch020-external-publication`: PASS, 1 file and 13 tests.
 - Required contract/authorization command: PASS, 6 files and 42 tests.
 - Required ESLint scope: PASS.
 - `git diff --check`: PASS.
 - `npm run typecheck`: non-zero only for 15 unrelated diagnostics in 7 untouched files; zero diagnostics remain in task-owned files.
+- Final parent report publication: parent branch remains `task/ARCH-021-COMMERCE-023`; the final report commit is published after this reconciliation, with local/remote parity and a clean parent worktree recorded at handoff.
 
 ### Deviations
 - None from the bounded Commerce-023 scope. No Shopify Admin validation, live HTTP request, credential display/decryption, live-test receipt, or Tool UI was added.
 
 ### Assumptions
 - The existing `requireStudioPlatformRole('ADMIN')` hierarchy helper is the authoritative admission contract for platform administrators and super administrators and denial for merchant roles.
-- The Attempt 2 implementation branch commit is `9612be2b1cbcb5b0d34c863e2bf1f4bd568c2314`.
+- The Attempt 3 implementation branch commit is `1b1e3484eb4446c5ae2e002ec7f85706c073a2db`.
 
 ### Unresolved Issues
 - Repository-wide typecheck remains non-zero because of 15 unrelated existing diagnostics in untouched files: the code-response preview route imports, agent-configuration tests, C20 fixture test, external wiring test, local MCP diagnostic test, and selected-shop-context tests.
 - Repository-wide typecheck remains non-zero because of 15 unrelated existing diagnostics in untouched preview, agent-configuration, C20 fixture, external-wiring, local MCP diagnostic, and selected-shop-context files.
-- No C023-owned unresolved issue remains. The previously recorded Commerce-013 integration failures were not part of the Attempt 2 required validation command and remain outside this task-owned diff.
+- No C023-owned unresolved issue remains. The previously recorded Commerce-013 integration failures were not part of the Attempt 3 required validation command and remain outside this task-owned diff.
 
 ### Architectural Concerns
-No new architectural concerns. Attempt 2 addresses the requested visual diagnostic boundary, strict preview DTO ordering, runtime error classification, and executable Server Action/provider-I/O proofs.
+No new architectural concerns. Attempt 3 preserves the accepted Attempt 2 behavior and adds the canonical UTF-8 source bound, complete preview invalid-input proofs, full-definition runtime classification, credential boundary proof, and LIST projection coverage.
 
 ## Architect Review
 
