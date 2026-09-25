@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 45
 executor: null
 claimed_at: null
@@ -313,19 +313,141 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
-None
+
+#### Attempt 1 review — 2026-09-25
+
+Reviewed implementation `4fb736076901639b17b3d2f93061fc4b8c225173` and the submitted Completion Report against the COMMERCE-036 task contract.
+
+The implementation is architecturally conformant in substance and MUST be preserved:
+
+- `createToolWithInitialDraft` is one lifecycle command using the existing `CREATE_TOOL` operation/audit identity;
+- the complete proposed DRAFT is parsed by the canonical `CommerceToolDraftDefinitionSchema` and then passed through `validateToolDraftDefinition`;
+- definition `name` must equal the immutable Tool `name`;
+- one transaction/state mutation creates the enabled Tool plus revision 1 with `editVersion: 1` and `status: DRAFT`;
+- the command returns `toolId`, `toolRevisionId`, `editVersion` and `updatedAt` directly;
+- the existing generic command boundary includes the complete request in the operation payload hash, replays an identical committed operation, rejects conflicting reuse, and records both created identifiers in one audit result;
+- injected pre-audit failure rolls back the Tool, Tool revision, audit and operation record in the fixture transaction;
+- the task did not introduce a database migration, Prisma persistence-path change, Studio Server Action, or browser authoring change.
+
+No repository source or test correction is requested from this review. Do not manufacture code churn or a replacement implementation commit solely for Attempt 2.
+
+The task cannot yet be accepted because the durable execution record was returned in `status: review` without reconciling the implementing-agent-owned checklist state required by the task protocol:
+
+```text
+Work Items:          0 / 8 checked
+Acceptance Criteria: 0 / 11 checked
+Validation:          0 / 5 checked
+```
+
+The Completion Report also uses:
+
+```text
+Attempt 1 implementation complete; returned to architect review.
+```
+
+instead of the canonical Completion Report status `Ready for Review`.
+
+This is a report/workflow correction, not an implementation defect. The following is the complete Attempt 2 correction contract.
+
+##### A1-R1 — reconcile Work Items and Acceptance Criteria
+
+Update this task file only as necessary to reconcile the implementing-agent-owned checklist state to the already-submitted implementation evidence.
+
+For each Work Item and Acceptance Criterion:
+
+1. mark it complete only when the Attempt 1 implementation/tests actually prove it;
+2. preserve the existing implementation at `4fb736076901639b17b3d2f93061fc4b8c225173`;
+3. if any item cannot truthfully be checked from the existing implementation, do not return the task to review — report the concrete implementation gap instead.
+
+The expected result from the reviewed source/tests is that all eight Work Items and all eleven Acceptance Criteria can be checked without source changes.
+
+##### A1-R2 — reconcile Validation and Completion Report status
+
+Reconcile the five Validation checkboxes to the recorded Attempt 1 results:
+
+```text
+npm run test:arch021-tool-authoring-common
+  -> 7 files / 81 tests passed
+
+focused tests/commerce-lifecycle.test.ts
+  -> 34 tests passed
+
+targeted TypeScript / npm run typecheck
+  -> repository baseline exited 2; no diagnostic in task-owned files
+
+targeted ESLint
+  -> passed with zero warnings
+
+git diff --check
+  -> passed
+```
+
+Set the Completion Report status exactly to:
+
+```text
+Ready for Review
+```
+
+Preserve the existing validation detail, baseline qualification, changed-file list, worktree/isolation evidence and implementation commit evidence.
+
+##### A1-R3 — report-only correction; no implementation rework required
+
+No source/test modification is required by this Architect Review. In particular, do not change:
+
+```text
+src/commerce/publication/lifecycle.ts
+tests/commerce-lifecycle.test.ts
+```
+
+solely to create a new implementation commit.
+
+The existing Attempt 1 validation evidence may be reused for this report-only reconciliation. A full test rerun is not required merely because the task markdown is corrected. Run `git diff --check` for the final task/report change and record the result.
+
+If the reconciliation process reveals that any checked claim would be false, stop and report that discrepancy instead of papering over it.
+
+##### A1-R4 — final Attempt 2 handoff state
+
+On the authorized Attempt 2 claim, increment `attempt` exactly once. Before returning to architect review, leave exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+Record the final parent report commit/push parity and clean parent/implementation worktree state. The implementation commit may remain `4fb736076901639b17b3d2f93061fc4b8c225173` when no source change is needed.
+
+`ARCH-021-COMMERCE-037` remains gated and MUST NOT start until COMMERCE-036 is architect-accepted Complete.
 
 ### Reviewed Files
-None
+
+- `docs/decisions/commerce/ARCH-021/COMMERCE-036-create-tool-with-initial-draft-atomically.md`
+- `moda-interact-commerce/src/commerce/publication/lifecycle.ts`
+- `moda-interact-commerce/src/commerce/publication/ports.ts`
+- `moda-interact-commerce/src/commerce/publication/validation.ts`
+- `moda-interact-commerce/src/commerce/tool-definition/contracts.ts`
+- `moda-interact-commerce/tests/commerce-lifecycle.test.ts`
 
 ### Validation Reviewed
-None
+
+- Inspected the actual lifecycle implementation and focused regression additions from the submitted handoff snapshot.
+- Reviewed the submitted common-suite result: 81/81 passed.
+- Reviewed the submitted focused lifecycle result: 34/34 passed.
+- Reviewed the submitted targeted ESLint and `git diff --check` results as clean.
+- Reviewed the submitted TypeScript result as baseline-only outside task-owned files.
+- Confirmed the command remains on the existing storage-agnostic lifecycle transaction boundary; the narrow Prisma path remains correctly deferred to COMMERCE-037.
+- Confirmed no schema/migration change is required by the reviewed implementation.
 
 ### Architecture Conformance
-Pending
+
+Implementation: Conformant.
+
+Durable task/report state: Non-conformant until Attempt 2 reconciles the required Work Items, Acceptance Criteria, Validation checkboxes and canonical Completion Report status.
 
 ### Follow-up
-None
+
+Return the same task through `/moda-task ARCH-021-COMMERCE-036` for the report-only Attempt 2 correction above. Do not start COMMERCE-037.
