@@ -9,18 +9,18 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 45
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-016
   - ARCH-021-COMMERCE-020
 enables:
   - ARCH-021-COMMERCE-037
 created: 2026-09-25
-updated: 2026-09-25
+updated: 2026-09-26
 ---
 
 # Create a Tool and its initial draft as one lifecycle operation
@@ -199,14 +199,14 @@ This task introduces the new atomic capability without opportunistically deletin
 
 ## Work Items
 
-- [ ] Add the initial Tool + draft command schema/type.
-- [ ] Add the lifecycle operation using the canonical draft-definition validator.
-- [ ] Create Tool and revision 1 in one lifecycle transaction/state mutation.
-- [ ] Record one replay/audit result containing `toolId` and `toolRevisionId`.
-- [ ] Add identical-replay and conflicting-reuse tests.
-- [ ] Add Tool-name conflict and definition-name mismatch tests.
-- [ ] Add atomic rollback regression coverage.
-- [ ] Preserve existing Tool lifecycle operations unchanged.
+- [x] Add the initial Tool + draft command schema/type.
+- [x] Add the lifecycle operation using the canonical draft-definition validator.
+- [x] Create Tool and revision 1 in one lifecycle transaction/state mutation.
+- [x] Record one replay/audit result containing `toolId` and `toolRevisionId`.
+- [x] Add identical-replay and conflicting-reuse tests.
+- [x] Add Tool-name conflict and definition-name mismatch tests.
+- [x] Add atomic rollback regression coverage.
+- [x] Preserve existing Tool lifecycle operations unchanged.
 
 ## Interfaces / Contracts
 
@@ -241,25 +241,25 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] One lifecycle call creates the Tool and revision 1 `DRAFT` together.
-- [ ] A successful result contains both `toolId` and `toolRevisionId`.
-- [ ] No successful initial-creation command can produce a Tool with zero revisions.
-- [ ] The initial revision uses `revisionNumber: 1`, `editVersion: 1` and `status: DRAFT`.
-- [ ] The canonical draft-definition validator is used and definition name must equal Tool name.
-- [ ] One operation/audit result records both created identifiers.
-- [ ] Identical operation replay creates no duplicate Tool/revision and returns the original result.
-- [ ] Altered operation reuse is rejected deterministically.
-- [ ] Injected transaction failure leaves neither created object committed in fixture state.
-- [ ] Existing Tool lifecycle methods and their tests remain valid.
-- [ ] No database migration is introduced.
+- [x] One lifecycle call creates the Tool and revision 1 `DRAFT` together.
+- [x] A successful result contains both `toolId` and `toolRevisionId`.
+- [x] No successful initial-creation command can produce a Tool with zero revisions.
+- [x] The initial revision uses `revisionNumber: 1`, `editVersion: 1` and `status: DRAFT`.
+- [x] The canonical draft-definition validator is used and definition name must equal Tool name.
+- [x] One operation/audit result records both created identifiers.
+- [x] Identical operation replay creates no duplicate Tool/revision and returns the original result.
+- [x] Altered operation reuse is rejected deterministically.
+- [x] Injected transaction failure leaves neither created object committed in fixture state.
+- [x] Existing Tool lifecycle methods and their tests remain valid.
+- [x] No database migration is introduced.
 
 ## Validation
 
-- [ ] `npm run test:arch021-tool-authoring-common`
-- [ ] focused `tests/commerce-lifecycle.test.ts` initial-create/replay/rollback cases
-- [ ] targeted TypeScript diagnostics for changed files or `npm run typecheck` when repository baseline permits
-- [ ] targeted ESLint for changed files or `npm run lint` when repository baseline permits
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-tool-authoring-common`
+- [x] focused `tests/commerce-lifecycle.test.ts` initial-create/replay/rollback cases
+- [x] targeted TypeScript diagnostics for changed files or `npm run typecheck` when repository baseline permits
+- [x] targeted ESLint for changed files or `npm run lint` when repository baseline permits
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -274,25 +274,40 @@ Do not add a `CREATE_TOOL_WITH_INITIAL_DRAFT` Prisma enum value. The business/au
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review
 
 ### Files Changed
-None
+- `src/commerce/publication/lifecycle.ts`
+- `tests/commerce-lifecycle.test.ts`
 
 ### Work Completed
-None
+- Added `createToolWithInitialDraft`, using one `CREATE_TOOL` lifecycle command and transaction for Tool plus revision-one `DRAFT` creation.
+- Applied canonical `CommerceToolDraftDefinitionSchema` validation and required the definition name to match the Tool name.
+- Returned `toolId`, `toolRevisionId`, `editVersion: 1`, and the Tool `updatedAt` from the single operation.
+- Preserved replay/conflict behavior and recorded both created identifiers in one audit/result envelope.
+- Added atomic rollback, replay, conflict, mismatch, revision-shape, and legacy compatibility coverage.
 
 ### Validation Results
-None
+- `npm run test:arch021-tool-authoring-common`: 7 files passed, 81 tests passed.
+- Focused `tests/commerce-lifecycle.test.ts`: 34 tests passed.
+- Targeted ESLint for changed files: passed with zero warnings.
+- `git diff --check`: passed.
+- `npm run typecheck`: repository baseline exited 2; no diagnostics referenced task-owned files.
+- No database migration, Prisma persistence-path change, Studio Server Action, or browser authoring refactor was introduced.
 
 ### Deviations
-None
+- The fresh implementation worktree required `npm ci` before validation because dependencies were not materialized; package installation completed successfully with existing peer/engine/audit warnings.
 
 ### Assumptions
-None
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-036`, branch `task/ARCH-021-COMMERCE-036`, claim commit `81239640d90371611fd0fafab1750e8339a8154c`, synchronized with its remote branch.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-036`, branch `task/ARCH-021-COMMERCE-036`, implementation commit `4fb736076901639b17b3d2f93061fc4b8c225173`, synchronized with `origin/task/ARCH-021-COMMERCE-036`.
+- Recursive database submodule evidence: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Attempt 2 claim commit: `86ac3dd2490f6f7e65c9e823fe6dced0d1351863`, pushed and synchronized before this report-only correction.
+- Parent report branch is clean and local/remote parity was verified after the report-only correction was pushed.
 
 ### Unresolved Issues
-None
+Repository-wide typecheck remains baseline-bearing outside the task-owned files and was not altered.
 
 ### Architectural Concerns
 None
@@ -300,19 +315,176 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
-None
+
+#### Attempt 2 review — 2026-09-26
+
+Reviewed the preserved implementation `4fb736076901639b17b3d2f93061fc4b8c225173` and the submitted report-only parent handoff `4ac637f0` against the complete Attempt 1 correction contract.
+
+Accepted. Attempt 1 had already established that the implementation is architecturally conformant. Attempt 2 correctly performs only the requested durable-record reconciliation:
+
+- all 8/8 Work Items are checked against the already-reviewed implementation;
+- all 11/11 Acceptance Criteria are checked against the already-reviewed implementation/tests;
+- all 5/5 required Validation items are reconciled to the recorded Attempt 1 evidence;
+- Completion Report status is exactly `Ready for Review`;
+- final execution metadata is `status: review`, `attempt: 2`, `executor: null`, `claimed_at: null` before this acceptance;
+- the implementation commit remains `4fb736076901639b17b3d2f93061fc4b8c225173`;
+- comparison of the submitted Attempt 1 and Attempt 2 workspace snapshots shows that the task markdown is the only changed file; `src/commerce/publication/lifecycle.ts` and `tests/commerce-lifecycle.test.ts` are unchanged.
+
+The accepted implementation therefore remains exactly the lifecycle capability reviewed in Attempt 1: one `CREATE_TOOL` operation creates the Tool plus revision-1 `DRAFT`, validates the canonical draft definition/name relationship, returns both durable identifiers, preserves replay/conflict semantics, and rolls back atomically at the lifecycle transaction boundary.
+
+No additional implementation rerun is required for this report-only correction. The accepted validation evidence remains:
+
+```text
+npm run test:arch021-tool-authoring-common
+  -> 7 files / 81 tests passed
+
+focused tests/commerce-lifecycle.test.ts
+  -> 34 tests passed
+
+targeted ESLint
+  -> passed with zero warnings
+
+npm run typecheck
+  -> repository baseline exited 2; zero diagnostics in task-owned files
+
+git diff --check
+  -> passed
+```
+
+`ARCH-021-COMMERCE-036` is Complete. Its direct dependent `ARCH-021-COMMERCE-037` is promoted from Pending to Ready. `ARCH-021-COMMERCE-038` and `ARCH-021-COMMERCE-039` remain dependency-gated.
+
+#### Attempt 1 review — 2026-09-25
+
+Reviewed implementation `4fb736076901639b17b3d2f93061fc4b8c225173` and the submitted Completion Report against the COMMERCE-036 task contract.
+
+The implementation is architecturally conformant in substance and MUST be preserved:
+
+- `createToolWithInitialDraft` is one lifecycle command using the existing `CREATE_TOOL` operation/audit identity;
+- the complete proposed DRAFT is parsed by the canonical `CommerceToolDraftDefinitionSchema` and then passed through `validateToolDraftDefinition`;
+- definition `name` must equal the immutable Tool `name`;
+- one transaction/state mutation creates the enabled Tool plus revision 1 with `editVersion: 1` and `status: DRAFT`;
+- the command returns `toolId`, `toolRevisionId`, `editVersion` and `updatedAt` directly;
+- the existing generic command boundary includes the complete request in the operation payload hash, replays an identical committed operation, rejects conflicting reuse, and records both created identifiers in one audit result;
+- injected pre-audit failure rolls back the Tool, Tool revision, audit and operation record in the fixture transaction;
+- the task did not introduce a database migration, Prisma persistence-path change, Studio Server Action, or browser authoring change.
+
+No repository source or test correction is requested from this review. Do not manufacture code churn or a replacement implementation commit solely for Attempt 2.
+
+The task cannot yet be accepted because the durable execution record was returned in `status: review` without reconciling the implementing-agent-owned checklist state required by the task protocol:
+
+```text
+Work Items:          0 / 8 checked
+Acceptance Criteria: 0 / 11 checked
+Validation:          0 / 5 checked
+```
+
+The Completion Report also uses:
+
+```text
+Attempt 1 implementation complete; returned to architect review.
+```
+
+instead of the canonical Completion Report status `Ready for Review`.
+
+This is a report/workflow correction, not an implementation defect. The following is the complete Attempt 2 correction contract.
+
+##### A1-R1 — reconcile Work Items and Acceptance Criteria
+
+Update this task file only as necessary to reconcile the implementing-agent-owned checklist state to the already-submitted implementation evidence.
+
+For each Work Item and Acceptance Criterion:
+
+1. mark it complete only when the Attempt 1 implementation/tests actually prove it;
+2. preserve the existing implementation at `4fb736076901639b17b3d2f93061fc4b8c225173`;
+3. if any item cannot truthfully be checked from the existing implementation, do not return the task to review — report the concrete implementation gap instead.
+
+The expected result from the reviewed source/tests is that all eight Work Items and all eleven Acceptance Criteria can be checked without source changes.
+
+##### A1-R2 — reconcile Validation and Completion Report status
+
+Reconcile the five Validation checkboxes to the recorded Attempt 1 results:
+
+```text
+npm run test:arch021-tool-authoring-common
+  -> 7 files / 81 tests passed
+
+focused tests/commerce-lifecycle.test.ts
+  -> 34 tests passed
+
+targeted TypeScript / npm run typecheck
+  -> repository baseline exited 2; no diagnostic in task-owned files
+
+targeted ESLint
+  -> passed with zero warnings
+
+git diff --check
+  -> passed
+```
+
+Set the Completion Report status exactly to:
+
+```text
+Ready for Review
+```
+
+Preserve the existing validation detail, baseline qualification, changed-file list, worktree/isolation evidence and implementation commit evidence.
+
+##### A1-R3 — report-only correction; no implementation rework required
+
+No source/test modification is required by this Architect Review. In particular, do not change:
+
+```text
+src/commerce/publication/lifecycle.ts
+tests/commerce-lifecycle.test.ts
+```
+
+solely to create a new implementation commit.
+
+The existing Attempt 1 validation evidence may be reused for this report-only reconciliation. A full test rerun is not required merely because the task markdown is corrected. Run `git diff --check` for the final task/report change and record the result.
+
+If the reconciliation process reveals that any checked claim would be false, stop and report that discrepancy instead of papering over it.
+
+##### A1-R4 — final Attempt 2 handoff state
+
+On the authorized Attempt 2 claim, increment `attempt` exactly once. Before returning to architect review, leave exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+Record the final parent report commit/push parity and clean parent/implementation worktree state. The implementation commit may remain `4fb736076901639b17b3d2f93061fc4b8c225173` when no source change is needed.
+
+`ARCH-021-COMMERCE-037` remains gated and MUST NOT start until COMMERCE-036 is architect-accepted Complete.
 
 ### Reviewed Files
-None
+
+- `docs/decisions/commerce/ARCH-021/COMMERCE-036-create-tool-with-initial-draft-atomically.md`
+- `moda-interact-commerce/src/commerce/publication/lifecycle.ts`
+- `moda-interact-commerce/src/commerce/publication/ports.ts`
+- `moda-interact-commerce/src/commerce/publication/validation.ts`
+- `moda-interact-commerce/src/commerce/tool-definition/contracts.ts`
+- `moda-interact-commerce/tests/commerce-lifecycle.test.ts`
 
 ### Validation Reviewed
-None
+
+- Inspected the actual lifecycle implementation and focused regression additions from the submitted handoff snapshot.
+- Reviewed the submitted common-suite result: 81/81 passed.
+- Reviewed the submitted focused lifecycle result: 34/34 passed.
+- Reviewed the submitted targeted ESLint and `git diff --check` results as clean.
+- Reviewed the submitted TypeScript result as baseline-only outside task-owned files.
+- Confirmed the command remains on the existing storage-agnostic lifecycle transaction boundary; the narrow Prisma path remains correctly deferred to COMMERCE-037.
+- Confirmed no schema/migration change is required by the reviewed implementation.
 
 ### Architecture Conformance
-Pending
+
+Accepted. The implementation conforms to the COMMERCE-036 lifecycle scope and the Attempt 2 durable task/report state now conforms to the execution protocol. The narrow PostgreSQL persistence optimization remains correctly deferred to COMMERCE-037.
 
 ### Follow-up
-None
+
+`ARCH-021-COMMERCE-037` is promoted to `ready`. COMMERCE-038 and COMMERCE-039 remain dependency-gated.
