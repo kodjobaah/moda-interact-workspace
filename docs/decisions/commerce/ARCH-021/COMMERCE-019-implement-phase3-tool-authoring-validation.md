@@ -281,9 +281,10 @@ Ready for Review
 - Added named server actions for definition and argument validation using `requireStudioPlatformRole('ADMIN')` directly; no alternate auth model, client credentials, or browser-side provider access.
 - Added exact `/liveTest` and `LIVE_TEST_REQUIRED` propagation for `EXTERNAL_HTTP` and `SHOPIFY_ADMIN_GRAPHQL`; synthetic receipts no longer satisfy the Phase 3 gate.
 - Preserved sample/receipt storage tests as test assets and retained historical published revisions unchanged.
-- Implementation commit: `b4d023d0e59894b99ebc2ed929c26f5e63e6c981`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
+- Implementation commits: `b4d023d0e59894b99ebc2ed929c26f5e63e6c981` and final alias commit `a20397d3d20ffe4d8a54dbfbf7a3a63a0a49a721`, pushed to `origin/task/ARCH-021-COMMERCE-019`.
 ### Validation Results
 - `npm run test:arch021-tool-authoring-validation`: passed, 6 tests.
+- `npm run test:arch021-tool-authoring-common`: passed, 6 tests.
 - `npm run test:arch020-external-publication`: passed, 12 tests.
 - `npm run test -- --run tests/auth-role-requirements.test.ts tests/auth-permissions.test.ts`: passed, 10 tests.
 - Targeted ESLint: passed.
