@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 35
 executor: null
 claimed_at: null
@@ -300,3 +300,28 @@ None
 Pending
 ### Follow-up
 None
+
+## Developer Override
+
+### Reopen Decision
+
+This task was explicitly reopened by the developer on 2026-09-25. The prior
+review remains historical; the task is returned to `ready` for a new execution
+attempt without incrementing `attempt`.
+
+### Previous Accepted Attempt
+
+The prior implementation attempt was attempt 1, recorded as `review` with
+implementation commit `db18555446f0c8f3a9601397941451bdb20b3714`.
+
+### Lifecycle Transition
+
+- `status: ready`
+- `executor: null`
+- `claimed_at: null`
+- `attempt: 1`
+
+### Downstream Eligibility
+
+`ARCH-021-COMMERCE-024` remains `pending` because this task is no longer in a
+complete state. No downstream status transition was required.
