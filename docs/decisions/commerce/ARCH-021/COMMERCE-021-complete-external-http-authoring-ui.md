@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -22,7 +22,7 @@ depends_on:
   - ARCH-021-COMMERCE-006
 enables: []
 created: 2026-09-23
-updated: 2026-09-25
+updated: 2026-09-26
 ---
 
 # Complete External HTTP request and response authoring UI
@@ -278,9 +278,146 @@ The implementation remains bounded to `moda-interact-commerce`; no cross-reposit
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 4
+Changes Requested — Attempt 5
 
 ### Review Notes
+
+#### Attempt 5 review — 2026-09-26
+
+Reviewed implementation `7a033f32c0ed76431b2a5f7db1e347ee278cbb81` and the submitted Attempt 5 task report against the complete Attempt 4 correction contract. The parent handoff was subsequently synchronized and pushed as merge commit `750a803c`; the developer reports both parent and implementation worktrees clean.
+
+Attempt 5 fixes the substantive implementation defects from Attempt 4 and those changes MUST be preserved:
+
+- incomplete EXTERNAL_HTTP DRAFT state is no longer cast to full `ToolDefinition`; the editor uses a DRAFT-capable state and narrows only the execution field;
+- the child `ExternalHttpEditor` contract now consumes only the execution-owned shape it actually needs;
+- authoring edits clear current external validation state/message and successful save preserves validation only when the persisted definition canonically equals the validated submitted candidate;
+- the UI regression consumes the exact `ToolSummary` returned by the production `createCommerceStudioServices(...).getTool(...)` incomplete-DRAFT read and preserves the incomplete JSON through Save/Validate;
+- the SUPER_ADMIN lifecycle covers dirty -> Save -> Validate -> publication gating and preserves typed `LIVE_TEST_REQUIRED`;
+- the focused packet is reported green (16/16 external UI; 67/67 four-file packet), targeted ESLint and `git diff --check` pass, and no task-owned TypeScript diagnostic remains.
+
+Attempt 5 is not accepted because one mandatory regression from A4-R2 is still not actually proved. This is a narrow test/report correction; no production-source change is expected unless the new regression exposes a defect.
+
+##### A5-R1 — add the exact stale-authoritative-validation regression required by A4-R2
+
+Change the minimum required file:
+
+```text
+tests/external-tools-ui.test.tsx
+```
+
+The existing SUPER_ADMIN regression currently does:
+
+```text
+initial clean DRAFT
+-> edit Description
+-> assert validation-success message is absent
+-> Save
+-> Validate
+-> publish
+```
+
+That does **not** prove stale validation-success invalidation, because no successful validation message exists before the edit. A4-R2 explicitly required:
+
+```text
+Validate current saved definition
+-> exact success message visible
+
+edit Description
+-> previous success message disappears immediately
+-> publish disabled
+
+Save changed definition successfully
+-> Saved. (or another non-validation save message) is visible
+-> previous validation-success message remains absent
+-> publish remains disabled
+
+Validate current saved definition again
+-> exact success message returns
+-> with nonblank reason SUPER_ADMIN publish becomes enabled
+```
+
+Add one focused regression that executes that exact sequence. Also prove at least one execution-field edit or Input JSON Schema edit invalidates an already-visible successful validation message, as required by A4-R2. This may be a second short assertion in the same test or a separate focused regression.
+
+The required success message remains exactly:
+
+```text
+Definition passed authoritative validation. Live test is required before publication.
+```
+
+The regression must fail if `validationMessage` survives an authored-content change. Do not merely assert the message is absent before the first validation.
+
+The current implementation already appears to satisfy this behavior through `invalidateExternalValidation()`. Preserve it. If the exact regression passes without production-source changes, do not churn `tool-editor.tsx`.
+
+##### A5-R2 — reconcile the Attempt 6 Completion Report
+
+Before returning to review, set the Completion Report status exactly to:
+
+```text
+Ready for Review
+```
+
+Record the fresh Attempt 6 launcher/preparation evidence that is available from the launcher packet, including parent/implementation worktree paths, branches, start synchronization, claim evidence and recursive submodule materialization. Record the accepted implementation lineage (`7a033f3` plus any test-only commit created by this correction) and the validation results.
+
+Do not attempt to place the SHA of the commit containing the report inside that same report. Final parent handoff commit/push parity may be supplied in the user handoff and recorded by `moda_architect` during review.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 6
+executor: null
+claimed_at: null
+```
+
+##### A5-R3 — focused validation
+
+Run the same task-required packet after the regression is added:
+
+```bash
+npm run test:arch020-external-tools-ui
+
+npm exec vitest run \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/studio-workspace.test.tsx \
+  tests/studio-integration.test.ts
+
+npm run typecheck
+
+npm exec eslint \
+  src/studio/external-http/editor.tsx \
+  src/studio/tools/tool-editor.tsx \
+  src/studio/contracts.ts \
+  src/commerce/integration/studio/services.ts \
+  src/commerce/publication/lifecycle.ts \
+  src/studio/testing/in-memory-studio-services.ts \
+  app/preview/page.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/studio-workspace.test.tsx \
+  tests/studio-integration.test.ts
+
+git diff --check
+```
+
+Existing unrelated repository typecheck diagnostics may remain only if no diagnostic references a COMMERCE-021 causal file.
+
+##### Attempt 6 stop condition
+
+Return to architect review only when:
+
+```text
+exact Validate -> edit -> stale-success-cleared -> Save -> still-cleared -> Validate regression passes
+AND at least one execution/input-schema edit also invalidates an already-visible success result
+AND all existing Attempt 5 regressions remain green
+AND no task-owned type/lint/diff diagnostic remains
+AND Completion Report status is exactly Ready for Review
+AND fresh Attempt 6 launcher/report evidence is reconciled
+```
+
+Then push the implementation/test branch and parent task branch, return control to `moda_architect`, and STOP. Do not implement Phase 4 live HTTP execution/testing and do not start COMMERCE-039.
+
+#### Historical Attempt 4 review
 
 #### Attempt 4 review — 2026-09-25
 
