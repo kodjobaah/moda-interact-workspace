@@ -121,13 +121,13 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Complete | COMMERCE-016, ARCH-020-COMMERCE-011 |
 | [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth/error contract and `LIVE_TEST_REQUIRED` publication gate | Complete | COMMERCE-016, COMMERCE-027, ARCH-020-COMMERCE-030 |
 | [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Complete | COMMERCE-016, 005, 006, 027, 029 |
-| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Ready | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
+| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Review | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
 | [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Complete | COMMERCE-019, 020, 024 |
 | [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Complete | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
 | [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Complete | COMMERCE-016, 018, 019 |
 | [COMMERCE-036](COMMERCE-036-create-tool-with-initial-draft-atomically.md) | Create Tool + revision-1 DRAFT as one lifecycle operation | Complete | COMMERCE-016, COMMERCE-020 |
 | [COMMERCE-037](COMMERCE-037-persist-initial-tool-with-narrow-transaction.md) | Persist initial Tool creation with a narrow PostgreSQL transaction | Complete | COMMERCE-036 |
-| [COMMERCE-038](COMMERCE-038-expose-atomic-tool-creation-boundary.md) | Expose atomic initial Tool creation through the Studio boundary | Ready | COMMERCE-037 |
+| [COMMERCE-038](COMMERCE-038-expose-atomic-tool-creation-boundary.md) | Expose atomic initial Tool creation through the Studio boundary | Complete | COMMERCE-037 |
 | [COMMERCE-039](COMMERCE-039-keep-new-tool-authoring-local-until-create.md) | Keep new Tool authoring local until final creation | Pending | COMMERCE-021, COMMERCE-022, COMMERCE-038 |
 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
@@ -135,15 +135,15 @@ Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 
 ```text
 COMMERCE-016 is architect-accepted Complete and the simplification implementation is Complete. The developer is intentionally holding terminal `ARCH-021-SYSTEM-TEST-001` until the implementation phases are finished; terminal system testing does not gate implementation.
 
-Current Phase 3 Ready frontier:
+Current Phase 3 coordination frontier:
 
 ```text
-COMMERCE-038   priority 47   Atomic initial-Tool Studio mutation boundary
-COMMERCE-021   priority 50   External HTTP request/response authoring UI
+COMMERCE-021   review        External HTTP request/response authoring UI
+COMMERCE-039   pending       Keep new Tool authoring local until final creation
 ```
 
-COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036 and COMMERCE-037 are architect-accepted Complete.
-COMMERCE-038 and COMMERCE-021 are independent Ready Phase 3 Commerce implementation tasks. COMMERCE-039 remains gated by COMMERCE-021 and COMMERCE-038.
+COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037 and COMMERCE-038 are architect-accepted Complete.
+COMMERCE-039 remains Pending because COMMERCE-021 is still in Review; COMMERCE-021 is now its sole unsatisfied dependency.
 ```
 
 
@@ -170,6 +170,10 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 Current checkpoint implementation frontier: none.
 
 COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. All terminal checkpoint implementation dependencies are Complete, so `ARCH-021-SYSTEM-TEST-001` remains Ready. The developer is intentionally holding terminal system tests until the implementation phases are finished and is using manual validation meanwhile; this Ready system-test task is not an implementation dependency and does not pause Phase 3.
+
+### COMMERCE-038 Attempt 2 accepted — 2026-09-26
+
+COMMERCE-038 is **Complete / Accepted, Attempt 2**. The named atomic initial-Tool Server Action now calls a real mutation method, returns exact composite identity directly without publication snapshot reconstruction, preserves exact audit-only reconciliation, and has direct success/`CONFLICT` Server Action coverage. The common packet passed 84 tests, the focused packet passed 31, changed-file ESLint/diff checks passed, and no task-owned TypeScript diagnostics remain. COMMERCE-039 remains Pending because COMMERCE-021 is still in Review; COMMERCE-021 is its sole remaining dependency gate.
 
 ### COMMERCE-037 Attempt 2 accepted — 2026-09-26
 
