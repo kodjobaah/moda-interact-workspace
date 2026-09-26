@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
 executor: null
 claimed_at: null
@@ -704,9 +704,47 @@ None.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 5
+Accepted — Attempt 6
 
 ### Review Notes
+
+#### Attempt 6 acceptance — 2026-09-26
+
+Reviewed implementation `9ba89bd` and the submitted Attempt 6 Completion Report against the complete Attempt 5 correction contract. The task is accepted and marked Complete.
+
+Accepted implementation outcomes:
+
+```text
+new Tool setup -> Continue authoring remains non-mutating
+all pre-create Tool authoring remains browser-local
+final Create performs exactly one createToolWithInitialDraft mutation
+exact toolId/toolRevisionId drive confirmed navigation and reconciliation
+legacy createTool -> createToolDraft staging remains absent
+Request / Response / Test are real component ownership boundaries
+new and persisted External authoring share the accepted tab shell and shared Agent/Review components
+local External preview remains no-provider and uses the accepted preview boundary
+current Admin candidate validation is non-mutating and final Create uses the validated candidate
+malformed JSON remains visible across tab unmount/remount and blocks final Create
+dirty abandonment discards local state and performs zero Tool mutations
+persisted DRAFT Save / Validate / publication authority and LIVE_TEST_REQUIRED semantics remain intact
+Phase 2 tab gating remains absent
+```
+
+Accepted validation evidence:
+
+```text
+npm run test:arch020-external-tools-ui        16/16 passed
+npm run test:arch021-tool-authoring-common    85/85 passed
+focused UI packet                              60/60 passed, zero skips
+focused ESLint                                 passed
+required source audits                         passed
+git diff --check                               passed
+full repository typecheck                      retains unrelated baseline diagnostics only; no Attempt 6 changed-file diagnostics
+```
+
+The developer clarified the product invariant for External HTTP authoring during review: a new `EXTERNAL_HTTP` Tool cannot enter authoring until the setup screen has selected an authorized connection revision; an existing persisted External DRAFT derives that revision from its durable definition. Therefore an absent/unresolvable External HTTP connection context is not a second supported authoring mode. Any residual fallback/unavailable-state issue discovered during the developer's manual validation is treated as non-blocking follow-up work and should be captured in a new bounded task rather than silently expanding COMMERCE-039.
+
+This acceptance is an implementation checkpoint for developer manual validation. It does not mark ARCH-021 Implemented and does not execute the deferred terminal system-test work.
 
 
 #### Attempt 5 formal architecture review — 2026-09-26
@@ -2955,37 +2993,44 @@ Return to `moda_architect` and STOP. Do not implement Phase 2 gating, Next/Previ
 ### Reviewed Files
 
 ```text
-moda-interact-commerce/src/studio/tools/tool-library.tsx
+moda-interact-commerce/src/studio/tools/new-tool-editor.tsx
 moda-interact-commerce/src/studio/tools/tool-authoring-screen.tsx
 moda-interact-commerce/src/studio/tools/tool-editor.tsx
+moda-interact-commerce/src/studio/tools/authoring/tool-authoring-tabs.tsx
+moda-interact-commerce/src/studio/tools/authoring/agent-contract-tab.tsx
+moda-interact-commerce/src/studio/tools/authoring/review-tab.tsx
 moda-interact-commerce/src/studio/external-http/editor.tsx
+moda-interact-commerce/src/studio/external-http/request-tab.tsx
+moda-interact-commerce/src/studio/external-http/response-tab.tsx
+moda-interact-commerce/src/studio/external-http/test-tab.tsx
 moda-interact-commerce/tests/tool-authoring-screen.test.tsx
 moda-interact-commerce/tests/external-tools-ui.test.tsx
 moda-interact-commerce/tests/studio-workspace.test.tsx
-moda-interact-commerce/app/styles.css
+moda-interact-commerce/tests/studio-integration.test.ts
 ```
 
 ### Validation Reviewed
 
-Submitted Attempt 1 evidence:
+Accepted Attempt 6 evidence:
 
 ```text
-implementation: 2914d56
-parent report: 18e1ef8c
-common Tool-authoring packet: 85 passed
-external UI: 16 passed
-focused packet: 56 passed
-targeted ESLint: passed
+implementation: 9ba89bd
+parent report handoff: faa0b409
+external UI: 16/16 passed
+common Tool-authoring packet: 85/85 passed
+focused packet: 60/60 passed, zero skips
+focused ESLint: passed
+required source audits: passed
 git diff --check: passed
-repository typecheck: baseline failures reported; no task-owned diagnostics reported
+repository typecheck: unrelated baseline diagnostics remain; no Attempt 6 changed-file diagnostics
+implementation and parent worktrees: reported clean and synchronized
+database submodule: 0a8d3b9feade69690b6c1e33aeda051ea588bd45
 ```
-
-The green packet does not prove the missing local-authoring flow because its new-tool tests invoke `Create tool` directly from the metadata form.
 
 ### Architecture Conformance
 
-Changes Requested. Atomic persistence/reconciliation mechanics conform, but the primary local-authoring-before-create behavior and accepted External HTTP authoring presentation do not yet conform.
+Accepted for COMMERCE-039 scope. The implementation satisfies the local-until-final-Create persistence model, atomic initial creation, exact-identity reconciliation, restored freely navigable authoring presentation and preserved existing-DRAFT durability semantics. External HTTP authoring is understood to require the authorized connection revision established before entry into the authoring flow.
 
 ### Follow-up
 
-Reclaim the same task as Attempt 2. Preserve the accepted Attempt 1 atomic mechanics and implement only the correction contract above.
+Developer manual validation is the next checkpoint. Any defects or presentation issues discovered during that validation should be captured as one or more new bounded architecture tasks with their own acceptance contracts. Do not reopen COMMERCE-039 merely for unrelated/manual-review follow-up unless the core local-only creation contract itself is shown to be invalid.
