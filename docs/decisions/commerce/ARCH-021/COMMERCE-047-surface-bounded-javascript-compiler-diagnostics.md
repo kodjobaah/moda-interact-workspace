@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: copilot
 claimed_at: 2026-09-26T16:22:17Z
@@ -289,14 +289,14 @@ Do not expose arbitrary `cause`, serialized exception objects or worker diagnost
 
 ## Work Items
 
-- [ ] Extend `KernelResult` with an optional bounded diagnostic message.
-- [ ] Preserve bounded QuickJS-NG `SYNTAX_ERROR` / entrypoint message in `worker.mjs`.
-- [ ] Preserve Request processor diagnostic message/line/column through `mapFailure(...)`.
-- [ ] Use the propagated Request compiler cause in `processorDiagnostic(...)` with the existing generic fallback.
-- [ ] Add runtime/processor/validation/Server Action regressions for diagnostic propagation.
-- [ ] Add one Request UI regression proving the exact returned authoring cause is visible.
-- [ ] Prove operational runtime failures remain separately classified and do not leak internal messages.
-- [ ] Preserve shared structured logging and prove no direct `console.*` runtime diagnostics are introduced.
+- [x] Extend `KernelResult` with an optional bounded diagnostic message.
+- [x] Preserve bounded QuickJS-NG `SYNTAX_ERROR` / entrypoint message in `worker.mjs`.
+- [x] Preserve Request processor diagnostic message/line/column through `mapFailure(...)`.
+- [x] Use the propagated Request compiler cause in `processorDiagnostic(...)` with the existing generic fallback.
+- [x] Add runtime/processor/validation/Server Action regressions for diagnostic propagation.
+- [x] Add one Request UI regression proving the exact returned authoring cause is visible.
+- [x] Prove operational runtime failures remain separately classified and do not leak internal messages.
+- [x] Preserve shared structured logging and prove no direct `console.*` runtime diagnostics are introduced.
 
 ## Interfaces / Contracts
 
@@ -334,18 +334,18 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] A malformed Request JavaScript source returns `SYNTAX_ERROR` with a non-empty bounded guest compiler message through the real SandboxKernel.
-- [ ] A missing/invalid `buildRequest` entrypoint returns `SYNTAX_ERROR` with a bounded useful cause.
-- [ ] Request processor `mapFailure(...)` preserves code/message/line/column for guest invalid-request diagnostics.
-- [ ] `validateExternalHttpRequest(...)` returns `/request/source` with the propagated compiler cause instead of the generic fallback when a safe message exists.
-- [ ] The Request Server Action returns the syntax issue as `kind: ok` / `valid: false`, not `INTERNAL_ERROR`.
-- [ ] The Request UI visibly displays the propagated compiler cause.
-- [ ] `Request processor did not compile` remains only the fallback when no bounded guest message exists.
-- [ ] `RUNTIME_UNAVAILABLE`, `DEADLINE`, `CANCELLED` and `THROTTLED` retain their existing operational classification and do not expose internal runtime messages to the browser.
-- [ ] Guest syntax/entrypoint failures do not create new error-level operational logs.
-- [ ] No guest source, stack, Tool arguments, request/response body/header data, credentials or absolute host paths are logged or returned as diagnostics.
-- [ ] COMMERCE-046 QuickJS-NG runtime packaging/worker/supervision behavior remains unchanged.
-- [ ] No Request workflow gating, Response UI change, database migration or provider execution is introduced.
+- [x] A malformed Request JavaScript source returns `SYNTAX_ERROR` with a non-empty bounded guest compiler message through the real SandboxKernel.
+- [x] A missing/invalid `buildRequest` entrypoint returns `SYNTAX_ERROR` with a bounded useful cause.
+- [x] Request processor `mapFailure(...)` preserves code/message/line/column for guest invalid-request diagnostics.
+- [x] `validateExternalHttpRequest(...)` returns `/request/source` with the propagated compiler cause instead of the generic fallback when a safe message exists.
+- [x] The Request Server Action returns the syntax issue as `kind: ok` / `valid: false`, not `INTERNAL_ERROR`.
+- [x] The Request UI visibly displays the propagated compiler cause.
+- [x] `Request processor did not compile` remains only the fallback when no bounded guest message exists.
+- [x] `RUNTIME_UNAVAILABLE`, `DEADLINE`, `CANCELLED` and `THROTTLED` retain their existing operational classification and do not expose internal runtime messages to the browser.
+- [x] Guest syntax/entrypoint failures do not create new error-level operational logs.
+- [x] No guest source, stack, Tool arguments, request/response body/header data, credentials or absolute host paths are logged or returned as diagnostics.
+- [x] COMMERCE-046 QuickJS-NG runtime packaging/worker/supervision behavior remains unchanged.
+- [x] No Request workflow gating, Response UI change, database migration or provider execution is introduced.
 
 ## Validation
 
@@ -421,16 +421,53 @@ Do not parse JavaScript in React and do not reconstruct compiler messages from c
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review
 
 ### Files Changed
-None
+- `src/commerce/code-runtime/types.ts`
+- `src/commerce/code-runtime/worker.mjs`
+- `src/commerce/code-request/processor.ts`
+- `src/commerce/tool-authoring/external-validation.ts`
+- `tests/code-runtime-proof.test.ts`
+- `tests/code-request-processor.test.ts`
+- `tests/external-tool-authoring-validation.test.ts`
+- `tests/external-tool-authoring-server-actions.test.ts`
+- `tests/external-tools-ui.test.tsx`
 
 ### Work Completed
-None
+- Guest compile/entrypoint failures now carry a sanitized QuickJS message capped at 512 UTF-8 bytes before leaving the worker; quoted token fragments and filesystem paths are removed, and only explicit finite line/column properties are retained.
+- Request processor mapping preserves syntax diagnostics and locations while operational codes remain message-free. Request-only validation displays the compiler message with the existing generic fallback when absent; Response diagnostics retain their previous presentation.
+- Regressions cover real QuickJS malformed/missing entrypoints, the Request processor, authoring validation, the Server Action `kind: ok` envelope, Request UI display, operational message suppression, and absence of error logs for expected syntax failures.
+- Physical worktree isolation:
+  - canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  - parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-047`
+  - parent branch: `task/ARCH-021-COMMERCE-047`
+  - implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-047`
+  - implementation branch: `task/ARCH-021-COMMERCE-047`
+  - shared workspace checkout switched/mutated for task work: no
+  - shared implementation checkout switched/mutated for task work: no
+  - another task worktree reused: no
+- Start-of-attempt synchronization:
+  - parent remote task branch fast-forwarded: not-needed
+  - parent `origin/main` incorporated: yes
+  - implementation remote task branch fast-forwarded: not-needed
+  - implementation `origin/main` incorporated: already-current
+- Recursive implementation submodules:
+  - `git submodule sync --recursive`: passed
+  - `git submodule update --init --recursive`: passed
+  - recorded submodule commit: `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`
 
 ### Validation Results
-None
+- `npm run code-runtime:package`: passed; runtime package hash remains `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9` and artifact set remains `manifest.json`, `quickjs.wasm`, `worker.mjs`.
+- `npm run code-runtime:smoke`: passed.
+- `npm run test:arch020-code-runtime-proof`: passed, 12 tests.
+- `npm run test:arch021-code-request`: passed, 7 tests.
+- `npm run test:arch021-external-tool-authoring-validation`: passed, 47 tests.
+- `npm run test:arch020-external-tools-ui`: passed, 21 tests.
+- Targeted ESLint, `node --check src/commerce/code-runtime/worker.mjs`, `git diff --check`, no-`console.*` runtime audit, and shared-logging import audit: passed.
+- `npm run prisma:generate`: passed after clean dependency installation.
+- `npm run typecheck`: blocked by the existing repository baseline, reproduced at 16 errors in 8 unchanged files. Diagnostics are: three missing preview imports in `app/api/studio/code-response/validate/route.ts`; missing `createToolWithInitialDraft` in `src/commerce/integration/studio/services.ts`; nullability errors in `tests/agent-configuration-effective.test.ts` and `tests/c20-integration-fixture.test.ts`; a `PromptResult` narrowing error in `tests/agent-configuration-prompts-postgres.test.ts`; an `McpRequestContext` mismatch in `tests/external-wiring.test.ts`; a response-contract `additionalProperties` type mismatch in `tests/local-external-mcp-diagnostic.test.ts`; and stale `resolveStudioShopSelection` call signatures in `tests/selected-shop-context.test.ts`. No typecheck diagnostics reference C047-changed files.
+- Implementation commit `4dccfab` was pushed to `origin/task/ARCH-021-COMMERCE-047`.
 
 ### Deviations
 None
@@ -439,7 +476,7 @@ None
 None
 
 ### Unresolved Issues
-None
+The unrelated repository typecheck baseline described above remains unresolved.
 
 ### Architectural Concerns
 None
