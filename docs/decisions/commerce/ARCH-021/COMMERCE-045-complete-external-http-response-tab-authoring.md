@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
 executor: copilot
 claimed_at: 2026-09-26T17:08:27Z
@@ -298,16 +298,16 @@ This task must not add locked tabs, mandatory Next/Previous progression or compl
 
 ## Work Items
 
-- [ ] Replace duplicate Result/Direct-result controls with one contextual Source path.
-- [ ] Wire the existing JavaScript response editor into new local-only Tool authoring and remove stale COMMERCE-027 copy.
-- [ ] Give JavaScript response editing a useful multi-line/resizable presentation.
-- [ ] Preserve invalid Response form values locally with field/row diagnostics.
-- [ ] Add `Validate response` using COMMERCE-044 and stale-success invalidation.
-- [ ] Make Visual controls the single primary processing editor and move processing JSON behind a read-only/secondary disclosure.
-- [ ] Add Visual projected-field Type authoring and COMMERCE-043 derived result-contract presentation.
-- [ ] Rename explicit Direct/JavaScript result-schema authoring to `Processed result schema`.
-- [ ] Preserve independent Direct/Visual/JavaScript local mode drafts across switches.
-- [ ] Add focused regressions for new/persisted draft parity, local-vs-durable state and no tab gating.
+- [x] Replace duplicate Result/Direct-result controls with one contextual Source path.
+- [x] Wire the existing JavaScript response editor into new local-only Tool authoring and remove stale COMMERCE-027 copy.
+- [x] Give JavaScript response editing a useful multi-line/resizable presentation.
+- [x] Preserve invalid Response form values locally with field/row diagnostics.
+- [x] Add `Validate response` using COMMERCE-044 and stale-success invalidation.
+- [x] Make Visual controls the single primary processing editor and move processing JSON behind a read-only/secondary disclosure.
+- [x] Add Visual projected-field Type authoring and COMMERCE-043 derived result-contract presentation.
+- [x] Rename explicit Direct/JavaScript result-schema authoring to `Processed result schema`.
+- [x] Preserve independent Direct/Visual/JavaScript local mode drafts across switches.
+- [x] Add focused regressions for new/persisted draft parity, local-vs-durable state and no tab gating.
 
 ## Interfaces / Contracts
 
@@ -342,33 +342,33 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Response tab uses one `Source path` control for Direct/Visual and none for JavaScript.
-- [ ] The duplicate `Direct result path` control no longer exists.
-- [ ] New-Tool JavaScript response authoring uses the real CodeMirror response editor; no COMMERCE-027 placeholder remains.
-- [ ] JavaScript editor has a usable multi-line, scrollable/resizable presentation.
-- [ ] Temporarily invalid Response values remain visible locally with actionable Response-tab errors.
-- [ ] `Validate response` validates only Response configuration and displayed success becomes stale on relevant edits.
-- [ ] Visual processing JSON is no longer an always-visible second required editor.
-- [ ] Visual fields expose Output name, Path, Type and Omit-if-missing semantics.
-- [ ] Visual `resultSchema` is generated from COMMERCE-043 and shown only as derived/read-only contract information.
-- [ ] Direct and JavaScript modes use the clearer `Processed result schema` label and retain explicit schema authoring until Test-tab sample inference is designed.
-- [ ] Direct/Visual/JavaScript local authoring survives mode switches within the session.
-- [ ] Only the active mode enters the canonical local definition; inactive mode drafts and invalid raw form state are not durably persisted.
-- [ ] Errors are shown in Response; other tabs remain freely navigable.
-- [ ] No live provider I/O, database migration or Phase 2 gating is introduced.
+- [x] Response tab uses one `Source path` control for Direct/Visual and none for JavaScript.
+- [x] The duplicate `Direct result path` control no longer exists.
+- [x] New-Tool JavaScript response authoring uses the real CodeMirror response editor; no COMMERCE-027 placeholder remains.
+- [x] JavaScript editor has a usable multi-line, scrollable/resizable presentation.
+- [x] Temporarily invalid Response values remain visible locally with actionable Response-tab errors.
+- [x] `Validate response` validates only Response configuration and displayed success becomes stale on relevant edits.
+- [x] Visual processing JSON is no longer an always-visible second required editor.
+- [x] Visual fields expose Output name, Path, Type and Omit-if-missing semantics.
+- [x] Visual `resultSchema` is generated from COMMERCE-043 and shown only as derived/read-only contract information.
+- [x] Direct and JavaScript modes use the clearer `Processed result schema` label and retain explicit schema authoring until Test-tab sample inference is designed.
+- [x] Direct/Visual/JavaScript local authoring survives mode switches within the session.
+- [x] Only the active mode enters the canonical local definition; inactive mode drafts and invalid raw form state are not durably persisted.
+- [x] Errors are shown in Response; other tabs remain freely navigable.
+- [x] No live provider I/O, database migration or Phase 2 gating is introduced.
 
 ## Validation
 
-- [ ] focused External HTTP Response-tab UI tests for Direct/Visual/JavaScript
-- [ ] focused new-Tool local-only JavaScript panel regression
-- [ ] focused Visual derived-contract UI/round-trip tests
-- [ ] focused invalid raw-state retention and Response validation diagnostics
-- [ ] focused mode-switch retention tests for new and persisted-DRAFT authoring where applicable
-- [ ] explicit proof that Response validation performs zero provider/credential I/O
-- [ ] existing External UI/common Tool-authoring regression packet required by repository scripts
-- [ ] targeted TypeScript diagnostics or repository typecheck with baseline reconciliation
-- [ ] targeted ESLint for changed files
-- [ ] `git diff --check`
+- [x] focused External HTTP Response-tab UI tests for Direct/Visual/JavaScript
+- [x] focused new-Tool local-only JavaScript panel regression
+- [x] focused Visual derived-contract UI/round-trip tests
+- [x] focused invalid raw-state retention and Response validation diagnostics
+- [x] focused mode-switch retention tests for new and persisted-DRAFT authoring where applicable
+- [x] explicit proof that Response validation performs zero provider/credential I/O
+- [x] existing External UI/common Tool-authoring regression packet required by repository scripts
+- [x] targeted TypeScript diagnostics or repository typecheck with baseline reconciliation
+- [x] targeted ESLint for changed files
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -385,28 +385,46 @@ Direct/JavaScript sample-based result-schema generation is intentionally deferre
 ## Completion Report
 
 ### Status
-Not Started
+Implementation complete; submitted for Architect Review.
 
 ### Files Changed
-None
+`moda-interact-commerce/app/styles.css`
+`moda-interact-commerce/src/studio/external-http/editor.tsx`
+`moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+`moda-interact-commerce/src/studio/tools/new-tool-editor.tsx`
+`moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+`moda-interact-commerce/tests/external-tools-ui.test.tsx`
+`moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
-None
+- Consolidated Source path behavior for Direct/Visual and removed it from JavaScript mode; replaced duplicate schema/path language with mode-specific controls.
+- Connected stable, resizable CodeMirror response panels to new local Tool authoring and persisted Draft authoring. Kept new Tool persistence behind final Create and preserved independent mode drafts.
+- Made Visual processing controls primary, added projected result types, derived the deterministic result contract, and kept invalid Visual authoring state local until schema derivation succeeds.
+- Added Response-only validation, field diagnostics, stale-result invalidation, and raw invalid-value retention; added regression coverage for incomplete Visual types and malformed filter values.
+- Preserved free tab navigation and the no-provider-I/O boundary.
 
 ### Validation Results
-None
+- `npm run test:arch020-external-tools-ui`: passed, 26 tests.
+- `npx vitest run tests/tool-authoring-screen.test.tsx`: passed, 12 tests.
+- `npm run test:arch021-external-tool-authoring-validation`: passed, 47 tests. Packaged the repository QuickJS runtime first with `npm run code-runtime:package`.
+- `npm run test:arch021-tool-authoring-common`: passed, 85 tests.
+- `npm run test:arch020-code-editor`: passed, 14 tests.
+- Targeted ESLint across all changed TS/TSX files: passed.
+- Targeted editor diagnostics: no errors in changed TS/TSX/CSS files.
+- `npx tsc --noEmit --pretty false`: repository-wide check remains blocked by pre-existing errors in unrelated API imports, generated Prisma client/types and tests; final output had no diagnostics in C045-modified files.
+- `git diff --check`: passed.
 
 ### Deviations
-None
+No scope deviations. Response validation remains configuration-only; provider execution, schema inference from samples, database changes and Phase 2 gating were not added.
 
 ### Assumptions
-None
+The existing `productionCodePanel` feature flag remains the enablement boundary for persisted Draft editor composition. The new Tool flow composes its stable CodeMirror panel directly.
 
 ### Unresolved Issues
-None
+The repository-wide TypeScript check has unrelated existing baseline failures; targeted diagnostics and changed-file lint are clean.
 
 ### Architectural Concerns
-None
+None identified. Architect Review remains pending and was not edited.
 
 ## Architect Review
 
