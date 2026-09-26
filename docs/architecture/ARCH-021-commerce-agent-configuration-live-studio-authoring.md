@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 Ready with COMMERCE-044 and COMMERCE-045 dependency-gated behind it. Neither workstream introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three independent Commerce follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; Response has COMMERCE-043 Ready with COMMERCE-044 and COMMERCE-045 dependency-gated behind it; and the lower-level QuickJS runtime adapter has COMMERCE-046 Ready. These workstreams may proceed in parallel and do not introduce Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -876,6 +876,40 @@ COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045
 
 The Request and Response follow-up chains are intentionally independent and may execute in parallel. Test-tab review will separately decide real provider execution and sample-derived Direct/JavaScript result-schema generation.
 
+
+### Manual-validation follow-up — QuickJS runtime adapter
+
+Manual JavaScript Request validation exposed an implementation defect below the Request-tab contract:
+
+```text
+real Next.js validateExternalRequestAction
+  -> SandboxKernel worker starts
+  -> QuickJS engine initialisation fails
+  -> RUNTIME_UNAVAILABLE
+```
+
+Standalone `test:arch020-code-runtime-proof` and packaged runtime smoke tests pass, so authored JavaScript and the high-level `SandboxKernel` contract are not the defect. Diagnostics isolated the failure to Emscripten engine-module resolution in the Next/worker environment (`ERR_INVALID_ARG_TYPE` for a cross-realm URL followed by `MODULE_NOT_FOUND: Cannot find module as expression is too dynamic`).
+
+The target correction is one packaged QuickJS-NG/WASI adapter:
+
+```text
+Next Server Action
+  -> SandboxKernel
+  -> packaged Node worker
+  -> explicit adjacent quickjs.wasm bytes
+  -> quickjs-wasi / QuickJS-NG
+```
+
+The migration preserves `quickjs-sync.v1`, the existing request/response processor contracts, worker supervision and production JavaScript executor gate. Operational runtime failures use `@modainteract/moda-interact-shared/logging`; guest source, Tool arguments, provider bodies, credentials and absolute host paths are never logged.
+
+Runtime-adapter task:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-046 | moda_commerce | Ready | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-040, ARCH-021-COMMERCE-041 |
+
+COMMERCE-046 is independent of the remaining Request/Response UI follow-ups and may execute in parallel.
+
 Phase 3 exit criteria:
 
 - Commerce owns the accepted request/response/Admin Tool-definition contracts under `src/commerce/tool-definition/`; Shared remains unchanged at 0.14.2;
@@ -1118,6 +1152,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-26 — QuickJS-NG/WASI runtime-adapter follow-up defined
+
+- Manual JavaScript Request validation reproduced `RUNTIME_UNAVAILABLE` only through the real Next.js Server Action while the standalone `SandboxKernel` proof and packaged runtime smoke remained green.
+- Bounded diagnostics isolated the failure to the current Emscripten engine loader (`ERR_INVALID_ARG_TYPE` URL handling and then dynamic-expression `MODULE_NOT_FOUND`), not authored JavaScript or the Request validation contract.
+- Agreed one packaged runtime path using `quickjs-wasi@3.6.2` / QuickJS-NG with caller-supplied adjacent WASM bytes, preserving the logical `quickjs-sync.v1` contract, worker supervision and request/response processor behavior.
+- Required all code-runtime operational logging to use `@modainteract/moda-interact-shared/logging`; temporary `console.*`, source/input/body/path diagnostics and competing loggers are prohibited.
+- Materialised COMMERCE-046 as Ready. It is independent of COMMERCE-042 and COMMERCE-043..045 and may execute in parallel.
 
 ### 2026-09-26 — External HTTP Response-tab manual-validation follow-up defined
 

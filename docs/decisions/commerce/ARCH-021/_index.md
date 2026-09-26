@@ -187,6 +187,23 @@ ARCH-021-COMMERCE-043
 The Response chain remains zero-provider-I/O. Visual result schemas are deterministically derived from Visual authoring; Direct/JavaScript sample-derived schema generation and real provider execution are deferred to the later Test-tab review. Errors remain visible in Response while all authoring tabs stay freely navigable.
 
 
+## Manual-validation follow-up — QuickJS runtime adapter
+
+Manual Request-tab validation also exposed a lower-level runtime-loader defect independent of the Request/Response UI workstreams. The accepted sandbox contract remains valid, but the current `quickjs-emscripten` adapter fails when the real Next.js Server Action initializes the engine (`RUNTIME_UNAVAILABLE`) even though standalone runtime/package proofs pass.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-046](COMMERCE-046-replace-quickjs-emscripten-with-quickjs-ng-wasi.md) | Replace the Emscripten QuickJS adapter with one packaged QuickJS-NG/WASI runtime and shared structured runtime logging | Ready | COMMERCE-017, COMMERCE-040, COMMERCE-041 |
+
+Current runtime-adapter frontier:
+
+```text
+ARCH-021-COMMERCE-046
+```
+
+COMMERCE-046 is independent of COMMERCE-042 and COMMERCE-043..045 and may execute in parallel. It changes only the sandbox engine adapter/package/logging implementation; `quickjs-sync.v1`, Tool-definition shapes, Request/Response authoring semantics and the production JavaScript executor gate remain unchanged.
+
+
 ### COMMERCE-041 Attempt 1 accepted — 2026-09-26
 
 COMMERCE-041 is **Complete / Accepted, Attempt 1**. Request is now the non-network validation/preview checkpoint: invalid intermediate Request edits remain visible with diagnostics, authoritative Request validation is bounded and zero-provider-I/O, exact safe request preview lives in Request, `Manage connections` is removed, Test no longer owns Request preview, and tabs remain freely navigable. The submitted packet passed 85 common, 17 External UI, 45 validation/Server Action and 10 new-tool tests with targeted lint/diff checks clean and no task-owned diagnostics. COMMERCE-042 is promoted to **Ready**.
