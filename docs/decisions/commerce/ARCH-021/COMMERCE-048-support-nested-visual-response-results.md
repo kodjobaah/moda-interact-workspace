@@ -9,14 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 63
-executor: copilot
-claimed_at: 2026-09-26T18:55:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-045
-enables: []
+enables:
+  - ARCH-021-COMMERCE-049
 created: 2026-09-26
 updated: 2026-09-26
 ---
@@ -1143,19 +1144,62 @@ None. Shared remains at 0.14.2 and no Shared or Prisma changes were introduced.
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-None
+Reviewed implementation `e2f9e48` and parent report `ac39aab7` against the revised C048 contract. Accepted.
+
+The implementation completes the intended preproduction ownership and nested-Visual migration:
+
+- Commerce now owns `CommerceResultSchemaSchema`, `CommerceResultSchema` and `compileCommerceResultSchema(...)`; no Commerce/Studio result/output path imports Shared `DetailsSchemaSchema` or uses `compileSubset(..., "details")`.
+- Shared 0.14.2 remains unchanged and continues to own the actual shared input-schema/Tool-descriptor boundary.
+- Canonical response processing is `DIRECT | VISUAL | JAVASCRIPT`; the obsolete root flat `OBJECT`/`LIST` grammar is rejected.
+- Recursive Visual OBJECT/LIST projection supports nested containers through the task's depth/node/field/list/work bounds, root LIST preserves `{items:[...]}`, nested LIST emits a raw array, and runtime paths remain relative to the current parent/list row.
+- One Commerce derivation/reconstruction path owns Visual processing/result-schema compatibility, and the production response processor is reused by the active Studio synthetic sample path.
+- Browser-local recursive authoring preserves invalid edits plus root/per-field inactive branch drafts; only a valid active tree is promoted canonically.
+- Response validation, publication, fixture/sample validation and live External HTTP output validation use the canonical Commerce result/Visual helpers without provider I/O being introduced into authoring.
+- The preproduction rule is correctly applied: old development-only flat Visual definitions are recreated/reset rather than carried by a compatibility adapter or migration.
+
+Primitive scalar arrays such as `{ "tags": ["red", "blue"] }` remain intentionally outside C048: current `LIST` means a list of projected objects. This is recorded as the bounded follow-up `ARCH-021-COMMERCE-049`, not as a C048 defect.
+
+One historical `src/studio/external-http/processor.ts` flat helper remains unreferenced; repository search shows no production/test import and the active sample port delegates to `createResponseProcessor(...)`. It is therefore not a runtime compatibility branch and is non-blocking for C048 acceptance. C049 may delete it as adjacent dead-code cleanup if it is still unreferenced when that task executes.
 
 ### Reviewed Files
-None
+- `src/commerce/tool-definition/result-schema.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-authoring/visual-result-contract.ts`
+- `src/commerce/external-response/index.ts`
+- `src/commerce/external-http/index.ts`
+- `src/commerce/external-preview/fixture-runner.ts`
+- `src/commerce/external-publication/index.ts`
+- `src/commerce/tool-authoring/external-validation.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `src/studio/external-http/response-tab.tsx`
+- `src/studio/external-http/visual-tree-editor.tsx`
+- `src/studio/external-http/ports.ts`
+- focused C048 contract/runtime/authoring/UI/publication/preview tests
+- C048 Completion Report
 
 ### Validation Reviewed
-None
+Accepted submitted evidence:
+
+```text
+test:arch021-commerce-tool-contract       16 passed
+test:arch021-external-tool-authoring-validation 47 passed
+test:arch020-code-processor                6 passed
+test:arch020-external-tools-ui            33 passed
+focused C048 batch                        182 passed / 12 files
+lint                                       0 errors / 7 baseline warnings
+git diff --check                          passed
+C048-owned TypeScript diagnostics          none reported
+repository typecheck baseline              251 diagnostics / 22 unrelated files
+Shared/result-schema ownership audits      passed
+```
+
+The supplied archive does not include installed dependencies, so dependency-backed commands were not falsely claimed as independently rerun by the architect. Source/test inspection confirms the task-owned implementation paths and focused regressions described above.
 
 ### Architecture Conformance
-Pending
+Conforms. C048 keeps genuine cross-domain contracts in Shared while making Commerce-local output/result semantics Commerce-owned, establishes one canonical preproduction recursive Visual grammar, preserves bounded execution/local-authoring invariants, and introduces no Shared publication, Prisma migration, live Response provider I/O or Phase 2 gating.
 
 ### Follow-up
-None
+`ARCH-021-COMMERCE-049` is promoted to `ready` for the deliberately separate primitive-scalar-array Visual extension (`{tags:["red","blue"]}`).

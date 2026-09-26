@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043, COMMERCE-044 and COMMERCE-045 architect-accepted Complete with nested-Visual extension COMMERCE-048 In Progress behind it. Neither workstream introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 through COMMERCE-048 architect-accepted Complete with primitive-scalar-array follow-up COMMERCE-049 Ready behind it. Neither workstream introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -869,17 +869,18 @@ Response follow-up tasks:
 | ARCH-021-COMMERCE-043 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-039 |
 | ARCH-021-COMMERCE-044 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
 | ARCH-021-COMMERCE-045 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
-| ARCH-021-COMMERCE-048 | moda_commerce | In Progress | ARCH-021-COMMERCE-045 |
+| ARCH-021-COMMERCE-048 | moda_commerce | Complete | ARCH-021-COMMERCE-045 |
+| ARCH-021-COMMERCE-049 | moda_commerce | Ready | ARCH-021-COMMERCE-048 |
 
 ```text
-COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048
+COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048 -> COMMERCE-049
 ```
 
 The Request and Response follow-up chains are intentionally independent and may execute in parallel. Test-tab review will separately decide real provider execution and sample-derived Direct/JavaScript result-schema generation.
 
 #### Nested Visual result-tree extension
 
-The flat COMMERCE-043/C045 Visual model intentionally projects scalar leaves only. Manual validation identified nested result requirements such as an object containing a variants/items list. COMMERCE-048 is now In Progress and establishes these invariants:
+The flat COMMERCE-043/C045 Visual model intentionally projected scalar leaves only. Manual validation identified nested result requirements such as an object containing a variants/items list. COMMERCE-048 is architect-accepted Complete with these invariants:
 
 1. Commerce owns its output/result schema because `resultSchema` does not cross the Tool-descriptor/service boundary. Add one Commerce-local `CommerceResultSchemaSchema`/compiler and remove Shared `DetailsSchemaSchema` / `compileSubset(..., "details")` authority from Commerce result/output paths.
 2. Shared remains pinned at 0.14.2 and continues to own genuinely shared boundaries such as `InputSchemaSchema` and the Tool descriptor; no Shared publication is required.
@@ -891,6 +892,19 @@ The flat COMMERCE-043/C045 Visual model intentionally projects scalar leaves onl
 8. Response validation, publication compatibility, runtime execution and Studio fixture processing reuse the same Commerce derivation/reconstruction/result-validation semantics rather than introducing parallel implementations.
 
 COMMERCE-048 does not add live provider I/O, database/Prisma work, Shared publication, Test-tab schema inference or Phase 2 navigation gating.
+
+#### Primitive scalar-array Visual follow-up
+
+C048 intentionally defines `LIST` as a list of projected objects. Manual review confirmed that a common Commerce-local result such as `{tags:["red","blue"]}` therefore still requires JavaScript even though `CommerceResultSchemaSchema` already supports arrays of scalar items. COMMERCE-049 is the narrow follow-up:
+
+1. add one explicit persisted `SCALAR_LIST` Visual projection leaf; do not overload object-row `LIST`;
+2. keep item result type in the derived Commerce result schema rather than persisted processing;
+3. support string/integer/number/boolean scalar arrays with path, limit and omit-if-missing semantics;
+4. reuse C048 derivation/reconstruction, runtime, Response validation, publication and sample boundaries;
+5. expose a clear `List of values` UI distinct from `List of objects`, preserving inactive branch drafts and invalid local edits;
+6. keep Shared/Prisma unchanged and introduce no live provider I/O or Phase 2 gating.
+
+Root scalar-list shape, primitive-list filters/sort, arrays-of-arrays and null items remain outside COMMERCE-049.
 
 Phase 3 exit criteria:
 
@@ -1143,6 +1157,14 @@ independent of features.
 - OBJECT and LIST maintain independent local processing/type drafts, including LIST-only filter/sort/limit state; only the active valid shape enters canonical execution/result-schema state.
 - Accepted submitted validation: 31 Response UI, 47 external validation/action, 85 common authoring, 12 New Tool and 14 CodeMirror tests, plus targeted ESLint, changed-file diagnostics and `git diff --check`; repository-wide typecheck remains blocked only by unrelated baseline diagnostics.
 - Marked COMMERCE-045 Complete and promoted COMMERCE-048 to Ready.
+
+### 2026-09-26 — COMMERCE-048 Attempt 1 accepted; primitive scalar-array follow-up defined
+
+- Accepted implementation `e2f9e48` and parent report `ac39aab7` for the Commerce-owned nested Visual/result-schema migration.
+- Accepted one canonical preproduction `DIRECT | VISUAL | JAVASCRIPT` response-processing grammar, Commerce-owned result-schema parser/compiler, recursive OBJECT/LIST processing through Visual container depth 4, bounded runtime work and recursive browser-local authoring/reconstruction.
+- Accepted submitted evidence: 182 focused C048 tests across 12 files, 33 External UI tests, 16 Commerce Tool-contract tests, 47 External validation tests, 6 code-processor tests, lint with zero errors, diff/source audits clean and no C048-owned TypeScript diagnostics.
+- Primitive arrays such as `{tags:["red","blue"]}` were intentionally out of C048 scope because `LIST` projects object rows. Materialised COMMERCE-049 as Ready with a dedicated `SCALAR_LIST` leaf so the object-list contract remains unambiguous.
+- Marked COMMERCE-048 Complete and promoted COMMERCE-049 to Ready.
 
 ### 2026-09-26 — COMMERCE-048 result-schema ownership revised for preproduction
 
