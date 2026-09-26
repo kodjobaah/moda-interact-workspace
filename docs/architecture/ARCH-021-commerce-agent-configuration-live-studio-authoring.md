@@ -907,9 +907,9 @@ Runtime-adapter task:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-046 | moda_commerce | Complete | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-040, ARCH-021-COMMERCE-041 |
-| ARCH-021-COMMERCE-047 | moda_commerce | Ready | ARCH-021-COMMERCE-046 |
+| ARCH-021-COMMERCE-047 | moda_commerce | Complete | ARCH-021-COMMERCE-046 |
 
-COMMERCE-046 is architect-accepted Complete. COMMERCE-047 is Ready and changes only bounded compiler-diagnostic propagation into Request validation/UI; the Request/Response UI workstreams remain independent.
+COMMERCE-046 and COMMERCE-047 are architect-accepted Complete. The QuickJS runtime-adapter/compiler-diagnostic follow-up is complete; the Request/Response UI workstreams remain independent.
 
 Phase 3 exit criteria:
 
@@ -1162,6 +1162,13 @@ independent of features.
 - Accepted JavaScript compile-without-execution and the integration proof that Response validation performs no connection, credential, DNS, transport or Tool/ToolRevision write operations.
 - Accepted validation evidence: 52 focused validation/Server Action tests, targeted ESLint and `git diff --check` passed, with no changed-file TypeScript diagnostics; repository-wide typecheck remains blocked only by the documented unrelated baseline.
 - Marked COMMERCE-044 Complete and promoted COMMERCE-045 to Ready.
+### 2026-09-26 — COMMERCE-047 Attempt 1 accepted
+
+- Accepted implementation `4dccfab5` and parent report handoff `bd975657`.
+- QuickJS-NG Request syntax/entrypoint causes are now preserved as bounded authoring diagnostics through the Worker, KernelResult, Request processor, validation Server Action and Request UI, capped at 512 UTF-8 bytes with no source/stack/host-path or customer/provider-data leakage.
+- Operational runtime failures remain opaque and continue through COMMERCE-046 shared structured logging; expected guest syntax failures do not become operational error logs.
+- Accepted packaging/smoke plus 12 runtime, 7 Request processor, 47 validation/Server Action and 21 External UI tests, targeted lint/source audits and diff checks with no task-owned type diagnostics.
+- Marked COMMERCE-047 Complete. The QuickJS runtime-adapter/compiler-diagnostic follow-up chain is Complete.
 
 ### 2026-09-26 — COMMERCE-043 Attempt 1 accepted
 
