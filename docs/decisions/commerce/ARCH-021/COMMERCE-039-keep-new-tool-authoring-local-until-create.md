@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -684,9 +684,611 @@ None.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 4
+Changes Requested — Attempt 5
 
 ### Review Notes
+
+
+#### Attempt 5 formal architecture review — 2026-09-26
+
+Reviewed the supplied Attempt 5 implementation snapshot against the complete Attempt 4 correction contract. The user reports implementation commit `c514154` and parent task-report commit `4a009461`. The supplied task metadata is correctly at `status: review`, `attempt: 5`, with `executor` and `claimed_at` cleared. The Completion Report is `Ready for Review`.
+
+Preserve the following Attempt 5 progress:
+
+```text
+new Tool setup -> Continue authoring remains non-mutating
+new local Tool authoring remains in browser state until final Create
+final persistence remains exactly one createToolWithInitialDraft operation
+exact returned toolId/toolRevisionId navigation and reconciliation remain intact
+legacy createTool -> createToolDraft staging remains absent
+the six required component files now exist
+the common five-tab navigation shell exists and is used by new and persisted External flows
+local External preview remains no-provider and uses the accepted preview boundary
+current raw External response/result JSON buffers survive parent state
+Admin result-schema text is included by the current-candidate builders
+Agent contract JSON text remains parent-owned
+COMMERCE-021 Save / CAS / validation / LIVE_TEST_REQUIRED behavior remains present
+the submitted validation packet is green according to the handoff
+```
+
+Attempt 5 is **not accepted**. The component extraction required by Attempt 4 was implemented only superficially, and several mandatory executable proofs from the same correction contract remain absent.
+
+The following is the COMPLETE and authoritative Attempt 6 correction contract. Do not infer additional requirements from chat history.
+
+##### A5-R1 — make the External tab files real JSX ownership boundaries
+
+The following files already exist and MUST be retained:
+
+```text
+src/studio/external-http/request-tab.tsx
+src/studio/external-http/response-tab.tsx
+src/studio/external-http/test-tab.tsx
+```
+
+They currently contain only thin `children: ReactNode` wrappers. That is non-conforming.
+
+Current non-conforming shape:
+
+```tsx
+export function ExternalHttpRequestTab({ children }: { children: ReactNode }) {
+  return <section ...>{children}</section>;
+}
+```
+
+The same problem exists for Response and Test. `ExternalHttpEditor` still contains the actual Request/Response/Test JSX and chooses it through:
+
+```text
+showRequest
+showResponse
+showTest
+```
+
+This defeats the architectural purpose of the extraction.
+
+Required final ownership:
+
+```text
+request-tab.tsx
+  owns and renders the actual Request JSX:
+    connection revision
+    Manage connections
+    request mode
+    JavaScript/declarative request construction
+    HTTP path
+    query mappings
+    safe headers
+
+response-tab.tsx
+  owns and renders the actual Response JSX:
+    response format / media types
+    result path
+    DIRECT / VISUAL / JAVASCRIPT mode
+    CodeEditor slot
+    projection/filter/sort/limit controls
+    response-mode discard dialog
+    Advanced response processing JSON
+    Response shape/resultSchema JSON
+
+test-tab.tsx
+  owns and renders the actual Test JSX:
+    Tool arguments
+    Preview request
+    bounded request preview result/error
+```
+
+`ExternalHttpEditor` remains the shared EXTERNAL_HTTP controller. It MAY own reusable state/helpers such as:
+
+```text
+requestArguments
+requestPreview
+response-mode transition state
+projection/filter helper functions
+JSON parsing helpers
+validation invalidation helpers
+```
+
+but the section-owned JSX MUST move into the three tab files.
+
+Use explicit typed props for each tab. Do NOT use:
+
+```text
+children: ReactNode
+render arbitrary React children supplied by NewToolEditor/ToolEditor
+```
+
+for Request, Response or Test.
+
+`ExternalHttpEditor` must import and instantiate the actual components:
+
+```tsx
+section === "request"  -> <ExternalHttpRequestTab ... />
+section === "response" -> <ExternalHttpResponseTab ... />
+section === "test"     -> <ExternalHttpTestTab ... />
+```
+
+When `section` is omitted only for a legacy/non-tab caller that genuinely requires the full editor, document that caller. Do not keep the current `showRequest/showResponse/showTest` monolithic render blocks as the normal tab implementation.
+
+Required source audits:
+
+```bash
+! rg -n 'children:\s*ReactNode|children:\s*React\.ReactNode' \
+  src/studio/external-http/request-tab.tsx \
+  src/studio/external-http/response-tab.tsx \
+  src/studio/external-http/test-tab.tsx
+
+rg -n 'External GET path|Request mode|Query mappings|Static safe headers' \
+  src/studio/external-http/request-tab.tsx
+
+rg -n 'Response processing mode|Advanced response processing JSON|Response shape JSON' \
+  src/studio/external-http/response-tab.tsx
+
+rg -n 'Tool arguments|Preview request' \
+  src/studio/external-http/test-tab.tsx
+
+rg -n 'ExternalHttpRequestTab|ExternalHttpResponseTab|ExternalHttpTestTab' \
+  src/studio/external-http/editor.tsx
+```
+
+The source audits are evidence only. Do not satisfy them using hidden/inert markup.
+
+##### A5-R2 — remove audit-marker hacks and use the shared Agent/Review components in BOTH editor modes
+
+The current Attempt 5 source contains two explicit non-conforming patterns:
+
+```text
+src/studio/external-http/response-tab.tsx
+  -> hidden <span className="tool-editor-json-textarea" ... />
+
+src/studio/tools/tool-editor.tsx
+  -> import AgentContractTab / ReviewTab
+  -> `void AgentContractTab;`
+  -> `void ReviewTab;`
+  -> render duplicate inline Agent contract / Review JSX instead
+```
+
+These are not acceptable component reuse.
+
+Required corrections:
+
+1. Delete the hidden `tool-editor-json-textarea` marker from `response-tab.tsx`.
+2. The ACTUAL:
+   - `Advanced response processing JSON`
+   - `Response shape JSON`
+   textareas must live in `response-tab.tsx` and each render:
+
+```tsx
+className="tool-editor-json-textarea"
+rows={12}
+```
+
+3. `ToolEditor` persisted EXTERNAL_HTTP DRAFT mode MUST render the shared:
+
+```tsx
+<AgentContractTab ... />
+<ReviewTab ... />
+```
+
+instead of maintaining duplicate inline Agent/Review JSX.
+
+4. Remove:
+
+```ts
+void AgentContractTab;
+void ReviewTab;
+```
+
+5. `NewToolEditor` and persisted `ToolEditor` must therefore share:
+   - `ToolAuthoringTabs`
+   - `AgentContractTab`
+   - `ReviewTab`
+   - `ExternalHttpEditor`, which in turn shares the three real External tab components.
+
+Required source audits:
+
+```bash
+! rg -n 'void AgentContractTab|void ReviewTab' \
+  src/studio/tools/tool-editor.tsx
+
+rg -n 'AgentContractTab' \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx
+
+rg -n 'ReviewTab' \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx
+
+! rg -n 'hidden.*tool-editor-json-textarea|tool-editor-json-textarea.*hidden' \
+  src/studio/external-http/response-tab.tsx
+```
+
+Do not duplicate an alternate persisted-only Agent or Review implementation after adding these shared components.
+
+##### A5-R3 — complete truthful local Admin validation and current-candidate coverage
+
+Attempt 5 still does not contain the exact Admin regression required by Attempt 4.
+
+The current test named:
+
+```text
+"creates the authored Admin definition exactly once through the atomic action"
+```
+
+only changes Definition SemVer before Create. It does NOT prove:
+
+```text
+GraphQL document edit
+operation-name edit where applicable
+real variable mapping
+Input JSON Schema edit
+Result schema edit
+Response template edit
+Validate current candidate
+Create the same current candidate
+```
+
+Also keep Admin validation state truthful across edits.
+
+Required implementation behavior:
+
+```text
+successful Validate of current Admin candidate
+-> adminValidated = true
+-> "Valid Admin GraphQL query." visible
+-> validation itself does NOT set dirty
+
+any subsequent current-candidate authoring edit, including:
+  GraphQL document
+  operation name
+  variable mapping/literal
+  Input JSON Schema
+  Result schema
+  Response template
+-> adminValidated = false
+-> dirty = true
+```
+
+Do not discard `adminValidated` via:
+
+```ts
+const [, setAdminValidated] = useState(...)
+```
+
+Keep the state explicitly so its transition can be tested and presented truthfully. It does not have to become a mandatory Create gate unless another accepted contract requires that.
+
+Add ONE exact local Admin regression:
+
+```text
+setup SHOPIFY_ADMIN_GRAPHQL
+-> Continue authoring
+-> persistence mutation count = 0
+
+Agent contract
+-> Input JSON Schema has property "id"
+-> Response template changed to a distinguishable value
+
+Request/Admin editor
+-> GraphQL document declares $id
+-> operation name set/changed as required
+-> Mapping for id selects the actual input property
+-> Result schema changed to a distinguishable value
+
+mock validateShopifyAdminDefinitionAction to:
+  { kind: "ok", value: { valid: true, issues: [] } }
+
+click Validate
+-> validateShopifyAdminDefinitionAction exactly once
+-> validation argument contains CURRENT:
+     document
+     operationName
+     variable mapping
+     Input JSON Schema
+     Result schema
+     Response template
+-> "Valid Admin GraphQL query." visible
+-> persistence mutation count still = 0
+
+make one further Admin authoring edit
+-> previous validated state becomes stale/false
+
+validate again
+-> success visible again
+
+Review -> Create tool
+-> createToolWithInitialDraft exactly once
+-> proposedDefinition contains the SAME CURRENT values
+-> legacy createTool = 0
+-> legacy createToolDraft = 0
+```
+
+The test must configure the validation mock explicitly. An undefined/default mock is not acceptable proof.
+
+##### A5-R4 — complete the missing External/abandonment/invalid-JSON executable proofs
+
+Attempt 5 still marks these validation items complete without implementing the exact required regressions.
+
+###### A5-R4a — exact Request/Response/Test isolation
+
+Add a regression that proves:
+
+```text
+Request active
+-> External GET path present
+-> Response shape JSON absent
+-> Preview request absent
+
+Response active
+-> Response shape JSON present
+-> External GET path absent
+-> Preview request absent
+
+Test active
+-> Preview request present
+-> External GET path absent
+-> Response shape JSON absent
+```
+
+This regression must run against the refactored real tab components.
+
+###### A5-R4b — persisted five-tab lifecycle
+
+Preserve and, if needed, extend the persisted SUPER_ADMIN regression so ONE regression proves:
+
+```text
+persisted EXTERNAL_HTTP DRAFT
+-> exactly five tabs in order
+-> active-panel-only rendering
+-> edit Request or Agent contract
+-> dirty = true
+-> Review
+-> Save draft exactly once
+-> saved candidate becomes clean
+-> Validate current saved candidate
+-> exact authoritative validation-success message visible
+-> nonblank publication reason
+-> Publish validated revision enabled
+-> publish returns LIVE_TEST_REQUIRED
+-> exact LIVE_TEST_REQUIRED code/message visible
+-> no INTERNAL_ERROR
+-> no UNCONFIRMED
+```
+
+Retain the existing stale-CAS retained-edit regression.
+
+###### A5-R4c — local External Review must show the actual candidate
+
+Before Create, Review must visibly summarize at minimum:
+
+```text
+connection revision
+request mode
+HTTP path when declarative
+response processing mode
+result path
+definition version
+description
+Input JSON Schema
+Response template
+result schema
+```
+
+The current Review summary does not include all of these values.
+
+Add one regression that performs distinguishable Request, Response and Agent edits, visits Review and asserts those exact values are visible before Create.
+
+Then:
+
+```text
+Create tool
+-> createToolWithInitialDraft exactly once
+-> proposedDefinition contains those same exact edits
+```
+
+###### A5-R4d — real dirty abandonment
+
+Replace/extend the current weak:
+
+```text
+"abandons a local session without persistence"
+```
+
+which only checks that no mutation has happened yet.
+
+Required exact regression:
+
+```text
+Continue authoring
+-> make a local edit
+-> click Back
+-> "Discard unsaved changes?" dialog visible
+-> click "Discard unsaved changes"
+-> navigation to /tools requested
+-> createToolWithInitialDraft = 0
+-> createTool = 0
+-> createToolDraft = 0
+```
+
+###### A5-R4e — invalid JSON survives unmount/remount
+
+Add exact local-new regressions:
+
+```text
+Agent contract
+-> Input JSON Schema = "{"
+-> switch to Request
+-> switch back to Agent contract
+-> textarea value is still exactly "{"
+
+Response
+-> Response shape JSON = "{"
+-> switch to Test
+-> switch back to Response
+-> textarea value is still exactly "{"
+
+Review/Create
+-> bounded actionable error visible
+-> Create disabled
+-> zero Tool persistence
+```
+
+The purpose is to prove parent-owned raw text survives actual tab unmount/remount.
+
+##### A5-R5 — preserve all accepted lower-layer behavior
+
+MUST preserve without redesign:
+
+```text
+COMMERCE-036 createToolWithInitialDraft lifecycle semantics
+COMMERCE-037 narrow PostgreSQL persistence
+COMMERCE-038 named Studio mutation and exact audit reconciliation
+COMMERCE-021 DRAFT typing / stale validation / Save-CAS / preview / LIVE_TEST_REQUIRED behavior
+COMMERCE-022 Admin compiler / pinned metadata / current mapping validity
+later-DRAFT creation for existing Tools
+```
+
+MUST NOT add:
+
+```text
+Phase 2 tab gating
+mandatory Next/Previous sequencing
+provider live execution
+database/schema changes
+new cross-repository contracts
+browser localStorage/sessionStorage persistence
+system-test work
+```
+
+##### A5-R6 — deterministic Attempt 6 validation
+
+Run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+npm run test:arch021-tool-authoring-common
+
+npm exec vitest run \
+  tests/tool-authoring-screen.test.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/studio-workspace.test.tsx \
+  tests/studio-integration.test.ts
+
+npm exec eslint \
+  src/studio/tools/tool-library.tsx \
+  src/studio/tools/tool-authoring-screen.tsx \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx \
+  src/studio/tools/shopify-admin-editor.tsx \
+  src/studio/tools/authoring/tool-authoring-tabs.tsx \
+  src/studio/tools/authoring/agent-contract-tab.tsx \
+  src/studio/tools/authoring/review-tab.tsx \
+  src/studio/external-http/editor.tsx \
+  src/studio/external-http/request-tab.tsx \
+  src/studio/external-http/response-tab.tsx \
+  src/studio/external-http/test-tab.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/studio-workspace.test.tsx
+
+npm run typecheck
+git diff --check
+```
+
+All focused tests MUST pass with zero skips.
+
+Repository typecheck may retain only established diagnostics outside files changed by Attempt 6.
+
+Run these source audits exactly:
+
+```bash
+! rg -n 'children:\s*ReactNode|children:\s*React\.ReactNode' \
+  src/studio/external-http/request-tab.tsx \
+  src/studio/external-http/response-tab.tsx \
+  src/studio/external-http/test-tab.tsx
+
+rg -n 'External GET path|Request mode|Query mappings|Static safe headers' \
+  src/studio/external-http/request-tab.tsx
+
+rg -n 'Response processing mode|Advanced response processing JSON|Response shape JSON' \
+  src/studio/external-http/response-tab.tsx
+
+rg -n 'Tool arguments|Preview request' \
+  src/studio/external-http/test-tab.tsx
+
+! rg -n 'void AgentContractTab|void ReviewTab' \
+  src/studio/tools/tool-editor.tsx
+
+rg -n 'AgentContractTab' \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx
+
+rg -n 'ReviewTab' \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx
+
+! rg -n 'hidden.*tool-editor-json-textarea|tool-editor-json-textarea.*hidden' \
+  src/studio/external-http/response-tab.tsx
+
+! rg -n 'createTool\(|createToolDraft\(' \
+  src/studio/tools/tool-library.tsx \
+  src/studio/tools/tool-authoring-screen.tsx \
+  src/studio/tools/new-tool-editor.tsx
+
+rg -n 'Continue authoring' src/studio/tools
+```
+
+##### A5-R7 — Attempt 6 handoff state
+
+Reclaim the SAME task. The next authorized claim increments to:
+
+```yaml
+attempt: 6
+```
+
+Reconcile every implementer-owned:
+
+```text
+Work Item
+Acceptance Criterion
+Validation checkbox
+Completion Report field
+```
+
+to final Attempt 6 evidence.
+
+Completion Report status must be exactly:
+
+```text
+Ready for Review
+```
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 6
+executor: null
+claimed_at: null
+```
+
+Record:
+
+```text
+fresh launcher-prepared parent worktree
+fresh launcher-prepared implementation worktree
+parent branch synchronization
+implementation branch synchronization
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit supplied in handoff
+push parity
+clean implementation worktree
+clean parent worktree
+```
+
+Then return control to `moda_architect` and STOP.
+
+Do not begin system-test work or Phase 2 gating.
+
 
 #### Attempt 4 formal architecture review — 2026-09-26
 
