@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 61
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-040
@@ -267,7 +267,7 @@ The Request preview remains a descriptor preview, not evidence of a successful p
 ## Completion Report
 
 ### Status
-Ready for Architect Review
+Ready for Review
 
 ### Files Changed
 `app/styles.css`; `src/commerce/integration/external/index.ts`; `src/commerce/tool-authoring/external-validation.ts`; `src/commerce/tool-definition/contracts.ts`; `src/studio/external-http/editor.tsx`; `src/studio/external-http/request-tab.tsx`; `src/studio/external-http/test-tab.tsx`; `src/studio/tools/external-validation-server-actions.ts`; `src/studio/tools/new-tool-editor.tsx`; `src/studio/tools/tool-editor.tsx`; `tests/external-tool-authoring-server-actions.test.ts`; `tests/external-tool-authoring-validation.test.ts`; `tests/external-tools-ui.test.tsx`; `tests/tool-authoring-screen.test.tsx`.
@@ -308,19 +308,62 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-None
+
+#### Attempt 1 review — 2026-09-26
+
+Reviewed implementation `a37dcfc` and parent report handoff `a8f18256` against the bounded COMMERCE-041 Request-tab contract.
+
+Accepted. The implementation keeps COMMERCE-041 correctly scoped to Request authoring. It removes `Manage connections`, preserves connection selection and safe metadata, retains invalid intermediate Request form values locally instead of silently discarding them, adds ADMIN-authorized Request-only server validation with bounded structured issues, moves safe request-descriptor preview into Request, leaves Test as a truthful no-live-provider placeholder, and keeps all authoring tabs freely navigable.
+
+The architect explicitly confirms that COMMERCE-041 does **not** own cross-tab gating or final Create/Save/Publish blocking. Request-local raw state may temporarily differ from the last schema-valid canonical Tool draft while the author is editing; this task's requirement is to retain that raw Request state and diagnose it within Request. Phase-2 progression/gating and other-tab behavior remain out of scope. The accepted COMMERCE-036/037 atomic create boundary remains unchanged.
+
+Request validation/preview are non-mutating and zero-provider-I/O. Validation uses only the bounded Request inputs and safe connection metadata; preview produces the safe descriptor and never reads credentials or performs transport/DNS work. COMMERCE-040 bounded JavaScript binding semantics remain in force.
 
 ### Reviewed Files
-None
+- `src/studio/external-http/request-tab.tsx`
+- `src/studio/external-http/test-tab.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/external-validation-server-actions.ts`
+- `src/commerce/tool-authoring/external-validation.ts`
+- `src/commerce/integration/external/index.ts`
+- `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tool-authoring-server-actions.test.ts`
+- `tests/external-tool-authoring-validation.test.ts`
 
 ### Validation Reviewed
-None
+Accepted submitted evidence:
+
+```text
+Common Tool-authoring packet:                  85 passed
+External UI packet:                            17 passed
+Request validation / Server Action packet:     45 passed
+Focused new-tool authoring packet:              10 passed
+Targeted ESLint:                                passed
+Changed-file diagnostics:                      clean
+git diff --check:                              passed
+Repository typecheck:                           249 unrelated diagnostics outside task-owned files
+```
+
+Source/test inspection additionally confirms:
+
+```text
+Request contains Validate request + Preview request
+Test contains no Request preview controls
+Manage connections is absent from Request
+invalid Request edits remain visible
+all five authoring tabs remain navigable
+Request validation/preview do not persist Tool state
+zero DNS/transport/credential-read behavior is covered
+```
 
 ### Architecture Conformance
-Pending
+Conforms. COMMERCE-041 remains a bounded Request-tab follow-up. It does not redesign Response, Agent contract or Review, introduce progression gating, add provider execution, change database schema, or alter the accepted atomic creation lifecycle.
 
 ### Follow-up
-None
+`ARCH-021-COMMERCE-042` is promoted to `ready` to complete the JavaScript-specific Request binding/editor UX. Manual review should remain on the Request tab until COMMERCE-042 is accepted.
