@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 63
 executor: copilot
 claimed_at: 2026-09-26T18:55:02Z
@@ -881,57 +881,57 @@ Do not modify another repository for C048.
 
 ## Work Items
 
-- [ ] Add `CommerceResultSchemaSchema`, `CommerceResultSchema` and one Commerce result compiler.
-- [ ] Replace Shared Details-schema parsing/compilation on Commerce result/output paths.
-- [ ] Keep Shared input-schema/Tool-descriptor boundaries unchanged.
-- [ ] Make canonical Response processing exactly DIRECT | VISUAL | JAVASCRIPT.
-- [ ] Remove legacy flat OBJECT/LIST compatibility branches and update development fixtures/seeds.
-- [ ] Enforce recursive VISUAL structural/path/filter bounds.
-- [ ] Introduce one array-backed browser-local recursive authoring tree with stable UI-only IDs.
-- [ ] Derive canonical VISUAL processing and Commerce resultSchema together.
-- [ ] Reconstruct the authoring tree from canonical VISUAL + Commerce resultSchema only.
-- [ ] Implement one production recursive Visual projector.
-- [ ] Implement nested OBJECT and LIST semantics including per-list filter/sort/limit.
-- [ ] Enforce runtime source-row/global inspected-row budgets and cancellation/deadline checks.
-- [ ] Extract recursive UI into a focused component and preserve branch/root drafts.
-- [ ] Preserve invalid nested edits locally and prevent invalid Save/Create without tab gating.
-- [ ] Keep processing/schema disclosures synchronized with current local validity.
-- [ ] Extend Response-only validation to canonical VISUAL.
-- [ ] Route publication compatibility through the same Commerce reconstruction helper.
-- [ ] Route fixture/sample result validation through the Commerce result compiler.
-- [ ] Route synthetic Visual processing through production recursive semantics.
-- [ ] Add explicit preproduction reset/reseed note where current development data needs replacement.
+- [x] Add `CommerceResultSchemaSchema`, `CommerceResultSchema` and one Commerce result compiler.
+- [x] Replace Shared Details-schema parsing/compilation on Commerce result/output paths.
+- [x] Keep Shared input-schema/Tool-descriptor boundaries unchanged.
+- [x] Make canonical Response processing exactly DIRECT | VISUAL | JAVASCRIPT.
+- [x] Remove legacy flat OBJECT/LIST compatibility branches and update development fixtures/seeds.
+- [x] Enforce recursive VISUAL structural/path/filter bounds.
+- [x] Introduce one array-backed browser-local recursive authoring tree with stable UI-only IDs.
+- [x] Derive canonical VISUAL processing and Commerce resultSchema together.
+- [x] Reconstruct the authoring tree from canonical VISUAL + Commerce resultSchema only.
+- [x] Implement one production recursive Visual projector.
+- [x] Implement nested OBJECT and LIST semantics including per-list filter/sort/limit.
+- [x] Enforce runtime source-row/global inspected-row budgets and cancellation/deadline checks.
+- [x] Extract recursive UI into a focused component and preserve branch/root drafts.
+- [x] Preserve invalid nested edits locally and prevent invalid Save/Create without tab gating.
+- [x] Keep processing/schema disclosures synchronized with current local validity.
+- [x] Extend Response-only validation to canonical VISUAL.
+- [x] Route publication compatibility through the same Commerce reconstruction helper.
+- [x] Route fixture/sample result validation through the Commerce result compiler.
+- [x] Route synthetic Visual processing through production recursive semantics.
+- [x] Add explicit preproduction reset/reseed note where current development data needs replacement.
 
 ## Acceptance Criteria
 
-- [ ] Commerce, not Shared, owns the canonical result-schema parser/type/compiler.
-- [ ] No Commerce production result/output path imports Shared `DetailsSchemaSchema` or calls Shared `compileSubset(..., "details")`.
-- [ ] Shared `InputSchemaSchema` / `compileSubset(..., "input")` and Shared Tool descriptor remain unchanged.
-- [ ] `CommerceResultSchemaSchema` supports bounded nested object/array/scalar output with schema depth 12 and node bound 256.
-- [ ] Canonical response processing is exactly DIRECT | VISUAL | JAVASCRIPT.
-- [ ] No legacy flat OBJECT/LIST runtime/parser/reconstruction branch remains.
-- [ ] An OBJECT result can contain a nested LIST of projected objects without JavaScript.
-- [ ] An OBJECT result can contain a nested OBJECT.
-- [ ] A root LIST row can contain nested OBJECT/LIST fields.
-- [ ] Nested containers are supported through Visual container depth 4.
-- [ ] Processing does not duplicate scalar result types; result types remain in derived Commerce resultSchema.
-- [ ] One derivation produces processing and resultSchema together.
-- [ ] Root LIST derives `{items:[...]}`; nested LIST derives a raw array.
-- [ ] All object schemas are closed and requiredness follows `omitIfMissing`.
-- [ ] Canonical VISUAL + Commerce resultSchema reconstruct deterministically; mismatches fail explicitly.
-- [ ] Runtime paths are relative to the current source/list row.
-- [ ] Missing/wrong-shape semantics follow R12 exactly.
-- [ ] Every LIST applies filter -> stable sort -> limit -> recursive projection.
-- [ ] Structural/runtime work limits are enforced before runaway work.
-- [ ] Final output is validated by `compileCommerceResultSchema` before Tool success.
-- [ ] Response UI exposes scalar/object/list nested editing and preserves inactive branch drafts.
-- [ ] Invalid nested values remain visible locally and cannot be saved/created while invalid.
-- [ ] Validation success becomes stale on every relevant local edit.
-- [ ] Response-only validation performs zero provider/credential/network/persistence I/O.
-- [ ] Publication and fixture/sample paths use the canonical Commerce schema/Visual helpers.
-- [ ] Direct and JavaScript behavior remains unchanged apart from using Commerce result-schema validation.
-- [ ] Shopify Admin resultSchema continues to parse/validate under the new Commerce result-schema contract.
-- [ ] No Shared/Prisma publication or migration is introduced.
+- [x] Commerce, not Shared, owns the canonical result-schema parser/type/compiler.
+- [x] No Commerce production result/output path imports Shared `DetailsSchemaSchema` or calls Shared `compileSubset(..., "details")`.
+- [x] Shared `InputSchemaSchema` / `compileSubset(..., "input")` and Shared Tool descriptor remain unchanged.
+- [x] `CommerceResultSchemaSchema` supports bounded nested object/array/scalar output with schema depth 12 and node bound 256.
+- [x] Canonical response processing is exactly DIRECT | VISUAL | JAVASCRIPT.
+- [x] No legacy flat OBJECT/LIST runtime/parser/reconstruction branch remains.
+- [x] An OBJECT result can contain a nested LIST of projected objects without JavaScript.
+- [x] An OBJECT result can contain a nested OBJECT.
+- [x] A root LIST row can contain nested OBJECT/LIST fields.
+- [x] Nested containers are supported through Visual container depth 4.
+- [x] Processing does not duplicate scalar result types; result types remain in derived Commerce resultSchema.
+- [x] One derivation produces processing and resultSchema together.
+- [x] Root LIST derives `{items:[...]}`; nested LIST derives a raw array.
+- [x] All object schemas are closed and requiredness follows `omitIfMissing`.
+- [x] Canonical VISUAL + Commerce resultSchema reconstruct deterministically; mismatches fail explicitly.
+- [x] Runtime paths are relative to the current source/list row.
+- [x] Missing/wrong-shape semantics follow R12 exactly.
+- [x] Every LIST applies filter -> stable sort -> limit -> recursive projection.
+- [x] Structural/runtime work limits are enforced before runaway work.
+- [x] Final output is validated by `compileCommerceResultSchema` before Tool success.
+- [x] Response UI exposes scalar/object/list nested editing and preserves inactive branch drafts.
+- [x] Invalid nested values remain visible locally and cannot be saved/created while invalid.
+- [x] Validation success becomes stale on every relevant local edit.
+- [x] Response-only validation performs zero provider/credential/network/persistence I/O.
+- [x] Publication and fixture/sample paths use the canonical Commerce schema/Visual helpers.
+- [x] Direct and JavaScript behavior remains unchanged apart from using Commerce result-schema validation.
+- [x] Shopify Admin resultSchema continues to parse/validate under the new Commerce result-schema contract.
+- [x] No Shared/Prisma publication or migration is introduced.
 
 ## Mandatory Regression Scenarios
 
@@ -1097,28 +1097,48 @@ Do not introduce a second result-schema compiler in Studio or publication code.
 ## Completion Report
 
 ### Status
-Not Started
+Ready for architect review
+
+### Execution Isolation
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-048`, `task/ARCH-021-COMMERCE-048`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-048`, `task/ARCH-021-COMMERCE-048`.
+- Shared workspace and source checkouts were not switched or modified for implementation; no other task worktree was reused.
+- The parent task branch was synchronized to `origin/task/ARCH-021-COMMERCE-048` at the revised task-definition commit `c62057ca`. The implementation branch started at `origin/main` commit `b6f3f0f`; no remote implementation task ref existed before this attempt, so the task branch will be published as a new remote ref.
+- Prepared recursive submodule synchronization/update passed. The recorded implementation submodule is `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 ### Files Changed
-None
+Commerce result schema/contracts, recursive Visual derivation and reconstruction, External HTTP runtime/preview/publication/fixture validation, Studio synthetic processing and recursive response UI, the new External HTTP starter definition, and focused Commerce tests/fixtures. No Shared, database, or Prisma files changed.
 
 ### Work Completed
-None
+- Added the Commerce-owned bounded result-schema parser/compiler (depth 12, 256 schema nodes) and moved Commerce output validation to it while retaining Shared input-schema validation.
+- Replaced flat root OBJECT/LIST response-processing kinds with the canonical DIRECT | VISUAL | JAVASCRIPT union; nested Visual OBJECT/LIST nodes use one recursive contract, projector, derivation/reconstruction path, and publication compatibility check.
+- Added recursive Visual authoring with local validation, synchronized current-validity disclosures, independent root shape drafts, and per-field SCALAR/OBJECT/LIST branch retention keyed by browser-only client IDs.
+- Routed runtime, fixture/sample validation, publication, and Studio synthetic processing through the Commerce-owned schema/Visual helpers; updated old development fixtures and the starter tool.
+- Documented the preproduction data rule: local definitions using the removed flat modes must be discarded and recreated through Studio, or the disposable local development database reset/reseeded using the repository's local procedure. No migration or compatibility adapter was added.
 
 ### Validation Results
-None
+- `npm run test:arch021-commerce-tool-contract`: 16 passed.
+- `npm run test:arch021-external-tool-authoring-validation`: 47 passed.
+- `npm run test:arch020-code-processor`: 6 passed.
+- `npm run test:arch020-external-tools-ui`: 33 passed, including nested branch-draft retention. The task's suggested `test:arch021-external-tool-ui` name is not declared in this repository; the existing focused UI script was used.
+- Focused C048 contract, schema, runtime, authoring, UI, execution, preview, and publication batch: 182 passed across 12 test files.
+- `npm run lint`: 0 errors, 7 warnings (existing warnings in unrelated source/tests and an existing unused test import).
+- `npm run typecheck`: blocked by the existing repository-wide baseline of 251 diagnostics across 22 files. The diagnostics are in unrelated Prisma-backed areas or pre-existing portions of fixture/test files; none are on C048-edited lines or in C048-owned implementation code.
+- `git diff --check`: passed. Source audits confirmed Shared remains pinned at 0.14.2 and unchanged; no Commerce/Studio `DetailsSchemaSchema` or details-mode compiler use remains; Shared compilation is input-only; root processing is Direct/Visual/JavaScript, with OBJECT/LIST only as nested Visual nodes.
 
 ### Deviations
-None
+- The task's suggested C048-specific UI npm script is absent from `package.json`; ran the existing `test:arch020-external-tools-ui` script instead.
+- Whole-repository typecheck remains non-green because of the documented unrelated baseline diagnostics; focused behavior tests and lint pass.
 
 ### Assumptions
-None
+Old flat Visual definitions are development-only state and need local recreation; no production compatibility or data migration is required. Reset only a disposable local development database if manual recreation is not sufficient.
 
 ### Unresolved Issues
-None
+None within C048 scope. Architect review is pending.
 
 ### Architectural Concerns
-None
+None. Shared remains at 0.14.2 and no Shared or Prisma changes were introduced.
 
 ## Architect Review
 
