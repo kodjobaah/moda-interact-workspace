@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation has now identified a bounded External HTTP Request-tab follow-up: COMMERCE-040 is Ready, with COMMERCE-041 and COMMERCE-042 dependency-gated behind it. These tasks refine Request authoring before manual review proceeds to the next tab and do not introduce Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation has now identified a bounded External HTTP Request-tab follow-up: COMMERCE-040 is architect-accepted Complete, COMMERCE-041 is Ready, and COMMERCE-042 remains dependency-gated behind COMMERCE-041. These tasks refine Request authoring before manual review proceeds to the next tab and do not introduce Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -835,8 +835,8 @@ Request follow-up tasks:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-040 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-039 |
-| ARCH-021-COMMERCE-041 | moda_commerce | Pending | ARCH-021-COMMERCE-040 |
+| ARCH-021-COMMERCE-040 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-041 | moda_commerce | Ready | ARCH-021-COMMERCE-040 |
 | ARCH-021-COMMERCE-042 | moda_commerce | Pending | ARCH-021-COMMERCE-041 |
 
 ```text
@@ -1093,6 +1093,15 @@ independent of features.
 - Manual review after COMMERCE-039 found that Request authoring silently discards invalid intermediate edits, Request preview is misplaced under Test, JavaScript lacks explicit Agent-input/Literal value bindings, JavaScript mode is visually too shallow, mode switching destroys the previous mode draft, and the local-only flow exposes a dead `Manage connections` control.
 - Agreed the Request target: remove Manage connections; keep connection selection/safe metadata; validate request construction in Request with zero provider I/O; render the exact safe request descriptor there; add explicit JavaScript Request-value bindings while retaining `buildRequest({ args })`; preserve per-mode local drafts; keep tabs freely navigable.
 - Materialised COMMERCE-040 (Ready), COMMERCE-041 (Pending on 040) and COMMERCE-042 (Pending on 041). No system-test dependency or Phase 2 gating was introduced.
+
+### 2026-09-26 — COMMERCE-040 Attempt 1 accepted
+
+- Accepted implementation `b8d544d` and parent report handoff `5fdfbc03`.
+- The canonical JavaScript External HTTP request now requires explicit bounded Agent-input/Literal `bindings`; the complete Tool invocation is validated first, then only declared bindings are resolved and passed to QuickJS as `buildRequest({ args })`.
+- Tool argument mapping and request preview share `resolveToolArgumentMappings(...)`; unbound Tool inputs are absent, structured bound inputs remain available to JavaScript, literals remain bounded JSON, and declarative mappings retain scalar-only query semantics.
+- Unknown and forbidden External input bindings are rejected at deterministic binding paths; the final JavaScript descriptor remains restricted to relative path, scalar query values and safe headers.
+- No compatibility parser, new execution version, database change, live provider execution or Request UI binding controls were introduced. Production JavaScript External HTTP execution remains disabled.
+- Promoted COMMERCE-041 to Ready; COMMERCE-042 remains Pending on COMMERCE-041.
 
 
 ### 2026-09-25 — COMMERCE-018 Attempt 4 accepted

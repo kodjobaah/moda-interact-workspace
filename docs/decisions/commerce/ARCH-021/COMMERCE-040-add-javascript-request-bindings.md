@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
   - ARCH-021-COMMERCE-017
@@ -204,14 +204,14 @@ Update repository fixtures/tests/builders to the new canonical shape. No Prisma 
 
 ## Work Items
 
-- [ ] Add bounded `bindings` to the canonical JavaScript request contract.
-- [ ] Remove implicit copy-all-inputs semantics for JavaScript request construction.
-- [ ] Reuse one deterministic binding resolver for JavaScript preview/runtime mapping.
-- [ ] Apply External HTTP forbidden-input policy to JavaScript bindings.
-- [ ] Preserve bounded QuickJS input/output and safe descriptor validation.
-- [ ] Update authoritative External HTTP validation for binding diagnostics.
-- [ ] Update canonical fixtures/builders/tests to the single new shape.
-- [ ] Add regression coverage proving unbound Tool inputs are absent from JavaScript `args`.
+- [x] Add bounded `bindings` to the canonical JavaScript request contract.
+- [x] Remove implicit copy-all-inputs semantics for JavaScript request construction.
+- [x] Reuse one deterministic binding resolver for JavaScript preview/runtime mapping.
+- [x] Apply External HTTP forbidden-input policy to JavaScript bindings.
+- [x] Preserve bounded QuickJS input/output and safe descriptor validation.
+- [x] Update authoritative External HTTP validation for binding diagnostics.
+- [x] Update canonical fixtures/builders/tests to the single new shape.
+- [x] Add regression coverage proving unbound Tool inputs are absent from JavaScript `args`.
 
 ## Interfaces / Contracts
 
@@ -245,26 +245,26 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Canonical JavaScript request definitions contain an explicit bounded `bindings` map.
-- [ ] `buildRequest({ args })` receives the resolved bindings only, not all validated Tool inputs.
-- [ ] Agent-input and Literal bindings use deterministic semantics equivalent to the platform mapping model.
-- [ ] Structured JavaScript-bound values remain possible while final descriptor query values remain scalar/bounded.
-- [ ] Unknown/forbidden input bindings fail authoritative validation deterministically.
-- [ ] Request preview and runtime argument mapping use the same binding-resolution rule.
-- [ ] Unbound Tool inputs are proven absent from request JavaScript input.
-- [ ] Existing QuickJS security/runtime bounds remain intact.
-- [ ] No compatibility parser, new execution kind/version or Prisma migration is introduced.
-- [ ] No Studio UI, live provider call or tab gating is implemented by this task.
+- [x] Canonical JavaScript request definitions contain an explicit bounded `bindings` map.
+- [x] `buildRequest({ args })` receives the resolved bindings only, not all validated Tool inputs.
+- [x] Agent-input and Literal bindings use deterministic semantics equivalent to the platform mapping model.
+- [x] Structured JavaScript-bound values remain possible while final descriptor query values remain scalar/bounded.
+- [x] Unknown/forbidden input bindings fail authoritative validation deterministically.
+- [x] Request preview and runtime argument mapping use the same binding-resolution rule.
+- [x] Unbound Tool inputs are proven absent from request JavaScript input.
+- [x] Existing QuickJS security/runtime bounds remain intact.
+- [x] No compatibility parser, new execution kind/version or Prisma migration is introduced.
+- [x] No Studio UI, live provider call or tab gating is implemented by this task.
 
 ## Validation
 
-- [ ] focused Commerce Tool-contract tests
-- [ ] focused request-processor tests
-- [ ] focused External HTTP authoring validation/preview tests
-- [ ] existing common Tool-authoring packet required by repository scripts
-- [ ] targeted TypeScript diagnostics for changed files or repository typecheck with baseline reconciliation
-- [ ] targeted ESLint for changed files
-- [ ] `git diff --check`
+- [x] focused Commerce Tool-contract tests: 14 passed.
+- [x] focused request-processor tests: included in the final 4-file packet; all passed.
+- [x] focused External HTTP authoring validation/preview tests: included in the final 4-file packet; all passed.
+- [x] existing common Tool-authoring packet: 7 files, 85 tests passed.
+- [x] TypeScript diagnostics: `tsc --noEmit` reports 249 repository diagnostics, all outside changed files; editor diagnostics report no errors in changed files.
+- [x] targeted ESLint for changed files: passed.
+- [x] `git diff --check`: passed.
 
 ## Stop Condition
 
@@ -284,45 +284,83 @@ Literal     -> authored fixed value
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review
 
 ### Files Changed
-None
+`src/commerce/tool-definition/contracts.ts`, `src/commerce/tool-definition/mappings.ts`, `src/commerce/tool-authoring/external-validation.ts`, `src/commerce/tool-authoring/server-actions.ts`, `src/studio/external-http/request-tab.tsx`, `tests/arch021-commerce-tool-contract.test.ts`, `tests/code-request-processor.test.ts`, `tests/external-tool-authoring-validation.test.ts`, and `tests/external-tool-authoring-server-actions.test.ts`.
 
 ### Work Completed
-None
+Added the required bounded JavaScript request `bindings` map and deterministic validation paths for unknown and forbidden input references. JavaScript Tool argument mapping and request preview now share one resolver for input/literal bindings, optional omission, structured-value copying, and required-missing errors; only resolved bindings reach QuickJS. Migrated canonical request fixtures/default data shape and added regressions for unbound input exclusion, nested values, literals, missing bindings, invalid bindings, and unsafe descriptors. Preserved the production executor's JavaScript request rejection.
 
 ### Validation Results
-None
+`npm exec -- vitest run tests/arch021-commerce-tool-contract.test.ts tests/code-request-processor.test.ts tests/external-tool-authoring-validation.test.ts tests/external-tool-authoring-server-actions.test.ts`: 4 files, 61 tests passed. `npm run test:arch021-tool-authoring-common`: 7 files, 85 tests passed. Targeted ESLint passed. `git diff --check` passed. `npm exec -- tsc --noEmit --pretty false` exited nonzero with 249 repository diagnostics; none reference changed files, and editor diagnostics are clear for all changed files. Validation ran with Node 24.21.0; package engine declares 24.19.0. Implementation commit `b8d544d` is pushed to `task/ARCH-021-COMMERCE-040` in `moda-interact-commerce`.
 
 ### Deviations
-None
+No QuickJS processor or production executor changes were needed: argument resolution occurs before the processor boundary, and production JavaScript External HTTP execution remains disabled. The Studio Request tab change is limited to including the newly required empty `bindings` field in its default JavaScript request data.
 
 ### Assumptions
-None
+None.
 
 ### Unresolved Issues
-None
+The repository-wide TypeScript check remains non-green because of 249 diagnostics outside the changed files; no task-file diagnostics remain.
 
 ### Architectural Concerns
-None
+None identified. The implementation remains pre-production and does not enable JavaScript External HTTP execution.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-None
+Reviewed implementation `b8d544d` and parent report handoff `5fdfbc03` against the complete COMMERCE-040 contract. Accepted.
+
+The canonical `EXTERNAL_HTTP` JavaScript request shape now requires an explicit bounded `bindings` map while retaining the `quickjs-sync.v1` runtime and `function buildRequest({ args })` entrypoint. JavaScript request arguments are no longer the complete validated Tool input object: `mapToolArguments(...)` validates the full invocation against `inputSchema` and resolves only declared bindings, preserving structured Agent-input values and bounded JSON literals while honoring `omitIfMissing`.
+
+The same `resolveToolArgumentMappings(...)` implementation is used by Tool argument mapping and External request preview. Preview resolves bindings before invoking the request processor, and source inspection confirms QuickJS receives only that resolved record. Unbound Tool inputs are therefore absent from `args`. Existing declarative External mappings continue to enforce scalar-only request-query values while JavaScript bindings may intentionally carry structured JSON values for transformation before the final descriptor.
+
+Canonical definition validation now applies unknown-input and forbidden External-input checks to JavaScript bindings at stable `/execution/request/bindings/<name>` paths. Request literals retain the existing bounded mapping semantics and the final request descriptor remains restricted to relative path, scalar query values and safe non-reserved headers. No compatibility parser, `JAVASCRIPT_V2`, Prisma migration or alternate execution shape was introduced.
+
+Production JavaScript External HTTP execution remains disabled by the existing executor compatibility gate. The only Studio source change is the required empty `bindings` member when switching a Request draft into JavaScript mode; COMMERCE-041/042 remain the owners of Request validation/preview presentation and JavaScript binding controls.
 
 ### Reviewed Files
-None
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-definition/mappings.ts`
+- `src/commerce/tool-authoring/external-validation.ts`
+- `src/commerce/tool-authoring/server-actions.ts`
+- `src/commerce/code-request/processor.ts`
+- `src/commerce/execution/executor.ts`
+- `src/studio/external-http/request-tab.tsx`
+- `tests/arch021-commerce-tool-contract.test.ts`
+- `tests/code-request-processor.test.ts`
+- `tests/external-tool-authoring-validation.test.ts`
+- `tests/external-tool-authoring-server-actions.test.ts`
 
 ### Validation Reviewed
-None
+Accepted submitted evidence:
+
+```text
+Focused COMMERCE-040 packet:        61 passed
+Common Tool-authoring packet:       85 passed
+Targeted ESLint:                    passed
+git diff --check:                   passed
+Changed-file/editor diagnostics:    clean
+Repository tsc baseline:            249 unrelated diagnostics
+```
+
+The supplied review snapshot does not contain installed dependencies/Git metadata, so the architect review independently inspected the implementation and source invariants rather than rerunning the Node test packet in this environment.
+
+Source audits additionally confirmed:
+
+```text
+requestProcessor.process(...) receives resolved boundArgs
+no production request-processor call passes the complete Tool invocation object
+canonical JavaScript request literals in source/tests include bindings
+production EXTERNAL_HTTP JavaScript request execution remains rejected
+```
 
 ### Architecture Conformance
-Pending
+Conforms. The implementation is bounded to the Commerce-owned Tool-definition/authoring contract, preserves authority and credential isolation, reuses one mapping resolver, keeps QuickJS schema/connection unaware, introduces no database or cross-repository contract change, and leaves UI authoring work to COMMERCE-041/042.
 
 ### Follow-up
-None
+`ARCH-021-COMMERCE-041` is promoted to `ready`. COMMERCE-042 remains Pending on COMMERCE-041.
