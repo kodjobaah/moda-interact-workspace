@@ -4,14 +4,14 @@ title: CommerceAgent configuration and live Studio authoring
 status: agreed
 coordinator: moda_architect
 created: 2026-09-23
-updated: 2026-09-25
+updated: 2026-09-26
 ---
 
 # ARCH-021: CommerceAgent configuration and live Studio authoring
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023 and COMMERCE-024 are Complete; COMMERCE-021 is Ready.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036 and COMMERCE-037 are Complete; COMMERCE-021 and COMMERCE-038 are Ready.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -790,6 +790,10 @@ Phase 3 tasks:
 | ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 | ARCH-021-COMMERCE-023 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-024 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019 |
+| ARCH-021-COMMERCE-036 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-020 |
+| ARCH-021-COMMERCE-037 | moda_commerce | Complete | ARCH-021-COMMERCE-036 |
+| ARCH-021-COMMERCE-038 | moda_commerce | Ready | ARCH-021-COMMERCE-037 |
+| ARCH-021-COMMERCE-039 | moda_commerce | Pending | ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-022, ARCH-021-COMMERCE-038 |
 
 Dependency graph:
 
@@ -803,9 +807,16 @@ COMMERCE-016
     +--> COMMERCE-019 ----+---- common validation/publication +
     |
     +--> COMMERCE-020 -------- Tool UI extraction ------------+
+              |
+              +--> COMMERCE-036 --> COMMERCE-037 --> COMMERCE-038 --+
+                                                                     |
+COMMERCE-021 --------------------------------------------------------+--> COMMERCE-039
+COMMERCE-022 --------------------------------------------------------+
 
-COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-021 is the sole Ready Phase 3 Commerce implementation task.
+COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036 and COMMERCE-037 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-038 and COMMERCE-021 are independent Ready Phase 3 Commerce implementation tasks. COMMERCE-039 remains gated by COMMERCE-021 and COMMERCE-038.
 ```
+
+The initial-Tool refactor keeps intermediate new-Tool authoring non-durable until final Create, then commits Tool + revision-1 `DRAFT` through one atomic lifecycle/persistence/Studio boundary. Phase 2 tab gating remains explicitly out of scope.
 
 Phase 3 exit criteria:
 
@@ -1824,6 +1835,20 @@ architect-accepted Complete.
 - Marked COMMERCE-032 Complete and promoted COMMERCE-033 to Ready.
 - Reconciled duplicate correction-task rows in the architect-owned checkpoint
   table; this was coordination-document drift, not a C032 implementation issue.
+
+### 2026-09-26 — COMMERCE-037 Attempt 2 accepted
+
+- Accepted the dedicated narrow PostgreSQL persistence path for atomic initial Tool creation: operation-scoped advisory locking, exact audit replay lookup and direct Tool/revision/audit inserts without whole-publication state materialisation or the legacy global publication lock.
+- Accepted Attempt 2 corrections proving a distinct narrow create succeeds while the legacy global lock remains held, rejecting changed-actor replay, and limiting Tool-name `CONFLICT` translation to the `CommerceTool.name` unique target.
+- Accepted validation: common Tool-authoring packet 81/81, focused PostgreSQL correction test passed, changed-file ESLint and diff checks passed; retained backend/typecheck failures match the documented baseline and introduce no task-owned diagnostics.
+- Marked COMMERCE-037 Complete and promoted COMMERCE-038 to Ready. COMMERCE-039 remains dependency-gated on COMMERCE-021 and COMMERCE-038.
+
+### 2026-09-26 — COMMERCE-036 Attempt 2 accepted
+
+- Accepted `createToolWithInitialDraft` as the atomic lifecycle boundary for Tool + revision-1 `DRAFT` under one `CREATE_TOOL` operation/audit identity.
+- Accepted the preserved Attempt 1 implementation evidence: common Tool-authoring suite 81/81, focused lifecycle suite 34/34, targeted ESLint and diff checks clean, with repository TypeScript diagnostics remaining outside task-owned files.
+- Attempt 2 was report-only; the submitted snapshots differ only in the COMMERCE-036 task record, whose Work Items, Acceptance Criteria, Validation and canonical Completion Report status are now reconciled.
+- Marked COMMERCE-036 Complete and promoted COMMERCE-037 to Ready. COMMERCE-038/039 remain dependency-gated.
 
 ### 2026-09-25 — COMMERCE-022 Attempt 4 accepted
 
