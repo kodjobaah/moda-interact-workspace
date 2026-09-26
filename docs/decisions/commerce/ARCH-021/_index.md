@@ -128,7 +128,7 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | [COMMERCE-036](COMMERCE-036-create-tool-with-initial-draft-atomically.md) | Create Tool + revision-1 DRAFT as one lifecycle operation | Complete | COMMERCE-016, COMMERCE-020 |
 | [COMMERCE-037](COMMERCE-037-persist-initial-tool-with-narrow-transaction.md) | Persist initial Tool creation with a narrow PostgreSQL transaction | Complete | COMMERCE-036 |
 | [COMMERCE-038](COMMERCE-038-expose-atomic-tool-creation-boundary.md) | Expose atomic initial Tool creation through the Studio boundary | Complete | COMMERCE-037 |
-| [COMMERCE-039](COMMERCE-039-keep-new-tool-authoring-local-until-create.md) | Keep new Tool authoring local until final creation | Ready | COMMERCE-021, COMMERCE-022, COMMERCE-038 |
+| [COMMERCE-039](COMMERCE-039-keep-new-tool-authoring-local-until-create.md) | Keep new Tool authoring local until final creation | Complete | COMMERCE-021, COMMERCE-022, COMMERCE-038 |
 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
 
@@ -138,14 +138,17 @@ COMMERCE-016 is architect-accepted Complete and the simplification implementatio
 Current Phase 3 coordination frontier:
 
 ```text
-COMMERCE-039   ready         Keep new Tool authoring local until final creation
+No Ready Phase 3 implementation task remains. Developer manual validation may now proceed before deferred terminal system testing and any bounded follow-up tasks discovered during that validation.
 ```
 
-COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037 and COMMERCE-038 are architect-accepted Complete.
-COMMERCE-039 is Ready: all three dependencies (COMMERCE-021, COMMERCE-022 and COMMERCE-038) are Complete.
+COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037, COMMERCE-038 and COMMERCE-039 are architect-accepted Complete.
 ```
 
 
+
+### COMMERCE-039 Attempt 6 accepted — 2026-09-26
+
+COMMERCE-039 is **Complete / Accepted, Attempt 6**. New Tool authoring remains browser-local through Request/Response/Test/Agent contract/Review and persists only at final Create through the atomic COMMERCE-038 boundary. The accepted packet passed External UI 16/16, common authoring 85/85 and focused UI 60/60 with zero skips; focused ESLint, required source audits and diff checks passed with no Attempt 6 changed-file type diagnostics. The developer will now manually validate the completed Phase 3 flow; defects discovered there are follow-up tasks rather than unfinished COMMERCE-039 work unless they invalidate the core local-only creation contract.
 
 ## Pre-Phase-3 simplification checkpoint — 2026-09-24
 

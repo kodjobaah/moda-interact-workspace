@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037 and COMMERCE-038 are Complete; COMMERCE-039 is Ready.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037, COMMERCE-038 and COMMERCE-039 are Complete. Developer manual validation may now proceed before the deferred terminal system test and any bounded follow-up work discovered during that validation.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -793,7 +793,7 @@ Phase 3 tasks:
 | ARCH-021-COMMERCE-036 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-020 |
 | ARCH-021-COMMERCE-037 | moda_commerce | Complete | ARCH-021-COMMERCE-036 |
 | ARCH-021-COMMERCE-038 | moda_commerce | Complete | ARCH-021-COMMERCE-037 |
-| ARCH-021-COMMERCE-039 | moda_commerce | Ready | ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-022, ARCH-021-COMMERCE-038 |
+| ARCH-021-COMMERCE-039 | moda_commerce | Complete | ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-022, ARCH-021-COMMERCE-038 |
 
 Dependency graph:
 
@@ -813,10 +813,10 @@ COMMERCE-016
 COMMERCE-021 --------------------------------------------------------+--> COMMERCE-039
 COMMERCE-022 --------------------------------------------------------+
 
-COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037 and COMMERCE-038 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-039 is Ready because all of its dependencies are Complete.
+COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037, COMMERCE-038 and COMMERCE-039 are architect-accepted Complete. The simplification implementation is Complete. Developer manual validation is the next checkpoint before deferred terminal system testing and any bounded follow-up tasks discovered during manual review.
 ```
 
-The initial-Tool refactor keeps intermediate new-Tool authoring non-durable until final Create, then commits Tool + revision-1 `DRAFT` through one atomic lifecycle/persistence/Studio boundary. Phase 2 tab gating remains explicitly out of scope.
+The initial-Tool refactor keeps intermediate new-Tool authoring non-durable until final Create, then commits Tool + revision-1 `DRAFT` through one atomic lifecycle/persistence/Studio boundary. Phase 2 tab gating remains explicitly out of scope. For `EXTERNAL_HTTP`, new-Tool setup must establish the authorized connection revision before entering authoring; persisted drafts derive that revision from their durable definition. Failure to resolve that required connection context is an unavailable/error condition, not a second supported authoring mode.
 
 Phase 3 exit criteria:
 
@@ -1835,6 +1835,14 @@ architect-accepted Complete.
 - Marked COMMERCE-032 Complete and promoted COMMERCE-033 to Ready.
 - Reconciled duplicate correction-task rows in the architect-owned checkpoint
   table; this was coordination-document drift, not a C032 implementation issue.
+
+### 2026-09-26 — COMMERCE-039 Attempt 6 accepted
+
+- Accepted implementation `9ba89bd`: new Tool authoring remains browser-local across the freely navigable authoring surfaces and performs exactly one atomic `createToolWithInitialDraft` at final Create, with exact returned identity used for navigation/reconciliation.
+- Accepted the extracted External Request/Response/Test ownership boundaries, shared Agent/Review presentation, current-candidate Admin validation, malformed-JSON retention, dirty-abandonment behavior and preserved persisted-DRAFT Save/Validate/publication semantics.
+- Accepted validation: External UI 16/16, common authoring 85/85 and focused UI 60/60 with zero skips; focused ESLint, required source audits and `git diff --check` passed; no Attempt 6 changed-file TypeScript diagnostics remain.
+- Clarified the External HTTP entry invariant: an authorized connection revision is selected/resolved before authoring begins. Any residual unavailable/fallback-state issue found in developer manual validation is non-blocking follow-up work and must be captured in a new bounded task.
+- Marked COMMERCE-039 Complete. Phase 3 implementation work is now complete; developer manual validation may proceed before the intentionally deferred terminal system test.
 
 ### 2026-09-26 — COMMERCE-021 Attempt 6 accepted
 
