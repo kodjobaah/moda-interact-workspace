@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-26T08:12:37Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-021
@@ -518,23 +518,23 @@ Do not copy the old pre-COMMERCE-021 component wholesale. Restore only its prese
 
 ## Work Items
 
-- [ ] Introduce/derive a local new-Tool authoring model from Tool metadata + canonical proposed definition.
-- [ ] Reuse the accepted EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL authoring surfaces in new mode without a persisted Tool id.
-- [ ] Remove the initial `createTool -> createToolDraft` browser sequence.
-- [ ] Remove new-Tool dependence on `stagedToolDraft` / resume composite recovery.
-- [ ] Ensure Request/Response/Test/Agent contract/Review changes are local/non-mutating.
-- [ ] Remove/avoid persisted `Save draft` for a not-yet-created Tool.
-- [ ] Wire final Review `Create tool` to the COMMERCE-038 atomic mutation.
-- [ ] Navigate using the returned exact `toolId` + `toolRevisionId`.
-- [ ] Wire transport-only UNCONFIRMED reconciliation to exact committed identity.
-- [ ] Preserve existing persisted Tool DRAFT editing unchanged.
-- [ ] Add focused regressions for no intermediate persistence and abandonment.
-- [ ] Replace the metadata-form `Create tool` submit with a non-mutating `Continue authoring` transition.
-- [ ] Render a genuine local authoring session before final creation; do not submit generated defaults directly from the setup form.
-- [ ] Restore the five-tab External HTTP authoring shell for both local-new and persisted-DRAFT modes.
-- [ ] Restore the structured Review-card presentation and JSON-editor sizing/classes without reverting COMMERCE-021 behavior.
-- [ ] Keep the current COMMERCE-021 request preview in the Test tab; do not resurrect removed provider/sample execution semantics.
-- [ ] Reconcile all Work Items, Acceptance Criteria and Validation checkboxes to the final Attempt 2 evidence.
+- [x] Introduce/derive a local new-Tool authoring model from Tool metadata + canonical proposed definition.
+- [x] Reuse the accepted EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL authoring surfaces in new mode without a persisted Tool id.
+- [x] Remove the initial `createTool -> createToolDraft` browser sequence.
+- [x] Remove new-Tool dependence on `stagedToolDraft` / resume composite recovery.
+- [x] Ensure Request/Response/Test/Agent contract/Review changes are local/non-mutating.
+- [x] Remove/avoid persisted `Save draft` for a not-yet-created Tool.
+- [x] Wire final Review `Create tool` to the COMMERCE-038 atomic mutation.
+- [x] Navigate using the returned exact `toolId` + `toolRevisionId`.
+- [x] Wire transport-only UNCONFIRMED reconciliation to exact committed identity.
+- [x] Preserve existing persisted Tool DRAFT editing unchanged.
+- [x] Add focused regressions for no intermediate persistence and abandonment.
+- [x] Replace the metadata-form `Create tool` submit with a non-mutating `Continue authoring` transition.
+- [x] Render a genuine local authoring session before final creation; do not submit generated defaults directly from the setup form.
+- [x] Restore the five-tab External HTTP authoring shell for both local-new and persisted-DRAFT modes.
+- [x] Restore the structured Review-card presentation and JSON-editor sizing/classes without reverting COMMERCE-021 behavior.
+- [x] Keep the current COMMERCE-021 request preview in the Test tab; do not resurrect removed provider/sample execution semantics.
+- [x] Reconcile all Work Items, Acceptance Criteria and Validation checkboxes to the final Attempt 4 evidence.
 
 ## Interfaces / Contracts
 
@@ -579,49 +579,49 @@ None in this task set. Phase 2 progression/gating may be defined separately only
 
 ## Acceptance Criteria
 
-- [ ] A new Tool can be authored across the accepted tabs/sections without creating a Tool or ToolRevision row.
-- [ ] No new-Tool persistence occurs when entering/changing Request/Query, Response/Result, Test, Agent contract or Review.
-- [ ] A brand-new Tool does not expose durable `Save draft` before creation.
-- [ ] Final `Create tool` performs exactly one atomic initial-create mutation.
-- [ ] Confirmed creation navigates using the exact returned `toolId` + `toolRevisionId`.
-- [ ] Abandoning the flow before Create leaves no Tool/ToolRevision artifact created by that flow.
-- [ ] Lost final-create response is reconciled through the one operation identity without mutation replay or name/DRAFT scans.
-- [ ] Both EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL obey the same no-intermediate-persistence rule.
-- [ ] Existing persisted Tool DRAFT Save/Publish/CAS behaviour remains unchanged.
-- [ ] All tabs remain freely navigable; no Phase 2 gating is introduced.
-- [ ] Browser state is not treated as a trust boundary; final server validation remains authoritative.
-- [ ] The New tool setup form exposes `Continue authoring` and does not expose the final `Create tool` action.
-- [ ] `Create tool` is available only from the local Review surface after entering the authoring session.
-- [ ] EXTERNAL_HTTP renders exactly five freely navigable tabs in this order: Request, Response, Test, Agent contract, Review.
-- [ ] Existing EXTERNAL_HTTP DRAFT editing uses the same restored tab/panel presentation while retaining durable Save/Validate/Publish semantics.
-- [ ] Only the active External HTTP tab panel is rendered and each tab exposes correct `role=tab` / `aria-selected` semantics.
-- [ ] Agent-contract JSON/text areas and response-processing/schema JSON areas use the accepted `tool-editor-json-textarea` presentation.
-- [ ] Review uses the accepted `tool-review-*` card/grid/action structure rather than a flattened facts list.
-- [ ] The Test tab contains the current no-provider request-construction preview; no removed live/sample-provider behavior is reintroduced.
-- [ ] COMMERCE-021 Attempt 6 behavioral regressions remain green after the presentation restoration.
+- [x] A new Tool can be authored across the accepted tabs/sections without creating a Tool or ToolRevision row.
+- [x] No new-Tool persistence occurs when entering/changing Request/Query, Response/Result, Test, Agent contract or Review.
+- [x] A brand-new Tool does not expose durable `Save draft` before creation.
+- [x] Final `Create tool` performs exactly one atomic initial-create mutation.
+- [x] Confirmed creation navigates using the exact returned `toolId` + `toolRevisionId`.
+- [x] Abandoning the flow before Create leaves no Tool/ToolRevision artifact created by that flow.
+- [x] Lost final-create response is reconciled through the one operation identity without mutation replay or name/DRAFT scans.
+- [x] Both EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL obey the same no-intermediate-persistence rule.
+- [x] Existing persisted Tool DRAFT Save/Publish/CAS behaviour remains unchanged.
+- [x] All tabs remain freely navigable; no Phase 2 gating is introduced.
+- [x] Browser state is not treated as a trust boundary; final server validation remains authoritative.
+- [x] The New tool setup form exposes `Continue authoring` and does not expose the final `Create tool` action.
+- [x] `Create tool` is available only from the local Review surface after entering the authoring session.
+- [x] EXTERNAL_HTTP renders exactly five freely navigable tabs in this order: Request, Response, Test, Agent contract, Review.
+- [x] Existing EXTERNAL_HTTP DRAFT editing uses the same restored tab/panel presentation while retaining durable Save/Validate/Publish semantics.
+- [x] Only the active External HTTP tab panel is rendered and each tab exposes correct `role=tab` / `aria-selected` semantics.
+- [x] Agent-contract JSON/text areas and response-processing/schema JSON areas use the accepted `tool-editor-json-textarea` presentation.
+- [x] Review uses the accepted `tool-review-*` card/grid/action structure rather than a flattened facts list.
+- [x] The Test tab contains the current no-provider request-construction preview; no removed live/sample-provider behavior is reintroduced.
+- [x] COMMERCE-021 Attempt 6 behavioral regressions remain green after the presentation restoration.
 
 ## Validation
 
-- [ ] `npm run test:arch020-external-tools-ui`
-- [ ] `npm run test:arch021-tool-authoring-common`
-- [ ] focused `tests/tool-authoring-screen.test.tsx`
-- [ ] focused Shopify Admin Tool-authoring UI regression packet affected by this composition
-- [ ] regression: changing fields/tabs/preview/validation before final Create invokes zero Tool persistence Server Actions
-- [ ] regression: abandoning/discarding new Tool flow invokes zero Tool persistence Server Actions
-- [ ] regression: final Create invokes the atomic action once and never calls legacy create-then-draft sequence
-- [ ] regression: committed UNCONFIRMED reconciliation navigates by returned audit identity
-- [ ] regression: existing persisted Tool DRAFT still saves/publishes through existing actions
-- [ ] targeted lint/typecheck with zero new task-owned diagnostics
-- [ ] regression: setup form -> `Continue authoring` performs zero Tool persistence actions and renders the local authoring shell
-- [ ] regression: EXTERNAL_HTTP tablist has exactly Request / Response / Test / Agent contract / Review in order, all freely clickable
-- [ ] regression: clicking each External HTTP tab renders only its matching panel while preserving authored values across tab switches
-- [ ] regression: Request/Response/Test/Agent edits followed by Review still produce zero Tool persistence calls
-- [ ] regression: `Create tool` is absent before Review and final Review Create submits the actually edited local definition, not generated defaults
-- [ ] regression: persisted EXTERNAL_HTTP DRAFT still exposes the restored tabs and retains COMMERCE-021 Save -> Validate -> publish/LIVE_TEST_REQUIRED behavior
-- [ ] regression: restored Agent contract textareas carry `tool-editor-json-textarea`; restored Review carries `tool-review-panel`, `tool-review-summary-grid` and `tool-review-card` structure
-- [ ] source audit: no new-mode fake/persisted Tool or ToolRevision id is invented for component reuse
-- [ ] source audit: no `createTool` / `createToolDraft` call returns to the new-Tool flow
-- [ ] `git diff --check`
+- [x] `npm run test:arch020-external-tools-ui` (16 passed)
+- [x] `npm run test:arch021-tool-authoring-common` (85 passed)
+- [x] focused packet (`tool-authoring-screen`, `external-tools-ui`, `studio-workspace`, `studio-integration`) (4 files, 58 passed)
+- [x] focused Shopify Admin/persisted Tool UI regressions included in the focused packet.
+- [x] regression: changing fields/tabs/preview/validation before final Create invokes zero Tool persistence Server Actions
+- [x] regression: abandoning/discarding new Tool flow invokes zero Tool persistence Server Actions
+- [x] regression: final Create invokes the atomic action once and never calls legacy create-then-draft sequence
+- [x] regression: committed UNCONFIRMED reconciliation navigates by returned audit identity
+- [x] regression: existing persisted Tool DRAFT still saves/publishes through existing actions
+- [x] targeted lint/typecheck with zero new task-owned diagnostics
+- [x] regression: setup form -> `Continue authoring` performs zero Tool persistence actions and renders the local authoring shell
+- [x] regression: EXTERNAL_HTTP tablist has exactly Request / Response / Test / Agent contract / Review in order, all freely clickable
+- [x] regression: clicking each External HTTP tab renders only its matching panel while preserving authored values across tab switches
+- [x] regression: Request/Response/Test/Agent edits followed by Review still produce zero Tool persistence calls
+- [x] regression: `Create tool` is absent before Review and final Review Create submits the actually edited local definition, not generated defaults
+- [x] regression: persisted EXTERNAL_HTTP DRAFT still exposes the restored tabs and retains COMMERCE-021 Save -> Validate -> publish/LIVE_TEST_REQUIRED behavior
+- [x] regression: restored Agent contract textareas carry `tool-editor-json-textarea`; restored Review carries `tool-review-panel`, `tool-review-summary-grid` and `tool-review-card` structure
+- [x] source audit: no new-mode fake/persisted Tool or ToolRevision id is invented for component reuse
+- [x] source audit: no `createTool` / `createToolDraft` call returns to the new-Tool flow
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -636,44 +636,42 @@ The visible label/button flow may distinguish an initial local setup action such
 ## Completion Report
 
 ### Status
-Ready for review
+Ready for Review
 
 ### Files Changed
-- `src/studio/contracts.ts`
-- `src/studio/tools/tool-library.tsx`
-- `src/studio/tools/tool-authoring-screen.tsx`
-- `src/studio/testing/in-memory-studio-services.ts`
-- `tests/tool-authoring-screen.test.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
 - `tests/external-tools-ui.test.tsx`
-- `tests/studio-workspace.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
-- Replaced the new-tool `createTool` then `createToolDraft` browser sequence with one `createToolWithInitialDraft` action.
-- Kept new-tool metadata and canonical definitions local until final Create; removed staged-draft/resume handling.
-- Preserved existing durable Tool DRAFT editing and added exact returned `toolId`/`toolRevisionId` navigation and reconciliation.
-- Added atomic in-memory fixture support and updated focused regressions for local authoring, exact-once creation, external authoring, and failure handling.
-- Added the atomic operation to the shared Studio service contract and mutation refresh typing.
+- Restored the five-tab External HTTP presentation for local new Tools and persisted DRAFTs with active-panel-only rendering and correct tab semantics.
+- Preserved COMMERCE-021 request preview, response processing, JSON editors, Save/Validate/CAS, publication and LIVE_TEST_REQUIRED behavior.
+- Hoisted local External response-processing/result-schema text and bounded errors across unmounted tabs; invalid JSON remains visible and blocks final Create.
+- Made local Admin and External final creation use the current authored candidate, including current JSON text, execution edits and result schemas.
+- Added Attempt 4 regressions for exact External edits, invalid JSON retention, tab isolation and persisted editor behavior.
 
 ### Validation Results
-- `npm run test:arch021-tool-authoring-common`: 7 files, 85 tests passed.
 - `npm run test:arch020-external-tools-ui`: 16 tests passed.
-- Focused packet (`tool-authoring-screen`, `external-tools-ui`, `studio-workspace`, `studio-integration`): 4 files, 56 tests passed.
-- Targeted ESLint: passed.
-- `git diff --check`: passed.
-- Legacy new-tool path invariant: passed; no `createTool`, `createToolDraft`, or staged new-tool recovery path remains in the owning screens.
-- `npm run typecheck`: exits nonzero with 255 repository-baseline diagnostics; zero diagnostics remain in task-owned implementation, fixture, and regression files.
+- `npm run test:arch021-tool-authoring-common`: 7 files, 85 tests passed.
+- Mandated focused packet: 4 files, 58 tests passed with zero skips.
+- Focused ESLint: passed; `git diff --check`: passed.
+- Source audits: no legacy new-mode `createTool`/`createToolDraft` calls; required Continue/tablist markers present.
+- `npm run typecheck`: retains established repository diagnostics outside COMMERCE-039-owned changed files; zero diagnostics reported in the changed Attempt 4 files.
+- Attempt 4 launcher: canonical workspace and dedicated parent/implementation worktrees resolved; dependencies passed; recursive submodule status ready; claim committed and pushed.
 
 ### Deviations
-- Full repository typecheck remains blocked by unrelated existing diagnostics outside this task's files.
+- No Phase 2 gating, provider live execution, schema/database changes or system-test work was added. Full repository typecheck remains blocked by established diagnostics outside this task's files.
 
 ### Assumptions
-- COMMERCE-038 atomic creation and exact-identity reconciliation contracts remain the authoritative server boundary.
+- COMMERCE-038 atomic creation and exact-identity reconciliation contracts remain the authoritative server boundary. The launcher-provided implementation worktree is the only implementation checkout used for Attempt 4.
 
 ### Unresolved Issues
-None
+None within the COMMERCE-039-owned implementation or validation packet.
 
 ### Architectural Concerns
-None
+None.
 
 ## Architect Review
 
