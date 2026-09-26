@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 and COMMERCE-044 architect-accepted Complete with COMMERCE-045 Ready and nested-Visual extension COMMERCE-048 Pending behind it. Neither workstream introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043, COMMERCE-044 and COMMERCE-045 architect-accepted Complete with nested-Visual extension COMMERCE-048 Ready behind it. Neither workstream introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -868,8 +868,8 @@ Response follow-up tasks:
 |---|---|---|---|
 | ARCH-021-COMMERCE-043 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-039 |
 | ARCH-021-COMMERCE-044 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
-| ARCH-021-COMMERCE-045 | moda_commerce | Ready | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
-| ARCH-021-COMMERCE-048 | moda_commerce | Pending | ARCH-021-COMMERCE-045 |
+| ARCH-021-COMMERCE-045 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-048 | moda_commerce | Ready | ARCH-021-COMMERCE-045 |
 
 ```text
 COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048
@@ -1169,6 +1169,15 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-26 — COMMERCE-045 Attempt 2 accepted
+
+- Accepted implementation `8f9bb99` and parent handoff `1ee7ad21`; all four Attempt 1 corrections are closed.
+- Response-only validation now submits the exact active Direct/Visual/JavaScript candidate, and prior successful validation is invalidated before any relevant local edit can fail canonical promotion.
+- Visual processing JSON and derived result-contract disclosures now describe only the current browser-local selected shape; incomplete typing suppresses stale contract presentation.
+- OBJECT and LIST maintain independent local processing/type drafts, including LIST-only filter/sort/limit state; only the active valid shape enters canonical execution/result-schema state.
+- Accepted submitted validation: 31 Response UI, 47 external validation/action, 85 common authoring, 12 New Tool and 14 CodeMirror tests, plus targeted ESLint, changed-file diagnostics and `git diff --check`; repository-wide typecheck remains blocked only by unrelated baseline diagnostics.
+- Marked COMMERCE-045 Complete and promoted COMMERCE-048 to Ready.
 
 ### 2026-09-26 — nested Visual response-result follow-up defined
 
