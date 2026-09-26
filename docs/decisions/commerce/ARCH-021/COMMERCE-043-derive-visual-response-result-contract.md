@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-09-26T12:55:48Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -242,14 +242,14 @@ They retain an explicit canonical `resultSchema` until later Test-tab work decid
 
 ## Work Items
 
-- [ ] Define the bounded Visual projected-field result-type authoring model without changing Shared runtime contracts.
-- [ ] Add one deterministic OBJECT result-schema derivation helper.
-- [ ] Add deterministic LIST result-schema derivation matching `{ items: [...] }` runtime output.
-- [ ] Map `omitIfMissing` to derived required/optional schema semantics.
-- [ ] Add deterministic reconstruction of Visual field types from compatible persisted result schemas.
-- [ ] Reject incompatible legacy/malformed Visual projection/schema pairs rather than silently guessing.
-- [ ] Add focused contract/authoring regressions for OBJECT and LIST derivation.
-- [ ] Preserve Direct/JavaScript result-schema semantics unchanged.
+- [x] Define the bounded Visual projected-field result-type authoring model without changing Shared runtime contracts.
+- [x] Add one deterministic OBJECT result-schema derivation helper.
+- [x] Add deterministic LIST result-schema derivation matching `{ items: [...] }` runtime output.
+- [x] Map `omitIfMissing` to derived required/optional schema semantics.
+- [x] Add deterministic reconstruction of Visual field types from compatible persisted result schemas.
+- [x] Reject incompatible legacy/malformed Visual projection/schema pairs rather than silently guessing.
+- [x] Add focused contract/authoring regressions for OBJECT and LIST derivation.
+- [x] Preserve Direct/JavaScript result-schema semantics unchanged.
 
 ## Interfaces / Contracts
 
@@ -282,27 +282,28 @@ No cross-repository runtime contract or Shared package change is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Visual OBJECT projected fields have an explicit authoring result type drawn from string/integer/number/boolean.
-- [ ] Visual LIST projected fields use the same bounded type model.
-- [ ] `omitIfMissing` is the single source for required/optional semantics.
-- [ ] OBJECT `resultSchema` is generated deterministically from the Visual field contract.
-- [ ] LIST `resultSchema` is generated deterministically and matches the accepted `{ items: [...] }` runtime result envelope.
-- [ ] Generated string schemas include the bounded `maxLength` required by the canonical schema subset.
-- [ ] Existing compatible persisted Visual definitions can reconstruct their field types deterministically.
-- [ ] Incompatible projection/schema pairs are reported rather than silently coerced.
-- [ ] Direct and JavaScript result-schema behaviour is unchanged.
-- [ ] `@modainteract/moda-interact-shared` and Prisma schemas are unchanged.
-- [ ] No live provider call, persistence change or tab gating is introduced.
+- [x] Visual OBJECT projected fields have an explicit authoring result type drawn from string/integer/number/boolean.
+- [x] Visual LIST projected fields use the same bounded type model.
+- [x] `omitIfMissing` is the single source for required/optional semantics.
+- [x] OBJECT `resultSchema` is generated deterministically from the Visual field contract.
+- [x] LIST `resultSchema` is generated deterministically and matches the accepted `{ items: [...] }` runtime result envelope.
+- [x] Generated string schemas include the bounded `maxLength` required by the canonical schema subset.
+- [x] Existing compatible persisted Visual definitions can reconstruct their field types deterministically.
+- [x] Incompatible projection/schema pairs are reported rather than silently coerced.
+- [x] Direct and JavaScript result-schema behaviour is unchanged.
+- [x] `@modainteract/moda-interact-shared` and Prisma schemas are unchanged.
+- [x] No live provider call, persistence change or tab gating is introduced.
 
 ## Validation
 
-- [ ] focused Visual result-schema derivation unit tests
-- [ ] focused OBJECT/LIST publication-compatibility regressions
-- [ ] focused External HTTP authoring/UI regression required to prove round-trip reconstruction
-- [ ] existing common Tool-authoring packet required by repository scripts
-- [ ] targeted TypeScript diagnostics or repository typecheck with baseline reconciliation
-- [ ] targeted ESLint for changed files
-- [ ] `git diff --check`
+- [x] focused Visual result-schema derivation unit tests (`tests/visual-result-contract.test.ts`)
+- [x] focused OBJECT/LIST publication-compatibility regressions (`tests/arch021-commerce-tool-contract.test.ts`)
+- [x] focused External HTTP authoring/UI regression (`tests/external-tools-ui.test.tsx`)
+- [x] existing common Tool-authoring packet (`npm run test:arch021-tool-authoring-common`, 85 tests passed)
+- [x] focused External Tool authoring validation (`npm run test:arch021-external-tool-authoring-validation`, 45 tests passed)
+- [x] repository typecheck executed; 16 diagnostics remain in eight unchanged files, with none reported in changed files
+- [x] targeted ESLint for changed files (clean)
+- [x] `git diff --check` (clean)
 
 ## Stop Condition
 
@@ -317,25 +318,35 @@ This task removes duplicated *authoring*, not the durable `resultSchema` field. 
 ## Completion Report
 
 ### Status
-Not Started
+Completed; ready for Architect Review
 
 ### Files Changed
-None
+- `src/commerce/tool-authoring/visual-result-contract.ts` (new)
+- `src/commerce/tool-definition/publication.ts`
+- `src/studio/external-http/response-tab.tsx`
+- `tests/visual-result-contract.test.ts` (new)
+- `tests/external-tools-ui.test.tsx`
 
 ### Work Completed
-None
+- Added a Commerce-owned deterministic helper for Visual OBJECT/LIST result-schema derivation, bounded scalar types, `omitIfMissing` requiredness, and compatible persisted-schema reconstruction.
+- Integrated the helper with publication compatibility and minimal Response authoring controls; Visual mode no longer exposes independently editable result-shape JSON, while Direct/JavaScript behavior remains unchanged.
+- Added focused derivation, compatibility, reconstruction, incompatibility, and production UI round-trip coverage.
 
 ### Validation Results
-None
+- Focused Visual/UI/publication suite: 41 tests passed.
+- Common Tool-authoring packet: 85 tests passed.
+- External Tool authoring validation packet: 45 tests passed.
+- Targeted ESLint: clean. `git diff --check`: clean.
+- `npm run typecheck` generated route types, then reported 16 errors across eight unchanged files (missing code-response modules, existing service/test typing issues); no diagnostics referenced changed files.
 
 ### Deviations
-None
+- Repository-wide typecheck is not green because of the unrelated existing diagnostics listed above; implementation scope was not expanded to repair them.
 
 ### Assumptions
-None
+- Persisted Visual LIST schemas with a bounded `items.maxItems` at least as large as the current Visual limit remain reconstructable; newly derived schemas use the exact current limit.
 
 ### Unresolved Issues
-None
+- The unrelated repository-wide TypeScript diagnostics remain for their owning tasks.
 
 ### Architectural Concerns
 None
