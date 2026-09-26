@@ -866,8 +866,8 @@ Response follow-up tasks:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-043 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-039 |
-| ARCH-021-COMMERCE-044 | moda_commerce | Pending | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
+| ARCH-021-COMMERCE-043 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-044 | moda_commerce | Ready | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
 | ARCH-021-COMMERCE-045 | moda_commerce | Pending | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
 
 ```text
@@ -1162,6 +1162,13 @@ independent of features.
 - Accepted packaging/smoke plus 12 runtime, 7 Request processor, 47 validation/Server Action and 21 External UI tests, targeted lint/source audits and diff checks with no task-owned type diagnostics.
 - Marked COMMERCE-047 Complete. The QuickJS runtime-adapter/compiler-diagnostic follow-up chain is Complete.
 
+### 2026-09-26 — COMMERCE-043 Attempt 1 accepted
+
+- Accepted deterministic Visual OBJECT/LIST result-schema derivation from projected output name/path/type/omit-if-missing authoring.
+- Accepted compatible persisted-draft field-type reconstruction and explicit incompatibility reporting without adding persisted type metadata or changing Shared/Prisma contracts.
+- Accepted publication compatibility reuse of the same Visual reconstruction rule and minimal Response integration that removes independently editable Visual `Response shape JSON` while preserving Direct/JavaScript schema authoring.
+- Accepted validation evidence: 41 focused Visual/UI/publication tests, 85 common Tool-authoring tests, 45 External authoring-validation tests, targeted ESLint/diff checks clean, with no task-owned TypeScript diagnostics.
+- Marked COMMERCE-043 Complete and promoted COMMERCE-044 to Ready; COMMERCE-045 remains Pending.
 ### 2026-09-26 — bounded JavaScript compiler-diagnostic follow-up defined
 
 - Manual validation of the submitted COMMERCE-046 QuickJS-NG/WASI runtime now reaches the guest compiler successfully, but `/request/source` still displays the generic `Request processor did not compile` message because the guest exception message is discarded at the Worker -> KernelResult -> Request processor -> authoring-validation boundaries.
