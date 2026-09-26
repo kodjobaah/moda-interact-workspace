@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 47
-executor: copilot
-claimed_at: 2026-09-25T23:59:00Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-037
 enables:
   - ARCH-021-COMMERCE-039
 created: 2026-09-25
-updated: 2026-09-25
+updated: 2026-09-26
 ---
 
 # Expose atomic initial Tool creation through the Studio boundary
@@ -356,19 +356,256 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
-None
+
+#### Attempt 1 review — 2026-09-26
+
+Reviewed submitted implementation `27c3bc7` against the COMMERCE-038 contract and the attached task-worktree snapshot. Preserve the parts that are already architecturally correct:
+
+- `InitialToolCreationInput` / `InitialToolCreationResult` establish the bounded serializable composite contract;
+- the Commerce-backed atomic-create service path authorizes through `requireStudioPlatformRole('ADMIN')`, calls `backend.publication.createToolWithInitialDraft(...)` directly and does not reconstruct the result through `publication.snapshot()`;
+- reconciliation remains read-only, origin-checked, ADMIN-authorized and exact-operation scoped;
+- committed `CREATE_TOOL` reconciliation can return `toolId` + `toolRevisionId` directly from the audit row/result without Tool-name or broad publication scans;
+- existing Tool edit/publish/enable actions remain present;
+- no browser authoring or Phase-2 gating work was pulled into this task.
+
+Attempt 1 is not accepted because the new named Server Action is not connected to an actual runtime mutation method, the new contract introduces task-owned TypeScript errors, and the required direct Server Action proof is absent. The attached handoff snapshot also does not contain the reported final task-report state.
+
+The following is the complete authoritative Attempt 2 correction contract. Keep the correction narrow; do not implement COMMERCE-039 browser authoring.
+
+##### A1-R1 — make the named atomic Server Action callable at runtime
+
+Current code declares:
+
+```ts
+createToolWithInitialDraftMutation: (...) => Promise<ToolMutationResult<InitialToolCreationResult>>
+```
+
+in `ToolMutationServices`, and the named Server Action executes:
+
+```ts
+service().createToolWithInitialDraftMutation(...)
+```
+
+but `createCommerceStudioServices()` does **not** return a `createToolWithInitialDraftMutation` property. It instead returns:
+
+```ts
+async createToolWithInitialDraft(input) { ... }
+```
+
+with a `ToolMutationResult` shape. Therefore the named action currently attempts to call `undefined`; `toolMutation(...)` catches that failure and converts it to `INTERNAL_ERROR`. The atomic operation cannot be invoked through the new public Studio action.
+
+Correct the boundary so the property the Server Action calls exists at runtime and calls `backend.publication.createToolWithInitialDraft(...)` exactly once. Follow the established COMMERCE-020 split between the broad Studio service shape and Tool mutation envelope rather than relying on an incompatible intersection.
+
+A valid correction may either:
+
+1. add a real `createToolWithInitialDraftMutation` implementation alongside any intentionally retained `StudioServices` method; or
+2. keep atomic creation exclusively on the Tool-mutation/named-Server-Action boundary and remove the unnecessary broad `StudioServices` member, typing the named action from `InitialToolCreationInput` directly.
+
+Whichever shape is chosen, there MUST NOT be one method that is typed as `StudioResult<InitialToolCreationResult>` while actually returning `ToolMutationResult<InitialToolCreationResult>`.
+
+Preserve:
+
+```text
+requireStudioPlatformRole('ADMIN')
+exact input forwarding
+one backend lifecycle call
+direct composite result
+no publication snapshot/listTools/getTool result reconstruction
+```
+
+##### A1-R2 — remove the new task-owned TypeScript contract failures
+
+The submitted `tsconfig.tsbuildinfo` records task-owned diagnostics caused by Attempt 1, including:
+
+```text
+TS2322
+createToolWithInitialDraft implementation returning ToolMutationResult
+is not assignable to StudioServices.createToolWithInitialDraft returning StudioResult
+
+TS2420 / TS2741
+InMemoryStudioServices incorrectly implements StudioServices:
+Property 'createToolWithInitialDraft' is missing
+```
+
+These are not baseline diagnostics because they are direct consequences of the COMMERCE-038 contract addition.
+
+Resolve them according to the boundary selected under A1-R1. If `createToolWithInitialDraft` remains part of `StudioServices`, every real implementation of that interface, including `InMemoryStudioServices`, must satisfy the contract without unsafe casts or upgrading an incomplete DRAFT into a published/full definition. If the operation is mutation-only, remove the unnecessary `StudioServices` requirement instead.
+
+Required proof:
+
+```text
+no COMMERCE-038-owned TS2322 for createToolWithInitialDraft
+no COMMERCE-038-owned TS2420/TS2741 for InMemoryStudioServices
+```
+
+Unrelated documented repository baseline diagnostics may remain.
+
+##### A1-R3 — add a direct regression for the named Server Action
+
+Add focused coverage, preferably in:
+
+```text
+tests/tool-authoring-server-actions.test.ts
+```
+
+or another clearly named focused Server Action test file.
+
+The regression MUST invoke the actual exported:
+
+```ts
+createToolWithInitialDraft
+```
+
+from `src/studio/server-actions.ts` and prove at minimum:
+
+```text
+valid origin
+-> exact InitialToolCreationInput forwarded once
+-> actual createToolWithInitialDraftMutation service method called once
+-> successful ToolMutationResult contains exact toolId + toolRevisionId + editVersion + updatedAt
+```
+
+Also prove one deterministic service failure (for example `CONFLICT` or `INVALID_INPUT`) remains the exact bounded Tool mutation error and is not converted to `UNCONFIRMED` or `INTERNAL_ERROR`.
+
+This test must fail if `createCommerceStudioServices()` omits the mutation method or if the named action is wired to the wrong Tool mutation.
+
+##### A1-R4 — preserve and strengthen audit reconciliation proof
+
+Preserve the current reconciliation implementation and existing actor/no-replay/database-error tests. Keep the committed composite-result regression proving exact `toolId` + `toolRevisionId` recovery from the matching audit row.
+
+Do not reintroduce:
+
+```text
+publication.snapshot()
+listTools()
+getTool()
+Tool-name lookup
+first-DRAFT lookup
+mutation replay
+```
+
+into reconciliation.
+
+##### A1-R5 — reconcile the durable Attempt 2 task/report state
+
+The attached architect-review snapshot contains:
+
+```yaml
+status: in_progress
+attempt: 1
+executor: copilot
+claimed_at: 2026-09-25T23:59:00Z
+```
+
+and all Work Items, Acceptance Criteria and Validation checkboxes remain unchecked with Completion Report status `Not Started`. This does not match the conversational claim that parent report `6dff43ce` was already marked review. Architect review must follow the durable submitted snapshot.
+
+Attempt 2 must provide a final snapshot containing the actual pushed report state and reconcile:
+
+```text
+Work Items
+Acceptance Criteria
+Validation
+Completion Report status = Ready for Review
+files changed
+exact validation results
+implementation commit
+launcher-prepared parent + implementation worktrees
+start-of-attempt synchronization evidence
+recursive submodule evidence
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+Do not create source churn merely to change an implementation commit when a correction does not require it. Here source/test correction is required by A1-R1 through A1-R3, so return the actual resulting implementation commit.
+
+##### A1-R6 — deterministic validation
+
+Run:
+
+```bash
+npm run test:arch021-tool-authoring-common
+
+npm exec vitest run \
+  tests/tool-authoring-server-actions.test.ts \
+  tests/tool-operation-reconciliation.test.ts \
+  tests/studio-integration.test.ts \
+  tests/auth-role-requirements.test.ts
+
+npm run typecheck
+
+npm exec eslint \
+  src/studio/contracts.ts \
+  src/studio/server-actions.ts \
+  src/studio/server-services.ts \
+  src/studio/tools/reconciliation-server-actions.ts \
+  src/commerce/integration/studio/services.ts \
+  src/studio/testing/in-memory-studio-services.ts \
+  tests/tool-authoring-server-actions.test.ts \
+  tests/tool-operation-reconciliation.test.ts \
+  tests/studio-integration.test.ts
+
+git diff --check
+```
+
+If A1-R1 removes the operation from `StudioServices` and therefore requires no change to `in-memory-studio-services.ts`, it may be omitted from changed-file lint, but the typecheck must still prove no new COMMERCE-038-owned contract diagnostic.
+
+##### Attempt 2 stop condition
+
+Return to architect review only when:
+
+```text
+the named createToolWithInitialDraft Server Action calls a real mutation method
+AND the atomic backend lifecycle command is invoked exactly once
+AND the direct composite result is returned without a broad reread
+AND no COMMERCE-038-owned StudioResult/ToolMutationResult type conflict remains
+AND no COMMERCE-038-owned StudioServices implementation diagnostic remains
+AND the actual named Server Action has focused success + deterministic-error coverage
+AND exact audit-only composite reconciliation remains intact
+AND existing Tool mutation actions remain intact
+AND the final durable task/report snapshot is reconciled and pushed
+```
+
+Then set the task to `review`, return control to `moda_architect`, and STOP. Do not begin COMMERCE-039.
 
 ### Reviewed Files
-None
+
+- `src/studio/contracts.ts`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `src/studio/tools/reconciliation-server-actions.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/tool-authoring-server-actions.test.ts`
+- `tests/tool-operation-reconciliation.test.ts`
+- `tests/studio-integration.test.ts`
+- `tsconfig.tsbuildinfo`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-038-expose-atomic-tool-creation-boundary.md`
 
 ### Validation Reviewed
-None
+
+- submitted common/focused/ESLint/diff results from the handoff;
+- source-level comparison against the pre-COMMERCE-038 snapshot;
+- generated TypeScript build-state diagnostics for the new contract boundary;
+- direct Server Action caller/service-method wiring;
+- reconciliation query/result behavior.
 
 ### Architecture Conformance
-Pending
+
+Changes Requested. The lifecycle/persistence boundary and reconciliation design conform, but the public named mutation is not currently callable because its runtime service method is missing, and the new contract leaves task-owned type failures.
 
 ### Follow-up
-None
+
+Reclaim the same task for Attempt 2. COMMERCE-039 remains dependency-gated until COMMERCE-038 is architect-accepted Complete.
