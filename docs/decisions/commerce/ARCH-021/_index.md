@@ -150,6 +150,24 @@ COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-0
 
 COMMERCE-039 is **Complete / Accepted, Attempt 6**. New Tool authoring remains browser-local through Request/Response/Test/Agent contract/Review and persists only at final Create through the atomic COMMERCE-038 boundary. The accepted packet passed External UI 16/16, common authoring 85/85 and focused UI 60/60 with zero skips; focused ESLint, required source audits and diff checks passed with no Attempt 6 changed-file type diagnostics. The developer will now manually validate the completed Phase 3 flow; defects discovered there are follow-up tasks rather than unfinished COMMERCE-039 work unless they invalidate the core local-only creation contract.
 
+## Manual-validation follow-up — External HTTP Request tab
+
+Developer manual review of the completed COMMERCE-039 flow identified bounded Request-tab authoring defects. These follow-up tasks correct the Request contract and UI before review moves to the Response tab. They do not reopen COMMERCE-039 and they do not introduce Phase 2 tab gating.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-040](COMMERCE-040-add-javascript-request-bindings.md) | Add explicit Agent-input/Literal bindings to JavaScript HTTP request construction | Ready | COMMERCE-016, COMMERCE-017, COMMERCE-023, COMMERCE-039 |
+| [COMMERCE-041](COMMERCE-041-make-external-request-tab-validating-and-previewable.md) | Make Request the validating/exact-preview checkpoint and remove Manage connections | Pending | COMMERCE-040 |
+| [COMMERCE-042](COMMERCE-042-complete-javascript-request-authoring-ui.md) | Complete JavaScript bindings, resizable editor and mode-draft preservation | Pending | COMMERCE-041 |
+
+Current manual-validation follow-up frontier:
+
+```text
+ARCH-021-COMMERCE-040
+```
+
+The Request-tab follow-up remains zero-provider-I/O. Request validation/preview answers what request will be constructed; the later Test-tab review will determine the separate live-provider test behaviour.
+
 ## Pre-Phase-3 simplification checkpoint — 2026-09-24
 
 The checkpoint reduces Phase-2 configuration/reconciliation complexity before further Tool authoring. It preserves model catalogue, prompt revisions, prompt-template categories, immutable published artifacts, capabilities/releases/grants, server-owned credentials and future merchant Studio authorization. Errors must remain visible and transport-level uncertainty must be reconcilable through the UI; ordinary failures must not be swallowed into a generic unknown state.

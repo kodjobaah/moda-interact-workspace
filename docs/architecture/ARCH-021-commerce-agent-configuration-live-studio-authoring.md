@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037, COMMERCE-038 and COMMERCE-039 are Complete. Developer manual validation may now proceed before the deferred terminal system test and any bounded follow-up work discovered during that validation.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation has now identified a bounded External HTTP Request-tab follow-up: COMMERCE-040 is Ready, with COMMERCE-041 and COMMERCE-042 dependency-gated behind it. These tasks refine Request authoring before manual review proceeds to the next tab and do not introduce Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -766,7 +766,7 @@ Phase 3 invariants:
 2. External HTTP remains generic read-only GET in Phase 3. A Tool pins one immutable connection revision; origin/auth credentials remain server-owned connection state and never enter request JavaScript or browser state.
 3. EXTERNAL_HTTP request construction is exactly one of:
    - `DECLARATIVE`: relative path + bounded query mappings + static safe headers;
-   - `JAVASCRIPT`: bounded QuickJS `buildRequest({ args })` returning only relative path/query/safe headers.
+   - `JAVASCRIPT`: explicit bounded Request-value bindings (`Agent input` or `Literal`) plus bounded QuickJS `buildRequest({ args })`, where `args` contains only the resolved declared bindings and the function returns only relative path/query/safe headers.
 4. Request JavaScript describes a request; it never calls `fetch`, chooses an origin/method, accesses credentials, reads environment/process/filesystem or performs I/O.
 5. EXTERNAL_HTTP response processing is exactly DIRECT, Visual (OBJECT/LIST), or JavaScript `transform(response)`. DIRECT validates selected JSON directly against `resultSchema`.
 6. Shopify authoring uses `SHOPIFY_ADMIN_GRAPHQL` pinned to Admin API `2026-07`, not a new Storefront authoring flow. The definition contains the query document, operation name, input-variable mappings, result path/schema and pinned schema hash; it contains no shop/session/token.
@@ -817,6 +817,33 @@ COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-0
 ```
 
 The initial-Tool refactor keeps intermediate new-Tool authoring non-durable until final Create, then commits Tool + revision-1 `DRAFT` through one atomic lifecycle/persistence/Studio boundary. Phase 2 tab gating remains explicitly out of scope. For `EXTERNAL_HTTP`, new-Tool setup must establish the authorized connection revision before entering authoring; persisted drafts derive that revision from their durable definition. Failure to resolve that required connection context is an unavailable/error condition, not a second supported authoring mode.
+
+### Manual-validation follow-up — External HTTP Request tab
+
+The completed Phase 3 flow is now being reviewed tab-by-tab before deferred terminal system testing. Request-tab review established the following target contract:
+
+1. Request is the authoring/validation/preview checkpoint for the safe HTTP request descriptor; the Test tab does not own request-construction preview.
+2. Request validation remains non-mutating and zero-provider-I/O. It may inspect safe connection metadata and compile request JavaScript, but it performs no DNS lookup, transport call or credential read/decryption.
+3. The Tool Request surface contains no `Manage connections` navigation. It selects an existing authorized immutable connection revision and displays safe metadata only.
+4. JavaScript request construction declares explicit bounded value bindings. Each binding source is either `Agent input` or `Literal`; QuickJS receives only the resolved declared bindings as `buildRequest({ args })`.
+5. Request forms retain invalid intermediate authoring text long enough to show actionable diagnostics; canonical Tool-definition state remains schema validated.
+6. Declarative and JavaScript mode drafts may be preserved locally while switching modes, but only the active mode belongs to the canonical definition/persistence payload.
+7. Request errors are visible in Request, but all tabs remain freely navigable. Phase 2 gating is still out of scope.
+8. Real external-provider execution remains a separate Test-tab/live-test concern and is not introduced by these Request tasks.
+
+Request follow-up tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-040 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-041 | moda_commerce | Pending | ARCH-021-COMMERCE-040 |
+| ARCH-021-COMMERCE-042 | moda_commerce | Pending | ARCH-021-COMMERCE-041 |
+
+```text
+COMMERCE-040 -> COMMERCE-041 -> COMMERCE-042
+```
+
+Manual review must remain on the Request tab until these bounded tasks are accepted; Response/Test/Agent-contract/Review defects are to be recorded separately rather than folded into this chain.
 
 Phase 3 exit criteria:
 
@@ -1060,6 +1087,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-26 — External HTTP Request-tab manual-validation follow-up defined
+
+- Manual review after COMMERCE-039 found that Request authoring silently discards invalid intermediate edits, Request preview is misplaced under Test, JavaScript lacks explicit Agent-input/Literal value bindings, JavaScript mode is visually too shallow, mode switching destroys the previous mode draft, and the local-only flow exposes a dead `Manage connections` control.
+- Agreed the Request target: remove Manage connections; keep connection selection/safe metadata; validate request construction in Request with zero provider I/O; render the exact safe request descriptor there; add explicit JavaScript Request-value bindings while retaining `buildRequest({ args })`; preserve per-mode local drafts; keep tabs freely navigable.
+- Materialised COMMERCE-040 (Ready), COMMERCE-041 (Pending on 040) and COMMERCE-042 (Pending on 041). No system-test dependency or Phase 2 gating was introduced.
+
 
 ### 2026-09-25 — COMMERCE-018 Attempt 4 accepted
 
