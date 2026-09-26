@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-26T01:20:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-021
@@ -402,22 +402,38 @@ The visible label/button flow may distinguish an initial local setup action such
 ## Completion Report
 
 ### Status
-Not Started
+Ready for review
 
 ### Files Changed
-None
+- `src/studio/contracts.ts`
+- `src/studio/tools/tool-library.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/studio-workspace.test.tsx`
 
 ### Work Completed
-None
+- Replaced the new-tool `createTool` then `createToolDraft` browser sequence with one `createToolWithInitialDraft` action.
+- Kept new-tool metadata and canonical definitions local until final Create; removed staged-draft/resume handling.
+- Preserved existing durable Tool DRAFT editing and added exact returned `toolId`/`toolRevisionId` navigation and reconciliation.
+- Added atomic in-memory fixture support and updated focused regressions for local authoring, exact-once creation, external authoring, and failure handling.
+- Added the atomic operation to the shared Studio service contract and mutation refresh typing.
 
 ### Validation Results
-None
+- `npm run test:arch021-tool-authoring-common`: 7 files, 85 tests passed.
+- `npm run test:arch020-external-tools-ui`: 16 tests passed.
+- Focused packet (`tool-authoring-screen`, `external-tools-ui`, `studio-workspace`, `studio-integration`): 4 files, 56 tests passed.
+- Targeted ESLint: passed.
+- `git diff --check`: passed.
+- Legacy new-tool path invariant: passed; no `createTool`, `createToolDraft`, or staged new-tool recovery path remains in the owning screens.
+- `npm run typecheck`: exits nonzero with 255 repository-baseline diagnostics; zero diagnostics remain in task-owned implementation, fixture, and regression files.
 
 ### Deviations
-None
+- Full repository typecheck remains blocked by unrelated existing diagnostics outside this task's files.
 
 ### Assumptions
-None
+- COMMERCE-038 atomic creation and exact-identity reconciliation contracts remain the authoritative server boundary.
 
 ### Unresolved Issues
 None
