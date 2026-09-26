@@ -177,7 +177,7 @@ Response-tab manual review identified a separate bounded workstream. It is indep
 | [COMMERCE-043](COMMERCE-043-derive-visual-response-result-contract.md) | Derive Visual result schemas from projection authoring instead of separately maintained shape JSON | Complete | COMMERCE-016, COMMERCE-021, COMMERCE-039 |
 | [COMMERCE-044](COMMERCE-044-validate-external-http-response-authoring.md) | Add Response-only authoritative Direct/Visual/JavaScript validation with Response-local diagnostics | Complete | COMMERCE-043, COMMERCE-019, COMMERCE-023 |
 | [COMMERCE-045](COMMERCE-045-complete-external-http-response-tab-authoring.md) | Complete Response-tab Source-path, JavaScript panel, derived-contract and per-mode local-draft UX | Complete | COMMERCE-043, COMMERCE-044, COMMERCE-006, COMMERCE-039 |
-| [COMMERCE-048](COMMERCE-048-support-nested-visual-response-results.md) | Add bounded recursive Visual OBJECT/LIST result trees, including objects with embedded lists | Ready | COMMERCE-045 |
+| [COMMERCE-048](COMMERCE-048-support-nested-visual-response-results.md) | Add bounded recursive Visual result trees with Commerce-owned result-schema validation | In Progress | COMMERCE-045 |
 
 Current Response-tab manual-validation frontier:
 
@@ -185,7 +185,7 @@ Current Response-tab manual-validation frontier:
 ARCH-021-COMMERCE-048
 ```
 
-The Response chain remains zero-provider-I/O. COMMERCE-045 is architect-accepted Complete for the flat Visual authoring UX; COMMERCE-048 is now Ready and extends Visual processing to bounded recursive OBJECT/LIST result trees without changing Shared 0.14.2. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to the later Test-tab review. Errors remain visible in Response while all authoring tabs stay freely navigable.
+The Response chain remains zero-provider-I/O. COMMERCE-045 is architect-accepted Complete; COMMERCE-048 is now In Progress and replaces the flat development-only Visual grammar with one recursive Commerce-owned `kind:"VISUAL"` contract. Commerce also takes ownership of `resultSchema` parsing/runtime validation instead of inheriting Shared `DetailsSchemaSchema` limits. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to the later Test-tab review. Errors remain visible in Response while all authoring tabs stay freely navigable.
 
 
 ### COMMERCE-045 Attempt 2 accepted — 2026-09-26
@@ -194,12 +194,7 @@ COMMERCE-045 is **Complete / Accepted, Attempt 2**. The final Response-tab compo
 
 ### Nested Visual result follow-up — COMMERCE-048
 
-Manual Response-tab validation established that the accepted flat Visual model cannot represent an object with an embedded list because legacy projected fields are scalar-only. COMMERCE-048 adds a Commerce-owned `kind:"VISUAL"` recursive processing tree while retaining legacy OBJECT/LIST execution. Root LIST keeps the accepted `{ items: [...] }` envelope; nested LIST fields produce raw arrays. COMMERCE-045 is now architect-accepted Complete, so COMMERCE-048 is Ready.
-The Response chain remains zero-provider-I/O. COMMERCE-045 completes the flat Visual authoring UX; COMMERCE-048 is dependency-gated behind it and extends Visual processing to bounded recursive OBJECT/LIST result trees without changing Shared 0.14.2. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to the later Test-tab review. Errors remain visible in Response while all authoring tabs stay freely navigable.
-
-### Nested Visual result follow-up — COMMERCE-048
-
-Manual Response-tab validation established that the accepted flat Visual model cannot represent an object with an embedded list because legacy projected fields are scalar-only. COMMERCE-048 adds a Commerce-owned `kind:"VISUAL"` recursive processing tree while retaining legacy OBJECT/LIST execution. Root LIST keeps the accepted `{ items: [...] }` envelope; nested LIST fields produce raw arrays. The task remains Pending until COMMERCE-045 is architect-accepted Complete.
+Manual Response-tab validation established that the accepted flat Visual model cannot represent nested objects/lists. C048 is now In Progress and defines one preproduction canonical `kind:"VISUAL"` recursive processing tree plus a Commerce-owned `CommerceResultSchemaSchema`/compiler. Shared 0.14.2 remains pinned for genuine shared boundaries such as `inputSchema` and Tool descriptors, but Shared `DetailsSchemaSchema` is no longer authoritative for Commerce-only results. Because the product is preproduction, C048 does not retain legacy flat OBJECT/LIST parser/runtime/reconstruction compatibility; development fixtures/seeds are converted and stale local data may be reset/reseeded.
 
 ### COMMERCE-043 Attempt 1 accepted — 2026-09-26
 

@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043, COMMERCE-044 and COMMERCE-045 architect-accepted Complete with nested-Visual extension COMMERCE-048 Ready behind it. Neither workstream introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043, COMMERCE-044 and COMMERCE-045 architect-accepted Complete with nested-Visual extension COMMERCE-048 In Progress behind it. Neither workstream introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -869,7 +869,7 @@ Response follow-up tasks:
 | ARCH-021-COMMERCE-043 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-039 |
 | ARCH-021-COMMERCE-044 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
 | ARCH-021-COMMERCE-045 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
-| ARCH-021-COMMERCE-048 | moda_commerce | Ready | ARCH-021-COMMERCE-045 |
+| ARCH-021-COMMERCE-048 | moda_commerce | In Progress | ARCH-021-COMMERCE-045 |
 
 ```text
 COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048
@@ -879,53 +879,18 @@ The Request and Response follow-up chains are intentionally independent and may 
 
 #### Nested Visual result-tree extension
 
-The flat COMMERCE-043/C045 Visual model intentionally projects scalar leaves only. Manual validation identified a required extension for structures such as an object containing a variants/items list. COMMERCE-048 is dependency-gated behind C045 and establishes these additional invariants:
+The flat COMMERCE-043/C045 Visual model intentionally projects scalar leaves only. Manual validation identified nested result requirements such as an object containing a variants/items list. COMMERCE-048 is now In Progress and establishes these invariants:
 
-1. Shared remains pinned at 0.14.2; legacy Shared OBJECT/LIST processing stays readable/executable.
-2. New recursive Visual definitions use one Commerce-owned `responseProcessing.kind = "VISUAL"` tree rather than changing the legacy Shared grammar.
-3. Processing nodes own source paths/structure; durable scalar types remain owned by the derived `resultSchema`.
-4. Root LIST retains `{ items: [...] }`; a nested LIST field emits a raw array.
-5. Nested paths are relative to their parent source/list row. LIST nodes apply filter -> stable sort -> limit -> recursive projection.
-6. Recursion is bounded to container depth 4, 32 fields/container, 128 projection nodes, 8 filters/list, limit 20, 1000 source rows/list and 4096 inspected list rows/invocation.
-7. Browser-local recursive authoring retains invalid edits and inactive scalar/object/list branch drafts; only the valid active tree is canonical/persisted.
-8. Response validation, publication compatibility and Studio fixture processing reuse the same Commerce derivation/reconstruction/runtime semantics rather than introducing parallel recursive implementations.
+1. Commerce owns its output/result schema because `resultSchema` does not cross the Tool-descriptor/service boundary. Add one Commerce-local `CommerceResultSchemaSchema`/compiler and remove Shared `DetailsSchemaSchema` / `compileSubset(..., "details")` authority from Commerce result/output paths.
+2. Shared remains pinned at 0.14.2 and continues to own genuinely shared boundaries such as `InputSchemaSchema` and the Tool descriptor; no Shared publication is required.
+3. Preproduction canonical response processing is exactly `DIRECT | VISUAL | JAVASCRIPT`. Old flat Visual `OBJECT`/`LIST` definitions are not retained through parser/runtime/reconstruction compatibility; source fixtures/seeds are updated and development data may be reset/reseeded.
+4. Recursive Visual definitions use one Commerce-owned `responseProcessing.kind = "VISUAL"` tree. Processing owns paths/structure while durable scalar result types remain in the derived Commerce result schema.
+5. Root LIST retains `{ items: [...] }`; a nested LIST field emits a raw array. Nested paths are relative to their current parent/list row. Every LIST applies filter -> stable sort -> limit -> recursive projection.
+6. Visual recursion is bounded to four OBJECT/LIST container levels, 32 fields/container, 128 projection nodes, 8 filters/list, list limit 20, 1000 source rows/list and 4096 inspected list rows/invocation. Commerce result schemas have their own bounded parser/compiler sized to represent every valid four-container Visual tree.
+7. Browser-local recursive authoring retains invalid edits and inactive scalar/object/list branch drafts; only a valid active tree is canonical/persisted.
+8. Response validation, publication compatibility, runtime execution and Studio fixture processing reuse the same Commerce derivation/reconstruction/result-validation semantics rather than introducing parallel implementations.
 
-COMMERCE-048 does not add live provider I/O, database work, Shared publication, Test-tab schema inference or Phase 2 navigation gating.
-
-
-### Manual-validation follow-up — QuickJS runtime adapter
-
-Manual JavaScript Request validation exposed an implementation defect below the Request-tab contract:
-
-```text
-real Next.js validateExternalRequestAction
-  -> SandboxKernel worker starts
-  -> QuickJS engine initialisation fails
-  -> RUNTIME_UNAVAILABLE
-```
-
-Standalone `test:arch020-code-runtime-proof` and packaged runtime smoke tests pass, so authored JavaScript and the high-level `SandboxKernel` contract are not the defect. Diagnostics isolated the failure to Emscripten engine-module resolution in the Next/worker environment (`ERR_INVALID_ARG_TYPE` for a cross-realm URL followed by `MODULE_NOT_FOUND: Cannot find module as expression is too dynamic`).
-
-The target correction is one packaged QuickJS-NG/WASI adapter:
-
-```text
-Next Server Action
-  -> SandboxKernel
-  -> packaged Node worker
-  -> explicit adjacent quickjs.wasm bytes
-  -> quickjs-wasi / QuickJS-NG
-```
-
-The migration preserves `quickjs-sync.v1`, the existing request/response processor contracts, worker supervision and production JavaScript executor gate. Operational runtime failures use `@modainteract/moda-interact-shared/logging`; guest source, Tool arguments, provider bodies, credentials and absolute host paths are never logged.
-
-Runtime-adapter task:
-
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-021-COMMERCE-046 | moda_commerce | Complete | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-040, ARCH-021-COMMERCE-041 |
-| ARCH-021-COMMERCE-047 | moda_commerce | Complete | ARCH-021-COMMERCE-046 |
-
-COMMERCE-046 and COMMERCE-047 are architect-accepted Complete. The QuickJS runtime-adapter/compiler-diagnostic follow-up is complete; the Request/Response UI workstreams remain independent.
+COMMERCE-048 does not add live provider I/O, database/Prisma work, Shared publication, Test-tab schema inference or Phase 2 navigation gating.
 
 Phase 3 exit criteria:
 
@@ -1178,6 +1143,14 @@ independent of features.
 - OBJECT and LIST maintain independent local processing/type drafts, including LIST-only filter/sort/limit state; only the active valid shape enters canonical execution/result-schema state.
 - Accepted submitted validation: 31 Response UI, 47 external validation/action, 85 common authoring, 12 New Tool and 14 CodeMirror tests, plus targeted ESLint, changed-file diagnostics and `git diff --check`; repository-wide typecheck remains blocked only by unrelated baseline diagnostics.
 - Marked COMMERCE-045 Complete and promoted COMMERCE-048 to Ready.
+
+### 2026-09-26 — COMMERCE-048 result-schema ownership revised for preproduction
+
+- Implementation investigation showed that Shared `DetailsSchemaSchema` was constraining a Commerce-only result contract even though Tool descriptors expose only name/description/inputSchema across the shared boundary.
+- Reassigned `resultSchema` ownership to Commerce: C048 now requires one Commerce-local result-schema parser/type/compiler and removal of Shared `DetailsSchemaSchema` / `compileSubset(..., "details")` from Commerce result/output validation paths while keeping Shared input/descriptor contracts unchanged.
+- Restored the intended four-container Visual recursion limit; Commerce result-schema bounds must be large enough to represent every schema derived from a valid four-container Visual tree.
+- Recorded the preproduction migration rule: canonical response processing after C048 is DIRECT | VISUAL | JAVASCRIPT only. Legacy flat OBJECT/LIST compatibility, migration-on-read and published-definition adapters are intentionally not implemented; fixtures/seeds are updated and development state may be reset/reseeded.
+- C048 remains In Progress, Attempt 1; existing partial implementation work may be preserved where it conforms to this revised contract.
 
 ### 2026-09-26 — nested Visual response-result follow-up defined
 

@@ -39,145 +39,190 @@ Coordinator:
 
 ## Objective
 
-Extend External HTTP Visual response authoring from the current flat scalar projection model to a bounded recursive result tree that can produce nested objects and nested lists while preserving the accepted legacy flat OBJECT/LIST definitions, deterministic derived `resultSchema`, zero-provider-I/O Response validation, sandbox-independent Visual execution and all C045 local-authoring invariants.
+Extend External HTTP Visual response authoring from the current flat scalar projection model to one bounded recursive Commerce-owned Visual tree that can produce nested objects and nested lists without requiring JavaScript.
 
-The required first-class use case is an object containing an embedded list, for example:
+The first-class example is:
 
 ```json
 {
   "title": "T-Shirt",
   "price": 20,
   "variants": [
-    {
-      "size": "S",
-      "available": true
-    },
-    {
-      "size": "M",
-      "available": false
-    }
+    { "size": "S", "available": true },
+    { "size": "M", "available": false }
   ]
 }
 ```
 
-Visual authoring must be able to construct that result without requiring JavaScript.
+The implementation must also remove the accidental architectural dependency whereby Commerce output/result schemas are constrained by Shared `DetailsSchemaSchema` even though this result contract does not cross an application-domain boundary.
 
 ## Context
 
-The accepted COMMERCE-043/C045 Visual contract is deliberately flat:
+ARCH-021 already made the full Tool definition Commerce-owned. The cross-service Tool descriptor contains only:
 
 ```text
-root OBJECT
-  -> scalar projected fields
-
-or
-
-root LIST
-  -> list of rows
-  -> scalar projected fields
-  -> canonical root result envelope { items: [...] }
+name
+description
+inputSchema
 ```
 
-Current implementation constraints include:
+It does not expose:
 
 ```text
-src/commerce/tool-authoring/visual-result-contract.ts
-  VISUAL_RESULT_TYPES = string | integer | number | boolean
-
-src/commerce/external-response/index.ts
-  projectRow(...)
-    -> rejects any projected value that is not scalar
-
-@modainteract/moda-interact-shared/commerce
-  VisualResponseProcessingSchema
-    -> legacy flat OBJECT/LIST processing only
+execution
+responseProcessing
+resultSchema
+connectionRevisionId
+request/response JavaScript
+provider configuration
 ```
 
-The current model therefore cannot represent:
+Therefore `resultSchema` is a Commerce-local execution/result contract. Reusing Shared `DetailsSchemaSchema` and `compileSubset(..., "details")` is implementation reuse, not contract ownership.
+
+The current accepted flat Visual model supports only:
 
 ```text
-OBJECT
-  variants -> LIST
-
-OBJECT
-  vendor -> OBJECT
-
-LIST
-  each row
-    variants -> LIST
+root OBJECT -> scalar projected fields
+root LIST   -> scalar projected row fields -> { items: [...] }
 ```
 
-JavaScript response processing can express those shapes, but Visual rules cannot.
+and cannot express nested containers.
 
-This task adds one Commerce-owned recursive Visual processing representation. It does **not** change the Shared package, does not require a database migration and does not remove support for already-persisted legacy OBJECT/LIST definitions.
+Implementation investigation also proved that Shared 0.14.2's Details-schema depth restriction would unnecessarily constrain nested Commerce-only results. C048 must remove that coupling rather than make Shared authoritative for a Commerce-local contract.
 
-## Architectural Decision
+The product is preproduction. No backward-compatibility layer is required for old development-only Visual processing shapes or persisted development fixtures.
 
-### AD1 — Shared remains pinned and unchanged
+## Architectural Decisions
 
-Keep exactly:
+### AD1 — Commerce owns `resultSchema`
+
+Create a Commerce-local canonical result-schema contract under:
+
+```text
+src/commerce/tool-definition/result-schema.ts
+```
+
+Export at minimum:
+
+```ts
+CommerceResultSchemaSchema
+CommerceResultSchema
+compileCommerceResultSchema(...)
+```
+
+Equivalent internal helper names are acceptable only if there is still one obvious canonical Commerce result-schema parser/type/compiler boundary.
+
+`CommerceResultSchemaSchema` becomes authoritative for Commerce result schemas, including:
+
+```text
+EXTERNAL_HTTP.resultSchema
+SHOPIFY_ADMIN_GRAPHQL.resultSchema
+publication/template output-schema composition
+External HTTP runtime result validation
+External fixture/sample validation
+Response-authoring validation
+Visual schema derivation/reconstruction
+```
+
+Do not parse a Commerce `resultSchema` through Shared `DetailsSchemaSchema` after this task.
+
+Do not use Shared `compileSubset(schema, "details")` to validate Commerce execution output after this task.
+
+Shared remains authoritative only for genuinely shared contracts/utilities still crossing service boundaries, including `InputSchemaSchema` and the Shared Tool descriptor.
+
+### AD2 — Shared remains pinned but is not authoritative for Commerce result schemas
+
+Keep the package dependency unchanged:
 
 ```json
 "@modainteract/moda-interact-shared": "0.14.2"
 ```
 
-Do not edit/publish `moda-interact-shared` and do not change the Shared gitlink.
+Do not edit or publish `moda-interact-shared` for this task.
 
-The existing Shared `VisualResponseProcessingSchema` remains the parser/type source for **legacy** flat OBJECT/LIST definitions only.
+Shared helpers such as `safeName`, `safePath`, canonical JSON helpers, IDs and input-schema compilation may still be reused where appropriate. Their reuse must not make a Commerce-local result contract subject to unrelated Shared schema limits.
 
-The recursive representation is Commerce-owned under:
+### AD3 — one canonical preproduction Visual grammar
+
+After C048, canonical Commerce response processing is exactly:
 
 ```text
-src/commerce/tool-definition/
-src/commerce/tool-authoring/
+DIRECT
+VISUAL
+JAVASCRIPT
 ```
 
-### AD2 — add one new persisted processing kind; do not mutate the legacy encoding
-
-Add a new Commerce-local processing kind:
+The old flat canonical Visual processing kinds:
 
 ```text
+OBJECT
+LIST
+```
+
+must be removed from the Commerce-local canonical response-processing union.
+
+Do not retain:
+
+```text
+legacy OBJECT/LIST parser branch
+legacy runtime adapter
+migration-on-read
+open-old-and-rewrite behavior
+published-definition compatibility shim
+```
+
+because the system is preproduction.
+
+Update test fixtures, seed/development definitions and local examples to `kind:"VISUAL"`. If an existing development database contains old definitions, reset/reseed is acceptable and should be documented rather than adding compatibility code.
+
+### AD4 — exact persisted Visual processing representation
+
+Use exactly one persisted root discriminator:
+
+```ts
 kind: "VISUAL"
 ```
 
-Do **not** reinterpret the existing Shared OBJECT/LIST field grammar as recursive.
-
-The canonical new representation is:
+Root OBJECT:
 
 ```ts
-export type VisualTreeResponseProcessing =
-  | {
-      kind: "VISUAL";
-      shape: "OBJECT";
-      fields: Record<string, VisualProjectionNode>;
-    }
-  | {
-      kind: "VISUAL";
-      shape: "LIST";
-      fields: Record<string, VisualProjectionNode>;
-      filters: VisualFilter[];
-      sort: VisualSort | null;
-      limit: number;
-    };
+{
+  kind: "VISUAL";
+  shape: "OBJECT";
+  fields: Record<string, VisualProjectionNode>;
+}
 ```
 
-A projected field is exactly one of:
+Root LIST:
 
 ```ts
-export type VisualScalarProjection = {
+{
+  kind: "VISUAL";
+  shape: "LIST";
+  fields: Record<string, VisualProjectionNode>;
+  filters: VisualFilter[];
+  sort: VisualSort | null;
+  limit: number;
+}
+```
+
+Nested nodes are:
+
+```ts
+type VisualScalarProjection = {
   kind: "SCALAR";
   path: string;
   omitIfMissing?: true;
 };
 
-export type VisualObjectProjection = {
+type VisualObjectProjection = {
   kind: "OBJECT";
   path: string;
   fields: Record<string, VisualProjectionNode>;
   omitIfMissing?: true;
 };
 
-export type VisualListProjection = {
+type VisualListProjection = {
   kind: "LIST";
   path: string;
   fields: Record<string, VisualProjectionNode>;
@@ -186,101 +231,214 @@ export type VisualListProjection = {
   limit: number;
   omitIfMissing?: true;
 };
-
-export type VisualProjectionNode =
-  | VisualScalarProjection
-  | VisualObjectProjection
-  | VisualListProjection;
 ```
 
-The top-level source is still selected by:
+Scalar result types are not duplicated into `responseProcessing`; they remain durable in the derived Commerce `resultSchema`.
+
+### AD5 — Visual container depth remains four
+
+The Visual authoring/runtime structural bound is:
 
 ```text
-execution.resultPath   // user-facing Source path
+maximum container depth:        4
+maximum fields per container:   32
+maximum total projection nodes: 128
+maximum filters per LIST:       8
+maximum configured LIST limit:  20
 ```
 
-Therefore the root VISUAL object/list does not have its own `path` or `omitIfMissing`.
-
-### AD3 — persisted processing does not duplicate scalar result types
-
-Do not add `resultType`, JSON-schema `type`, `maxLength` or equivalent scalar result metadata to persisted `responseProcessing` nodes.
-
-Preserve the COMMERCE-043 ownership rule:
+Depth is defined only by Visual OBJECT/LIST containers:
 
 ```text
-responseProcessing
-  owns how source data is selected/projected
-
-resultSchema
-  owns the durable output type contract
+root OBJECT/LIST container = depth 1
+nested OBJECT/LIST         = parent depth + 1
+SCALAR leaves              = do not add container depth
 ```
 
-The browser authoring model may carry scalar result types while editing, but canonical persisted processing strips those authoring-only types.
-
-### AD4 — legacy definitions remain executable
-
-`LocalResponseProcessingSchema` must accept all of:
+Therefore this is valid:
 
 ```text
-DIRECT
-legacy Shared OBJECT
-legacy Shared LIST
-new Commerce VISUAL
-JAVASCRIPT
+root OBJECT                 depth 1
+  product OBJECT            depth 2
+    variants LIST           depth 3
+      option OBJECT         depth 4
+        name SCALAR
 ```
 
-Existing immutable/published legacy OBJECT/LIST Tool revisions must continue to validate and execute with unchanged semantics.
+A container below `option` would be rejected as depth 5.
 
-Do not run a PostgreSQL/data migration.
+The Commerce result-schema validator must be capable of representing every result schema derivable from a valid depth-4 Visual tree. Do not reintroduce a shallower schema-depth limit that makes a valid Visual tree impossible to persist.
 
-Do not rewrite an untouched persisted legacy DRAFT merely because an administrator opened the editor.
+## Commerce Result Schema Contract
 
-When a legacy Visual DRAFT is actually edited and successfully saved after this task, it may be canonicalised to `kind: "VISUAL"` through the accepted authoring-tree conversion. New Visual authoring after this task must use `kind: "VISUAL"`.
+### R1 — exact supported schema subset
 
-## Exact Persisted Contract
+`CommerceResultSchemaSchema` must support exactly the result/output subset required by current Commerce execution:
 
-### R1 — local recursive Zod schemas
+```text
+string
+integer
+number
+boolean
+object
+array
+```
 
-Implement the new schema in:
+Supported scalar forms:
+
+```ts
+{ type: "string", maxLength: integer 1..4096 }
+{ type: "integer" }
+{ type: "number" }
+{ type: "boolean" }
+```
+
+Supported object form:
+
+```ts
+{
+  type: "object";
+  properties: Record<safeName, CommerceResultSchema>;
+  required: string[];
+  additionalProperties: false;
+}
+```
+
+Rules:
+
+```text
+1..32 properties
+required is unique
+required contains only keys present in properties
+no unknown schema keywords
+additionalProperties must be exactly false
+```
+
+Supported array form:
+
+```ts
+{
+  type: "array";
+  items: CommerceResultSchema;
+  maxItems: integer 1..20;
+}
+```
+
+Do not add:
+
+```text
+oneOf / anyOf / allOf
+$ref
+patternProperties
+additionalProperties schemas
+regex validation
+nullable unions
+arbitrary enum/const
+unbounded arrays/strings
+```
+
+unless another architecture task explicitly adds them.
+
+### R2 — result-schema resource bounds
+
+The Commerce result-schema parser/compiler must reject before unbounded recursion or validation work.
+
+Use these independent schema bounds:
+
+```text
+maximum schema depth:          12
+maximum schema nodes:          256
+maximum object properties:      32 per object
+maximum array maxItems:         20
+maximum string maxLength:     4096
+```
+
+Schema depth counts schema nodes and is separate from Visual container depth. `12` is intentionally large enough for every result schema produced by a four-container Visual tree including root-LIST envelope/array/row-object expansion.
+
+A Visual tree must first satisfy the Visual depth/node limits and then its derived schema must satisfy the Commerce result-schema bounds.
+
+### R3 — one Commerce result compiler
+
+Implement `compileCommerceResultSchema(schema)` as the only production output validator for Commerce result values.
+
+The compiler must:
+
+```text
+parse/accept only CommerceResultSchemaSchema
+validate runtime values recursively
+reject unknown object keys
+require every required property
+validate scalar types exactly
+require finite numbers
+respect maxLength using JavaScript string length semantics already used by the schema contract
+respect maxItems
+return deterministic bounded issue paths/messages
+never mutate input values
+```
+
+A production call site must not compile equivalent result-schema logic independently.
+
+Input validation remains separate:
+
+```text
+Shared InputSchemaSchema + compileSubset(..., "input")
+```
+
+Do not replace the Shared input contract in C048.
+
+### R4 — replace every Commerce details-schema dependency in result/output paths
+
+At minimum inspect and update these current call sites:
+
+```text
+src/commerce/tool-definition/contracts.ts
+src/commerce/tool-definition/publication.ts
+src/commerce/tool-authoring/visual-result-contract.ts
+src/commerce/tool-authoring/external-validation.ts
+src/commerce/external-http/index.ts
+src/commerce/external-preview/fixture-runner.ts
+src/commerce/external-publication/index.ts
+src/studio/external-http/ports.ts
+```
+
+Also run repository search and update any additional production/test result-schema consumer discovered by:
+
+```bash
+rg -n 'DetailsSchemaSchema|compileSubset\([^\n]*["'"']details["'"']|resultSchema' src tests
+```
+
+After C048, no Commerce production result/output path may depend on Shared `DetailsSchemaSchema` or Shared `compileSubset(..., "details")`.
+
+Shopify Admin result schemas should use the same Commerce result-schema contract so Commerce has one output-schema language.
+
+## Recursive Visual Contract
+
+### R5 — exact recursive local Zod schema
+
+Implement the recursive processing schema in:
 
 ```text
 src/commerce/tool-definition/contracts.ts
 ```
 
-or a Commerce-local module imported by `contracts.ts` when doing so keeps the contract file readable.
+or a single adjacent Commerce-local module imported by it.
 
-Use `z.lazy(...)` for recursive nodes.
-
-The persisted rules are:
+Use `z.lazy(...)` where appropriate and preserve these rules:
 
 ```text
-output field name
-  safeName(...)
-
-all source paths
-  non-empty safe dot paths
-  every segment must also reject:
-    __proto__
-    prototype
-    constructor
-
-fields per OBJECT/LIST container
-  minimum 1
-  maximum 32
-
-LIST filters
-  maximum 8
-
-LIST limit
-  integer
-  minimum 1
-  maximum 20
-
-sort direction
-  ASC | DESC
+output names: safeName
+source/filter/sort paths: safe dot paths
+forbidden path segments:
+  __proto__
+  prototype
+  constructor
+fields/container: 1..32
+filters/list: 0..8
+list limit: 1..20
+sort direction: ASC | DESC
 ```
 
-Filter operators remain exactly the existing accepted set:
+Filter operators remain exactly:
 
 ```text
 EQ
@@ -294,7 +452,7 @@ STARTS_WITH
 IN
 ```
 
-Filter scalar values remain exactly:
+Filter scalar values remain:
 
 ```text
 string
@@ -303,58 +461,13 @@ boolean
 null
 ```
 
-`IN` remains:
+`IN` remains 1..20 values of one scalar type.
 
-```text
-1..20 values
-all values same scalar type
-```
+Do not introduce predicates, expressions, regex or JavaScript into Visual filters.
 
-Do not add regex, arbitrary predicates, expressions or JavaScript to Visual filters.
+### R6 — one browser-local typed authoring tree
 
-### R2 — bounded recursive structure
-
-Reject a canonical VISUAL processing tree when any of these bounds is exceeded:
-
-```text
-maximum container depth:        4
-maximum fields per container:   32
-maximum total projection nodes: 128
-maximum filters per LIST:       8
-maximum configured LIST limit:  20
-```
-
-Depth definition is exact:
-
-```text
-root OBJECT/LIST container = depth 1
-nested OBJECT/LIST field   = parent depth + 1
-SCALAR leaves do not add container depth
-```
-
-Therefore this is valid:
-
-```text
-root OBJECT                 depth 1
-  product OBJECT            depth 2
-    variants LIST           depth 3
-      option OBJECT         depth 4
-        name SCALAR
-```
-
-A nested OBJECT/LIST below `option` is invalid because it would create container depth 5.
-
-The total-node count includes every SCALAR, OBJECT and LIST field node below the root, but not the root container itself.
-
-Return deterministic schema/authoring diagnostics rather than overflowing recursion or silently truncating the tree.
-
-## Authoring Contract and Derived Schema
-
-### R3 — one browser-local typed authoring tree
-
-Replace the current flat `visualTypes`/parallel scalar-type mapping as the primary new Visual model with one typed browser-local authoring tree.
-
-Use a shape equivalent to:
+The browser-local authoring tree must carry the scalar result type because persisted processing does not:
 
 ```ts
 type VisualAuthoringScalarNode = {
@@ -363,132 +476,88 @@ type VisualAuthoringScalarNode = {
   resultType: "string" | "integer" | "number" | "boolean";
   omitIfMissing?: true;
 };
-
-type VisualAuthoringObjectNode = {
-  kind: "OBJECT";
-  path: string;
-  fields: VisualAuthoringField[];
-  omitIfMissing?: true;
-};
-
-type VisualAuthoringListNode = {
-  kind: "LIST";
-  path: string;
-  fields: VisualAuthoringField[];
-  filters: VisualFilterDraft[];
-  sort: VisualSortDraft | null;
-  limit: string | number;
-  omitIfMissing?: true;
-};
-
-type VisualAuthoringField = {
-  clientId: string; // browser-only; never persisted
-  name: string;
-  node: VisualAuthoringNode;
-};
 ```
 
-The exact TypeScript placement/name may follow repository conventions, but these semantics are mandatory.
+OBJECT/LIST authoring nodes mirror the persisted structure and contain array-backed child fields with a browser-only stable `clientId`.
 
-Use an **array** for raw local authoring fields rather than a `Record` so temporarily invalid states can remain visible, including:
+Use arrays for raw field authoring so the UI can retain invalid intermediate states including:
 
 ```text
 blank output name
 duplicate output name
 invalid output name
-blank/invalid source path
-incomplete nested container
-incomplete scalar result type
+missing type
+invalid source path
+incomplete OBJECT/LIST
+invalid limit/filter/sort
 ```
 
-Only a valid authoring tree is converted into canonical `Record<string, ...>` processing.
+`clientId` must never be persisted.
 
-`clientId` is UI-only and must never enter Tool-definition JSON, audit payloads or persistence.
+### R7 — derive processing and result schema together
 
-### R4 — derive processing and resultSchema from the same authoring tree
-
-Evolve the Commerce-owned Visual contract helper so one function derives both canonical artifacts from the same valid authoring tree.
-
-Provide one canonical helper equivalent to:
+There must be one canonical helper equivalent to:
 
 ```ts
-deriveVisualTreeContract(authoringRoot)
-  ->
-  | {
-      ok: true;
-      processing: VisualTreeResponseProcessing;
-      schema: SubsetSchema;
-    }
-  | {
-      ok: false;
-      code: VisualTreeDerivationErrorCode;
-      path: string;
-      message: string;
-    }
+deriveVisualContract(authoringTree)
+  -> {
+       processing: VisualTreeResponseProcessing;
+       resultSchema: CommerceResultSchema;
+     }
 ```
 
-Do not independently derive processing and schema in separate UI handlers.
-
-The helper must:
-
-1. validate all structural bounds;
-2. reject duplicate/unsafe output names;
-3. validate source paths;
-4. strip authoring-only `resultType` and `clientId` from processing;
-5. derive the exact recursive `resultSchema`;
-6. validate the derived schema with `DetailsSchemaSchema` before returning success.
-
-Keep existing COMMERCE-043 legacy helpers where required for compatibility, but do not maintain a second recursive derivation algorithm.
-
-### R5 — exact recursive result-schema rules
-
-Scalar fields derive exactly:
+The derivation order is:
 
 ```text
-string
-  { type: "string", maxLength: 4096 }
-
-integer
-  { type: "integer" }
-
-number
-  { type: "number" }
-
-boolean
-  { type: "boolean" }
+1. validate raw authoring names/paths/types/container configuration
+2. enforce Visual depth/field/node/filter/list limits
+3. build canonical kind:"VISUAL" processing
+4. derive the complete Commerce resultSchema from the exact same tree
+5. parse the derived schema through CommerceResultSchemaSchema
+6. return both artifacts together
 ```
 
-Every Visual OBJECT node derives a closed object:
+Do not derive processing and schema in different UI handlers.
 
-```ts
-{
-  type: "object",
-  properties: { ...children },
-  required: [...children whose omitIfMissing !== true],
-  additionalProperties: false
-}
+### R8 — exact recursive result-schema mapping
+
+SCALAR mapping:
+
+```text
+string  -> { type:"string", maxLength:4096 }
+integer -> { type:"integer" }
+number  -> { type:"number" }
+boolean -> { type:"boolean" }
 ```
 
-Every **nested** Visual LIST field derives a raw array:
+OBJECT node mapping:
 
-```ts
-{
-  type: "array",
-  items: <closed object schema derived from that LIST's fields>,
-  maxItems: list.limit
-}
+```text
+type: object
+properties: exactly authored child output names
+required: exactly children without omitIfMissing
+additionalProperties: false
 ```
 
-The **root** `shape: "LIST"` preserves the accepted external result envelope:
+Nested LIST node mapping:
 
-```ts
+```text
+type: array
+items:
+  closed object schema for the projected row
+maxItems: exact configured list limit
+```
+
+Root LIST remains the product-level envelope:
+
+```text
 {
   type: "object",
   properties: {
     items: {
       type: "array",
-      items: <closed object schema derived from root LIST fields>,
-      maxItems: root.limit
+      items: <closed projected-row object>,
+      maxItems: <root list limit>
     }
   },
   required: ["items"],
@@ -496,71 +565,50 @@ The **root** `shape: "LIST"` preserves the accepted external result envelope:
 }
 ```
 
-Do not wrap nested LIST fields in `{ items: [...] }`.
-
-This distinction is mandatory:
+Therefore:
 
 ```text
-root LIST     -> { items: [...] }
-nested LIST   -> [...]
+root LIST   -> { items: [...] }
+nested LIST -> [...]
 ```
 
-### R6 — deterministic reconstruction from persisted definitions
+### R9 — reconstruction is only for the new canonical format
 
-Provide one canonical reconstruction helper equivalent to:
+Provide one helper equivalent to:
 
 ```ts
 reconstructVisualAuthoringTree(processing, resultSchema)
 ```
 
-It must support both:
+It only needs to support:
 
 ```text
-legacy OBJECT/LIST + compatible resultSchema
-new VISUAL + compatible resultSchema
+kind:"VISUAL" + CommerceResultSchema
 ```
 
-For legacy processing, reconstruct an equivalent flat authoring tree with SCALAR nodes and preserve legacy:
+It must reconstruct scalar `resultType` values and verify processing/schema structural agreement recursively.
 
-```text
-filters
-sort
-limit
-omitIfMissing
-source paths
-```
-
-For new VISUAL processing, recursively match every processing node against the corresponding schema node and reconstruct each SCALAR `resultType`.
-
-Reject rather than guess when any mismatch exists, including:
+Reject instead of guessing on:
 
 ```text
 processing field missing from schema
 schema field missing from processing
 required/omitIfMissing mismatch
-OBJECT processing paired with non-object schema
-nested LIST paired with non-array schema
-root LIST without the { items: [...] } envelope
-unsupported scalar schema type
-string schema without a finite maxLength
-LIST schema maxItems < processing.limit
-unsafe/invalid processing path
-unexpected additional schema properties
+OBJECT paired with non-object schema
+LIST paired with non-array schema
+root LIST missing {items:[...]} envelope
+unsupported scalar type
+string without valid maxLength
+maxItems < configured list limit
+unsafe path
+unexpected schema property
 ```
 
-For backward compatibility, a persisted LIST schema with:
-
-```text
-maxItems >= processing.limit
-```
-
-is reconstructable, matching COMMERCE-043/044 behavior. Newly derived canonical schemas use exactly `maxItems = processing.limit`.
-
-No silent coercion or default type guessing is allowed.
+Do not add legacy flat OBJECT/LIST reconstruction in this task.
 
 ## Runtime Processing
 
-### R7 — use one recursive processor implementation
+### R10 — one recursive Visual processor
 
 Update:
 
@@ -568,19 +616,17 @@ Update:
 src/commerce/external-response/index.ts
 ```
 
-to execute both legacy flat Visual definitions and the new VISUAL tree through one canonical recursive processing algorithm.
+so `VISUAL` processing runs through one canonical recursive projector.
 
-Do not keep one old flat projection implementation plus a separate unrelated nested implementation.
+There is no legacy flat Visual runtime adapter after C048.
 
-Adapt legacy OBJECT/LIST processing in memory to the recursive execution representation, then use the same recursive projector.
+DIRECT and JAVASCRIPT remain unchanged.
 
-DIRECT and JAVASCRIPT execution remain unchanged.
+### R11 — relative-path semantics
 
-### R8 — exact path semantics
+`execution.resultPath` selects the root JSON value before Visual processing.
 
-`execution.resultPath` selects the root input before Visual processing.
-
-Within the Visual tree:
+Inside the Visual tree all paths are relative to the current node source:
 
 ```text
 SCALAR.path
@@ -590,191 +636,94 @@ filter.path
 sort.path
 ```
 
-are all relative to the current source object/list row at that node.
-
 Example:
 
-```json
-provider source after Source path:
-{
-  "product": {
-    "title": "T-Shirt",
-    "variants": [
-      { "size": "S", "available": true },
-      { "size": "M", "available": false }
-    ]
-  }
-}
-```
-
-Authoring tree:
-
 ```text
+root source
+  product.title
+  product.variants[]
+
 root OBJECT
-  title
-    SCALAR path=product.title type=string
-
-  variants
-    LIST path=product.variants limit=20
-      size
-        SCALAR path=size type=string
-      available
-        SCALAR path=available type=boolean
+  title SCALAR path=product.title
+  variants LIST path=product.variants
+    size SCALAR path=size
+    available SCALAR path=available
 ```
 
-Produces:
+### R12 — missing/wrong-shape semantics
 
-```json
-{
-  "title": "T-Shirt",
-  "variants": [
-    { "size": "S", "available": true },
-    { "size": "M", "available": false }
-  ]
-}
-```
-
-### R9 — missing/wrong-shape semantics
-
-For every projected field node:
+For every SCALAR/OBJECT/LIST field:
 
 ```text
-path does not exist + omitIfMissing === true
-  -> omit that output property
-
-path does not exist + omitIfMissing !== true
-  -> INVALID_RESPONSE
-
-SCALAR path exists but value is not scalar
-  -> INVALID_RESPONSE
-
-OBJECT path exists but value is not a non-array object
-  -> INVALID_RESPONSE
-
-LIST path exists but value is not an array
-  -> INVALID_RESPONSE
+missing path + omitIfMissing=true  -> omit output field
+missing path + required            -> INVALID_RESPONSE
+present OBJECT with non-object     -> INVALID_RESPONSE
+present LIST with non-array        -> INVALID_RESPONSE
+present SCALAR object/array        -> INVALID_RESPONSE
 ```
 
-`omitIfMissing` applies only to an absent path. It must not convert a present wrong-shaped value into omission.
+`omitIfMissing` applies only to a missing path; it does not forgive a present wrong-shaped value.
 
-Preserve the current scalar definition:
+### R13 — nested LIST operation order
 
-```text
-string | finite number | boolean | null
-```
-
-Final `resultSchema` validation remains authoritative for whether a scalar value satisfies the configured non-null output type.
-
-Do not mutate provider/source objects while projecting.
-
-### R10 — nested LIST processing semantics
-
-Every LIST node uses the same accepted operation order:
+Every root or nested LIST performs:
 
 ```text
-source array
-  -> validate row objects / hard row bound
-  -> filters (AND)
+resolve source array
+  -> enforce source-row bound
+  -> filters
   -> stable sort
-  -> configured/runtime limit
-  -> recursive field projection
+  -> limit
+  -> recursively project selected rows
 ```
 
-Filters and sort inspect the raw list row before projection.
+Filters/sort operate on raw list rows before projection.
 
-Keep existing comparison semantics exactly:
+### R14 — runtime work bounds
+
+Preserve/add:
 
 ```text
-EQ / NE
-  same scalar type required
-
-CONTAINS / STARTS_WITH
-  strings only
-
-GT / GTE / LT / LTE
-  finite numbers only
-
-IN
-  same-type scalar membership
-
-sort
-  one consistent number or string type
-  stable ties
-  missing/null values last for ASC and DESC
-  strings compare by Unicode code point order
+maximum source rows inspected per LIST: 1000
+maximum inspected LIST rows per invocation: 4096
+maximum Visual container depth: 4
+maximum projection nodes: 128
+existing cancellation/deadline checks
 ```
 
-Nested LIST output is a raw array.
+Exceeding a bound must fail closed through the existing bounded processor error/result model and must not mutate source data.
 
-Root LIST output remains:
+### R15 — final Commerce result validation remains mandatory
 
-```json
-{ "items": [...] }
+Every successful Visual/Direct/JavaScript External HTTP result must be validated through:
+
+```ts
+compileCommerceResultSchema(execution.resultSchema).safeParse(processed.values)
 ```
 
-### R11 — execution resource bounds remain hard
+before returning Tool success.
 
-Keep existing Visual bounds and add a recursive work budget.
-
-Per LIST node:
-
-```text
-maximum source rows accepted: 1000
-configured limit:             1..20
-effective emitted limit:      min(node.limit, input.limits.maxSearchResults)
-```
-
-Across the entire recursive invocation:
-
-```text
-maximum list rows inspected: 4096
-```
-
-Count each raw row considered by any root/nested LIST against that shared invocation budget.
-
-If the structural or runtime work budget is exceeded, fail closed with the existing bounded Visual failure contract; do not partially return a truncated tree beyond the configured list-limit semantics.
-
-Continue checking cancellation/deadline at least once every 32 row/node visits and before descending into a nested container.
-
-The recursive implementation must not use unbounded recursion beyond R2's depth limit.
-
-### R12 — final schema validation remains mandatory
-
-Do not rely on projection alone for output type correctness.
-
-The existing executor path must continue to run:
-
-```text
-compileSubset(execution.resultSchema, "details").safeParse(processed.values)
-```
-
-against the complete nested result before returning an OK Commerce Tool result.
+The same compiler must be used by fixture/sample processing where the saved `resultSchema` is validated.
 
 ## Studio / Response UI
 
-### R13 — recursive Visual editor component, not more monolithic ResponseTab JSX
+### R16 — extract a recursive Visual editor
 
-Do not add the recursive tree directly as another large block inside `response-tab.tsx`.
+Do not grow `response-tab.tsx` into one recursive monolith.
 
-Create a focused component/module under:
-
-```text
-src/studio/external-http/
-```
-
-with repository-conventional naming, for example:
+Create/reuse a component such as:
 
 ```text
-visual-tree-editor.tsx
+src/studio/external-http/visual-tree-editor.tsx
 ```
 
-`ResponseTab` owns mode composition, validation state and canonical promotion. The Visual tree component owns recursive field/container editing.
+with recursive field rendering.
 
-Keep the component API data-oriented. Do not pass persistence services, credentials, provider clients or Server Actions into nested row components.
+`response-tab.tsx` remains responsible for mode/root coordination and delegates nested Visual tree editing.
 
-### R14 — exact field type choices
+### R17 — exact field type choices
 
-The Visual field type selector must expose exactly:
+Each projected field exposes:
 
 ```text
 string
@@ -785,464 +734,365 @@ object
 list
 ```
 
-Interpret them as:
+Selecting:
 
 ```text
-string/integer/number/boolean
-  -> SCALAR authoring node with matching resultType
-
-object
-  -> OBJECT authoring node
-
-list
-  -> LIST authoring node
+string/integer/number/boolean -> SCALAR branch
+object                        -> OBJECT branch
+list                          -> LIST branch
 ```
 
-For an OBJECT/LIST field, display its nested children immediately below/within the field with clear indentation/boundary styling.
+New OBJECT/LIST branches receive deterministic minimal local defaults but are not promoted canonically until valid.
 
-For LIST fields also display the list's own:
+### R18 — preserve branch drafts
+
+For each browser-local field, retain independent SCALAR/OBJECT/LIST branch drafts keyed by stable `clientId`.
+
+Example:
 
 ```text
-Limit
-Sort path
-Sort direction
-Filters
+field LIST -> OBJECT -> LIST
 ```
 
-at that list node. Do not reuse the root list controls to configure nested lists.
+restores the previous LIST configuration including nested fields/filter/sort/limit.
 
-### R15 — deterministic defaults for newly-created nested containers
+Root OBJECT and root LIST drafts must remain independent as established by C045.
 
-When a field is first changed to `object`, initialize its local OBJECT draft with exactly one child:
+Inactive drafts are browser-only and never persisted.
+
+### R19 — invalid edits remain visible
+
+Invalid nested edits must:
 
 ```text
-Output name: value
-Path:        value
-Type:        string
-Omit:        false
+remain visible
+show local actionable errors
+immediately invalidate prior Response-validation success
+not overwrite the last valid canonical definition
+prevent Save/Create of the invalid active tree
+not gate navigation to Request/Test/Agent/Review
 ```
 
-When first changed to `list`, initialize its local LIST draft with:
+### R20 — disclosures describe current local truth
 
-```text
-fields:
-  value -> path=value, type=string, omit=false
-filters: []
-sort:    null
-limit:   20
-```
-
-These defaults are browser-local until the full Visual tree derives successfully.
-
-### R16 — preserve local drafts across nested type switches
-
-Within one authoring session, changing one field among:
-
-```text
-scalar
-object
-list
-```
-
-must not silently destroy the previous local draft for that field.
-
-Key the retained browser-local branch drafts by the field's UI-only `clientId`, not by mutable output name.
-
-Required interaction proof:
-
-```text
-field variants = LIST with two children
-switch variants -> OBJECT
-edit OBJECT child
-switch variants -> LIST
-previous LIST children/settings are restored
-switch variants -> OBJECT
-previous OBJECT child is restored
-```
-
-Only the currently selected branch enters canonical processing/schema derivation.
-
-Inactive branch drafts are never persisted.
-
-### R17 — preserve independent root OBJECT/LIST drafts
-
-Consume the accepted C045 root-shape behavior:
-
-```text
-root OBJECT draft
-root LIST draft
-```
-
-Switching root Shape must preserve each draft independently.
-
-C048 must not regress this back into copying OBJECT fields into LIST or vice versa.
-
-### R18 — invalid nested edits remain visible locally
-
-The UI must retain and display invalid nested authoring values such as:
-
-```text
-blank/duplicate output names
-invalid nested paths
-missing scalar type
-invalid nested LIST limit
-invalid filter values
-excess depth/node count
-```
-
-Do not silently revert to the previous canonical tree.
-
-When the active Visual authoring tree is invalid:
-
-```text
-canonical Tool definition remains at the last valid Visual value
-Save/Create remains unavailable for that active invalid Visual state
-other authoring tabs remain freely navigable
-```
-
-No Phase 2 progression gating is introduced.
-
-### R19 — processing/result-contract disclosures must describe the current state truthfully
-
-For a valid current Visual authoring tree:
+For a valid current Visual tree:
 
 ```text
 View Visual processing JSON
-  -> show the current canonical kind:"VISUAL" processing
+  -> current canonical kind:"VISUAL" processing
 
-View derived result contract JSON
-  -> show the current derived recursive resultSchema
+Derived result contract
+  -> current Commerce resultSchema
 ```
 
-When the raw local Visual tree is invalid, do not present the previous canonical JSON as though it describes the current edit.
+For an invalid current tree, do not display stale old canonical JSON/schema as if it represents the current edits. Mark the disclosure invalid/unavailable until the local tree is valid again.
 
-Either hide the disclosure or label it explicitly as:
+### R21 — Response-only validation supports VISUAL
+
+Extend COMMERCE-044's authoritative Response validator to validate:
 
 ```text
-Last valid canonical processing
-Last valid derived result contract
+DIRECT
+VISUAL
+JAVASCRIPT
 ```
 
-and show the local validation reason.
+Visual validation must use the same derive/reconstruct helpers and return deterministic nested issue paths.
 
-### R20 — Response-only validation understands recursive Visual authoring
-
-Extend COMMERCE-044's Response-only validator to accept/validate the new canonical `kind:"VISUAL"` contract.
-
-It must validate recursively and return deterministic issue paths, for example:
+It must still perform zero:
 
 ```text
-/execution/responseProcessing/fields/variants/path
-/execution/responseProcessing/fields/variants/fields/size/path
-/execution/responseProcessing/fields/variants/filters/0/path
-/execution/responseProcessing/fields/variants/limit
-/execution/resultSchema/properties/variants/items/properties/size
+DNS
+provider HTTP
+credential reads/decryption
+Tool/ToolRevision writes
 ```
 
-Use the shared Commerce-owned derive/reconstruct helpers rather than implementing a separate recursive compatibility algorithm in validation.
+## Publication / Preview
 
-Validation remains:
+### R22 — publication compatibility uses the canonical Commerce helpers
+
+Publication must validate recursive Visual processing/result-schema compatibility via the same Commerce reconstruction/derivation semantics.
+
+Do not maintain a second recursive compatibility algorithm.
+
+Template path traversal must understand the Commerce result-schema structure without importing Shared `SubsetSchema` as the authoritative result type.
+
+### R23 — Studio synthetic/fixture processing reuses production Visual semantics
+
+Any Studio sample/synthetic Visual processing path must delegate to the production recursive Visual processor or a shared Commerce execution helper.
+
+Do not create another recursive projector in Studio.
+
+## Preproduction Migration Rule
+
+### R24 — no backward-compatibility implementation
+
+Because the system is preproduction:
 
 ```text
-non-mutating
-ADMIN-authorized
-zero DNS
-zero provider HTTP
-zero credential read/decryption
-zero Tool/ToolRevision write
+old flat OBJECT/LIST persisted definitions are not supported after C048
+old development fixtures/seeds are updated in source
+no runtime compatibility adapter is required
+no migration-on-read is required
+no DB migration script is required
+no old/new dual parser is required
 ```
 
-A nested edit invalidates any previous Response-validation success immediately, including edits that remain raw-local and cannot yet be promoted into the canonical definition.
+If local development data contains old definitions, document the required reset/reseed command or manual development reset procedure already used by the repository.
 
-## Publication / Preview Compatibility
-
-### R21 — publication uses the same reconstruction compatibility rule
-
-Update:
-
-```text
-src/commerce/tool-definition/publication.ts
-```
-
-so Visual publication compatibility accepts:
-
-```text
-legacy OBJECT
-legacy LIST
-new VISUAL
-```
-
-through the one canonical reconstruction helper.
-
-Do not implement a second recursive publication compatibility algorithm.
-
-Direct/JavaScript publication behavior remains unchanged.
-
-### R22 — Studio sample/fixture processing must not diverge from runtime processing
-
-The current Studio helper:
-
-```text
-src/studio/external-http/processor.ts
-```
-
-contains its own flat Visual projection implementation.
-
-Do not create a second recursive algorithm there.
-
-Refactor it to delegate/adapt to the same Commerce recursive response processor used by production, while retaining its Studio-facing `ExternalSampleResult` formatting/count metadata.
-
-The synthetic fixture path remains local/sample processing only; this task does not add live provider I/O.
+Do not add production migration complexity to preserve development-only state.
 
 ## Exact Files / Ownership
 
-Expected primary implementation files:
+Expected implementation ownership includes at minimum:
 
 ```text
-moda-interact-commerce/src/commerce/tool-definition/contracts.ts
-moda-interact-commerce/src/commerce/tool-authoring/visual-result-contract.ts
-moda-interact-commerce/src/commerce/external-response/index.ts
-moda-interact-commerce/src/commerce/tool-authoring/external-validation.ts
-moda-interact-commerce/src/commerce/tool-definition/publication.ts
-moda-interact-commerce/src/studio/external-http/response-tab.tsx
-moda-interact-commerce/src/studio/external-http/visual-tree-editor.tsx   # expected extraction; name may follow repository convention
-moda-interact-commerce/src/studio/external-http/processor.ts
-moda-interact-commerce/src/studio/external-http/ports.ts                 # only local type widening where required
-moda-interact-commerce/app/styles.css                                    # nested visual presentation only
+src/commerce/tool-definition/result-schema.ts              NEW
+src/commerce/tool-definition/contracts.ts
+src/commerce/tool-definition/publication.ts
+src/commerce/tool-authoring/visual-result-contract.ts
+src/commerce/tool-authoring/external-validation.ts
+src/commerce/external-response/index.ts
+src/commerce/external-http/index.ts
+src/commerce/external-preview/fixture-runner.ts
+src/commerce/external-publication/index.ts
+src/studio/external-http/response-tab.tsx
+src/studio/external-http/visual-tree-editor.tsx             NEW or equivalent focused component
+src/studio/external-http/ports.ts
 ```
 
-Expected focused tests:
+Update focused tests/fixtures/seeds wherever repository search proves ownership.
 
-```text
-moda-interact-commerce/tests/visual-result-contract.test.ts
-moda-interact-commerce/tests/response-processing.test.ts
-moda-interact-commerce/tests/arch021-commerce-tool-contract.test.ts
-moda-interact-commerce/tests/external-tool-authoring-validation.test.ts
-moda-interact-commerce/tests/external-tool-authoring-server-actions.test.ts
-moda-interact-commerce/tests/external-tools-ui.test.tsx
-moda-interact-commerce/tests/tool-authoring-screen.test.tsx
-moda-interact-commerce/tests/external-publication.test.ts
-moda-interact-commerce/tests/external-preview.test.ts                    # when current fixture path is covered there
-```
-
-Do not modify unrelated services merely because they consume Tool definitions indirectly.
+Do not modify another repository for C048.
 
 ## Out of Scope
 
-- Changes to `@modainteract/moda-interact-shared` or publishing a new Shared version.
-- Prisma/database schema changes or data migrations.
-- Live provider execution from the Response tab.
-- Test-tab redesign or automatic schema inference from observed provider output.
-- JavaScript response runtime changes.
-- Request-tab changes.
-- Agent-contract/template redesign.
-- Review-tab redesign.
+- Editing/publishing `moda-interact-shared`.
+- Database/Prisma schema migration.
+- Production backward-compatibility or migration for old Visual definitions.
+- Live provider execution in Test.
+- Direct/JavaScript sample-derived schema inference.
+- Arrays of primitive values as a dedicated Visual LIST node; LIST projects row objects.
+- Dynamic-map/object keys.
+- Arbitrary Visual expressions/JavaScript.
+- Unbounded recursion.
 - Phase 2 navigation gating.
-- Arbitrary expressions/functions in Visual mappings.
-- Maps/dictionaries with dynamic output keys.
-- Arrays of primitive scalars as a distinct Visual node type; LIST nodes in this task project rows into objects.
-- Unbounded recursive nesting.
 
 ## Work Items
 
-- [ ] Add Commerce-local recursive VISUAL processing schemas and types while retaining legacy Shared OBJECT/LIST parsing.
-- [ ] Add exact recursive structural bounds and safe-path validation.
-- [ ] Introduce one typed browser-local Visual authoring tree with array-backed raw fields and UI-only stable field IDs.
-- [ ] Derive both canonical VISUAL processing and recursive resultSchema from the same authoring tree.
-- [ ] Reconstruct authoring trees from both legacy flat and new recursive persisted definitions without guessing.
-- [ ] Refactor production Visual processing to one recursive algorithm and adapt legacy flat processing through it.
-- [ ] Implement nested OBJECT projection and nested LIST filter/sort/limit/projection semantics.
-- [ ] Add the global 4096 inspected-row work budget plus existing cancellation/deadline checks.
-- [ ] Extract recursive Visual UI from ResponseTab and add scalar/object/list field-type controls.
-- [ ] Preserve per-field scalar/object/list drafts and root OBJECT/LIST drafts in browser-local state.
-- [ ] Preserve invalid nested edits locally and prevent invalid active Visual state from Save/Create without gating navigation.
-- [ ] Keep Visual processing/result-contract disclosures synchronized and truthful for valid/invalid local state.
-- [ ] Extend Response-only validation to recursive VISUAL processing with deterministic nested issue paths.
-- [ ] Route publication compatibility through the same recursive reconstruction helper.
-- [ ] Refactor Studio synthetic Visual sample processing to delegate to the production recursive processor rather than duplicate it.
-- [ ] Add focused backward-compatibility, nested-runtime, authoring, validation and publication regressions.
+- [ ] Add `CommerceResultSchemaSchema`, `CommerceResultSchema` and one Commerce result compiler.
+- [ ] Replace Shared Details-schema parsing/compilation on Commerce result/output paths.
+- [ ] Keep Shared input-schema/Tool-descriptor boundaries unchanged.
+- [ ] Make canonical Response processing exactly DIRECT | VISUAL | JAVASCRIPT.
+- [ ] Remove legacy flat OBJECT/LIST compatibility branches and update development fixtures/seeds.
+- [ ] Enforce recursive VISUAL structural/path/filter bounds.
+- [ ] Introduce one array-backed browser-local recursive authoring tree with stable UI-only IDs.
+- [ ] Derive canonical VISUAL processing and Commerce resultSchema together.
+- [ ] Reconstruct the authoring tree from canonical VISUAL + Commerce resultSchema only.
+- [ ] Implement one production recursive Visual projector.
+- [ ] Implement nested OBJECT and LIST semantics including per-list filter/sort/limit.
+- [ ] Enforce runtime source-row/global inspected-row budgets and cancellation/deadline checks.
+- [ ] Extract recursive UI into a focused component and preserve branch/root drafts.
+- [ ] Preserve invalid nested edits locally and prevent invalid Save/Create without tab gating.
+- [ ] Keep processing/schema disclosures synchronized with current local validity.
+- [ ] Extend Response-only validation to canonical VISUAL.
+- [ ] Route publication compatibility through the same Commerce reconstruction helper.
+- [ ] Route fixture/sample result validation through the Commerce result compiler.
+- [ ] Route synthetic Visual processing through production recursive semantics.
+- [ ] Add explicit preproduction reset/reseed note where current development data needs replacement.
 
 ## Acceptance Criteria
 
+- [ ] Commerce, not Shared, owns the canonical result-schema parser/type/compiler.
+- [ ] No Commerce production result/output path imports Shared `DetailsSchemaSchema` or calls Shared `compileSubset(..., "details")`.
+- [ ] Shared `InputSchemaSchema` / `compileSubset(..., "input")` and Shared Tool descriptor remain unchanged.
+- [ ] `CommerceResultSchemaSchema` supports bounded nested object/array/scalar output with schema depth 12 and node bound 256.
+- [ ] Canonical response processing is exactly DIRECT | VISUAL | JAVASCRIPT.
+- [ ] No legacy flat OBJECT/LIST runtime/parser/reconstruction branch remains.
 - [ ] An OBJECT result can contain a nested LIST of projected objects without JavaScript.
 - [ ] An OBJECT result can contain a nested OBJECT.
-- [ ] A root LIST row can contain nested OBJECT and LIST fields.
-- [ ] Nested OBJECT/LIST fields may themselves contain nested containers up to container depth 4.
-- [ ] The canonical persisted recursive processing kind is exactly `VISUAL` and legacy OBJECT/LIST remain accepted/executable.
-- [ ] New Visual authoring writes VISUAL processing; an untouched legacy persisted DRAFT is not rewritten merely by opening it.
-- [ ] Persisted processing does not duplicate scalar result types; scalar types remain durable in derived `resultSchema`.
-- [ ] One authoring-tree derivation produces processing and resultSchema together.
-- [ ] Root LIST derives `{ items: [...] }`; nested LIST derives a raw array.
-- [ ] Every object schema is closed with `additionalProperties:false` and requiredness exactly follows `omitIfMissing`.
-- [ ] Compatible legacy and recursive definitions reconstruct deterministically; mismatches fail explicitly.
-- [ ] Runtime nested paths are relative to the current parent/list-row source.
-- [ ] Missing-path/omit semantics and wrong-shape failures follow R9 exactly.
-- [ ] Every LIST applies filter -> stable sort -> limit -> recursive projection in that order.
-- [ ] Structural limits (depth 4, 32 fields/container, 128 nodes, 8 filters/list, limit 20) are enforced before persistence/publication.
-- [ ] Runtime enforces 1000 source rows per list and 4096 inspected rows across the full invocation.
-- [ ] Cancellation/deadline remains bounded and a failed nested execution does not mutate source data.
-- [ ] Final recursive output is still validated by the canonical `resultSchema` before Tool success.
-- [ ] Response UI exposes string/integer/number/boolean/object/list Visual field types with nested editors.
-- [ ] Nested list nodes have their own limit/sort/filter controls.
-- [ ] Scalar/object/list branch drafts for a field survive switches during the authoring session and are never persisted when inactive.
-- [ ] Root OBJECT/LIST drafts survive shape switches independently.
-- [ ] Invalid nested values remain visible locally; Save/Create cannot persist an invalid active Visual tree; other tabs remain navigable.
-- [ ] Processing/schema disclosures never present stale canonical JSON as the current invalid edit.
-- [ ] Response-only validation produces deterministic nested issue paths and performs zero provider/credential/network/persistence I/O.
-- [ ] Publication compatibility uses the shared Commerce reconstruction helper, not a second recursive validator.
-- [ ] Studio synthetic sample processing uses the production recursive processor semantics rather than a duplicate recursive implementation.
-- [ ] Direct and JavaScript response behavior is unchanged.
-- [ ] Shared remains exactly 0.14.2; no Shared/Prisma migration is introduced.
+- [ ] A root LIST row can contain nested OBJECT/LIST fields.
+- [ ] Nested containers are supported through Visual container depth 4.
+- [ ] Processing does not duplicate scalar result types; result types remain in derived Commerce resultSchema.
+- [ ] One derivation produces processing and resultSchema together.
+- [ ] Root LIST derives `{items:[...]}`; nested LIST derives a raw array.
+- [ ] All object schemas are closed and requiredness follows `omitIfMissing`.
+- [ ] Canonical VISUAL + Commerce resultSchema reconstruct deterministically; mismatches fail explicitly.
+- [ ] Runtime paths are relative to the current source/list row.
+- [ ] Missing/wrong-shape semantics follow R12 exactly.
+- [ ] Every LIST applies filter -> stable sort -> limit -> recursive projection.
+- [ ] Structural/runtime work limits are enforced before runaway work.
+- [ ] Final output is validated by `compileCommerceResultSchema` before Tool success.
+- [ ] Response UI exposes scalar/object/list nested editing and preserves inactive branch drafts.
+- [ ] Invalid nested values remain visible locally and cannot be saved/created while invalid.
+- [ ] Validation success becomes stale on every relevant local edit.
+- [ ] Response-only validation performs zero provider/credential/network/persistence I/O.
+- [ ] Publication and fixture/sample paths use the canonical Commerce schema/Visual helpers.
+- [ ] Direct and JavaScript behavior remains unchanged apart from using Commerce result-schema validation.
+- [ ] Shopify Admin resultSchema continues to parse/validate under the new Commerce result-schema contract.
+- [ ] No Shared/Prisma publication or migration is introduced.
 
 ## Mandatory Regression Scenarios
 
-Add named tests that explicitly prove at least these cases.
-
-### Contract derivation
+### Commerce result schema
 
 ```text
-1. root OBJECT with nested LIST variants derives raw variants:[] array schema.
-2. root LIST with nested OBJECT metadata derives {items:[...]} root envelope.
-3. nested LIST maxItems equals its configured limit.
-4. requiredness recursively follows omitIfMissing.
-5. depth 5 is rejected.
-6. >32 fields in one container is rejected.
-7. >128 total projection nodes is rejected.
-8. unsafe nested path segment (__proto__/prototype/constructor) is rejected.
+1. nested object/array result schema beyond Shared Details depth 4 parses through CommerceResultSchemaSchema.
+2. schema depth >12 is rejected.
+3. schema node count >256 is rejected.
+4. object with unknown property is rejected by compiled runtime validation.
+5. missing required property is rejected with deterministic path.
+6. array above maxItems is rejected.
+7. string above maxLength is rejected.
+8. non-finite number is rejected.
+9. unsupported schema keyword is rejected.
+10. Shopify Admin flat result schema remains accepted by CommerceResultSchemaSchema.
 ```
 
-### Reconstruction/backward compatibility
+### Visual derivation
 
 ```text
-9. legacy flat OBJECT reconstructs to scalar authoring nodes.
-10. legacy flat LIST reconstructs with filters/sort/limit intact.
-11. recursive VISUAL round-trips processing + resultSchema -> authoring -> same canonical processing/schema.
-12. nested processing/schema structural mismatch is rejected, not guessed.
-13. nested LIST persisted schema with maxItems >= limit is accepted; maxItems < limit is rejected.
+11. root OBJECT with nested LIST variants derives raw variants:[] array schema.
+12. root LIST with nested OBJECT/list descendants derives the root {items:[...]} envelope.
+13. nested LIST maxItems exactly equals configured limit.
+14. requiredness recursively follows omitIfMissing.
+15. valid Visual container depth 4 derives a valid Commerce result schema.
+16. Visual container depth 5 is rejected before canonical persistence.
+17. >32 fields/container is rejected.
+18. >128 projection nodes is rejected.
+19. unsafe nested path segment (__proto__/prototype/constructor) is rejected.
+20. VISUAL + resultSchema round-trips through reconstruction to the same canonical pair.
+21. structural processing/schema mismatch is rejected, not guessed.
 ```
 
 ### Runtime
 
 ```text
-14. OBJECT -> nested LIST -> scalar children produces expected JSON.
-15. OBJECT -> nested OBJECT -> scalar children produces expected JSON.
-16. root LIST -> nested LIST produces {items:[{..., nested:[...]}]}.
-17. nested LIST filter/sort/limit are evaluated against raw nested rows before projection.
-18. missing required nested container -> INVALID_RESPONSE.
-19. missing omitIfMissing nested container -> property omitted.
-20. present nested container with wrong object/array type -> INVALID_RESPONSE even when omitIfMissing=true.
-21. source objects are unchanged after processing.
-22. 4096 inspected-row work budget fails closed; following ordinary processing still succeeds.
-23. cancellation/deadline during deep/nested work returns the existing bounded cancellation/deadline result.
+22. OBJECT -> nested LIST -> scalar children produces expected JSON.
+23. OBJECT -> nested OBJECT -> scalar children produces expected JSON.
+24. root LIST -> nested LIST/OBJECT descendants produces {items:[...]} correctly.
+25. nested LIST filter/sort/limit operates on raw nested rows before projection.
+26. missing required nested container -> INVALID_RESPONSE.
+27. missing omitIfMissing nested container -> output property omitted.
+28. present nested container with wrong type -> INVALID_RESPONSE even when optional.
+29. source objects remain unchanged after processing.
+30. 4096 inspected-row budget fails closed and following ordinary processing still succeeds.
+31. cancellation/deadline during nested work returns the existing bounded failure result.
+32. successful processed output is rejected when it violates Commerce resultSchema.
 ```
 
-### UI / local state
+### UI/local state
 
 ```text
-24. user authors OBJECT {title:string, variants:list{size:string, available:boolean}} and sees matching derived contract.
-25. nested list controls expose their own filters/sort/limit.
-26. duplicate/blank nested field names remain visible with errors and are not promoted canonically.
-27. field LIST -> OBJECT -> LIST restores the prior LIST draft.
-28. root OBJECT -> LIST -> OBJECT restores each root draft.
-29. invalid nested edit immediately makes prior Response validation success stale.
-30. invalid nested tree cannot Save/Create but Response/Test/Agent/Review tabs remain navigable.
-31. legacy persisted flat Visual definition opens correctly without being rewritten solely by opening.
+33. user authors OBJECT {title:string, variants:list{size:string, available:boolean}} and sees matching derived contract.
+34. nested list exposes its own filters/sort/limit controls.
+35. blank/duplicate nested names remain visible with local errors and are not promoted.
+36. field LIST -> OBJECT -> LIST restores prior LIST draft.
+37. field SCALAR -> LIST -> SCALAR restores prior scalar path/type draft.
+38. root OBJECT -> LIST -> OBJECT restores independent root drafts.
+39. invalid nested edit immediately invalidates prior Response-validation success.
+40. invalid active tree cannot Save/Create but all authoring tabs remain navigable.
+41. processing/result disclosures never show stale canonical JSON as current invalid state.
+```
+
+### Preproduction/canonical grammar
+
+```text
+42. LocalResponseProcessingSchema rejects old flat kind:"OBJECT".
+43. LocalResponseProcessingSchema rejects old flat kind:"LIST".
+44. canonical new Visual fixtures/seeds use kind:"VISUAL".
+45. no production legacy Visual adapter/reconstruction branch remains by source audit.
 ```
 
 ### Validation/publication
 
 ```text
-32. Response-only validator accepts valid recursive VISUAL definition.
-33. validator reports nested field/path/filter/limit issues at deterministic nested paths.
-34. validator performs zero connection/credential/DNS/HTTP/Tool-write operations.
-35. publication accepts compatible recursive tree/schema and rejects mismatched recursive tree/schema.
-36. Direct and JavaScript validation/publication regressions remain green.
+46. Response-only validator accepts valid recursive VISUAL definition.
+47. validator reports nested field/path/filter/limit issues at deterministic nested paths.
+48. validator performs zero connection/credential/DNS/HTTP/Tool-write operations.
+49. publication accepts compatible recursive Visual processing/schema and rejects mismatch.
+50. External HTTP fixture validation uses compileCommerceResultSchema.
+51. External HTTP runtime uses compileCommerceResultSchema.
+52. Direct/JavaScript validation/publication regressions remain green.
+53. Shopify Admin contract regression remains green under CommerceResultSchemaSchema.
 ```
 
 ## Validation Commands
 
-Inspect `package.json` first and use repository-declared scripts where available.
-
-Run the current focused packets plus the new nested tests. At minimum:
+Inspect `package.json` and use existing repository scripts where available. At minimum run the focused equivalents of:
 
 ```bash
-npm run test:arch020-external-tools-ui
+npm run test:arch021-commerce-tool-contract
 npm run test:arch021-external-tool-authoring-validation
-npm run test:arch021-tool-authoring-common
+npm run test:arch020-code-processor
+npm run test:arch021-external-tool-ui
 ```
 
-Run focused files explicitly when no dedicated script owns them:
+Run the exact focused Visual/result/runtime/UI tests added or modified by C048.
 
-```bash
-npx vitest run \
-  tests/visual-result-contract.test.ts \
-  tests/response-processing.test.ts \
-  tests/arch021-commerce-tool-contract.test.ts \
-  tests/external-tool-authoring-validation.test.ts \
-  tests/external-tool-authoring-server-actions.test.ts \
-  tests/external-tools-ui.test.tsx \
-  tests/tool-authoring-screen.test.tsx \
-  tests/external-publication.test.ts
-```
-
-If `tests/external-preview.test.ts` is changed, include it in the same focused run.
-
-Run targeted lint over every changed source/test file and:
+Then run:
 
 ```bash
 npm run typecheck
+npm run lint
 git diff --check
 ```
 
-If repository-wide TypeScript remains non-zero only because of established unrelated baseline diagnostics, record the exact diagnostics/baseline reference and prove there is no diagnostic in a C048-modified file.
+Repository-wide baseline failures may be recorded only when unchanged and unrelated; there must be zero C048-owned diagnostics.
 
-Run source audits:
+Run these required source audits:
 
 ```bash
-# Shared version must remain exact and no workspace Shared change is allowed.
-rg -n '"@modainteract/moda-interact-shared": "0\.14\.2"' package.json package-lock.json
+# Shared must remain pinned and unmodified.
+git diff --exit-code -- moda-interact-shared
 
-# New canonical processing kind must exist in Commerce.
+# No Shared Details-schema authority in Commerce result/output paths.
+! rg -n 'DetailsSchemaSchema' src/commerce src/studio
+! rg -n 'compileSubset\([^\n]*["'"']details["'"']' src/commerce src/studio
+
+# Shared input contract remains in use.
+rg -n 'InputSchemaSchema|compileSubset\([^\n]*["'"']input["'"']' src/commerce
+
+# One canonical Visual discriminator.
 rg -n 'kind:\s*z\.literal\(["'"']VISUAL["'"']\)|kind:\s*["'"']VISUAL["'"']' src/commerce src/studio
 
-# No persisted scalar type duplication inside canonical processing nodes.
-! rg -n 'resultType' src/commerce/tool-definition
+# No canonical legacy flat Visual processing discriminator remains.
+! rg -n 'responseProcessing[^\n]*(OBJECT|LIST)|kind:\s*z\.literal\(["'"'](OBJECT|LIST)["'"']\)' src/commerce/tool-definition src/commerce/external-response src/commerce/tool-authoring src/studio/external-http
 ```
 
-Inspect the final diff to confirm no files under:
-
-```text
-moda-interact-shared/
-moda-interact-database/
-```
-
-were modified.
+The last audit may exclude unrelated object/list schema terminology; its purpose is to prove no legacy flat response-processing discriminator remains.
 
 ## Stop Condition
 
-After recursive Visual processing, derivation/reconstruction, runtime execution, Response validation, publication compatibility, recursive UI authoring and the mandatory regressions above are complete, set this task to `review`, complete the Completion Report and STOP.
+When Commerce owns the result-schema parser/compiler, the canonical response-processing union is DIRECT | VISUAL | JAVASCRIPT only, nested Visual execution/UI/validation/publication/fixture semantics are implemented through the canonical helpers, all required focused regressions pass, and validation/source audits are reconciled, set the task to `review`, complete the Completion Report and STOP.
 
-Do not continue into live Test-tab provider execution, Direct/JavaScript sample schema inference, Agent-contract redesign, Review redesign, database work or Shared publication.
+Do not continue into live Test provider execution, Direct/JavaScript sample schema inference, Agent-contract redesign, Review redesign, database work or Shared publication.
 
 ## Implementation Notes
 
-This task intentionally introduces `kind:"VISUAL"` rather than changing the grammar of the Shared legacy OBJECT/LIST schema. That makes backward compatibility explicit and keeps Shared pinned at 0.14.2.
+Preserve the current in-progress C048 implementation work where it conforms to this revised architecture. The task remains Attempt 1; do not restart merely because the ownership contract changed during implementation.
 
-Prefer small composable functions over recursive logic embedded in React event handlers. In particular, keep these concerns separate:
+Preferred dependency direction:
 
 ```text
-raw UI tree
-  -> derive/canonicalise
-  -> persisted VISUAL processing + resultSchema
+raw UI Visual tree
+  -> deriveVisualContract
+       -> canonical VISUAL processing
+       -> CommerceResultSchema
 
-persisted processing + resultSchema
+canonical VISUAL processing + CommerceResultSchema
   -> reconstruct UI tree
 
-runtime source + canonical processing
+runtime source + VISUAL processing
   -> recursive projected value
+  -> compileCommerceResultSchema(resultSchema)
+
+Tool descriptor boundary
+  -> Shared name/description/inputSchema only
 ```
 
-The runtime and Studio fixture path must share execution semantics. The UI and publication validator must share derivation/reconstruction semantics.
+Do not introduce a second result-schema compiler in Studio or publication code.
 
 ## Completion Report
 
