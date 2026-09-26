@@ -156,17 +156,21 @@ Developer manual review of the completed COMMERCE-039 flow identified bounded Re
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-040](COMMERCE-040-add-javascript-request-bindings.md) | Add explicit Agent-input/Literal bindings to JavaScript HTTP request construction | Ready | COMMERCE-016, COMMERCE-017, COMMERCE-023, COMMERCE-039 |
-| [COMMERCE-041](COMMERCE-041-make-external-request-tab-validating-and-previewable.md) | Make Request the validating/exact-preview checkpoint and remove Manage connections | Pending | COMMERCE-040 |
+| [COMMERCE-040](COMMERCE-040-add-javascript-request-bindings.md) | Add explicit Agent-input/Literal bindings to JavaScript HTTP request construction | Complete | COMMERCE-016, COMMERCE-017, COMMERCE-023, COMMERCE-039 |
+| [COMMERCE-041](COMMERCE-041-make-external-request-tab-validating-and-previewable.md) | Make Request the validating/exact-preview checkpoint and remove Manage connections | Ready | COMMERCE-040 |
 | [COMMERCE-042](COMMERCE-042-complete-javascript-request-authoring-ui.md) | Complete JavaScript bindings, resizable editor and mode-draft preservation | Pending | COMMERCE-041 |
 
 Current manual-validation follow-up frontier:
 
 ```text
-ARCH-021-COMMERCE-040
+ARCH-021-COMMERCE-041
 ```
 
 The Request-tab follow-up remains zero-provider-I/O. Request validation/preview answers what request will be constructed; the later Test-tab review will determine the separate live-provider test behaviour.
+
+### COMMERCE-040 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-040 is **Complete / Accepted, Attempt 1**. JavaScript External HTTP requests now persist an explicit bounded `bindings` map; Tool argument mapping and Request preview use the same resolver; only resolved declared bindings reach QuickJS; structured Agent-input values and bounded literals remain supported; unknown/forbidden input bindings fail at deterministic paths; and production JavaScript External HTTP execution remains disabled. The submitted packet passed 61 focused tests and 85 common authoring tests, with targeted ESLint/diff checks clean and no changed-file diagnostics. COMMERCE-041 is promoted to **Ready**; COMMERCE-042 remains Pending.
 
 ## Pre-Phase-3 simplification checkpoint — 2026-09-24
 
