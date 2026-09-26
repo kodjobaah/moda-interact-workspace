@@ -152,7 +152,7 @@ COMMERCE-039 is **Complete / Accepted, Attempt 6**. New Tool authoring remains b
 
 ## Manual-validation follow-up — External HTTP Request tab
 
-Developer manual review of the completed COMMERCE-039 flow identified bounded Request-tab authoring defects. These follow-up tasks correct the Request contract and UI before review moves to the Response tab. They do not reopen COMMERCE-039 and they do not introduce Phase 2 tab gating.
+Developer manual review of the completed COMMERCE-039 flow identified bounded Request-tab authoring defects. These follow-up tasks correct the Request contract and UI as one independent manual-validation workstream. They do not reopen COMMERCE-039 and they do not introduce Phase 2 tab gating.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -167,6 +167,24 @@ ARCH-021-COMMERCE-042
 ```
 
 The Request-tab follow-up remains zero-provider-I/O. Request validation/preview answers what request will be constructed; the later Test-tab review will determine the separate live-provider test behaviour.
+
+## Manual-validation follow-up — External HTTP Response tab
+
+Response-tab manual review identified a separate bounded workstream. It is independent of COMMERCE-040..042 and may execute in parallel because it consumes only already-Complete Phase 3 capabilities plus its own response-task chain.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-043](COMMERCE-043-derive-visual-response-result-contract.md) | Derive Visual result schemas from projection authoring instead of separately maintained shape JSON | Ready | COMMERCE-016, COMMERCE-021, COMMERCE-039 |
+| [COMMERCE-044](COMMERCE-044-validate-external-http-response-authoring.md) | Add Response-only authoritative Direct/Visual/JavaScript validation with Response-local diagnostics | Pending | COMMERCE-043, COMMERCE-019, COMMERCE-023 |
+| [COMMERCE-045](COMMERCE-045-complete-external-http-response-tab-authoring.md) | Complete Response-tab Source-path, JavaScript panel, derived-contract and per-mode local-draft UX | Pending | COMMERCE-043, COMMERCE-044, COMMERCE-006, COMMERCE-039 |
+
+Current Response-tab manual-validation frontier:
+
+```text
+ARCH-021-COMMERCE-043
+```
+
+The Response chain remains zero-provider-I/O. Visual result schemas are deterministically derived from Visual authoring; Direct/JavaScript sample-derived schema generation and real provider execution are deferred to the later Test-tab review. Errors remain visible in Response while all authoring tabs stay freely navigable.
 
 
 ### COMMERCE-041 Attempt 1 accepted — 2026-09-26

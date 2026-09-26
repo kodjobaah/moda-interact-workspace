@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation has now identified a bounded External HTTP Request-tab follow-up: COMMERCE-040 and COMMERCE-041 are architect-accepted Complete, and COMMERCE-042 is Ready. These tasks refine Request authoring before manual review proceeds to the next tab and do not introduce Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 Ready with COMMERCE-044 and COMMERCE-045 dependency-gated behind it. Neither workstream introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -843,7 +843,38 @@ Request follow-up tasks:
 COMMERCE-040 -> COMMERCE-041 -> COMMERCE-042
 ```
 
-Manual review must remain on the Request tab until these bounded tasks are accepted; Response/Test/Agent-contract/Review defects are to be recorded separately rather than folded into this chain.
+The Request follow-up is one bounded workstream. Response/Test/Agent-contract/Review findings must not be folded into it merely because they share the same editor. Independent tab workstreams may proceed in parallel when their dependencies do not overlap.
+
+### Manual-validation follow-up — External HTTP Response tab
+
+Response-tab review established the following target contract independently of the Request follow-up:
+
+1. Response owns authoring and validation of how a provider response becomes the Tool result; real provider/sample execution remains a Test-tab concern.
+2. Response authoring distinguishes raw local form state, canonical local Tool-draft state and durable Tool state. Temporarily invalid values remain visible locally; new-Tool Response work is never durably persisted before final Create from Review.
+3. `execution.resultPath` is one user-facing **Source path** concept for Direct and Visual JSON modes. Empty means the JSON response root. JavaScript has no Source-path control because `transform(response)` receives the complete bounded response object.
+4. Direct returns the JSON selected by Source path unchanged; Visual selects JSON then projects/filters/sorts/limits it; JavaScript transforms the complete bounded response.
+5. The accepted JavaScript response editor must be wired into local new-Tool authoring. Production UI must not expose stale task-history text claiming the panel is unavailable.
+6. Response has a non-mutating, zero-provider-I/O validation checkpoint with mode-specific Direct/Visual/JavaScript diagnostics shown in Response. Validation errors do not gate navigation in this phase.
+7. Visual controls are the primary authoring surface. Raw processing JSON is a secondary/read-only representation rather than a second required editor.
+8. Visual result shape is authored once: output name + source path + scalar type + `omitIfMissing`. Studio deterministically derives the canonical bounded `resultSchema`; `omitIfMissing` is the source for optional/required semantics. No Shared runtime processing-contract change is required.
+9. Direct and JavaScript cannot derive result types from configuration alone. They retain one explicitly authored **Processed result schema** until Test-tab review defines sample-derived schema generation from observed processed output.
+10. Direct/Visual/JavaScript local mode drafts are preserved while switching modes, but only the active mode enters the canonical local definition/persistence payload.
+11. Invalid media types, Source paths, filters, schema JSON or JavaScript remain visible in local authoring state with actionable Response-local errors rather than silently reverting to the last valid value.
+12. Response work introduces no live provider call, credential read, database migration or Phase 2 tab gating.
+
+Response follow-up tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-043 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-044 | moda_commerce | Pending | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
+| ARCH-021-COMMERCE-045 | moda_commerce | Pending | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
+
+```text
+COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045
+```
+
+The Request and Response follow-up chains are intentionally independent and may execute in parallel. Test-tab review will separately decide real provider execution and sample-derived Direct/JavaScript result-schema generation.
 
 Phase 3 exit criteria:
 
@@ -1087,6 +1118,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-26 — External HTTP Response-tab manual-validation follow-up defined
+
+- Manual review found duplicate `Result path`/`Direct result path` controls, stale JavaScript-panel wiring text, no Response-only validation checkpoint, destructive mode switching, silently discarded invalid intermediate values, and duplicate Visual processing/result-schema authoring.
+- Agreed one Source-path concept for Direct/Visual, complete-response JavaScript processing, Response-local errors/validation with zero provider I/O, local raw/canonical/durable state separation, per-mode local draft retention and no Phase 2 gating.
+- Agreed Visual result contracts are derived from output name/path/type/`omitIfMissing` authoring while Direct/JavaScript retain explicit Processed result schemas until Test-tab sample inference is designed.
+- Materialised COMMERCE-043 (Ready), COMMERCE-044 (Pending on 043) and COMMERCE-045 (Pending on 043/044). This Response chain is independent of COMMERCE-040..042 and may execute in parallel.
 
 ### 2026-09-26 — External HTTP Request-tab manual-validation follow-up defined
 
