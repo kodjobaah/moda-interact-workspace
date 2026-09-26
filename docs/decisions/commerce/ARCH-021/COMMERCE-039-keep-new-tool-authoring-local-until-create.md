@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 55
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-021
   - ARCH-021-COMMERCE-022
@@ -308,17 +308,17 @@ Do not convert existing Tool editing into an all-local session merely because ne
 
 ## Work Items
 
-- [ ] Introduce/derive a local new-Tool authoring model from Tool metadata + canonical proposed definition.
-- [ ] Reuse the accepted EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL authoring surfaces in new mode without a persisted Tool id.
-- [ ] Remove the initial `createTool -> createToolDraft` browser sequence.
-- [ ] Remove new-Tool dependence on `stagedToolDraft` / resume composite recovery.
-- [ ] Ensure Request/Response/Test/Agent contract/Review changes are local/non-mutating.
-- [ ] Remove/avoid persisted `Save draft` for a not-yet-created Tool.
-- [ ] Wire final Review `Create tool` to the COMMERCE-038 atomic mutation.
-- [ ] Navigate using the returned exact `toolId` + `toolRevisionId`.
-- [ ] Wire transport-only UNCONFIRMED reconciliation to exact committed identity.
-- [ ] Preserve existing persisted Tool DRAFT editing unchanged.
-- [ ] Add focused regressions for no intermediate persistence and abandonment.
+- [x] Introduce/derive a local new-Tool authoring model from Tool metadata + canonical proposed definition.
+- [x] Reuse the accepted EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL authoring surfaces in new mode without a persisted Tool id.
+- [x] Remove the initial `createTool -> createToolDraft` browser sequence.
+- [x] Remove new-Tool dependence on `stagedToolDraft` / resume composite recovery.
+- [x] Ensure Request/Response/Test/Agent contract/Review changes are local/non-mutating.
+- [x] Remove/avoid persisted `Save draft` for a not-yet-created Tool.
+- [x] Wire final Review `Create tool` to the COMMERCE-038 atomic mutation.
+- [x] Navigate using the returned exact `toolId` + `toolRevisionId`.
+- [x] Wire transport-only UNCONFIRMED reconciliation to exact committed identity.
+- [x] Preserve existing persisted Tool DRAFT editing unchanged.
+- [x] Add focused regressions for no intermediate persistence and abandonment.
 
 ## Interfaces / Contracts
 
@@ -363,31 +363,31 @@ None in this task set. Phase 2 progression/gating may be defined separately only
 
 ## Acceptance Criteria
 
-- [ ] A new Tool can be authored across the accepted tabs/sections without creating a Tool or ToolRevision row.
-- [ ] No new-Tool persistence occurs when entering/changing Request/Query, Response/Result, Test, Agent contract or Review.
-- [ ] A brand-new Tool does not expose durable `Save draft` before creation.
-- [ ] Final `Create tool` performs exactly one atomic initial-create mutation.
-- [ ] Confirmed creation navigates using the exact returned `toolId` + `toolRevisionId`.
-- [ ] Abandoning the flow before Create leaves no Tool/ToolRevision artifact created by that flow.
-- [ ] Lost final-create response is reconciled through the one operation identity without mutation replay or name/DRAFT scans.
-- [ ] Both EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL obey the same no-intermediate-persistence rule.
-- [ ] Existing persisted Tool DRAFT Save/Publish/CAS behaviour remains unchanged.
-- [ ] All tabs remain freely navigable; no Phase 2 gating is introduced.
-- [ ] Browser state is not treated as a trust boundary; final server validation remains authoritative.
+- [x] A new Tool can be authored across the accepted tabs/sections without creating a Tool or ToolRevision row.
+- [x] No new-Tool persistence occurs when entering/changing Request/Query, Response/Result, Test, Agent contract or Review.
+- [x] A brand-new Tool does not expose durable `Save draft` before creation.
+- [x] Final `Create tool` performs exactly one atomic initial-create mutation.
+- [x] Confirmed creation navigates using the exact returned `toolId` + `toolRevisionId`.
+- [x] Abandoning the flow before Create leaves no Tool/ToolRevision artifact created by that flow.
+- [x] Lost final-create response is reconciled through the one operation identity without mutation replay or name/DRAFT scans.
+- [x] Both EXTERNAL_HTTP and SHOPIFY_ADMIN_GRAPHQL obey the same no-intermediate-persistence rule.
+- [x] Existing persisted Tool DRAFT Save/Publish/CAS behaviour remains unchanged.
+- [x] All tabs remain freely navigable; no Phase 2 gating is introduced.
+- [x] Browser state is not treated as a trust boundary; final server validation remains authoritative.
 
 ## Validation
 
-- [ ] `npm run test:arch020-external-tools-ui`
-- [ ] `npm run test:arch021-tool-authoring-common`
-- [ ] focused `tests/tool-authoring-screen.test.tsx`
-- [ ] focused Shopify Admin Tool-authoring UI regression packet affected by this composition
-- [ ] regression: changing fields/tabs/preview/validation before final Create invokes zero Tool persistence Server Actions
-- [ ] regression: abandoning/discarding new Tool flow invokes zero Tool persistence Server Actions
-- [ ] regression: final Create invokes the atomic action once and never calls legacy create-then-draft sequence
-- [ ] regression: committed UNCONFIRMED reconciliation navigates by returned audit identity
-- [ ] regression: existing persisted Tool DRAFT still saves/publishes through existing actions
-- [ ] targeted lint/typecheck with zero new task-owned diagnostics
-- [ ] `git diff --check`
+- [x] `npm run test:arch020-external-tools-ui` (16 passed)
+- [x] `npm run test:arch021-tool-authoring-common` (85 passed)
+- [x] focused `tests/tool-authoring-screen.test.tsx` (6 passed)
+- [x] focused Shopify Admin Tool-authoring UI regression packet affected by this composition (15 passed)
+- [x] regression: changing fields/tabs/preview/validation before final Create invokes zero Tool persistence Server Actions
+- [x] regression: abandoning/discarding new Tool flow invokes zero Tool persistence Server Actions
+- [x] regression: final Create invokes the atomic action once and never calls legacy create-then-draft sequence
+- [x] regression: committed UNCONFIRMED reconciliation navigates by returned audit identity
+- [x] regression: existing persisted Tool DRAFT still saves/publishes through existing actions
+- [x] targeted lint/typecheck with zero new task-owned diagnostics
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -402,25 +402,39 @@ The visible label/button flow may distinguish an initial local setup action such
 ## Completion Report
 
 ### Status
-Not Started
+Ready for architect review
 
 ### Files Changed
-None
+`moda-interact-commerce/src/studio/external-http/editor.tsx`
+`moda-interact-commerce/src/studio/server-services.ts`
+`moda-interact-commerce/src/studio/tools/new-tool-editor.tsx`
+`moda-interact-commerce/src/studio/tools/tool-authoring-screen.tsx`
+`moda-interact-commerce/src/studio/tools/tool-library.tsx`
+`moda-interact-commerce/tests/external-tools-ui.test.tsx`
+`moda-interact-commerce/tests/shopify-admin-tools-ui.test.tsx`
+`moda-interact-commerce/tests/studio-workspace.test.tsx`
+`moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
-None
+Implemented a local new-Tool authoring session with the accepted five-tab Request, Response, Test, Agent contract and Review presentation. Setup now only loads local metadata and enters authoring; edits, tab changes, preview and validation do not call Tool persistence mutations. Final Review Create submits the canonical metadata and proposed definition through the COMMERCE-038 atomic action exactly once, navigates with the returned Tool and ToolRevision IDs, and retains exact-identity reconciliation without mutation replay. Existing persisted Tool DRAFT editing remains on its durable Save/Validate/CAS/Publish path.
 
 ### Validation Results
-None
+`npm run test:arch020-external-tools-ui`: 16 passed.
+`npm run test:arch021-tool-authoring-common`: 85 passed.
+Focused local and adjacent UI packet: 58 passed across 4 files.
+Focused Admin/local packet: 21 passed across 2 files.
+Focused ESLint: clean.
+Task-owned typecheck diagnostics: clean; the full project typecheck still reports unrelated pre-existing diagnostics outside this task.
+`git diff --check`: clean.
 
 ### Deviations
-None
+No Phase 2 tab gating or system-test work was added. Existing compatibility props for staged draft state remain in the library/editor boundaries where adjacent callers still provide them, but the new local flow no longer uses them for persistence or recovery.
 
 ### Assumptions
-None
+The existing COMMERCE-038 action and exact-operation reconciliation contract are authoritative for final creation. Server-side definition validation remains the trust boundary; browser validation only informs the local authoring experience.
 
 ### Unresolved Issues
-None
+The full repository typecheck has unrelated baseline diagnostics in generated/Prisma and other test surfaces; no diagnostics remain in the task-owned implementation or affected tests.
 
 ### Architectural Concerns
 None
