@@ -193,15 +193,21 @@ Manual Request-tab validation also exposed a lower-level runtime-loader defect i
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-046](COMMERCE-046-replace-quickjs-emscripten-with-quickjs-ng-wasi.md) | Replace the Emscripten QuickJS adapter with one packaged QuickJS-NG/WASI runtime and shared structured runtime logging | Ready | COMMERCE-017, COMMERCE-040, COMMERCE-041 |
+| [COMMERCE-046](COMMERCE-046-replace-quickjs-emscripten-with-quickjs-ng-wasi.md) | Replace the Emscripten QuickJS adapter with one packaged QuickJS-NG/WASI runtime and shared structured runtime logging | Review | COMMERCE-017, COMMERCE-040, COMMERCE-041 |
+| [COMMERCE-047](COMMERCE-047-surface-bounded-javascript-compiler-diagnostics.md) | Preserve bounded QuickJS-NG compiler causes through Request validation and the Request UI | Pending | COMMERCE-046 |
 
-Current runtime-adapter frontier:
+Current runtime-adapter state:
 
 ```text
-ARCH-021-COMMERCE-046
+COMMERCE-046   Review
+      |
+      v
+COMMERCE-047   Pending
 ```
 
 COMMERCE-046 is independent of COMMERCE-042 and COMMERCE-043..045 and may execute in parallel. It changes only the sandbox engine adapter/package/logging implementation; `quickjs-sync.v1`, Tool-definition shapes, Request/Response authoring semantics and the production JavaScript executor gate remain unchanged.
+
+COMMERCE-047 is a deliberately small diagnostic-fidelity follow-up discovered during manual validation of the submitted COMMERCE-046 runtime. It remains Pending until COMMERCE-046 is architect-accepted Complete.
 
 
 ### COMMERCE-041 Attempt 1 accepted — 2026-09-26

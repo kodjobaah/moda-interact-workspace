@@ -18,7 +18,8 @@ depends_on:
   - ARCH-021-COMMERCE-017
   - ARCH-021-COMMERCE-040
   - ARCH-021-COMMERCE-041
-enables: []
+enables:
+  - ARCH-021-COMMERCE-047
 created: 2026-09-26
 updated: 2026-09-26
 ---
