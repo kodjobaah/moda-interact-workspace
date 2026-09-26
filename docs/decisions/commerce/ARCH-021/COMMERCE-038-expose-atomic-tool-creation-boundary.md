@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 47
 executor: null
 claimed_at: null
@@ -366,6 +366,24 @@ The COMMERCE-037 lifecycle result is the canonical serializable `{ toolId, toolR
 Full repository typecheck remains subject to pre-existing generated Prisma-client and unrelated baseline diagnostics; changed-file editor diagnostics are clean.
 
 ### Architectural Concerns
+
+## Developer Override
+
+### Decision
+Reopened for the next implementation cycle.
+
+### Previous Accepted Attempt
+1
+
+### Reason
+Developer requested reopening after the Architect Review recorded Changes Requested for Attempt 1. The next attempt must address the runtime Server Action wiring, task-owned TypeScript contract failures, and direct Server Action proof identified in that review.
+
+### Reopen Effects
+- `status` transitioned from `review` to `ready`.
+- `executor` remains `null`.
+- `claimed_at` remains `null`.
+- `attempt` remains `1`; the next prepare/claim will increment it exactly once.
+- Historical Completion Report and Architect Review content were preserved.
 
 ## Architect Review
 
