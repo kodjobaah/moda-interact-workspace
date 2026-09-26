@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
-executor: copilot
-claimed_at: 2026-09-26T12:05:38Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-041
@@ -202,14 +202,14 @@ All authoring tabs remain freely navigable. JavaScript errors are visible Reques
 
 ## Work Items
 
-- [ ] Render COMMERCE-040 JavaScript bindings as Request values.
-- [ ] Add Agent input/Literal source switching with typed literal preservation.
-- [ ] Update JavaScript contract help text to describe resolved bindings accurately.
-- [ ] Give Request JavaScript CodeMirror a useful resizable multi-line presentation.
-- [ ] Retain invalid/partial JavaScript source locally with actionable diagnostics.
-- [ ] Preserve independent Declarative and JavaScript local drafts across mode switches.
-- [ ] Invalidate Request validation/preview state on source/binding edits.
-- [ ] Add focused regressions for mapping parity, literal typing, editor state and mode switching.
+- [x] Render COMMERCE-040 JavaScript bindings as Request values.
+- [x] Add Agent input/Literal source switching with typed literal preservation.
+- [x] Update JavaScript contract help text to describe resolved bindings accurately.
+- [x] Give Request JavaScript CodeMirror a useful resizable multi-line presentation.
+- [x] Retain invalid/partial JavaScript source locally with actionable diagnostics.
+- [x] Preserve independent Declarative and JavaScript local drafts across mode switches.
+- [x] Invalidate Request validation/preview state on source/binding edits.
+- [x] Add focused regressions for mapping parity, literal typing, editor state and mode switching.
 
 ## Interfaces / Contracts
 
@@ -235,28 +235,28 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] JavaScript mode visibly exposes Request values with Agent input/Literal sources.
-- [ ] The binding controls edit the canonical COMMERCE-040 `bindings` map.
-- [ ] JSON literal types are preserved and malformed literals receive visible errors.
-- [ ] JavaScript guidance states that `args` contains only resolved Request values.
-- [ ] The request CodeMirror editor opens at a useful multi-line height, scrolls and can be resized vertically.
-- [ ] Partial/invalid JavaScript remains visible while being edited and receives validation diagnostics.
-- [ ] Declarative authoring state survives Declarative -> JavaScript -> Declarative switching within the session.
-- [ ] JavaScript bindings/source survive JavaScript -> Declarative -> JavaScript switching within the session.
-- [ ] Only the active request mode is part of the canonical definition/persistence payload.
-- [ ] Request validation/preview is invalidated when source/bindings change.
-- [ ] New-Tool authoring remains non-durable until final Create.
-- [ ] No live provider I/O or Phase 2 gating is introduced.
+- [x] JavaScript mode visibly exposes Request values with Agent input/Literal sources.
+- [x] The binding controls edit the canonical COMMERCE-040 `bindings` map.
+- [x] JSON literal types are preserved and malformed literals receive visible errors.
+- [x] JavaScript guidance states that `args` contains only resolved Request values.
+- [x] The request CodeMirror editor opens at a useful multi-line height, scrolls and can be resized vertically.
+- [x] Partial/invalid JavaScript remains visible while being edited and receives validation diagnostics.
+- [x] Declarative authoring state survives Declarative -> JavaScript -> Declarative switching within the session.
+- [x] JavaScript bindings/source survive JavaScript -> Declarative -> JavaScript switching within the session.
+- [x] Only the active request mode is part of the canonical definition/persistence payload.
+- [x] Request validation/preview is invalidated when source/bindings change.
+- [x] New-Tool authoring remains non-durable until final Create.
+- [x] No live provider I/O or Phase 2 gating is introduced.
 
 ## Validation
 
-- [ ] focused External HTTP Request JavaScript UI tests
-- [ ] focused mode-switch retention tests for new and persisted-DRAFT authoring where applicable
-- [ ] focused Request validation/preview regression with JavaScript bindings
-- [ ] existing External UI/common Tool-authoring regression packet required by repository scripts
-- [ ] targeted TypeScript diagnostics or repository typecheck with baseline reconciliation
-- [ ] targeted ESLint for changed files
-- [ ] `git diff --check`
+- [x] focused External HTTP Request JavaScript UI tests
+- [x] focused mode-switch retention tests for new and persisted-DRAFT authoring where applicable
+- [x] focused Request validation/preview regression with JavaScript bindings
+- [x] existing External UI/common Tool-authoring regression packet required by repository scripts
+- [x] targeted TypeScript diagnostics or repository typecheck with baseline reconciliation
+- [x] targeted ESLint for changed files
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -271,28 +271,46 @@ Do not persist both modes into the canonical Tool definition. This is local edit
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Architect Review
 
 ### Files Changed
-None
+- `app/styles.css`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/external-http/request-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
-None
+- Added canonical JavaScript Request `bindings` controls for value name, Agent input/Literal source, typed bounded JSON, omission policy and removal. Literal text remains local while edited; malformed and over-limit JSON receives a stable Request diagnostic.
+- Replaced the destructive mode switch with independent Declarative and JavaScript drafts. Only the active request is emitted in the canonical definition; New Tool and persisted DRAFT actions remain blocked until the active JavaScript Request passes current validation or preview.
+- Added exact `buildRequest({ args })` contract guidance, Request-local compile/validation feedback, and input-keyed invalidation/fencing for validation and preview results.
+- Wrapped the Request CodeMirror in a resizable, scrolling, 280px initial editing area while retaining line numbers and leaving response editor sizing unchanged.
+- Added coverage for typed canonical bindings, source switching, malformed literals/source, both mode-retention directions, preview staleness, stale asynchronous validation, active-mode-only persistence, and new-tool non-durability.
 
 ### Validation Results
-None
+- Focused packet: `npm run test -- tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/external-tool-authoring-validation.test.ts tests/external-tool-authoring-server-actions.test.ts tests/code-request-processor.test.ts` — 5 files, 83 tests passed.
+- Targeted ESLint for the six changed TypeScript/TSX files — passed with no warnings. `git diff --check` — passed.
+- Editor diagnostics for all six changed TypeScript/TSX files — no errors.
+- `npm run typecheck` — repository check remains red with 249 diagnostics across 20 files. The final run has no diagnostics in task-changed files; reported errors are in unrelated existing integration and test files.
+
+### Execution Evidence
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-042`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-042`. Both use `task/ARCH-021-COMMERCE-042`; neither worktree was reused and the canonical shared checkouts were left untouched.
+- Launcher preparation passed the COMMERCE-041 dependency gate. Both task-branch fast-forwards were `not-needed`; `origin/main` was `already-current`. Recursive submodule sync/update-init passed; database submodule commit was `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Parent claim commit `393364dc79d04d8418514f9fe2964fc7543f8781` was pushed by the launcher. Parent preparation HEAD was `013e5e54f742afd0c82cddec679ec53533d40d82`; implementation starting HEAD was `ba837f2ffa83617738196c77b139700c6e4e5fbd`.
 
 ### Deviations
-None
+None. The existing Request validation and preview actions were reused; no provider execution, new service boundary, persistence model, or tab gating was added.
 
 ### Assumptions
-None
+JavaScript requests require a successful current Request validation or preview checkpoint before Create/Save, because the canonical request schema alone cannot report JavaScript compilation failures. Any request edit or mode switch invalidates that checkpoint.
 
 ### Unresolved Issues
-None
+The repository-wide typecheck has 249 diagnostics across 20 unrelated files; see Validation Results. No task-local type errors remain.
 
 ### Architectural Concerns
-None
+None.
 
 ## Architect Review
 
