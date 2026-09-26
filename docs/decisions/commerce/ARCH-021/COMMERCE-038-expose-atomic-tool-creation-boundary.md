@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 47
-executor: copilot
-claimed_at: 2026-09-26T00:18:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-037
@@ -256,14 +256,14 @@ The new creation action must be imported/invoked as a named Server Action throug
 
 ## Work Items
 
-- [ ] Add the serializable initial Tool creation DTO/input contract.
-- [ ] Add one Tool mutation service method for the atomic lifecycle command.
-- [ ] Add one named Server Action for that mutation.
-- [ ] Return the lifecycle result directly without a publication snapshot.
-- [ ] Extend audit reconciliation to return exact initial Tool/revision identity.
-- [ ] Preserve actor authorization and no-replay semantics.
-- [ ] Add focused service/action/reconciliation tests.
-- [ ] Preserve existing Tool mutation APIs required by existing Tool editing.
+- [x] Add the serializable initial Tool creation DTO/input contract.
+- [x] Add one Tool mutation service method for the atomic lifecycle command.
+- [x] Add one named Server Action for that mutation.
+- [x] Return the lifecycle result directly without a publication snapshot.
+- [x] Extend audit reconciliation to return exact initial Tool/revision identity.
+- [x] Preserve actor authorization and no-replay semantics.
+- [x] Add focused service/action/reconciliation tests.
+- [x] Preserve existing Tool mutation APIs required by existing Tool editing.
 
 ## Interfaces / Contracts
 
@@ -297,25 +297,24 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] One named Server Action creates the Tool and initial draft through one Commerce command.
-- [ ] The action accepts the complete proposed definition and returns both created IDs.
-- [ ] Successful initial creation does not call `backend.publication.snapshot()` to build its result.
-- [ ] ADMIN hierarchy is enforced through the accepted Studio authorization boundary.
-- [ ] Deterministic errors remain bounded `ToolMutationResult` errors and never become UNCONFIRMED.
-- [ ] A committed lost-response create can be reconciled to exact `toolId` + `toolRevisionId` from audit metadata/result.
-- [ ] Reconciliation performs no mutation and no broad Tool-state scan.
-- [ ] Existing persisted Tool-editing Server Actions remain available.
-- [ ] No function-valued production React action prop is introduced.
+- [x] One named Server Action creates the Tool and initial draft through one Commerce command.
+- [x] The action accepts the complete proposed definition and returns both created IDs.
+- [x] Successful initial creation does not call `backend.publication.snapshot()` to build its result.
+- [x] ADMIN hierarchy is enforced through the accepted Studio authorization boundary.
+- [x] Deterministic errors remain bounded `ToolMutationResult` errors and never become UNCONFIRMED.
+- [x] A committed lost-response create can be reconciled to exact `toolId` + `toolRevisionId` from audit metadata/result.
+- [x] Reconciliation performs no mutation and no broad Tool-state scan.
+- [x] Existing persisted Tool-editing Server Actions remain available.
+- [x] No function-valued production React action prop is introduced.
 
 ## Validation
 
-- [ ] `npm run test:arch021-tool-authoring-common`
-- [ ] focused `tests/tool-authoring-server-actions.test.ts`
-- [ ] focused `tests/tool-operation-reconciliation.test.ts`
-- [ ] focused Studio integration/auth tests affected by the new mutation
-- [ ] targeted lint/typecheck with zero new task-owned diagnostics
-- [ ] source audit proving successful atomic creation does not use publication `snapshot()` for result reconstruction
-- [ ] `git diff --check`
+- [x] `npm run test:arch021-tool-authoring-common` — 84 passed, 7 files passed.
+- [x] Focused action/reconciliation/Studio packet — 31 passed, 3 files passed.
+- [x] Changed-file ESLint passed.
+- [x] Typecheck rerun: no task-owned `createToolWithInitialDraft` diagnostics; 16 unrelated baseline errors remain.
+- [x] Source audit proves successful atomic creation does not use publication `snapshot()` for result reconstruction.
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -330,7 +329,7 @@ The destination Tool editor may perform its normal read after navigation. Avoid 
 ## Completion Report
 
 ### Status
-Review
+Attempt 2 submitted for review
 
 ### Files Changed
 `moda-interact-commerce/src/studio/contracts.ts`
@@ -339,31 +338,33 @@ Review
 `moda-interact-commerce/src/studio/server-services.ts`
 `moda-interact-commerce/src/studio/tools/reconciliation-server-actions.ts`
 `moda-interact-commerce/tests/studio-integration.test.ts`
+`moda-interact-commerce/tests/tool-authoring-server-actions.test.ts`
 `moda-interact-commerce/tests/tool-operation-reconciliation.test.ts`
 
 ### Work Completed
-- Added serializable atomic initial-create input/result contracts and the `StudioServices` method.
-- Added `createToolWithInitialDraftMutation` and the named `createToolWithInitialDraft` Server Action.
+- Preserved the serializable atomic initial-create input/result contracts while keeping the mutation out of broad `StudioServices`.
+- Added a callable `createToolWithInitialDraftMutation` and wired the named `createToolWithInitialDraft` Server Action to it.
 - Calls the COMMERCE-037 lifecycle operation exactly once and returns its composite result without a publication snapshot.
 - Extended exact audit reconciliation to return `toolId` and `toolRevisionId` for committed `CREATE_TOOL` operations.
 - Preserved legacy Tool mutation actions and actor authorization/no-replay behavior.
+- Added direct named Server Action success and deterministic `CONFLICT` regression coverage.
 
 ### Validation Results
-- `npm run test:arch021-tool-authoring-common -- --reporter=dot`: 82 passed, 7 files passed.
-- Focused atomic/reconciliation packet: 9 passed, 16 skipped by name filter.
+- Implementation commit: `1b2f853` pushed to `task/ARCH-021-COMMERCE-038`.
+- `npm run test:arch021-tool-authoring-common`: 84 passed, 7 files passed.
+- Focused action/reconciliation/Studio packet: 31 passed, 3 files passed.
 - Changed-file ESLint: passed.
 - `git diff --check`: passed.
 - Source audit: atomic creation path contains no `publication.snapshot()` result reconstruction.
-- Prisma client generated from `database/prisma/schema.prisma` for local test execution.
 
 ### Deviations
-The initial pnpm test invocation was blocked by ignored package build scripts; direct Vitest execution was used after generating the repository Prisma client. No source deviation remains.
+The repository typecheck exits nonzero on 16 unrelated baseline diagnostics outside this task (preview imports, agent configuration tests, fixtures, MCP context, and selected-shop-context tests). No task-owned diagnostics for `createToolWithInitialDraft` remain. Focused Vitest, common acceptance tests, changed-file lint, and diff checks pass.
 
 ### Assumptions
 The COMMERCE-037 lifecycle result is the canonical serializable `{ toolId, toolRevisionId, editVersion, updatedAt }` DTO.
 
 ### Unresolved Issues
-Full repository typecheck remains subject to pre-existing generated Prisma-client and unrelated baseline diagnostics; changed-file editor diagnostics are clean.
+Full repository typecheck remains subject to the 16 documented unrelated baseline diagnostics; changed-file diagnostics are clean.
 
 ### Architectural Concerns
 
