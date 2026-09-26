@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 47
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-037
 enables:
@@ -330,28 +330,42 @@ The destination Tool editor may perform its normal read after navigation. Avoid 
 ## Completion Report
 
 ### Status
-Not Started
+Review
 
 ### Files Changed
-None
+`moda-interact-commerce/src/studio/contracts.ts`
+`moda-interact-commerce/src/commerce/integration/studio/services.ts`
+`moda-interact-commerce/src/studio/server-actions.ts`
+`moda-interact-commerce/src/studio/server-services.ts`
+`moda-interact-commerce/src/studio/tools/reconciliation-server-actions.ts`
+`moda-interact-commerce/tests/studio-integration.test.ts`
+`moda-interact-commerce/tests/tool-operation-reconciliation.test.ts`
 
 ### Work Completed
-None
+- Added serializable atomic initial-create input/result contracts and the `StudioServices` method.
+- Added `createToolWithInitialDraftMutation` and the named `createToolWithInitialDraft` Server Action.
+- Calls the COMMERCE-037 lifecycle operation exactly once and returns its composite result without a publication snapshot.
+- Extended exact audit reconciliation to return `toolId` and `toolRevisionId` for committed `CREATE_TOOL` operations.
+- Preserved legacy Tool mutation actions and actor authorization/no-replay behavior.
 
 ### Validation Results
-None
+- `npm run test:arch021-tool-authoring-common -- --reporter=dot`: 82 passed, 7 files passed.
+- Focused atomic/reconciliation packet: 9 passed, 16 skipped by name filter.
+- Changed-file ESLint: passed.
+- `git diff --check`: passed.
+- Source audit: atomic creation path contains no `publication.snapshot()` result reconstruction.
+- Prisma client generated from `database/prisma/schema.prisma` for local test execution.
 
 ### Deviations
-None
+The initial pnpm test invocation was blocked by ignored package build scripts; direct Vitest execution was used after generating the repository Prisma client. No source deviation remains.
 
 ### Assumptions
-None
+The COMMERCE-037 lifecycle result is the canonical serializable `{ toolId, toolRevisionId, editVersion, updatedAt }` DTO.
 
 ### Unresolved Issues
-None
+Full repository typecheck remains subject to pre-existing generated Prisma-client and unrelated baseline diagnostics; changed-file editor diagnostics are clean.
 
 ### Architectural Concerns
-None
 
 ## Architect Review
 
