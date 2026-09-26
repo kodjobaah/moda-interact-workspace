@@ -178,16 +178,21 @@ Response-tab manual review identified a separate bounded workstream. It is indep
 | [COMMERCE-044](COMMERCE-044-validate-external-http-response-authoring.md) | Add Response-only authoritative Direct/Visual/JavaScript validation with Response-local diagnostics | Complete | COMMERCE-043, COMMERCE-019, COMMERCE-023 |
 | [COMMERCE-045](COMMERCE-045-complete-external-http-response-tab-authoring.md) | Complete Response-tab Source-path, JavaScript panel, derived-contract and per-mode local-draft UX | Complete | COMMERCE-043, COMMERCE-044, COMMERCE-006, COMMERCE-039 |
 | [COMMERCE-048](COMMERCE-048-support-nested-visual-response-results.md) | Add bounded recursive Visual result trees with Commerce-owned result-schema validation | Complete | COMMERCE-045 |
-| [COMMERCE-049](COMMERCE-049-support-primitive-scalar-arrays-in-visual-results.md) | Add an explicit Visual list-of-scalar-values node for results such as `{tags:["red","blue"]}` | Ready | COMMERCE-048 |
+| [COMMERCE-049](COMMERCE-049-support-primitive-scalar-arrays-in-visual-results.md) | Add an explicit Visual list-of-scalar-values node for results such as `{tags:["red","blue"]}` | Complete | COMMERCE-048 |
+| [COMMERCE-050](COMMERCE-050-make-response-validation-diagnostics-actionable.md) | Replace raw Response validation parser errors with field-specific corrective diagnostics | Ready | COMMERCE-049 |
 
 Current Response-tab manual-validation frontier:
 
 ```text
-ARCH-021-COMMERCE-049
+ARCH-021-COMMERCE-050
 ```
 
-The Response chain remains zero-provider-I/O. COMMERCE-048 is architect-accepted Complete: Commerce owns result-schema parsing/runtime validation and one recursive `kind:"VISUAL"` grammar supports nested object/list results. The intentionally separate COMMERCE-049 frontier adds primitive scalar arrays such as `{tags:["red","blue"]}` without overloading C048 `LIST` object-row semantics. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to the later Test-tab review. Errors remain visible in Response while all authoring tabs stay freely navigable.
+The Response chain remains zero-provider-I/O. COMMERCE-049 is architect-accepted Complete: primitive scalar arrays such as `{tags:["red","blue"]}` now use explicit `SCALAR_LIST` leaves without overloading object-row `LIST`. Manual validation exposed a separate presentation defect where locally invalid Visual authoring can produce raw null-placeholder/Zod errors in the Validate response summary; COMMERCE-050 is Ready to replace those with field-specific corrective diagnostics while preserving the authoritative server boundary. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to later Test-tab review. All authoring tabs remain freely navigable.
 
+
+### COMMERCE-049 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-049 is **Complete / Accepted, Attempt 1**. Visual response trees now support explicit `SCALAR_LIST` leaves for primitive arrays such as `{tags:["red","blue"]}` while preserving object-row `LIST` semantics. Item type remains owned by the Commerce result schema, runtime projection preserves source order and the accepted work/deadline bounds, Response validation/publication reuse the C048 helpers, and Studio clearly separates `List of values` from `List of objects` with browser-local branch retention. Submitted evidence totals 165 focused passing tests with lint/diff/source audits clean and no C049-owned type diagnostics. Manual review also identified a separate cross-Visual diagnostic-presentation issue: Validate response can currently show raw null-placeholder/Zod messages when the local Visual tree is invalid. COMMERCE-050 is promoted to **Ready** for that bounded UX correction.
 
 ### COMMERCE-045 Attempt 2 accepted — 2026-09-26
 

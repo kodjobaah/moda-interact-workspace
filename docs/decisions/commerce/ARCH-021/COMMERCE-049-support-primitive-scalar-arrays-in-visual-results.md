@@ -9,14 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 64
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-048
-enables: []
+enables:
+  - ARCH-021-COMMERCE-050
 created: 2026-09-26
 updated: 2026-09-26
 ---
@@ -881,45 +882,121 @@ and return the architectural concern instead.
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Review
 
 ### Files Changed
-None
+- `moda-interact-commerce/src/commerce/tool-definition/contracts.ts`
+- `moda-interact-commerce/src/commerce/tool-authoring/visual-result-contract.ts`
+- `moda-interact-commerce/src/commerce/external-response/index.ts`
+- `moda-interact-commerce/src/studio/external-http/visual-tree-editor.tsx`
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/src/studio/external-http/processor.ts` (deleted; pre-delete search found only its own declaration and no callers)
+- `moda-interact-commerce/tests/arch021-commerce-tool-contract.test.ts`
+- `moda-interact-commerce/tests/visual-result-contract.test.ts`
+- `moda-interact-commerce/tests/response-processing.test.ts`
+- `moda-interact-commerce/tests/external-tool-authoring-validation.test.ts`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/external-publication.test.ts`
 
 ### Work Completed
-None
+- Added strict Commerce-local `SCALAR_LIST` processing with bounded path/limit/omit settings; it remains a leaf and does not persist an item type.
+- Extended the canonical C048 authoring derivation/reconstruction path for string, integer, number and boolean arrays, exact `maxItems`, canonical string bounds, requiredness, and fail-closed schema matching.
+- Extended the production recursive projector to preserve order, cap items by `min(limit, maxSearchResults)`, reject null/non-primitives/non-finite numbers, check cancellation/deadline per emitted item, share the existing work budget, and leave source arrays unchanged.
+- Added “List of objects” / “List of values” authoring controls, local item type/raw limit state, per-kind branch retention, stale validation behavior, and truthful invalid-state disclosures. Root shape remains OBJECT/LIST.
+- Covered Response-only acceptance and deterministic mismatch paths, publication acceptance/rejection, and the existing Commerce result-schema validation boundary.
+- Kept Shared pinned at `@modainteract/moda-interact-shared@0.14.2`; no Shared, Prisma, migration, or dependency-manifest changes.
+- Implementation commit `99330e4` (`feat(commerce): support scalar arrays in Visual results`) was pushed to `origin/task/ARCH-021-COMMERCE-049`.
 
 ### Validation Results
-None
+- `npm run test:arch021-commerce-tool-contract`: passed, 17 tests.
+- `npm run test:arch021-external-tool-authoring-validation`: passed, 50 tests across the authoring-validation and server-action suites.
+- `npm run test:arch020-external-tools-ui`: passed, 35 tests.
+- `npm run test:arch020-external-publication`: passed, 14 tests.
+- `npm run test:arch020-response-processing`: passed, 12 tests.
+- `npx vitest run tests/visual-result-contract.test.ts`: passed, 12 tests.
+- `npm run test:arch020-external-preview`: passed, 19 tests.
+- `npm run test:arch020-code-processor`: passed, 6 tests.
+- `npm run typecheck`: non-zero with 251 diagnostics in 22 files; no diagnostic names any C049-modified file. The diagnostics are in `app/api/studio/code-response/validate/route.ts`, `auth.ts`, `lib/auth/development-platform-admin.ts`, `lib/auth/merchant-binding.ts`, `lib/discovery/compiler.ts`, `lib/server/connections.ts`, `scripts/validate-shopify-admin-local.ts`, `src/commerce/agent-configuration/prompt-service.ts`, `src/commerce/connections/command-kernel.ts`, `src/commerce/integration/backend.ts`, `src/commerce/integration/backend/c20-test-fixture.ts`, `src/commerce/integration/backend/publication-storage.ts`, `src/commerce/integration/studio/services.ts`, `tests/agent-configuration-effective.test.ts`, `tests/agent-configuration-prompts-postgres.test.ts`, `tests/auth-merchant-access-postgres.test.ts`, `tests/backend-postgres-rehearsal.test.ts`, `tests/c20-integration-fixture.test.ts`, `tests/external-credentials-postgres.test.ts`, `tests/external-wiring.test.ts`, `tests/local-external-mcp-diagnostic.test.ts`, and `tests/selected-shop-context.test.ts`.
+- `npm run lint`: passed with zero errors and six warnings in unrelated existing files (`scripts/code-runtime-manifest.mjs`, `src/studio/code-response/code-response-panel.tsx`, `tests/agent-configuration-model.test.ts`, and `tests/mcp-service.test.ts`).
+- `git diff --check`: passed. Source audits confirmed no details-subset result authority, no Shared/database/dependency changes, and no remaining `processVisualSample` caller. `npm run code-runtime:package` packaged the locked QuickJS runtime before validation.
+- Direct/JavaScript regression suites passed: external preview 19/19 and code response processor 6/6.
 
 ### Deviations
-None
+- The first full authoring-validation run exposed a missing packaged QuickJS worker artifact after dependency installation; running the repository-declared `npm run code-runtime:package` resolved it, and the complete suite then passed.
+- Repository-wide typecheck remains blocked by the 251 diagnostics listed above; diagnostics were checked against every modified source and test file and none are C049-related.
 
 ### Assumptions
-None
+- Existing C048 bounds, cancellation/deadline checks, result-schema compiler, Response-only boundary and publication reconstruction remain authoritative; C049 adds only a primitive-array leaf.
+- The prepared launcher handoff owns task-branch and recursive-submodule synchronization; implementation was performed in the dedicated task worktree only.
 
 ### Unresolved Issues
-None
+- Repository-wide typecheck must be reconciled outside this bounded task; see the exact 22-file diagnostic list above.
 
 ### Architectural Concerns
-None
+- None. No second Visual runtime, derivation, reconstruction, or publication compatibility implementation was introduced.
+
+### Physical Worktree and Launch Evidence
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-049`, `task/ARCH-021-COMMERCE-049`; launcher claim commit `4ace02f2` was already pushed before implementation.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-049`, `task/ARCH-021-COMMERCE-049`.
+- Prepared-task handoff confirmed COMMERCE-048 dependency completion and synchronized the dedicated task branches/submodules. No shared workspace checkout or shared implementation checkout was switched or edited for this work; no other task worktree was reused.
+- Implementation commit `99330e4` is pushed to the same-name remote task branch. No submodule gitlink was staged.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-None
+Reviewed implementation `99330e4` and parent report `236cb8ae` against the complete C049 contract and the accepted C048 recursive Visual/result-schema architecture. Accepted.
+
+The implementation is correctly bounded to one new primitive-array Visual leaf:
+
+- persisted `SCALAR_LIST` owns only source path, bounded limit and optional omit-if-missing; item result type is not duplicated into processing;
+- C048's single derivation/reconstruction path now derives and reconstructs string/integer/number/boolean array schemas through Commerce-owned `CommerceResultSchemaSchema`;
+- the production recursive Visual processor executes scalar arrays in source order, shares the existing deadline/cancellation/work budget, does not mutate source arrays, and leaves exact authored type enforcement to final Commerce result-schema validation;
+- Response-only validation and publication reuse the canonical C048 Visual/result helpers rather than introducing parallel scalar-list compatibility code;
+- Studio distinguishes `List of objects` from `List of values`, exposes only path/item-type/limit/omit controls for `SCALAR_LIST`, preserves per-kind browser-local drafts and invalid raw edits, and stales prior validation on invalid scalar-list edits;
+- the historical duplicate Studio sample projector was removed after repository search established that the active synthetic path already delegates to the production processor;
+- Shared remains pinned at 0.14.2, and no Prisma/schema migration, live provider authoring I/O or Phase 2 navigation gating was introduced.
+
+Manual review found a separate Response-validation presentation defect: when the current Visual authoring tree is locally invalid (for example a Scalar field remains at `Choose type`) and the user presses **Validate response**, `response-tab.tsx` sends `null` for the non-canonical `responseProcessing` / `resultSchema` placeholders. The server then returns raw schema diagnostics such as `expected object, received null` and `Invalid input`. This does not invalidate the C049 scalar-array implementation, because the current local authoring error is correctly retained and C049's scalar-list functionality is complete, but the default validation UI does not clearly identify the affected field or corrective action. That cross-Visual diagnostic-presentation issue is materialised as the small follow-up `ARCH-021-COMMERCE-050`.
 
 ### Reviewed Files
-None
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-authoring/visual-result-contract.ts`
+- `src/commerce/external-response/index.ts`
+- `src/commerce/tool-authoring/external-validation.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `src/studio/external-http/visual-tree-editor.tsx`
+- `src/studio/external-http/response-tab.tsx`
+- focused C049 contract/derivation/runtime/validation/publication/UI tests
+- C049 Completion Report
 
 ### Validation Reviewed
-None
+Accepted submitted evidence:
+
+```text
+Commerce Tool contract                     17 passed
+External authoring validation/actions       50 passed
+External UI                                 35 passed
+External publication                        14 passed
+Response processing                         12 passed
+Visual result contract                      12 passed
+External preview                            19 passed
+Code response processor                      6 passed
+Focused total                              165 passed
+lint                                         0 errors / 6 unrelated warnings
+git diff --check                            passed
+C049-owned TypeScript diagnostics            none reported
+repository typecheck baseline              251 diagnostics / 22 unrelated files
+Shared/result-schema ownership audits        passed
+```
+
+The supplied review archive does not include installed dependencies, so dependency-backed commands were not falsely claimed as independently rerun by the architect. Source/test inspection confirms the C049 implementation seams and focused regressions described above.
 
 ### Architecture Conformance
-Pending
+Conforms. C049 adds one Commerce-local `SCALAR_LIST` leaf through the accepted C048 processing/schema/runtime/validation/publication seams without changing object-row `LIST`, Shared contracts, persistence infrastructure or provider-authoring authority.
 
 ### Follow-up
-None
+`ARCH-021-COMMERCE-050` is promoted to `ready` to make Response validation diagnostics field-specific and corrective instead of exposing raw schema/Zod diagnostics when browser-local Response authoring is invalid.
