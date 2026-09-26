@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 and COMMERCE-044 architect-accepted Complete with COMMERCE-045 Ready. Neither workstream introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 and COMMERCE-044 architect-accepted Complete with COMMERCE-045 Ready and nested-Visual extension COMMERCE-048 Pending behind it. Neither workstream introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -869,12 +869,28 @@ Response follow-up tasks:
 | ARCH-021-COMMERCE-043 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-039 |
 | ARCH-021-COMMERCE-044 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
 | ARCH-021-COMMERCE-045 | moda_commerce | Ready | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
+| ARCH-021-COMMERCE-048 | moda_commerce | Pending | ARCH-021-COMMERCE-045 |
 
 ```text
-COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045
+COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048
 ```
 
 The Request and Response follow-up chains are intentionally independent and may execute in parallel. Test-tab review will separately decide real provider execution and sample-derived Direct/JavaScript result-schema generation.
+
+#### Nested Visual result-tree extension
+
+The flat COMMERCE-043/C045 Visual model intentionally projects scalar leaves only. Manual validation identified a required extension for structures such as an object containing a variants/items list. COMMERCE-048 is dependency-gated behind C045 and establishes these additional invariants:
+
+1. Shared remains pinned at 0.14.2; legacy Shared OBJECT/LIST processing stays readable/executable.
+2. New recursive Visual definitions use one Commerce-owned `responseProcessing.kind = "VISUAL"` tree rather than changing the legacy Shared grammar.
+3. Processing nodes own source paths/structure; durable scalar types remain owned by the derived `resultSchema`.
+4. Root LIST retains `{ items: [...] }`; a nested LIST field emits a raw array.
+5. Nested paths are relative to their parent source/list row. LIST nodes apply filter -> stable sort -> limit -> recursive projection.
+6. Recursion is bounded to container depth 4, 32 fields/container, 128 projection nodes, 8 filters/list, limit 20, 1000 source rows/list and 4096 inspected list rows/invocation.
+7. Browser-local recursive authoring retains invalid edits and inactive scalar/object/list branch drafts; only the valid active tree is canonical/persisted.
+8. Response validation, publication compatibility and Studio fixture processing reuse the same Commerce derivation/reconstruction/runtime semantics rather than introducing parallel recursive implementations.
+
+COMMERCE-048 does not add live provider I/O, database work, Shared publication, Test-tab schema inference or Phase 2 navigation gating.
 
 
 ### Manual-validation follow-up — QuickJS runtime adapter
@@ -1153,6 +1169,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-26 — nested Visual response-result follow-up defined
+
+- Manual Response authoring showed that the accepted scalar-only Visual projection cannot represent an object containing an embedded list or nested object.
+- Defined COMMERCE-048 as a dependency-gated post-C045 extension using one Commerce-owned `kind:"VISUAL"` recursive processing tree while preserving legacy Shared OBJECT/LIST definitions and keeping `@modainteract/moda-interact-shared` pinned at 0.14.2.
+- Root LIST retains the accepted `{ items: [...] }` envelope; nested LIST nodes emit raw arrays. Persisted processing owns structure/paths while the derived `resultSchema` remains the durable scalar type contract.
+- The recursive model is explicitly bounded (depth/field/node/list/work budgets), and runtime, validation, publication and Studio sample processing must share canonical semantics rather than duplicate recursive algorithms.
 
 ### 2026-09-26 — COMMERCE-044 Attempt 1 accepted
 
