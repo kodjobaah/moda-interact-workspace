@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three independent Commerce follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; Response has COMMERCE-043 Ready with COMMERCE-044 and COMMERCE-045 dependency-gated behind it; and the lower-level QuickJS runtime adapter has COMMERCE-046 architect-accepted Complete with COMMERCE-047 Ready. These workstreams may proceed in parallel and do not introduce Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three independent Commerce follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; Response has COMMERCE-043 Ready with COMMERCE-044 and COMMERCE-045 dependency-gated behind it; and the lower-level QuickJS runtime adapter and bounded compiler-diagnostic follow-up have COMMERCE-046 and COMMERCE-047 architect-accepted Complete. These workstreams may proceed in parallel and do not introduce Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -907,9 +907,9 @@ Runtime-adapter task:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-046 | moda_commerce | Complete | ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-040, ARCH-021-COMMERCE-041 |
-| ARCH-021-COMMERCE-047 | moda_commerce | Ready | ARCH-021-COMMERCE-046 |
+| ARCH-021-COMMERCE-047 | moda_commerce | Complete | ARCH-021-COMMERCE-046 |
 
-COMMERCE-046 is architect-accepted Complete. COMMERCE-047 is Ready and changes only bounded compiler-diagnostic propagation into Request validation/UI; the Request/Response UI workstreams remain independent.
+COMMERCE-046 and COMMERCE-047 are architect-accepted Complete. The QuickJS runtime-adapter/compiler-diagnostic follow-up is complete; the Request/Response UI workstreams remain independent.
 
 Phase 3 exit criteria:
 
@@ -1153,6 +1153,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-26 — COMMERCE-047 Attempt 1 accepted
+
+- Accepted implementation `4dccfab5` and parent report handoff `bd975657`.
+- QuickJS-NG Request syntax/entrypoint causes are now preserved as bounded authoring diagnostics through the Worker, KernelResult, Request processor, validation Server Action and Request UI, capped at 512 UTF-8 bytes with no source/stack/host-path or customer/provider-data leakage.
+- Operational runtime failures remain opaque and continue through COMMERCE-046 shared structured logging; expected guest syntax failures do not become operational error logs.
+- Accepted packaging/smoke plus 12 runtime, 7 Request processor, 47 validation/Server Action and 21 External UI tests, targeted lint/source audits and diff checks with no task-owned type diagnostics.
+- Marked COMMERCE-047 Complete. The QuickJS runtime-adapter/compiler-diagnostic follow-up chain is Complete.
 
 ### 2026-09-26 — bounded JavaScript compiler-diagnostic follow-up defined
 

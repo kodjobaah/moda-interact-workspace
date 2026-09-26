@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-09-26T16:22:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-046
@@ -484,19 +484,67 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-None
+
+Reviewed implementation `4dccfab5` and parent report handoff `bd975657` against the complete COMMERCE-047 bounded compiler-diagnostic contract.
+
+Accepted. The QuickJS-NG worker now preserves a bounded guest compiler message only for `SYNTAX_ERROR`; the message is sanitized and truncated to at most 512 UTF-8 bytes before crossing the worker boundary, source/stack/host-path data is not propagated, and explicit finite line/column values are retained only when the guest exception supplies them. Operational failures such as `RUNTIME_UNAVAILABLE`, `DEADLINE`, `CANCELLED` and `THROTTLED` remain opaque and keep their existing operational classification.
+
+The Request processor now carries the bounded syntax diagnostic through `mapFailure(...)`; Request-only and full-definition Request validation use that message at the existing canonical Request source paths while Response diagnostics deliberately retain their previous generic presentation. The Request Server Action therefore returns guest syntax/entrypoint mistakes as normal `kind: ok` / `valid: false` authoring issues rather than `INTERNAL_ERROR`, and the existing Request UI renders the returned cause without introducing a second parser.
+
+The runtime logging separation also conforms: expected guest syntax failures do not emit new error-level operational logs, while COMMERCE-046 shared structured runtime logging remains authoritative for actual worker/runtime failures. No Request workflow gating, Response UI change, runtime-engine change, database work or provider execution was introduced.
+
+The submitted task was in `review` but retained `executor: copilot` / `claimed_at`; this acceptance clears those stale claim fields as architect-owned coordination reconciliation.
 
 ### Reviewed Files
-None
+- `src/commerce/code-runtime/types.ts`
+- `src/commerce/code-runtime/worker.mjs`
+- `src/commerce/code-runtime/kernel.ts` (logging boundary inspection)
+- `src/commerce/code-request/processor.ts`
+- `src/commerce/tool-authoring/external-validation.ts`
+- `tests/code-runtime-proof.test.ts`
+- `tests/code-request-processor.test.ts`
+- `tests/external-tool-authoring-validation.test.ts`
+- `tests/external-tool-authoring-server-actions.test.ts`
+- `tests/external-tools-ui.test.tsx`
+- this task Completion Report
 
 ### Validation Reviewed
-None
+Accepted submitted evidence:
+
+```text
+code-runtime packaging                 passed
+packaged smoke                          passed
+runtime proof                           12 passed
+Request processor                        7 passed
+Request validation / Server Actions     47 passed
+External UI                              21 passed
+targeted ESLint                          passed
+source audits                            passed
+git diff --check                         passed
+repository typecheck                     16 established unrelated errors in 8 unchanged files
+task-owned TypeScript diagnostics        none
+```
+
+Source/test inspection additionally confirms:
+
+```text
+SYNTAX_ERROR message bounded to <= 512 UTF-8 bytes before worker egress
+malformed Request compile carries a non-empty guest cause
+missing/invalid Request entrypoint carries a useful bounded cause
+operational codes do not expose internal messages
+Request validation preserves message + optional source location
+Response diagnostic presentation remains unchanged
+Request UI displays the propagated cause and not the generic fallback when present
+expected guest syntax diagnostics produce no operational error log
+```
+
+The supplied review archive does not include installed dependencies, so the architect review did not falsely claim to rerun dependency-backed commands; acceptance is based on submitted validation evidence plus direct inspection of the implementation and focused regressions.
 
 ### Architecture Conformance
-Pending
+Conforms. COMMERCE-047 remains a bounded Request diagnostic-fidelity change on top of the accepted COMMERCE-046 runtime. It preserves the runtime engine, worker supervision, Request semantics, operational logging boundary, Response behavior, persistence boundaries and free tab navigation.
 
 ### Follow-up
-None
+None. The QuickJS runtime-adapter/Request compiler-diagnostic follow-up chain is Complete.
