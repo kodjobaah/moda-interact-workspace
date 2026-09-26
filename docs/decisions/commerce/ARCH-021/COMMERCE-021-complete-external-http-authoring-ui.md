@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -20,7 +20,8 @@ depends_on:
   - ARCH-021-COMMERCE-023
   - ARCH-021-COMMERCE-005
   - ARCH-021-COMMERCE-006
-enables: []
+enables:
+  - ARCH-021-COMMERCE-039
 created: 2026-09-23
 updated: 2026-09-26
 ---
@@ -210,7 +211,9 @@ Consumes the COMMERCE-016 Commerce-owned Tool contract, COMMERCE-023 External HT
 
 ## Enables
 
-None in Phase 3. Phase 4 live-test tasks will depend on this completed authoring surface.
+- ARCH-021-COMMERCE-039
+
+COMMERCE-039 consumes this completed EXTERNAL_HTTP authoring surface when moving new-Tool authoring to local-only state before final atomic creation. Phase 4 live-test tasks may also depend on this completed authoring surface.
 
 ## Acceptance Criteria
 
@@ -282,11 +285,33 @@ The implementation remains bounded to `moda-interact-commerce`; no cross-reposit
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 5
+Accepted — Attempt 6
 
 ### Review Notes
 
-#### Attempt 5 review — 2026-09-26
+#### Attempt 6 review — 2026-09-26
+
+Reviewed the submitted Attempt 6 implementation `c9fee48` and parent handoff `f9a23152` against the complete Attempt 5 correction contract.
+
+Accepted. Attempt 6 supplies the exact stale-authoritative-validation regression that was missing from Attempt 5. The SUPER_ADMIN regression now establishes a successful authoritative validation result before editing, proves a Description edit immediately clears the success result and disables publication, proves Save does not resurrect that stale result, re-validates the saved candidate, then repeats the invalidation proof through an execution-path edit before the final Validate/publication handoff. The regression therefore fails if a previously visible successful validation message survives authored-content changes.
+
+The accepted Attempt 5 behavior remains preserved: incomplete EXTERNAL_HTTP DRAFTs use a DRAFT-capable type rather than full `ToolDefinition`; the production-read incomplete-DRAFT DTO is consumed directly by the editor; dirty -> Save -> Validate -> SUPER_ADMIN publication gating remains explicit; and `LIVE_TEST_REQUIRED` remains a typed visible outcome. The synchronized lifecycle boundary uses the canonical `CommerceToolDraftDefinition` contract and no task-owned TypeScript diagnostic remains.
+
+Validation accepted from the submitted handoff/report:
+
+```text
+External UI:                 16/16 passed
+Focused four-file packet:   68/68 passed
+Targeted ESLint:             passed
+Git diff --check:            passed
+Repository typecheck:        15 pre-existing unrelated diagnostics; zero task-owned diagnostics
+```
+
+The Attempt 6 launcher/report evidence records the dedicated parent and implementation worktrees, task branches, fresh claim, synchronization against `origin/main`, and recursive database submodule materialization. The developer handoff reports implementation `c9fee48`, parent report `f9a23152`, and clean worktrees.
+
+COMMERCE-021 is Complete. With COMMERCE-022 and COMMERCE-038 already architect-accepted Complete, every dependency of COMMERCE-039 is now satisfied; COMMERCE-039 is promoted to Ready.
+
+#### Historical Attempt 5 review — 2026-09-26
 
 Reviewed implementation `7a033f32c0ed76431b2a5f7db1e347ee278cbb81` and the submitted Attempt 5 task report against the complete Attempt 4 correction contract. The parent handoff was subsequently synchronized and pushed as merge commit `750a803c`; the developer reports both parent and implementation worktrees clean.
 
