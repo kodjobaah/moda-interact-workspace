@@ -157,16 +157,21 @@ Developer manual review of the completed COMMERCE-039 flow identified bounded Re
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-040](COMMERCE-040-add-javascript-request-bindings.md) | Add explicit Agent-input/Literal bindings to JavaScript HTTP request construction | Complete | COMMERCE-016, COMMERCE-017, COMMERCE-023, COMMERCE-039 |
-| [COMMERCE-041](COMMERCE-041-make-external-request-tab-validating-and-previewable.md) | Make Request the validating/exact-preview checkpoint and remove Manage connections | Ready | COMMERCE-040 |
-| [COMMERCE-042](COMMERCE-042-complete-javascript-request-authoring-ui.md) | Complete JavaScript bindings, resizable editor and mode-draft preservation | Pending | COMMERCE-041 |
+| [COMMERCE-041](COMMERCE-041-make-external-request-tab-validating-and-previewable.md) | Make Request the validating/exact-preview checkpoint and remove Manage connections | Complete | COMMERCE-040 |
+| [COMMERCE-042](COMMERCE-042-complete-javascript-request-authoring-ui.md) | Complete JavaScript bindings, resizable editor and mode-draft preservation | Ready | COMMERCE-041 |
 
 Current manual-validation follow-up frontier:
 
 ```text
-ARCH-021-COMMERCE-041
+ARCH-021-COMMERCE-042
 ```
 
 The Request-tab follow-up remains zero-provider-I/O. Request validation/preview answers what request will be constructed; the later Test-tab review will determine the separate live-provider test behaviour.
+
+
+### COMMERCE-041 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-041 is **Complete / Accepted, Attempt 1**. Request is now the non-network validation/preview checkpoint: invalid intermediate Request edits remain visible with diagnostics, authoritative Request validation is bounded and zero-provider-I/O, exact safe request preview lives in Request, `Manage connections` is removed, Test no longer owns Request preview, and tabs remain freely navigable. The submitted packet passed 85 common, 17 External UI, 45 validation/Server Action and 10 new-tool tests with targeted lint/diff checks clean and no task-owned diagnostics. COMMERCE-042 is promoted to **Ready**.
 
 ### COMMERCE-040 Attempt 1 accepted — 2026-09-26
 

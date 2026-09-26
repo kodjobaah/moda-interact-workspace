@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation has now identified a bounded External HTTP Request-tab follow-up: COMMERCE-040 is architect-accepted Complete, COMMERCE-041 is Ready, and COMMERCE-042 remains dependency-gated behind COMMERCE-041. These tasks refine Request authoring before manual review proceeds to the next tab and do not introduce Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation has now identified a bounded External HTTP Request-tab follow-up: COMMERCE-040 and COMMERCE-041 are architect-accepted Complete, and COMMERCE-042 is Ready. These tasks refine Request authoring before manual review proceeds to the next tab and do not introduce Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -836,8 +836,8 @@ Request follow-up tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-040 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-039 |
-| ARCH-021-COMMERCE-041 | moda_commerce | Ready | ARCH-021-COMMERCE-040 |
-| ARCH-021-COMMERCE-042 | moda_commerce | Pending | ARCH-021-COMMERCE-041 |
+| ARCH-021-COMMERCE-041 | moda_commerce | Complete | ARCH-021-COMMERCE-040 |
+| ARCH-021-COMMERCE-042 | moda_commerce | Ready | ARCH-021-COMMERCE-041 |
 
 ```text
 COMMERCE-040 -> COMMERCE-041 -> COMMERCE-042
@@ -1093,6 +1093,16 @@ independent of features.
 - Manual review after COMMERCE-039 found that Request authoring silently discards invalid intermediate edits, Request preview is misplaced under Test, JavaScript lacks explicit Agent-input/Literal value bindings, JavaScript mode is visually too shallow, mode switching destroys the previous mode draft, and the local-only flow exposes a dead `Manage connections` control.
 - Agreed the Request target: remove Manage connections; keep connection selection/safe metadata; validate request construction in Request with zero provider I/O; render the exact safe request descriptor there; add explicit JavaScript Request-value bindings while retaining `buildRequest({ args })`; preserve per-mode local drafts; keep tabs freely navigable.
 - Materialised COMMERCE-040 (Ready), COMMERCE-041 (Pending on 040) and COMMERCE-042 (Pending on 041). No system-test dependency or Phase 2 gating was introduced.
+
+
+### 2026-09-26 — COMMERCE-041 Attempt 1 accepted
+
+- Accepted the bounded External HTTP Request-tab validation/preview checkpoint.
+- Request now retains invalid intermediate authoring values visibly, validates through the bounded server-authoritative Request boundary, and renders the exact safe request descriptor from sample Tool arguments without provider, DNS or credential access.
+- Request contains no `Manage connections` navigation; Test no longer contains Request preview and remains a truthful no-live-provider placeholder.
+- Confirmed COMMERCE-041 introduces no cross-tab gating: all tabs remain freely navigable and later-tab/final-create behavior is outside this task.
+- Accepted validation evidence: 85 common authoring, 17 External UI, 45 Request validation/Server Action and 10 focused new-tool tests; targeted lint/diff checks passed with no task-owned diagnostics.
+- Marked COMMERCE-041 Complete and promoted COMMERCE-042 to Ready.
 
 ### 2026-09-26 — COMMERCE-040 Attempt 1 accepted
 
