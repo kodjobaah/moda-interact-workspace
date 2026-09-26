@@ -20,7 +20,7 @@ depends_on:
   - ARCH-021-COMMERCE-038
 enables: []
 created: 2026-09-25
-updated: 2026-09-25
+updated: 2026-09-26
 ---
 
 # Keep new Tool authoring local until final creation
@@ -346,6 +346,16 @@ No new cross-repository contract is introduced.
 - ARCH-021-COMMERCE-021
 - ARCH-021-COMMERCE-022
 - ARCH-021-COMMERCE-038
+
+Current dependency state after COMMERCE-038 Attempt 2 acceptance:
+
+```text
+ARCH-021-COMMERCE-021  Review
+ARCH-021-COMMERCE-022  Complete
+ARCH-021-COMMERCE-038  Complete
+```
+
+Therefore this task remains `pending`; COMMERCE-021 is the sole remaining gate.
 
 ## Enables
 

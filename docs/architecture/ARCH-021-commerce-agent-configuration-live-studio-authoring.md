@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036 and COMMERCE-037 are Complete; COMMERCE-021 and COMMERCE-038 are Ready.
+Agreed — Phase 1, Phase 2 and the pre-Phase-3 simplification implementation are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished. It does not gate implementation. Phase 3 resumes from the simplified architecture: COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037 and COMMERCE-038 are Complete; COMMERCE-021 is in Review and COMMERCE-039 remains Pending on COMMERCE-021.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -786,13 +786,13 @@ Phase 3 tasks:
 | ARCH-021-COMMERCE-018 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
 | ARCH-021-COMMERCE-019 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
-| ARCH-021-COMMERCE-021 | moda_commerce | Ready | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Review | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 | ARCH-021-COMMERCE-023 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-019, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-024 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-018, ARCH-021-COMMERCE-019 |
 | ARCH-021-COMMERCE-036 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-020 |
 | ARCH-021-COMMERCE-037 | moda_commerce | Complete | ARCH-021-COMMERCE-036 |
-| ARCH-021-COMMERCE-038 | moda_commerce | Ready | ARCH-021-COMMERCE-037 |
+| ARCH-021-COMMERCE-038 | moda_commerce | Complete | ARCH-021-COMMERCE-037 |
 | ARCH-021-COMMERCE-039 | moda_commerce | Pending | ARCH-021-COMMERCE-021, ARCH-021-COMMERCE-022, ARCH-021-COMMERCE-038 |
 
 Dependency graph:
@@ -813,7 +813,7 @@ COMMERCE-016
 COMMERCE-021 --------------------------------------------------------+--> COMMERCE-039
 COMMERCE-022 --------------------------------------------------------+
 
-COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036 and COMMERCE-037 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-038 and COMMERCE-021 are independent Ready Phase 3 Commerce implementation tasks. COMMERCE-039 remains gated by COMMERCE-021 and COMMERCE-038.
+COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037 and COMMERCE-038 are architect-accepted Complete. The simplification implementation is Complete. COMMERCE-021 is in Review. COMMERCE-039 remains Pending with COMMERCE-021 as its sole unsatisfied dependency.
 ```
 
 The initial-Tool refactor keeps intermediate new-Tool authoring non-durable until final Create, then commits Tool + revision-1 `DRAFT` through one atomic lifecycle/persistence/Studio boundary. Phase 2 tab gating remains explicitly out of scope.
@@ -1030,7 +1030,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-018 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-020-COMMERCE-011 |
 | ARCH-021-COMMERCE-019 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-027, ARCH-020-COMMERCE-030 |
 | ARCH-021-COMMERCE-020 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-027, ARCH-021-COMMERCE-029 |
-| ARCH-021-COMMERCE-021 | moda_commerce | Ready | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
+| ARCH-021-COMMERCE-021 | moda_commerce | Review | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
@@ -1835,6 +1835,13 @@ architect-accepted Complete.
 - Marked COMMERCE-032 Complete and promoted COMMERCE-033 to Ready.
 - Reconciled duplicate correction-task rows in the architect-owned checkpoint
   table; this was coordination-document drift, not a C032 implementation issue.
+
+### 2026-09-26 — COMMERCE-038 Attempt 2 accepted
+
+- Accepted implementation `1b2f853`: the named atomic initial-Tool Server Action calls a real mutation method, invokes the COMMERCE-037 lifecycle command exactly once and returns exact composite identity without publication snapshot reconstruction.
+- Accepted the corrected Tool mutation/type boundary, direct Server Action success/`CONFLICT` regressions and preserved exact audit-only reconciliation with no mutation replay or Tool/DRAFT scans.
+- Accepted validation: common Tool-authoring packet 84 passed, focused action/reconciliation/Studio packet 31 passed, changed-file ESLint and diff checks passed, and no COMMERCE-038-owned TypeScript diagnostics remain.
+- Marked COMMERCE-038 Complete. COMMERCE-039 remains Pending because COMMERCE-021 is still in Review; COMMERCE-021 is now the sole remaining dependency gate.
 
 ### 2026-09-26 — COMMERCE-037 Attempt 2 accepted
 
