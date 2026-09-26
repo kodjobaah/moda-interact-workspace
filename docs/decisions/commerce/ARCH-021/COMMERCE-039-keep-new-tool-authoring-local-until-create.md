@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 55
 executor: null
 claimed_at: null
@@ -677,9 +677,596 @@ None.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 3
+Changes Requested — Attempt 4
 
 ### Review Notes
+
+#### Attempt 4 formal architecture review — 2026-09-26
+
+Reviewed the supplied Attempt 4 implementation snapshot against the complete Attempt 3 correction contract and the current ARCH-021 authoring architecture. The user reports implementation commit `32eb81b` and parent task-report commit `a9ea5f28`. The supplied task file is correctly at `status: review`, `attempt: 4`, with the claim cleared. The Completion Report embedded in the snapshot records the same implementation commit but an earlier parent-report commit; this review uses the user-supplied final report commit for the handoff identity and does not require a self-referential report rewrite.
+
+Preserve the following Attempt 4 progress:
+
+```text
+new Tool setup -> Continue authoring remains non-mutating
+new local Tool authoring remains in browser state until final Create
+final persistence remains exactly one createToolWithInitialDraft operation
+exact returned toolId/toolRevisionId navigation and audit reconciliation remain intact
+legacy createTool -> createToolDraft staging remains absent
+ExternalHttpEditor now has real Request / Response / Test section boundaries
+persisted EXTERNAL_HTTP DRAFT now has a five-tab shell
+local External preview uses the accepted no-provider preview boundary
+current Admin result-schema text is included by buildCurrentCandidate
+invalid local JSON blocks Create and local External raw response JSON is hoisted
+COMMERCE-021 Save / CAS / validation / LIVE_TEST_REQUIRED behavior remains present
+```
+
+Attempt 4 is not accepted. The remaining deficiencies are within COMMERCE-039 scope. In addition, the developer explicitly asked that the next correction reduce recurrence by separating each authoring tab into its own React component/file. That component boundary is now part of the authoritative Attempt 5 contract below.
+
+The following is the COMPLETE Attempt 5 correction contract. Do not infer additional requirements from chat history.
+
+##### A4-R1 — split the five authoring tabs into explicit React component files
+
+Create exactly these files:
+
+```text
+src/studio/tools/authoring/tool-authoring-tabs.tsx
+src/studio/tools/authoring/agent-contract-tab.tsx
+src/studio/tools/authoring/review-tab.tsx
+
+src/studio/external-http/request-tab.tsx
+src/studio/external-http/response-tab.tsx
+src/studio/external-http/test-tab.tsx
+```
+
+Use the files as real ownership boundaries, not one-line wrappers around the current monolithic component.
+
+`tool-authoring-tabs.tsx` owns ONLY the common tab navigation presentation:
+
+```ts
+export type ToolAuthoringTabId =
+  | "request"
+  | "response"
+  | "test"
+  | "agent"
+  | "review";
+```
+
+It must render exactly:
+
+```text
+Request
+Response
+Test
+Agent contract
+Review
+```
+
+in that order, with:
+
+```text
+className="tool-editor-tabs"
+role="tablist"
+aria-label="External tool authoring steps"
+```
+
+and each tab using:
+
+```text
+role="tab"
+aria-selected=<true only for active tab>
+className="active" only for active tab
+```
+
+It receives controlled `activeTab` / `onTabChange`. It MUST NOT own Tool definition state, persistence state or validation state.
+
+`request-tab.tsx` owns the JSX for the current EXTERNAL_HTTP Request controls only:
+
+```text
+connection revision
+Manage connections
+request mode
+JavaScript/declarative request construction
+HTTP path
+query mappings
+safe headers
+```
+
+`response-tab.tsx` owns the JSX for the current EXTERNAL_HTTP Response controls only:
+
+```text
+response format / media types
+result path
+DIRECT / VISUAL / JAVASCRIPT processing
+CodeEditor slot
+projection/filter/sort/limit controls
+Advanced response processing JSON
+Response shape / resultSchema JSON
+```
+
+`test-tab.tsx` owns the JSX for the current no-provider Test controls only:
+
+```text
+tool arguments
+Preview request
+bounded preview result/error
+```
+
+`agent-contract-tab.tsx` owns the common controlled Agent contract fields:
+
+```text
+Definition SemVer
+Description
+Input JSON Schema
+Response template
+```
+
+It receives the CURRENT raw JSON text buffers and callbacks. It MUST NOT keep an independent canonical definition or replace invalid JSON with the last valid parsed object.
+
+`review-tab.tsx` owns the common Review presentation and final action surface. Its action contract must be a discriminated union equivalent to:
+
+```ts
+type ReviewActions =
+  | {
+      mode: "create";
+      createDisabled: boolean;
+      onCreate(): void;
+    }
+  | {
+      mode: "persisted";
+      saveDisabled: boolean;
+      validateDisabled: boolean;
+      onSave(): void;
+      onValidate(): void;
+      publish?: {
+        disabled: boolean;
+        reason: string;
+        onReasonChange(value: string): void;
+        onPublish(): void;
+      };
+    };
+```
+
+The exact type name may differ, but the distinction between new-local Create and persisted Save/Validate/Publish MUST be encoded explicitly rather than hidden behind nullable callbacks.
+
+State ownership invariant:
+
+```text
+NewToolEditor / ToolEditor
+  own canonical definition
+  own raw JSON text buffers
+  own dirty state
+  own validation state
+  own pending/locked state
+  own persistence orchestration
+            |
+            v
+controlled tab components
+```
+
+No tab component may call `createToolWithInitialDraft`, `updateToolDraft`, `publishToolRevision`, `createTool` or `createToolDraft` directly. Test preview and Admin validation are invoked only through callbacks supplied by the owning editor/controller.
+
+`ExternalHttpEditor` may remain as the shared controller for EXTERNAL_HTTP editing helpers/transient state, but after this refactor it MUST NOT contain the section-owned Request/Response/Test JSX listed above. Move that JSX into the three required tab files and pass typed values/callbacks down.
+
+Both:
+
+```text
+NewToolEditor
+ToolEditor (persisted EXTERNAL_HTTP DRAFT)
+```
+
+MUST use the SAME six component files above. Do not maintain separate new-vs-persisted copies of Request, Response, Test, Agent contract or Review presentation.
+
+Required source audits:
+
+```bash
+test -f src/studio/tools/authoring/tool-authoring-tabs.tsx
+test -f src/studio/tools/authoring/agent-contract-tab.tsx
+test -f src/studio/tools/authoring/review-tab.tsx
+test -f src/studio/external-http/request-tab.tsx
+test -f src/studio/external-http/response-tab.tsx
+test -f src/studio/external-http/test-tab.tsx
+
+rg -n 'ToolAuthoringTabs' \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx
+
+rg -n 'ExternalHttpRequestTab|ExternalHttpResponseTab|ExternalHttpTestTab' \
+  src/studio/external-http/editor.tsx
+
+! rg -n '<nav className="tool-editor-tabs"' \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx
+```
+
+##### A4-R2 — complete the accepted presentation contract inside the extracted Response tab
+
+Attempt 4 still does not satisfy the explicit R12 editor-sizing contract. The active EXTERNAL_HTTP response implementation currently renders:
+
+```tsx
+<textarea aria-label="Advanced response processing JSON" ... />
+<textarea aria-label="Response shape JSON" ... />
+```
+
+without the accepted class or row count.
+
+In the new `response-tab.tsx`, BOTH controls MUST render with:
+
+```tsx
+className="tool-editor-json-textarea"
+rows={12}
+```
+
+The Agent contract Input JSON Schema and Response template controls must continue to use the same class and `rows={12}` in `agent-contract-tab.tsx`.
+
+Required DOM regression:
+
+```text
+Response tab
+-> Advanced response processing JSON
+   class contains tool-editor-json-textarea
+   rows === 12
+-> Response shape JSON
+   class contains tool-editor-json-textarea
+   rows === 12
+
+Agent contract tab
+-> Input JSON Schema
+   class contains tool-editor-json-textarea
+   rows === 12
+-> Response template
+   class contains tool-editor-json-textarea
+   rows === 12
+```
+
+Do not introduce another styling system. Continue using the existing `app/styles.css` classes.
+
+##### A4-R3 — make Admin validation state truthful and prove the exact current candidate
+
+Change at minimum:
+
+```text
+src/studio/tools/new-tool-editor.tsx
+src/studio/tools/shopify-admin-editor.tsx
+tests/tool-authoring-screen.test.tsx
+```
+
+Attempt 4 correctly includes CURRENT `adminResultSchemaText` in `buildCurrentCandidate`, but its current message callback is:
+
+```ts
+setMessage={(value) => {
+  setAdminMessage(value);
+  setAdminValidated(false);
+  setDirty(true);
+}}
+```
+
+That means a successful `ShopifyAdminEditor.validate()` call executes:
+
+```text
+onValidationChange(true)
+-> setMessage("Valid Admin GraphQL query.")
+-> parent immediately sets validation false AND marks an unchanged candidate dirty
+```
+
+A validation/status message is not an authoring edit.
+
+Required behavior:
+
+```text
+Admin authoring edit
+-> dirty = true
+-> adminValidated = false
+
+successful Validate of CURRENT candidate
+-> adminValidated = true
+-> visible "Valid Admin GraphQL query."
+-> validation itself does NOT mark dirty
+-> validation message callback does NOT invalidate the validation it reports
+
+subsequent Admin authoring edit
+-> adminValidated = false again
+```
+
+Use `setAdminMessage` (or an equivalent bounded status setter) for validation/metadata messages without mutating dirty/validation state.
+
+Add the exact local Admin regression required by Attempt 3. The regression MUST execute all of this, not merely edit Definition SemVer:
+
+```text
+setup SHOPIFY_ADMIN_GRAPHQL
+-> Continue authoring
+-> Tool persistence mutation count = 0
+
+Agent contract
+-> change Input JSON Schema to contain property "id"
+-> change Response template to a distinguishable value
+
+Request/Admin editor
+-> change GraphQL document to one declaring $id
+-> change operation name if needed
+-> choose an actual mapping for variable "id"
+-> change Result schema to a distinguishable current value
+
+click Validate
+-> validateShopifyAdminDefinitionAction called exactly once
+-> argument contains CURRENT:
+     GraphQL document
+     operationName
+     variable mapping
+     Input JSON Schema
+     Result schema
+     Response template
+-> "Valid Admin GraphQL query." visible
+-> Tool persistence mutation count still = 0
+
+Review -> Create tool
+-> createToolWithInitialDraft exactly once
+-> submitted proposedDefinition contains the SAME CURRENT values above
+-> legacy createTool = 0
+-> legacy createToolDraft = 0
+```
+
+Mock `validateShopifyAdminDefinitionAction` with an explicit successful bounded result in this regression. Do not let an unconfigured mock make the test pass without exercising the validation result path.
+
+##### A4-R4 — complete the executable External/persisted/abandonment/invalid-JSON proofs
+
+Update at minimum:
+
+```text
+tests/tool-authoring-screen.test.tsx
+tests/external-tools-ui.test.tsx
+tests/studio-workspace.test.tsx
+```
+
+Attempt 4's test counts are green, but several mandatory assertions from A3-R1/A3-R4 are still absent.
+
+Add an exact EXTERNAL_HTTP section-isolation regression:
+
+```text
+Request active
+-> External GET path present
+-> Response shape JSON absent
+-> Preview request absent
+
+Response active
+-> Response shape JSON present
+-> External GET path absent
+-> Preview request absent
+
+Test active
+-> Preview request present
+-> External GET path absent
+-> Response shape JSON absent
+```
+
+Add an exact persisted EXTERNAL_HTTP regression:
+
+```text
+persisted DRAFT + SUPER_ADMIN
+-> exactly five tabs in order
+-> only active panel controls mounted
+-> edit Request or Agent contract
+-> dirty = true
+-> Review -> Save draft exactly once
+-> saved candidate becomes clean
+-> Validate current saved candidate
+-> exact authoritative success visible
+-> nonblank publication reason
+-> Publish validated revision enabled
+-> publish result LIVE_TEST_REQUIRED
+-> exact LIVE_TEST_REQUIRED code/message visible
+-> no INTERNAL_ERROR
+-> no UNCONFIRMED
+```
+
+Retain the existing stale-CAS retained-edit regression.
+
+Strengthen the local EXTERNAL_HTTP Review regression:
+
+```text
+Request edit with distinguishable HTTP path
+Response edit with distinguishable resultPath/result schema
+Agent contract edit with distinguishable Description/Input JSON/Response template
+Test preview through the real preview-action mock
+switch tabs away/back
+-> exact edits retained
+
+Review
+-> current Request AND Response AND Agent edits are visibly summarized
+-> Tool persistence = 0
+
+Create
+-> one atomic call containing those exact edits
+```
+
+The Review component must therefore summarize enough of the current candidate to prove it is not showing only execution kind. At minimum for EXTERNAL_HTTP show:
+
+```text
+connection revision
+request mode
+HTTP path (when declarative)
+response mode
+result path
+definition version / description
+Input JSON Schema
+Response template
+result schema
+```
+
+Add the exact dirty-abandonment regression:
+
+```text
+Continue authoring
+-> make a local edit
+-> click Back
+-> "Discard unsaved changes?" dialog visible
+-> click "Discard unsaved changes"
+-> navigate to /tools
+-> createToolWithInitialDraft = 0
+-> createTool = 0
+-> createToolDraft = 0
+```
+
+Strengthen invalid JSON retention to prove unmount/remount:
+
+```text
+Agent contract -> Input JSON Schema = "{"
+-> switch to Request
+-> switch back to Agent contract
+-> textarea value is still exactly "{"
+
+Response -> Response shape JSON = "{"
+-> switch to Test
+-> switch back to Response
+-> textarea value is still exactly "{"
+
+Review/Create
+-> bounded actionable error visible
+-> Create disabled
+-> zero Tool persistence
+```
+
+##### A4-R5 — keep persistence and lower-layer boundaries unchanged
+
+MUST preserve without redesign:
+
+```text
+COMMERCE-036 createToolWithInitialDraft lifecycle semantics
+COMMERCE-037 narrow PostgreSQL persistence
+COMMERCE-038 named Studio mutation and exact audit reconciliation
+COMMERCE-021 DRAFT typing / stale-validation / Save-CAS / preview / LIVE_TEST_REQUIRED behavior
+COMMERCE-022 Admin compiler / pinned metadata / mapping-validity behavior
+later-DRAFT creation for existing Tools
+```
+
+MUST NOT add:
+
+```text
+Phase 2 tab gating
+Next/Previous wizard sequencing
+provider live execution
+database/schema changes
+new cross-repository contracts
+browser localStorage/sessionStorage persistence
+system-test work
+```
+
+Do not move canonical authoring state into the new tab components merely because the JSX is extracted.
+
+##### A4-R6 — deterministic Attempt 5 validation
+
+Run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+npm run test:arch021-tool-authoring-common
+
+npm exec vitest run \
+  tests/tool-authoring-screen.test.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/studio-workspace.test.tsx \
+  tests/studio-integration.test.ts
+
+npm exec eslint \
+  src/studio/tools/tool-library.tsx \
+  src/studio/tools/tool-authoring-screen.tsx \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx \
+  src/studio/tools/shopify-admin-editor.tsx \
+  src/studio/tools/authoring/tool-authoring-tabs.tsx \
+  src/studio/tools/authoring/agent-contract-tab.tsx \
+  src/studio/tools/authoring/review-tab.tsx \
+  src/studio/external-http/editor.tsx \
+  src/studio/external-http/request-tab.tsx \
+  src/studio/external-http/response-tab.tsx \
+  src/studio/external-http/test-tab.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/studio-workspace.test.tsx
+
+npm run typecheck
+git diff --check
+```
+
+All focused tests MUST pass with zero skips. Repository typecheck may retain only established diagnostics outside files changed by Attempt 5.
+
+Run these source audits exactly:
+
+```bash
+! rg -n 'createTool\(|createToolDraft\(' \
+  src/studio/tools/tool-library.tsx \
+  src/studio/tools/tool-authoring-screen.tsx \
+  src/studio/tools/new-tool-editor.tsx
+
+rg -n 'Continue authoring' src/studio/tools
+
+rg -n 'External tool authoring steps' \
+  src/studio/tools/authoring/tool-authoring-tabs.tsx
+
+rg -n 'tool-editor-json-textarea' \
+  src/studio/tools/authoring/agent-contract-tab.tsx \
+  src/studio/external-http/response-tab.tsx
+
+! rg -n '<nav className="tool-editor-tabs"' \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx
+```
+
+##### A4-R7 — Attempt 5 handoff state
+
+Reclaim the SAME task. The next authorized claim increments:
+
+```yaml
+attempt: 5
+```
+
+Reconcile every implementer-owned:
+
+```text
+Work Item
+Acceptance Criterion
+Validation checkbox
+Completion Report field
+```
+
+to the final Attempt 5 evidence.
+
+Completion Report status must be exactly:
+
+```text
+Ready for Review
+```
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 5
+executor: null
+claimed_at: null
+```
+
+Record:
+
+```text
+fresh launcher-prepared parent worktree
+fresh launcher-prepared implementation worktree
+parent branch synchronization
+implementation branch synchronization
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit supplied in handoff
+push parity
+clean implementation worktree
+clean parent worktree
+```
+
+If the parent worktree contains unrelated uncommitted changes, reconcile that before handoff. Do not return to review with an active claim or a dirty task worktree.
+
+Then return control to `moda_architect` and STOP. Do not begin system-test work or Phase 2 gating.
+
+#### Historical Attempt 3 review
 
 #### Attempt 3 formal architecture review — 2026-09-26
 
