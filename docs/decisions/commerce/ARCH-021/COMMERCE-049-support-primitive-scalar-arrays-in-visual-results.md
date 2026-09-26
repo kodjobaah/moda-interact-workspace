@@ -9,14 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 64
-executor: copilot
-claimed_at: 2026-09-26T22:22:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-048
-enables: []
+enables:
+  - ARCH-021-COMMERCE-050
 created: 2026-09-26
 updated: 2026-09-26
 ---
@@ -944,19 +945,58 @@ Ready for Review
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-None
+Reviewed implementation `99330e4` and parent report `236cb8ae` against the complete C049 contract and the accepted C048 recursive Visual/result-schema architecture. Accepted.
+
+The implementation is correctly bounded to one new primitive-array Visual leaf:
+
+- persisted `SCALAR_LIST` owns only source path, bounded limit and optional omit-if-missing; item result type is not duplicated into processing;
+- C048's single derivation/reconstruction path now derives and reconstructs string/integer/number/boolean array schemas through Commerce-owned `CommerceResultSchemaSchema`;
+- the production recursive Visual processor executes scalar arrays in source order, shares the existing deadline/cancellation/work budget, does not mutate source arrays, and leaves exact authored type enforcement to final Commerce result-schema validation;
+- Response-only validation and publication reuse the canonical C048 Visual/result helpers rather than introducing parallel scalar-list compatibility code;
+- Studio distinguishes `List of objects` from `List of values`, exposes only path/item-type/limit/omit controls for `SCALAR_LIST`, preserves per-kind browser-local drafts and invalid raw edits, and stales prior validation on invalid scalar-list edits;
+- the historical duplicate Studio sample projector was removed after repository search established that the active synthetic path already delegates to the production processor;
+- Shared remains pinned at 0.14.2, and no Prisma/schema migration, live provider authoring I/O or Phase 2 navigation gating was introduced.
+
+Manual review found a separate Response-validation presentation defect: when the current Visual authoring tree is locally invalid (for example a Scalar field remains at `Choose type`) and the user presses **Validate response**, `response-tab.tsx` sends `null` for the non-canonical `responseProcessing` / `resultSchema` placeholders. The server then returns raw schema diagnostics such as `expected object, received null` and `Invalid input`. This does not invalidate the C049 scalar-array implementation, because the current local authoring error is correctly retained and C049's scalar-list functionality is complete, but the default validation UI does not clearly identify the affected field or corrective action. That cross-Visual diagnostic-presentation issue is materialised as the small follow-up `ARCH-021-COMMERCE-050`.
 
 ### Reviewed Files
-None
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-authoring/visual-result-contract.ts`
+- `src/commerce/external-response/index.ts`
+- `src/commerce/tool-authoring/external-validation.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `src/studio/external-http/visual-tree-editor.tsx`
+- `src/studio/external-http/response-tab.tsx`
+- focused C049 contract/derivation/runtime/validation/publication/UI tests
+- C049 Completion Report
 
 ### Validation Reviewed
-None
+Accepted submitted evidence:
+
+```text
+Commerce Tool contract                     17 passed
+External authoring validation/actions       50 passed
+External UI                                 35 passed
+External publication                        14 passed
+Response processing                         12 passed
+Visual result contract                      12 passed
+External preview                            19 passed
+Code response processor                      6 passed
+Focused total                              165 passed
+lint                                         0 errors / 6 unrelated warnings
+git diff --check                            passed
+C049-owned TypeScript diagnostics            none reported
+repository typecheck baseline              251 diagnostics / 22 unrelated files
+Shared/result-schema ownership audits        passed
+```
+
+The supplied review archive does not include installed dependencies, so dependency-backed commands were not falsely claimed as independently rerun by the architect. Source/test inspection confirms the C049 implementation seams and focused regressions described above.
 
 ### Architecture Conformance
-Pending
+Conforms. C049 adds one Commerce-local `SCALAR_LIST` leaf through the accepted C048 processing/schema/runtime/validation/publication seams without changing object-row `LIST`, Shared contracts, persistence infrastructure or provider-authoring authority.
 
 ### Follow-up
-None
+`ARCH-021-COMMERCE-050` is promoted to `ready` to make Response validation diagnostics field-specific and corrective instead of exposing raw schema/Zod diagnostics when browser-local Response authoring is invalid.

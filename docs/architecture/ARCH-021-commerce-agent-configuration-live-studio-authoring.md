@@ -11,7 +11,7 @@ updated: 2026-09-26
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 through COMMERCE-048 architect-accepted Complete with primitive-scalar-array follow-up COMMERCE-049 Ready behind it. Neither workstream introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 through COMMERCE-049 architect-accepted Complete with actionable-validation-diagnostics follow-up COMMERCE-050 Ready behind it. Neither workstream introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -870,10 +870,11 @@ Response follow-up tasks:
 | ARCH-021-COMMERCE-044 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-023 |
 | ARCH-021-COMMERCE-045 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
 | ARCH-021-COMMERCE-048 | moda_commerce | Complete | ARCH-021-COMMERCE-045 |
-| ARCH-021-COMMERCE-049 | moda_commerce | Ready | ARCH-021-COMMERCE-048 |
+| ARCH-021-COMMERCE-049 | moda_commerce | Complete | ARCH-021-COMMERCE-048 |
+| ARCH-021-COMMERCE-050 | moda_commerce | Ready | ARCH-021-COMMERCE-049 |
 
 ```text
-COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048 -> COMMERCE-049
+COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048 -> COMMERCE-049 -> COMMERCE-050
 ```
 
 The Request and Response follow-up chains are intentionally independent and may execute in parallel. Test-tab review will separately decide real provider execution and sample-derived Direct/JavaScript result-schema generation.
@@ -895,7 +896,7 @@ COMMERCE-048 does not add live provider I/O, database/Prisma work, Shared public
 
 #### Primitive scalar-array Visual follow-up
 
-C048 intentionally defines `LIST` as a list of projected objects. Manual review confirmed that a common Commerce-local result such as `{tags:["red","blue"]}` therefore still requires JavaScript even though `CommerceResultSchemaSchema` already supports arrays of scalar items. COMMERCE-049 is the narrow follow-up:
+C048 intentionally defines `LIST` as a list of projected objects. COMMERCE-049 is now architect-accepted Complete and adds the narrow primitive-array extension:
 
 1. add one explicit persisted `SCALAR_LIST` Visual projection leaf; do not overload object-row `LIST`;
 2. keep item result type in the derived Commerce result schema rather than persisted processing;
@@ -905,6 +906,10 @@ C048 intentionally defines `LIST` as a list of projected objects. Manual review 
 6. keep Shared/Prisma unchanged and introduce no live provider I/O or Phase 2 gating.
 
 Root scalar-list shape, primitive-list filters/sort, arrays-of-arrays and null items remain outside COMMERCE-049.
+
+#### Actionable Response-validation diagnostics follow-up
+
+Manual validation after C049 showed that the local/canonical split is correct but the validation presentation is not: when a Visual draft is locally invalid, `Validate response` can send null canonical placeholders and expose raw schema diagnostics such as `expected object, received null` / `Invalid input`. COMMERCE-050 keeps the authoritative server boundary unchanged for canonical candidates while diagnosing non-canonical local Visual state locally and presenting field/control-specific corrective messages. Internal paths/codes remain deterministic secondary details; ordinary users see what is wrong and how to fix it. No processing, schema, persistence, provider-I/O or navigation semantics change.
 
 Phase 3 exit criteria:
 
@@ -1148,6 +1153,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-26 — COMMERCE-049 Attempt 1 accepted; actionable Response diagnostics follow-up defined
+
+- Accepted implementation `99330e4` and parent handoff `236cb8ae`: explicit Commerce-local `SCALAR_LIST` processing now supports bounded primitive arrays without changing object-row `LIST` semantics.
+- Accepted submitted evidence: 165 focused passing tests across Tool contract, derivation/reconstruction, runtime, Response validation/actions, UI, publication, preview and code-processor suites; lint has zero errors, diff/source audits pass and no C049-owned type diagnostic was reported.
+- Manual review confirmed a separate diagnostic-presentation defect outside the scalar-array capability itself: locally invalid Visual authoring can currently cause Validate response to send null canonical placeholders and surface raw parser/Zod messages that do not identify the field or correction.
+- Materialised COMMERCE-050 as Ready: invalid local Visual trees are diagnosed locally, canonical candidates still use authoritative server validation, and default UI diagnostics become field/control-specific with corrective text while path/code remain secondary technical detail.
+- Marked COMMERCE-049 Complete and promoted COMMERCE-050 to Ready.
 
 ### 2026-09-26 — COMMERCE-045 Attempt 2 accepted
 
