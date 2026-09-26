@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
 executor: copilot
 claimed_at: 2026-09-26T18:26:35Z
@@ -402,9 +402,13 @@ Implementation complete; submitted for Architect Review.
 - Made Visual processing controls primary, added projected result types, derived the deterministic result contract, and kept invalid Visual authoring state local until schema derivation succeeds.
 - Added Response-only validation, field diagnostics, stale-result invalidation, and raw invalid-value retention; added regression coverage for incomplete Visual types and malformed filter values.
 - Preserved free tab navigation and the no-provider-I/O boundary.
+- A1-R1: Response validation now builds its payload from the selected mode: Direct sends `{ kind: "DIRECT" }`, JavaScript sends the active transform, and Visual sends the active shape draft with its derived schema. Added switch-without-edit regressions for Direct and JavaScript.
+- A1-R2: Invalidate validation before Visual edits and rejected local changes, including incomplete types, duplicate names, shape and filter edits. Added a success-then-clear-type regression.
+- A1-R3: Render processing JSON and the derived contract from current Visual shape/type state; suppress the derived contract while the active projection is incomplete. Added live-disclosure and stale-schema regressions.
+- A1-R4: Maintain separate browser-local OBJECT and LIST projection/type drafts; only promote the selected valid shape. Added shape-switch restoration and active-shape validation coverage.
 
 ### Validation Results
-- `npm run test:arch020-external-tools-ui`: passed, 26 tests.
+- `npm run test:arch020-external-tools-ui`: passed, 30 tests, including all four A1 correction regressions.
 - `npx vitest run tests/tool-authoring-screen.test.tsx`: passed, 12 tests.
 - `npm run test:arch021-external-tool-authoring-validation`: passed, 47 tests. Packaged the repository QuickJS runtime first with `npm run code-runtime:package`.
 - `npm run test:arch021-tool-authoring-common`: passed, 85 tests.
@@ -413,6 +417,7 @@ Implementation complete; submitted for Architect Review.
 - Targeted editor diagnostics: no errors in changed TS/TSX/CSS files.
 - `npx tsc --noEmit --pretty false`: repository-wide check remains blocked by pre-existing errors in unrelated API imports, generated Prisma client/types and tests; final output had no diagnostics in C045-modified files.
 - `git diff --check`: passed.
+- Attempt 2 launcher evidence: prepared and claimed as `copilot` on `task/ARCH-021-COMMERCE-045` (claim commit `00c6bd13a8f64750a189dd1cf5235bb7e10775d7`); parent worktree synchronized/current at `185bd35a98acd9d74dd5159959e88b12951eab57`; implementation worktree incorporated current `origin/main`, with recursive submodule initialization verified (`database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`).
 
 ### Deviations
 No scope deviations. Response validation remains configuration-only; provider execution, schema inference from samples, database changes and Phase 2 gating were not added.
@@ -421,7 +426,7 @@ No scope deviations. Response validation remains configuration-only; provider ex
 The existing `productionCodePanel` feature flag remains the enablement boundary for persisted Draft editor composition. The new Tool flow composes its stable CodeMirror panel directly.
 
 ### Unresolved Issues
-The repository-wide TypeScript check has unrelated existing baseline failures; targeted diagnostics and changed-file lint are clean.
+The repository-wide TypeScript check has unrelated existing baseline failures; targeted diagnostics and changed-file lint are clean. No A1 correction remains unresolved.
 
 ### Architectural Concerns
 None identified. Architect Review remains pending and was not edited.
