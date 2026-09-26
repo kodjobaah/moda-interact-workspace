@@ -121,14 +121,14 @@ Phase 3 is contract/authoring only. It does not make a real Shopify or external 
 | [COMMERCE-018](COMMERCE-018-implement-shopify-admin-graphql-compiler.md) | Implement pinned Shopify Admin GraphQL 2026-07 compiler + toolkit oracle | Complete | COMMERCE-016, ARCH-020-COMMERCE-011 |
 | [COMMERCE-019](COMMERCE-019-implement-phase3-tool-authoring-validation.md) | Establish common validation/auth/error contract and `LIVE_TEST_REQUIRED` publication gate | Complete | COMMERCE-016, COMMERCE-027, ARCH-020-COMMERCE-030 |
 | [COMMERCE-020](COMMERCE-020-extract-tool-authoring-domain.md) | Extract Tool authoring onto named Server Actions + explicit reconciliation | Complete | COMMERCE-016, 005, 006, 027, 029 |
-| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Review | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
+| [COMMERCE-021](COMMERCE-021-complete-external-http-authoring-ui.md) | Complete External HTTP request/response authoring UI | Complete | COMMERCE-019, 020, 023, COMMERCE-005, 006 |
 | [COMMERCE-022](COMMERCE-022-build-shopify-admin-tool-authoring-ui.md) | Build Shopify Admin GraphQL authoring UI | Complete | COMMERCE-019, 020, 024 |
 | [COMMERCE-023](COMMERCE-023-implement-external-http-authoring-validation.md) | Implement External HTTP validation and safe request preview | Complete | COMMERCE-016, 017, 019, ARCH-020-COMMERCE-030 |
 | [COMMERCE-024](COMMERCE-024-implement-shopify-admin-authoring-validation.md) | Implement Shopify Admin GraphQL authoring validation | Complete | COMMERCE-016, 018, 019 |
 | [COMMERCE-036](COMMERCE-036-create-tool-with-initial-draft-atomically.md) | Create Tool + revision-1 DRAFT as one lifecycle operation | Complete | COMMERCE-016, COMMERCE-020 |
 | [COMMERCE-037](COMMERCE-037-persist-initial-tool-with-narrow-transaction.md) | Persist initial Tool creation with a narrow PostgreSQL transaction | Complete | COMMERCE-036 |
 | [COMMERCE-038](COMMERCE-038-expose-atomic-tool-creation-boundary.md) | Expose atomic initial Tool creation through the Studio boundary | Complete | COMMERCE-037 |
-| [COMMERCE-039](COMMERCE-039-keep-new-tool-authoring-local-until-create.md) | Keep new Tool authoring local until final creation | Pending | COMMERCE-021, COMMERCE-022, COMMERCE-038 |
+| [COMMERCE-039](COMMERCE-039-keep-new-tool-authoring-local-until-create.md) | Keep new Tool authoring local until final creation | Ready | COMMERCE-021, COMMERCE-022, COMMERCE-038 |
 
 Phase 3 is Commerce-owned. Shared remains unchanged at exact `0.14.2`; no Phase 3 Shared publication is required.
 
@@ -138,12 +138,11 @@ COMMERCE-016 is architect-accepted Complete and the simplification implementatio
 Current Phase 3 coordination frontier:
 
 ```text
-COMMERCE-021   review        External HTTP request/response authoring UI
-COMMERCE-039   pending       Keep new Tool authoring local until final creation
+COMMERCE-039   ready         Keep new Tool authoring local until final creation
 ```
 
-COMMERCE-019, COMMERCE-020, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037 and COMMERCE-038 are architect-accepted Complete.
-COMMERCE-039 remains Pending because COMMERCE-021 is still in Review; COMMERCE-021 is now its sole unsatisfied dependency.
+COMMERCE-019, COMMERCE-020, COMMERCE-021, COMMERCE-022, COMMERCE-023, COMMERCE-024, COMMERCE-036, COMMERCE-037 and COMMERCE-038 are architect-accepted Complete.
+COMMERCE-039 is Ready: all three dependencies (COMMERCE-021, COMMERCE-022 and COMMERCE-038) are Complete.
 ```
 
 
@@ -170,6 +169,10 @@ The checkpoint reduces Phase-2 configuration/reconciliation complexity before fu
 Current checkpoint implementation frontier: none.
 
 COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035 are architect-accepted Complete. All terminal checkpoint implementation dependencies are Complete, so `ARCH-021-SYSTEM-TEST-001` remains Ready. The developer is intentionally holding terminal system tests until the implementation phases are finished and is using manual validation meanwhile; this Ready system-test task is not an implementation dependency and does not pause Phase 3.
+
+### COMMERCE-021 Attempt 6 accepted — 2026-09-26
+
+COMMERCE-021 is **Complete / Accepted, Attempt 6**. The final regression now proves that an already-visible authoritative validation success is invalidated by both Description and execution-path edits, remains absent after Save, and returns only after re-validating the current saved candidate. The External UI packet passed 16/16 and the focused four-file packet 68/68; targeted ESLint and diff checks passed, with 15 unrelated repository typecheck diagnostics and zero task-owned diagnostics. With COMMERCE-022 and COMMERCE-038 already Complete, COMMERCE-039 is promoted to **Ready**.
 
 ### COMMERCE-038 Attempt 2 accepted — 2026-09-26
 
