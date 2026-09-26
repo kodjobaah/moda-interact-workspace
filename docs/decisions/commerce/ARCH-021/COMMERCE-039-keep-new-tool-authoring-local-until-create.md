@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
-executor: copilot
-claimed_at: 2026-09-26T09:16:19Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-021-COMMERCE-021
@@ -534,8 +534,12 @@ Do not copy the old pre-COMMERCE-021 component wholesale. Restore only its prese
 - [x] Restore the five-tab External HTTP authoring shell for both local-new and persisted-DRAFT modes.
 - [x] Restore the structured Review-card presentation and JSON-editor sizing/classes without reverting COMMERCE-021 behavior.
 - [x] Keep the current COMMERCE-021 request preview in the Test tab; do not resurrect removed provider/sample execution semantics.
-- [x] Extract the six Attempt 5 tab component boundaries and route both local-new and persisted External authoring through the shared tab navigation.
-- [x] Reconcile all Work Items, Acceptance Criteria and Validation checkboxes to the final Attempt 5 evidence.
+- [x] Extract the six Attempt 6 tab component boundaries and route both local-new and persisted External authoring through shared tab navigation and shared Agent/Review components.
+- [x] Make Request, Response and Test files own their actual JSX with typed inputs; keep the External editor as the shared controller.
+- [x] Prove the exact current Admin candidate is validated and atomically created, and invalidate stale validation after valid or malformed authored edits.
+- [x] Prove malformed Agent and Response JSON survives actual tab unmount/remount and blocks Create with actionable Review feedback.
+- [x] Exercise dirty Back discard through navigation and prevent a second composer blocker after confirmation.
+- [x] Reconcile all Work Items, Acceptance Criteria and Validation checkboxes to final Attempt 6 evidence.
 
 ## Interfaces / Contracts
 
@@ -600,12 +604,19 @@ None in this task set. Phase 2 progression/gating may be defined separately only
 - [x] Review uses the accepted `tool-review-*` card/grid/action structure rather than a flattened facts list.
 - [x] The Test tab contains the current no-provider request-construction preview; no removed live/sample-provider behavior is reintroduced.
 - [x] COMMERCE-021 Attempt 6 behavioral regressions remain green after the presentation restoration.
+- [x] Request/Response/Test are actual JSX ownership boundaries; the controller dispatches to the typed components and does not render hidden audit markers.
+- [x] New and persisted editors share AgentContractTab and ReviewTab; no `void` import hacks or duplicate inline persisted presentation remain.
+- [x] Local Admin validation uses explicit successful action results, proves current document/mapping/input/result/template fields, invalidation, revalidation and exact atomic candidate payload.
+- [x] Dirty local Back -> discard navigates to `/tools` with zero Tool mutations; malformed Admin JSON immediately invalidates its previous validation status.
+- [x] Persisted SUPER_ADMIN regression proves the five-tab order, active-panel isolation, saved/validated state, nonblank reason gate and exact confirmed `LIVE_TEST_REQUIRED` outcome.
+- [x] Local External Review visibly presents the exact edited definition fields/schema before its one atomic Create.
+- [x] COMMERCE-021 stale-CAS retained-edit regression remains green in `tests/studio-workspace.test.tsx`.
 
 ## Validation
 
 - [x] `npm run test:arch020-external-tools-ui` (16 passed)
 - [x] `npm run test:arch021-tool-authoring-common` (85 passed)
-- [x] focused packet (`tool-authoring-screen`, `external-tools-ui`, `studio-workspace`, `studio-integration`) (4 files, 58 passed)
+- [x] focused packet (`tool-authoring-screen`, `external-tools-ui`, `studio-workspace`, `studio-integration`) (4 files, 60 passed, zero skips)
 - [x] focused Shopify Admin/persisted Tool UI regressions included in the focused packet.
 - [x] regression: changing fields/tabs/preview/validation before final Create invokes zero Tool persistence Server Actions
 - [x] regression: abandoning/discarding new Tool flow invokes zero Tool persistence Server Actions
@@ -622,6 +633,13 @@ None in this task set. Phase 2 progression/gating may be defined separately only
 - [x] regression: restored Agent contract textareas carry `tool-editor-json-textarea`; restored Review carries `tool-review-panel`, `tool-review-summary-grid` and `tool-review-card` structure
 - [x] source audit: no new-mode fake/persisted Tool or ToolRevision id is invented for component reuse
 - [x] source audit: no `createTool` / `createToolDraft` call returns to the new-Tool flow
+- [x] all required Attempt 6 source audits: real tab JSX labels/dispatch; no ReactNode wrappers; shared Agent/Review usage; no hidden marker, `void` hack or legacy create call; Continue authoring marker
+- [x] malformed Admin JSON invalidates the successful validation badge; Admin candidate validation remains non-mutating
+- [x] malformed local Agent Input JSON and Response result schema survive tab unmount/remount; Review surfaces errors, disables Create and makes zero persistence calls
+- [x] dirty local abandonment performs the actual discard dialog and navigates to `/tools` without Tool mutations
+- [x] persisted five-tab Save/Validate/Publish regression proves current validation and reason gating, confirmed `LIVE_TEST_REQUIRED`, and no `INTERNAL_ERROR`/`UNCONFIRMED`
+- [x] exact focused ESLint command passed
+- [x] full `npm run typecheck` completed; no diagnostics in Attempt 6 changed files, remaining diagnostics are in untouched integration/Prisma/test files
 - [x] `git diff --check`
 
 ## Stop Condition
@@ -641,42 +659,44 @@ Ready for Review
 
 ### Files Changed
 - `src/studio/external-http/editor.tsx`
-- `src/studio/tools/new-tool-editor.tsx`
-- `src/studio/tools/tool-editor.tsx`
-- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
-- `src/studio/tools/authoring/agent-contract-tab.tsx`
-- `src/studio/tools/authoring/review-tab.tsx`
 - `src/studio/external-http/request-tab.tsx`
 - `src/studio/external-http/response-tab.tsx`
 - `src/studio/external-http/test-tab.tsx`
+- `src/studio/tools/authoring/review-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
 - `tests/external-tools-ui.test.tsx`
 - `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
-- Restored the five-tab External HTTP presentation for local new Tools and persisted DRAFTs with active-panel-only rendering and correct tab semantics.
-- Preserved COMMERCE-021 request preview, response processing, JSON editors, Save/Validate/CAS, publication and LIVE_TEST_REQUIRED behavior.
-- Hoisted local External response-processing/result-schema text and bounded errors across unmounted tabs; invalid JSON remains visible and blocks final Create.
-- Made local Admin and External final creation use the current authored candidate, including current JSON text, execution edits and result schemas.
-- Added Attempt 5 regressions for exact External edits, invalid JSON retention, tab isolation, Admin validation status, abandonment, and persisted editor behavior.
+- Request, Response and Test now own their actual typed JSX; `ExternalHttpEditor` dispatches to these components as the shared state/validation controller.
+- New and persisted External authoring share the five-tab navigation, `AgentContractTab`, and `ReviewTab`; persisted drafts retain their existing save/CAS/validation/publication behavior.
+- Local External Review shows the current request, response and Agent contract values; raw JSON buffers survive tab unmounts, invalid JSON remains visible, and final Create stays disabled until corrected.
+- Admin regression explicitly validates the current document, operation, input mapping, Input JSON Schema, result schema and response template, proves validation is non-mutating, invalidates stale status after edits (including malformed JSON), revalidates and atomically creates the same candidate once.
+- Dirty Back now completes its confirmed local discard and navigates without reopening the composer-wide blocker; abandonment performs zero Tool mutations.
+- Persisted SUPER_ADMIN regression proves tab order/isolation, Save/Validate state, nonblank publication-reason gating, exact `LIVE_TEST_REQUIRED`, and absence of `INTERNAL_ERROR`/`UNCONFIRMED`.
+- Preserved no-provider preview routing, response-mode discard semantics, DIRECT/VISUAL/JAVASCRIPT processing, CodeEditor behavior, stale-CAS retained edits, and the existing exact initial-create/reconciliation flow.
 
 ### Validation Results
-- `npm run test:arch020-external-tools-ui`: 16 tests passed.
-- `npm run test:arch021-tool-authoring-common`: 7 files, 85 tests passed.
-- Mandated focused packet: 4 files, 58 tests passed with zero skips.
-- Focused ESLint: passed; `git diff --check`: passed.
-- Source audits: no legacy new-mode `createTool`/`createToolDraft` calls; required Continue/tablist markers present.
-- `npm run typecheck`: retains established repository diagnostics outside COMMERCE-039-owned changed files; zero diagnostics reported in the changed Attempt 5 files.
-- Attempt 5 launcher: canonical workspace and dedicated parent/implementation worktrees resolved; dependencies passed; recursive submodule status ready; claim `77c8770` committed and pushed.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-039`; parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-039`. Implementation and parent report commits are prepared for the final review handoff.
+- `npm run test:arch020-external-tools-ui`: 16 passed.
+- `npm run test:arch021-tool-authoring-common`: 7 files, 85 passed.
+- Focused packet (`tool-authoring-screen`, `external-tools-ui`, `studio-workspace`, `studio-integration`): 4 files, 60 passed, zero skips.
+- Focused ESLint: passed; editor diagnostics: none; `git diff --check`: passed.
+- All required Attempt 6 source audits passed: actual tab ownership/labels and dispatch; shared Agent/Review use; no ReactNode wrappers, hidden marker hacks, `void` imports or legacy new-mode create calls; Continue authoring present.
+- `npm run typecheck` still exits with diagnostics in untouched Prisma/integration/test files; no diagnostics remain in Attempt 6 changed files.
+- Attempt 6 launcher supplied parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-039` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-039` on `task/ARCH-021-COMMERCE-039`. Parent claim commit `2e3ac78d637b38c14a7d97e6745618547c691f8c` and implementation baseline `c5141543d6f4883c348580764f1b7833c8b62361` were supplied by the launcher.
+- Recursive database submodule is materialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commit `9ba89bd` is pushed; implementation branch matches origin and its worktree is clean. The parent task-report commit is pushed separately; its final SHA is included in the handoff.
 
 ### Deviations
-- No Phase 2 gating, provider live execution, schema/database changes or system-test work was added. Full repository typecheck remains blocked by established diagnostics outside this task's files.
+- No Phase 2 gating, provider live execution, schema/database changes or system-test work was added. Full repository typecheck remains blocked by errors in untouched files outside this task's ownership.
 
 ### Assumptions
-- COMMERCE-038 atomic creation and exact-identity reconciliation contracts remain the authoritative server boundary. The launcher-provided implementation worktree is the only implementation checkout used for Attempt 5.
+- COMMERCE-038 atomic creation and exact-identity reconciliation contracts remain the authoritative server boundary. The launcher-provided Attempt 6 implementation worktree was the only implementation checkout used.
 
 ### Unresolved Issues
-None within the COMMERCE-039-owned implementation or validation packet.
+Full workspace typecheck remains blocked by unrelated diagnostics in untouched Prisma/integration/test files; the focused task-owned lint, tests, editor diagnostics and source audits pass.
 
 ### Architectural Concerns
 None.
