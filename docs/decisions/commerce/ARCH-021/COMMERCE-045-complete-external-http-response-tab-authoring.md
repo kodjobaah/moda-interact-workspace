@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 62
-executor: copilot
-claimed_at: 2026-09-26T17:08:27Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-043
@@ -429,19 +429,105 @@ None identified. Architect Review remains pending and was not edited.
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1 (2026-09-26)
 
 ### Review Notes
-None
+Reviewer: `moda_architect`. Reviewed implementation `9bfd342` and completion-report handoff `ce216523`.
+
+Attempt 1 closes most of the intended Response-tab composition: Source path is de-duplicated, the new-Tool and persisted-DRAFT JavaScript editors use CodeMirror, Visual result types and derived contracts are exposed, invalid Direct/JavaScript schema JSON and malformed Visual `IN` values remain local, and COMMERCE-044 Response validation is wired without provider execution. Preserve those changes. Four bounded state/validation defects remain.
+
+#### A1-R1 — Validate the exact active Response mode after a mode switch
+
+File: `moda-interact-commerce/src/studio/external-http/response-tab.tsx` plus focused UI regression coverage.
+
+`advancedTexts` is initialised for all three modes from the initially active `advancedText`. `resetMode()` then restores `advancedTexts[mode]`, while `validateResponse()` sends `advancedText` as `responseProcessing` for Direct and JavaScript. Consequently, a persisted Visual draft switched to Direct can submit the old Visual processing JSON to `validateExternalResponseAction`; switching Visual -> JavaScript and validating before editing the source can do the same. The UI and canonical `execution.responseProcessing` say one mode while the authoritative Response validator receives another.
+
+Correction contract:
+
+1. Build the Response-validation DTO from the exact currently active Response candidate. Direct validation must submit `{ kind: "DIRECT" }`; JavaScript validation must submit the current `{ kind: "JAVASCRIPT", runtimeVersion, source }`; Visual must submit the current Visual processing candidate.
+2. Do not rely on an `advancedText` value seeded from another mode. If per-mode raw processing text remains, initialise/reconcile it from that mode's own draft deterministically.
+3. Preserve raw invalid Direct/JavaScript `resultSchema`, media-type and Source-path text for validation exactly as required by R4/R5.
+4. Add regressions that start from the persisted Visual fixture, switch to Direct and validate without another edit, then switch to JavaScript and validate without another source edit. Assert the Server Action receives the selected mode, not the previous Visual JSON.
+
+#### A1-R2 — Every relevant Response edit must invalidate a previous success, including locally invalid Visual edits
+
+File: `moda-interact-commerce/src/studio/external-http/response-tab.tsx` plus focused UI regression coverage.
+
+The normal `update()` path invalidates Response validation, but locally invalid Visual edits can return before reaching `update()`. In particular, clearing a projected field Type causes `setVisual()` to report `Choose a result type...` and return without calling `invalidateResponseValidation()`. A previously successful `Response configuration is valid` status therefore remains visible while the current local Response state is invalid. Duplicate output-name rejection has the same shape. This violates R5's requirement that successful validation becomes stale immediately on every relevant Response edit.
+
+Correction contract:
+
+1. Invalidate Response validation at the beginning of every relevant authoring edit, before parsing/derivation can fail.
+2. At minimum cover projected field Type/name/path, add/remove projected field, Visual shape/filter/sort/limit, Response format/media types, Source path, JavaScript source and explicit Direct/JavaScript result schema.
+3. Do not erase the invalid raw value merely to obtain staleness.
+4. Add a regression: obtain a successful Visual Response validation, clear one projected field Type, assert the local Type remains blank with its actionable error and the validation status immediately returns to `Not validated` (or equivalent stale state) without another Server Action call.
+
+#### A1-R3 — Visual read-only disclosures must describe the current local Visual authoring state
+
+File: `moda-interact-commerce/src/studio/external-http/response-tab.tsx` plus focused UI regression coverage.
+
+`setVisual()` updates `visualDraft` / canonical execution but does not reconcile `advancedTexts` / `onAdvancedTextChange`, while `View Visual processing JSON` renders the `advancedText` prop. After editing projection/filter/sort/limit controls, that disclosure can therefore continue to show the initial processing JSON. Likewise, when a Visual Type is deliberately incomplete and the canonical `resultSchema` is correctly left unchanged, the tab still renders `execution.resultSchema` under `Derived result contract` as though it represented the current incomplete controls.
+
+Correction contract:
+
+1. Make `View Visual processing JSON` a read-only representation of the current Visual local draft, not an older canonical/text buffer.
+2. When all Visual types are valid, the displayed derived result-contract JSON must correspond to the current controls and the canonical derived schema.
+3. When the current Visual authoring state cannot derive a result contract (for example a blank Type), do not present the previous schema as the current derived contract; show the existing local error and mark/suppress the derived contract until derivation succeeds.
+4. Add regressions proving a projection/filter change updates the read-only processing JSON and an incomplete Type cannot display a stale prior schema as the current derived contract.
+
+#### A1-R4 — OBJECT and LIST Visual shapes must not destructively reuse one shape draft
+
+File: `moda-interact-commerce/src/studio/external-http/response-tab.tsx` plus focused UI regression coverage.
+
+Manual validation after the Attempt 1 handoff exposed a fourth state defect. The Shape selector currently converts the active Visual draft with:
+
+```ts
+setVisual(event.target.value === "LIST"
+  ? { kind: "LIST", fields, filters: [], sort: null, limit: 20 }
+  : { kind: "OBJECT", fields })
+```
+
+so switching OBJECT -> LIST reuses the OBJECT projection fields as the LIST row projection, and switching back reuses the mutated LIST fields as the OBJECT projection. These are different result shapes and the user has not asked to reinterpret one shape's authoring as the other. The switch is therefore destructive/ambiguous in the same way C045 already avoids for Direct/Visual/JavaScript mode drafts.
+
+Correction contract:
+
+1. Maintain independent browser-local Visual shape drafts for `OBJECT` and `LIST` during the editor session, including their projected fields and result-type authoring. LIST-only filters/sort/limit belong only to the LIST draft.
+2. Switching OBJECT -> LIST must restore the previous LIST draft when one exists; otherwise initialise a deterministic bounded LIST default rather than copying the OBJECT projection implicitly.
+3. Switching LIST -> OBJECT must restore the previous OBJECT draft when one exists; LIST-only state must not leak into OBJECT.
+4. Only the currently selected Visual shape enters the canonical local `execution.responseProcessing` / derived `resultSchema`. The inactive shape draft remains browser-local convenience state and must not be persisted.
+5. Any shape switch is a relevant Response edit and must invalidate prior Response-validation success immediately.
+6. Add regressions proving: author OBJECT fields/types -> switch to LIST -> LIST starts/restores its own draft; edit LIST -> switch back -> original OBJECT fields/types are restored; switch again -> LIST edits are restored; validation and read-only derived/disclosure output always describe the selected shape only.
+
+Do not expand this attempt into Test-tab execution, sample schema inference, Request-tab corrections, Agent/Review redesign, database work or Phase 2 gating.
 
 ### Reviewed Files
-None
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/src/studio/external-http/editor.tsx`
+- `moda-interact-commerce/src/studio/tools/new-tool-editor.tsx`
+- `moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+- `moda-interact-commerce/app/styles.css`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
+- COMMERCE-043/044 accepted contracts and this task's R1-R12 / Acceptance Criteria
 
 ### Validation Reviewed
-None
+Submitted evidence is retained as supporting evidence:
+
+```text
+External HTTP UI:                    26/26 passed
+New Tool authoring:                  12/12 passed
+External validation / Server Action: 47/47 passed
+Common Tool authoring:               85/85 passed
+CodeMirror:                          14/14 passed
+Targeted ESLint:                     passed
+Changed-file diagnostics:            clean
+git diff --check:                    passed
+```
+
+The supplied review archive does not contain installed dependencies, so dependency-backed commands were not falsely rerun in the architect container. Source inspection plus developer manual validation found the four functional gaps above, which the submitted tests do not currently cover.
 
 ### Architecture Conformance
-Pending
+Changes Requested. The overall composition remains aligned with ARCH-021, but R5 is not yet satisfied for exact active-mode validation/stale-success invalidation, R6/R7 are not yet satisfied by the stale Visual read-only disclosures, and Visual OBJECT/LIST switching still destructively reinterprets one local shape draft as the other.
 
 ### Follow-up
-None
+Return to `ready` with Attempt 1 retained and claim cleared. The next executor claim becomes Attempt 2. Preserve the completed C045 work and correct only A1-R1 through A1-R4 before resubmitting for Architect Review.
