@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-26T01:06:47Z
+executor: null
+claimed_at: null
 attempt: 6
 depends_on:
   - ARCH-021-COMMERCE-019
@@ -242,12 +242,13 @@ The model/CommerceAgent supplies runtime arguments; this UI only authors `inputS
 ## Completion Report
 
 ### Status
-Attempt 5 implementation complete; returned to architect review.
+Ready for Review
 ### Files Changed
 - `src/studio/tools/tool-editor.tsx`
 - `src/studio/external-http/editor.tsx`
 - `src/studio/tools/shopify-admin-editor.tsx`
 - `tests/external-tools-ui.test.tsx`
+- `src/commerce/publication/lifecycle.ts`
 ### Work Completed
 - Replaced incomplete-DRAFT/full-definition casts with a draft-capable editor state and schema-based readback.
 - Narrowed child editor contracts to execution-owned data.
@@ -255,23 +256,26 @@ Attempt 5 implementation complete; returned to architect review.
 - Preserved validation state only when the saved definition exactly matches the submitted candidate.
 - Added production-reread incomplete-DRAFT DTO UI coverage.
 - Added explicit dirty -> Save -> Validate -> SUPER_ADMIN publish gating coverage, including `LIVE_TEST_REQUIRED`.
+- Added the exact Validate -> authored edit -> stale-success cleared -> Save -> still-cleared -> Validate regression, including an execution-path edit.
+- Corrected the initial-draft mutation parameter to use the existing `CommerceToolDraftDefinition` contract, removing the task-owned typecheck diagnostic.
 ### Validation Results
 - `npm run test:arch020-external-tools-ui`: 16/16 passed.
-- Focused four-file Vitest packet (`external-tools-ui`, `tool-authoring-screen`, `studio-workspace`, `studio-integration`): 67/67 passed.
+- Focused four-file Vitest packet (`external-tools-ui`, `tool-authoring-screen`, `studio-workspace`, `studio-integration`): 68/68 passed.
 - Targeted ESLint: passed with zero warnings.
 - `git diff --check`: passed.
 - Static `as ToolDefinition` invariant for the DRAFT editor path: passed.
-- `npm run typecheck`: repository baseline exited 2; no diagnostics referenced any COMMERCE-021 task-owned file.
+- `npm run typecheck`: repository baseline exited 2 with 15 pre-existing diagnostics across seven unrelated files; no diagnostic references a COMMERCE-021 task-owned file after the lifecycle type correction.
 - No Phase 4 live HTTP execution/testing was run.
 ### Deviations
-- The implementation branch had an existing upstream tracking mismatch; it was pushed explicitly with `git push origin HEAD`.
+- Attempt 6 launcher preparation claimed the task at `2026-09-26T01:06:47Z`, incremented from Attempt 5, committed and pushed claim `f1b83ceec0ed0fa7d4aecad8e1fe2429d2c77920`, and synchronized both worktrees against `origin/main`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`, head `4aadb00aae0b305b117da46f34d4250f8c17b7cd` during preparation.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`, synchronized implementation lineage `7a033f3` plus merge `ae41898`; recursive database submodule materialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Attempt 6 correction is test/source-only on top of the accepted Attempt 5 implementation; final branch SHAs are supplied by the handoff rather than recorded in this report.
 ### Assumptions
-- Attempt 5 launcher claim commit `cd4ae5512540510e6820554d88beba6225c70a63` is synchronized in both the parent worktree and implementation worktree.
-- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`, claim commit `cd4ae5512540510e6820554d88beba6225c70a63`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-021`, branch `task/ARCH-021-COMMERCE-021`, implementation commit `7a033f32c0ed76431b2a5f7db1e347ee278cbb81`, matching `origin/task/ARCH-021-COMMERCE-021`.
+- The Attempt 5 implementation lineage and accepted correction behavior remain preserved through the Attempt 6 synchronization merge.
 - Recursive database submodule evidence: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 ### Unresolved Issues
-Repository-wide typecheck still reports pre-existing diagnostics outside the task-owned files; these were not changed.
+Repository-wide typecheck still reports 15 pre-existing diagnostics outside the task-owned files; these were not changed.
 ### Architectural Concerns
 The implementation remains bounded to `moda-interact-commerce`; no cross-repository changes were required. Live external HTTP execution/testing remains out of scope per the task stop condition.
 
