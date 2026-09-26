@@ -9,16 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 59
-executor: copilot
-claimed_at: 2026-09-26T14:34:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-017
   - ARCH-021-COMMERCE-040
   - ARCH-021-COMMERCE-041
-enables: []
+enables:
+  - ARCH-021-COMMERCE-047
 created: 2026-09-26
 updated: 2026-09-26
 ---
@@ -749,7 +750,7 @@ actually enforced property of the new runtime.
 ## Completion Report
 
 ### Status
-Review
+Ready for Review
 
 ### Files Changed
 Implementation commit `b114716` changed:
@@ -803,19 +804,55 @@ None identified within this bounded runtime migration. No database, Shared contr
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-None
+
+Reviewed implementation `b114716` and parent report handoff `2c85f5a4` against the complete COMMERCE-046 contract.
+
+Accepted. The runtime adapter is now `quickjs-wasi@3.6.2` / QuickJS-NG behind the existing `quickjs-sync.v1` contract. The application, packaged smoke and runtime proof all use the packaged `build/code-runtime/worker.mjs` + adjacent `quickjs.wasm` architecture; the prior Emscripten loader/dynamic-import path is removed. Request and Response compile/run semantics, worker-thread supervision, four-worker admission control, cancellation/deadline behavior, 16 MiB guest heap, 512 KiB QuickJS stack, guest interrupt, output bounds and the production JavaScript executor gate are preserved.
+
+Shared runtime operational logging is correctly owned by `kernel.ts` through `@modainteract/moda-interact-shared/logging`. The worker emits only bounded parent-port diagnostics; no runtime `console.*`, guest source/input/body, credentials or absolute host paths are logged. Expected guest authoring failures remain bounded results rather than operational error logs.
+
+Manual validation through the real Next.js `validateExternalRequestAction` now reaches the QuickJS-NG compiler rather than failing with `RUNTIME_UNAVAILABLE`. The remaining generic `/request/source: Request processor did not compile` message is diagnostic-fidelity work and is explicitly separated into COMMERCE-047; it does not invalidate this engine-adapter migration.
 
 ### Reviewed Files
-None
+
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/package-lock.json`
+- `moda-interact-commerce/src/commerce/code-runtime/types.ts`
+- `moda-interact-commerce/src/commerce/code-runtime/kernel.ts`
+- `moda-interact-commerce/src/commerce/code-runtime/worker.mjs`
+- `moda-interact-commerce/scripts/code-runtime-manifest.mjs`
+- `moda-interact-commerce/scripts/code-runtime-packaged-smoke.mjs`
+- `moda-interact-commerce/tests/code-runtime-proof.test.ts`
+- `moda-interact-commerce/src/commerce/code-request/processor.ts`
+- `moda-interact-commerce/src/commerce/code-response/processor.ts`
+- `moda-interact-commerce/docs/code-runtime-proof.md`
+- this task Completion Report
 
 ### Validation Reviewed
-None
+
+Accepted submitted evidence:
+
+```text
+code-runtime:package                         PASS
+code-runtime:smoke                           PASS
+runtime proof                                11/11
+request processor                            6/6
+response processor                           6/6
+external authoring/Server Actions            45 tests PASS
+targeted ESLint                              PASS
+git diff --check                             PASS
+source audits                                PASS
+```
+
+The packaged runtime is exactly `worker.mjs`, `quickjs.wasm`, and `manifest.json`; the report records SHA-256 `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9` for the packaged WASM. Repository-wide typecheck/build remain non-zero only because of unchanged baseline diagnostics/imports recorded in the Completion Report; no QuickJS/WASI or task-owned module-resolution diagnostic remains.
+
+Manual browser evidence additionally confirms the real Next.js Request-validation path reaches the guest compiler and returns a bounded authoring syntax failure rather than `RUNTIME_UNAVAILABLE`.
 
 ### Architecture Conformance
-Pending
+Conforms. COMMERCE-046 changes only the sandbox engine adapter/package/logging implementation, preserves `quickjs-sync.v1`, Request/Response processor contracts, Tool-definition shapes, worker supervision and the production JavaScript executor gate, and introduces no database or cross-repository contract change.
 
 ### Follow-up
-None
+`ARCH-021-COMMERCE-047` is promoted to `ready` for bounded compiler-diagnostic propagation. It must preserve the COMMERCE-046 operational-logging boundary: guest syntax errors are UI validation results, not error-level runtime logs.
