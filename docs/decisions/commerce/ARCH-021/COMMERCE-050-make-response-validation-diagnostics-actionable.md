@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
-executor: copilot
-claimed_at: 2026-09-26T23:14:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-049
@@ -535,28 +535,42 @@ kinds, publication policy or unrelated authoring diagnostics.
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Architect Review (Attempt 1; implementation commit `e4f6226` pushed)
 
 ### Files Changed
-None
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/src/commerce/tool-authoring/external-validation.ts`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/external-tool-authoring-validation.test.ts`
+- `moda-interact-commerce/tests/external-tool-authoring-server-actions.test.ts`
 
 ### Work Completed
-None
+- Invalid browser-local Visual trees now short-circuit Response validation locally; canonical Visual candidates continue through the authoritative Server Action.
+- Added field/control-specific Visual guidance for all stable derivation codes, including Scalar versus SCALAR_LIST item types; issue paths/codes are confined to collapsed Technical details.
+- Mapped malformed top-level Response format, processing, schema, and path values to bounded domain diagnostics; preserved safe Response JavaScript compiler messages and locations.
+- Added UI and Server Action regressions for the manual `field2` reproduction, SCALAR_LIST type/limit, unsafe paths, duplicates, empty projections, server mismatch, JavaScript causes, Direct schema failures, retained edits/navigation, and null payloads.
 
 ### Validation Results
-None
+- `npm run test:arch020-external-tools-ui`: passed, 40 tests.
+- `npm run test:arch021-external-tool-authoring-validation`: passed, 54 tests across Response validation and Server Actions; includes the existing zero-I/O proof.
+- Targeted `npx eslint` over all five modified files: passed with zero errors and warnings.
+- Editor diagnostics via `get_errors`: no diagnostics in any of the five modified files.
+- `git diff --check`: passed.
+- `npm run typecheck`: repository baseline remains at 251 errors in 22 files; none reference a C050-modified file.
+- `npm run test:arch021-tool-authoring-common`: 85 passed, 1 failed. The unrelated existing `tests/commerce-lifecycle.test.ts` publication fixture uses an empty result schema, so it fails with `INVALID_DEFINITION` before its expected `LIVE_TEST_REQUIRED` assertion. The exact test was rerun in isolation and reproduces the same failure; no lifecycle fixture or schema contract was changed for C050.
+- Implementation commit `e4f6226` was pushed to `task/ARCH-021-COMMERCE-050`.
 
 ### Deviations
-None
+The common Tool-authoring packet has the unrelated lifecycle fixture failure recorded above; it was not changed because publication and result-schema semantics are outside C050.
 
 ### Assumptions
-None
+None.
 
 ### Unresolved Issues
-None
+The unrelated common-packet lifecycle fixture and repository-wide TypeScript baseline remain for their owning workstreams; no C050-specific issue is unresolved.
 
 ### Architectural Concerns
-None
+None.
 
 ## Architect Review
 
