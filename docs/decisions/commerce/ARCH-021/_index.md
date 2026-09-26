@@ -175,14 +175,13 @@ Response-tab manual review identified a separate bounded workstream. It is indep
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-043](COMMERCE-043-derive-visual-response-result-contract.md) | Derive Visual result schemas from projection authoring instead of separately maintained shape JSON | Complete | COMMERCE-016, COMMERCE-021, COMMERCE-039 |
-| [COMMERCE-044](COMMERCE-044-validate-external-http-response-authoring.md) | Add Response-only authoritative Direct/Visual/JavaScript validation with Response-local diagnostics | Ready | COMMERCE-043, COMMERCE-019, COMMERCE-023 |
-| [COMMERCE-045](COMMERCE-045-complete-external-http-response-tab-authoring.md) | Complete Response-tab Source-path, JavaScript panel, derived-contract and per-mode local-draft UX | Pending | COMMERCE-043, COMMERCE-044, COMMERCE-006, COMMERCE-039 |
+| [COMMERCE-044](COMMERCE-044-validate-external-http-response-authoring.md) | Add Response-only authoritative Direct/Visual/JavaScript validation with Response-local diagnostics | Complete | COMMERCE-043, COMMERCE-019, COMMERCE-023 |
+| [COMMERCE-045](COMMERCE-045-complete-external-http-response-tab-authoring.md) | Complete Response-tab Source-path, JavaScript panel, derived-contract and per-mode local-draft UX | Ready | COMMERCE-043, COMMERCE-044, COMMERCE-006, COMMERCE-039 |
 
 Current Response-tab manual-validation frontier:
 
 ```text
-ARCH-021-COMMERCE-044
-ARCH-021-COMMERCE-043
+ARCH-021-COMMERCE-045
 ```
 
 The Response chain remains zero-provider-I/O. Visual result schemas are deterministically derived from Visual authoring; Direct/JavaScript sample-derived schema generation and real provider execution are deferred to the later Test-tab review. Errors remain visible in Response while all authoring tabs stay freely navigable.
@@ -190,6 +189,10 @@ The Response chain remains zero-provider-I/O. Visual result schemas are determin
 ### COMMERCE-043 Attempt 1 accepted — 2026-09-26
 
 COMMERCE-043 is **Complete / Accepted, Attempt 1**. Visual OBJECT/LIST projected fields now carry bounded scalar result types, `omitIfMissing` deterministically controls requiredness, and one Commerce-owned helper derives the canonical OBJECT or `{ items: [...] }` LIST `resultSchema`. Compatible persisted Visual definitions reconstruct editable field types without new durable metadata; incompatible projection/schema pairs fail explicitly. Publication compatibility reuses the same rule, Visual mode no longer requires independently editable `Response shape JSON`, and Direct/JavaScript schema behavior remains unchanged. The submitted packet passed 41 focused Visual/UI/publication tests, 85 common Tool-authoring tests and 45 External authoring-validation tests, with targeted ESLint/diff checks clean and no task-owned type diagnostics. COMMERCE-044 is promoted to **Ready**; COMMERCE-045 remains Pending.
+
+### COMMERCE-044 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-044 is **Complete / Accepted, Attempt 1**. Response now has a named ADMIN-authorized, non-mutating validator for Direct, Visual OBJECT/LIST and JavaScript authoring. Direct/Visual JSON and Source-path rules, bounded result schemas, Visual projection/filter/sort/limit rules and COMMERCE-043 derived-schema compatibility are checked at deterministic Response-local paths; compatible persisted LIST bounds remain accepted. JavaScript validation compiles `transform(response)` without executing it, and integration coverage proves the Response-only path performs no connection, credential, DNS, transport or Tool/ToolRevision write operations. The submitted focused validation/Server Action packet passed 52 tests with targeted ESLint and diff checks clean and no changed-file TypeScript diagnostics. COMMERCE-045 is promoted to **Ready** for final Response-tab UX wiring.
 
 ## Manual-validation follow-up — QuickJS runtime adapter
 
