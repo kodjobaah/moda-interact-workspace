@@ -195,6 +195,11 @@ COMMERCE-045 is **Complete / Accepted, Attempt 2**. The final Response-tab compo
 ### Nested Visual result follow-up — COMMERCE-048
 
 Manual Response-tab validation established that the accepted flat Visual model cannot represent an object with an embedded list because legacy projected fields are scalar-only. COMMERCE-048 adds a Commerce-owned `kind:"VISUAL"` recursive processing tree while retaining legacy OBJECT/LIST execution. Root LIST keeps the accepted `{ items: [...] }` envelope; nested LIST fields produce raw arrays. COMMERCE-045 is now architect-accepted Complete, so COMMERCE-048 is Ready.
+The Response chain remains zero-provider-I/O. COMMERCE-045 completes the flat Visual authoring UX; COMMERCE-048 is dependency-gated behind it and extends Visual processing to bounded recursive OBJECT/LIST result trees without changing Shared 0.14.2. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to the later Test-tab review. Errors remain visible in Response while all authoring tabs stay freely navigable.
+
+### Nested Visual result follow-up — COMMERCE-048
+
+Manual Response-tab validation established that the accepted flat Visual model cannot represent an object with an embedded list because legacy projected fields are scalar-only. COMMERCE-048 adds a Commerce-owned `kind:"VISUAL"` recursive processing tree while retaining legacy OBJECT/LIST execution. Root LIST keeps the accepted `{ items: [...] }` envelope; nested LIST fields produce raw arrays. The task remains Pending until COMMERCE-045 is architect-accepted Complete.
 
 ### COMMERCE-043 Attempt 1 accepted — 2026-09-26
 
