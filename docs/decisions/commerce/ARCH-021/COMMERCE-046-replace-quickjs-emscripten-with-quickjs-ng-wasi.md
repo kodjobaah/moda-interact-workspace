@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 59
 executor: copilot
 claimed_at: 2026-09-26T14:34:02Z
@@ -555,16 +555,16 @@ There must be exactly one sandbox engine adapter in `src/commerce/code-runtime`.
 
 ## Work Items
 
-- [ ] Pin `quickjs-wasi@3.6.2`; remove direct Emscripten QuickJS dependencies and update the lockfile.
-- [ ] Change runtime packaging to `worker.mjs + quickjs.wasm + manifest.json`.
-- [ ] Replace the worker Emscripten variant/module-loader implementation with the QuickJS-NG/WASI adapter.
-- [ ] Preserve compile-without-execution semantics with the new compile API.
-- [ ] Preserve Request and Response run semantics and KernelResult mapping.
-- [ ] Preserve worker cancellation, deadlines, capacity and resource limits without false manifest claims.
-- [ ] Replace all temporary/free-form runtime diagnostics with shared structured logging at the kernel boundary.
-- [ ] Update packaged smoke to use the exact same engine-loading path as application execution.
-- [ ] Update runtime/request/response/authoring tests for the new adapter without weakening assertions.
-- [ ] Remove obsolete Emscripten packages/assets/code and run source audits.
+- [x] Pin `quickjs-wasi@3.6.2`; remove direct Emscripten QuickJS dependencies and update the lockfile.
+- [x] Change runtime packaging to `worker.mjs + quickjs.wasm + manifest.json`.
+- [x] Replace the worker Emscripten variant/module-loader implementation with the QuickJS-NG/WASI adapter.
+- [x] Preserve compile-without-execution semantics with the new compile API.
+- [x] Preserve Request and Response run semantics and KernelResult mapping.
+- [x] Preserve worker cancellation, deadlines, capacity and resource limits without false manifest claims.
+- [x] Replace all temporary/free-form runtime diagnostics with shared structured logging at the kernel boundary.
+- [x] Update packaged smoke to use the exact same engine-loading path as application execution.
+- [x] Update runtime/request/response/authoring tests for the new adapter without weakening assertions.
+- [x] Remove obsolete Emscripten packages/assets/code and run source audits.
 
 ## Interfaces / Contracts
 
@@ -617,29 +617,29 @@ may execute in parallel with them.
 
 ## Acceptance Criteria
 
-- [ ] `quickjs-wasi@3.6.2` is the sole direct QuickJS runtime dependency.
-- [ ] Direct `quickjs-emscripten` / `@jitl/quickjs-*` runtime dependencies are removed.
-- [ ] `RUNTIME_VERSION` remains `quickjs-sync.v1`.
-- [ ] Packaged runtime contains `worker.mjs`, `quickjs.wasm`, `manifest.json` and no Emscripten module artifacts.
-- [ ] Manifest SHA-256 is computed from the packaged QuickJS-NG/WASI `quickjs.wasm` bytes.
-- [ ] Kernel, runtime proof and packaged smoke use the same packaged worker architecture.
-- [ ] Worker reads explicit WASM bytes and does not dynamically import an engine module expression.
-- [ ] Request compile checks syntax/entry contract without executing top-level guest effects.
-- [ ] Response compile checks syntax/entry contract without executing top-level guest effects.
-- [ ] Valid request JavaScript compiles and executes with exact expected descriptor output.
-- [ ] Valid response JavaScript compiles and executes with exact expected transformed output.
-- [ ] Existing syntax/execution/invalid-output/resource/deadline/cancellation/throttling KernelResult semantics remain proved.
-- [ ] Infinite-loop cancellation/deadline and subsequent worker recovery remain proved.
-- [ ] Guest memory exhaustion is bounded and the host remains usable afterward.
-- [ ] Forbidden host capabilities remain inaccessible.
-- [ ] COMMERCE-040 unbound Tool inputs remain absent from JavaScript `args`.
-- [ ] Production JavaScript External HTTP executor gate remains disabled/unchanged.
-- [ ] A normal valid JavaScript Request validation path no longer returns `RUNTIME_UNAVAILABLE` because of engine initialisation/module loading.
-- [ ] All code-runtime operational logs use shared structured logging with stable semantic events.
-- [ ] No runtime `console.*` debugging, guest source/input/body logging or absolute filesystem path logging remains.
-- [ ] Shared-logger sink failure cannot change KernelResult/business behavior.
-- [ ] No Emscripten fallback/second sandbox implementation remains.
-- [ ] No database, Shared-contract, Tool-definition shape, Request/Response UI or provider-execution change is introduced.
+- [x] `quickjs-wasi@3.6.2` is the sole direct QuickJS runtime dependency.
+- [x] Direct `quickjs-emscripten` / `@jitl/quickjs-*` runtime dependencies are removed.
+- [x] `RUNTIME_VERSION` remains `quickjs-sync.v1`.
+- [x] Packaged runtime contains `worker.mjs`, `quickjs.wasm`, `manifest.json` and no Emscripten module artifacts.
+- [x] Manifest SHA-256 is computed from the packaged QuickJS-NG/WASI `quickjs.wasm` bytes.
+- [x] Kernel, runtime proof and packaged smoke use the same packaged worker architecture.
+- [x] Worker reads explicit WASM bytes and does not dynamically import an engine module expression.
+- [x] Request compile checks syntax/entry contract without executing top-level guest effects.
+- [x] Response compile checks syntax/entry contract without executing top-level guest effects.
+- [x] Valid request JavaScript compiles and executes with exact expected descriptor output.
+- [x] Valid response JavaScript compiles and executes with exact expected transformed output.
+- [x] Existing syntax/execution/invalid-output/resource/deadline/cancellation/throttling KernelResult semantics remain proved.
+- [x] Infinite-loop cancellation/deadline and subsequent worker recovery remain proved.
+- [x] Guest memory exhaustion is bounded and the host remains usable afterward.
+- [x] Forbidden host capabilities remain inaccessible.
+- [x] COMMERCE-040 unbound Tool inputs remain absent from JavaScript `args`.
+- [x] Production JavaScript External HTTP executor gate remains disabled/unchanged.
+- [x] A normal valid JavaScript Request validation path no longer returns `RUNTIME_UNAVAILABLE` because of engine initialisation/module loading.
+- [x] All code-runtime operational logs use shared structured logging with stable semantic events.
+- [x] No runtime `console.*` debugging, guest source/input/body logging or absolute filesystem path logging remains.
+- [x] Shared-logger sink failure cannot change KernelResult/business behavior.
+- [x] No Emscripten fallback/second sandbox implementation remains.
+- [x] No database, Shared-contract, Tool-definition shape, Request/Response UI or provider-execution change is introduced.
 
 ## Validation
 
@@ -749,28 +749,56 @@ actually enforced property of the new runtime.
 ## Completion Report
 
 ### Status
-Not Started
+Review
 
 ### Files Changed
-None
+Implementation commit `b114716` changed:
+
+- `package.json`, `package-lock.json`
+- `src/commerce/code-runtime/{kernel.ts,types.ts,worker.mjs}`
+- `scripts/code-runtime-manifest.mjs`, `scripts/code-runtime-packaged-smoke.mjs`
+- `tests/code-runtime-proof.test.ts`, `tests/code-request-processor.test.ts`, `tests/code-response-processor.test.ts`
+- `docs/code-runtime-proof.md`
 
 ### Work Completed
-None
+- Replaced the Emscripten adapter with pinned `quickjs-wasi@3.6.2` / QuickJS-NG/WASI using explicit packaged WASM bytes. Preserved `quickjs-sync.v1` and existing request/response processor contracts.
+- Packager emits exactly `manifest.json`, `quickjs.wasm`, and `worker.mjs`. Manifest engine is `quickjs-ng-wasi`, package is `quickjs-wasi@3.6.2`, and SHA-256 is `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`, verified against packaged bytes.
+- Retained enforced 16 MiB guest heap, 512 KiB QuickJS stack, 500 ms guest interrupt, 2,000 ms supervisor deadline, four-worker capacity, cancellation termination, and capacity-release behavior. Removed the unsupported 64 MiB WASM-memory claim.
+- Compile uses QuickJS-WASI `compile()` without evaluating top-level source. Required named entries are checked through compile-time module-export validation; both request and response compile tests cover syntax errors, missing entries, top-level throws, and reassignment.
+- Replaced runtime console diagnostics with shared structured logging and bounded operational metadata. Added sink-failure isolation and source/input leakage proof.
+- Updated packaged smoke and proof documentation. Source audits found no old-engine/dynamic-loader/obsolete-memory references in `src`, `scripts`, or `package.json`, no runtime `console.*`, and confirmed the shared logging import.
+- Implementation commit `b114716` was pushed to `origin/task/ARCH-021-COMMERCE-046`.
 
 ### Validation Results
-None
+- PASS `npm run code-runtime:package`; engine/package/hash recorded above.
+- PASS `npm run code-runtime:smoke`; exact request/response outputs, compile-only behavior in both modes, and exact packaged artifact set.
+- PASS `npm run test:arch020-code-runtime-proof`; 11 tests.
+- PASS `npm run test:arch021-code-request`; 6 tests.
+- PASS `npm run test:arch020-code-processor`; 6 tests.
+- PASS `npm run test:arch021-external-tool-authoring-validation`; 45 tests across authoring-validation and Server Action suites.
+- PASS task-required targeted `npm exec eslint` command.
+- PASS `git diff --check`; PASS `node --check src/commerce/code-runtime/worker.mjs`.
+- PASS dependency, artifact, obsolete-engine, runtime-console, and shared-logger source audits.
+- BLOCKED by unrelated repository diagnostics: `npm run typecheck` completed `next typegen` then reported 16 errors in 8 unchanged files. These include three unresolved imports (`lib/preview/http`, `lib/preview/runtime`, `src/commerce/preview/types`) in `app/api/studio/code-response/validate/route.ts`, missing `createToolWithInitialDraft` in `src/commerce/integration/studio/services.ts`, and unrelated errors in existing agent-configuration, C20, external-wiring, local-external-MCP, and selected-shop-context tests. No diagnostic referenced task-changed files.
+- BLOCKED by the same unrelated route imports: `npm run build` passed runtime packaging, packaged smoke, and Prisma generation, then Next webpack failed to resolve `lib/preview/http`, `lib/preview/runtime`, and `src/commerce/preview/types` from unchanged `app/api/studio/code-response/validate/route.ts`. No QuickJS/WASI, Emscripten, or dynamic-import resolution error occurred.
+
+### Execution Evidence
+- Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-046`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-046`; both task branches are `task/ARCH-021-COMMERCE-046`. Shared workspace/source checkouts were not switched or edited; no other task worktree was reused.
+- The prepared launcher synchronized both task worktrees and incorporated their `origin/main` bases before claim. Parent claim was already committed/pushed as `ea68f8fa66b7bc311a50a557cc7c4fc1bad4bc9f`; no duplicate claim was made.
+- Recursive implementation submodule preparation passed: `git submodule sync --recursive` and `git submodule update --init --recursive`; recorded `database` commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commit `b114716` was pushed to `origin/task/ARCH-021-COMMERCE-046`.
 
 ### Deviations
-None
+Repository-wide typecheck and production build remain blocked by unrelated unresolved preview-route imports and other unchanged-file type errors described above. No unrelated files were changed to address those blockers.
 
 ### Assumptions
-None
+QuickJS-WASI `memoryLimit`, `maxStackSize`, and `interruptHandler` enforce the declared heap, stack, and guest execution bounds; no separate WASM linear-memory maximum is claimed.
 
 ### Unresolved Issues
-None
+Unrelated typecheck/build blockers remain in the unchanged preview route, Commerce Studio service, and tests; see Validation Results.
 
 ### Architectural Concerns
-None
+None identified within this bounded runtime migration. No database, Shared contract, Tool definition, authoring UI, or production provider-execution gate was changed.
 
 ## Architect Review
 
