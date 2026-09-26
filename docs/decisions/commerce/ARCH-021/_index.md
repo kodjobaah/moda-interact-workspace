@@ -214,6 +214,8 @@ COMMERCE-046 is architect-accepted Complete. COMMERCE-047 is now Ready as the bo
 ### COMMERCE-046 Attempt 1 accepted — 2026-09-26
 
 COMMERCE-046 is **Complete / Accepted, Attempt 1**. The Emscripten adapter is replaced by the packaged `quickjs-wasi@3.6.2` / QuickJS-NG runtime while preserving `quickjs-sync.v1`, request/response behavior, worker supervision and shared structured runtime logging. Packaging/smoke/runtime/request/response/authoring validation passed, and real Next.js manual validation now reaches the guest compiler rather than returning `RUNTIME_UNAVAILABLE`. COMMERCE-047 is promoted to **Ready** for bounded compiler-message propagation.
+COMMERCE-047 is a deliberately small diagnostic-fidelity follow-up discovered during manual validation of the submitted COMMERCE-046 runtime. It remains Pending until COMMERCE-046 is architect-accepted Complete.
+
 
 ### COMMERCE-041 Attempt 1 accepted — 2026-09-26
 

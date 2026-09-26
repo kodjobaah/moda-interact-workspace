@@ -1154,14 +1154,6 @@ independent of features.
 
 ## Change History
 
-
-### 2026-09-26 — COMMERCE-046 Attempt 1 accepted
-
-- Accepted the packaged `quickjs-wasi@3.6.2` / QuickJS-NG adapter behind the existing `quickjs-sync.v1` runtime contract.
-- Accepted one packaged worker/WASM path across application, runtime proof and smoke, preserved worker supervision/resource bounds, and shared structured runtime logging with no guest payload leakage.
-- Manual Next.js validation now reaches the guest compiler rather than failing during runtime initialization.
-- Marked COMMERCE-046 Complete and promoted COMMERCE-047 to Ready for bounded compiler-diagnostic fidelity.
-
 ### 2026-09-26 — bounded JavaScript compiler-diagnostic follow-up defined
 
 - Manual validation of the submitted COMMERCE-046 QuickJS-NG/WASI runtime now reaches the guest compiler successfully, but `/request/source` still displays the generic `Request processor did not compile` message because the guest exception message is discarded at the Worker -> KernelResult -> Request processor -> authoring-validation boundaries.
