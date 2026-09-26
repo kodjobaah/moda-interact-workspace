@@ -403,12 +403,12 @@ Implementation complete; submitted for Architect Review.
 - Added Response-only validation, field diagnostics, stale-result invalidation, and raw invalid-value retention; added regression coverage for incomplete Visual types and malformed filter values.
 - Preserved free tab navigation and the no-provider-I/O boundary.
 - A1-R1: Response validation now builds its payload from the selected mode: Direct sends `{ kind: "DIRECT" }`, JavaScript sends the active transform, and Visual sends the active shape draft with its derived schema. Added switch-without-edit regressions for Direct and JavaScript.
-- A1-R2: Invalidate validation before Visual edits and rejected local changes, including incomplete types, duplicate names, shape and filter edits. Added a success-then-clear-type regression.
+- A1-R2: Invalidate validation before Visual edits and rejected local changes, including incomplete types, duplicate names, shape and filter edits. Retain rejected duplicate output-name text in local state with an actionable field error. Added success-then-clear-type and success-then-duplicate-name regressions.
 - A1-R3: Render processing JSON and the derived contract from current Visual shape/type state; suppress the derived contract while the active projection is incomplete. Added live-disclosure and stale-schema regressions.
 - A1-R4: Maintain separate browser-local OBJECT and LIST projection/type drafts; only promote the selected valid shape. Added shape-switch restoration and active-shape validation coverage.
 
 ### Validation Results
-- `npm run test:arch020-external-tools-ui`: passed, 30 tests, including all four A1 correction regressions.
+- `npm run test:arch020-external-tools-ui`: passed, 31 tests, including all four A1 correction regressions and duplicate-name raw-value retention.
 - `npx vitest run tests/tool-authoring-screen.test.tsx`: passed, 12 tests.
 - `npm run test:arch021-external-tool-authoring-validation`: passed, 47 tests. Packaged the repository QuickJS runtime first with `npm run code-runtime:package`.
 - `npm run test:arch021-tool-authoring-common`: passed, 85 tests.
