@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 73
 executor: null
 claimed_at: null
@@ -445,24 +445,53 @@ Merged to workspace main: no
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implementation review found no task-scoped source-code defect. The Automatic
+workflow now presents only current provider/decode evidence, hides stale canonical
+Response disclosures while Automatic is active, renders the bounded provider preview
+as text, invalidates transient Automatic state when generation context changes, and
+preserves the existing authored Response definition after failed regeneration. The
+success path continues to install the inferred Visual definition and leave Automatic.
+
+The durable task record is not yet review-conformant: all ten required `## Work Items`
+remain unchecked even though the task was moved to `status: review` and the Completion
+Report states that the corresponding work is complete. Work Items are repository-agent
+execution state and must be reconciled by the implementing agent; the architect must
+not silently mark them complete in an acceptance overlay.
+
+No implementation source changes are requested.
 
 ### Reviewed Files
 
-None
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-058-make-automatic-failures-current-and-actionable.md`
 
 ### Validation Reviewed
 
-None
+- Inspected the focused regressions covering valid Request A -> failing Request B,
+  `404 text/html` diagnostics, malformed JSON guidance, Request-context invalidation,
+  escaped provider preview and successful Automatic -> Visual behavior.
+- Reviewed the recorded focused result: 92/92 tests passed.
+- Reviewed the recorded targeted ESLint, changed-file TypeScript diagnostics and
+  `git diff --check` results as passing.
+- The submitted archive contains no installed `node_modules`, so the focused suite was
+  not rerun in the review container.
 
 ### Architecture Conformance
 
-Pending.
+The implementation conforms to the C058 runtime/UI architecture and preserves the
+C053/C057 ownership boundaries. Acceptance is withheld only because the authoritative
+task execution record is incomplete.
 
 ### Follow-up
 
-None
+For Attempt 2, make no source-code changes unless reconciliation reveals a genuine
+new issue. Reclaim this same task, mark each completed `## Work Items` checkbox `[x]`,
+reconfirm the already-completed Acceptance Criteria/Validation and Completion Report,
+return the task to `status: review`, clear the execution claim, and resubmit. Do not
+modify COMMERCE-055 or COMMERCE-056.
