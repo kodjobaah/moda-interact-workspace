@@ -322,10 +322,10 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-062](COMMERCE-062-derive-shopify-admin-result-contract.md) | Backend/compiler: derive canonical Admin resultSchema and nullable normalization semantics | Complete | COMMERCE-018 |
 | [COMMERCE-063](COMMERCE-063-compile-tool-result-contract.md) | Backend: compile source-neutral ToolResultContract and validate Result Templates | Complete | COMMERCE-043 |
 | [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Complete | COMMERCE-039, COMMERCE-061 |
-| [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Ready | COMMERCE-062, COMMERCE-064 |
+| [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Complete | COMMERCE-062, COMMERCE-064 |
 | [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Complete | COMMERCE-063 |
 | [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Complete | COMMERCE-063 |
-| [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Pending | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
+| [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Ready | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
 | [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Complete | COMMERCE-060, COMMERCE-064 |
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 
@@ -363,6 +363,12 @@ Key invariants:
 - Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
+
+### COMMERCE-065 Attempt 2 accepted — 2026-09-27
+
+COMMERCE-065 is **Complete / Accepted, Attempt 2**. Shopify Admin Request/Response ownership remains split as designed, and the remaining stale asynchronous derivation race is closed: an obsolete in-flight result must still match the latest committed identity/generation before it can promote schema or mark Response fresh. Deferred regressions prove stale completion cannot re-enable New Tool Create or persisted-DRAFT Save/Publish. Attempt 2 also supplies the required launcher/worktree/synchronization and VCS evidence. Submitted validation passed 49/49 focused tests, targeted ESLint, changed-file diagnostics and `git diff --check`; package-wide TypeScript remains red only on unrelated files.
+
+COMMERCE-066 and COMMERCE-067 are already Complete, so COMMERCE-068 is promoted to **Ready**. COMMERCE-069 remains independently Ready.
 
 ### COMMERCE-064 Attempt 3 accepted — 2026-09-27
 

@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 75
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-062
   - ARCH-021-COMMERCE-064
@@ -151,14 +151,14 @@ Request and Response remain freely navigable. No tab becomes locked because quer
 
 ## Work Items
 
-- [ ] Remove Result path/schema controls from Shopify Request UI.
-- [ ] Add Shopify Response authoring component/surface.
-- [ ] Wire Response derivation to COMMERCE-062.
-- [ ] Promote only valid derived schemas into canonical local Tool state.
-- [ ] Retain invalid resultPath text and show actionable Response-local diagnostics.
-- [ ] Invalidate stale derivation when query/resultPath changes.
-- [ ] Show derived values structure/read-only schema.
-- [ ] Cover new Tool and persisted DRAFT authoring parity where applicable.
+- [x] Remove Result path/schema controls from Shopify Request UI.
+- [x] Add Shopify Response authoring component/surface.
+- [x] Wire Response derivation to COMMERCE-062.
+- [x] Promote only valid derived schemas into canonical local Tool state.
+- [x] Retain invalid resultPath text and show actionable Response-local diagnostics.
+- [x] Invalidate stale derivation when query/resultPath changes.
+- [x] Show derived values structure/read-only schema.
+- [x] Cover new Tool and persisted DRAFT authoring parity where applicable.
 
 ## Interfaces / Contracts
 
@@ -177,26 +177,26 @@ Produces no new runtime/durable contract beyond the already-canonical persisted 
 
 ## Acceptance Criteria
 
-- [ ] Shopify Request contains document, operation and mappings but no editable result schema.
-- [ ] Shopify Response owns resultPath.
-- [ ] A valid resultPath derives and installs the canonical local `resultSchema`.
-- [ ] Invalid resultPath text remains visible and actionable.
-- [ ] Query changes invalidate prior derived-result success.
-- [ ] Authors can inspect the resulting `data.values` shape without editing JSON Schema.
-- [ ] New Tool derivation causes no durable write.
-- [ ] Persisted-DRAFT derivation does not save automatically.
-- [ ] Manual GraphQL remains supported.
-- [ ] Tab navigation remains ungated.
+- [x] Shopify Request contains document, operation and mappings but no editable result schema.
+- [x] Shopify Response owns resultPath.
+- [x] A valid resultPath derives and installs the canonical local `resultSchema`.
+- [x] Invalid resultPath text remains visible and actionable.
+- [x] Query changes invalidate prior derived-result success.
+- [x] Authors can inspect the resulting `data.values` shape without editing JSON Schema.
+- [x] New Tool derivation causes no durable write.
+- [x] Persisted-DRAFT derivation does not save automatically.
+- [x] Manual GraphQL remains supported.
+- [x] Tab navigation remains ungated.
 
 ## Validation
 
-- [ ] Shopify Admin Request UI tests
-- [ ] Shopify Admin Response UI tests
-- [ ] stale-derivation regression tests
-- [ ] new/persisted authoring lifecycle tests
-- [ ] targeted lint
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
+- [x] Shopify Admin Request UI tests
+- [x] Shopify Admin Response UI tests
+- [x] stale-derivation regression tests
+- [x] new/persisted authoring lifecycle tests
+- [x] targeted lint
+- [x] changed-file TypeScript diagnostics
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -210,58 +210,121 @@ Keep output-schema derivation on the canonical COMMERCE-062 boundary. React must
 
 ### Status
 
-Not Started
+Ready for Architect Review (Attempt 1)
 
 ### Files Changed
 
-None.
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/shopify-admin-editor.tsx`
+- `src/studio/tools/shopify-admin-response-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/admin-explorer.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
-None.
+- Implementation commit: `806c93f20f420e9b35d661ba9f18cc689a81fc95` on `task/ARCH-021-COMMERCE-065` (pushed).
+- Split Shopify Admin authoring so Request contains invocation fields and Response owns local `resultPath` editing and derivation.
+- Used COMMERCE-062's derivation action as the sole source of result schema; successful derivation promotes its schema into local candidate state without an automatic write.
+- Added stale-result identity handling for API/schema identity, document, operation name, and result path; mapping-only edits preserve freshness.
+- Preserved invalid path text in authoring sessions and exposed compiler issue codes, paths, and messages in Response.
+- Rendered a readable `data.values` shape and a read-only schema disclosure.
+- Applied the same derivation freshness and save/publish protections to persisted DRAFT authoring, including a submit-handler guard.
+- Kept Request/Response navigation ungated and retained manual GraphQL editing.
 
 ### Validation Results
 
-None.
+- Passed targeted ESLint for all changed source and test files.
+- Passed focused Vitest suites: 4 files, 47 tests (`shopify-admin-tools-ui`, `tool-authoring-screen`, `tool-authoring-session`, `admin-explorer`).
+- Pylance diagnostics: no errors in the 8 changed files.
+- Passed `git diff --check`.
+- `npm run typecheck` remains unsuccessful: 28 diagnostics across 17 other package files; none reference the C065 changed files. Diagnostics include missing `lib/preview/http` modules and unrelated compiler, schema typing, and test errors.
 
 ### Deviations
 
-None.
+No scope deviations. The package-wide typecheck limitation is recorded above; focused tests, lint, and changed-file diagnostics pass.
 
 ### Assumptions
 
-None.
+The existing persisted `execution.resultSchema` remains the canonical storage contract; session `resultSchemaText` remains only for existing generic Explore/session compatibility and is not editable or used to derive Admin schemas.
 
 ### Unresolved Issues
 
-None.
+The repository-wide TypeScript check is blocked by 28 diagnostics in files outside this task's changed-file set; Architect Review should decide whether that baseline warrants follow-up.
 
 ### Architectural Concerns
 
-None.
+None identified within C065 scope.
+
+### Attempt 2 Completion Report
+
+#### Worktree and Synchronization Evidence
+
+- Launcher-resolved canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-065`, branch `task/ARCH-021-COMMERCE-065`.
+- Dedicated implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-065`, branch `task/ARCH-021-COMMERCE-065`.
+- Attempt 2 used these launcher-resolved task worktrees only; no shared/default checkout or another task's worktree was used.
+- Start-of-attempt synchronization for both repositories: task-branch fast-forward was `not-needed`; `origin/main` was `already-current` in each task branch. Both worktrees were clean before implementation edits.
+- Implementation submodules were synchronized and recursively initialized before claim. Recursive status was clean at the recorded database submodule commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
+#### Changes and VCS Publication
+
+- Attempt 2 implementation commit: `cb07cb7837c8bb2072f9363fc98b61ecd493eda6` on `task/ARCH-021-COMMERCE-065`; pushed to `origin`.
+- Synchronous layout-commit invalidation now advances the derivation generation and marks freshness false when the Request identity changes, preventing an obsolete asynchronous completion from promoting its schema.
+- Added deferred stale-completion regressions for both New Tool creation and persisted-DRAFT Save/Publish, asserting that obsolete schema is not promoted and persistence remains blocked.
+- Parent report-content commit: `524c5de4f5c4e5c013ae1b9b044ed9bcda19be1c` on the parent `task/ARCH-021-COMMERCE-065` branch; pushed to `origin`.
+- No parent database submodule gitlink was staged or changed for C065 task reporting.
+
+#### Attempt 2 Validation
+
+- Focused Vitest: 4 files, 49 tests passed (`shopify-admin-tools-ui`, `tool-authoring-screen`, `tool-authoring-session`, `admin-explorer`).
+- Targeted ESLint passed for all 8 changed source/test files.
+- Changed-file TypeScript/editor diagnostics: no errors in all 8 changed files.
+- `git diff --check` passed.
+- The package-wide typecheck limitation recorded for Attempt 1 remains unrelated to changed files: 28 diagnostics across 17 other package files. It was not treated as a C065 blocker, consistent with the Architect Review.
+
+### Attempt 2 Status
+
+Ready for Architect Review. The Attempt 2 implementation and deferred regressions are published on the task branch; task metadata is set to `review`, with `executor` and `claimed_at` cleared. No follow-on task was started.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 2 satisfies the Attempt 1 correction contract and is accepted.
+
+The stale asynchronous derivation window is closed at the Response authoring boundary. `shopify-admin-response-editor.tsx` now invalidates the active derivation generation and marks freshness false in a layout-commit effect whenever the Admin result identity changes (`apiVersion`, `schemaHash`, `document`, `operationName` or `resultPath`). An in-flight completion must still match both the submitted generation and the latest committed identity before it may promote a derived schema or mark the result contract fresh.
+
+The deferred regressions exercise both lifecycle consumers. New Tool authoring starts derivation A, changes the Admin Request identity before A resolves, then proves A cannot install its obsolete schema or re-enable Create. Persisted-DRAFT authoring proves the same stale completion cannot install the obsolete schema, re-enable Save Draft or Publish, or invoke either persistence action.
+
+The Attempt 2 Completion Report also supplies the required launcher-resolved workspace root, dedicated parent/implementation worktree paths and branches, start-of-attempt synchronization evidence, recursive submodule state, implementation/report commit and push evidence, and explicit confirmation that the parent database gitlink was not staged for task reporting.
 
 ### Reviewed Files
 
-None.
+- `src/studio/tools/shopify-admin-response-editor.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-065-split-shopify-request-response-authoring.md`
 
 ### Validation Reviewed
 
-None.
+- Submitted Attempt 2 focused Vitest packet: 49/49 tests across four suites passed.
+- Submitted targeted ESLint: passed for the eight changed source/test files.
+- Submitted changed-file TypeScript/editor diagnostics: no errors in the eight changed files.
+- Submitted `git diff --check`: passed.
+- The package-wide typecheck remains red on 28 diagnostics across 17 unrelated files and is not treated as a C065 regression.
+- Source/test inspection confirms the deferred stale-completion tests cover both New Tool Create and persisted-DRAFT Save/Publish gates.
 
 ### Architecture Conformance
 
-Pending review.
+Conformant. Shopify Admin Request remains the invocation-authoring surface; Response owns `resultPath` and the COMMERCE-062 compiler-derived read-only result contract. Invalid path text remains local/actionable, derivation does not persist automatically, navigation stays ungated, and obsolete asynchronous results cannot become authoritative for a newer Request identity.
 
 ### Follow-up
 
-None.
+COMMERCE-065 is Complete. COMMERCE-066 and COMMERCE-067 are already Complete, so all dependencies of COMMERCE-068 are now satisfied and COMMERCE-068 is promoted to Ready. COMMERCE-069 remains independently Ready.
