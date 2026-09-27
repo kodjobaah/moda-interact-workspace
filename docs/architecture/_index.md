@@ -985,3 +985,12 @@ generated and nested-submodule boundaries, and performs one formatting sweep. Th
 agent definition provides no documentation task domain/owner.
 
 [Architecture](ARCH-022-code-cleanup.md)
+
+
+## ARCH-023 — Merchant knowledge and store-aware Commerce Agent configuration (2026-09-27)
+
+Proposed architecture review packet. Initial Ready frontier: `DATABASE-001`, `DATABASE-002`, `DATABASE-003`, `SHARED-001`, `SHARED-002`, `SHARED-003`. The remaining 19 tasks are Pending behind database/shared publication and repository-specific dependencies. These are portable definitions only; no ARCH-023 task branch/worktree is materialised or claimed by this patch.
+
+The architecture adds Store Category onboarding/default prompt seeding, Admin-owned Platform/Shop Instructions with all-20 translation gating, logical Merchant Knowledge entries processed asynchronously by Background, PostgreSQL/pgvector semantic retrieval through one feature-bound Commerce capability, and one platform-wide environment-selected multilingual embedding model.
+
+[Architecture](ARCH-023-merchant-knowledge-store-aware-commerce-agent.md)
