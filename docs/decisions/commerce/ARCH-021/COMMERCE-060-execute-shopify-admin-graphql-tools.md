@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
 executor: copilot
 claimed_at: 2026-09-27T15:30:18Z
@@ -260,7 +260,7 @@ Do not redesign Admin `resultSchema` semantics here. The current persisted schem
 
 ### Status
 
-Implementation complete; submitted for architect review (Attempt 1).
+Attempt 2 correction complete; submitted for architect review.
 
 ### Files Changed
 
@@ -289,6 +289,26 @@ The package-wide TypeScript command reports unrelated diagnostics as noted under
 ### Architectural Concerns
 
 None.
+
+### Attempt 2 Correction
+
+Addressed the Changes Requested finding: Shopify Admin GraphQL HTTP 200 envelopes now map any bounded error entry with `extensions.code === "THROTTLED"` to the minimal Commerce `THROTTLED` error with `retryable: true`. Other GraphQL errors retain the existing safe `UNAVAILABLE` mapping. Added a regression containing a token, provider message, and request identifier in the provider error; the returned result contains none of those details.
+
+### Attempt 2 Files Changed
+
+`moda-interact-commerce/src/commerce/query/admin.ts`; `moda-interact-commerce/tests/admin-query-execution.test.ts`.
+
+### Attempt 2 Validation
+
+- Focused Admin execution suite passed (11 tests).
+- Admin, Storefront query, DefinitionExecutor, backend integration, and External HTTP compatibility suite passed (61 tests across 5 files).
+- Targeted ESLint passed for both changed files.
+- Changed-file Pylance diagnostics reported no errors.
+- `git diff --check` passed.
+
+### Attempt 2 Status
+
+Ready for architect review on the existing mirrored task branches. No additional scope changes were made.
 
 ## Architect Review
 
