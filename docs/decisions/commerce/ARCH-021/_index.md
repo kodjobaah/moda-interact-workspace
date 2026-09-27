@@ -189,6 +189,22 @@ No implementation task currently Ready in this Response chain.
 
 The zero-provider-I/O Response authoring chain through COMMERCE-050 is architect-accepted Complete. Invalid local Visual state is diagnosed locally, canonical candidates still use authoritative server validation, configuration issues are field/control-specific, and action-level validation-system failures no longer masquerade as Response-field errors. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to later Test-tab review. All authoring tabs remain freely navigable.
 
+## Manual-validation follow-up — JavaScript Response helper runtime
+
+JavaScript Response authoring now has one independent runtime-helper follow-up. It does not change provider execution or the Request JavaScript contract. The helper is a versioned Commerce-owned QuickJS guest API and is bundled at build time; authored Tool source still has no npm/module loader or host callbacks.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-059](COMMERCE-059-add-versioned-quickjs-text-helper-api.md) | Add `quickjs-sync.v2` Response helpers with immutable `moda.text.stripHtml(value)` backed by a packaged `string-strip-html` bundle | Ready | COMMERCE-045, COMMERCE-046, COMMERCE-047 |
+
+Current JavaScript Response helper frontier:
+
+```text
+ARCH-021-COMMERCE-059
+```
+
+COMMERCE-059 is independent of the live-Test and Agent-contract follow-up workstreams and may execute in parallel under the normal task/worktree protocol. Request JavaScript remains `quickjs-sync.v1`. Existing Response `quickjs-sync.v1` definitions remain valid; new Response JavaScript authoring defaults to `quickjs-sync.v2`.
+
 ## Manual-validation follow-up — External HTTP live response generation and Test
 
 The live work now has two independent branches sharing the accepted secure provider-observation primitive. Automatic Response generation remains separate from Test. Test consumes the already-implemented Request/Response contracts directly and has no task dependency on the earlier Request/Response UI chains.

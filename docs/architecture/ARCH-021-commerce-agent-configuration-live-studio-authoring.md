@@ -911,6 +911,29 @@ Root scalar-list shape, primitive-list filters/sort, arrays-of-arrays and null i
 
 Manual validation after C049 showed that the local/canonical split is correct but the validation presentation is not: when a Visual draft is locally invalid, `Validate response` can send null canonical placeholders and expose raw schema diagnostics such as `expected object, received null` / `Invalid input`. COMMERCE-050 keeps the authoritative server boundary unchanged for canonical candidates while diagnosing non-canonical local Visual state locally and presenting field/control-specific corrective messages. Internal paths/codes remain deterministic secondary details; ordinary users see what is wrong and how to fix it. No processing, schema, persistence, provider-I/O or navigation semantics change.
 
+#### Versioned JavaScript Response helper follow-up
+
+Manual Response authoring also identified a reusable-code gap: common provider cleanup such as stripping HTML should not require every Tool author to hand-write fragile string/regex transforms, but the accepted QuickJS sandbox must not gain npm imports, `require`, DOM access or Node host callbacks. COMMERCE-059 therefore introduces one versioned Commerce-owned helper runtime contract:
+
+1. existing JavaScript Response definitions on `quickjs-sync.v1` remain valid and keep the accepted environment with no `moda` helper namespace;
+2. new JavaScript Response definitions default to `quickjs-sync.v2`; Request JavaScript remains `quickjs-sync.v1`;
+3. v2 exposes exactly `moda.text.stripHtml(value: string): string` as an immutable guest API;
+4. the implementation is pinned `string-strip-html@13.6.2`, bundled at `code-runtime:package` time with pinned `esbuild@0.28.2` into a self-contained adjacent `helpers-v2.js` guest artifact;
+5. the worker evaluates that trusted guest bundle only for v2 Response execution, then compiles/runs authored `transform(response)` under the existing worker/QuickJS resource and isolation limits;
+6. no host callback, package loader, network/filesystem capability, Shared change or database change is introduced;
+7. existing v1 Response drafts are upgraded only by an explicit browser-local author action that preserves source/format/result schema and invalidates prior validation;
+8. both new-Tool and persisted-DRAFT Response JavaScript authoring document the v2 helper with one bounded example.
+
+The public Tool contract is the Moda helper API, not the underlying npm package. Future helpers require a separate architecture/task decision rather than opportunistic additions to v2.
+
+JavaScript Response helper task:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-059 | moda_commerce | Ready | ARCH-021-COMMERCE-045, ARCH-021-COMMERCE-046, ARCH-021-COMMERCE-047 |
+
+COMMERCE-059 is independent of the live-Test and Agent-contract follow-up workstreams.
+
 ### Manual-validation follow-up — External HTTP live response generation and Test
 
 After the zero-provider-I/O Request/Response authoring contracts were settled, live authoring is split into two independent branches that share one secure provider-observation primitive:
