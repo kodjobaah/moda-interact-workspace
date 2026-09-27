@@ -321,12 +321,12 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-061](COMMERCE-061-establish-admin-schema-exploration-domain.md) | Backend/domain: expose Admin schema exploration and bounded query-building primitives | Complete | COMMERCE-018 |
 | [COMMERCE-062](COMMERCE-062-derive-shopify-admin-result-contract.md) | Backend/compiler: derive canonical Admin resultSchema and nullable normalization semantics | Complete | COMMERCE-018 |
 | [COMMERCE-063](COMMERCE-063-compile-tool-result-contract.md) | Backend: compile source-neutral ToolResultContract and validate Result Templates | Complete | COMMERCE-043 |
-| [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Ready | COMMERCE-039, COMMERCE-061 |
-| [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Pending | COMMERCE-062, COMMERCE-064 |
+| [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Complete | COMMERCE-039, COMMERCE-061 |
+| [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Ready | COMMERCE-062, COMMERCE-064 |
 | [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Complete | COMMERCE-063 |
 | [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Complete | COMMERCE-063 |
 | [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Pending | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
-| [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Pending | COMMERCE-060, COMMERCE-064 |
+| [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Ready | COMMERCE-060, COMMERCE-064 |
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 
 Initial executable frontier for this workstream:
@@ -363,6 +363,12 @@ Key invariants:
 - Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
+
+### COMMERCE-064 Attempt 3 accepted — 2026-09-27
+
+COMMERCE-064 is **Complete / Accepted, Attempt 3**. The Admin Explore authoring handoff now keeps Request literal buffers consistent with accepted variable mappings across the real New Tool Request -> Explore -> Validate -> Use in tool -> Request flow: semantically unchanged literals retain exact raw text, changed/new literals receive bounded canonical JSON, and stale entries are removed without disturbing unrelated editor buffers. The accepted Attempt 1/2 boundaries remain intact: browser-session authoring identity, Request-only validation, exact session isolation/return, manual GraphQL authority, Cancel semantics, no provider I/O and no durable Tool creation merely for Explore navigation. Submitted Attempt 3 validation passed 55 tests across five suites, targeted ESLint and `git diff --check`; neither Attempt 3 file has filtered TypeScript diagnostics.
+
+COMMERCE-062 is already Complete, so COMMERCE-065 is promoted to **Ready**. COMMERCE-060 is already Complete, so COMMERCE-069 is also promoted to **Ready**. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
 
 ### COMMERCE-070 Attempt 1 accepted — 2026-09-27
 
