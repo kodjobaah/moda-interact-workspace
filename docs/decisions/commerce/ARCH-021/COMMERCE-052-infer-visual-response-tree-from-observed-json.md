@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 67
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-049
 enables:
@@ -454,16 +454,16 @@ The same JSON input must produce structurally equal inference output.
 
 ## Work Items
 
-- [ ] Add a pure Visual response-inference module.
-- [ ] Reuse the exact COMMERCE-048/049 authoring types and terminology.
-- [ ] Implement deterministic root/nested candidate discovery.
-- [ ] Implement scalar, object, List of objects and List of values inference.
-- [ ] Merge consistent evidence across up to 20 object-list rows.
-- [ ] Emit bounded unresolved issue codes instead of guessing ambiguous structures.
-- [ ] Respect C048/049 depth/field/node/list bounds.
-- [ ] Generate deterministic browser-local client IDs.
-- [ ] Validate every emitted candidate through `deriveVisualTreeContract(...)`.
-- [ ] Add focused pure-unit regressions.
+- [x] Add a pure Visual response-inference module.
+- [x] Reuse the exact COMMERCE-048/049 authoring types and terminology.
+- [x] Implement deterministic root/nested candidate discovery.
+- [x] Implement scalar, object, List of objects and List of values inference.
+- [x] Merge consistent evidence across up to 20 object-list rows.
+- [x] Emit bounded unresolved issue codes instead of guessing ambiguous structures.
+- [x] Respect C048/049 field/depth/node/list bounds.
+- [x] Generate deterministic browser-local client IDs.
+- [x] Validate every emitted candidate through `deriveVisualTreeContract(...)`.
+- [x] Add focused pure-unit regressions.
 
 ## Interfaces / Contracts
 
@@ -500,27 +500,27 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Inference uses only `SCALAR`, `OBJECT`, `LIST`, `SCALAR_LIST`.
-- [ ] UI/documentation terminology remains `Scalar`, `Object`, `List of objects`, `List of values`.
-- [ ] No `OBJECT_LIST`, `itemKind`, `LIST<object>` or parallel node grammar is introduced.
-- [ ] Root Visual candidate remains OBJECT/LIST only.
-- [ ] Root primitive arrays produce no Visual candidate.
-- [ ] Scalars map deterministically to string/integer/number/boolean.
-- [ ] Integer+number evidence widens to number; incompatible scalar categories are unresolved.
-- [ ] Missing/null field observations do not imply requiredness or conflict with a concrete type.
-- [ ] Every generated field defaults `omitIfMissing: true`.
-- [ ] Nested objects infer OBJECT nodes recursively.
-- [ ] Arrays of objects infer existing LIST / `List of objects`.
-- [ ] Primitive scalar arrays infer existing SCALAR_LIST / `List of values`.
-- [ ] Empty arrays, arrays of arrays and mixed/null-item arrays are not guessed.
-- [ ] LIST/SCALAR_LIST generated limit is 20, not observed length.
-- [ ] No filters/sort are inferred.
-- [ ] Unsafe keys are not silently renamed.
-- [ ] Candidate ordering is deterministic with root first and then ascending resultPath.
-- [ ] At most 16 candidates are returned.
-- [ ] C048/049 field/depth/node bounds are honored.
-- [ ] Every candidate passes `deriveVisualTreeContract(...)` before return.
-- [ ] Same input produces structurally equal output without clock/random/environment dependence.
+- [x] Inference uses only `SCALAR`, `OBJECT`, `LIST`, `SCALAR_LIST`.
+- [x] UI/documentation terminology remains `Scalar`, `Object`, `List of objects`, `List of values`.
+- [x] No `OBJECT_LIST`, `itemKind`, `LIST<object>` or parallel node grammar is introduced.
+- [x] Root Visual candidate remains OBJECT/LIST only.
+- [x] Root primitive arrays produce no Visual candidate.
+- [x] Scalars map deterministically to string/integer/number/boolean.
+- [x] Integer+number evidence widens to number; incompatible scalar categories are unresolved.
+- [x] Missing/null field observations do not imply requiredness or conflict with a concrete type.
+- [x] Every generated field defaults `omitIfMissing: true`.
+- [x] Nested objects infer OBJECT nodes recursively.
+- [x] Arrays of objects infer existing LIST / `List of objects`.
+- [x] Primitive scalar arrays infer existing SCALAR_LIST / `List of values`.
+- [x] Empty arrays, arrays of arrays and mixed/null-item arrays are not guessed.
+- [x] LIST/SCALAR_LIST generated limit is 20, not observed length.
+- [x] No filters/sort are inferred.
+- [x] Unsafe keys are not silently renamed.
+- [x] Candidate ordering is deterministic with root first and then ascending resultPath.
+- [x] At most 16 candidates are returned.
+- [x] C048/049 field/depth/node bounds are honored.
+- [x] Every candidate passes `deriveVisualTreeContract(...)` before return.
+- [x] Same input produces structurally equal output without clock/random/environment dependence.
 
 ## Mandatory Regression Scenarios
 
@@ -562,12 +562,12 @@ Add named focused tests for at least:
 
 ## Validation
 
-- [ ] focused `tests/visual-response-inference.test.ts`
+- [x] focused `tests/visual-response-inference.test.ts`
 - [ ] `npm run test:arch020-response-processing` when shared Visual assumptions are touched
 - [ ] `npm run test:arch020-external-tools-ui` is **not required** unless this pure task unexpectedly changes UI-owned code
-- [ ] targeted ESLint on changed files
-- [ ] `git diff --check`
-- [ ] changed-file TypeScript diagnostics contain no task-owned error
+- [x] targeted ESLint on changed files
+- [x] `git diff --check`
+- [x] changed-file TypeScript diagnostics contain no task-owned error
 
 ## Stop Condition
 
@@ -581,58 +581,102 @@ Keep the implementation pure and small. The purpose is to translate observed JSO
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `moda-interact-commerce/src/commerce/tool-authoring/visual-response-inference.ts`
+- `moda-interact-commerce/tests/visual-response-inference.test.ts`
 
 ### Work Completed
 
-None.
+- Corrected A1-R1: field-level null values are ignored while classifying scalar/list evidence; null items inside an observed array still produce `MIXED_ARRAY`.
+- Corrected A1-R2: nodes are reserved before descending and rolled back when a field is omitted. `nodeCount` matches the emitted recursive tree, and the deterministic 128-node prefix remains derivable.
+- Corrected A1-R3: safe source keys are traversed in sorted order until 32 inferable fields are emitted; unsafe or unresolved keys do not consume the field limit.
+- Candidate limiting applies to valid derived candidates, and merged array evidence inspects at most 20 source items in source order.
+- Added individually named regressions for all 31 mandatory scenarios plus Attempt 2 null/list, mixed array, aggregate item-bound, invalid-candidate-bound, and unsafe-key traversal cases.
+- Every emitted candidate continues to be validated by `deriveVisualTreeContract(...)`; no persisted grammar, UI, or cross-repository contract was added.
+- Reconciled Work Items, Acceptance Criteria, and Validation checkboxes. The Architect Review section was not edited.
 
 ### Validation Results
 
-Not run.
+- `./node_modules/.bin/vitest run tests/visual-response-inference.test.ts`: passed, 37 tests.
+- Targeted ESLint on both changed files: passed.
+- Changed-file diagnostics via `get_errors`: no errors in either changed file.
+- `git diff --check`: passed after the report update.
+- `npm run test:arch020-response-processing` was not run because this task changed only the inference helper/tests and did not modify shared Visual assumptions or derivation code.
+- `npm run test:arch020-external-tools-ui` was not run because no UI-owned files changed; the task explicitly marks that suite as not required for this pure task.
 
 ### Deviations
 
-None.
+- None for Attempt 2.
 
 ### Assumptions
 
-None.
+- Existing C048/C049 authoring types and `deriveVisualTreeContract(...)` remain authoritative for Visual grammar and canonical derived output.
+- Prepared launcher synchronization, dependency gate, claim, and recursive submodule materialization are authoritative startup evidence.
 
 ### Unresolved Issues
 
-None.
+- None within task scope. Repository-wide TypeScript diagnostics were not rerun; changed-file diagnostics are clean.
 
 ### Architectural Concerns
 
-None.
+- None.
+
+### Physical Worktree and Launch Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-052`, `task/ARCH-021-COMMERCE-052`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-052`, `task/ARCH-021-COMMERCE-052`.
+- Shared workspace or shared implementation checkout switched/mutated: no. Another task worktree reused: no.
+- Start synchronization: parent remote task branch fast-forwarded `not-needed`; parent origin/main incorporated `yes`; implementation remote task branch fast-forwarded `not-needed`; implementation origin/main incorporated `already-current`.
+- Recursive submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; recorded `database` commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Attempt 2 claim commit `d1012faddac8cbec1181c82609a264e92b8b6c46` was pushed by the launcher.
+- Implementation commit `0fbd643` was pushed to `origin/task/ARCH-021-COMMERCE-052`; no submodule gitlink was staged.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Attempt 2 is accepted. The implementation corrects all Attempt 1 findings while preserving the accepted C048/C049 Visual grammar and Commerce-local purity boundary.
+
+- **A1-R1 resolved:** field-level `null` contributes no conflicting evidence when the same field has concrete LIST/SCALAR_LIST observations, while `null` items inside arrays remain rejected as `MIXED_ARRAY`.
+- **A1-R2 resolved:** projection-node budget is reserved before descent and rolled back for omitted fields, so `nodeCount` reflects only emitted nodes. The deterministic 128-node case retains the valid prefix of the fourth branch and remains derivable.
+- **A1-R3 resolved:** unsafe/unresolved source keys no longer consume the 32 emitted-field allowance; traversal remains deterministic and later safe inferable fields remain eligible.
+- **A1-R4 resolved:** the focused suite now names and asserts all 31 mandatory regression scenarios, with additional direct regressions for the Attempt 1 defects and candidate/item-bound behavior.
+- **A1-R5 resolved:** Work Items and Acceptance Criteria are reconciled. Conditional broader suites remain unchecked because their documented predicates were not triggered: no shared Visual derivation code and no UI-owned code changed.
+
+The implementation continues to generate only `SCALAR`, `OBJECT`, `LIST` and `SCALAR_LIST`, validates every returned candidate through `deriveVisualTreeContract(...)`, introduces no persistence/provider I/O, and does not start COMMERCE-053.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/src/commerce/tool-authoring/visual-response-inference.ts`
+- `moda-interact-commerce/tests/visual-response-inference.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-052-infer-visual-response-tree-from-observed-json.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None.
+- Submitted focused result: `tests/visual-response-inference.test.ts` — **37/37 passed**.
+- All 31 mandatory scenarios are individually named and asserted; direct Attempt 2 regressions cover A1-R1 through A1-R4 behavior.
+- Submitted targeted ESLint — passed.
+- Submitted changed-file TypeScript diagnostics — no task-owned errors.
+- Submitted `git diff --check` — passed.
+- `test:arch020-response-processing` was not required because shared Visual assumptions/derivation code did not change.
+- `test:arch020-external-tools-ui` was not required because no UI-owned code changed.
+- Independent source review confirms the A1-R1/A1-R2/A1-R3 corrections and the required regression coverage. The compressed review snapshot does not contain `node_modules`, so Vitest could not be independently rerun in this review environment.
+- Physical worktree/start synchronization evidence remains present and conforms to the task-isolation protocol.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. The helper is pure and Commerce-local, reuses the accepted Visual authoring model and terminology, respects deterministic candidate/field/depth/node/list bounds, and delegates canonical contract validation to `deriveVisualTreeContract(...)`. No cross-repository contract, persistence mode, provider I/O, UI behavior or new Visual grammar is introduced.
 
 ### Follow-up
 
-None.
+ARCH-021-COMMERCE-052 is Complete. ARCH-021-COMMERCE-053 remains Pending in this submitted parent snapshot because its other dependencies, ARCH-021-COMMERCE-042 and ARCH-021-COMMERCE-051, are still not Complete. Do not start COMMERCE-053 from this acceptance alone.
