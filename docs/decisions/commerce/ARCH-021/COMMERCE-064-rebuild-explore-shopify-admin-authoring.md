@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 74
-executor: copilot
-claimed_at: 2026-09-27T15:20:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-039
@@ -291,24 +291,64 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None.
+Attempt 1 is not accepted. The Admin Explore direction is broadly correct, but four corrections are required before COMMERCE-064 can be accepted:
+
+1. **Preserve the originating Request literal buffers exactly.** `ShopifyAdminEditor` owns browser-local `literalText`, but both new-Tool and existing-DRAFT Explore handoffs currently write `editor.literalText: {}` and the editor has no restoration input for that buffer. A raw literal that is temporarily invalid, or valid text whose exact authoring form differs from `JSON.stringify(...)`, is therefore lost across Request -> Explore -> Request. Make the Request literal buffer controlled/restorable at the parent authoring boundary, snapshot its current value into `ToolAuthoringSession.editor.literalText`, and restore it for both new and existing Tools. Add focused regressions that preserve an invalid raw literal and an exact valid raw literal across route remount and return from Explore without durable writes.
+
+2. **Keep Explore validation Request-owned instead of re-validating unrelated Tool state.** `AdminExplorer` currently parses the whole session through `CommerceToolDefinitionSchema` and calls the full `validateShopifyAdminDefinitionAction`, so malformed/stale `responseTemplate` or Response-owned `resultSchema` buffers can prevent a valid Admin Request from being explored/validated. This regresses the COMMERCE-061 request-only compiler boundary and conflicts with R4's requirement that Explore merge only `apiVersion`, `schemaHash`, `document`, `operationName` and `variables`. Build/validate the Explore candidate from the current Admin query-authoring fields plus the Tool input schema only; preserve unrelated Response/Agent buffers opaquely and unchanged. Invalid input-schema state may remain blocking where variable compatibility cannot be established. Add regressions proving malformed unrelated Response/Agent buffers do not block a valid Request Explore round trip and are restored unchanged afterwards.
+
+3. **Implement R3's Studio composer identity contract.** The task marks the composer work item complete, but `components/studio-composer-context.tsx` still exposes only durable `toolId`/`toolRevisionId` Tool composer state and contains no transient `authoringSessionId` capable of representing an unsaved Tool. Extend the reactive Studio composer model as specified by R3 while preserving existing preview/release semantics; `sessionStorage` remains the remount/refresh recovery layer. Add focused coverage for both new unsaved and existing-DRAFT authoring identities.
+
+4. **Reconcile mandatory execution evidence in the Completion Report.** The report does not record the launcher-resolved parent/implementation worktree paths, task branches, shared-checkout non-mutation statements, start-of-attempt synchronization results, or recursive implementation-submodule preparation required by `docs/agent-worktree-isolation-policy.md`. It also gives categories rather than the exact modified-file list. Record the required evidence and exact files. If the original attempt cannot be proven to have run from the canonical dedicated task worktrees, restore/recreate those worktrees, check out the already-pushed task branches, rerun the task's required validation there, and record the corrected evidence; no code churn is required solely for this workflow remediation.
+
+The accepted parts should be preserved: namespaced/bounded `sessionStorage`, safe return-location validation, session-ID isolation, Admin-only Explore surface, representable/manual-query handling, query-field-only merge shape, Cancel semantics, no Tool persistence during Explore, and no provider I/O.
 
 ### Reviewed Files
 
-None.
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-061-establish-admin-schema-exploration-domain.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-064-rebuild-explore-shopify-admin-authoring.md`
+- `docs/agent-worktree-isolation-policy.md`
+- `components/studio-composer-context.tsx`
+- `components/studio-workspace.tsx`
+- `components/production-studio-page.tsx`
+- `app/explore/page.tsx`
+- `app/tools/page.tsx`
+- `app/tools/[id]/page.tsx`
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/shopify-admin-editor.tsx`
+- `src/studio/discovery/admin-explorer.tsx`
+- `src/studio/discovery/admin-selection.ts`
+- `src/studio/discovery/admin-argument-bindings.tsx`
+- `src/studio/discovery/admin-schema-browser.tsx`
+- `src/studio/discovery/admin-query-builder.ts`
+- `src/studio/tools/admin-validation-server-actions.ts`
+- `src/commerce/tool-authoring/admin-validation.ts`
+- `tests/tool-authoring-session.test.ts`
+- `tests/admin-explorer.test.tsx`
+- `tests/studio-workspace.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
 
 ### Validation Reviewed
 
-None.
+- Inspected the submitted Completion Report evidence: 65 focused handoff/session/workspace/builder tests and 17 Admin compiler/no-provider-I/O tests reported passing.
+- Inspected the focused regression coverage for session isolation, corrupt/missing sessions, new/existing round trips, Explore Cancel, Explorer selection/tab/literal restoration and no durable Tool creation.
+- Inspected the reported targeted ESLint, changed-file TypeScript diagnostics and `git diff --check` results.
+- Repository-wide TypeScript remains red only on the documented unrelated baseline according to the submitted report; this is not itself a C064 rejection reason.
+- No independent test rerun was performed from the review archive because it contains no installed `node_modules`; source/test inspection was sufficient to identify the corrections above.
 
 ### Architecture Conformance
 
-Pending review.
+Partially conformant. The implementation preserves the Admin-only, local-session, no-durable-write Explore architecture, but it does not yet satisfy R3's reactive composer identity, R4's exact originating Request-buffer preservation, or the COMMERCE-061 request-only validation boundary. Mandatory worktree/synchronization evidence is also absent from the Completion Report.
 
 ### Follow-up
 
-None.
+Return the same task to its configured agent path for Attempt 2. Add the focused source/test corrections above, reconcile the Completion Report evidence, rerun the required focused validation, set the task back to `review`, and STOP. Do not begin COMMERCE-065 or COMMERCE-069.
