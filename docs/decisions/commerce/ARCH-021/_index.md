@@ -191,12 +191,12 @@ The zero-provider-I/O Response authoring chain through COMMERCE-050 is architect
 
 ## Manual-validation follow-up — External HTTP live response generation and Test
 
-The live follow-up is split into four bounded tasks so network/security observation, pure JSON inference, Response Automatic composition and Test execution remain independently reviewable. COMMERCE-051 and COMMERCE-052 are executable in parallel now; COMMERCE-053/054 remain dependency-gated.
+The live follow-up is split into four bounded tasks so network/security observation, pure JSON inference, Response Automatic composition and Test execution remain independently reviewable. COMMERCE-052 is architect-accepted Complete; COMMERCE-051 remains independently executable in this snapshot, while COMMERCE-053/054 remain dependency-gated.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-051](COMMERCE-051-add-live-external-http-authoring-observation.md) | Add bounded ADMIN-authorized live provider observation for the current Request candidate | Ready | COMMERCE-041, COMMERCE-047 |
-| [COMMERCE-052](COMMERCE-052-infer-visual-response-tree-from-observed-json.md) | Infer the accepted recursive Visual tree from observed JSON using C049 `LIST` / `SCALAR_LIST` terminology | Ready | COMMERCE-049 |
+| [COMMERCE-052](COMMERCE-052-infer-visual-response-tree-from-observed-json.md) | Infer the accepted recursive Visual tree from observed JSON using C049 `LIST` / `SCALAR_LIST` terminology | Complete | COMMERCE-049 |
 | [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands the generated proposal to existing Visual rules | Pending | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
 | [COMMERCE-054](COMMERCE-054-implement-external-http-live-test-tab.md) | Execute and observe the current External HTTP candidate in Test without duplicating Response authoring | Pending | COMMERCE-051, COMMERCE-053 |
 
@@ -204,7 +204,6 @@ Current live-authoring frontier:
 
 ```text
 ARCH-021-COMMERCE-051
-ARCH-021-COMMERCE-052
 ```
 
 Dependency graph:
