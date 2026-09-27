@@ -975,3 +975,13 @@ Phase 2 is architect-accepted Complete. The subsequent simplification checkpoint
 Terminal `ARCH-021-SYSTEM-TEST-001` remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Phase 3 therefore resumes on the simplified architecture. COMMERCE-016, COMMERCE-017, COMMERCE-018, COMMERCE-019, COMMERCE-023 and COMMERCE-024 are architect-accepted Complete. COMMERCE-020 is the current Ready frontier; COMMERCE-021 and COMMERCE-022 remain gated on COMMERCE-020.
 
 [Architecture](ARCH-021-commerce-agent-configuration-live-studio-authoring.md)
+
+## ARCH-022 — Code cleanup (2026-09-27)
+
+Phase 1 is agreed with ten independent Ready repository-formatting tasks. Each task pins or
+reconciles repository-local Prettier `3.9.6`, establishes write/check commands, protects
+generated and nested-submodule boundaries, and performs one formatting sweep. The
+`moda-interact-documentation` repository is recorded as an ownership gap because the current
+agent definition provides no documentation task domain/owner.
+
+[Architecture](ARCH-022-code-cleanup.md)

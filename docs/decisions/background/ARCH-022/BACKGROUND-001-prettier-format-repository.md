@@ -1,0 +1,263 @@
+---
+id: ARCH-022-BACKGROUND-001
+architecture_id: ARCH-022
+title: Install Prettier baseline and format background service
+task_kind: implementation
+domain: background
+repository: moda-interact-background
+assigned_agent: moda_background
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: ready
+priority: 20
+executor: null
+claimed_at: null
+attempt: 0
+depends_on: []
+enables: []
+created: 2026-09-27
+updated: 2026-09-27
+---
+
+# Install Prettier baseline and format background service
+
+## Architecture
+
+Architecture ID: `ARCH-022`
+
+Architecture document:
+
+`docs/architecture/ARCH-022-code-cleanup.md`
+
+Coordinator: `moda_architect`
+
+## Objective
+
+Establish the ARCH-022 Phase-1 Prettier baseline in `moda-interact-background` and perform one
+repository-owned formatting sweep without changing runtime behaviour.
+
+## Context
+
+ARCH-022 intentionally decomposes formatting by repository. A formatter pass can create a
+large textual diff, so the diff must remain attributable to one repository owner and must not
+cross nested-submodule or generated-output boundaries.
+
+The canonical formatter version for Phase 1 is exact Prettier `3.9.6`. No additional style
+plugin or repository-wide semantic cleanup is authorised by this task.
+
+## Scope
+
+- `moda-interact-background/package.json` and `moda-interact-background/package-lock.json` where required for
+  repository-local formatter tooling.
+- `moda-interact-background/.prettierignore`.
+- Repository-owned Prettier-supported source, test, configuration and documentation files
+  changed only by the one-time formatter pass.
+- Existing repository validation required below.
+
+## Out of Scope
+
+- Functional refactoring or behavioural changes.
+- Fixing unrelated lint/type/test/build failures.
+- ESLint rule changes or ESLint/Prettier integration changes.
+- Import sorting or new Prettier plugins.
+- Formatting generated output, package lockfile content, dependency trees or ignored secrets.
+- Editing another repository from this task.
+- Workspace-root formatter changes.
+
+## Requirements
+
+### R1 — exact local formatter dependency
+
+Ensure `prettier` is an exact development dependency:
+
+```json
+"prettier": "3.9.6"
+```
+
+When the current manifest does not already satisfy that exact version, use the repository's
+existing npm workflow (`npm install --save-dev --save-exact prettier@3.9.6`) so
+`package.json` and `package-lock.json` remain consistent.
+
+### R2 — deterministic write/check commands
+
+Expose these repository-local commands exactly:
+
+```json
+"format": "prettier --write .",
+"format:check": "prettier --check ."
+```
+
+### R3 — explicit ignore boundary
+
+Create or reconcile `.prettierignore`.
+
+It MUST exclude at least:
+
+```text
+node_modules/
+package-lock.json
+```
+
+It MUST also mirror relevant generated/build/cache/test-artifact paths from this repository's
+`.gitignore` so the formatter does not rewrite generated or ephemeral output. Preserve
+existing intentional ignore entries unless they are demonstrably obsolete.
+
+Do not ignore normal repository-owned source/configuration files merely to make the formatter
+check pass. In particular, `package.json` must remain formatter-owned.
+This repository contains the independently owned `database/` Git submodule. `.prettierignore`
+MUST include `database/`, and the task MUST verify that formatting produced no database
+submodule worktree diff or gitlink change.
+
+### R4 — one-time formatting sweep
+
+Run:
+
+```text
+npm run format
+```
+
+The resulting source/configuration/documentation changes must be formatting-only. If the
+formatter exposes a parse error, resolve only formatter/tooling configuration that belongs to
+this task; do not rewrite program semantics as a workaround.
+
+### R5 — clean non-mutating formatter check
+
+After the write pass, `npm run format:check` must exit successfully without changing files.
+A second formatter write pass must be idempotent.
+
+### R6 — preserve repository baseline semantics
+
+Run the task Validation below. A pre-existing documented baseline failure may be recorded
+under the standard development-baseline rules, but any new failure in a task-owned changed
+file is a task regression and must be corrected before review.
+
+## Work Items
+
+- [ ] Reconcile exact Prettier `3.9.6` dependency state.
+- [ ] Add/reconcile deterministic formatting scripts.
+- [ ] Add/reconcile `.prettierignore` with generated-output and ownership exclusions.
+- [ ] Run the one-time repository formatting sweep.
+- [ ] Inspect the full diff and remove any semantic or out-of-scope change.
+- [ ] Run all required Validation.
+- [ ] Complete the Completion Report and hand the task back for architect review.
+
+## Interfaces / Contracts
+
+ARCH-022 development-tooling convention:
+
+```text
+Prettier version: 3.9.6 exact
+write command:    repository-local npm script
+check command:    format:check -> prettier --check .
+style options:    Prettier defaults unless an existing repo-local config already requires more
+ownership:        never format another repository/nested submodule
+```
+
+No runtime cross-service contract is introduced.
+
+## Dependencies
+
+None.
+
+## Enables
+
+None. Phase-1 repository formatting tasks are intentionally independent.
+
+## Acceptance Criteria
+
+- [ ] `moda-interact-background` uses exact Prettier `3.9.6` as repository-local development tooling.
+- [ ] A deterministic Prettier write command exists for the repository.
+- [ ] `npm run format:check` is non-mutating and passes after the write sweep.
+- [ ] `.prettierignore` excludes dependencies, generated/ephemeral output and lockfile content.
+- [ ] No repository-owned source/configuration file is excluded merely to hide formatting drift.
+- [ ] The committed formatting diff contains no functional/refactor changes.
+- [ ] A repeated formatter write pass produces no further diff.
+- [ ] Required repository validation has been run and task-owned regressions are absent.
+- [ ] `git diff --check` passes.
+- [ ] The nested `database/` submodule has no task-owned worktree diff or gitlink change.
+
+## Validation
+
+- [ ] `npm run format:check`
+- [ ] `npm run build`
+- [ ] `npm test`
+- [ ] `git diff --check`
+- [ ] Verify `git -C database status --short` is empty and the parent gitlink is unchanged.
+
+
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set
+the task to `review`, return the Completion Report to `moda_architect` and STOP. Do not begin
+another ARCH-022 task or opportunistic cleanup.
+
+## Implementation Notes
+
+This is intentionally a mechanical cleanup task. The implementation should prefer a broad,
+formatter-generated diff over hand-editing files one by one, but every changed file still
+must remain inside this repository's ownership boundary.
+
+Do not add a `.prettierrc` merely to reduce diff size. ARCH-022 Phase 1 uses the pinned
+Prettier defaults unless an existing repository-local configuration already establishes a
+necessary exception.
+
+## Completion Report
+
+### Status
+
+Not Started
+
+### Files Changed
+
+None.
+
+### Work Completed
+
+None.
+
+### Validation Results
+
+None.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+None.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None.
+
+## Architect Review
+
+### Review Status
+
+Pending
+
+### Review Notes
+
+None.
+
+### Reviewed Files
+
+None.
+
+### Validation Reviewed
+
+None.
+
+### Architecture Conformance
+
+Pending.
+
+### Follow-up
+
+None.
