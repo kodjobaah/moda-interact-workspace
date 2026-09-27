@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 73
-executor: copilot
-claimed_at: 2026-09-27T12:34:22Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-053
@@ -255,18 +255,18 @@ attempt returns for architect review rather than modifying its task from here.
 
 ## Work Items
 
-- [ ] Hide existing Response-processing/result disclosures whenever Automatic is the
+- [x] Hide existing Response-processing/result disclosures whenever Automatic is the
       active authoring mode.
-- [ ] Add a bounded Automatic failure presentation over COMMERCE-057 diagnostics.
-- [ ] Show HTTP status, expected/received media type and safe provider body preview
+- [x] Add a bounded Automatic failure presentation over COMMERCE-057 diagnostics.
+- [x] Show HTTP status, expected/received media type and safe provider body preview
       where available.
-- [ ] Explain the stable decode reason in user-oriented language.
-- [ ] State explicitly that the existing Response definition was left unchanged.
-- [ ] Preserve existing Visual/Direct/JavaScript state on failed generation.
-- [ ] Ensure generation-context changes invalidate transient candidates/failures.
-- [ ] Keep provider body preview escaped/plain text.
-- [ ] Add the exact valid-A -> invalid-B regression.
-- [ ] Preserve successful Automatic -> Visual behaviour.
+- [x] Explain the stable decode reason in user-oriented language.
+- [x] State explicitly that the existing Response definition was left unchanged.
+- [x] Preserve existing Visual/Direct/JavaScript state on failed generation.
+- [x] Ensure generation-context changes invalidate transient candidates/failures.
+- [x] Keep provider body preview escaped/plain text.
+- [x] Add the exact valid-A -> invalid-B regression.
+- [x] Preserve successful Automatic -> Visual behaviour.
 
 ## Interfaces / Contracts
 
@@ -367,6 +367,10 @@ Automatic attempt failed
 
 Ready for Architect Review
 
+Attempt 2 reconciled the authoritative Work Items as complete per A1-R1. No
+implementation source or test changes were required; the reviewed Attempt 1
+implementation remains unchanged.
+
 ### Files Changed
 
 - `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
@@ -422,6 +426,9 @@ Parent remote task branch fast-forwarded: not-needed
 Parent origin/main incorporated: already-current
 Implementation remote task branch fast-forwarded: not-needed
 Implementation origin/main incorporated: already-current
+Parent task worktree reused: yes
+Implementation task worktree reused: yes
+Another task worktree reused: no
 
 Recursive submodule sync: passed
 Recursive submodule update/init: passed
@@ -431,10 +438,12 @@ Implementation repository: moda-interact-commerce
 Implementation commit: beb9939c568d1d19c7ad22d7f387b64fbe569a38
 Implementation remote branch: origin/task/ARCH-021-COMMERCE-058
 Implementation pushed: yes
+Attempt 2 implementation branch reverified clean at the same commit: yes
 
 Parent workspace task file: docs/decisions/commerce/ARCH-021/COMMERCE-058-make-automatic-failures-current-and-actionable.md
 Parent remote branch: origin/task/ARCH-021-COMMERCE-058
 Parent claim commit: 9e4367eeaaa18bb86064d1776dfaf601d0ab2c09 (pushed)
+Attempt 2 claim commit: 8ca69b5aa054eade239f74b932eb05ba05506c16 (pushed)
 Parent task/report changes pushed: yes
 Implementation submodule gitlink staged: no
 Merged to implementation main: no
