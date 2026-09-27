@@ -1058,7 +1058,7 @@ Implementation tasks:
 |---|---|---|---|
 | ARCH-021-COMMERCE-060 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
-| ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
 | ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
@@ -1066,8 +1066,15 @@ Implementation tasks:
 | ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
+Current independent execution frontier after COMMERCE-062 acceptance:
+
+```text
+COMMERCE-064    COMMERCE-066    COMMERCE-067    COMMERCE-070
+```
+
+COMMERCE-070 is newly Ready because COMMERCE-060 and COMMERCE-062 are both Complete. COMMERCE-064, COMMERCE-066 and COMMERCE-067 were already Ready from their independent dependency chains. COMMERCE-065 remains Pending until COMMERCE-064 is Complete.
 Current remaining executable frontier in this workstream after COMMERCE-066 acceptance:
 
 ```text
@@ -1302,7 +1309,7 @@ docs/decisions/commerce/ARCH-021/
 
 | ARCH-021-COMMERCE-060 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
-| ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
 | ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
@@ -1310,7 +1317,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1339,6 +1346,29 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-062 Attempt 2 accepted
+
+- Accepted implementation `622add6`: compatible repeated GraphQL response keys now merge recursively after semantic validation, preserving aliases, selected child unions, required-key unions and proven array bounds without last-write-wins behavior.
+- Accepted direct canonical-equivalence coverage for repeated aliased `nodes` selections versus the equivalent single merged selection.
+- Accepted the real pinned `QueryRoot.nodes(ids: [...])` nullable-element regression; the literal IDs establish a truthful finite bound and derivation rejects `[Node]!` with `UNREPRESENTABLE_NULLABLE_LIST` as required.
+- Accepted recorded validation: required regression packet 42/42, targeted ESLint and `git diff --check` passed; repository-wide TypeScript remains red only on unrelated diagnostics, with zero diagnostics in the C062 Attempt 2 changed files.
+- Marked COMMERCE-062 Complete. COMMERCE-060 is already Complete, so COMMERCE-070 is promoted to Ready. COMMERCE-065 remains Pending until COMMERCE-064 is Complete.
+
+### 2026-09-27 — COMMERCE-062 Attempt 1 changes requested
+
+- Accepted the pure Admin result-schema derivation, alias/nullability mapping,
+  explicit serialized-scalar map, query-proven list bounds, canonical schema
+  representation, nullable-output normalization and authenticated non-mutating
+  authoring action in substance.
+- Returned COMMERCE-062 to Ready because a valid GraphQL document can repeat the
+  same merge-compatible response key with complementary child selections, while
+  the current derivation rejects differing per-occurrence schemas as
+  `DUPLICATE_RESPONSE_KEY` instead of deriving the actual merged response shape.
+- Required a direct real-schema regression for nullable list elements
+  (`QueryRoot.nodes: [Node]!`) to prove the existing
+  `UNREPRESENTABLE_NULLABLE_LIST` behavior.
+- COMMERCE-065 and COMMERCE-070 remain Pending on their other dependencies.
 
 ### 2026-09-27 — Shopify Admin result-contract / Result Template workstream defined
 
