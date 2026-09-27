@@ -15,8 +15,6 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-021-COMMERCE-055
-  - ARCH-021-COMMERCE-068
 enables: []
 created: 2026-09-27
 updated: 2026-09-27
