@@ -177,16 +177,16 @@ Produces no new runtime/durable contract beyond the already-canonical persisted 
 
 ## Acceptance Criteria
 
-- [ ] Shopify Request contains document, operation and mappings but no editable result schema.
-- [ ] Shopify Response owns resultPath.
-- [ ] A valid resultPath derives and installs the canonical local `resultSchema`.
-- [ ] Invalid resultPath text remains visible and actionable.
-- [ ] Query changes invalidate prior derived-result success.
-- [ ] Authors can inspect the resulting `data.values` shape without editing JSON Schema.
-- [ ] New Tool derivation causes no durable write.
-- [ ] Persisted-DRAFT derivation does not save automatically.
-- [ ] Manual GraphQL remains supported.
-- [ ] Tab navigation remains ungated.
+- [x] Shopify Request contains document, operation and mappings but no editable result schema.
+- [x] Shopify Response owns resultPath.
+- [x] A valid resultPath derives and installs the canonical local `resultSchema`.
+- [x] Invalid resultPath text remains visible and actionable.
+- [x] Query changes invalidate prior derived-result success.
+- [x] Authors can inspect the resulting `data.values` shape without editing JSON Schema.
+- [x] New Tool derivation causes no durable write.
+- [x] Persisted-DRAFT derivation does not save automatically.
+- [x] Manual GraphQL remains supported.
+- [x] Tab navigation remains ungated.
 
 ## Validation
 
