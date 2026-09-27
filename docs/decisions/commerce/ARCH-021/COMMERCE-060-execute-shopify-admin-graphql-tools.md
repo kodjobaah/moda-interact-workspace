@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 72
 executor: null
 claimed_at: null
@@ -294,24 +294,47 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None.
+Attempt 1 is structurally aligned with the Admin execution architecture: it reuses the pinned Admin compiler before session/provider work, resolves the authorized shop's offline token server-side, pins the `2026-07` endpoint, bounds provider response consumption, validates `resultPath`/persisted `resultSchema`, preserves the response-template boundary, and leaves Storefront/policy/External HTTP execution intact.
+
+One task-scoped provider-error defect remains. The implementation maps HTTP `429` to `THROTTLED`, but Shopify Admin GraphQL normally reports rate limiting as an HTTP `200` GraphQL error whose `errors[n].extensions.code` is `THROTTLED`. `src/commerce/query/admin.ts` currently returns `UNAVAILABLE` for every non-empty GraphQL `errors` array, so real Admin throttling loses the required Commerce `THROTTLED`/retryable semantics.
+
+Attempt 2 correction contract:
+
+1. After decoding a successful HTTP GraphQL envelope, inspect bounded GraphQL error entries before the generic GraphQL-error fallback.
+2. If any error has `extensions.code === "THROTTLED"`, return Commerce `THROTTLED` with `retryable: true`; do not expose provider messages, extensions, request IDs, access tokens or other provider details.
+3. Preserve the existing generic safe mapping for other GraphQL errors unless an already-established Commerce mapping requires otherwise.
+4. Add a focused regression for an HTTP `200` Admin response containing a GraphQL `THROTTLED` error and prove the returned result is `THROTTLED`, retryable, and credential/provider-detail safe. The defensive HTTP-429 regression may remain.
+5. Rerun the focused Admin execution/DefinitionExecutor/backend compatibility packet, targeted lint, changed-file diagnostics and `git diff --check`. No unrelated source churn is requested.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/src/commerce/query/admin.ts`
+- `moda-interact-commerce/src/commerce/execution/executor.ts`
+- `moda-interact-commerce/src/commerce/execution/ports.ts`
+- `moda-interact-commerce/src/commerce/execution/renderer.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
+- `moda-interact-commerce/src/commerce/integration/backend/executors.ts`
+- `moda-interact-commerce/tests/admin-query-execution.test.ts`
+- `moda-interact-commerce/tests/backend-integration.test.ts`
+- `moda-interact-commerce/tests/definition-execution.test.ts`
 
 ### Validation Reviewed
 
-None.
+- Recorded focused compatibility run: 60 tests passed.
+- Recorded targeted ESLint: passed.
+- Recorded changed-file diagnostics: clean.
+- Recorded `git diff --check`: passed.
+- Recorded Shopify Admin `2026-07` schema validation: passed.
+- Architect static review confirmed the submitted GraphQL-error branch maps every non-empty `errors` array to `UNAVAILABLE`; therefore the current tests do not cover Shopify's normal HTTP-200 `THROTTLED` error path.
 
 ### Architecture Conformance
 
-Pending review.
+Changes Requested. Credential ownership, tenant/shop authority, endpoint pinning, compiler reuse, bounded provider I/O, result validation, rendering, and preservation of existing execution paths conform. Provider throttling semantics do not yet conform because the real Admin GraphQL throttle signal is not recognized.
 
 ### Follow-up
 
-None.
+Return the same task for Attempt 2 after the bounded GraphQL `THROTTLED` mapping and regression are complete. COMMERCE-069 and COMMERCE-070 remain dependency-gated.
