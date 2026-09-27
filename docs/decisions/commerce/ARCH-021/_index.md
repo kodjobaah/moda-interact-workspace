@@ -152,7 +152,7 @@ COMMERCE-039 is **Complete / Accepted, Attempt 6**. New Tool authoring remains b
 
 ## Manual-validation follow-up — External HTTP Request tab
 
-Developer manual review of the completed COMMERCE-039 flow identified bounded Request-tab authoring defects. These follow-up tasks correct the Request contract and UI before review moves to the Response tab. They do not reopen COMMERCE-039 and they do not introduce Phase 2 tab gating.
+Developer manual review of the completed COMMERCE-039 flow identified bounded Request-tab authoring defects. These follow-up tasks correct the Request contract and UI as one independent manual-validation workstream. They do not reopen COMMERCE-039 and they do not introduce Phase 2 tab gating.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
@@ -167,6 +167,134 @@ ARCH-021-COMMERCE-042
 ```
 
 The Request-tab follow-up remains zero-provider-I/O. Request validation/preview answers what request will be constructed; the later Test-tab review will determine the separate live-provider test behaviour.
+
+## Manual-validation follow-up — External HTTP Response tab
+
+Response-tab manual review identified a separate bounded workstream. It is independent of COMMERCE-040..042 and may execute in parallel because it consumes only already-Complete Phase 3 capabilities plus its own response-task chain.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-043](COMMERCE-043-derive-visual-response-result-contract.md) | Derive Visual result schemas from projection authoring instead of separately maintained shape JSON | Complete | COMMERCE-016, COMMERCE-021, COMMERCE-039 |
+| [COMMERCE-044](COMMERCE-044-validate-external-http-response-authoring.md) | Add Response-only authoritative Direct/Visual/JavaScript validation with Response-local diagnostics | Complete | COMMERCE-043, COMMERCE-019, COMMERCE-023 |
+| [COMMERCE-045](COMMERCE-045-complete-external-http-response-tab-authoring.md) | Complete Response-tab Source-path, JavaScript panel, derived-contract and per-mode local-draft UX | Complete | COMMERCE-043, COMMERCE-044, COMMERCE-006, COMMERCE-039 |
+| [COMMERCE-048](COMMERCE-048-support-nested-visual-response-results.md) | Add bounded recursive Visual result trees with Commerce-owned result-schema validation | Complete | COMMERCE-045 |
+| [COMMERCE-049](COMMERCE-049-support-primitive-scalar-arrays-in-visual-results.md) | Add an explicit Visual list-of-scalar-values node for results such as `{tags:["red","blue"]}` | Complete | COMMERCE-048 |
+| [COMMERCE-050](COMMERCE-050-make-response-validation-diagnostics-actionable.md) | Replace raw Response validation parser errors with field-specific corrective diagnostics | Complete | COMMERCE-049 |
+
+Current Response-tab manual-validation frontier:
+
+```text
+No implementation task currently Ready in this Response chain.
+```
+
+The zero-provider-I/O Response authoring chain through COMMERCE-050 is architect-accepted Complete. Invalid local Visual state is diagnosed locally, canonical candidates still use authoritative server validation, configuration issues are field/control-specific, and action-level validation-system failures no longer masquerade as Response-field errors. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to later Test-tab review. All authoring tabs remain freely navigable.
+
+## Manual-validation follow-up — External HTTP live response generation and Test
+
+The live follow-up is split into four bounded tasks so network/security observation, pure JSON inference, Response Automatic composition and Test execution remain independently reviewable. COMMERCE-051 and COMMERCE-052 are executable in parallel now; COMMERCE-053/054 remain dependency-gated.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-051](COMMERCE-051-add-live-external-http-authoring-observation.md) | Add bounded ADMIN-authorized live provider observation for the current Request candidate | Ready | COMMERCE-041, COMMERCE-047 |
+| [COMMERCE-052](COMMERCE-052-infer-visual-response-tree-from-observed-json.md) | Infer the accepted recursive Visual tree from observed JSON using C049 `LIST` / `SCALAR_LIST` terminology | Ready | COMMERCE-049 |
+| [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands the generated proposal to existing Visual rules | Pending | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
+| [COMMERCE-054](COMMERCE-054-implement-external-http-live-test-tab.md) | Execute and observe the current External HTTP candidate in Test without duplicating Response authoring | Pending | COMMERCE-051, COMMERCE-053 |
+
+Current live-authoring frontier:
+
+```text
+ARCH-021-COMMERCE-051
+ARCH-021-COMMERCE-052
+```
+
+Dependency graph:
+
+```text
+COMMERCE-041 + COMMERCE-047 -> COMMERCE-051 ----+
+                                                 |
+COMMERCE-049 ----------------> COMMERCE-052 ----+--> COMMERCE-053 -> COMMERCE-054
+                                                 ^
+COMMERCE-042 + COMMERCE-050 ---------------------+
+```
+
+Canonical terminology remains:
+
+```text
+SCALAR       -> Scalar
+OBJECT       -> Object
+LIST         -> List of objects
+SCALAR_LIST  -> List of values
+```
+
+`Automatic` is browser-local authoring state only and must never become a persisted/runtime processing kind. A successful Automatic run installs an existing `VisualAuthoringRoot` and switches to the normal Visual rules editor. Test executes/observes only; it must not expose Source-path/Visual/schema/JavaScript-response/Automatic authoring controls.
+
+The Request preview, Automatic flow and Test share one Sample Tool arguments value. None of COMMERCE-051..054 writes a live-test publication receipt; `LIVE_TEST_REQUIRED` remains unsatisfied until a later exact-saved-revision receipt task is explicitly defined.
+
+
+### COMMERCE-050 Attempt 2 accepted — 2026-09-27
+
+COMMERCE-050 is **Complete / Accepted, Attempt 2**. Invalid local Visual authoring
+remains browser-local with field/control-specific corrective guidance, canonical
+Response candidates retain authoritative zero-I/O validation, and action-level
+`DATABASE_UNAVAILABLE` / `INTERNAL_ERROR` / `FORBIDDEN` / rejected-Promise failures
+now render as bounded validation-system diagnostics without fabricated Response
+paths or raw server messages. Submitted evidence includes 47/47 External HTTP UI and
+54/54 Response-validation/Server Action tests, targeted lint/diff checks and zero
+C050-owned TypeScript diagnostics. The one common-packet lifecycle fixture failure is
+unchanged and outside C050's presentation scope. No downstream task is enabled.
+
+### COMMERCE-049 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-049 is **Complete / Accepted, Attempt 1**. Visual response trees now support explicit `SCALAR_LIST` leaves for primitive arrays such as `{tags:["red","blue"]}` while preserving object-row `LIST` semantics. Item type remains owned by the Commerce result schema, runtime projection preserves source order and the accepted work/deadline bounds, Response validation/publication reuse the C048 helpers, and Studio clearly separates `List of values` from `List of objects` with browser-local branch retention. Submitted evidence totals 165 focused passing tests with lint/diff/source audits clean and no C049-owned type diagnostics. Manual review also identified a separate cross-Visual diagnostic-presentation issue: Validate response can currently show raw null-placeholder/Zod messages when the local Visual tree is invalid. COMMERCE-050 is promoted to **Ready** for that bounded UX correction.
+
+### COMMERCE-045 Attempt 2 accepted — 2026-09-26
+
+COMMERCE-045 is **Complete / Accepted, Attempt 2**. The final Response-tab composition now keeps Direct/Visual/JavaScript mode drafts and Visual OBJECT/LIST shape drafts independent, validates the exact active mode, invalidates prior Response-validation success on every relevant edit (including rejected local Visual edits), and renders Visual processing/derived-contract disclosures from the current local shape rather than stale canonical buffers. The accepted UI also retains invalid raw edits, uses the existing CodeMirror JavaScript response editor, derives Visual result contracts through COMMERCE-043, consumes COMMERCE-044 Response-only validation, performs no provider I/O and introduces no tab gating. Submitted validation passed 31 Response UI, 47 external validation/action, 85 common authoring, 12 New Tool and 14 CodeMirror tests plus targeted lint/diff/changed-file diagnostics. COMMERCE-048 is promoted to **Ready** for the separately scoped nested Visual result-tree extension.
+
+### Nested Visual result follow-up — COMMERCE-048
+
+COMMERCE-048 is **Complete / Accepted, Attempt 1**. It replaces the preproduction flat Visual root grammar with one canonical Commerce-owned recursive `kind:"VISUAL"` tree and moves Commerce result/output schema parsing and validation behind `CommerceResultSchemaSchema` / `compileCommerceResultSchema(...)`, while keeping genuine shared input/descriptor contracts in Shared 0.14.2. Nested OBJECT/LIST projection, relative paths, per-list filter/sort/limit, bounded work, recursive authoring/reconstruction, publication and fixture/live output validation are now composed through the accepted Commerce helpers. Submitted evidence includes a 182-test focused C048 batch and 33/33 External UI tests with zero task-owned type diagnostics. Primitive scalar arrays remain deliberately outside C048 and are now the Ready COMMERCE-049 follow-up.
+
+### COMMERCE-043 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-043 is **Complete / Accepted, Attempt 1**. Visual OBJECT/LIST projected fields now carry bounded scalar result types, `omitIfMissing` deterministically controls requiredness, and one Commerce-owned helper derives the canonical OBJECT or `{ items: [...] }` LIST `resultSchema`. Compatible persisted Visual definitions reconstruct editable field types without new durable metadata; incompatible projection/schema pairs fail explicitly. Publication compatibility reuses the same rule, Visual mode no longer requires independently editable `Response shape JSON`, and Direct/JavaScript schema behavior remains unchanged. The submitted packet passed 41 focused Visual/UI/publication tests, 85 common Tool-authoring tests and 45 External authoring-validation tests, with targeted ESLint/diff checks clean and no task-owned type diagnostics. COMMERCE-044 is promoted to **Ready**; COMMERCE-045 remains Pending.
+
+### COMMERCE-044 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-044 is **Complete / Accepted, Attempt 1**. Response now has a named ADMIN-authorized, non-mutating validator for Direct, Visual OBJECT/LIST and JavaScript authoring. Direct/Visual JSON and Source-path rules, bounded result schemas, Visual projection/filter/sort/limit rules and COMMERCE-043 derived-schema compatibility are checked at deterministic Response-local paths; compatible persisted LIST bounds remain accepted. JavaScript validation compiles `transform(response)` without executing it, and integration coverage proves the Response-only path performs no connection, credential, DNS, transport or Tool/ToolRevision write operations. The submitted focused validation/Server Action packet passed 52 tests with targeted ESLint and diff checks clean and no changed-file TypeScript diagnostics. COMMERCE-045 is promoted to **Ready** for final Response-tab UX wiring.
+
+## Manual-validation follow-up — QuickJS runtime adapter
+
+Manual Request-tab validation also exposed a lower-level runtime-loader defect independent of the Request/Response UI workstreams. The accepted sandbox contract remains valid, but the current `quickjs-emscripten` adapter fails when the real Next.js Server Action initializes the engine (`RUNTIME_UNAVAILABLE`) even though standalone runtime/package proofs pass.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-046](COMMERCE-046-replace-quickjs-emscripten-with-quickjs-ng-wasi.md) | Replace the Emscripten QuickJS adapter with one packaged QuickJS-NG/WASI runtime and shared structured runtime logging | Complete | COMMERCE-017, COMMERCE-040, COMMERCE-041 |
+| [COMMERCE-047](COMMERCE-047-surface-bounded-javascript-compiler-diagnostics.md) | Preserve bounded QuickJS-NG compiler causes through Request validation and the Request UI | Complete | COMMERCE-046 |
+
+Current runtime-adapter state:
+
+```text
+COMMERCE-046   Complete
+      |
+      v
+COMMERCE-047   Complete
+```
+
+COMMERCE-046 is independent of COMMERCE-042 and COMMERCE-043..045 and may execute in parallel. It changes only the sandbox engine adapter/package/logging implementation; `quickjs-sync.v1`, Tool-definition shapes, Request/Response authoring semantics and the production JavaScript executor gate remain unchanged.
+
+COMMERCE-046 and COMMERCE-047 are architect-accepted Complete. The bounded QuickJS runtime-adapter/compiler-diagnostic follow-up chain has no remaining implementation task.
+
+
+
+### COMMERCE-047 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-047 is **Complete / Accepted, Attempt 1**. Bounded QuickJS-NG Request compiler causes now survive Worker -> KernelResult -> Request processor -> authoring validation -> Request UI, capped at 512 UTF-8 bytes and without source, stack, host-path, Tool-argument or provider/customer-data leakage. Operational runtime failures remain opaque and use the COMMERCE-046 shared structured logging boundary; expected guest syntax/entrypoint failures remain normal authoring validation results and do not emit error-level operational logs. The submitted packet passed packaging/smoke, 12 runtime proofs, 7 Request processor tests, 47 validation/Server Action tests, 21 External UI tests, targeted lint/source audits and diff checks with no task-owned type diagnostics. The runtime-adapter/compiler-diagnostic follow-up chain is now Complete.
+
+### COMMERCE-046 Attempt 1 accepted — 2026-09-26
+
+COMMERCE-046 is **Complete / Accepted, Attempt 1**. The Emscripten adapter is replaced by the packaged `quickjs-wasi@3.6.2` / QuickJS-NG runtime while preserving `quickjs-sync.v1`, request/response behavior, worker supervision and shared structured runtime logging. Packaging/smoke/runtime/request/response/authoring validation passed, and real Next.js manual validation now reaches the guest compiler rather than returning `RUNTIME_UNAVAILABLE`. COMMERCE-047 is promoted to **Ready** for bounded compiler-message propagation.
+COMMERCE-047 completed the deliberately small diagnostic-fidelity follow-up discovered during manual validation of COMMERCE-046.
 
 
 ### COMMERCE-041 Attempt 1 accepted — 2026-09-26
