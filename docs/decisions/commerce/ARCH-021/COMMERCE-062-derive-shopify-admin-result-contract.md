@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
 executor: copilot
 claimed_at: 2026-09-27T14:19:22Z
@@ -150,13 +150,13 @@ Any server/service action exposed for UI consumption returns the derived result 
 
 ## Work Items
 
-- [ ] Add canonical Admin GraphQL-selection -> `CommerceResultSchema` derivation.
-- [ ] Map aliases, object fields, scalars and bounded arrays deterministically.
-- [ ] Encode GraphQL nullability through required/optional Commerce properties.
-- [ ] Add pure nullable-output normalization semantics/helper for later runtime integration.
-- [ ] Add deterministic canonical equality/fingerprint behavior for a derived schema.
-- [ ] Expose a non-mutating authoring derivation boundary if required by current Studio services.
-- [ ] Add focused derivation, alias, nullability, list-bound and unsupported-scalar tests.
+- [x] Add canonical Admin GraphQL-selection -> `CommerceResultSchema` derivation.
+- [x] Map aliases, object fields, scalars and bounded arrays deterministically.
+- [x] Encode GraphQL nullability through required/optional Commerce properties.
+- [x] Add pure nullable-output normalization semantics/helper for later runtime integration.
+- [x] Add deterministic canonical equality/fingerprint behavior for a derived schema.
+- [x] Expose a non-mutating authoring derivation boundary through an authenticated Server Action.
+- [x] Add focused derivation, alias, nullability, list-bound and unsupported-scalar tests.
 
 ## Interfaces / Contracts
 
@@ -189,26 +189,26 @@ No new cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] A valid Admin query/resultPath deterministically derives one canonical Commerce result schema without provider I/O.
-- [ ] GraphQL response aliases become the canonical result keys.
-- [ ] Unselected Shopify fields never appear in the result contract.
-- [ ] Non-null object fields are required Commerce properties.
-- [ ] Nullable object fields are optional Commerce properties.
-- [ ] Pure normalization semantics omit `null` optional object fields and reject `null` required fields.
-- [ ] Selected list shapes are emitted only when a truthful finite `maxItems` is established.
-- [ ] Unrepresentable nullable/list/scalar shapes return actionable derivation issues rather than guessed schemas.
-- [ ] Generated strings are bounded.
-- [ ] Canonical equality/fingerprint behavior is deterministic across equivalent derivations.
-- [ ] Authoring derivation creates no Tool/ToolRevision and performs no Shopify provider request.
-- [ ] Existing Admin compiler validation remains green.
+- [x] A valid Admin query/resultPath deterministically derives one canonical Commerce result schema without provider I/O.
+- [x] GraphQL response aliases become the canonical result keys.
+- [x] Unselected Shopify fields never appear in the result contract.
+- [x] Non-null object fields are required Commerce properties.
+- [x] Nullable object fields are optional Commerce properties.
+- [x] Pure normalization semantics omit `null` optional object fields and reject `null` required fields.
+- [x] Selected list shapes are emitted only when a truthful finite `maxItems` is established.
+- [x] Unrepresentable nullable/list/scalar shapes return actionable derivation issues rather than guessed schemas.
+- [x] Generated strings are bounded.
+- [x] Canonical equality/fingerprint behavior is deterministic across equivalent derivations.
+- [x] Authoring derivation creates no Tool/ToolRevision and performs no Shopify provider request.
+- [x] Existing Admin compiler validation remains green.
 
 ## Validation
 
-- [ ] focused Admin result-contract derivation tests
-- [ ] Admin compiler regression tests
-- [ ] Admin authoring-validation regression tests where affected
-- [ ] targeted lint/type diagnostics for changed files
-- [ ] `git diff --check`
+- [x] focused Admin result-contract derivation tests
+- [x] Admin compiler regression tests
+- [x] Admin authoring-validation regression tests where affected
+- [x] targeted lint/type diagnostics for changed files
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -224,31 +224,44 @@ Do not broaden `CommerceResultSchema` to arbitrary JSON Schema unless the accept
 
 ### Status
 
-Not Started
+Implemented; submitted for Architect Review.
 
 ### Files Changed
 
-None.
+- `moda-interact-commerce/lib/discovery/admin-compiler.ts`
+- `moda-interact-commerce/src/commerce/tool-definition/result-schema.ts`
+- `moda-interact-commerce/src/commerce/tool-authoring/admin-validation.ts`
+- `moda-interact-commerce/src/studio/tools/admin-validation-server-actions.ts`
+- `moda-interact-commerce/tests/admin-result-contract.test.ts`
+- `moda-interact-commerce/tests/shopify-admin-authoring-validation.test.ts`
 
 ### Work Completed
 
-None.
+- Added `deriveAdminResultContract`, which reuses the pinned Admin schema/document validation and follows response aliases and `resultPath` without provider I/O.
+- Added explicit JSON-serialized Admin scalar mappings using the pinned 2026-07 artifact descriptions. Strings are bounded to 4096 characters; unsupported JSON/unknown output scalars fail with bounded actionable issues.
+- Derived object required/optional properties from GraphQL non-null wrappers. Bounded connection `nodes`/`edges` arrays use the query's literal `first` argument; unrelated, unbounded lists and nullable/nested-list elements are rejected.
+- Added nullable-output normalization that omits null optional object properties and reports null required properties, plus deterministic canonical schema serialization with sorted object keys and required lists.
+- Exposed an input-bounded authoring derivation service and authenticated platform-admin Server Action. The action returns only the derived contract/issues and performs no durable writes or provider calls.
+- Corrected existing Admin compiler type-kind detection so valid pinned-schema scalars such as `UnsignedInt64` are not mistaken for object types during query validation.
 
 ### Validation Results
 
-Not run.
+- `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts`: passed, 39 tests.
+- Targeted ESLint across all six changed files: passed with no output/errors.
+- `git diff --check`: passed.
+- `npx tsc --noEmit --pretty false`: repository-wide check remains blocked by 252 diagnostics in unrelated files (including missing preview module imports and Prisma client types); no diagnostics referenced C062-changed files.
 
 ### Deviations
 
-None.
+None. No provider execution, persistence changes, cross-repository contracts, or UI changes were added.
 
 ### Assumptions
 
-None.
+- The pinned Admin 2026-07 introspection descriptions are authoritative for scalar JSON serialization; unsupported JSON scalar output remains rejected because the Commerce result grammar has no general JSON value node.
 
 ### Unresolved Issues
 
-None.
+- Repository-wide TypeScript validation remains red on the unrelated diagnostics noted above; the changed files had no reported TypeScript diagnostics.
 
 ### Architectural Concerns
 
