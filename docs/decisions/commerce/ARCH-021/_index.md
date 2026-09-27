@@ -158,12 +158,12 @@ Developer manual review of the completed COMMERCE-039 flow identified bounded Re
 |---|---|---|---|
 | [COMMERCE-040](COMMERCE-040-add-javascript-request-bindings.md) | Add explicit Agent-input/Literal bindings to JavaScript HTTP request construction | Complete | COMMERCE-016, COMMERCE-017, COMMERCE-023, COMMERCE-039 |
 | [COMMERCE-041](COMMERCE-041-make-external-request-tab-validating-and-previewable.md) | Make Request the validating/exact-preview checkpoint and remove Manage connections | Complete | COMMERCE-040 |
-| [COMMERCE-042](COMMERCE-042-complete-javascript-request-authoring-ui.md) | Complete JavaScript bindings, resizable editor and mode-draft preservation | Ready | COMMERCE-041 |
+| [COMMERCE-042](COMMERCE-042-complete-javascript-request-authoring-ui.md) | Complete JavaScript bindings, resizable editor and mode-draft preservation | Complete | COMMERCE-041 |
 
 Current manual-validation follow-up frontier:
 
 ```text
-ARCH-021-COMMERCE-042
+None — COMMERCE-040..042 are architect-accepted Complete.
 ```
 
 The Request-tab follow-up remains zero-provider-I/O. Request validation/preview answers what request will be constructed; the later Test-tab review will determine the separate live-provider test behaviour.
@@ -191,20 +191,19 @@ The zero-provider-I/O Response authoring chain through COMMERCE-050 is architect
 
 ## Manual-validation follow-up — External HTTP live response generation and Test
 
-The live follow-up is split into four bounded tasks so network/security observation, pure JSON inference, Response Automatic composition and Test execution remain independently reviewable. COMMERCE-052 is architect-accepted Complete; COMMERCE-051 remains independently executable in this snapshot, while COMMERCE-053/054 remain dependency-gated.
+The live follow-up is split into four bounded tasks so network/security observation, pure JSON inference, Response Automatic composition and Test execution remain independently reviewable. COMMERCE-051, COMMERCE-052 and COMMERCE-042 are now architect-accepted Complete, so COMMERCE-053 is Ready; COMMERCE-054 remains dependency-gated.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-051](COMMERCE-051-add-live-external-http-authoring-observation.md) | Add bounded ADMIN-authorized live provider observation for the current Request candidate | Ready | COMMERCE-041, COMMERCE-047 |
+| [COMMERCE-051](COMMERCE-051-add-live-external-http-authoring-observation.md) | Add bounded ADMIN-authorized live provider observation for the current Request candidate | Complete | COMMERCE-041, COMMERCE-047 |
 | [COMMERCE-052](COMMERCE-052-infer-visual-response-tree-from-observed-json.md) | Infer the accepted recursive Visual tree from observed JSON using C049 `LIST` / `SCALAR_LIST` terminology | Complete | COMMERCE-049 |
-| [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands the generated proposal to existing Visual rules | Pending | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
+| [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands the generated proposal to existing Visual rules | Ready | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
 | [COMMERCE-054](COMMERCE-054-implement-external-http-live-test-tab.md) | Execute and observe the current External HTTP candidate in Test without duplicating Response authoring | Pending | COMMERCE-051, COMMERCE-053 |
 
 Current live-authoring frontier:
 
 ```text
-ARCH-021-COMMERCE-051
-ARCH-021-COMMERCE-052
+ARCH-021-COMMERCE-053
 ```
 
 Dependency graph:
@@ -231,9 +230,20 @@ SCALAR_LIST  -> List of values
 The Request preview, Automatic flow and Test share one Sample Tool arguments value. None of COMMERCE-051..054 writes a live-test publication receipt; `LIVE_TEST_REQUIRED` remains unsatisfied until a later exact-saved-revision receipt task is explicitly defined.
 
 
+### COMMERCE-042 Attempt 3 accepted — 2026-09-27
+
+COMMERCE-042 is **Complete / Accepted, Attempt 3**. The original blocked handoff
+correctly stopped when QuickJS packaging was unavailable, but supplemental developer
+evidence from the same implementation worktree subsequently proved the pinned
+`quickjs-wasi@3.6.2` package/smoke path and the complete required five-file packet
+(122/122). The common packet reproduced only the previously documented unrelated
+lifecycle fixture failure (85/86). No Attempt 4 source change was required.
+
+All COMMERCE-053 dependencies are now Complete, so COMMERCE-053 is **Ready**.
+
 ### COMMERCE-051 Attempt 1 accepted — 2026-09-27
 
-COMMERCE-051 is **Complete / Accepted, Attempt 1**. Live External HTTP authoring now previews the exact current Declarative or JavaScript Request into the accepted safe descriptor, revalidates ADMIN/PER_SHOP scope, resolves credentials server-side and reuses the production descriptor transport/security primitive. Decodable 4xx/429/5xx responses are bounded authoring observations without changing production JavaScript gating or production non-2xx Tool semantics; credentials and provider response headers never enter the browser contract, and no Tool/Revision/Connection/Credential/audit/live-test-receipt mutation is introduced. Submitted validation passed the required executor, Request-runtime, authoring-validation/action and wiring suites plus focused security tests, lint and diff checks. Independent inspection of the submitted Commerce `tsconfig.tsbuildinfo` confirms zero diagnostics in all eight changed C051 files. COMMERCE-053 remains Pending because COMMERCE-052 is still Ready.
+COMMERCE-051 is **Complete / Accepted, Attempt 1**. Live External HTTP authoring now previews the exact current Declarative or JavaScript Request into the accepted safe descriptor, revalidates ADMIN/PER_SHOP scope, resolves credentials server-side and reuses the production descriptor transport/security primitive. Decodable 4xx/429/5xx responses are bounded authoring observations without changing production JavaScript gating or production non-2xx Tool semantics; credentials and provider response headers never enter the browser contract, and no Tool/Revision/Connection/Credential/audit/live-test-receipt mutation is introduced. Submitted validation passed the required executor, Request-runtime, authoring-validation/action and wiring suites plus focused security tests, lint and diff checks. Independent inspection of the submitted Commerce `tsconfig.tsbuildinfo` confirms zero diagnostics in all eight changed C051 files. With COMMERCE-042 and COMMERCE-052 also Complete, COMMERCE-053 is Ready.
 
 ### COMMERCE-050 Attempt 2 accepted — 2026-09-27
 

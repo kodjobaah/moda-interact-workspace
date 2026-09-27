@@ -9,14 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: complete
 priority: 62
 executor: null
 claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-041
-enables: []
+enables:
+  - ARCH-021-COMMERCE-053
 created: 2026-09-26
 updated: 2026-09-27
 ---
@@ -253,7 +254,7 @@ None.
 - [x] focused External HTTP Request JavaScript UI tests
 - [x] focused mode-switch retention tests for new and persisted-DRAFT authoring where applicable
 - [x] focused Request validation/preview regression with JavaScript bindings
-- [ ] existing External UI/common Tool-authoring regression packet required by repository scripts (blocked: pinned QuickJS runtime packaging failed; see Attempt 3 Completion Report)
+- [x] existing External UI/common Tool-authoring regression packet required by repository scripts (supplemental developer evidence: five-file packet 122/122 PASS; common packet 85/86 with only the documented unrelated lifecycle baseline)
 - [x] targeted TypeScript diagnostics or repository typecheck with baseline reconciliation
 - [x] targeted ESLint for changed files
 - [x] `git diff --check`
@@ -271,7 +272,7 @@ Do not persist both modes into the canonical Tool definition. This is local edit
 ## Completion Report
 
 ### Status
-Attempt 3 blocked: pinned QuickJS runtime packaging failed before the required runtime-dependent validation packet.
+Attempt 3 implementation complete. The original blocked handoff was caused only by the isolated worktree QuickJS installation; supplemental developer validation supplied after that handoff resolved the runtime gate without any C042 source change.
 
 ### Files Changed
 - `app/styles.css`
@@ -291,8 +292,12 @@ Attempt 3 blocked: pinned QuickJS runtime packaging failed before the required r
 ### Validation Results
 - `npm exec -- vitest run tests/external-tools-ui.test.tsx -t "does not overwrite existing JavaScript Request bindings"` — passed, 1 targeted regression.
 - `npm run test:arch020-external-tools-ui` — passed, 49/49 tests.
-- `npm run code-runtime:package` — blocked: `Cannot find module 'quickjs-wasi/quickjs.wasm'` from `scripts/code-runtime-manifest.mjs` (`MODULE_NOT_FOUND`, Node v24.21.0).
-- `npm run code-runtime:smoke` — blocked because packaging did not create `build/code-runtime/manifest.json` (`ENOENT`). Per A2-R3, the runtime-dependent five-file packet and common packet were not run after this package failure; do not treat Attempt 2's red packet as Attempt 3 evidence.
+- Initial blocked handoff: `npm run code-runtime:package` could not resolve `quickjs-wasi/quickjs.wasm`, so the repository agent correctly stopped before running the runtime-dependent packet.
+- Supplemental developer evidence from the same implementation worktree subsequently proved `npm run code-runtime:package` PASS with `quickjs-wasi@3.6.2`, engine `quickjs-ng-wasi`, and WASM SHA-256 `d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9`.
+- Supplemental developer evidence proved `npm run code-runtime:smoke` PASS with the packaged `manifest.json`, `quickjs.wasm`, and `worker.mjs` artifacts.
+- Required five-file C042 packet: 5/5 files PASS, 122/122 tests PASS, zero skipped, no `MODULE_NOT_FOUND` / `RUNTIME_UNAVAILABLE`.
+- Required common Tool-authoring packet: 6/7 files PASS, 85/86 tests PASS; the sole failure is the previously documented unrelated `commerce-lifecycle.test.ts` fixture (`INVALID_DEFINITION` before expected `LIVE_TEST_REQUIRED`) with no C042 file/stack involved.
+- Supplemental `git diff --check` produced no output.
 - Targeted ESLint for all six C042 source/test files — passed with no warnings.
 - `npm run typecheck` — remains red with 250 diagnostics across 21 files; there are no diagnostics in any of the six C042 source/test files.
 - `git diff --check` — passed.
@@ -305,19 +310,146 @@ Attempt 3 blocked: pinned QuickJS runtime packaging failed before the required r
 - Attempt 3 implementation commit: `1436b1e385b3c471c845000760305c8770a75921` (`fix(commerce): scope request rename errors and stale previews`); pushed to `origin/task/ARCH-021-COMMERCE-042`, with local/remote refs matching and a clean implementation worktree. The final parent report was pushed with local/remote parity and a clean parent worktree (final parent branch SHA is included in the handoff). Packaging failed before the runtime-dependent validation packet, so the task remains blocked rather than being submitted for review.
 
 ### Deviations
-The required validation gate is blocked because the declared `quickjs-wasi` package does not provide the `quickjs.wasm` module expected by the repository packager, and the smoke test consequently has no manifest to read. No runtime infrastructure or dependency installation was attempted; no provider execution, service boundary, persistence model, or tab gating was added.
+The original Attempt 3 handoff was correctly blocked by incomplete local QuickJS dependency state. Supplemental developer validation later proved the pinned runtime package/smoke and the required runtime-dependent test packet without changing C042 source. No provider execution, service boundary, persistence model or tab gating was added.
 
 ### Assumptions
 Only schema-valid active Request state is emitted to canonical Tool definition state; malformed raw source/Literal drafts remain local. Request validation and preview do not authorize or gate final Create/Save.
 
 ### Unresolved Issues
-The runtime package must be restored/resolved so `code-runtime:package` and `code-runtime:smoke` pass before the required five-file packet and common packet can run. Workspace typecheck also reports unrelated diagnostics; no C042-owned TypeScript diagnostics remain.
+None within C042. Repository typecheck still reports the documented unrelated baseline diagnostics; no C042-owned TypeScript diagnostics remain.
 
 ### Architectural Concerns
 None.
 
 ## Architect Review
 
+### Review Status
+
+Accepted — Attempt 3 with supplemental runtime validation
+
+### Review Notes
+
+Attempt 3 is accepted without creating an artificial Attempt 4.
+
+The repository agent correctly stopped the original handoff as `blocked` because
+the required QuickJS runtime could not be packaged at that moment. Subsequent
+developer-supplied evidence from the same isolated implementation worktree proves
+that the blocker was environmental/dependency-installation state rather than a C042
+source defect.
+
+The runtime gate now proves:
+
+```text
+code-runtime:package   PASS
+code-runtime:smoke     PASS
+engine                 quickjs-ng-wasi
+package                quickjs-wasi@3.6.2
+WASM SHA-256           d4c9375f2b1ca4dc95f72c8aa2982a7a9951ac8011490d79c6582df732b4bbd9
+```
+
+The complete required five-file packet then passed:
+
+```text
+Test Files  5 passed (5)
+Tests       122 passed (122)
+zero skipped
+```
+
+This includes:
+
+```text
+external-tools-ui.test.tsx                     49/49
+tool-authoring-screen.test.tsx                 12/12
+external-tool-authoring-validation.test.ts     22/22
+external-tool-authoring-server-actions.test.ts 32/32
+code-request-processor.test.ts                  7/7
+```
+
+The required common Tool-authoring packet reproduced exactly the architect-approved
+unrelated baseline:
+
+```text
+Test Files  1 failed | 6 passed (7)
+Tests       1 failed | 85 passed (86)
+```
+
+The sole failure is:
+
+```text
+tests/commerce-lifecycle.test.ts
+expected LIVE_TEST_REQUIRED
+received INVALID_DEFINITION
+```
+
+for the previously documented empty-resultSchema lifecycle fixture. The stack does
+not involve a C042 source/test file. This is therefore not a C042 acceptance blocker.
+
+The supplemental command sequence also ran `git diff --check` with no reported
+output.
+
+The original Attempt 3 implementation remains:
+
+```text
+1436b1e385b3c471c845000760305c8770a75921
+```
+
+and the original parent report handoff remains:
+
+```text
+413a419d7fc735405c2b32fe2c4949066b804918
+```
+
+No additional C042 implementation change was required after the blocked handoff.
+
+The final C042 behavior accepted is:
+
+- duplicate JavaScript binding-name errors are scoped to JavaScript mode and do
+  not leak into Declarative validation/preview;
+- a rejected duplicate rename invalidates/fences prior Request validation and
+  preview state;
+- switching modes preserves independent Declarative and JavaScript local drafts;
+- a later valid rename preserves the exact existing binding/literal state;
+- Add/Rename never overwrites existing bindings;
+- malformed Literal state is active only while Literal is the selected source;
+- Request Validate/Preview remains advisory and never gates final Create/Save;
+- only active canonical Request state is persisted;
+- new Tool authoring remains non-durable until final Create;
+- no provider I/O, persistence-model change or tab gating was introduced.
+
+### Reviewed Evidence
+
+Implementation/source review from the submitted Attempt 3 snapshot plus supplemental
+developer runtime/test output.
+
+### Validation Reviewed
+
+```text
+focused External Tools UI:              49/49 PASS
+runtime package:                         PASS
+runtime smoke:                           PASS
+five-file C042 packet:                  122/122 PASS
+common Tool-authoring packet:            85/86
+  only known unrelated lifecycle fixture failure
+targeted ESLint:                         PASS
+typecheck:                               unrelated baseline only
+C042-owned TypeScript diagnostics:       0
+git diff --check:                        PASS
+```
+
+### Architecture Conformance
+
+Conforms.
+
+### Follow-up
+
+`ARCH-021-COMMERCE-042` is Complete.
+
+All dependencies of `ARCH-021-COMMERCE-053` are now Complete, so
+`ARCH-021-COMMERCE-053` becomes Ready.
+
+Do not start COMMERCE-054 until COMMERCE-053 is architect-accepted Complete.
+
+### Historical Reviews
 ### Review Status
 Changes Requested — Attempt 2
 

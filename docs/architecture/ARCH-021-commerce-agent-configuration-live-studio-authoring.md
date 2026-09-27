@@ -837,7 +837,7 @@ Request follow-up tasks:
 |---|---|---|---|
 | ARCH-021-COMMERCE-040 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-017, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-039 |
 | ARCH-021-COMMERCE-041 | moda_commerce | Complete | ARCH-021-COMMERCE-040 |
-| ARCH-021-COMMERCE-042 | moda_commerce | Ready | ARCH-021-COMMERCE-041 |
+| ARCH-021-COMMERCE-042 | moda_commerce | Complete | ARCH-021-COMMERCE-041 |
 
 ```text
 COMMERCE-040 -> COMMERCE-041 -> COMMERCE-042
@@ -929,7 +929,7 @@ Live authoring/Test tasks:
 |---|---|---|---|
 | ARCH-021-COMMERCE-051 | moda_commerce | Complete | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
 | ARCH-021-COMMERCE-052 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
-| ARCH-021-COMMERCE-053 | moda_commerce | Pending | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
+| ARCH-021-COMMERCE-053 | moda_commerce | Ready | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
 | ARCH-021-COMMERCE-054 | moda_commerce | Pending | ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-053 |
 
 ```text
@@ -940,7 +940,7 @@ COMMERCE-049 ----------------> COMMERCE-052 ----+--> COMMERCE-053 -> COMMERCE-05
 COMMERCE-042 + COMMERCE-050 ---------------------+
 ```
 
-COMMERCE-051 and COMMERCE-052 were intentionally parallel: secure provider observation does not depend on inference, and pure inference does not depend on network/provider work. COMMERCE-052 is now Complete in this snapshot; COMMERCE-053 remains gated until COMMERCE-042 and COMMERCE-051 are also Complete. COMMERCE-054 follows the completed Automatic/shared-arguments composition so Test does not create a second arguments state or Response editor.
+COMMERCE-051 and COMMERCE-052 were intentionally parallel: secure provider observation does not depend on inference, and pure inference does not depend on network/provider work. COMMERCE-051, COMMERCE-052 and COMMERCE-042 are now Complete, so COMMERCE-053 is Ready. COMMERCE-054 follows the completed Automatic/shared-arguments composition so Test does not create a second arguments state or Response editor.
 
 Phase 3 exit criteria:
 
@@ -1184,6 +1184,21 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-042 Attempt 3 accepted with supplemental runtime evidence
+
+- Accepted implementation `1436b1e385b3c471c845000760305c8770a75921`.
+- The repository agent correctly blocked the original handoff when the isolated
+  QuickJS installation could not package the pinned WASM asset.
+- Supplemental developer evidence from the same implementation worktree later
+  proved `code-runtime:package` and `code-runtime:smoke` with
+  `quickjs-wasi@3.6.2` and the accepted WASM SHA-256.
+- The complete five-file C042 packet passed 122/122 with zero skips.
+- The common Tool-authoring packet reproduced only the documented unrelated
+  lifecycle fixture failure: 85/86, `INVALID_DEFINITION` before expected
+  `LIVE_TEST_REQUIRED`, with no C042 source/stack involved.
+- No Attempt 4 source change was required; C042 is Complete.
+- All COMMERCE-053 dependencies are Complete, so COMMERCE-053 is Ready.
 
 ### 2026-09-27 — COMMERCE-051 Attempt 1 accepted
 
