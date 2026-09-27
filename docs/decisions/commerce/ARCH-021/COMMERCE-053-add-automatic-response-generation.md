@@ -9,17 +9,18 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 68
-executor: copilot
-claimed_at: 2026-09-27T10:35:40Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-042
   - ARCH-021-COMMERCE-050
   - ARCH-021-COMMERCE-051
   - ARCH-021-COMMERCE-052
-enables: []
+enables:
+  - ARCH-021-COMMERCE-054
 created: 2026-09-27
 updated: 2026-09-27
 ---
@@ -180,18 +181,19 @@ Move the current Request-tab-local:
 Sample Tool arguments
 ```
 
-text state to `ExternalHttpEditor` (or the closest single parent shared by Request/Response Automatic).
+text state to `ExternalHttpEditor` (or the closest single parent shared by Request/Response/Test).
 
 There must be **one string value** shared by:
 
 ```text
 Request preview
 Response Automatic generation
+COMMERCE-054 Test
 ```
 
 Request must continue to render/edit that value.
 
-Automatic may render/edit the same shared textarea, clearly labelled as the same Sample Tool arguments used by Request. It must not create a second independent arguments state.
+Automatic may render/edit the same shared textarea, clearly labelled as the same Sample Tool arguments used by Request/Test. It must not create a second independent arguments state.
 
 Changing sample arguments:
 
@@ -199,6 +201,7 @@ Changing sample arguments:
 does not dirty/persist the Tool definition
 invalidates prior Request preview
 invalidates prior Automatic observation/candidate state
+later invalidates COMMERCE-054 Test result
 ```
 
 ### R4 — selected-shop plumbing
@@ -535,7 +538,7 @@ Do not rerun provider/security suites owned by COMMERCE-051 unless this task cha
 
 ## Stop Condition
 
-After Automatic generation works through the existing Visual editor for both new and existing Tool authoring, all mandatory UI regressions pass and the Completion Report is complete, set the task to `review`, clear the execution claim under the normal workflow, return control to `moda_architect` and STOP. Do not begin independent live-Test tasks.
+After Automatic generation works through the existing Visual editor for both new and existing Tool authoring, all mandatory UI regressions pass and the Completion Report is complete, set the task to `review`, clear the execution claim under the normal workflow, return control to `moda_architect` and STOP. Do not begin COMMERCE-054.
 
 ## Implementation Notes
 
@@ -553,7 +556,7 @@ Do not collapse these responsibilities merely because they share the same Extern
 
 ### Status
 
-Complete; submitted for Architect Review.
+Attempt 2 complete; submitted for Architect Review.
 
 ### Files Changed
 
@@ -574,15 +577,19 @@ Complete; submitted for Architect Review.
 - Added zero/one/multiple candidate flows, candidate ordering and selection, bounded failure guidance, unresolved-field notice, and candidate application through `deriveVisualTreeContract(...)` into the existing Visual editor.
 - Preserved Direct, Visual, and JavaScript drafts; guarded against late observations after leaving Automatic or changing generation context; kept Visual editing and COMMERCE-050 validation authoritative after application.
 - Wired selected-shop context through New Tool and existing DRAFT composition. Added regression evidence for shop scope, shared arguments across all three tabs, no intermediate persistence, and canonical-only Create/Save payloads.
+- Corrected Automatic abandonment: returning to the unchanged canonical persisted mode now restores only the UI mode, preserving successful Response validation and avoiding canonical mutation or Tool dirtying; choosing a different persisted mode still follows the existing change path.
+- Added explicit coverage for an exactly-one root LIST candidate with `resultPath: ""`, and for successful generation creating no draft save or live-test receipt while publication remains `LIVE_TEST_REQUIRED`.
 
 ### Validation Results
 
-- `npm run test:arch020-external-tools-ui`: passed, 66 tests.
+- `npm run test:arch020-external-tools-ui`: passed, 69 tests (Attempt 1: 66).
 - `npx vitest run tests/tool-authoring-screen.test.tsx`: passed, 13 tests.
 - `npm run test:arch021-tool-authoring-common`: 85/86 tests passed; one existing `commerce-lifecycle.test.ts` case still receives `INVALID_DEFINITION` where its assertion expects `LIVE_TEST_REQUIRED`.
-- Targeted ESLint on all nine changed files: passed.
+- Targeted ESLint on the Attempt 2 changed files: passed.
 - `git diff --check`: passed.
-- `npm run typecheck`: non-zero with 250 diagnostics in 21 files. Pylance and filtered TypeScript output report no diagnostics in task-changed files. This is recorded against `TYPECHECK-001`; the observed count differs from its historical 171-error revision-specific observation, so the baseline count is not claimed as an exact match.
+- Changed-file editor diagnostics: no errors in `response-tab.tsx` or `external-tools-ui.test.tsx`.
+- Commerce package-wide `npm run typecheck` was non-zero in the Attempt 1 run with 250 diagnostics across 21 files. This is a repository-wide Commerce observation, not `TYPECHECK-001` (which applies to `moda-interact/`); no diagnostics were reported in task-changed files.
+- Final focused rerun of the live-test receipt regression passed after adding explicit assertions that generation does not invoke publication and later publication returns `LIVE_TEST_REQUIRED`.
 
 ### Deviations
 
@@ -595,23 +602,25 @@ The selected shop ID is context only; COMMERCE-051 remains responsible for reval
 ### Unresolved Issues
 
 - `npm run test:arch021-tool-authoring-common` retains the unrelated lifecycle failure described above.
-- Repository-wide typecheck remains non-zero under `TYPECHECK-001` (250 current diagnostics across 21 files); no task-changed file has a diagnostic. The documented historical count is revision-specific and differs from this run.
+- The Commerce repository-wide typecheck observation from Attempt 1 remains non-zero (250 diagnostics across 21 files); this task does not attribute it to `TYPECHECK-001`, and no task-changed file has a diagnostic.
 
 ### Architectural Concerns
 
-No additional architectural concerns identified. Architect Review remains pending.
+No additional architectural concerns identified beyond the Attempt 1 corrections recorded below; this Attempt 2 submission is returned for Architect Review.
 
 ### Git / VCS
 
 Implementation branch: `task/ARCH-021-COMMERCE-053`
 
-Implementation commit: `534dbb5` (`feat(commerce): add Automatic Visual response generation`), pushed to `origin/task/ARCH-021-COMMERCE-053`.
+Implementation commit: `6c5132a` (`task(ARCH-021-COMMERCE-053): correct Automatic abandonment semantics`), pushed to `origin/task/ARCH-021-COMMERCE-053`. Attempt 1 implementation commit: `534dbb5`.
 
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-053`
 
 Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-053`
 
 Parent task branch: `task/ARCH-021-COMMERCE-053`.
+
+Parent task branch synchronized from `origin/main` at `9d6747b4`; Attempt 2 claim commit `a11b1dd` was committed and pushed by the deterministic launcher. The Completion Report and review handoff are being committed on this branch.
 
 ## Architect Review
 
