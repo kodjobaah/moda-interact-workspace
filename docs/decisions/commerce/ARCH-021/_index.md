@@ -327,7 +327,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Complete | COMMERCE-063 |
 | [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Pending | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
 | [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Pending | COMMERCE-060, COMMERCE-064 |
-| [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Ready | COMMERCE-060, COMMERCE-062 |
+| [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 
 Initial executable frontier for this workstream:
 
@@ -363,6 +363,12 @@ Key invariants:
 - Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
+
+### COMMERCE-070 Attempt 1 accepted — 2026-09-27
+
+COMMERCE-070 is **Complete / Accepted, Attempt 1**. Production Shopify Admin execution now derives the authoritative result contract from the immutable Admin definition, rejects stale persisted schemas before provider output is exposed, normalizes nullable output through the shared COMMERCE-062 semantics, and validates the normalized value before assigning canonical `data.values`. Publication/authoring validation uses the same exact derived-schema equality. Submitted validation passed the 64-test focused regression packet, 30 adjacent Admin builder/contract tests, the targeted Admin executable-registry integration case, targeted ESLint, changed-file diagnostics and `git diff --check`. The full backend integration file retains two unrelated `getCommerceBackend()` process-global availability assertion failures; review found no C070 change to that initialization path.
+
+C070 enables no downstream task. The current executable frontier for this Shopify/Admin workstream remains **COMMERCE-064**; COMMERCE-065 and COMMERCE-069 remain dependency-gated by COMMERCE-064, and COMMERCE-068 remains dependency-gated by COMMERCE-065.
 
 ### COMMERCE-062 Attempt 2 accepted — 2026-09-27
 

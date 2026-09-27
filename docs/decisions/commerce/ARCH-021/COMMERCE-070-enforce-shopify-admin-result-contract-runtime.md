@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 74
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-060
   - ARCH-021-COMMERCE-062
@@ -129,12 +129,12 @@ Do not create a second published schema or migration layer.
 
 ## Work Items
 
-- [ ] Wire canonical Admin result-contract derivation into the production executor.
-- [ ] Enforce exact persisted-vs-derived `resultSchema` equality.
-- [ ] Apply nullable-output normalization before result-schema validation.
-- [ ] Validate normalized values and expose them only under `data.values`.
-- [ ] Align publication validation with exact derived-schema semantics where required.
-- [ ] Add stale-schema, nullable-field, required-null, selected-root-null and successful normalization tests.
+- [x] Wire canonical Admin result-contract derivation into the production executor.
+- [x] Enforce exact persisted-vs-derived `resultSchema` equality.
+- [x] Apply nullable-output normalization before result-schema validation.
+- [x] Validate normalized values and expose them only under `data.values`.
+- [x] Align publication validation with exact derived-schema semantics where required.
+- [x] Add stale-schema, nullable-field, required-null, selected-root-null and successful normalization tests.
 
 ## Interfaces / Contracts
 
@@ -159,24 +159,24 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Runtime derives the result contract from the immutable Admin query and resultPath.
-- [ ] A persisted Admin `resultSchema` that differs from the canonical derived schema is rejected.
-- [ ] A null selected root maps to the accepted not-found behavior.
-- [ ] Null optional object fields are omitted before schema validation.
-- [ ] Null required/non-null fields are rejected as invalid provider data.
-- [ ] Successful normalized data satisfies the exact canonical result schema.
-- [ ] `CommerceToolResult.data.values` contains only normalized validated values.
-- [ ] Publication and runtime use the same derived-schema semantics.
-- [ ] Existing Admin execution security/deadline/throttling behavior from COMMERCE-060 remains green.
-- [ ] Existing External HTTP behavior is unchanged.
+- [x] Runtime derives the result contract from the immutable Admin query and resultPath.
+- [x] A persisted Admin `resultSchema` that differs from the canonical derived schema is rejected.
+- [x] A null selected root maps to the accepted not-found behavior.
+- [x] Null optional object fields are omitted before schema validation.
+- [x] Null required/non-null fields are rejected as invalid provider data.
+- [x] Successful normalized data satisfies the exact canonical result schema.
+- [x] `CommerceToolResult.data.values` contains only normalized validated values.
+- [x] Publication and runtime use the same derived-schema semantics.
+- [x] Existing Admin execution security/deadline/throttling behavior from COMMERCE-060 remains green.
+- [x] Existing External HTTP behavior is unchanged.
 
 ## Validation
 
-- [ ] focused Admin executor/result-contract integration tests
-- [ ] Admin publication/contract tests where affected
-- [ ] Admin compiler/result-contract regressions
-- [ ] targeted lint/type diagnostics for changed files
-- [ ] `git diff --check`
+- [x] focused Admin executor/result-contract integration tests
+- [x] Admin publication/contract tests where affected
+- [x] Admin compiler/result-contract regressions
+- [x] targeted lint/type diagnostics for changed files
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -190,31 +190,45 @@ Keep this task as an integration layer. Do not move React authoring or Storefron
 
 ### Status
 
-Not Started
+Attempt 1: Ready for Architect Review.
 
 ### Files Changed
 
-None.
+- `lib/discovery/admin-compiler.ts`
+- `src/commerce/execution/executor.ts`
+- `src/commerce/query/admin.ts`
+- `tests/admin-graphql-compiler.test.ts`
+- `tests/admin-query-execution.test.ts`
+- `tests/backend-integration.test.ts`
+- `tests/definition-execution.test.ts`
+- `tests/shopify-admin-authoring-validation.test.ts`
 
 ### Work Completed
 
-None.
+- Replaced the Admin compiler's permissive schema-compatibility check with canonical equality against the result derived from the pinned API/schema identity, document, operation name and result path. Publication validation delegates to this compiler, so it now enforces the same exact contract as runtime.
+- The production executor derives the authoritative contract before dispatch, rejects stale schemas as `INCOMPATIBLE_VERSION`, normalizes provider `values` using the shared Commerce result normalizer, and validates the normalized shape before rendering. Null selected roots map to `NOT_FOUND`; nullable optional fields are omitted; null required fields fail closed.
+- The Admin query adapter enforces the same compiled contract before session/provider work and normalizes selected values before its result validation. Existing credential redaction, provider bounds, deadline, throttle and failure handling remain unchanged.
+- Added regressions for stale persisted schemas before provider dispatch, exact publication validation, nullable-field omission, required-null rejection, null-root not-found, and successful normalized rendering. Updated Admin fixtures to use the compiler-derived bounds.
 
 ### Validation Results
 
-Not run.
+- `./node_modules/.bin/vitest run tests/admin-query-execution.test.ts tests/definition-execution.test.ts tests/shopify-admin-authoring-validation.test.ts tests/admin-graphql-compiler.test.ts tests/admin-result-contract.test.ts --reporter=verbose` — 5 files, 64 tests passed.
+- `./node_modules/.bin/vitest run tests/admin-query-builder.test.ts tests/arch021-commerce-tool-contract.test.ts tests/backend-integration.test.ts --reporter=verbose` — 30 tests passed across the Admin query-builder and Commerce contract files; the full backend integration file had an initial fixture mismatch and two unrelated process-global backend availability assertion failures.
+- `./node_modules/.bin/vitest run tests/backend-integration.test.ts -t "reports Admin definitions executable only when the pinned Admin executor is installed" --reporter=verbose` — 1 test passed after updating its Admin result schema fixture.
+- The full `tests/backend-integration.test.ts` rerun passed 6 tests and failed 2 existing assertions that expect `getCommerceBackend()` to throw `COMMERCE_BACKEND_UNAVAILABLE`; these assertions are outside this task's Admin result-contract behavior and were not changed.
+- Targeted ESLint across all eight changed files passed. Editor diagnostics reported no errors in any changed file. `git diff --check` passed.
 
 ### Deviations
 
-None.
+No implementation-scope deviations. Backend integration validation retains the two unrelated process-global availability assertion failures noted above.
 
 ### Assumptions
 
-None.
+The accepted Admin contract is the canonical schema already produced by COMMERCE-062; canonical comparison is order-independent as defined by its existing helper.
 
 ### Unresolved Issues
 
-None.
+The two `getCommerceBackend()` missing-production-dependency assertions in `tests/backend-integration.test.ts` do not throw in this environment. The Admin registry case and all task-focused tests pass; the unrelated assertions remain for Architect review.
 
 ### Architectural Concerns
 
@@ -224,23 +238,40 @@ None.
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Accepted — Attempt 1. The implementation uses the COMMERCE-062 compiler as the single source of truth for Shopify Admin result-contract derivation, rejects a persisted `resultSchema` that is not canonically equal to the derived contract before provider output can be exposed, normalizes nullable provider output through the shared Commerce result normalizer, and validates the normalized value before it becomes `CommerceToolResult.data.values`. Publication/authoring validation and production execution therefore share the same derived-schema semantics rather than maintaining parallel interpretations.
+
+The two reported failures in the full `tests/backend-integration.test.ts` file assert process-global `getCommerceBackend()` unavailable behavior and are outside C070's Admin result-contract integration path. The task-specific Admin executable-registry case passes, the focused C070 regression packet is green, and source inspection found no C070 change to process-global backend initialization. They are therefore recorded as non-blocking for this task rather than treated as a C070 regression.
+
+The supplied review archive does not contain Git metadata or `node_modules`, so commit topology and the submitted commands could not be independently re-executed in this review environment. Review acceptance is based on the Completion Report evidence plus direct inspection of the changed implementation and focused regression tests.
 
 ### Reviewed Files
 
-None.
+- `lib/discovery/admin-compiler.ts`
+- `src/commerce/execution/executor.ts`
+- `src/commerce/query/admin.ts`
+- `tests/admin-graphql-compiler.test.ts`
+- `tests/admin-query-execution.test.ts`
+- `tests/definition-execution.test.ts`
+- `tests/shopify-admin-authoring-validation.test.ts`
+- `tests/backend-integration.test.ts`
 
 ### Validation Reviewed
 
-None.
+- Focused Admin executor/result-contract packet: 5 files / 64 tests passed.
+- Adjacent Admin query-builder / Commerce contract packet: 30 tests passed.
+- Admin executable-registry integration case passed after the canonical Admin result-schema fixture was reconciled.
+- Full `tests/backend-integration.test.ts`: 6 passed / 2 unrelated process-global backend-availability assertions failed, reviewed as non-blocking for C070.
+- Targeted ESLint passed.
+- Changed-file TypeScript/editor diagnostics were clean across all eight changed implementation files.
+- `git diff --check` passed.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. Runtime and publication use the COMMERCE-062 canonical Admin result-contract semantics; nullable output normalization occurs before exact result validation; stale persisted schemas fail closed; successful Admin data is exposed only as normalized validated `data.values`; existing security/deadline/throttling behavior remains bounded; no React, External HTTP, database-state or Result Template scope was introduced.
 
 ### Follow-up
 
