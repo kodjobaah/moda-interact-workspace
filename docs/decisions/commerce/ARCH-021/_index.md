@@ -198,14 +198,14 @@ The live work now has two independent branches sharing the accepted secure provi
 | [COMMERCE-051](COMMERCE-051-add-live-external-http-authoring-observation.md) | Add bounded ADMIN-authorized live provider observation for the current Request candidate | Complete | COMMERCE-041, COMMERCE-047 |
 | [COMMERCE-052](COMMERCE-052-infer-visual-response-tree-from-observed-json.md) | Infer the accepted recursive Visual tree from observed JSON using C049 `LIST` / `SCALAR_LIST` terminology | Complete | COMMERCE-049 |
 | [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands generated proposals to existing Visual rules | Ready | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
-| [COMMERCE-054](COMMERCE-054-execute-non-durable-external-http-candidate-live.md) | Backend: execute the current non-durable Request + Response candidate live with zero persistence | Ready | COMMERCE-051 |
-| [COMMERCE-055](COMMERCE-055-build-external-http-live-test-tab-ui.md) | Frontend: build the decomposed live Test-tab UI over COMMERCE-054 | Pending | COMMERCE-054 |
+| [COMMERCE-054](COMMERCE-054-execute-non-durable-external-http-candidate-live.md) | Backend: execute the current non-durable Request + Response candidate live with zero persistence | Complete | COMMERCE-051 |
+| [COMMERCE-055](COMMERCE-055-build-external-http-live-test-tab-ui.md) | Frontend: build the decomposed live Test-tab UI over COMMERCE-054 | Ready | COMMERCE-054 |
 
 Current live-authoring frontiers:
 
 ```text
 ARCH-021-COMMERCE-053
-ARCH-021-COMMERCE-054
+ARCH-021-COMMERCE-055
 ```
 
 Dependency graph:

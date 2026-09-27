@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 69
 executor: null
 claimed_at: null
@@ -499,58 +499,41 @@ None.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 is not accepted yet. The backend architecture and runtime composition are otherwise consistent with the COMMERCE-054 contract, but the submitted validation/evidence record contains two review-blocking defects that must be corrected in this same task.
+Attempt 2 is accepted. Both Attempt-1 corrections are closed without changing the approved runtime architecture.
 
-#### A1-R1 — task-owned TypeScript diagnostics must be clean
+A1-R1 is satisfied: `tests/external-http-live-test.test.ts` now types the observation mock through `ExternalHttpLiveTestDependencies['observe']` and explicitly returns `ExternalHttpAuthoringObservation`, so response and failure observations share the canonical union without weakening production types. The Attempt-2 focused live-test suite passed 13/13, targeted ESLint and `git diff --check` passed, and a fresh non-incremental TypeScript run reported no diagnostics for the corrected changed test file. The archived `tsconfig.tsbuildinfo` still contains the stale Attempt-1 diagnostics and is not treated as current compiler evidence.
 
-The submitted `moda-interact-commerce/tsconfig.tsbuildinfo` contradicts the Completion Report statement that changed-file diagnostics contain no task-owned errors. Semantic diagnostic file ID `1226` maps to the changed file `tests/external-http-live-test.test.ts` and contains two `TS2322` diagnostics. Both arise because the test fixture's `observe` mock is inferred as returning only the `kind: "response"` shape and later `mockResolvedValue(...)` calls assign `kind: "failure"` observations.
+A1-R2 is satisfied: the Completion Report now durably records the launcher-resolved canonical workspace, dedicated parent and implementation task worktrees, start HEADs, task-branch/origin-main synchronization outcomes, recursive implementation-submodule initialization and launcher claim commits for both Attempts 1 and 2.
 
-Correct the test typing so the mock is explicitly compatible with the canonical `ExternalHttpAuthoringObservation` union (or an equivalent type-safe fixture), without weakening production types. Then rerun changed-file TypeScript diagnostics and record the exact result. No production source redesign is required for this correction.
-
-#### A1-R2 — record required task-isolation/start evidence durably
-
-The Completion Report does not record the launcher-resolved dedicated parent and implementation worktrees, start-of-attempt synchronization evidence, or recursive implementation-submodule materialisation required by the task execution protocol. Chat-only assertions that both worktrees are clean/tracking are not a durable substitute.
-
-Reconcile the Completion Report with the actual prepared execution evidence for Attempt 1, including the resolved parent/implementation task worktrees, branch synchronization/start commit evidence, and recursive submodule materialisation. If any required preparation evidence is unavailable or non-conforming, report that accurately rather than reconstructing it. This correction does not require implementation-code churn.
-
-The implementation itself should otherwise remain bounded: preserve C051 as the sole provider-observation boundary, the five-stage result contract, canonical response/result processing, zero durable writes, no saved-revision authority and no COMMERCE-055 UI work.
+The previously reviewed runtime remains conformant: the transient candidate is server-validated, real provider I/O is delegated only to COMMERCE-051, ADMIN/selected-shop authorization is preserved, DIRECT/VISUAL/JavaScript reuse canonical response processors, `compileCommerceResultSchema(...)` remains the result authority, the five execution stages stay distinct, non-2xx responses short-circuit downstream processing, outputs remain bounded/redacted, and no Tool/Revision/audit/receipt persistence or saved-revision authority was introduced.
 
 ### Reviewed Files
 
+- `moda-interact-commerce/tests/external-http-live-test.test.ts`
 - `moda-interact-commerce/src/commerce/tool-authoring/external-live-test.ts`
 - `moda-interact-commerce/src/commerce/tool-authoring/external-observation.ts`
-- `moda-interact-commerce/src/commerce/integration/external/index.ts`
-- `moda-interact-commerce/src/studio/tools/external-validation-server-actions.ts`
-- `moda-interact-commerce/tests/external-http-live-test.test.ts`
-- `moda-interact-commerce/tests/external-http-live-test-action.test.ts`
-- `moda-interact-commerce/tests/external-http-authoring-observation.test.ts`
-- `moda-interact-commerce/tests/external-wiring.test.ts`
-- `moda-interact-commerce/tsconfig.tsbuildinfo`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-054-execute-non-durable-external-http-candidate-live.md`
 - `docs/decisions/commerce/ARCH-021/_index.md`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-- Submitted focused regression packet: **150 tests across 11 files — PASS**.
-- Submitted final `external-wiring.test.ts`: **5/5 PASS**.
-- Submitted targeted ESLint: **PASS**.
-- Submitted `git diff --check`: **PASS**.
-- Repository-wide typecheck remains red in several unrelated files, consistent with the Completion Report.
-- Independent inspection of `tsconfig.tsbuildinfo` finds **two task-owned TS2322 diagnostics in `tests/external-http-live-test.test.ts`**, so the changed-file diagnostics requirement is not satisfied.
-- The compressed review snapshot contains no `node_modules`, so the Vitest/ESLint commands were not independently rerun in this review environment.
-- The Completion Report contains no durable launcher/worktree/start-of-attempt/submodule preparation evidence.
+- Attempt-2 `tests/external-http-live-test.test.ts`: **13/13 PASS**.
+- Targeted ESLint: **PASS**.
+- `git diff --check`: **PASS**.
+- Fresh non-incremental TypeScript diagnostics: **no diagnostics in the corrected changed test file**.
+- Repository-wide TypeScript remains red only in the unrelated files documented by the Completion Report.
+- Attempt-1 focused packet remains recorded as **150 tests across 11 files PASS**, including the final `external-wiring.test.ts` **5/5 PASS**.
+- Prepared execution evidence for both attempts is now durably recorded and conforms to the dedicated-worktree/start-of-attempt protocol.
 
 ### Architecture Conformance
 
-The inspected runtime implementation is provisionally conformant: it validates the transient candidate, delegates real provider I/O to COMMERCE-051, preserves ADMIN and selected-shop authorization, uses the canonical response processors and `compileCommerceResultSchema(...)`, distinguishes the five required stages, short-circuits non-2xx responses, exposes bounded/redacted provider information, and introduces no Tool/Revision/audit/receipt persistence or saved-revision lookup.
-
-Final acceptance is withheld until A1-R1 and A1-R2 are corrected and the task is resubmitted.
+Conformant. COMMERCE-054 implements exactly the backend-only, non-durable live-Test boundary defined by ARCH-021 and introduces no UI, saved-revision authority, publication proof or durable Test state.
 
 ### Follow-up
 
-Return **ARCH-021-COMMERCE-054** through its normal `/moda-task` execution path for Attempt 2. Preserve `attempt: 1` until the repository agent reclaims the Ready task; that claim must increment it exactly once. COMMERCE-055 remains Pending and must not start.
+ARCH-021-COMMERCE-054 is Complete. ARCH-021-COMMERCE-055 is now dependency-eligible and becomes Ready. COMMERCE-053 remains independently Ready; neither task should be started implicitly by this review.
