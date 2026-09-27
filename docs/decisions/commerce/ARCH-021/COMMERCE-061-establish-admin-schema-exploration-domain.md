@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
-executor: copilot
-claimed_at: 2026-09-27T14:19:17Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-018
@@ -151,13 +151,13 @@ Add the Admin discovery/query-building path without deleting the existing Storef
 
 ## Work Items
 
-- [ ] Normalize the pinned Admin introspection graph for bounded Studio browsing.
-- [ ] Add Admin schema browse service/action contract without changing existing Storefront UI behavior.
-- [ ] Add Admin selection-tree/query-generation logic using GraphQL ASTs.
-- [ ] Add Admin argument-binding generation compatible with Tool input mappings/literals.
-- [ ] Add representable-manual-query parse/round-trip support.
-- [ ] Validate generated queries through the canonical Admin compiler in tests.
-- [ ] Add deterministic not-representable behavior for unsupported manual constructs.
+- [x] Normalize the pinned Admin introspection graph for bounded Studio browsing.
+- [x] Add Admin schema browse service/action contract without changing existing Storefront UI behavior.
+- [x] Add Admin selection-tree/query-generation logic using GraphQL ASTs.
+- [x] Add Admin argument-binding generation compatible with Tool input mappings/literals.
+- [x] Add representable-manual-query parse/round-trip support.
+- [x] Validate generated queries through the canonical Admin compiler in tests.
+- [x] Add deterministic not-representable behavior for unsupported manual constructs.
 
 ## Interfaces / Contracts
 
@@ -184,25 +184,25 @@ No Shared package publication is required.
 
 ## Acceptance Criteria
 
-- [ ] Admin browse starts at the real Admin query root.
-- [ ] Returned schema identity is Admin `2026-07` and the accepted Admin schema hash.
-- [ ] Nested fields/arguments are derived from the pinned Admin artifact.
-- [ ] Generated GraphQL validates with the canonical Admin compiler.
-- [ ] Generated execution output contains only Admin query-authoring fields.
-- [ ] Tool input/literal argument mappings are preserved deterministically.
-- [ ] A representable manual Admin query can seed the builder state.
-- [ ] A valid but non-representable manual query is preserved and reported as non-representable.
-- [ ] No live provider introspection occurs.
-- [ ] Existing Storefront Explore code is not removed by this task.
+- [x] Admin browse starts at the real Admin query root.
+- [x] Returned schema identity is Admin `2026-07` and the accepted Admin schema hash.
+- [x] Nested fields/arguments are derived from the pinned Admin artifact.
+- [x] Generated GraphQL validates with the canonical Admin compiler.
+- [x] Generated execution output contains only Admin query-authoring fields.
+- [x] Tool input/literal argument mappings are preserved deterministically.
+- [x] A representable manual Admin query can seed the builder state.
+- [x] A valid but non-representable manual query is preserved and reported as non-representable.
+- [x] No live provider introspection occurs.
+- [x] Existing Storefront Explore code is not removed by this task.
 
 ## Validation
 
-- [ ] focused Admin discovery tests
-- [ ] focused Admin query-builder round-trip tests
-- [ ] canonical Admin compiler conformance tests
-- [ ] targeted lint
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
+- [x] focused Admin discovery tests
+- [x] focused Admin query-builder round-trip tests
+- [x] canonical Admin compiler conformance tests
+- [x] targeted lint
+- [x] changed-file TypeScript diagnostics
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -216,35 +216,68 @@ Keep normalized schema/query-builder contracts execution-environment neutral and
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+Implementation repository: `moda-interact-commerce`.
+- `lib/discovery/admin-schema.ts`
+- `lib/discovery/service.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/contracts.ts`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `src/studio/discovery/admin-query-builder.ts`
+- `tests/admin-discovery.test.ts`
+- `tests/admin-query-builder.test.ts`
+- `tests/discovery.test.ts`
+
+Implementation commit: `d1f1e76b3c0acbed86275d7f191e82e3edda6b0c`.
+Remote branch: `origin/task/ARCH-021-COMMERCE-061` (pushed).
+
+Prepared execution evidence:
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-061`, branch `task/ARCH-021-COMMERCE-061`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-061`, branch `task/ARCH-021-COMMERCE-061`.
+- Shared workspace checkout switched/mutated: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no.
+- Parent task remote fast-forward: not needed; parent `origin/main` incorporated: already current.
+- Implementation task remote fast-forward: not needed; implementation `origin/main` incorporated: already current.
+- Recursive submodule sync and update: passed; `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Launcher claim: Attempt 1, executor `copilot`, claim commit `f24e49e57f02a63f2b9fb175a43f5717cf0f72d9`, pushed.
 
 ### Work Completed
 
-None.
+Added an Admin-only normalized schema browse contract over the pinned `admin-2026-07.json` artifact and accepted `adminSchemaHash`, including nested type references, argument/default/deprecation metadata, bounded paging/search, selectable/expandable flags and compiler-aligned forward-pagination bounds. Exposed it through `DiscoveryService`, authenticated Studio service/action wiring and the in-memory service while retaining the existing Storefront browse path.
+
+Added pure GraphQL-AST query generation over normalized Admin schema pages. It emits only `apiVersion`, `schemaHash`, `document`, `operationName` and `variables`; enforces the pinned schema identity, selection/depth/cost/document limits, literal `first` bounds and declared Tool-input mappings; and excludes managed shop/auth/credential input names. Added bounded manual-query parsing that validates through `createAdminCommerceCompiler`, seeds representable selection/binding state, and returns exact source text with an explicit `not-representable` result for aliases or variable defaults the builder cannot preserve.
 
 ### Validation Results
 
-None.
+Passed:
+- `vitest run tests/admin-discovery.test.ts tests/admin-query-builder.test.ts tests/discovery.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts`: 51 tests passed.
+- `npm run test:arch021-shopify-admin-compiler`: 22 tests passed.
+- Targeted ESLint across all 11 changed TypeScript files: passed without warnings.
+- Changed-file editor diagnostics: no errors in all 11 changed TypeScript files.
+- `git diff --check`: passed.
+
+Full `tsc --noEmit` remains blocked by existing repository errors unrelated to this task's Admin-domain changes: missing code-response preview imports, Storefront compiler output-schema typing, the existing Admin oracle fixture typing, the existing `createCommerceStudioServices` missing `createToolWithInitialDraft` implementation, and unrelated test typing errors. The new Admin schema and query-builder files report no compiler/editor diagnostics, and editor diagnostics are clear across all changed files. The remote Shopify Dev MCP oracle was not run; it contacts an external service and is not required by this task's Validation section.
 
 ### Deviations
 
-None.
+The launcher reported `rework.required: true`, while the current task's Architect Review is still `Pending` with no review notes or requested corrections. No review corrections were recorded to apply; this implementation follows the current task requirements. No live introspection or Shopify mutations were performed.
 
 ### Assumptions
 
-None.
+COMMERCE-064 will consume the new Admin-specific browse and pure query-builder contracts. The canonical Admin compiler remains the authority for query validity; result-path and result-schema editing remain outside this task.
 
 ### Unresolved Issues
 
-None.
+Repository-wide TypeScript validation remains red on the pre-existing errors listed under Validation Results. No task-owned Admin-domain error remains.
 
 ### Architectural Concerns
 
-None.
+None identified. Storefront exploration remains available and was not migrated or removed.
 
 ## Architect Review
 
