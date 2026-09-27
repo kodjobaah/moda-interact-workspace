@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 73
-executor: copilot
-claimed_at: 2026-09-27T12:07:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-053
@@ -296,27 +296,27 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Generate successfully from Request A, producing Visual rules.
-- [ ] Change Request to Request B `/categor/products`.
-- [ ] Provider returns `404 text/html` with body containing
+- [x] Generate successfully from Request A, producing Visual rules.
+- [x] Change Request to Request B `/categor/products`.
+- [x] Provider returns `404 text/html` with body containing
       `Cannot GET /categor/products`.
-- [ ] A new Automatic generation reports HTTP 404.
-- [ ] The failure reports expected `application/json` and received `text/html`.
-- [ ] The safe provider preview includes `Cannot GET /categor/products`.
-- [ ] The failure states that the existing Response definition was left unchanged.
-- [ ] While Automatic is selected, the previous successful
+- [x] A new Automatic generation reports HTTP 404.
+- [x] The failure reports expected `application/json` and received `text/html`.
+- [x] The safe provider preview includes `Cannot GET /categor/products`.
+- [x] The failure states that the existing Response definition was left unchanged.
+- [x] While Automatic is selected, the previous successful
       `View response processing JSON` / Visual processing disclosure is absent.
-- [ ] Switching back to Visual rules shows the previous Visual definition unchanged.
-- [ ] The failed attempt did not replace processing, schema, result path or Visual
+- [x] Switching back to Visual rules shows the previous Visual definition unchanged.
+- [x] The failed attempt did not replace processing, schema, result path or Visual
       drafts and did not dirty Response solely because it failed.
-- [ ] Malformed `application/json` produces a JSON-specific explanation rather than a
+- [x] Malformed `application/json` produces a JSON-specific explanation rather than a
       generic media-type message.
-- [ ] Changing generation context invalidates old candidate/failure UI.
-- [ ] Provider preview is rendered as text and cannot execute provider HTML.
-- [ ] Successful Automatic generation still installs the candidate and switches to
+- [x] Changing generation context invalidates old candidate/failure UI.
+- [x] Provider preview is rendered as text and cannot execute provider HTML.
+- [x] Successful Automatic generation still installs the candidate and switches to
       Visual rules.
-- [ ] `AUTOMATIC` is still absent from persisted/runtime response-processing kinds.
-- [ ] COMMERCE-055 and COMMERCE-056 are untouched.
+- [x] `AUTOMATIC` is still absent from persisted/runtime response-processing kinds.
+- [x] COMMERCE-055 and COMMERCE-056 are untouched.
 
 ## Validation
 
@@ -325,16 +325,16 @@ repository scripts that actually exist.
 
 Required focused validation:
 
-- [ ] External HTTP Response-tab UI tests.
-- [ ] Tool-authoring screen tests covering Automatic composition.
-- [ ] Exact successful-A -> failing-B stale-state regression.
-- [ ] `404 text/html` actionable-diagnostic regression.
-- [ ] malformed JSON diagnostic regression.
-- [ ] context-change invalidation regression.
-- [ ] successful Automatic -> Visual regression.
-- [ ] targeted lint for changed files.
-- [ ] changed-file TypeScript diagnostics.
-- [ ] `git diff --check`.
+- [x] External HTTP Response-tab UI tests.
+- [x] Tool-authoring screen tests covering Automatic composition.
+- [x] Exact successful-A -> failing-B stale-state regression.
+- [x] `404 text/html` actionable-diagnostic regression.
+- [x] malformed JSON diagnostic regression.
+- [x] context-change invalidation regression.
+- [x] successful Automatic -> Visual regression.
+- [x] targeted lint for changed files.
+- [x] changed-file TypeScript diagnostics.
+- [x] `git diff --check`.
 
 Do not turn unrelated documented repository baseline failures into task-owned work.
 
@@ -365,27 +365,38 @@ Automatic attempt failed
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
-None
+- Automatic failures now present current COMMERCE-057 HTTP/media-type/decode evidence with user-oriented decode explanations, collapsed technical reason details, and the explicit unchanged-Response statement.
+- Provider previews use the bounded diagnostic preview rendered as escaped text; provider HTML is never interpreted.
+- Automatic mode hides persisted Response-processing disclosures, Visual/result-contract JSON disclosures, Response schema field chips, and stale Response-only validation/error messages without modifying the underlying definition.
+- Generation state includes Request, Connection revision, shop, Sample Tool arguments, Input schema, Response format and media-type draft context; late results are rejected after a context change.
+- A failed regeneration leaves processing, schema, result path and Visual drafts untouched. Successful Automatic generation continues to install the inferred Visual candidate and switch to Visual rules.
+- Added the valid-Request-A to `/categor/products` HTTP-404 regression, malformed-JSON explanation coverage, Request-context candidate invalidation coverage, and composed Tool-authoring disclosure coverage.
 
 ### Validation Results
 
-Not run.
+- `node_modules/.bin/vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`: 92/92 tests passed.
+- Targeted ESLint for all three changed files: passed.
+- Changed-file TypeScript/editor diagnostics: no errors found.
+- `git diff --check`: passed.
+- The fresh worktree initially lacked the generated Prisma client. `pnpm exec` encountered `ERR_PNPM_IGNORED_BUILDS`; the local client was generated with `node_modules/.bin/prisma generate --schema database/prisma/schema.prisma`, after which the required focused tests passed. The generated client and install artifacts are not committed.
 
 ### Deviations
 
-None
+No implementation-scope deviations. No changes were made to COMMERCE-055, COMMERCE-056, the Test tab, persisted/runtime response-processing kinds, or main.
 
 ### Assumptions
 
-None
+Only the bounded COMMERCE-057 diagnostic preview is suitable for display; raw provider response bodies are not rendered.
 
 ### Unresolved Issues
 
@@ -394,6 +405,41 @@ None
 ### Architectural Concerns
 
 None
+
+### Execution and Isolation Evidence
+
+```text
+Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-058
+Parent branch: task/ARCH-021-COMMERCE-058
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-058
+Implementation branch: task/ARCH-021-COMMERCE-058
+Shared workspace checkout switched/mutated for task work: no
+Shared implementation checkout switched/mutated for task work: no
+Another task worktree reused: no
+
+Parent remote task branch fast-forwarded: not-needed
+Parent origin/main incorporated: already-current
+Implementation remote task branch fast-forwarded: not-needed
+Implementation origin/main incorporated: already-current
+
+Recursive submodule sync: passed
+Recursive submodule update/init: passed
+Submodule database commit: 0a8d3b9feade69690b6c1e33aeda051ea588bd45
+
+Implementation repository: moda-interact-commerce
+Implementation commit: beb9939c568d1d19c7ad22d7f387b64fbe569a38
+Implementation remote branch: origin/task/ARCH-021-COMMERCE-058
+Implementation pushed: yes
+
+Parent workspace task file: docs/decisions/commerce/ARCH-021/COMMERCE-058-make-automatic-failures-current-and-actionable.md
+Parent remote branch: origin/task/ARCH-021-COMMERCE-058
+Parent claim commit: 9e4367eeaaa18bb86064d1776dfaf601d0ab2c09 (pushed)
+Parent task/report changes pushed: yes
+Implementation submodule gitlink staged: no
+Merged to implementation main: no
+Merged to workspace main: no
+```
 
 ## Architect Review
 
