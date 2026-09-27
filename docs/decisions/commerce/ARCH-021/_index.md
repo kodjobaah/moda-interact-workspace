@@ -189,6 +189,47 @@ No implementation task currently Ready in this Response chain.
 
 The zero-provider-I/O Response authoring chain through COMMERCE-050 is architect-accepted Complete. Invalid local Visual state is diagnosed locally, canonical candidates still use authoritative server validation, configuration issues are field/control-specific, and action-level validation-system failures no longer masquerade as Response-field errors. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to later Test-tab review. All authoring tabs remain freely navigable.
 
+## Manual-validation follow-up — External HTTP live response generation and Test
+
+The live follow-up is split into four bounded tasks so network/security observation, pure JSON inference, Response Automatic composition and Test execution remain independently reviewable. COMMERCE-051 and COMMERCE-052 are executable in parallel now; COMMERCE-053/054 remain dependency-gated.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-051](COMMERCE-051-add-live-external-http-authoring-observation.md) | Add bounded ADMIN-authorized live provider observation for the current Request candidate | Ready | COMMERCE-041, COMMERCE-047 |
+| [COMMERCE-052](COMMERCE-052-infer-visual-response-tree-from-observed-json.md) | Infer the accepted recursive Visual tree from observed JSON using C049 `LIST` / `SCALAR_LIST` terminology | Ready | COMMERCE-049 |
+| [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands the generated proposal to existing Visual rules | Pending | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
+| [COMMERCE-054](COMMERCE-054-implement-external-http-live-test-tab.md) | Execute and observe the current External HTTP candidate in Test without duplicating Response authoring | Pending | COMMERCE-051, COMMERCE-053 |
+
+Current live-authoring frontier:
+
+```text
+ARCH-021-COMMERCE-051
+ARCH-021-COMMERCE-052
+```
+
+Dependency graph:
+
+```text
+COMMERCE-041 + COMMERCE-047 -> COMMERCE-051 ----+
+                                                 |
+COMMERCE-049 ----------------> COMMERCE-052 ----+--> COMMERCE-053 -> COMMERCE-054
+                                                 ^
+COMMERCE-042 + COMMERCE-050 ---------------------+
+```
+
+Canonical terminology remains:
+
+```text
+SCALAR       -> Scalar
+OBJECT       -> Object
+LIST         -> List of objects
+SCALAR_LIST  -> List of values
+```
+
+`Automatic` is browser-local authoring state only and must never become a persisted/runtime processing kind. A successful Automatic run installs an existing `VisualAuthoringRoot` and switches to the normal Visual rules editor. Test executes/observes only; it must not expose Source-path/Visual/schema/JavaScript-response/Automatic authoring controls.
+
+The Request preview, Automatic flow and Test share one Sample Tool arguments value. None of COMMERCE-051..054 writes a live-test publication receipt; `LIVE_TEST_REQUIRED` remains unsatisfied until a later exact-saved-revision receipt task is explicitly defined.
+
 
 ### COMMERCE-050 Attempt 2 accepted — 2026-09-27
 

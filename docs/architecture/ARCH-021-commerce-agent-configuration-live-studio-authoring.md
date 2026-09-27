@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while the zero-provider-I/O Response authoring chain COMMERCE-043 through COMMERCE-050 is architect-accepted Complete. Neither workstream introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three bounded External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; the zero-provider-I/O Response authoring chain COMMERCE-043 through COMMERCE-050 is architect-accepted Complete; and live authoring/Test work is materialised as COMMERCE-051 through COMMERCE-054 with COMMERCE-051 and COMMERCE-052 independently Ready. None of these follow-ups introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -910,6 +910,37 @@ Root scalar-list shape, primitive-list filters/sort, arrays-of-arrays and null i
 #### Actionable Response-validation diagnostics follow-up
 
 Manual validation after C049 showed that the local/canonical split is correct but the validation presentation is not: when a Visual draft is locally invalid, `Validate response` can send null canonical placeholders and expose raw schema diagnostics such as `expected object, received null` / `Invalid input`. COMMERCE-050 keeps the authoritative server boundary unchanged for canonical candidates while diagnosing non-canonical local Visual state locally and presenting field/control-specific corrective messages. Internal paths/codes remain deterministic secondary details; ordinary users see what is wrong and how to fix it. No processing, schema, persistence, provider-I/O or navigation semantics change.
+
+### Manual-validation follow-up — External HTTP live response generation and Test
+
+After the zero-provider-I/O Request/Response authoring boundaries were settled, the live authoring contract is now explicit:
+
+1. COMMERCE-051 adds one ADMIN-authorized, credential-redacted **provider observation** boundary for the current unsaved Request candidate. It reuses Request preview construction and the existing DNS/TLS/body/deadline protections, permits JavaScript authoring only through a safe preview descriptor, and does not remove the production JavaScript Request execution gate.
+2. COMMERCE-052 is pure deterministic JSON inference. It produces the already accepted `VisualAuthoringRoot` grammar only: `SCALAR`, `OBJECT`, `LIST` (**List of objects**) and `SCALAR_LIST` (**List of values**). It never invents a second processing/schema grammar and validates every candidate through `deriveVisualTreeContract(...)`.
+3. COMMERCE-053 adds browser-local **Automatic** generation to Response. `Automatic` is a generator, never a persisted/runtime response-processing kind. A successful generation installs the selected inferred tree into the existing Visual rules editor and immediately returns editing/validation ownership to Visual.
+4. COMMERCE-054 replaces the Test placeholder with live execution/observation of the current unsaved candidate. Test shows the safe Request, bounded provider response, processed Tool result and result-contract outcome. It contains no Source-path, Visual mapping, result-schema, JavaScript response or Automatic authoring controls.
+5. Request preview, Automatic generation and Test share one browser-local **Sample Tool arguments** value. Sample arguments/provider observations are never persisted as part of the Tool definition.
+6. These authoring live calls do **not** satisfy `LIVE_TEST_REQUIRED`. A later publication task/architecture must bind a successful live test to an exact saved revision/content hash before that gate may be satisfied.
+7. Synthetic fixture/sample-response testing is not exposed as a Test-tab product mode; the live Test tab has one meaning: run the current candidate against the selected real External provider.
+
+Live authoring/Test tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-051 | moda_commerce | Ready | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
+| ARCH-021-COMMERCE-052 | moda_commerce | Ready | ARCH-021-COMMERCE-049 |
+| ARCH-021-COMMERCE-053 | moda_commerce | Pending | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
+| ARCH-021-COMMERCE-054 | moda_commerce | Pending | ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-053 |
+
+```text
+COMMERCE-041 + COMMERCE-047 -> COMMERCE-051 ----+
+                                                 |
+COMMERCE-049 ----------------> COMMERCE-052 ----+--> COMMERCE-053 -> COMMERCE-054
+                                                 ^
+COMMERCE-042 + COMMERCE-050 ---------------------+
+```
+
+COMMERCE-051 and COMMERCE-052 are intentionally parallel: secure provider observation does not depend on inference, and pure inference does not depend on network/provider work. COMMERCE-053 composes both only after COMMERCE-042 has settled the final Request local-draft UI. COMMERCE-054 follows the completed Automatic/shared-arguments composition so Test does not create a second arguments state or Response editor.
 
 Phase 3 exit criteria:
 

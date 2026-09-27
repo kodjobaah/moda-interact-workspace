@@ -1,0 +1,613 @@
+---
+id: ARCH-021-COMMERCE-053
+architecture_id: ARCH-021
+title: Add Automatic Visual response generation
+task_kind: implementation
+domain: commerce
+repository: moda-interact-commerce
+assigned_agent: moda_commerce
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: pending
+priority: 68
+executor: null
+claimed_at: null
+attempt: 0
+depends_on:
+  - ARCH-021-COMMERCE-042
+  - ARCH-021-COMMERCE-050
+  - ARCH-021-COMMERCE-051
+  - ARCH-021-COMMERCE-052
+enables:
+  - ARCH-021-COMMERCE-054
+created: 2026-09-27
+updated: 2026-09-27
+---
+
+# Add Automatic Visual response generation
+
+## Architecture
+
+Architecture ID:
+
+`ARCH-021`
+
+Architecture document:
+
+`docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+
+Coordinator:
+
+`moda_architect`
+
+## Objective
+
+Add one **authoring-only `Automatic` choice** to the External HTTP Response tab that calls the current live provider using shared sample Tool arguments, infers one of the accepted COMMERCE-048/049 Visual authoring trees, and then installs that proposal into the existing **Visual rules** editor for normal manual editing/validation.
+
+`Automatic` is a transient Studio workflow, not a fourth persisted/runtime response-processing kind.
+
+## Context
+
+The accepted persisted response-processing union remains exactly:
+
+```text
+DIRECT
+VISUAL
+JAVASCRIPT
+```
+
+COMMERCE-048/049 own the Visual grammar:
+
+```text
+SCALAR       -> Scalar
+OBJECT       -> Object
+LIST         -> List of objects
+SCALAR_LIST  -> List of values
+```
+
+COMMERCE-050 owns actionable Response validation presentation.
+
+COMMERCE-051 supplies a bounded credential-redacted live provider observation.
+
+COMMERCE-052 supplies deterministic observed-JSON -> `VisualAuthoringRoot` candidates.
+
+The product decision for this task is:
+
+```text
+Automatic helps create Visual rules.
+Visual remains the editor.
+Test remains execution/observation only.
+```
+
+There must not be a second editable response-mapping surface inside Automatic or Test.
+
+## Scope
+
+Primary files are expected to include:
+
+```text
+moda-interact-commerce/src/studio/external-http/editor.tsx
+moda-interact-commerce/src/studio/external-http/request-tab.tsx
+moda-interact-commerce/src/studio/external-http/response-tab.tsx
+moda-interact-commerce/src/studio/external-http/ports.ts                  # only UI callback/types required
+moda-interact-commerce/src/studio/tools/new-tool-editor.tsx
+moda-interact-commerce/src/studio/tools/tool-editor.tsx
+moda-interact-commerce/src/studio/tools/tool-authoring-screen.tsx         # selected-shop plumbing for New Tool if required
+moda-interact-commerce/src/studio/tools/external-validation-server-actions.ts
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+moda-interact-commerce/tests/tool-authoring-screen.test.tsx
+```
+
+The exact server action may remain the COMMERCE-051 observation action; do not create another network implementation for Automatic.
+
+## Out of Scope
+
+- Adding persisted/runtime `kind:"AUTOMATIC"`.
+- Editing response mappings inside Test.
+- A second Automatic-specific field/tree editor.
+- Changing Visual node terminology/semantics.
+- Synthetic fixture/sample testing UI.
+- Satisfying `LIVE_TEST_REQUIRED`.
+- Persisting provider responses or inference samples.
+- Database/Shared changes.
+- Automatic generation of Direct/JavaScript result schemas in this task.
+- Prompt/model/agent execution.
+- Tab gating.
+
+## Requirements
+
+### R1 — authoring mode presentation only
+
+The Response mode selector may present:
+
+```text
+Visual rules
+Direct
+JavaScript
+Automatic
+```
+
+but the canonical definition remains:
+
+```text
+DIRECT | VISUAL | JAVASCRIPT
+```
+
+This is prohibited everywhere outside browser-local Response UI state:
+
+```ts
+{ kind: "AUTOMATIC" }
+```
+
+Do not add `AUTOMATIC` to:
+
+```text
+LocalResponseProcessingSchema
+ResponseProcessing
+ExternalHttpExecutionSchema
+publication validation
+runtime processors
+Prisma/database
+Shared contracts
+```
+
+### R2 — selecting Automatic does not mutate the Tool definition
+
+When an author selects `Automatic`:
+
+```text
+current canonical execution stays unchanged
+Response validation success becomes stale only when a real canonical Response change is later installed
+Tool dirty state does not change merely because Automatic was selected
+```
+
+Automatic owns transient state only:
+
+```text
+idle
+generating
+failure
+candidate-selection
+```
+
+Leaving Automatic before applying a proposal discards only that transient workflow state.
+
+### R3 — one shared Sample Tool arguments state
+
+Move the current Request-tab-local:
+
+```text
+Sample Tool arguments
+```
+
+text state to `ExternalHttpEditor` (or the closest single parent shared by Request/Response/Test).
+
+There must be **one string value** shared by:
+
+```text
+Request preview
+Response Automatic generation
+COMMERCE-054 Test
+```
+
+Request must continue to render/edit that value.
+
+Automatic may render/edit the same shared textarea, clearly labelled as the same Sample Tool arguments used by Request/Test. It must not create a second independent arguments state.
+
+Changing sample arguments:
+
+```text
+does not dirty/persist the Tool definition
+invalidates prior Request preview
+invalidates prior Automatic observation/candidate state
+later invalidates COMMERCE-054 Test result
+```
+
+### R4 — selected-shop plumbing
+
+Pass the current Studio selected-shop identity through the existing Tool-authoring composition so COMMERCE-051 can enforce PER_SHOP Connection scope.
+
+This must work for:
+
+```text
+new unsaved Tool authoring
+existing persisted DRAFT authoring
+```
+
+The server still revalidates shop authorization; client plumbing is not authority.
+
+PLATFORM Connections do not require a shop credential scope.
+
+### R5 — exact Generate action input
+
+`Generate from live response` uses the current authoring state:
+
+```text
+current connectionRevisionId
+current canonical active Request
+current JSON responseFormat
+current inputSchema
+shared Sample Tool arguments
+selected shop context
+```
+
+It does not require an already-valid Visual/Direct/JavaScript result definition because generation exists to create one.
+
+If the current Request cannot be represented canonically because Request-local authoring is invalid, generation is unavailable and the user is directed back to Request diagnostics. Do not silently use an older Request while invalid newer Request text is visible.
+
+### R6 — Automatic requires observed 2xx JSON
+
+Generation can infer Visual rules only when COMMERCE-051 returns:
+
+```text
+kind: response
+HTTP status 200..299
+response.json !== null
+```
+
+For non-2xx, transport failure, invalid/decode failure or non-JSON response:
+
+```text
+stay in Automatic
+preserve sample arguments/current Tool definition
+show bounded actionable guidance
+apply no Visual change
+```
+
+Do not run inference against provider error JSON from a non-2xx response.
+
+### R7 — run COMMERCE-052 inference exactly
+
+For an eligible provider response:
+
+```text
+observation.response.json
+      |
+      v
+inferVisualResponseTrees(...)
+```
+
+Do not duplicate candidate inference in React.
+
+Use COMMERCE-049 terminology in all labels:
+
+```text
+Object
+List of objects
+List of values
+Scalar
+```
+
+### R8 — zero usable candidates
+
+When inference returns zero candidates:
+
+```text
+stay in Automatic
+show: no usable Visual response structure could be inferred
+show bounded reason/warning summary when available
+leave canonical Response unchanged
+```
+
+Do not switch to Visual with an empty invalid tree.
+
+### R9 — exactly one usable candidate
+
+When inference returns exactly one candidate:
+
+```text
+re-run deriveVisualTreeContract(candidate.authoring)
+require ok === true
+install candidate.authoring into the existing Visual draft state
+set execution.resultPath = candidate.resultPath
+set responseProcessing = derived.processing
+set resultSchema = derived.schema
+keep the current valid JSON responseFormat/mediaTypes
+switch active Response mode to VISUAL
+mark Tool dirty
+invalidate previous Response validation success
+```
+
+The user must immediately see the normal existing **Visual rules** editor.
+
+There is no separate Automatic projection table.
+
+### R10 — multiple candidates
+
+When inference returns more than one candidate, Automatic shows only a bounded candidate picker plus generation status/warnings.
+
+Each candidate row shows at minimum:
+
+```text
+Source path: "Response root" for "" or exact dot path
+Root shape: Object | List of objects
+field count
+unresolved-field count
+```
+
+Candidate order is exactly COMMERCE-052 output order.
+
+The author selects one candidate and clicks a single action equivalent to:
+
+```text
+Use selected structure
+```
+
+Applying it follows R9.
+
+Do not render editable Visual fields under the candidate picker.
+
+### R11 — unresolved-field warning
+
+If the applied candidate contains COMMERCE-052 unresolved issues, switch to Visual as normal but retain one bounded non-blocking notice equivalent to:
+
+```text
+Visual rules were generated from the live response. Some response fields could not be inferred; review the generated rules.
+```
+
+Do not render raw provider data or internal stack/error text in that notice.
+
+The unresolved issue count may be shown. Technical issue codes may be secondary, but they are not the primary user message.
+
+### R12 — existing Visual editor/diagnostics are authoritative after generation
+
+After applying a candidate:
+
+```text
+Automatic workflow ends
+current mode = VISUAL
+VisualTreeEditor owns all further edits
+deriveVisualTreeContract owns processing/schema derivation
+COMMERCE-050 owns actionable validation presentation
+```
+
+Do not keep a hidden Automatic copy that later overwrites manual Visual edits.
+
+To generate again, the author deliberately selects Automatic again and performs another live generation.
+
+### R13 — preserve per-mode drafts
+
+Existing Direct/Visual/JavaScript draft retention remains intact.
+
+Automatic is not a persisted mode draft. Successful generation replaces the **current Visual draft** with the selected generated proposal, because that is the explicit Generate action.
+
+It must not overwrite inactive Direct/JavaScript local drafts.
+
+### R14 — no persistence from observation/generation itself
+
+The live response, inferred candidates and sample arguments are browser/session authoring state only.
+
+Generation performs no Tool/Revision save.
+
+For a new Tool, generated Visual state is persisted only by the existing final Create from Review.
+
+For an existing DRAFT, generated Visual state is persisted only by the existing Save Draft action.
+
+A successful generation does not satisfy `LIVE_TEST_REQUIRED`.
+
+### R15 — bounded actionable failures
+
+Use the COMMERCE-050 presentation principle:
+
+```text
+what failed
+what the author can do next
+```
+
+Do not show raw server/thrown/provider error messages.
+
+At minimum distinguish:
+
+```text
+invalid sample arguments
+Request is not currently executable
+shop required for selected Connection
+Connection unavailable
+provider unavailable
+provider deadline
+provider returned non-2xx
+provider response cannot be decoded as current JSON response format
+no inferable structure
+```
+
+## Work Items
+
+- [ ] Lift Sample Tool arguments to one `ExternalHttpEditor`-owned shared state.
+- [ ] Keep Request preview wired to that shared state.
+- [ ] Plumb selected shop for both new and existing Tool authoring without trusting it server-side.
+- [ ] Add transient `Automatic` Response selection without changing canonical response schemas.
+- [ ] Call COMMERCE-051 observation using the exact current Request/arguments/response format.
+- [ ] Run COMMERCE-052 inference on eligible 2xx JSON only.
+- [ ] Add zero/one/multiple candidate deterministic UI flows.
+- [ ] Install selected candidate into existing Visual draft + canonical execution through `deriveVisualTreeContract(...)`.
+- [ ] Switch successful generation to Visual rules.
+- [ ] Preserve Direct/JavaScript drafts and existing Visual/Response validation behavior.
+- [ ] Add new/existing Tool UI regressions and no-persistence evidence.
+
+## Interfaces / Contracts
+
+Consumes:
+
+```text
+ARCH-021-COMMERCE-042
+  final JavaScript Request UI/local-draft behavior
+
+ARCH-021-COMMERCE-050
+  actionable Response validation presentation
+
+ARCH-021-COMMERCE-051
+  live bounded provider observation
+
+ARCH-021-COMMERCE-052
+  VisualResponseInference candidates
+
+ARCH-021-COMMERCE-048/049 transitively
+  exact Visual authoring model and terminology
+```
+
+Produces:
+
+```text
+browser-local Automatic generation workflow
+-> existing VisualAuthoringRoot
+-> existing canonical VISUAL processing/result schema
+```
+
+No cross-repository contract is introduced.
+
+## Dependencies
+
+- ARCH-021-COMMERCE-042
+- ARCH-021-COMMERCE-050
+- ARCH-021-COMMERCE-051
+- ARCH-021-COMMERCE-052
+
+## Enables
+
+- ARCH-021-COMMERCE-054
+
+## Acceptance Criteria
+
+- [ ] Response visibly offers `Automatic` alongside Visual rules/Direct/JavaScript.
+- [ ] `AUTOMATIC` is not added to any persisted/runtime processing schema.
+- [ ] Selecting Automatic alone does not mutate/dirty the canonical Tool definition.
+- [ ] Request/Automatic/Test share one Sample Tool arguments string/state.
+- [ ] Sample arguments remain authoring-only and are never persisted.
+- [ ] New and existing Tool flows provide selected-shop context for PER_SHOP live calls.
+- [ ] Automatic uses the exact current canonical Request candidate, not a stale older Request.
+- [ ] Automatic performs one COMMERCE-051 live observation per explicit Generate action.
+- [ ] Only 2xx JSON responses are passed to inference.
+- [ ] Zero candidate result leaves Response unchanged with actionable guidance.
+- [ ] One candidate is applied directly then the UI switches to Visual rules.
+- [ ] Multiple candidates show a picker only; no duplicate Visual editor is rendered.
+- [ ] Candidate labels use `Object` / `List of objects`; nested field terminology remains C049 exact.
+- [ ] Applying a candidate sets exact `resultPath`, Visual authoring tree, derived processing and derived result schema.
+- [ ] `deriveVisualTreeContract(...)` remains the only processing/schema derivation authority.
+- [ ] Automatically inferred fields remain optional (`omitIfMissing`) as provided by C052.
+- [ ] Generated Visual state can be edited normally after generation.
+- [ ] COMMERCE-050 validation diagnostics continue to work on generated Visual state.
+- [ ] Direct/JavaScript inactive drafts survive generation.
+- [ ] Observation/generation performs no Tool/Revision save and does not satisfy `LIVE_TEST_REQUIRED`.
+- [ ] All authoring tabs remain freely navigable.
+
+## Mandatory Regression Scenarios
+
+Add focused UI/composition tests proving at least:
+
+```text
+1. selector shows Visual rules / Direct / JavaScript / Automatic.
+2. selecting Automatic does not call onChange and does not dirty Tool.
+3. shared sample arguments edited in Request are visible unchanged in Automatic.
+4. shared sample arguments edited in Automatic are visible unchanged in Request.
+5. malformed sample JSON blocks Generate locally and performs no observation call.
+6. invalid current Request blocks Generate instead of using stale canonical-looking UI state.
+7. PER_SHOP Connection without selected shop shows actionable shop-required result.
+8. provider transport/deadline failure leaves Response unchanged.
+9. provider 404/429/503 leaves Response unchanged and does not infer.
+10. 2xx non-JSON/null-json response leaves Response unchanged.
+11. 2xx JSON + zero candidates stays Automatic with guidance.
+12. one OBJECT candidate installs Visual, resultPath and derived schema, then shows normal Visual editor.
+13. one LIST candidate installs root List of objects and exact Source path.
+14. generated nested SCALAR_LIST is shown by existing UI as List of values.
+15. multiple candidates show picker in C052 order and no editable Visual tree.
+16. selecting second candidate applies exactly that candidate and switches to Visual.
+17. unresolved issues apply usable candidate but show bounded review notice.
+18. after generation, manual Visual edit is retained and not overwritten by hidden Automatic state.
+19. Direct draft survives Automatic -> Visual generation -> Direct switch.
+20. JavaScript draft survives Automatic -> Visual generation -> JavaScript switch.
+21. generated invalid/local edit uses C050 actionable diagnostic path.
+22. New Tool generation does not create/persist Tool until existing Review Create.
+23. existing DRAFT generation does not save until existing Save Draft.
+24. no AUTOMATIC value appears in submitted definition/persistence payload.
+25. successful generation does not create a live-test publication receipt.
+```
+
+## Validation
+
+Run at minimum:
+
+- [ ] `npm run test:arch020-external-tools-ui`
+- [ ] focused `tests/tool-authoring-screen.test.tsx`
+- [ ] `npm run test:arch021-tool-authoring-common` when shared New/Existing Tool composition changes
+- [ ] targeted ESLint on changed files
+- [ ] `git diff --check`
+- [ ] changed-file TypeScript diagnostics contain no task-owned error
+
+Do not rerun provider/security suites owned by COMMERCE-051 unless this task changes that implementation.
+
+## Stop Condition
+
+After Automatic generation works through the existing Visual editor for both new and existing Tool authoring, all mandatory UI regressions pass and the Completion Report is complete, set the task to `review`, clear the execution claim under the normal workflow, return control to `moda_architect` and STOP. Do not begin COMMERCE-054.
+
+## Implementation Notes
+
+The critical UI invariant is:
+
+```text
+Automatic = generator
+Visual rules = editor
+Test = observer
+```
+
+Do not collapse these responsibilities merely because they share the same External HTTP editor.
+
+## Completion Report
+
+### Status
+
+Not Started
+
+### Files Changed
+
+None.
+
+### Work Completed
+
+None.
+
+### Validation Results
+
+Not run.
+
+### Deviations
+
+None.
+
+### Assumptions
+
+None.
+
+### Unresolved Issues
+
+None.
+
+### Architectural Concerns
+
+None.
+
+## Architect Review
+
+### Review Status
+
+Pending
+
+### Review Notes
+
+Pending implementation.
+
+### Reviewed Files
+
+None.
+
+### Validation Reviewed
+
+None.
+
+### Architecture Conformance
+
+Pending.
+
+### Follow-up
+
+None.
