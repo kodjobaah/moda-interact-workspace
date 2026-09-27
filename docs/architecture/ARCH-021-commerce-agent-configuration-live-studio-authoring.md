@@ -1061,10 +1061,10 @@ Implementation tasks:
 | ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
-| ARCH-021-COMMERCE-065 | moda_commerce | Ready | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Ready | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
@@ -1106,6 +1106,14 @@ COMMERCE-065    COMMERCE-069
 ```
 
 COMMERCE-064 is architect-accepted Complete. COMMERCE-062 already satisfies COMMERCE-065's other dependency and COMMERCE-060 already satisfies COMMERCE-069's other dependency, so both are Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
+
+Current executable frontier after COMMERCE-065 Attempt 2 acceptance:
+
+```text
+COMMERCE-068    COMMERCE-069
+```
+
+COMMERCE-065 is architect-accepted Complete. COMMERCE-066 and COMMERCE-067 already satisfy COMMERCE-068's other dependencies, so COMMERCE-068 is promoted to Ready. COMMERCE-069 remains independently Ready.
 
 Phase 3 exit criteria:
 

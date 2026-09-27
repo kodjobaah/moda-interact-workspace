@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 75
 executor: null
 claimed_at: null
@@ -293,54 +293,38 @@ Ready for Architect Review. The Attempt 2 implementation and deferred regression
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 establishes the intended Request/Response ownership split: Shopify Admin Request owns invocation authoring, Response owns `resultPath` plus the compiler-derived read-only result contract, invalid path text is retained, and both New Tool and persisted-DRAFT flows use the COMMERCE-062 derivation boundary without an automatic durable write.
+Attempt 2 satisfies the Attempt 1 correction contract and is accepted.
 
-Two corrections are required before C065 can be accepted:
+The stale asynchronous derivation window is closed at the Response authoring boundary. `shopify-admin-response-editor.tsx` now invalidates the active derivation generation and marks freshness false in a layout-commit effect whenever the Admin result identity changes (`apiVersion`, `schemaHash`, `document`, `operationName` or `resultPath`). An in-flight completion must still match both the submitted generation and the latest committed identity before it may promote a derived schema or mark the result contract fresh.
 
-1. `shopify-admin-response-editor.tsx` can promote an obsolete in-flight derivation after the Request identity has changed. The completion guard compares against refs whose identity/generation invalidation is updated from a passive `useEffect`. A render for a changed `document`, `operationName`, API/schema identity, or `resultPath` can therefore occur before that effect updates the refs; if the older derivation resolves in that window, it can still call `onDerived(...)` and `onFreshChange(true)`. This violates R4 because an earlier query/result-path result may become fresh for the newer candidate.
-2. The Completion Report does not contain the mandatory task-worktree/start-of-attempt VCS evidence required by the workspace execution protocol. Passing tests and a pushed task branch do not substitute for evidence that Attempt 1 ran from the launcher-resolved dedicated parent and implementation worktrees synchronized from their canonical bases.
+The deferred regressions exercise both lifecycle consumers. New Tool authoring starts derivation A, changes the Admin Request identity before A resolves, then proves A cannot install its obsolete schema or re-enable Create. Persisted-DRAFT authoring proves the same stale completion cannot install the obsolete schema, re-enable Save Draft or Publish, or invoke either persistence action.
 
-The repository-wide TypeScript failure reported by the implementation is not itself a C065 rejection reason: the submitted evidence records 28 diagnostics in 17 files outside the C065 changed-file set and no changed-file diagnostics.
+The Attempt 2 Completion Report also supplies the required launcher-resolved workspace root, dedicated parent/implementation worktree paths and branches, start-of-attempt synchronization evidence, recursive submodule state, implementation/report commit and push evidence, and explicit confirmation that the parent database gitlink was not staged for task reporting.
 
 ### Reviewed Files
 
 - `src/studio/tools/shopify-admin-response-editor.tsx`
-- `src/studio/tools/shopify-admin-editor.tsx`
-- `src/studio/tools/new-tool-editor.tsx`
-- `src/studio/tools/tool-editor.tsx`
-- `src/studio/tools/authoring-session.ts`
-- `tests/shopify-admin-tools-ui.test.tsx`
 - `tests/tool-authoring-screen.test.tsx`
-- `tests/admin-explorer.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-065-split-shopify-request-response-authoring.md`
 
 ### Validation Reviewed
 
-- Submitted focused Vitest result: 47 tests across 4 files passed.
-- Submitted targeted ESLint result: passed for the changed source/test files.
-- Submitted changed-file diagnostics: no errors in the 8 changed files.
+- Submitted Attempt 2 focused Vitest packet: 49/49 tests across four suites passed.
+- Submitted targeted ESLint: passed for the eight changed source/test files.
+- Submitted changed-file TypeScript/editor diagnostics: no errors in the eight changed files.
 - Submitted `git diff --check`: passed.
-- Submitted package-wide `npm run typecheck`: 28 diagnostics in 17 other package files; none reported in C065 changed files.
-- Source/test inspection found the unresolved asynchronous stale-derivation completion window described above, which is not covered by the submitted stale-derivation regressions.
+- The package-wide typecheck remains red on 28 diagnostics across 17 unrelated files and is not treated as a C065 regression.
+- Source/test inspection confirms the deferred stale-completion tests cover both New Tool Create and persisted-DRAFT Save/Publish gates.
 
 ### Architecture Conformance
 
-The Request/Response separation, COMMERCE-062 derivation ownership, local-only derivation lifecycle, invalid-path retention and ungated navigation conform to the task architecture in principle. Attempt 1 is not acceptable yet because the asynchronous completion race can violate R4's freshness boundary and the Completion Report lacks the required physical-isolation/start-of-attempt evidence.
+Conformant. Shopify Admin Request remains the invocation-authoring surface; Response owns `resultPath` and the COMMERCE-062 compiler-derived read-only result contract. Invalid path text remains local/actionable, derivation does not persist automatically, navigation stays ungated, and obsolete asynchronous results cannot become authoritative for a newer Request identity.
 
 ### Follow-up
 
-Attempt 2 must satisfy all of the following and then return this same task to Architect Review:
-
-- [ ] Make the latest Admin derivation identity synchronously observable to an in-flight completion handler; do not rely on a passive effect to invalidate an obsolete request after a Request-identity-changing render.
-- [ ] Add a deferred/asynchronous regression that starts derivation A, changes `document`, `operationName`, API/schema identity or `resultPath` before A resolves, then resolves A and proves the obsolete schema is not promoted and derivation freshness remains false.
-- [ ] Prove the stale completion cannot re-enable New Tool Create or persisted-DRAFT Save/Publish. This may be demonstrated through focused consumer regressions or through shared-component coverage plus explicit consumer gate coverage, but both authoring lifecycles must remain protected.
-- [ ] Update the Completion Report with launcher-resolved canonical workspace root, dedicated parent and implementation worktree paths/branches, confirmation that no shared/default or another task worktree was used, and start-of-attempt synchronization evidence for both parent and implementation repositories.
-- [ ] Record implementation and parent branch/commit/push evidence, including confirmation that the parent submodule gitlink was not staged as part of C065 task reporting.
-- [ ] Rerun the C065-required focused validation from the canonical C065 implementation worktree after the source correction and record the results. Do not require unrelated repository-wide baseline diagnostics to be fixed unless they newly affect C065 changed files.
-- [ ] Set the task back to `review` with the Attempt 2 Completion Report complete, then STOP. Do not start COMMERCE-068 or COMMERCE-069.
-
-No new task is required for these corrections; they remain within the original C065 scope. The next authorized claim increments `attempt` from 1 to 2.
+COMMERCE-065 is Complete. COMMERCE-066 and COMMERCE-067 are already Complete, so all dependencies of COMMERCE-068 are now satisfied and COMMERCE-068 is promoted to Ready. COMMERCE-069 remains independently Ready.
