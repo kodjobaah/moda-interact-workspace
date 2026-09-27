@@ -1064,7 +1064,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-068 | moda_commerce | Ready | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Complete | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
@@ -1122,6 +1122,15 @@ COMMERCE-065
 ```
 
 COMMERCE-069 Attempt 1 is architect-accepted Complete and enables no downstream task. COMMERCE-065 remains independently Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
+
+
+Current refinement-workstream state after COMMERCE-068 acceptance:
+
+```text
+COMMERCE-060 ... COMMERCE-070 -> Complete
+```
+
+COMMERCE-068 Attempt 1 is architect-accepted Complete. The dedicated Result Template authoring surface is integrated for New Tool and persisted-DRAFT flows, Agent Contract is call-side only, and Review separates Agent contract, Result contract and Result Template. No later traversal/gating behavior is introduced by this task. This refinement workstream has no remaining executable task.
 
 Phase 3 exit criteria:
 
