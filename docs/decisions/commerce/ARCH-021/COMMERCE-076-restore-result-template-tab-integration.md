@@ -9,12 +9,14 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 78
 executor: null
 claimed_at: null
 attempt: 1
 depends_on:
+  - ARCH-021-COMMERCE-055
+  - ARCH-021-COMMERCE-068
 enables: []
 created: 2026-09-27
 updated: 2026-09-27
@@ -376,24 +378,113 @@ None. Architect Review remains Pending.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implementation is technically and architecturally conformant. No C076 implementation-source or test change is required at this stage.
+
+The shared authoring registry now exposes the required order:
+
+```text
+Request
+Response
+Test
+Agent contract
+Result Template
+Review
+```
+
+The implementation preserves the previously accepted C063/C066/C067/C068 composition rather than introducing a new template model. Agent Contract remains call-side only; Result Template continues to edit the canonical `definition.responseTemplate` through the source-neutral `ToolResultContract`; Review keeps Agent contract, Result contract and Result Template separate; and the existing Test, Create, Save and Publish boundaries remain unchanged.
+
+The focused regression coverage exercises the tab order and separation across new/persisted External HTTP and Shopify Admin authoring, including local-versus-durable persistence behavior.
+
+The task YAML dependency metadata has also been architect-reconciled in this overlay. The body correctly identifies C055 and C068 as dependencies, but the submitted frontmatter had an empty `depends_on` value. Because dependency ownership belongs to `moda_architect`, this is not charged as an implementation defect. The canonical metadata is now:
+
+```yaml
+depends_on:
+  - ARCH-021-COMMERCE-055
+  - ARCH-021-COMMERCE-068
+```
+
+#### A1-R1 — record mandatory task-worktree and synchronization evidence
+
+The Completion Report does not contain the durable physical-isolation/start-of-attempt evidence required by `docs/agent-worktree-isolation-policy.md`.
+
+For Attempt 2, recover the original launcher/preparation packet if it is retained and record the actual values. If the original packet is unavailable, say so explicitly and perform a fresh canonical-worktree reconciliation verification rather than inventing historical outcomes.
+
+Record at minimum:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <actual launcher/current verified path>
+  parent worktree: <actual path>
+  parent branch: task/ARCH-021-COMMERCE-076
+  implementation worktree: <actual path>
+  implementation branch: task/ARCH-021-COMMERCE-076
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Recursive implementation submodule:
+  database path: <actual path>
+  database commit: <actual commit>
+  clean/current for task worktree: yes|no
+
+Published task state:
+  implementation commit: ad0a0cf2c53e7dba199098bc90fedb819e91b4a0
+  implementation remote branch: origin/task/ARCH-021-COMMERCE-076
+  implementation pushed: yes
+
+  parent task-report commit: 63febc46
+  parent remote branch: origin/task/ARCH-021-COMMERCE-076
+  parent pushed: yes
+
+  merged to implementation main: no
+  merged to workspace main: no
+```
+
+If the original synchronization packet is not retained, replace the four historical synchronization lines with an explicitly labelled current reconciliation block covering local/remote task equality and `origin/main` ancestry/state for both repositories.
+
+After recording the evidence, rerun only the task-required focused validation needed to substantiate the canonical-worktree record, return the task to `review`, clear the claim, and STOP.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `src/studio/tools/authoring/agent-contract-tab.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/authoring/review-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/result-template-tab.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Focused authoring/UI packet: 127/127 passed across four suites.
+- Targeted ESLint: passed.
+- Changed-file TypeScript diagnostics: passed.
+- `git diff --check`: passed.
+- Submitted implementation commit: `ad0a0cf2c53e7dba199098bc90fedb819e91b4a0`.
+- Submitted parent task-report commit: `63febc46`.
 
 ### Architecture Conformance
 
-Pending
+Conforms at the implementation level.
+
+C076 restores the accepted Result Template composition without changing Request, Response, live Test, persistence, or navigation/gating semantics. It preserves one shared tab registry and source-neutral Result Template ownership for both supported providers.
+
+Acceptance is withheld only until the mandatory task-worktree/synchronization evidence is durably recorded.
 
 ### Follow-up
 
-None
+Return the same task through `/moda-task` for Attempt 2. Reconcile A1-R1 in the Completion Report, rerun the necessary focused validation from the canonical implementation worktree, return to `review`, clear the claim, and STOP. No C076 feature-source change is required unless that verification exposes a task-owned regression.
