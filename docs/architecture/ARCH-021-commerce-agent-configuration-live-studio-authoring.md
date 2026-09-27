@@ -931,8 +931,8 @@ Live authoring/Test tasks:
 | ARCH-021-COMMERCE-051 | moda_commerce | Complete | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
 | ARCH-021-COMMERCE-052 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
 | ARCH-021-COMMERCE-053 | moda_commerce | Complete | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
-| ARCH-021-COMMERCE-054 | moda_commerce | Ready | ARCH-021-COMMERCE-051 |
-| ARCH-021-COMMERCE-055 | moda_commerce | Pending | ARCH-021-COMMERCE-054 |
+| ARCH-021-COMMERCE-054 | moda_commerce | Complete | ARCH-021-COMMERCE-051 |
+| ARCH-021-COMMERCE-055 | moda_commerce | Ready | ARCH-021-COMMERCE-054 |
 
 ```text
 Automatic branch:
@@ -949,6 +949,8 @@ The current executable live-authoring frontier is:
 
 ```text
 ARCH-021-COMMERCE-054
+ARCH-021-COMMERCE-053
+ARCH-021-COMMERCE-055
 ```
 
 The Test backend receives the current canonical local candidate directly; it does not reload a saved revision and it does not require a `toolId`/`toolRevisionId`. Test arguments are ephemeral execution inputs and are not part of the durable Tool definition. Publication-proof semantics remain outside this pre-creation Test flow and require a separate later architecture decision after durable creation.

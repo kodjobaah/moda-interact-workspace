@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 69
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-051
 enables:
@@ -324,15 +324,15 @@ Backend Test failures are diagnostic only in this phase. Do not add progression/
 
 ## Work Items
 
-- [ ] Define the bounded non-durable live-Test input/result contracts.
-- [ ] Reparse/revalidate the current candidate server-side without saved-revision lookup.
-- [ ] Compose the real provider call through COMMERCE-051.
-- [ ] Apply canonical DIRECT/VISUAL/JavaScript response processing.
-- [ ] Validate the processed result through the canonical result-schema compiler.
-- [ ] Return the five explicit execution stages with deterministic failure/not-run semantics.
-- [ ] Preserve bounded safe Request/provider/result data without credentials/headers/internal errors.
-- [ ] Prove successful and failed Test runs perform zero durable writes.
-- [ ] Add focused non-2xx, processing, contract and security regressions.
+- [x] Define the bounded non-durable live-Test input/result contracts.
+- [x] Reparse/revalidate the current candidate server-side without saved-revision lookup.
+- [x] Compose the real provider call through COMMERCE-051.
+- [x] Apply canonical DIRECT/VISUAL/JavaScript response processing.
+- [x] Validate the processed result through the canonical result-schema compiler.
+- [x] Return the five explicit execution stages with deterministic failure/not-run semantics.
+- [x] Preserve bounded safe Request/provider/result data without credentials/headers/internal errors.
+- [x] Prove successful and failed Test runs perform zero durable writes.
+- [x] Add focused non-2xx, processing, contract and security regressions.
 
 ## Interfaces / Contracts
 
@@ -362,20 +362,20 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Live Test accepts the exact current non-durable candidate and ephemeral test arguments.
-- [ ] No `toolId` or `toolRevisionId` is required.
-- [ ] Server-side candidate validation occurs before unsafe execution.
-- [ ] Real provider I/O is performed only through COMMERCE-051.
-- [ ] DIRECT/VISUAL use canonical response processing.
-- [ ] JAVASCRIPT uses the canonical bounded code response processor.
-- [ ] Actual processed output is checked by the canonical result contract.
-- [ ] Five deterministic stages report passed/failed/not-run correctly.
-- [ ] Non-2xx provider outcomes remain visible and downstream processing is not run.
-- [ ] Credential values/provider response headers/raw internal errors never enter the result.
-- [ ] No synthetic Test mode is introduced.
-- [ ] Successful and failed Test runs perform zero durable writes.
-- [ ] No saved-revision lookup, receipt, publication proof or `LIVE_TEST_REQUIRED` satisfaction is introduced.
-- [ ] No Request/Response redesign or tab gating is introduced.
+- [x] Live Test accepts the exact current non-durable candidate and ephemeral test arguments.
+- [x] No `toolId` or `toolRevisionId` is required.
+- [x] Server-side candidate validation occurs before unsafe execution.
+- [x] Real provider I/O is performed only through COMMERCE-051.
+- [x] DIRECT/VISUAL use canonical response processing.
+- [x] JAVASCRIPT uses the canonical bounded code response processor.
+- [x] Actual processed output is checked by the canonical result contract.
+- [x] Five deterministic stages report passed/failed/not-run correctly.
+- [x] Non-2xx provider outcomes remain visible and downstream processing is not run.
+- [x] Credential values/provider response headers/raw internal errors never enter the result.
+- [x] No synthetic Test mode is introduced.
+- [x] Successful and failed Test runs perform zero durable writes.
+- [x] No saved-revision lookup, receipt, publication proof or `LIVE_TEST_REQUIRED` satisfaction is introduced.
+- [x] No Request/Response redesign or tab gating is introduced.
 
 ## Mandatory Regression Scenarios
 
@@ -403,15 +403,15 @@ Prove at minimum:
 
 Run at minimum the focused suites declared by the repository for:
 
-- [ ] External HTTP authoring Server Actions/live observation
-- [ ] External HTTP executor/security where shared composition changes
-- [ ] canonical response processing
-- [ ] JavaScript response processing
-- [ ] result-schema validation
-- [ ] focused new non-durable live-Test backend tests
-- [ ] targeted ESLint on changed files
-- [ ] changed-file TypeScript diagnostics contain no task-owned error
-- [ ] `git diff --check`
+- [x] External HTTP authoring Server Actions/live observation
+- [x] External HTTP executor/security where shared composition changes
+- [x] canonical response processing
+- [x] JavaScript response processing
+- [x] result-schema validation
+- [x] focused new non-durable live-Test backend tests
+- [x] targeted ESLint on changed files
+- [x] changed-file TypeScript diagnostics contain no task-owned error
+- [x] `git diff --check`
 
 Inspect the repository `package.json` before choosing exact script names; do not invent scripts.
 
@@ -436,31 +436,60 @@ If implementation requires persistence merely to run Test, stop and return the c
 
 ### Status
 
-Not Started
+Ready for review
 
 ### Files Changed
 
-None.
+- `src/commerce/tool-authoring/external-live-test.ts`
+- `src/commerce/tool-authoring/external-observation.ts`
+- `src/commerce/integration/external/index.ts`
+- `src/studio/tools/external-validation-server-actions.ts`
+- `tests/external-http-live-test.test.ts`
+- `tests/external-http-live-test-action.test.ts`
+- `tests/external-http-authoring-observation.test.ts`
+- `tests/external-wiring.test.ts`
 
 ### Work Completed
 
-None.
+Added the Commerce-local `createExternalHttpLiveTest` runner with strict transient-candidate validation, exact `acceptedMediaTypes` matching, canonical C051 observation, existing DIRECT/VISUAL and JavaScript Response processors, and canonical result-schema validation.
+
+Added safe five-stage outcomes, bounded provider/result diagnostics, non-2xx short-circuiting and separate Connection/provider/processing/contract failures. C051 now tags failures with their owning stage without changing its security or execution boundary.
+
+Exposed the runner through the external integration and an ADMIN-authorized Server Action that reuses Studio shop inspection for PER_SHOP Connections. No UI, saved revision authority, receipts, publication path or persistence was added.
+
+Real integration tests cover malformed arguments before credentials, JavaScript Request execution through C051, 404 short-circuiting, successful 200 processing, credential redaction and zero durable writes for both success and failure.
+
+Addressed Architect Review A1-R1 by typing the observation mock with `ExternalHttpLiveTestDependencies['observe']` and explicitly annotating its promise as `ExternalHttpAuthoringObservation`, so the fixture supports both response and failure variants without weakening production types.
+
+Addressed A1-R2 by recording the launcher-resolved paths, branch synchronization and recursive submodule evidence for Attempts 1 and 2 below.
+
+The Attempt 2 test correction is committed as `7d8102f` and pushed to `task/ARCH-021-COMMERCE-054`.
 
 ### Validation Results
 
-Not run.
+Passed: focused Vitest regression set, 11 files and 150 tests. Final `external-wiring.test.ts` rerun passed all 5 tests after adding the real JavaScript Request and no-write success scenario. On Attempt 2 after the A1-R1 typing correction, `vitest run tests/external-http-live-test.test.ts` passed all 13 tests.
+
+Passed: targeted ESLint on the corrected test, changed-file editor diagnostics (no errors), and `git diff --check`.
+
+Passed: fresh `tsc --noEmit --pretty false --incremental false` reported no diagnostics for `tests/external-http-live-test.test.ts` (the two reviewed TS2322 diagnostics are resolved). The project command exited 2 due to unrelated existing diagnostics in `app/api/studio/code-response/validate/route.ts`, `lib/discovery/compiler.ts`, and `scripts/validate-shopify-admin-local.ts`.
+
+Prepared execution evidence, Attempt 1: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-054`, branch `task/ARCH-021-COMMERCE-054`, created for this task at start HEAD `bc87a1229cf41221cd305a4b26d71e51af6a2aa9`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-054`, same task branch, created at start HEAD `e31a981133cd439684523647fb526b3a0ecf60d3`. For both worktrees, task-branch fast-forward was `not-needed` and `origin/main` was `already-current`. Recursive implementation submodule sync and update/init both passed; status was `ready`, with `database` initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`. The launcher claim commit was `f34eed90e31e820538a1d5a278c96855f26fc380`.
+
+Prepared execution evidence, Attempt 2: the same canonical workspace and dedicated task worktrees/branches were reused. Parent start HEAD was `bac734d9339820ebb300241d7cc6065056e23d00`; implementation start HEAD was `137c017be770ad78034c9f89ed1a2aeac8a15418`. Both task-branch fast-forwards were `not-needed`, and both `origin/main` incorporations were `already-current`. Recursive implementation submodule sync and update/init passed again; status was `ready`, with `database` initialized at the same recorded commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`. The Attempt 2 launcher claim commit was `6d8406b6f441188ab4f87168fdd45de86eb98321`.
+
+`npm run typecheck` was attempted but remains blocked by unrelated existing errors: unresolved `lib/preview`/Commerce preview imports in `app/api/studio/code-response/validate/route.ts`, incompatible compiler/schema types in `lib/discovery/compiler.ts`, and a Shopify Admin fixture type mismatch in `scripts/validate-shopify-admin-local.ts`.
 
 ### Deviations
 
-None.
+None. Scope stayed backend-only and no COMMERCE-055 work was started.
 
 ### Assumptions
 
-None.
+No saved Tool/revision lookup is performed; the supplied candidate is validated transiently and the operation calls only the accepted C051 observation boundary plus canonical response/result validators.
 
 ### Unresolved Issues
 
-None.
+The full project typecheck still has baseline failures outside the touched task files, recorded under Validation Results. The Architect-identified diagnostics in the touched test file are resolved.
 
 ### Architectural Concerns
 
@@ -470,24 +499,41 @@ None.
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Attempt 2 is accepted. Both Attempt-1 corrections are closed without changing the approved runtime architecture.
+
+A1-R1 is satisfied: `tests/external-http-live-test.test.ts` now types the observation mock through `ExternalHttpLiveTestDependencies['observe']` and explicitly returns `ExternalHttpAuthoringObservation`, so response and failure observations share the canonical union without weakening production types. The Attempt-2 focused live-test suite passed 13/13, targeted ESLint and `git diff --check` passed, and a fresh non-incremental TypeScript run reported no diagnostics for the corrected changed test file. The archived `tsconfig.tsbuildinfo` still contains the stale Attempt-1 diagnostics and is not treated as current compiler evidence.
+
+A1-R2 is satisfied: the Completion Report now durably records the launcher-resolved canonical workspace, dedicated parent and implementation task worktrees, start HEADs, task-branch/origin-main synchronization outcomes, recursive implementation-submodule initialization and launcher claim commits for both Attempts 1 and 2.
+
+The previously reviewed runtime remains conformant: the transient candidate is server-validated, real provider I/O is delegated only to COMMERCE-051, ADMIN/selected-shop authorization is preserved, DIRECT/VISUAL/JavaScript reuse canonical response processors, `compileCommerceResultSchema(...)` remains the result authority, the five execution stages stay distinct, non-2xx responses short-circuit downstream processing, outputs remain bounded/redacted, and no Tool/Revision/audit/receipt persistence or saved-revision authority was introduced.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/tests/external-http-live-test.test.ts`
+- `moda-interact-commerce/src/commerce/tool-authoring/external-live-test.ts`
+- `moda-interact-commerce/src/commerce/tool-authoring/external-observation.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-054-execute-non-durable-external-http-candidate-live.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None.
+- Attempt-2 `tests/external-http-live-test.test.ts`: **13/13 PASS**.
+- Targeted ESLint: **PASS**.
+- `git diff --check`: **PASS**.
+- Fresh non-incremental TypeScript diagnostics: **no diagnostics in the corrected changed test file**.
+- Repository-wide TypeScript remains red only in the unrelated files documented by the Completion Report.
+- Attempt-1 focused packet remains recorded as **150 tests across 11 files PASS**, including the final `external-wiring.test.ts` **5/5 PASS**.
+- Prepared execution evidence for both attempts is now durably recorded and conforms to the dedicated-worktree/start-of-attempt protocol.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. COMMERCE-054 implements exactly the backend-only, non-durable live-Test boundary defined by ARCH-021 and introduces no UI, saved-revision authority, publication proof or durable Test state.
 
 ### Follow-up
 
-None.
+ARCH-021-COMMERCE-054 is Complete. ARCH-021-COMMERCE-055 is now dependency-eligible and becomes Ready. COMMERCE-053 remains independently Ready; neither task should be started implicitly by this review.
