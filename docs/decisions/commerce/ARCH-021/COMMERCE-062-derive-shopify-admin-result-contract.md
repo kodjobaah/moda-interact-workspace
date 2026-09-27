@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 72
-executor: copilot
-claimed_at: 2026-09-27T14:19:22Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-018
@@ -103,6 +103,17 @@ Derivation must follow the actual selected GraphQL response keys, including alia
 
 `resultPath` resolves against response keys exactly as runtime selection does.
 
+GraphQL field-merging semantics are part of the exact selected response shape. A
+validated query may repeat the same response key when GraphQL considers those field
+selections merge-compatible (same underlying field/arguments with compatible
+sub-selections). Derivation must recursively merge those compatible selections
+rather than rejecting them merely because each occurrence contributes a different
+subset of child fields.
+
+Do not use last-write-wins and do not merge semantically conflicting response
+keys. `compileDocument()` already runs GraphQL semantic validation; incompatible
+field merges must continue to fail through that validation boundary.
+
 ### R3 — deterministic scalar mapping
 
 Maintain one explicit Admin GraphQL output-scalar mapping whose JSON representation matches Shopify's actual GraphQL serialization and the Commerce result schema.
@@ -157,6 +168,8 @@ Any server/service action exposed for UI consumption returns the derived result 
 - [x] Add deterministic canonical equality/fingerprint behavior for a derived schema.
 - [x] Expose a non-mutating authoring derivation boundary through an authenticated Server Action.
 - [x] Add focused derivation, alias, nullability, list-bound and unsupported-scalar tests.
+- [ ] Merge compatible repeated GraphQL response-key selections recursively instead of rejecting complementary selected shapes.
+- [ ] Add direct regressions for GraphQL field merging and real pinned-schema nullable-list rejection.
 
 ## Interfaces / Contracts
 
@@ -201,14 +214,15 @@ No new cross-repository contract is introduced.
 - [x] Canonical equality/fingerprint behavior is deterministic across equivalent derivations.
 - [x] Authoring derivation creates no Tool/ToolRevision and performs no Shopify provider request.
 - [x] Existing Admin compiler validation remains green.
+- [ ] A valid repeated response-key selection derives the same canonical result schema as the equivalent single merged GraphQL selection.
+- [ ] A real pinned Admin list with nullable elements fails derivation with `UNREPRESENTABLE_NULLABLE_LIST`.
 
 ## Validation
 
-- [x] focused Admin result-contract derivation tests
-- [x] Admin compiler regression tests
-- [x] Admin authoring-validation regression tests where affected
-- [x] targeted lint/type diagnostics for changed files
-- [x] `git diff --check`
+- [ ] `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts --reporter=verbose`
+- [ ] targeted ESLint for every Attempt 2 changed source/test file
+- [ ] `npm run typecheck` (the documented unrelated repository baseline may remain; zero C062-owned diagnostics required)
+- [ ] `git diff --check`
 
 ## Stop Condition
 
@@ -271,24 +285,280 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None.
+Attempt 1 establishes the intended C062 backend/compiler capability in substance.
+
+Accepted from source inspection:
+
+- derivation is pure and reuses the pinned Admin `2026-07` schema/document
+  validation path;
+- response aliases and `resultPath` response keys are used rather than underlying
+  field names;
+- object property required/optional state is derived from GraphQL non-nullability;
+- the explicit scalar map matches the pinned artifact's JSON serialization for
+  the supported Admin scalars reviewed, including `Decimal`, `BigInt` and
+  `UnsignedInt64` as strings;
+- generated strings are bounded to the existing Commerce maximum;
+- list derivation uses a query-proven literal `first` bound rather than a global
+  fabricated maximum;
+- unrelated unbounded lists are rejected;
+- nullable/nested list elements are rejected by the implementation;
+- scalar roots are rejected rather than wrapped/guessed;
+- `canonicalizeCommerceResultSchema()` recursively sorts object properties and
+  `required` entries for deterministic equality;
+- `normalizeCommerceResult()` creates new object/array values, omits null optional
+  properties and reports null required properties;
+- the authenticated derivation Server Action delegates to the pure derivation
+  function and performs no provider or persistence work.
+
+There is one correctness blocker in the exact-shape requirement, plus one missing
+direct R5 regression.
+
+#### Finding 1 — valid GraphQL field merging is rejected by result derivation
+
+Manual Admin GraphQL remains first-class in this architecture. GraphQL permits the
+same response key to occur more than once when the selections are
+merge-compatible. Compatible object/list sub-selections are merged into one
+response field.
+
+For example, this is a valid representable selection shape:
+
+```graphql
+query Products {
+  catalog: products(first: 2) {
+    items: nodes {
+      id
+    }
+    items: nodes {
+      title
+    }
+  }
+}
+```
+
+Both `items` entries select the same underlying `nodes` field with the same
+arguments. GraphQL field-merging semantics produce one `items` array whose item
+objects contain both:
+
+```text
+id
+title
+```
+
+The current `outputObject()` instead derives each occurrence independently:
+
+```text
+first items -> array items { id }
+second items -> array items { title }
+```
+
+and then compares their canonical schemas. Because those schemas differ, it
+throws:
+
+```text
+DUPLICATE_RESPONSE_KEY
+```
+
+even though `compileDocument()` has already semantically validated the GraphQL
+document and the actual response shape is representable.
+
+This violates R1/R2's requirement to derive the exact selected response shape from
+a validated Admin document.
+
+### Attempt 2 deterministic correction
+
+Reclaim the same task as Attempt 2.
+
+Do not redesign the Admin compiler or result-schema grammar.
+
+Implement GraphQL response-key merging at the derivation boundary.
+
+A valid solution may either:
+
+1. group/merge compatible `FieldSelection` selection sets by response key before
+   calling `outputValue()`, or
+2. recursively merge the derived Commerce result schemas for repeated response
+   keys.
+
+Whichever approach is used, enforce these invariants:
+
+```text
+scalar/enum repeated selection:
+  same derived schema -> one property
+
+object repeated selection:
+  recursively union selected child properties
+  required = union of required child keys
+
+array repeated selection:
+  same proven maxItems required
+  recursively merge item schema
+
+incompatible derived node kinds/bounds:
+  deterministic bounded derivation error
+```
+
+Do not use last-write-wins.
+
+Do not bypass GraphQL semantic validation. Conflicting underlying fields/arguments
+must continue to fail at the existing GraphQL validation boundary rather than
+being unioned by Commerce.
+
+The canonical result for the repeated selection above must equal the canonical
+result for:
+
+```graphql
+query Products {
+  catalog: products(first: 2) {
+    items: nodes {
+      id
+      title
+    }
+  }
+}
+```
+
+and must preserve the alias `items`.
+
+#### Finding 2 — R5's nullable-list-element rejection is implemented but not directly proved
+
+The source correctly contains:
+
+```text
+UNREPRESENTABLE_NULLABLE_LIST
+```
+
+for nullable or nested list elements, but the focused C062 tests do not exercise
+that path.
+
+Use a real pinned Admin field rather than an invented type. The `2026-07` Admin
+schema contains:
+
+```text
+QueryRoot.nodes: [Node]!
+```
+
+whose list elements are nullable.
+
+Add a derivation regression using a valid bounded query such as the real `nodes`
+root (with the exact pinned arguments required by the schema) and a selected
+interface field such as `id`.
+
+The derivation must return:
+
+```text
+success: false
+issues[0].code: UNREPRESENTABLE_NULLABLE_LIST
+```
+
+Do not modify the schema artifact or relax the list grammar to make the test pass.
+
+### Required Attempt 2 regressions
+
+At minimum add to `tests/admin-result-contract.test.ts`:
+
+1. repeated aliased `nodes` selections with complementary child selections derive
+   successfully;
+2. their canonical representation equals the equivalent single merged selection;
+3. the merged item schema contains both selected fields and no unselected field;
+4. the real pinned nullable-element `QueryRoot.nodes` shape returns
+   `UNREPRESENTABLE_NULLABLE_LIST`;
+5. all existing alias/nullability/list-bound/scalar/canonicalization tests remain
+   green.
+
+Retain the authenticated authoring-action regression and existing Admin compiler
+regression packet.
+
+### Validation
+
+Run exactly:
+
+```bash
+npx vitest run \
+  tests/admin-result-contract.test.ts \
+  tests/admin-graphql-compiler.test.ts \
+  tests/discovery-route.test.ts \
+  tests/shopify-admin-authoring-validation.test.ts \
+  --reporter=verbose
+```
+
+Run targeted ESLint for every Attempt 2 changed source/test file.
+
+Run:
+
+```bash
+npm run typecheck
+```
+
+The existing unrelated repository baseline may remain only when there are zero
+diagnostics in C062-owned files.
+
+Run:
+
+```bash
+git diff --check
+```
+
+### Task/report reconciliation
+
+Preserve the existing Attempt 1 Completion Report as historical implementation
+evidence and add Attempt 2 results rather than rewriting away the prior review
+history.
+
+Return:
+
+```yaml
+status: review
+executor: null
+claimed_at: null
+attempt: 2
+```
+
+and STOP.
+
+Do not begin COMMERCE-065 or COMMERCE-070.
 
 ### Reviewed Files
 
-None.
+- `lib/discovery/admin-compiler.ts`
+- `src/commerce/tool-definition/result-schema.ts`
+- `src/commerce/tool-authoring/admin-validation.ts`
+- `src/studio/tools/admin-validation-server-actions.ts`
+- `tests/admin-result-contract.test.ts`
+- `tests/admin-graphql-compiler.test.ts`
+- `tests/shopify-admin-authoring-validation.test.ts`
+- task Completion Report
 
 ### Validation Reviewed
 
-None.
+Submitted Attempt 1 evidence:
+
+```text
+focused Admin packet: 39 tests passed
+targeted ESLint: PASS
+git diff --check: PASS
+typecheck: 252 unrelated repository diagnostics
+           zero diagnostics reported in C062-changed files
+```
+
+The review archive does not contain installed dependencies, so the architect did
+not independently rerun the Node/Vitest/TypeScript packet.
 
 ### Architecture Conformance
 
-Pending.
+Partial.
+
+The scalar/nullability/list-bound/canonicalization/action architecture conforms.
+Acceptance is blocked by valid GraphQL repeated-field merging being rejected by
+the derivation layer.
 
 ### Follow-up
 
-None.
+Reclaim `ARCH-021-COMMERCE-062` as Attempt 2.
+
+COMMERCE-065 remains Pending on COMMERCE-064 as well as C062.
+
+COMMERCE-070 remains Pending on COMMERCE-060 as well as C062.

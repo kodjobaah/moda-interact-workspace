@@ -362,6 +362,19 @@ Key invariants:
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
 
+### COMMERCE-062 Attempt 1 changes requested — 2026-09-27
+
+The pure Admin result-contract derivation, scalar/nullability mapping, query-proven
+list bounds, canonicalization, normalization helper and authenticated non-mutating
+action are accepted in substance. COMMERCE-062 remains **Ready** for Attempt 2
+because valid GraphQL repeated response-key selections with complementary child
+selections are currently rejected instead of being merged according to GraphQL
+field-merging semantics.
+
+Attempt 2 must also add direct evidence for the already-implemented
+`UNREPRESENTABLE_NULLABLE_LIST` path using the real pinned Admin schema.
+COMMERCE-065 and COMMERCE-070 remain Pending on their other dependencies as well.
+
 ### COMMERCE-053 Attempt 2 accepted — 2026-09-27
 
 COMMERCE-053 is **Complete / Accepted, Attempt 2**. Automatic remains transient browser-local authoring state over the canonical `DIRECT | VISUAL | JAVASCRIPT` response union, shares the single Sample Tool arguments state, uses COMMERCE-051 observation and COMMERCE-052 inference, and hands accepted candidates into the existing Visual editor through `deriveVisualTreeContract(...)`. Attempt 2 corrected abandonment of Automatic back to the unchanged persisted mode so it no longer dirties/mutates the Tool or invalidates successful Response validation, while intentional mode changes still do. Regression coverage now includes a sole root `LIST` candidate with `resultPath: ""` and explicit proof that Automatic generation creates no live-test receipt and publication remains gated by `LIVE_TEST_REQUIRED`. Submitted validation passed 69/69 External HTTP UI and 13/13 Tool-authoring tests; the common packet remains 85/86 on the pre-existing lifecycle expectation mismatch outside C053. COMMERCE-054 remains independently **Ready** because its authoritative dependency is COMMERCE-051 alone.

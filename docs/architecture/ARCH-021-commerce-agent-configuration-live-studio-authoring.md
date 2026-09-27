@@ -1325,6 +1325,21 @@ independent of features.
 
 ## Change History
 
+### 2026-09-27 — COMMERCE-062 Attempt 1 changes requested
+
+- Accepted the pure Admin result-schema derivation, alias/nullability mapping,
+  explicit serialized-scalar map, query-proven list bounds, canonical schema
+  representation, nullable-output normalization and authenticated non-mutating
+  authoring action in substance.
+- Returned COMMERCE-062 to Ready because a valid GraphQL document can repeat the
+  same merge-compatible response key with complementary child selections, while
+  the current derivation rejects differing per-occurrence schemas as
+  `DUPLICATE_RESPONSE_KEY` instead of deriving the actual merged response shape.
+- Required a direct real-schema regression for nullable list elements
+  (`QueryRoot.nodes: [Node]!`) to prove the existing
+  `UNREPRESENTABLE_NULLABLE_LIST` behavior.
+- COMMERCE-065 and COMMERCE-070 remain Pending on their other dependencies.
+
 ### 2026-09-27 — Shopify Admin result-contract / Result Template workstream defined
 
 - Added COMMERCE-060..070, starting after the user's independently running COMMERCE-059 and without creating a dependency on it.
