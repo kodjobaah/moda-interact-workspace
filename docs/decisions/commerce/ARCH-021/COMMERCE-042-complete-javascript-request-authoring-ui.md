@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
-executor: copilot
-claimed_at: 2026-09-27T08:25:25Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-041
@@ -271,7 +271,7 @@ Do not persist both modes into the canonical Tool definition. This is local edit
 ## Completion Report
 
 ### Status
-Ready for Architect Review
+Attempt 2 complete; returned to Architect Review.
 
 ### Files Changed
 - `app/styles.css`
@@ -283,31 +283,35 @@ Ready for Architect Review
 - `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
-- Added canonical JavaScript Request `bindings` controls for value name, Agent input/Literal source, typed bounded JSON, omission policy and removal. Literal text remains local while edited; malformed and over-limit JSON receives a stable Request diagnostic.
-- Replaced the destructive mode switch with independent Declarative and JavaScript drafts. Only the active request is emitted in the canonical definition; New Tool and persisted DRAFT actions remain blocked until the active JavaScript Request passes current validation or preview.
-- Added exact `buildRequest({ args })` contract guidance, Request-local compile/validation feedback, and input-keyed invalidation/fencing for validation and preview results.
-- Wrapped the Request CodeMirror in a resizable, scrolling, 280px initial editing area while retaining line numbers and leaving response editor sizing unchanged.
-- Added coverage for typed canonical bindings, source switching, malformed literals/source, both mode-retention directions, preview staleness, stale asynchronous validation, active-mode-only persistence, and new-tool non-durability.
+- Removed the Request Validate/Preview completion prerequisite from persisted-Draft Save and New Tool Create. Request checkpoints remain non-mutating and stale results remain hidden after edits.
+- Kept raw malformed Literal text and its error local while switching sources. Literal errors now count only while that binding's selected source is Literal; switching back restores the raw text and reactivates its error without corrupting the last schema-valid canonical request.
+- Kept binding rename collision-safe and Add deterministic: duplicate rename retains both bindings and reports a local error; Add chooses the first unused `requestValueN` name.
+- Preserved active-mode-only persistence and the accepted partial-source, source-switch, editor, and stale-validation behavior.
+- Added persisted-Draft and New Tool regressions proving valid active JavaScript bindings can be saved/created without calling Validate or Preview, plus malformed Literal source-switch, rename collision, and post-deletion Add coverage.
 
 ### Validation Results
-- Focused packet: `npm run test -- tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/external-tool-authoring-validation.test.ts tests/external-tool-authoring-server-actions.test.ts tests/code-request-processor.test.ts` — 5 files, 83 tests passed.
-- Targeted ESLint for the six changed TypeScript/TSX files — passed with no warnings. `git diff --check` — passed.
-- Editor diagnostics for all six changed TypeScript/TSX files — no errors.
-- `npm run typecheck` — repository check remains red with 249 diagnostics across 20 files. The final run has no diagnostics in task-changed files; reported errors are in unrelated existing integration and test files.
+- `npm run test:arch020-external-tools-ui` — passed, 49/49 tests.
+- Required five-file authoring/server-action packet — 115 passed, 7 failed. The External Tools UI (49/49) and New Tool authoring screen (12/12) passed. The seven failures are confined to QuickJS-dependent processor/validation tests; the runtime worker reports `MODULE_NOT_FOUND` for `quickjs-ng-wasi` in this environment.
+- `npm run test:arch021-tool-authoring-common` — 85 passed, 1 failed. The unchanged `commerce-lifecycle.test.ts` live-test-gate fixture returns `INVALID_DEFINITION` before the expected `LIVE_TEST_REQUIRED`; no C042 file/stack is involved.
+- Targeted ESLint for all six changed TypeScript/TSX files — passed with no warnings.
+- `npm run typecheck` — remains red with 251 diagnostics across 22 unrelated files; the final diagnostic report contains no errors in any of the six C042 source/test files.
+- `git diff --check` — passed.
 
 ### Execution Evidence
-- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-042`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-042`. Both use `task/ARCH-021-COMMERCE-042`; neither worktree was reused and the canonical shared checkouts were left untouched.
-- Launcher preparation passed the COMMERCE-041 dependency gate. Both task-branch fast-forwards were `not-needed`; `origin/main` was `already-current`. Recursive submodule sync/update-init passed; database submodule commit was `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Parent claim commit `393364dc79d04d8418514f9fe2964fc7543f8781` was pushed by the launcher. Parent preparation HEAD was `013e5e54f742afd0c82cddec679ec53533d40d82`; implementation starting HEAD was `ba837f2ffa83617738196c77b139700c6e4e5fbd`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-042`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-042`. Both branches are `task/ARCH-021-COMMERCE-042`; canonical shared checkouts were left untouched.
+- Attempt 2 launcher claim: commit `e543fa587f41829e23ad41b201d66cf18628f2ed`, claimed `2026-09-27T08:25:25Z` by `copilot`. Parent preparation HEAD: `69e51352e61ef79ee5ade766db7ae9a0eac56b95`; implementation starting HEAD: `2553f8564488fbbdc2a4800ab6c7cae968f6da58`.
+- Start synchronization: dependency gate `ARCH-021-COMMERCE-041` passed; task-branch fast-forwards were `not-needed`; `origin/main` was `already-current`. Recursive submodule sync/update-init passed; database submodule commit: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Implementation commit: `4b26a170dd5ca64a00a1eae10772f2567d8867e5` (`fix(commerce): remove request checkpoint save gate`); pushed to `origin/task/ARCH-021-COMMERCE-042`. Fresh local and remote refs matched after push; implementation worktree was clean.
+- Parent task branch was at claim commit `e543fa587f41829e23ad41b201d66cf18628f2ed` before this report update. Parent report commit and final push parity are recorded in the final handoff evidence; both worktrees must be clean after the report commit.
 
 ### Deviations
-None. The existing Request validation and preview actions were reused; no provider execution, new service boundary, persistence model, or tab gating was added.
+Validation could not pass the QuickJS-dependent packet because its worker runtime is unavailable in this environment. The known common lifecycle fixture failure also reproduced unchanged. No provider execution, service boundary, persistence model, or tab gating was added.
 
 ### Assumptions
-JavaScript requests require a successful current Request validation or preview checkpoint before Create/Save, because the canonical request schema alone cannot report JavaScript compilation failures. Any request edit or mode switch invalidates that checkpoint.
+Only schema-valid active Request state is emitted to canonical Tool definition state; malformed raw source/Literal drafts remain local. Request validation and preview do not authorize or gate final Create/Save.
 
 ### Unresolved Issues
-The repository-wide typecheck has 249 diagnostics across 20 unrelated files; see Validation Results. No task-local type errors remain.
+The QuickJS worker dependency is unavailable to the broad test packet, the known common lifecycle fixture remains failing, and workspace typecheck reports unrelated diagnostics; see Validation Results. No C042-owned TypeScript diagnostics remain.
 
 ### Architectural Concerns
 None.
