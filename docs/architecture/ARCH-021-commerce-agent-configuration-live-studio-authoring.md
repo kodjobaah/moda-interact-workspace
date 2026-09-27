@@ -1060,12 +1060,12 @@ Implementation tasks:
 | ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
-| ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
-| ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Ready | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
-| ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
@@ -1098,6 +1098,14 @@ COMMERCE-064
 ```
 
 COMMERCE-070 Attempt 1 is architect-accepted Complete and has no downstream enables. COMMERCE-064 remains independently Ready. COMMERCE-065 and COMMERCE-069 remain gated by COMMERCE-064; COMMERCE-068 remains gated by COMMERCE-065.
+
+Current executable frontier after COMMERCE-064 Attempt 3 acceptance:
+
+```text
+COMMERCE-065    COMMERCE-069
+```
+
+COMMERCE-064 is architect-accepted Complete. COMMERCE-062 already satisfies COMMERCE-065's other dependency and COMMERCE-060 already satisfies COMMERCE-069's other dependency, so both are Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
 
 Phase 3 exit criteria:
 
@@ -1319,12 +1327,12 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
-| ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
-| ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Ready | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
-| ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
@@ -1354,6 +1362,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-064 Attempt 3 accepted
+
+- Accepted implementation `c0e07c5`: `Use in tool` now reconciles browser-local Request literal buffers with the accepted Admin variable mappings, preserving exact raw text only for semantically unchanged literals, seeding changed/new literals with bounded canonical JSON and removing stale entries.
+- Accepted the real New Tool Request -> Explore visual literal edit -> Validate -> Use in tool -> Request regression, including successful Request re-validation after return and preservation of unrelated authoring buffers.
+- Accepted recorded validation: 55/55 tests across five suites, targeted ESLint and `git diff --check` passed, with no filtered TypeScript diagnostics in the two Attempt 3 files. Repository-wide TypeScript remains red only on previously documented unrelated diagnostics.
+- Marked COMMERCE-064 Complete. COMMERCE-062 is already Complete, so COMMERCE-065 is promoted to Ready. COMMERCE-060 is already Complete, so COMMERCE-069 is promoted to Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
 
 ### 2026-09-27 — COMMERCE-070 Attempt 1 accepted
 
