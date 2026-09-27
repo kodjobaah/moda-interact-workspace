@@ -911,6 +911,29 @@ Root scalar-list shape, primitive-list filters/sort, arrays-of-arrays and null i
 
 Manual validation after C049 showed that the local/canonical split is correct but the validation presentation is not: when a Visual draft is locally invalid, `Validate response` can send null canonical placeholders and expose raw schema diagnostics such as `expected object, received null` / `Invalid input`. COMMERCE-050 keeps the authoritative server boundary unchanged for canonical candidates while diagnosing non-canonical local Visual state locally and presenting field/control-specific corrective messages. Internal paths/codes remain deterministic secondary details; ordinary users see what is wrong and how to fix it. No processing, schema, persistence, provider-I/O or navigation semantics change.
 
+#### Versioned JavaScript Response helper follow-up
+
+Manual Response authoring also identified a reusable-code gap: common provider cleanup such as stripping HTML should not require every Tool author to hand-write fragile string/regex transforms, but the accepted QuickJS sandbox must not gain npm imports, `require`, DOM access or Node host callbacks. COMMERCE-059 therefore introduces one versioned Commerce-owned helper runtime contract:
+
+1. existing JavaScript Response definitions on `quickjs-sync.v1` remain valid and keep the accepted environment with no `moda` helper namespace;
+2. new JavaScript Response definitions default to `quickjs-sync.v2`; Request JavaScript remains `quickjs-sync.v1`;
+3. v2 exposes exactly `moda.text.stripHtml(value: string): string` as an immutable guest API;
+4. the implementation is pinned `string-strip-html@13.6.2`, bundled at `code-runtime:package` time with pinned `esbuild@0.28.2` into a self-contained adjacent `helpers-v2.js` guest artifact;
+5. the worker evaluates that trusted guest bundle only for v2 Response execution, then compiles/runs authored `transform(response)` under the existing worker/QuickJS resource and isolation limits;
+6. no host callback, package loader, network/filesystem capability, Shared change or database change is introduced;
+7. existing v1 Response drafts are upgraded only by an explicit browser-local author action that preserves source/format/result schema and invalidates prior validation;
+8. both new-Tool and persisted-DRAFT Response JavaScript authoring document the v2 helper with one bounded example.
+
+The public Tool contract is the Moda helper API, not the underlying npm package. Future helpers require a separate architecture/task decision rather than opportunistic additions to v2.
+
+JavaScript Response helper task:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-059 | moda_commerce | Ready | ARCH-021-COMMERCE-045, ARCH-021-COMMERCE-046, ARCH-021-COMMERCE-047 |
+
+COMMERCE-059 is independent of the live-Test and Agent-contract follow-up workstreams.
+
 ### Manual-validation follow-up — External HTTP live response generation and Test
 
 After the zero-provider-I/O Request/Response authoring contracts were settled, live authoring is split into two independent branches that share one secure provider-observation primitive:
@@ -1004,6 +1027,46 @@ Agent-contract follow-up task:
 | ARCH-021-COMMERCE-056 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-043 |
 
 COMMERCE-056 is architect-accepted Complete and remains independent of COMMERCE-055.
+
+
+### Shopify Admin result-contract and Result Template refinement — 2026-09-27
+
+Manual architecture review of Tool result/prompt authoring establishes the following refinement without introducing final tab gating/traversal:
+
+1. New Shopify Tool authoring and runtime converge on `SHOPIFY_ADMIN_GRAPHQL`; the existing Storefront Tool execution model is pre-production transitional state and will be removed after Admin replacements are operational.
+2. Explore Shopify becomes an Admin `2026-07` schema/query builder. Manual GraphQL remains first-class; Explore only authors the query portion of the current Tool draft.
+3. The specific Request -> Explore -> Use in tool -> Request round trip is part of Explore itself. Unsaved Tool state is identified by a transient `authoringSessionId` and mirrored to versioned `sessionStorage`; no Tool/ToolRevision database row is created for this navigation.
+4. Shopify Request owns document/operation/variable mappings. Shopify Response owns `resultPath` and a compiler-derived `resultSchema`.
+5. Admin result-schema derivation is independent of provider execution. GraphQL non-null object fields become required Commerce properties; nullable object fields become optional, and runtime integration omits null optional properties before validation. Unrepresentable nullable/list/scalar shapes fail derivation rather than being guessed.
+6. External HTTP keeps its accepted Direct/Visual/JavaScript/Automatic Response semantics and existing canonical `resultSchema` production.
+7. A non-persisted source-neutral `ToolResultContract` is compiled from the canonical output/result schema and supplies exact scalar/collection bindings for template authoring. React does not infer provider-specific result paths independently.
+8. `responseTemplate` remains the persisted/runtime representation but receives its own Result Template authoring surface. Agent Contract retains definition version, Agent description and Agent input schema only.
+9. Result Template supports only the existing bounded `text` / `items` runtime grammar in this refinement; no conditional language, arbitrary JavaScript or rich-text dependency is introduced.
+10. General tab traversal/gating, global Next/Back behavior and cross-tab validation checkpoint coordination remain explicitly deferred until all individual tabs are implemented.
+
+Implementation tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-061 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-063 | moda_commerce | Ready | ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Pending | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+
+Initial independent backend frontier:
+
+```text
+COMMERCE-060    COMMERCE-061    COMMERCE-062    COMMERCE-063
+```
+
+These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
 
 
 Phase 3 exit criteria:
@@ -1221,6 +1284,19 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-021 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 
+
+| ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-061 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-063 | moda_commerce | Ready | ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Pending | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
 - `moda_database` for conversation/preview frozen model/prompt fields;
@@ -1248,6 +1324,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — Shopify Admin result-contract / Result Template workstream defined
+
+- Added COMMERCE-060..070, starting after the user's independently running COMMERCE-059 and without creating a dependency on it.
+- Split backend/compiler work from React/UI work wherever the current code boundaries allow.
+- Established Admin-only future Shopify Tool architecture, source-neutral `ToolResultContract`, compiler-derived Admin result schemas, dedicated Result Template authoring, and `sessionStorage`-backed Explore authoring handoff.
+- Kept general tab traversal/gating explicitly deferred.
 
 ### 2026-09-27 — COMMERCE-058 Attempt 2 accepted
 

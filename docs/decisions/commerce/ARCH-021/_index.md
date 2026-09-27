@@ -189,6 +189,22 @@ No implementation task currently Ready in this Response chain.
 
 The zero-provider-I/O Response authoring chain through COMMERCE-050 is architect-accepted Complete. Invalid local Visual state is diagnosed locally, canonical candidates still use authoritative server validation, configuration issues are field/control-specific, and action-level validation-system failures no longer masquerade as Response-field errors. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to later Test-tab review. All authoring tabs remain freely navigable.
 
+## Manual-validation follow-up — JavaScript Response helper runtime
+
+JavaScript Response authoring now has one independent runtime-helper follow-up. It does not change provider execution or the Request JavaScript contract. The helper is a versioned Commerce-owned QuickJS guest API and is bundled at build time; authored Tool source still has no npm/module loader or host callbacks.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-059](COMMERCE-059-add-versioned-quickjs-text-helper-api.md) | Add `quickjs-sync.v2` Response helpers with immutable `moda.text.stripHtml(value)` backed by a packaged `string-strip-html` bundle | Ready | COMMERCE-045, COMMERCE-046, COMMERCE-047 |
+
+Current JavaScript Response helper frontier:
+
+```text
+ARCH-021-COMMERCE-059
+```
+
+COMMERCE-059 is independent of the live-Test and Agent-contract follow-up workstreams and may execute in parallel under the normal task/worktree protocol. Request JavaScript remains `quickjs-sync.v1`. Existing Response `quickjs-sync.v1` definitions remain valid; new Response JavaScript authoring defaults to `quickjs-sync.v2`.
+
 ## Manual-validation follow-up — External HTTP live response generation and Test
 
 The live work now has two independent branches sharing the accepted secure provider-observation primitive. Automatic Response generation remains separate from Test. Test consumes the already-implemented Request/Response contracts directly and has no task dependency on the earlier Request/Response UI chains.
@@ -278,6 +294,72 @@ ARCH-021-COMMERCE-056 — Complete
 ```
 
 COMMERCE-056 is independent of COMMERCE-055. It validates Definition version, Agent description, Agent input schema and Agent response template against canonical rules without Request/Test completion, provider I/O, durable writes or tab gating. Validation operates on local authoring state and does not save a persisted DRAFT.
+
+
+## Manual-validation follow-up — Shopify Admin result contracts and Result Template
+
+Architecture review of the current Shopify/custom Tool flow establishes one source-neutral post-processing boundary:
+
+```text
+Shopify Admin GraphQL                 External HTTP
+        |                                  |
+        v                                  v
+compiler-derived resultSchema       existing Response resultSchema
+        |                                  |
+        +---------------+------------------+
+                        v
+               ToolResultContract
+                        |
+                 Result Template
+```
+
+The work is decomposed so backend/compiler tasks and React/UI tasks remain independently reviewable. General tab traversal/gating is explicitly deferred. The only navigation coordination included here is the bounded Explore Shopify round trip required to return generated Admin GraphQL to the exact originating Tool authoring session.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-060](COMMERCE-060-execute-shopify-admin-graphql-tools.md) | Backend: execute canonical Shopify Admin GraphQL Tool definitions | Ready | COMMERCE-018 |
+| [COMMERCE-061](COMMERCE-061-establish-admin-schema-exploration-domain.md) | Backend/domain: expose Admin schema exploration and bounded query-building primitives | Ready | COMMERCE-018 |
+| [COMMERCE-062](COMMERCE-062-derive-shopify-admin-result-contract.md) | Backend/compiler: derive canonical Admin resultSchema and nullable normalization semantics | Ready | COMMERCE-018 |
+| [COMMERCE-063](COMMERCE-063-compile-tool-result-contract.md) | Backend: compile source-neutral ToolResultContract and validate Result Templates | Ready | COMMERCE-043 |
+| [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Pending | COMMERCE-039, COMMERCE-061 |
+| [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Pending | COMMERCE-062, COMMERCE-064 |
+| [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Pending | COMMERCE-063 |
+| [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Pending | COMMERCE-063 |
+| [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Pending | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
+| [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Pending | COMMERCE-060, COMMERCE-064 |
+| [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Pending | COMMERCE-060, COMMERCE-062 |
+
+Initial executable frontier for this workstream:
+
+```text
+COMMERCE-060    COMMERCE-061    COMMERCE-062    COMMERCE-063
+     |               |               |               |
+     |               v               |               +-------> COMMERCE-066
+     |          COMMERCE-064          |               +-------> COMMERCE-067
+     |               |               |
+     |               +-------> COMMERCE-065
+     |                               |
+     +----------+--------------------+-------> COMMERCE-070
+     |          |
+     |          +---- COMMERCE-064 ----------> COMMERCE-069
+     |
+     +----------------------------------------> COMMERCE-069
+
+COMMERCE-065 + COMMERCE-066 + COMMERCE-067 ---> COMMERCE-068
+```
+
+Key invariants:
+
+- new Shopify Tools use `SHOPIFY_ADMIN_GRAPHQL`; Explore Shopify is an Admin API explorer/query builder;
+- manual Admin GraphQL remains first-class and the GraphQL document is authoritative after Explore returns;
+- unfinished Tool authoring remains browser-local; the Explore round trip uses `StudioComposerContext + sessionStorage`, never a database draft created solely for navigation;
+- Shopify resultSchema becomes a compiler-produced immutable Tool-definition artifact, while External HTTP keeps its already-accepted Response resultSchema behavior;
+- Admin result-schema derivation is independent of live provider execution; COMMERCE-070 is the narrow runtime integration point;
+- `ToolResultContract` is derived, not separately persisted;
+- `responseTemplate` remains the runtime representation but moves to a dedicated Result Template authoring surface;
+- Agent Contract becomes the call-side model contract only;
+- Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
+- global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
 
 ### COMMERCE-053 Attempt 2 accepted — 2026-09-27
