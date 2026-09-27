@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three bounded External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; the zero-provider-I/O Response authoring chain COMMERCE-043 through COMMERCE-050 is architect-accepted Complete; and live authoring/Test work is materialised as COMMERCE-051 through COMMERCE-054 with COMMERCE-052 architect-accepted Complete and COMMERCE-051 still Ready in this snapshot. None of these follow-ups introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051 and Visual inference COMMERCE-052 are Complete; Automatic Response generation COMMERCE-053 is Ready; and live Test is split into backend COMMERCE-054 (Ready) and frontend COMMERCE-055 (Pending on COMMERCE-054). The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -913,15 +913,16 @@ Manual validation after C049 showed that the local/canonical split is correct bu
 
 ### Manual-validation follow-up — External HTTP live response generation and Test
 
-After the zero-provider-I/O Request/Response authoring boundaries were settled, the live authoring contract is now explicit:
+After the zero-provider-I/O Request/Response authoring contracts were settled, live authoring is split into two independent branches that share one secure provider-observation primitive:
 
-1. COMMERCE-051 adds one ADMIN-authorized, credential-redacted **provider observation** boundary for the current unsaved Request candidate. It reuses Request preview construction and the existing DNS/TLS/body/deadline protections, permits JavaScript authoring only through a safe preview descriptor, and does not remove the production JavaScript Request execution gate.
-2. COMMERCE-052 is pure deterministic JSON inference. It produces the already accepted `VisualAuthoringRoot` grammar only: `SCALAR`, `OBJECT`, `LIST` (**List of objects**) and `SCALAR_LIST` (**List of values**). It never invents a second processing/schema grammar and validates every candidate through `deriveVisualTreeContract(...)`.
-3. COMMERCE-053 adds browser-local **Automatic** generation to Response. `Automatic` is a generator, never a persisted/runtime response-processing kind. A successful generation installs the selected inferred tree into the existing Visual rules editor and immediately returns editing/validation ownership to Visual.
-4. COMMERCE-054 replaces the Test placeholder with live execution/observation of the current unsaved candidate. Test shows the safe Request, bounded provider response, processed Tool result and result-contract outcome. It contains no Source-path, Visual mapping, result-schema, JavaScript response or Automatic authoring controls.
-5. Request preview, Automatic generation and Test share one browser-local **Sample Tool arguments** value. Sample arguments/provider observations are never persisted as part of the Tool definition.
-6. These authoring live calls do **not** satisfy `LIVE_TEST_REQUIRED`. A later publication task/architecture must bind a successful live test to an exact saved revision/content hash before that gate may be satisfied.
-7. Synthetic fixture/sample-response testing is not exposed as a Test-tab product mode; the live Test tab has one meaning: run the current candidate against the selected real External provider.
+1. COMMERCE-051 owns ADMIN-authorized, credential-redacted **provider observation** for the current unsaved Request candidate. It reuses accepted Request construction and the existing DNS/TLS/body/deadline protections.
+2. COMMERCE-052 is pure deterministic observed-JSON inference for the accepted Visual grammar.
+3. COMMERCE-053 is the independent Response **Automatic** generation branch. It consumes COMMERCE-051/052 and hands generated proposals back to existing Visual rules. Test does not depend on COMMERCE-053.
+4. COMMERCE-054 is the **backend live-Test execution boundary**. It accepts the exact current non-durable Request + Response candidate plus ephemeral test arguments, makes the real provider request through COMMERCE-051, applies the already-accepted Direct/Visual/JavaScript Response contract and validates the actual processed result. It requires no saved Tool or ToolRevision.
+5. COMMERCE-055 is the **frontend Test-tab presentation**. It consumes COMMERCE-054 and renders test arguments, stage-by-stage execution, safe request/provider details, processed result and result-contract outcome through bounded components rather than one monolithic React component.
+6. Request/Response/Test authoring remains non-durable. A successful or failed live Test MUST NOT create or modify `CommerceTool`, `CommerceToolRevision`, audit state, publication receipts or publication proof. Durable creation occurs only at the later final Create step after the author is satisfied.
+7. Synthetic fixture/sample-response testing is not exposed as a Test-tab product mode. Live Test has one meaning: execute the current local Request + Response candidate against the selected real External provider.
+8. Test does not depend on COMMERCE-040..050 as task dependencies because those Request/Response contracts are already implemented and architect-accepted baseline capabilities. It also does not depend on COMMERCE-053 Automatic generation.
 
 Live authoring/Test tasks:
 
@@ -930,17 +931,29 @@ Live authoring/Test tasks:
 | ARCH-021-COMMERCE-051 | moda_commerce | Complete | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
 | ARCH-021-COMMERCE-052 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
 | ARCH-021-COMMERCE-053 | moda_commerce | Ready | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
-| ARCH-021-COMMERCE-054 | moda_commerce | Pending | ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-053 |
+| ARCH-021-COMMERCE-054 | moda_commerce | Ready | ARCH-021-COMMERCE-051 |
+| ARCH-021-COMMERCE-055 | moda_commerce | Pending | ARCH-021-COMMERCE-054 |
 
 ```text
-COMMERCE-041 + COMMERCE-047 -> COMMERCE-051 ----+
-                                                 |
-COMMERCE-049 ----------------> COMMERCE-052 ----+--> COMMERCE-053 -> COMMERCE-054
-                                                 ^
-COMMERCE-042 + COMMERCE-050 ---------------------+
+Automatic branch:
+COMMERCE-042 + COMMERCE-050 + COMMERCE-051 + COMMERCE-052
+                                      |
+                                      v
+                                 COMMERCE-053
+
+Live Test branch:
+COMMERCE-051 -> COMMERCE-054 -> COMMERCE-055
 ```
 
-COMMERCE-051 and COMMERCE-052 were intentionally parallel: secure provider observation does not depend on inference, and pure inference does not depend on network/provider work. COMMERCE-051, COMMERCE-052 and COMMERCE-042 are now Complete, so COMMERCE-053 is Ready. COMMERCE-054 follows the completed Automatic/shared-arguments composition so Test does not create a second arguments state or Response editor.
+Current executable live-authoring frontiers are therefore independently:
+
+```text
+ARCH-021-COMMERCE-053
+ARCH-021-COMMERCE-054
+```
+
+The Test backend receives the current canonical local candidate directly; it does not reload a saved revision and it does not require a `toolId`/`toolRevisionId`. Test arguments are ephemeral execution inputs and are not part of the durable Tool definition. Publication-proof semantics remain outside this pre-creation Test flow and require a separate later architecture decision after durable creation.
+
 
 Phase 3 exit criteria:
 
@@ -1184,6 +1197,15 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — Live Test split into non-durable backend and decomposed frontend
+
+- Reframed Test around the actual creation flow: Request is authored/validated locally, Response is authored/validated locally, then Test executes that exact non-durable candidate against the real provider before any Tool/ToolRevision exists.
+- Replaced the monolithic COMMERCE-054 plan with backend-only COMMERCE-054 depending solely on the accepted secure observation primitive COMMERCE-051.
+- Added COMMERCE-055 for the React Test-tab UI, depending only on COMMERCE-054.
+- Removed Test dependencies on Automatic generation and on earlier Request/Response UI task chains; their accepted contracts are baseline capabilities, not execution gates.
+- Made zero durable writes, no saved-revision lookup, no publication receipt/proof and no synthetic sample mode hard Test invariants.
+- Required Test UI decomposition into bounded components for arguments, run action, execution stages, safe request/provider details, processed result and stage-specific errors.
 
 ### 2026-09-27 — COMMERCE-042 Attempt 3 accepted with supplemental runtime evidence
 

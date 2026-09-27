@@ -191,32 +191,37 @@ The zero-provider-I/O Response authoring chain through COMMERCE-050 is architect
 
 ## Manual-validation follow-up — External HTTP live response generation and Test
 
-The live follow-up is split into four bounded tasks so network/security observation, pure JSON inference, Response Automatic composition and Test execution remain independently reviewable. COMMERCE-051, COMMERCE-052 and COMMERCE-042 are now architect-accepted Complete, so COMMERCE-053 is Ready; COMMERCE-054 remains dependency-gated.
+The live work now has two independent branches sharing the accepted secure provider-observation primitive. Automatic Response generation remains separate from Test. Test consumes the already-implemented Request/Response contracts directly and has no task dependency on the earlier Request/Response UI chains.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-051](COMMERCE-051-add-live-external-http-authoring-observation.md) | Add bounded ADMIN-authorized live provider observation for the current Request candidate | Complete | COMMERCE-041, COMMERCE-047 |
 | [COMMERCE-052](COMMERCE-052-infer-visual-response-tree-from-observed-json.md) | Infer the accepted recursive Visual tree from observed JSON using C049 `LIST` / `SCALAR_LIST` terminology | Complete | COMMERCE-049 |
-| [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands the generated proposal to existing Visual rules | Ready | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
-| [COMMERCE-054](COMMERCE-054-implement-external-http-live-test-tab.md) | Execute and observe the current External HTTP candidate in Test without duplicating Response authoring | Pending | COMMERCE-051, COMMERCE-053 |
+| [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands generated proposals to existing Visual rules | Ready | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
+| [COMMERCE-054](COMMERCE-054-execute-non-durable-external-http-candidate-live.md) | Backend: execute the current non-durable Request + Response candidate live with zero persistence | Ready | COMMERCE-051 |
+| [COMMERCE-055](COMMERCE-055-build-external-http-live-test-tab-ui.md) | Frontend: build the decomposed live Test-tab UI over COMMERCE-054 | Pending | COMMERCE-054 |
 
-Current live-authoring frontier:
+Current live-authoring frontiers:
 
 ```text
 ARCH-021-COMMERCE-053
+ARCH-021-COMMERCE-054
 ```
 
 Dependency graph:
 
 ```text
-COMMERCE-041 + COMMERCE-047 -> COMMERCE-051 ----+
-                                                 |
-COMMERCE-049 ----------------> COMMERCE-052 ----+--> COMMERCE-053 -> COMMERCE-054
-                                                 ^
-COMMERCE-042 + COMMERCE-050 ---------------------+
+Automatic:
+COMMERCE-042 + COMMERCE-050 + COMMERCE-051 + COMMERCE-052
+                                      |
+                                      v
+                                 COMMERCE-053
+
+Live Test:
+COMMERCE-051 -> COMMERCE-054 -> COMMERCE-055
 ```
 
-Canonical terminology remains:
+Canonical Visual terminology remains:
 
 ```text
 SCALAR       -> Scalar
@@ -225,9 +230,9 @@ LIST         -> List of objects
 SCALAR_LIST  -> List of values
 ```
 
-`Automatic` is browser-local authoring state only and must never become a persisted/runtime processing kind. A successful Automatic run installs an existing `VisualAuthoringRoot` and switches to the normal Visual rules editor. Test executes/observes only; it must not expose Source-path/Visual/schema/JavaScript-response/Automatic authoring controls.
+The live Test branch is explicitly pre-creation. It tests the exact current in-memory Request + Response candidate, performs a real provider call and canonical response/result validation, but creates no Tool, ToolRevision, audit, publication receipt or publication proof. It requires no saved revision identifier. Synthetic/sample-response fixtures are not a Test-tab product mode.
 
-The Request preview, Automatic flow and Test share one Sample Tool arguments value. None of COMMERCE-051..054 writes a live-test publication receipt; `LIVE_TEST_REQUIRED` remains unsatisfied until a later exact-saved-revision receipt task is explicitly defined.
+COMMERCE-055 must be composed from bounded React responsibilities rather than one large Test component: argument authoring, Run action/state, execution-stage presentation, safe Request summary, bounded provider response, processed result and stage-specific failure presentation remain separable concerns.
 
 
 ### COMMERCE-042 Attempt 3 accepted — 2026-09-27
