@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 62
 executor: null
 claimed_at: null
@@ -319,9 +319,357 @@ None.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Changes Requested — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — 2026-09-27
+
+Reviewed implementation `4b26a170dd5ca64a00a1eae10772f2567d8867e5` and the
+submitted Attempt 2 Completion Report against the complete Attempt 1 correction
+contract.
+
+Attempt 2 fixes the three primary Attempt 1 defects and those changes MUST be
+preserved:
+
+- successful Request Validate/Preview is no longer a prerequisite for final
+  New-Tool Create or persisted-Draft Save;
+- malformed retained Literal errors count only while the corresponding binding
+  currently uses the Literal source;
+- switching back to Literal restores the raw malformed text/error;
+- Add chooses a deterministic unused `requestValueN` key after deletion;
+- duplicate rename no longer overwrites either binding;
+- persisted-Draft and New-Tool regressions prove schema-valid JavaScript bindings can
+  be Save/Create persisted without invoking Request Validate or Preview;
+- validation/preview staleness after source/binding edits remains intact;
+- Declarative/JavaScript local mode drafts, typed literals, active-mode-only
+  persistence and the resizable CodeMirror editor remain intact;
+- submitted TypeScript metadata contains no semantic diagnostics in the six C042
+  causal source/test files.
+
+Attempt 2 is not accepted because one binding-name error still leaks across Request
+modes and stale Request checkpoint state can survive the same invalid rename attempt.
+The required QuickJS-dependent packet is also still red because the repository
+runtime was not packaged before those tests.
+
+The following is the complete and authoritative Attempt 3 correction contract. Keep
+the correction narrow. Do not redesign Response/Test/Agent/Review, introduce final
+Request-validation gating, or implement live provider execution.
+
+##### A2-R1 — scope duplicate binding-name errors to the JavaScript local draft
+
+Change:
+
+```text
+moda-interact-commerce/src/studio/external-http/request-tab.tsx
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+```
+
+The current duplicate-name error is one global string:
+
+```ts
+const [bindingNameError, setBindingNameError] = useState("");
+```
+
+and is always appended to:
+
+```ts
+requestIssues
+```
+
+and always participates in:
+
+```ts
+requestDraftValid
+```
+
+even when the active Request mode is `DECLARATIVE`.
+
+Concrete current failure:
+
+```text
+JavaScript mode
+-> requestValue1 + requestValue2
+-> rename requestValue1 -> requestValue2
+-> "Request value name already exists."
+
+switch Request mode -> Declarative
+-> JavaScript binding table is gone
+-> duplicate JavaScript binding-name error is still visible
+-> Declarative Validate/Preview remain disabled by !bindingNameError
+```
+
+That violates independent Request-mode local state.
+
+Required behavior:
+
+```text
+active mode = JAVASCRIPT
+-> duplicate-name error may be visible/active
+
+active mode = DECLARATIVE
+-> JavaScript duplicate-name error is not visible
+-> it does not participate in requestDraftValid
+-> it cannot disable Declarative Validate/Preview
+
+switch back to JAVASCRIPT
+-> the local duplicate-name error may be restored for the JavaScript draft
+-> neither binding may have been overwritten
+```
+
+A per-mode/per-binding error map is acceptable, but do not create a second canonical
+bindings representation. The canonical COMMERCE-040 bindings map remains the only
+persistable mapping.
+
+Required regression:
+
+```text
+create requestValue1 + requestValue2
+attempt duplicate rename requestValue1 -> requestValue2
+-> both original rows/values remain
+-> duplicate error visible
+
+switch to Declarative
+-> duplicate error absent
+-> a structurally valid Declarative Request can Validate/Preview
+
+switch back to JavaScript
+-> both original rows/values still present
+-> duplicate error is scoped only to the JavaScript draft
+```
+
+##### A2-R2 — an invalid rename attempt must stale Request validation/preview
+
+Change:
+
+```text
+moda-interact-commerce/src/studio/external-http/request-tab.tsx
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+```
+
+The current duplicate branch does:
+
+```ts
+setBindingNameError("Request value name already exists.");
+return;
+```
+
+without calling `invalidateRequestCheckpoint()`.
+
+Therefore this sequence can display contradictory state:
+
+```text
+valid JavaScript Request
+-> Validate request succeeds and/or Preview request succeeds
+
+attempt duplicate rename
+-> local authoring error is visible
+-> old successful validation/preview can remain visible
+```
+
+R7 requires binding/source authoring changes to invalidate the Request checkpoint.
+
+Required behavior:
+
+```text
+duplicate/invalid rename attempt that creates a visible binding-name error
+-> current validation result disappears
+-> current preview result disappears
+-> no late in-flight result may re-authorize/display against the errored form state
+```
+
+Preserve the existing key-based stale-result fencing for real binding/source changes.
+
+Required regression:
+
+```text
+Validate and Preview a valid JavaScript Request
+attempt requestValue1 -> existing requestValue2
+-> duplicate error visible
+-> "Request definition is valid." absent
+-> Request preview absent
+-> authoritative actions are not implicitly rerun
+```
+
+Resolving the rename to a new valid unused name must clear the local name error and
+retain the exact binding/literal state under the new key.
+
+##### A2-R3 — package the pinned QuickJS runtime before judging the required processor packet
+
+No C042 runtime redesign is authorized.
+
+The Attempt 2 five-file packet reports:
+
+```text
+115 passed
+7 failed
+```
+
+and all seven failures report a missing QuickJS worker/runtime module.
+
+This repository declares the required preparation command:
+
+```bash
+npm run code-runtime:package
+```
+
+and the existing ARCH-021 history records the same missing packaged-worker condition
+being resolved by running that command before the full authoring-validation suite.
+
+Attempt 3 MUST run:
+
+```bash
+npm run code-runtime:package
+npm run code-runtime:smoke
+```
+
+before the QuickJS-dependent validation packet.
+
+Then run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+
+npm exec vitest run \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/external-tool-authoring-validation.test.ts \
+  tests/external-tool-authoring-server-actions.test.ts \
+  tests/code-request-processor.test.ts
+
+npm run test:arch021-tool-authoring-common
+
+npm exec eslint \
+  src/studio/external-http/request-tab.tsx \
+  src/studio/external-http/editor.tsx \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx
+
+npm run typecheck
+git diff --check
+```
+
+Required evidence:
+
+```text
+code-runtime:package PASS
+code-runtime:smoke   PASS
+
+five-file C042 packet
+-> all tests PASS
+-> zero skipped
+-> no MODULE_NOT_FOUND / RUNTIME_UNAVAILABLE caused by an absent packaged worker
+```
+
+The known common `commerce-lifecycle.test.ts` fixture may remain documented only if
+it reproduces unchanged as:
+
+```text
+empty resultSchema
+-> INVALID_DEFINITION before expected LIVE_TEST_REQUIRED
+```
+
+with no C042 file/stack involved.
+
+If `code-runtime:package` itself cannot prepare the pinned runtime in the canonical
+Attempt 3 worktree, do not return a red packet to `review`. Mark the task blocked and
+record the exact packaging failure.
+
+##### A2-R4 — preserve the accepted Attempt 2 no-gating and collision behavior
+
+Do not regress:
+
+```text
+Request Validate/Preview never gates final Create/Save
+no implicit Validate/Preview from Create/Save
+malformed Literal error inactive while Agent input is selected
+switching back to Literal restores its raw text/error
+Add never overwrites an existing binding
+duplicate rename never overwrites either binding
+valid rename moves the exact binding + local literal state
+Declarative/JavaScript local drafts survive mode switches
+only active canonical Request state is persisted
+stale validation/preview disappears after source/binding edits
+late async results stay stale
+new Tool remains non-durable until final Create
+all tabs remain freely navigable
+zero provider I/O
+```
+
+Do not add a new persistence gate as the solution to A2-R1/A2-R2.
+
+##### A2-R5 — fresh Attempt 3 execution/report evidence
+
+The final user handoff identifies:
+
+```text
+implementation commit:
+  4b26a170dd5ca64a00a1eae10772f2567d8867e5
+
+final parent task branch commit:
+  fde14c1d4510ea4fbb897e2eca415a63dcfadf39
+```
+
+while the embedded Attempt 2 Completion Report records an earlier report-publication
+commit and then describes final parity after that publication.
+
+Attempt 3 must record the exact fresh launcher-prepared:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-042
+implementation branch = task/ARCH-021-COMMERCE-042
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 3 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not reuse or infer Attempt 2 claim/synchronization values.
+
+Reconcile Work Items, Acceptance Criteria, Validation and Completion Report to the
+actual Attempt 3 evidence.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 3
+executor: null
+claimed_at: null
+```
+
+##### Attempt 3 stop condition
+
+Return to architect review only when:
+
+```text
+duplicate JavaScript binding-name errors cannot leak into Declarative mode
+AND duplicate/invalid rename stales any current Request validation/preview
+AND no binding Add/Rename path can overwrite existing work
+AND Request Validate/Preview still does not gate Create/Save
+AND code-runtime:package + code-runtime:smoke pass
+AND the complete five-file C042 packet passes with zero skips
+AND the accepted Attempt 2 UI regressions remain green
+AND zero C042-owned type/lint/diff diagnostics remain
+AND the fresh Attempt 3 launcher/report packet is complete
+```
+
+Then push implementation and parent task branches, return control to
+`moda_architect`, and STOP.
+
+Do not begin COMMERCE-053 or live-provider/Test-tab work.
+
+#### Historical Attempt 1 review
 
 #### Attempt 1 review — 2026-09-27
 
