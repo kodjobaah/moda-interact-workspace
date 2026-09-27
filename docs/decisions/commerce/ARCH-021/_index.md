@@ -240,7 +240,7 @@ Manual Automatic testing found that provider decode failures lose actionable res
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-057](COMMERCE-057-preserve-live-provider-response-diagnostics.md) | Preserve bounded provider status/media-type/decode-reason/body-preview evidence for live authoring decode failures | Complete | COMMERCE-051 |
-| [COMMERCE-058](COMMERCE-058-make-automatic-failures-current-and-actionable.md) | Show only current Automatic failure evidence, hide stale underlying processing disclosure and preserve existing Response authoring | Ready | COMMERCE-053, COMMERCE-057 |
+| [COMMERCE-058](COMMERCE-058-make-automatic-failures-current-and-actionable.md) | Show only current Automatic failure evidence, hide stale underlying processing disclosure and preserve existing Response authoring | Complete | COMMERCE-053, COMMERCE-057 |
 
 Correction frontier:
 
@@ -251,13 +251,17 @@ COMMERCE-051 -> COMMERCE-057 -> COMMERCE-058
                              COMMERCE-053
 ```
 
-COMMERCE-057 is independent of COMMERCE-055 and COMMERCE-056 and may execute without changing either task. COMMERCE-058 becomes Ready when COMMERCE-057 is architect-accepted Complete. Any Test-specific consumption of the richer diagnostic is assessed after the current COMMERCE-055 attempt returns for review rather than by moving its goalposts.
+COMMERCE-057/058 remain independent of COMMERCE-055 and COMMERCE-056 and do not change either task. Any Test-specific consumption of the richer diagnostic is assessed after the current COMMERCE-055 attempt returns for review rather than by moving its goalposts.
 
 ### COMMERCE-057 Attempt 1 accepted — 2026-09-27
 
 COMMERCE-057 is **Complete / Accepted, Attempt 1**. The shared External HTTP transport now preserves deterministic provider decode/body failure reasons for the live-authoring path, retains provider status/media-type evidence, and emits only a credential-redacted textual preview capped at 4096 UTF-8 bytes. Production execution continues to use the same transport without authoring diagnostics and retains its existing non-2xx/invalid-response semantics. The submitted focused packet passed 64/64 tests across authoring observation, Server Action, production executor and COMMERCE-054 live-Test coverage.
 
-Both dependencies of COMMERCE-058 are now Complete, so COMMERCE-058 is **Ready**. COMMERCE-055 and COMMERCE-056 remain independent.
+Both dependencies of COMMERCE-058 became Complete, allowing its correction work to execute independently of COMMERCE-055 and COMMERCE-056.
+
+### COMMERCE-058 Attempt 2 accepted — 2026-09-27
+
+COMMERCE-058 is **Complete / Accepted, Attempt 2**. The accepted Automatic UI now presents only current provider/decode evidence, hides stale canonical Response disclosures while Automatic is active, renders the bounded provider preview as escaped text, invalidates transient state when generation context changes and preserves the existing authored Response definition after failed regeneration. Successful Automatic generation continues to install the inferred Visual definition and switch to Visual rules. Attempt 2 was task-record reconciliation only: all ten Work Items are now durably checked and the implementation/test files remain byte-for-byte unchanged from the already-reviewed Attempt 1 snapshot. The accepted focused evidence remains 92/92 tests plus passing targeted ESLint, clean changed-file TypeScript diagnostics and `git diff --check`. COMMERCE-058 enables no additional task; COMMERCE-055 and COMMERCE-056 remain independent.
 
 ## Manual-validation follow-up — Agent contract tab
 

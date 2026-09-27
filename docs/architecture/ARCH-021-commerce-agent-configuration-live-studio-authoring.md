@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Complete. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating. Manual Automatic testing additionally exposed provider-decode diagnostic information loss and stale underlying Response disclosure while Automatic is active; COMMERCE-057 is the independent Ready backend correction and COMMERCE-058 is dependency-gated on it for the Automatic presentation correction.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Ready. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating. Manual Automatic testing additionally exposed provider-decode diagnostic information loss and stale underlying Response disclosure while Automatic is active; COMMERCE-057 and COMMERCE-058 are now architect-accepted Complete.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -978,7 +978,7 @@ COMMERCE-053
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-057 | moda_commerce | Complete | ARCH-021-COMMERCE-051 |
-| ARCH-021-COMMERCE-058 | moda_commerce | Ready | ARCH-021-COMMERCE-053, ARCH-021-COMMERCE-057 |
+| ARCH-021-COMMERCE-058 | moda_commerce | Complete | ARCH-021-COMMERCE-053, ARCH-021-COMMERCE-057 |
 
 COMMERCE-057/058 MUST NOT edit, re-gate or reopen COMMERCE-055 or COMMERCE-056. Those tasks may execute independently. Any Test-specific presentation of the richer provider diagnostic is assessed only after the current COMMERCE-055 attempt returns for architect review.
 
@@ -1248,6 +1248,15 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-058 Attempt 2 accepted
+
+- Accepted implementation `beb9939c` after the bounded Attempt 2 task-record reconciliation.
+- Confirmed all ten required Work Items are durably complete, Acceptance Criteria/Validation remain complete, and the review handoff has no active execution claim.
+- Confirmed Attempt 2 made no implementation/test changes: the C058 source/test files are byte-for-byte identical to the submitted Attempt 1 snapshot.
+- Preserved the accepted Automatic-state behavior: current provider/decode diagnostics only, no stale underlying Response disclosures while Automatic is active, escaped provider preview, context-scoped transient state, preserved authored Response on failure and unchanged successful Automatic-to-Visual installation.
+- Retained the already-reviewed focused evidence: 92/92 tests, targeted ESLint, clean changed-file TypeScript diagnostics and `git diff --check`.
+- Marked COMMERCE-058 Complete. It enables no additional task and leaves COMMERCE-055/056 independent and unchanged.
 
 ### 2026-09-27 — COMMERCE-057 Attempt 1 accepted
 

@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 73
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-053
   - ARCH-021-COMMERCE-057
@@ -255,18 +255,18 @@ attempt returns for architect review rather than modifying its task from here.
 
 ## Work Items
 
-- [ ] Hide existing Response-processing/result disclosures whenever Automatic is the
+- [x] Hide existing Response-processing/result disclosures whenever Automatic is the
       active authoring mode.
-- [ ] Add a bounded Automatic failure presentation over COMMERCE-057 diagnostics.
-- [ ] Show HTTP status, expected/received media type and safe provider body preview
+- [x] Add a bounded Automatic failure presentation over COMMERCE-057 diagnostics.
+- [x] Show HTTP status, expected/received media type and safe provider body preview
       where available.
-- [ ] Explain the stable decode reason in user-oriented language.
-- [ ] State explicitly that the existing Response definition was left unchanged.
-- [ ] Preserve existing Visual/Direct/JavaScript state on failed generation.
-- [ ] Ensure generation-context changes invalidate transient candidates/failures.
-- [ ] Keep provider body preview escaped/plain text.
-- [ ] Add the exact valid-A -> invalid-B regression.
-- [ ] Preserve successful Automatic -> Visual behaviour.
+- [x] Explain the stable decode reason in user-oriented language.
+- [x] State explicitly that the existing Response definition was left unchanged.
+- [x] Preserve existing Visual/Direct/JavaScript state on failed generation.
+- [x] Ensure generation-context changes invalidate transient candidates/failures.
+- [x] Keep provider body preview escaped/plain text.
+- [x] Add the exact valid-A -> invalid-B regression.
+- [x] Preserve successful Automatic -> Visual behaviour.
 
 ## Interfaces / Contracts
 
@@ -296,27 +296,27 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Generate successfully from Request A, producing Visual rules.
-- [ ] Change Request to Request B `/categor/products`.
-- [ ] Provider returns `404 text/html` with body containing
+- [x] Generate successfully from Request A, producing Visual rules.
+- [x] Change Request to Request B `/categor/products`.
+- [x] Provider returns `404 text/html` with body containing
       `Cannot GET /categor/products`.
-- [ ] A new Automatic generation reports HTTP 404.
-- [ ] The failure reports expected `application/json` and received `text/html`.
-- [ ] The safe provider preview includes `Cannot GET /categor/products`.
-- [ ] The failure states that the existing Response definition was left unchanged.
-- [ ] While Automatic is selected, the previous successful
+- [x] A new Automatic generation reports HTTP 404.
+- [x] The failure reports expected `application/json` and received `text/html`.
+- [x] The safe provider preview includes `Cannot GET /categor/products`.
+- [x] The failure states that the existing Response definition was left unchanged.
+- [x] While Automatic is selected, the previous successful
       `View response processing JSON` / Visual processing disclosure is absent.
-- [ ] Switching back to Visual rules shows the previous Visual definition unchanged.
-- [ ] The failed attempt did not replace processing, schema, result path or Visual
+- [x] Switching back to Visual rules shows the previous Visual definition unchanged.
+- [x] The failed attempt did not replace processing, schema, result path or Visual
       drafts and did not dirty Response solely because it failed.
-- [ ] Malformed `application/json` produces a JSON-specific explanation rather than a
+- [x] Malformed `application/json` produces a JSON-specific explanation rather than a
       generic media-type message.
-- [ ] Changing generation context invalidates old candidate/failure UI.
-- [ ] Provider preview is rendered as text and cannot execute provider HTML.
-- [ ] Successful Automatic generation still installs the candidate and switches to
+- [x] Changing generation context invalidates old candidate/failure UI.
+- [x] Provider preview is rendered as text and cannot execute provider HTML.
+- [x] Successful Automatic generation still installs the candidate and switches to
       Visual rules.
-- [ ] `AUTOMATIC` is still absent from persisted/runtime response-processing kinds.
-- [ ] COMMERCE-055 and COMMERCE-056 are untouched.
+- [x] `AUTOMATIC` is still absent from persisted/runtime response-processing kinds.
+- [x] COMMERCE-055 and COMMERCE-056 are untouched.
 
 ## Validation
 
@@ -325,16 +325,16 @@ repository scripts that actually exist.
 
 Required focused validation:
 
-- [ ] External HTTP Response-tab UI tests.
-- [ ] Tool-authoring screen tests covering Automatic composition.
-- [ ] Exact successful-A -> failing-B stale-state regression.
-- [ ] `404 text/html` actionable-diagnostic regression.
-- [ ] malformed JSON diagnostic regression.
-- [ ] context-change invalidation regression.
-- [ ] successful Automatic -> Visual regression.
-- [ ] targeted lint for changed files.
-- [ ] changed-file TypeScript diagnostics.
-- [ ] `git diff --check`.
+- [x] External HTTP Response-tab UI tests.
+- [x] Tool-authoring screen tests covering Automatic composition.
+- [x] Exact successful-A -> failing-B stale-state regression.
+- [x] `404 text/html` actionable-diagnostic regression.
+- [x] malformed JSON diagnostic regression.
+- [x] context-change invalidation regression.
+- [x] successful Automatic -> Visual regression.
+- [x] targeted lint for changed files.
+- [x] changed-file TypeScript diagnostics.
+- [x] `git diff --check`.
 
 Do not turn unrelated documented repository baseline failures into task-owned work.
 
@@ -365,27 +365,42 @@ Automatic attempt failed
 
 ### Status
 
-Not Started
+Ready for Architect Review
+
+Attempt 2 reconciled the authoritative Work Items as complete per A1-R1. No
+implementation source or test changes were required; the reviewed Attempt 1
+implementation remains unchanged.
 
 ### Files Changed
 
-None
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
-None
+- Automatic failures now present current COMMERCE-057 HTTP/media-type/decode evidence with user-oriented decode explanations, collapsed technical reason details, and the explicit unchanged-Response statement.
+- Provider previews use the bounded diagnostic preview rendered as escaped text; provider HTML is never interpreted.
+- Automatic mode hides persisted Response-processing disclosures, Visual/result-contract JSON disclosures, Response schema field chips, and stale Response-only validation/error messages without modifying the underlying definition.
+- Generation state includes Request, Connection revision, shop, Sample Tool arguments, Input schema, Response format and media-type draft context; late results are rejected after a context change.
+- A failed regeneration leaves processing, schema, result path and Visual drafts untouched. Successful Automatic generation continues to install the inferred Visual candidate and switch to Visual rules.
+- Added the valid-Request-A to `/categor/products` HTTP-404 regression, malformed-JSON explanation coverage, Request-context candidate invalidation coverage, and composed Tool-authoring disclosure coverage.
 
 ### Validation Results
 
-Not run.
+- `node_modules/.bin/vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`: 92/92 tests passed.
+- Targeted ESLint for all three changed files: passed.
+- Changed-file TypeScript/editor diagnostics: no errors found.
+- `git diff --check`: passed.
+- The fresh worktree initially lacked the generated Prisma client. `pnpm exec` encountered `ERR_PNPM_IGNORED_BUILDS`; the local client was generated with `node_modules/.bin/prisma generate --schema database/prisma/schema.prisma`, after which the required focused tests passed. The generated client and install artifacts are not committed.
 
 ### Deviations
 
-None
+No implementation-scope deviations. No changes were made to COMMERCE-055, COMMERCE-056, the Test tab, persisted/runtime response-processing kinds, or main.
 
 ### Assumptions
 
-None
+Only the bounded COMMERCE-057 diagnostic preview is suitable for display; raw provider response bodies are not rendered.
 
 ### Unresolved Issues
 
@@ -395,28 +410,98 @@ None
 
 None
 
+### Execution and Isolation Evidence
+
+```text
+Canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-058
+Parent branch: task/ARCH-021-COMMERCE-058
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-058
+Implementation branch: task/ARCH-021-COMMERCE-058
+Shared workspace checkout switched/mutated for task work: no
+Shared implementation checkout switched/mutated for task work: no
+Another task worktree reused: no
+
+Parent remote task branch fast-forwarded: not-needed
+Parent origin/main incorporated: already-current
+Implementation remote task branch fast-forwarded: not-needed
+Implementation origin/main incorporated: already-current
+Parent task worktree reused: yes
+Implementation task worktree reused: yes
+Another task worktree reused: no
+
+Recursive submodule sync: passed
+Recursive submodule update/init: passed
+Submodule database commit: 0a8d3b9feade69690b6c1e33aeda051ea588bd45
+
+Implementation repository: moda-interact-commerce
+Implementation commit: beb9939c568d1d19c7ad22d7f387b64fbe569a38
+Implementation remote branch: origin/task/ARCH-021-COMMERCE-058
+Implementation pushed: yes
+Attempt 2 implementation branch reverified clean at the same commit: yes
+
+Parent workspace task file: docs/decisions/commerce/ARCH-021/COMMERCE-058-make-automatic-failures-current-and-actionable.md
+Parent remote branch: origin/task/ARCH-021-COMMERCE-058
+Parent claim commit: 9e4367eeaaa18bb86064d1776dfaf601d0ab2c09 (pushed)
+Attempt 2 claim commit: 8ca69b5aa054eade239f74b932eb05ba05506c16 (pushed)
+Parent task/report changes pushed: yes
+Implementation submodule gitlink staged: no
+Merged to implementation main: no
+Merged to workspace main: no
+```
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 satisfies the bounded reconciliation contract from Attempt 1. All ten required
+`## Work Items` are now checked, the previously completed Acceptance Criteria and
+Validation remain recorded as complete, the task is returned to review with no active
+execution claim, and the Completion Report records the Attempt 2 isolation/execution
+evidence.
+
+No implementation source or test changes were required or made for Attempt 2. Review
+comparison against the submitted Attempt 1 snapshot confirms the three C058
+implementation/test files are byte-for-byte unchanged, so the already-reviewed runtime/UI
+implementation remains the implementation under acceptance.
+
+The accepted implementation keeps Automatic transient and current: provider/decode
+diagnostics belong to the current generation attempt; stale canonical Response disclosures
+are hidden while Automatic is active; failed regeneration preserves the existing authored
+Response definition; provider previews render as escaped text; generation-context changes
+invalidate transient Automatic state; and successful generation still installs the inferred
+Visual definition and switches to Visual rules.
 
 ### Reviewed Files
 
-None
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-058-make-automatic-failures-current-and-actionable.md`
 
 ### Validation Reviewed
 
-None
+- Confirmed all ten Work Items are checked and all Acceptance Criteria/Validation remain
+  checked.
+- Confirmed `executor: null` and `claimed_at: null` on the Attempt 2 review handoff.
+- Confirmed the three implementation/test files are byte-for-byte identical to the
+  submitted Attempt 1 snapshot.
+- Retained the already-reviewed focused evidence: 92/92 tests passed, targeted ESLint
+  passed, changed-file TypeScript diagnostics were clean, and `git diff --check` passed.
+- No implementation validation was rerun because Attempt 2 was explicitly a task-record
+  reconciliation with no source/test changes.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. C058 remains a bounded presentation/state correction over the accepted
+COMMERCE-053 Automatic workflow and COMMERCE-057 diagnostic contract. It introduces no
+new persisted response-processing kind, transport semantics, persistence boundary, Test-tab
+responsibility or cross-repository contract, and it leaves COMMERCE-055/056 untouched.
 
 ### Follow-up
 
-None
+None. COMMERCE-058 enables no additional task.
