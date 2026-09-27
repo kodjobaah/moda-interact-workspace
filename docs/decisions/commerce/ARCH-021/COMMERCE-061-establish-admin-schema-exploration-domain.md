@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
 executor: copilot
 claimed_at: 2026-09-27T14:55:32Z
@@ -222,6 +222,7 @@ Review
 
 Implementation repository: `moda-interact-commerce`.
 - `lib/discovery/admin-schema.ts`
+- `lib/discovery/admin-compiler.ts`
 - `lib/discovery/service.ts`
 - `src/commerce/integration/studio/services.ts`
 - `src/studio/contracts.ts`
@@ -233,39 +234,46 @@ Implementation repository: `moda-interact-commerce`.
 - `tests/admin-query-builder.test.ts`
 - `tests/discovery.test.ts`
 
-Implementation commit: `d1f1e76b3c0acbed86275d7f191e82e3edda6b0c`.
-Remote branch: `origin/task/ARCH-021-COMMERCE-061` (pushed).
+Implementation commits: `d1f1e76b3c0acbed86275d7f191e82e3edda6b0c` (Attempt 1) and `9063353fe81fbf848b45fc737290a7effb8b352d` (Attempt 2, pushed).
+Remote branch: `origin/task/ARCH-021-COMMERCE-061`.
 
 Prepared execution evidence:
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-061`, branch `task/ARCH-021-COMMERCE-061`.
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-061`, branch `task/ARCH-021-COMMERCE-061`.
 - Shared workspace checkout switched/mutated: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no.
-- Parent task remote fast-forward: not needed; parent `origin/main` incorporated: already current.
-- Implementation task remote fast-forward: not needed; implementation `origin/main` incorporated: already current.
+- Attempt 2 parent task remote fast-forward: not needed; parent `origin/main` incorporated: already current.
+- Attempt 2 implementation task remote fast-forward: not needed; implementation `origin/main` incorporated: already current.
 - Recursive submodule sync and update: passed; `database` at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
-- Launcher claim: Attempt 1, executor `copilot`, claim commit `f24e49e57f02a63f2b9fb175a43f5717cf0f72d9`, pushed.
+- Attempt 2 launcher claim: executor `copilot`, claimed at `2026-09-27T14:55:32Z`, parent claim commit `ac23ba69d72470c3965f1124f2bfa48cc7072ab6`, pushed. Parent and implementation worktrees were reused at the exact canonical task paths; both task branches were already current with `origin/main` and their remote task branches.
 
 ### Work Completed
 
 Added an Admin-only normalized schema browse contract over the pinned `admin-2026-07.json` artifact and accepted `adminSchemaHash`, including nested type references, argument/default/deprecation metadata, bounded paging/search, selectable/expandable flags and compiler-aligned forward-pagination bounds. Exposed it through `DiscoveryService`, authenticated Studio service/action wiring and the in-memory service while retaining the existing Storefront browse path.
 
-Added pure GraphQL-AST query generation over normalized Admin schema pages. It emits only `apiVersion`, `schemaHash`, `document`, `operationName` and `variables`; enforces the pinned schema identity, selection/depth/cost/document limits, literal `first` bounds and declared Tool-input mappings; and excludes managed shop/auth/credential input names. Added bounded manual-query parsing that validates through `createAdminCommerceCompiler`, seeds representable selection/binding state, and returns exact source text with an explicit `not-representable` result for aliases or variable defaults the builder cannot preserve.
+Added pure GraphQL-AST query generation over normalized Admin schema pages. It emits only `apiVersion`, `schemaHash`, `document`, `operationName` and `variables`; enforces the pinned schema identity, selection/depth/cost/document limits, literal `first` bounds and declared Tool-input mappings; and excludes managed shop/auth/credential input names. Added bounded manual-query parsing that seeds representable selection/binding state and returns exact source text with an explicit `not-representable` result for aliases or variable defaults the builder cannot preserve.
+
+Attempt 2 extracted the compiler's pinned-schema, document, operation and mapping checks into `compileAdminQueryAuthoring`, shared by both generated-query validation and manual-query parsing. This preserves one canonical argument-compatibility implementation while keeping Response-owned `resultPath` and `resultSchema` checks in full execution compilation only. The builder resolves fields across every loaded page for a parent type and constructs valid nested list/non-null variable types.
+
+Architect Review correction disposition:
+1. Implemented in `lib/discovery/admin-compiler.ts`, `src/studio/discovery/admin-query-builder.ts` and `tests/admin-query-builder.test.ts`: generated Tool-input and literal bindings are checked by the canonical Admin authoring validator before an output is returned. Tests reject a number input for a String argument and an object literal for an enum argument; accepted generated query candidates pass canonical mapped-argument validation.
+2. Implemented in `src/studio/discovery/admin-query-builder.ts` and `tests/admin-query-builder.test.ts`: selected fields are searched across all loaded pages for their parent type. A cursor-0 plus cursor-100 `QueryRoot` regression builds `deliveryProfiles` from the later page and validates it with the canonical compiler.
+3. Implemented in `lib/discovery/admin-compiler.ts`, `src/studio/discovery/admin-query-builder.ts` and `tests/admin-query-builder.test.ts`: manual-query parsing uses request-only canonical validation, so a representable valid query is recovered with stale `resultPath`/`resultSchema`; a query violating Admin compiler pagination rules still returns `invalid`.
 
 ### Validation Results
 
 Passed:
-- `vitest run tests/admin-discovery.test.ts tests/admin-query-builder.test.ts tests/discovery.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts`: 51 tests passed.
+- `vitest run tests/admin-discovery.test.ts tests/admin-query-builder.test.ts tests/discovery.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts`: 56 tests passed.
 - `npm run test:arch021-shopify-admin-compiler`: 22 tests passed.
-- Targeted ESLint across all 11 changed TypeScript files: passed without warnings.
-- Changed-file editor diagnostics: no errors in all 11 changed TypeScript files.
+- Targeted ESLint on `lib/discovery/admin-compiler.ts`, `src/studio/discovery/admin-query-builder.ts` and `tests/admin-query-builder.test.ts`: passed without warnings.
+- Changed-file editor diagnostics: no errors in all three Attempt 2 TypeScript files.
 - `git diff --check`: passed.
 
 Full `tsc --noEmit` remains blocked by existing repository errors unrelated to this task's Admin-domain changes: missing code-response preview imports, Storefront compiler output-schema typing, the existing Admin oracle fixture typing, the existing `createCommerceStudioServices` missing `createToolWithInitialDraft` implementation, and unrelated test typing errors. The new Admin schema and query-builder files report no compiler/editor diagnostics, and editor diagnostics are clear across all changed files. The remote Shopify Dev MCP oracle was not run; it contacts an external service and is not required by this task's Validation section.
 
 ### Deviations
 
-The launcher reported `rework.required: true`, while the current task's Architect Review is still `Pending` with no review notes or requested corrections. No review corrections were recorded to apply; this implementation follows the current task requirements. No live introspection or Shopify mutations were performed.
+All three corrections requested by Architect Review were implemented within the task scope. No live introspection or Shopify mutations were performed.
 
 ### Assumptions
 
