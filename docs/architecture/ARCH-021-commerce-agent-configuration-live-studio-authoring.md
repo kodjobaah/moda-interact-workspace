@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051 and Visual inference COMMERCE-052 are Complete; Automatic Response generation COMMERCE-053 is Ready; and live Test is split into backend COMMERCE-054 (Ready) and frontend COMMERCE-055 (Pending on COMMERCE-054). The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052 and Automatic Response generation COMMERCE-053 are Complete; live Test is split into backend COMMERCE-054 (Ready) and frontend COMMERCE-055 (Pending on COMMERCE-054). The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -930,7 +930,7 @@ Live authoring/Test tasks:
 |---|---|---|---|
 | ARCH-021-COMMERCE-051 | moda_commerce | Complete | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
 | ARCH-021-COMMERCE-052 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
-| ARCH-021-COMMERCE-053 | moda_commerce | Ready | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
+| ARCH-021-COMMERCE-053 | moda_commerce | Complete | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
 | ARCH-021-COMMERCE-054 | moda_commerce | Ready | ARCH-021-COMMERCE-051 |
 | ARCH-021-COMMERCE-055 | moda_commerce | Pending | ARCH-021-COMMERCE-054 |
 
@@ -945,10 +945,9 @@ Live Test branch:
 COMMERCE-051 -> COMMERCE-054 -> COMMERCE-055
 ```
 
-Current executable live-authoring frontiers are therefore independently:
+The current executable live-authoring frontier is:
 
 ```text
-ARCH-021-COMMERCE-053
 ARCH-021-COMMERCE-054
 ```
 
@@ -1206,6 +1205,16 @@ independent of features.
 - Removed Test dependencies on Automatic generation and on earlier Request/Response UI task chains; their accepted contracts are baseline capabilities, not execution gates.
 - Made zero durable writes, no saved-revision lookup, no publication receipt/proof and no synthetic sample mode hard Test invariants.
 - Required Test UI decomposition into bounded components for arguments, run action, execution stages, safe request/provider details, processed result and stage-specific errors.
+
+### 2026-09-27 — COMMERCE-053 Attempt 2 accepted
+
+- Accepted implementation `6c5132a`.
+- Confirmed Automatic remains transient browser-local UI state and does not extend the persisted/runtime `DIRECT | VISUAL | JAVASCRIPT` union.
+- Confirmed returning from Automatic to the unchanged persisted Response mode performs no canonical mutation, dirtying or successful-validation invalidation; choosing a genuinely different persisted mode remains a real canonical change.
+- Confirmed the sole root `LIST` path installs the inferred `List of objects` candidate with exact `resultPath: ""` into the existing Visual editor through `deriveVisualTreeContract(...)`.
+- Confirmed successful generation writes no draft/live-test receipt and publication remains rejected with `LIVE_TEST_REQUIRED` until the separately owned live-test boundary is satisfied.
+- Accepted submitted 69/69 External HTTP UI and 13/13 Tool-authoring validation, targeted lint/diff checks and clean changed-file diagnostics. The common packet remains 85/86 on the previously observed unrelated lifecycle expectation mismatch; the Commerce-wide typecheck observation is not attributed to `TYPECHECK-001`.
+- Marked COMMERCE-053 Complete. COMMERCE-054 remains independently Ready because it depends only on COMMERCE-051; COMMERCE-055 remains Pending on COMMERCE-054.
 
 ### 2026-09-27 — COMMERCE-042 Attempt 3 accepted with supplemental runtime evidence
 

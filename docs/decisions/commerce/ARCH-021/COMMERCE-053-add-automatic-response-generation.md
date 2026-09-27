@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 68
 executor: null
 claimed_at: null
@@ -626,66 +626,68 @@ Parent task branch synchronized from `origin/main` at `9d6747b4`; Attempt 2 clai
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 is architecturally aligned in its main Automatic-generation flow: the implementation keeps `AUTOMATIC` browser-local, shares one Sample Tool arguments state, passes selected-shop context to the accepted COMMERCE-051 observation boundary, sends only eligible 2xx JSON to COMMERCE-052 inference, installs candidates through `deriveVisualTreeContract(...)`, returns successful generation to the existing Visual editor, and does not persist during observation/generation.
+Attempt 2 is accepted.
 
-The attempt nevertheless requires correction before acceptance.
+The implementation satisfies the Attempt 1 correction contract and the full COMMERCE-053 Automatic-generation boundary:
 
-1. **R2 is violated when Automatic is exited back to the unchanged canonical Response mode.** `response-tab.tsx` routes every non-Automatic selection through `resetMode(...)`. Therefore `VISUAL -> AUTOMATIC -> VISUAL` (and the corresponding unchanged DIRECT/JAVASCRIPT case) calls `invalidateResponseValidation()`, `onChange(...)` and `onDirty()` even though no generated proposal or other canonical Response change was applied. R2 requires Automatic selection/abandonment to remain transient: Tool dirty state and a previously successful Response validation may become stale only after a real canonical Response change.
-2. **Mandatory regression scenario 13 is not proved.** The submitted tests prove a nested LIST candidate selected from the multiple-candidate picker, but not the required exactly-one LIST candidate path that automatically installs a root `List of objects` candidate and its exact source path.
-3. **Mandatory regression scenario 25 is not proved explicitly.** Add focused evidence that successful Automatic generation does not create/satisfy the live-test publication receipt and `LIVE_TEST_REQUIRED` remains unsatisfied until the separately owned live-test receipt boundary exists.
-4. **The Completion Report misattributes the Commerce repository-wide typecheck result to `TYPECHECK-001`.** `docs/development-baseline.md` scopes `TYPECHECK-001` to `moda-interact/`, not `moda-interact-commerce/`. The report may record the observed Commerce typecheck as non-zero/unrelated with zero diagnostics in changed files, but must not claim `TYPECHECK-001` as the applicable baseline identifier.
+1. `Automatic -> unchanged persisted mode` is now transient. `response-tab.tsx` restores only the UI selection when the author returns to the current canonical mode, without calling `onChange`, `onDirty` or invalidating an already-successful Response validation.
+2. Choosing a genuinely different persisted mode from Automatic still follows the existing canonical mode-change path, including dirty-state and Response-validation invalidation.
+3. The missing exactly-one root `LIST` regression now proves automatic installation of a sole root `List of objects` candidate with exact `resultPath: ""` into the existing Visual editor.
+4. The missing publication-boundary regression now proves Automatic generation creates no draft save/live-test receipt; authoritative definition validation still requires a live test, and a subsequent publication attempt remains rejected with `LIVE_TEST_REQUIRED`.
+5. The Completion Report now records the Commerce-wide typecheck observation without attributing it to `TYPECHECK-001`.
 
-Correction contract for Attempt 2:
+The broader C053 architecture remains conformant: `AUTOMATIC` is browser-local only; one Sample Tool arguments state is shared across Request/Automatic/Test; selected-shop context is plumbed for both New Tool and existing DRAFT authoring while server-side reauthorization remains in COMMERCE-051; only eligible 2xx JSON reaches COMMERCE-052 inference; candidate application reuses `deriveVisualTreeContract(...)`; Visual remains the editor; and observation/generation itself performs no Tool/Revision persistence.
 
-- Preserve the current canonical persisted mode when Automatic is abandoned without applying a proposal. Returning from Automatic to that same mode must not call `onChange`, must not mark the Tool dirty, and must not invalidate a successful Response validation.
-- Preserve existing behavior when the author intentionally chooses a *different* persisted mode from Automatic; that remains a real canonical change and may dirty/invalidate normally.
-- Add an explicit regression for `persisted mode -> Automatic -> same persisted mode` proving no canonical mutation/dirty/validation invalidation.
-- Add the missing mandatory exactly-one root LIST candidate regression and exact `resultPath` assertion.
-- Add explicit no-live-test-receipt / `LIVE_TEST_REQUIRED` evidence for successful generation.
-- Correct the Completion Report typecheck attribution. Do not modify `docs/development-baseline.md` merely to make this task pass.
-- Keep COMMERCE-051 transport/security behavior and COMMERCE-052 inference semantics unchanged; this is a Response composition/state correction only.
+COMMERCE-054 is not enabled by C053 in the canonical task graph. Its authoritative task metadata already has `status: ready` and depends only on COMMERCE-051, so accepting C053 does not alter C054's dependency state. COMMERCE-055 remains Pending on COMMERCE-054.
 
 ### Reviewed Files
 
+- `src/studio/external-http/response-tab.tsx`
 - `src/studio/external-http/editor.tsx`
 - `src/studio/external-http/request-tab.tsx`
-- `src/studio/external-http/response-tab.tsx`
 - `src/studio/external-http/test-tab.tsx`
 - `src/studio/tools/new-tool-editor.tsx`
 - `src/studio/tools/tool-editor.tsx`
 - `src/studio/tools/tool-authoring-screen.tsx`
 - `tests/external-tools-ui.test.tsx`
 - `tests/tool-authoring-screen.test.tsx`
-- `docs/development-baseline.md`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-053-add-automatic-response-generation.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-054-execute-non-durable-external-http-candidate-live.md`
 - `docs/decisions/commerce/ARCH-021/_index.md`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-Recorded submission evidence reviewed:
+Submitted/recorded validation:
 
-- `npm run test:arch020-external-tools-ui`: 66/66 passed.
+- `npm run test:arch020-external-tools-ui`: 69/69 passed.
 - focused `tests/tool-authoring-screen.test.tsx`: 13/13 passed.
-- `npm run test:arch021-tool-authoring-common`: 85/86; recorded failure is outside the C053 changed files and concerns an existing lifecycle expectation (`LIVE_TEST_REQUIRED` versus `INVALID_DEFINITION`).
-- targeted ESLint: passed.
+- `npm run test:arch021-tool-authoring-common`: 85/86; the remaining lifecycle assertion expects `LIVE_TEST_REQUIRED` but receives `INVALID_DEFINITION`, outside C053 changed files and unchanged from the prior review.
+- targeted ESLint on Attempt 2 changed files: passed.
 - `git diff --check`: passed.
-- repository-wide Commerce typecheck: non-zero with 250 diagnostics across 21 files; submitted changed-file diagnostics are clean. `TYPECHECK-001` is not accepted as the baseline identifier because that baseline is scoped to `moda-interact/`.
+- changed-file TypeScript diagnostics: clean.
+- Commerce package-wide typecheck remains non-zero with the previously recorded 250 diagnostics across 21 unrelated files; the task correctly no longer attributes that observation to `TYPECHECK-001`.
 
-The submitted archive is a source snapshot rather than the live Git worktrees, so clean/synchronized branch state and pushed commit identity are recorded from the Completion Report rather than independently re-queried from Git metadata.
+Source/test inspection confirms the Attempt 2 regressions exercise the exact corrections above. The submitted archive is a source snapshot rather than live Git metadata, so clean/synchronized worktree and pushed-commit state are recorded from the Completion Report/submission rather than independently queried here.
 
 ### Architecture Conformance
 
-Main Automatic generation architecture: **conformant**.
+Conformant.
 
-Transient-mode abandonment semantics under R2 and mandatory regression completeness: **not yet conformant**.
-
-Repository ownership, persistence boundary, C051 observation reuse, C052 inference reuse, Visual-editor authority and selected-shop server-revalidation boundary are otherwise preserved.
+- Canonical persisted response kinds remain `DIRECT | VISUAL | JAVASCRIPT`.
+- Automatic remains transient browser authoring state.
+- COMMERCE-051 remains the live observation/security boundary.
+- COMMERCE-052 remains the sole inference implementation.
+- `deriveVisualTreeContract(...)` and the existing Visual editor remain authoritative after candidate application.
+- Generation remains non-durable until existing Create/Save Draft.
+- Successful generation does not satisfy the publication live-test gate.
 
 ### Follow-up
 
-Return the same task to `ready` for Attempt 2. COMMERCE-054 remains dependency-gated until COMMERCE-053 is architect-accepted Complete.
+None for COMMERCE-053.
+
+Task is architect-accepted Complete at Attempt 2. The current independent live-Test backend frontier remains ARCH-021-COMMERCE-054; accepting C053 does not newly promote it because it was already Ready on COMMERCE-051 alone.

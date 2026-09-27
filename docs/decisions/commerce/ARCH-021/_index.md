@@ -197,14 +197,13 @@ The live work now has two independent branches sharing the accepted secure provi
 |---|---|---|---|
 | [COMMERCE-051](COMMERCE-051-add-live-external-http-authoring-observation.md) | Add bounded ADMIN-authorized live provider observation for the current Request candidate | Complete | COMMERCE-041, COMMERCE-047 |
 | [COMMERCE-052](COMMERCE-052-infer-visual-response-tree-from-observed-json.md) | Infer the accepted recursive Visual tree from observed JSON using C049 `LIST` / `SCALAR_LIST` terminology | Complete | COMMERCE-049 |
-| [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands generated proposals to existing Visual rules | Ready | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
+| [COMMERCE-053](COMMERCE-053-add-automatic-response-generation.md) | Add authoring-only Automatic generation that hands generated proposals to existing Visual rules | Complete | COMMERCE-042, COMMERCE-050, COMMERCE-051, COMMERCE-052 |
 | [COMMERCE-054](COMMERCE-054-execute-non-durable-external-http-candidate-live.md) | Backend: execute the current non-durable Request + Response candidate live with zero persistence | Ready | COMMERCE-051 |
 | [COMMERCE-055](COMMERCE-055-build-external-http-live-test-tab-ui.md) | Frontend: build the decomposed live Test-tab UI over COMMERCE-054 | Pending | COMMERCE-054 |
 
-Current live-authoring frontiers:
+Current live-authoring frontier:
 
 ```text
-ARCH-021-COMMERCE-053
 ARCH-021-COMMERCE-054
 ```
 
@@ -234,6 +233,10 @@ The live Test branch is explicitly pre-creation. It tests the exact current in-m
 
 COMMERCE-055 must be composed from bounded React responsibilities rather than one large Test component: argument authoring, Run action/state, execution-stage presentation, safe Request summary, bounded provider response, processed result and stage-specific failure presentation remain separable concerns.
 
+
+### COMMERCE-053 Attempt 2 accepted — 2026-09-27
+
+COMMERCE-053 is **Complete / Accepted, Attempt 2**. Automatic remains transient browser-local authoring state over the canonical `DIRECT | VISUAL | JAVASCRIPT` response union, shares the single Sample Tool arguments state, uses COMMERCE-051 observation and COMMERCE-052 inference, and hands accepted candidates into the existing Visual editor through `deriveVisualTreeContract(...)`. Attempt 2 corrected abandonment of Automatic back to the unchanged persisted mode so it no longer dirties/mutates the Tool or invalidates successful Response validation, while intentional mode changes still do. Regression coverage now includes a sole root `LIST` candidate with `resultPath: ""` and explicit proof that Automatic generation creates no live-test receipt and publication remains gated by `LIVE_TEST_REQUIRED`. Submitted validation passed 69/69 External HTTP UI and 13/13 Tool-authoring tests; the common packet remains 85/86 on the pre-existing lifecycle expectation mismatch outside C053. COMMERCE-054 remains independently **Ready** because its authoritative dependency is COMMERCE-051 alone.
 
 ### COMMERCE-042 Attempt 3 accepted — 2026-09-27
 
