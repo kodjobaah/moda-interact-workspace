@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 75
-executor: copilot
-claimed_at: 2026-09-27T17:16:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-062
@@ -151,14 +151,14 @@ Request and Response remain freely navigable. No tab becomes locked because quer
 
 ## Work Items
 
-- [ ] Remove Result path/schema controls from Shopify Request UI.
-- [ ] Add Shopify Response authoring component/surface.
-- [ ] Wire Response derivation to COMMERCE-062.
-- [ ] Promote only valid derived schemas into canonical local Tool state.
-- [ ] Retain invalid resultPath text and show actionable Response-local diagnostics.
-- [ ] Invalidate stale derivation when query/resultPath changes.
-- [ ] Show derived values structure/read-only schema.
-- [ ] Cover new Tool and persisted DRAFT authoring parity where applicable.
+- [x] Remove Result path/schema controls from Shopify Request UI.
+- [x] Add Shopify Response authoring component/surface.
+- [x] Wire Response derivation to COMMERCE-062.
+- [x] Promote only valid derived schemas into canonical local Tool state.
+- [x] Retain invalid resultPath text and show actionable Response-local diagnostics.
+- [x] Invalidate stale derivation when query/resultPath changes.
+- [x] Show derived values structure/read-only schema.
+- [x] Cover new Tool and persisted DRAFT authoring parity where applicable.
 
 ## Interfaces / Contracts
 
@@ -190,13 +190,13 @@ Produces no new runtime/durable contract beyond the already-canonical persisted 
 
 ## Validation
 
-- [ ] Shopify Admin Request UI tests
-- [ ] Shopify Admin Response UI tests
-- [ ] stale-derivation regression tests
-- [ ] new/persisted authoring lifecycle tests
-- [ ] targeted lint
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
+- [x] Shopify Admin Request UI tests
+- [x] Shopify Admin Response UI tests
+- [x] stale-derivation regression tests
+- [x] new/persisted authoring lifecycle tests
+- [x] targeted lint
+- [x] changed-file TypeScript diagnostics
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -210,35 +210,53 @@ Keep output-schema derivation on the canonical COMMERCE-062 boundary. React must
 
 ### Status
 
-Not Started
+Ready for Architect Review (Attempt 1)
 
 ### Files Changed
 
-None.
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/shopify-admin-editor.tsx`
+- `src/studio/tools/shopify-admin-response-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/admin-explorer.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
-None.
+- Implementation commit: `806c93f20f420e9b35d661ba9f18cc689a81fc95` on `task/ARCH-021-COMMERCE-065` (pushed).
+- Split Shopify Admin authoring so Request contains invocation fields and Response owns local `resultPath` editing and derivation.
+- Used COMMERCE-062's derivation action as the sole source of result schema; successful derivation promotes its schema into local candidate state without an automatic write.
+- Added stale-result identity handling for API/schema identity, document, operation name, and result path; mapping-only edits preserve freshness.
+- Preserved invalid path text in authoring sessions and exposed compiler issue codes, paths, and messages in Response.
+- Rendered a readable `data.values` shape and a read-only schema disclosure.
+- Applied the same derivation freshness and save/publish protections to persisted DRAFT authoring, including a submit-handler guard.
+- Kept Request/Response navigation ungated and retained manual GraphQL editing.
 
 ### Validation Results
 
-None.
+- Passed targeted ESLint for all changed source and test files.
+- Passed focused Vitest suites: 4 files, 47 tests (`shopify-admin-tools-ui`, `tool-authoring-screen`, `tool-authoring-session`, `admin-explorer`).
+- Pylance diagnostics: no errors in the 8 changed files.
+- Passed `git diff --check`.
+- `npm run typecheck` remains unsuccessful: 28 diagnostics across 17 other package files; none reference the C065 changed files. Diagnostics include missing `lib/preview/http` modules and unrelated compiler, schema typing, and test errors.
 
 ### Deviations
 
-None.
+No scope deviations. The package-wide typecheck limitation is recorded above; focused tests, lint, and changed-file diagnostics pass.
 
 ### Assumptions
 
-None.
+The existing persisted `execution.resultSchema` remains the canonical storage contract; session `resultSchemaText` remains only for existing generic Explore/session compatibility and is not editable or used to derive Admin schemas.
 
 ### Unresolved Issues
 
-None.
+The repository-wide TypeScript check is blocked by 28 diagnostics in files outside this task's changed-file set; Architect Review should decide whether that baseline warrants follow-up.
 
 ### Architectural Concerns
 
-None.
+None identified within C065 scope.
 
 ## Architect Review
 
