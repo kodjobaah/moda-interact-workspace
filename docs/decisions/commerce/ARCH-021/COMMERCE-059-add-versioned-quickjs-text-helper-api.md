@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 73
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-045
   - ARCH-021-COMMERCE-046
@@ -500,20 +500,20 @@ If the bundled helper cannot operate within them for the focused test corpus, re
 
 ## Work Items
 
-- [ ] Install exact `string-strip-html@13.6.2` and `esbuild@0.28.2` in their required dependency classes and update the lockfile through npm.
-- [ ] Add the Commerce-owned v2 response runtime contract while retaining v1 response support and v1-only request JavaScript.
-- [ ] Add one guest helper-entry source exposing only `moda.text.stripHtml(value)`.
-- [ ] Bundle that helper source deterministically to `build/code-runtime/helpers-v2.js` during `code-runtime:package`.
-- [ ] Extend the packaged runtime manifest with supported/default/request runtime identity and helper artifact/package/hash evidence.
-- [ ] Make kernel/worker compile and run response source under the selected v1/v2 environment with no fallback.
-- [ ] Preserve all accepted sandbox globals restrictions, worker isolation and resource limits.
-- [ ] Decouple Commerce v2 response processing from Shared's v1-only response-processing validator/type without modifying Shared.
-- [ ] Update response validation/live execution/publication/receipt code paths that legitimately consume response JavaScript runtime identity.
-- [ ] Default new Response JavaScript drafts to v2.
-- [ ] Add a non-persisting explicit v1 -> v2 upgrade affordance for existing Response JavaScript drafts.
-- [ ] Add v2 helper documentation/example to both new-Tool and persisted-DRAFT JavaScript Response authoring.
-- [ ] Add focused runtime, packaging, processor, publication and UI regressions.
-- [ ] Update `moda-interact-commerce/docs/code-runtime-proof.md` to describe v1/v2 response behavior, v1 request behavior and packaged helper proof.
+- [x] Install exact `string-strip-html@13.6.2` and `esbuild@0.28.2` in their required dependency classes and update the lockfile through npm.
+- [x] Add the Commerce-owned v2 response runtime contract while retaining v1 response support and v1-only request JavaScript.
+- [x] Add one guest helper-entry source exposing only `moda.text.stripHtml(value)`.
+- [x] Bundle that helper source deterministically to `build/code-runtime/helpers-v2.js` during `code-runtime:package`.
+- [x] Extend the packaged runtime manifest with supported/default/request runtime identity and helper artifact/package/hash evidence.
+- [x] Make kernel/worker compile and run response source under the selected v1/v2 environment with no fallback.
+- [x] Preserve all accepted sandbox globals restrictions, worker isolation and resource limits.
+- [x] Decouple Commerce v2 response processing from Shared's v1-only response-processing validator/type without modifying Shared.
+- [x] Update response validation/live execution/publication/receipt code paths that legitimately consume response JavaScript runtime identity.
+- [x] Default new Response JavaScript drafts to v2.
+- [x] Add a non-persisting explicit v1 -> v2 upgrade affordance for existing Response JavaScript drafts.
+- [x] Add v2 helper documentation/example to both new-Tool and persisted-DRAFT JavaScript Response authoring.
+- [x] Add focused runtime, packaging, processor, publication and UI regressions.
+- [x] Update `moda-interact-commerce/docs/code-runtime-proof.md` to describe v1/v2 response behavior, v1 request behavior and packaged helper proof.
 
 ## Interfaces / Contracts
 
@@ -575,46 +575,46 @@ Future helper additions must be separately architected. Do not add unrelated hel
 
 ## Acceptance Criteria
 
-- [ ] `package.json` pins exactly `string-strip-html: "13.6.2"` and dev dependency `esbuild: "0.28.2"`; lockfile is npm-generated and consistent.
-- [ ] Response JavaScript accepts both `quickjs-sync.v1` and `quickjs-sync.v2`; Request JavaScript remains v1-only.
-- [ ] A valid existing v1 Response definition still compiles and runs with `typeof moda === "undefined"`.
-- [ ] A v2 Response transform can call `moda.text.stripHtml(response.bodyText)` successfully.
-- [ ] `moda.text.stripHtml("Some text <b>and</b> text.")` returns exactly `Some text and text.`.
-- [ ] Passing a non-string to `moda.text.stripHtml` produces a bounded guest execution failure rather than coercion or a host exception.
-- [ ] `globalThis.moda`, `moda.text` and the helper cannot be replaced/configured by authored source in a way that changes helper behavior.
-- [ ] v2 still has no `fetch`, `XMLHttpRequest`, `require`, `process`, `WebAssembly`, `importScripts`, `eval`, `Function`, DOM or host-callback capability.
-- [ ] `code-runtime:package` emits exactly `helpers-v2.js`, `manifest.json`, `quickjs.wasm`, `worker.mjs`.
-- [ ] `helpers-v2.js` has no unresolved `import`/`require` and no source map is emitted.
-- [ ] Manifest helper SHA-256 equals the SHA-256 of the actual packaged `helpers-v2.js` bytes.
-- [ ] Manifest/package evidence identifies `string-strip-html@13.6.2` and `esbuild@0.28.2` and the required v1/v2 runtime matrix.
-- [ ] Packaged smoke proves v1 response behavior, v2 helper behavior, request v1 behavior and compile-only behavior through the exact packaged worker.
-- [ ] Unsupported runtime versions fail closed with the existing bounded invalid/runtime-unavailable semantics; there is no v2 -> v1 fallback.
-- [ ] Response Tool-definition/authoring/live-test/publication paths consume v2 where applicable without modifying Shared contracts.
-- [ ] Publication/Test receipt identity distinguishes v1 and v2 and retains `visual.v1` behavior.
-- [ ] New JavaScript Response authoring defaults to v2.
-- [ ] Existing v1 authoring is not silently upgraded on render.
-- [ ] Explicit v1 -> v2 upgrade preserves source/format/result schema, marks the local draft dirty and invalidates prior Response validation without persistence.
-- [ ] New-Tool and persisted-DRAFT v2 Response editors show the exact helper name, one-sentence purpose and example without introducing another editing surface.
-- [ ] No runtime/resource limit is increased and helper execution remains inside the existing guest/supervisor bounds.
-- [ ] No new generic logger, host callback, filesystem/network guest capability, database change or Shared change is introduced.
+- [x] `package.json` pins exactly `string-strip-html: "13.6.2"` and dev dependency `esbuild: "0.28.2"`; lockfile is npm-generated and consistent.
+- [x] Response JavaScript accepts both `quickjs-sync.v1` and `quickjs-sync.v2`; Request JavaScript remains v1-only.
+- [x] A valid existing v1 Response definition still compiles and runs with `typeof moda === "undefined"`.
+- [x] A v2 Response transform can call `moda.text.stripHtml(response.bodyText)` successfully.
+- [x] `moda.text.stripHtml("Some text <b>and</b> text.")` returns exactly `Some text and text.`.
+- [x] Passing a non-string to `moda.text.stripHtml` produces a bounded guest execution failure rather than coercion or a host exception.
+- [x] `globalThis.moda`, `moda.text` and the helper cannot be replaced/configured by authored source in a way that changes helper behavior.
+- [x] v2 still has no `fetch`, `XMLHttpRequest`, `require`, `process`, `WebAssembly`, `importScripts`, `eval`, `Function`, DOM or host-callback capability.
+- [x] `code-runtime:package` emits exactly `helpers-v2.js`, `manifest.json`, `quickjs.wasm`, `worker.mjs`.
+- [x] `helpers-v2.js` has no unresolved `import`/`require` and no source map is emitted.
+- [x] Manifest helper SHA-256 equals the SHA-256 of the actual packaged `helpers-v2.js` bytes.
+- [x] Manifest/package evidence identifies `string-strip-html@13.6.2` and `esbuild@0.28.2` and the required v1/v2 runtime matrix.
+- [x] Packaged smoke proves v1 response behavior, v2 helper behavior, request v1 behavior and compile-only behavior through the exact packaged worker.
+- [x] Unsupported runtime versions fail closed with the existing bounded invalid/runtime-unavailable semantics; there is no v2 -> v1 fallback.
+- [x] Response Tool-definition/authoring/live-test/publication paths consume v2 where applicable without modifying Shared contracts.
+- [x] Publication/Test receipt identity distinguishes v1 and v2 and retains `visual.v1` behavior.
+- [x] New JavaScript Response authoring defaults to v2.
+- [x] Existing v1 authoring is not silently upgraded on render.
+- [x] Explicit v1 -> v2 upgrade preserves source/format/result schema, marks the local draft dirty and invalidates prior Response validation without persistence.
+- [x] New-Tool and persisted-DRAFT v2 Response editors show the exact helper name, one-sentence purpose and example without introducing another editing surface.
+- [x] No runtime/resource limit is increased and helper execution remains inside the existing guest/supervisor bounds.
+- [x] No new generic logger, host callback, filesystem/network guest capability, database change or Shared change is introduced.
 
 ## Validation
 
 Run from `moda-interact-commerce` after inspecting the declared scripts:
 
-- [ ] `npm run code-runtime:package`
-- [ ] `npm run code-runtime:smoke`
-- [ ] `npm run test:arch020-code-runtime-proof`
-- [ ] `npm run test:arch020-code-processor`
-- [ ] `npm run test:arch020-external-tools-ui`
-- [ ] focused publication/authoring validation covering v1/v2 response runtime identity and receipt separation
-- [ ] focused tests proving immutable helper namespace, v1 absence, v2 availability, non-string failure and sandbox restrictions
-- [ ] source audit: packaged `helpers-v2.js` contains no unresolved module import/require and no source map exists
-- [ ] source audit: Request Tool contract still accepts only `quickjs-sync.v1`
-- [ ] targeted ESLint for task-owned changed source/tests/scripts
-- [ ] repository typecheck; record any known unrelated baseline diagnostics and prove zero diagnostics in task-owned changed files
-- [ ] `node --check src/commerce/code-runtime/worker.mjs`
-- [ ] `git diff --check`
+- [x] `npm run code-runtime:package`
+- [x] `npm run code-runtime:smoke`
+- [x] `npm run test:arch020-code-runtime-proof` (12 tests passed)
+- [x] `npm run test:arch020-code-processor` (7 tests passed)
+- [x] `npm run test:arch020-external-tools-ui` (81 tests passed)
+- [x] Focused publication/authoring validation covering v1/v2 response runtime identity and receipt separation (publication 15; preview 19; authoring validation 6; external authoring validation 54; New Tool and Commerce contract 33 tests passed)
+- [x] Focused tests proving immutable helper namespace, v1 absence, v2 availability, non-string failure and sandbox restrictions (packaged smoke and 12 runtime-proof tests passed)
+- [x] Source audit: packaged `helpers-v2.js` contains no unresolved module import/require and no source map exists (verified by packaged smoke; exactly four files emitted)
+- [x] Source audit: Request Tool contract still accepts only `quickjs-sync.v1` (schema/processor tests pass; Request-v2 packaged request fails closed)
+- [x] Targeted ESLint for task-owned changed source/tests/scripts (zero errors; two pre-existing hook-dependency warnings in `code-response-panel.tsx`)
+- [x] Repository typecheck; 252 existing diagnostics across 23 files. No C059-owned source diagnostics; one diagnostic in the touched External Tools test is confirmed present unchanged at the implementation base commit.
+- [x] `node --check src/commerce/code-runtime/worker.mjs` and edited package scripts
+- [x] `git diff --check`
 
 Do not treat a missing unrelated repository script as proof that the underlying capability failed; follow the repository's actual declared scripts and the durable development-baseline rules.
 
@@ -657,6 +657,85 @@ If exact local names differ, preserve the contracts above rather than inventing 
 
 ### Status
 
+Ready for Architect Review
+
+### Files Changed
+
+`moda-interact-commerce`: `package.json`, npm-generated `package-lock.json`, `docs/code-runtime-proof.md`, runtime packaging/smoke scripts, QuickJS runtime types/kernel/worker and helper entries, Commerce Response processing/Tool-definition/preview/publication contracts, Response authoring panels, and focused runtime/processor/publication/UI tests.
+
+### Work Completed
+
+- Installed exact `string-strip-html@13.6.2` and `esbuild@0.28.2`; packaged a deterministic, self-contained `helpers-v2.js` with its SHA-256 and package evidence.
+- Added explicit Response runtime v1/v2 selection; preserved v1 Response semantics and v1-only Request processing without changing Shared.
+- Exposed the immutable guest-only `moda.text.stripHtml(value)` API in v2; retained existing QuickJS isolation and resource limits.
+- Added Commerce-owned v1/v2 response processing, publication/receipt identity, v2 defaults for new Response JavaScript, and local v1 upgrade plus helper documentation in New Tool and persisted-DRAFT authoring.
+- Committed and pushed implementation commit `9baf5de9b3abf07fc3c3108c5308462457bfca0d` to `origin/task/ARCH-021-COMMERCE-059`.
+
+### Validation Results
+
+- Passed package/smoke and runtime proof (12 tests), Response processor (7), Request processor (7), publication (15), preview (19), External Tools UI (81), New Tool/Commerce contract (33), tool authoring validation (6), and external authoring/server-action validation (54).
+- Targeted ESLint completed with zero errors and two pre-existing hook-dependency warnings. Worker/package script syntax and `git diff --check` passed.
+- `npm run typecheck` remains blocked by the repository baseline: 252 diagnostics across 23 files. No C059-owned source files have diagnostics. The single diagnostic in the touched External Tools UI test is unchanged from the implementation base.
+
+### Deviations
+
+None. The helper bundle uses a private injected `Date` compatibility binding only for `string-strip-html`'s discarded internal timing metadata; it adds no guest-global `Date`, host callback, or additional Tool-facing API.
+
+### Assumptions
+
+The two hook-dependency ESLint warnings and repository-wide typecheck failures predate C059; the changed-file baseline was verified at the implementation base commit.
+
+### Unresolved Issues
+
+Repository-wide typecheck remains non-green for the pre-existing diagnostics listed above; coordinator review can proceed with the focused tests and changed-source diagnostics clean.
+
+### Architectural Concerns
+
+None identified. Shared contracts and the database submodule are unchanged; Architect Review remains pending.
+
+
+### Architect Reconciliation Evidence
+
+The original start-of-attempt launcher synchronization packet was not retained in the submitted archive, so no historical `yes`, `not-needed`, or `already-current` values are asserted here.
+
+Current canonical-worktree verification performed before architect acceptance:
+
+```text
+Parent/docs worktree:
+  path: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-059
+  branch: task/ARCH-021-COMMERCE-059
+  local HEAD: b3155a830c8a6f581d424dca329182525247e3f4
+  remote task HEAD: b3155a830c8a6f581d424dca329182525247e3f4
+  local equals remote task branch: yes
+  worktree clean: yes
+  current origin/main ancestor of task HEAD: no
+
+Implementation worktree:
+  path: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-059
+  branch: task/ARCH-021-COMMERCE-059
+  local HEAD: 9baf5de9b3abf07fc3c3108c5308462457bfca0d
+  remote task HEAD: 9baf5de9b3abf07fc3c3108c5308462457bfca0d
+  local equals remote task branch: yes
+  worktree clean: yes
+  current origin/main ancestor of task HEAD: yes
+
+Implementation recursive submodule:
+  database commit: 0a8d3b9feade69690b6c1e33aeda051ea588bd45
+  database state: clean
+  database branch annotation: heads/main
+
+Published task state:
+  implementation commit: 9baf5de9b3abf07fc3c3108c5308462457bfca0d
+  implementation remote branch: origin/task/ARCH-021-COMMERCE-059
+  implementation pushed: yes
+  parent report commit: b3155a830c8a6f581d424dca329182525247e3f4
+  parent remote branch: origin/task/ARCH-021-COMMERCE-059
+  parent pushed: yes
+  merged to implementation main: no
+  merged to workspace main: no
+```
+
+The parent task branch not containing the current `origin/main` tip is recorded as present-state ancestry, not treated as evidence of a failed original launcher synchronization. The implementation task branch does contain current `origin/main`.
 Not Started
 
 ### Files Changed
@@ -691,6 +770,65 @@ None.
 
 ### Review Status
 
+Accepted
+
+### Review Notes
+
+Attempt 1 is accepted.
+
+The C059 implementation is architecturally conformant. Response JavaScript preserves `quickjs-sync.v1` compatibility and adds `quickjs-sync.v2` only for Response authoring/runtime. Request JavaScript remains v1-only. V2 exposes only the immutable `moda.text.stripHtml(value)` guest API, packaged deterministically from the pinned `string-strip-html@13.6.2` dependency and executed fully inside the existing QuickJS guest without imports, `require`, host callbacks, DOM, network, filesystem, or relaxed runtime limits.
+
+Commerce continues to own the Response runtime/version contract without changing Shared. Publication identity distinguishes v1/v2. New Response JavaScript authoring defaults to v2, while existing v1 drafts are not silently upgraded; the explicit local upgrade preserves source/result configuration, marks the definition dirty, and invalidates prior Response validation.
+
+The missing workflow record has been reconciled transparently with current canonical-worktree evidence rather than reconstructed historical launcher values. Both task branches are clean and exactly match their remotes. The implementation task branch contains current `origin/main`; the parent/docs task branch does not, which is recorded as a present-state ancestry fact and is not misrepresented as historical launcher evidence. The implementation `database` submodule is clean at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
+### Reviewed Files
+
+- `package.json`
+- `package-lock.json`
+- `src/commerce/code-runtime/helpers-v2-entry.js`
+- `src/commerce/code-runtime/helper-injected-globals.js`
+- `src/commerce/code-runtime/types.ts`
+- `src/commerce/code-runtime/kernel.ts`
+- `src/commerce/code-runtime/worker.mjs`
+- `src/commerce/code-response/processor.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/external-publication/receipt-store.ts`
+- `scripts/code-runtime-manifest.mjs`
+- `scripts/code-runtime-packaged-smoke.mjs`
+- `src/studio/external-http/response-tab.tsx`
+- `src/studio/code-response/code-response-panel.tsx`
+- focused C059 runtime/processor/publication/authoring/UI tests
+- `docs/code-runtime-proof.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+
+### Validation Reviewed
+
+- `npm run code-runtime:package`: passed.
+- `npm run code-runtime:smoke`: passed.
+- Runtime proof: 12 tests passed.
+- Response processor: 7 tests passed.
+- Request processor: 7 tests passed, including Request-v2 rejection.
+- Publication: 15 tests passed.
+- Preview: 19 tests passed.
+- External Tools UI: 81 tests passed.
+- New Tool / Commerce contract: 33 tests passed.
+- Tool authoring validation: 6 tests passed.
+- External authoring/server-action validation: 54 tests passed.
+- Targeted ESLint: zero errors; two documented existing hook warnings.
+- `git diff --check`: passed.
+- Repository typecheck: 252 documented baseline diagnostics across 23 files; no changed C059 source file has diagnostics, and the one diagnostic in a touched test file is unchanged from the branch base.
+- Current canonical-worktree verification: both task branches clean and equal to their matching remote task refs; implementation `origin/main` ancestry verified; recursive `database` submodule clean at the recorded pinned commit.
+
+### Architecture Conformance
+
+Conforms.
+
+C059 adds a versioned Moda-owned guest helper contract without weakening the QuickJS sandbox, changing Shared ownership, altering Request runtime semantics, silently upgrading existing v1 Response drafts, or increasing accepted runtime limits.
+
+### Follow-up
+
+None. ARCH-021-COMMERCE-059 is Complete.
 Pending
 
 ### Review Notes
