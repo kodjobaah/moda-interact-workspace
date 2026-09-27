@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three bounded External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; the zero-provider-I/O Response authoring chain COMMERCE-043 through COMMERCE-050 is architect-accepted Complete; and live authoring/Test work is materialised as COMMERCE-051 through COMMERCE-054 with COMMERCE-051 and COMMERCE-052 independently Ready. None of these follow-ups introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three bounded External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; the zero-provider-I/O Response authoring chain COMMERCE-043 through COMMERCE-050 is architect-accepted Complete; and live authoring/Test work is materialised as COMMERCE-051 through COMMERCE-054 with COMMERCE-051 architect-accepted Complete and COMMERCE-052 Ready for rework. None of these follow-ups introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -927,7 +927,7 @@ Live authoring/Test tasks:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-051 | moda_commerce | Ready | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
+| ARCH-021-COMMERCE-051 | moda_commerce | Complete | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
 | ARCH-021-COMMERCE-052 | moda_commerce | Ready | ARCH-021-COMMERCE-049 |
 | ARCH-021-COMMERCE-053 | moda_commerce | Pending | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
 | ARCH-021-COMMERCE-054 | moda_commerce | Pending | ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-053 |
@@ -940,7 +940,7 @@ COMMERCE-049 ----------------> COMMERCE-052 ----+--> COMMERCE-053 -> COMMERCE-05
 COMMERCE-042 + COMMERCE-050 ---------------------+
 ```
 
-COMMERCE-051 and COMMERCE-052 are intentionally parallel: secure provider observation does not depend on inference, and pure inference does not depend on network/provider work. COMMERCE-053 composes both only after COMMERCE-042 has settled the final Request local-draft UI. COMMERCE-054 follows the completed Automatic/shared-arguments composition so Test does not create a second arguments state or Response editor.
+COMMERCE-051 and COMMERCE-052 were intentionally independent: secure provider observation does not depend on inference, and pure inference does not depend on network/provider work. COMMERCE-051 is now architect-accepted Complete; COMMERCE-052 remains Ready for correction. COMMERCE-053 therefore remains Pending until COMMERCE-052 is also Complete, and COMMERCE-054 remains behind COMMERCE-053.
 
 Phase 3 exit criteria:
 
@@ -1184,6 +1184,16 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-051 Attempt 1 accepted
+
+- Accepted implementation `e56fc8b34c7f2b7c6b346a425814a2eaf41ce300` and parent review submission `93a0244462b2151b558a1ac57e728705328698b9`.
+- Confirmed authoring resolves the exact current Declarative/JavaScript Request through `previewExternalRequest(...)` and reaches the provider only through the shared descriptor-based External HTTP observation primitive.
+- Confirmed production JavaScript Request execution remains disabled and production 429/non-2xx Tool-result semantics remain unchanged; only the authoring observation requests bounded decodable non-success responses.
+- Confirmed ADMIN/PER_SHOP reauthorization, server-only credential resolution, public/global DNS validation, address pinning, original-host TLS verification, no redirect following, <=5 second provider stages, 256 KiB decompressed body bounds and response-format decoding remain enforced.
+- Confirmed browser output contains no credential material or provider response headers and the flow writes no Tool/Revision/Connection/Credential/audit/live-test receipt.
+- Accepted submitted executor/Request-runtime/authoring-validation/wiring/focused security validation, targeted lint and diff checks. Independent inspection of the submitted Commerce `tsconfig.tsbuildinfo` records zero diagnostics in all eight changed C051 files; the repository-wide 250 diagnostics are outside those files and `TYPECHECK-001` is not treated as a Commerce baseline exemption.
+- Marked COMMERCE-051 Complete. COMMERCE-053 remains Pending because COMMERCE-052 remains Ready; COMMERCE-054 remains Pending behind COMMERCE-053.
 
 ### 2026-09-27 — COMMERCE-050 Attempt 2 accepted
 

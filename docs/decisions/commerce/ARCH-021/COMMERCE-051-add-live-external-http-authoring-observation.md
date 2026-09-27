@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 66
 executor: null
 claimed_at: null
@@ -608,24 +608,60 @@ Merged to workspace main: no
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+#### Attempt 1 review — Accepted — 2026-09-27
+
+Reviewed implementation `e56fc8b34c7f2b7c6b346a425814a2eaf41ce300` and the submitted Completion Report against the full COMMERCE-051 contract. Attempt 1 is accepted.
+
+The implementation preserves the required production/authoring boundary. Production `createExternalHttpExecutionPort(...)` still rejects every non-`DECLARATIVE` Request before Connection resolution, DNS or provider transport. Authoring instead resolves the current Declarative or JavaScript candidate through `previewExternalRequest(...)`, then passes only the validated `ExternalRequestDescriptor` into the shared descriptor-based provider observation primitive. No production JavaScript execution gate is removed.
+
+The shared `observeExternalHttpDescriptor(...)` path retains the accepted External HTTP protections: safe HTTPS origin, scalar bounded descriptor/query data, all-address public/global DNS validation, pinned resolved address, original-host TLS servername/certificate verification, one GET transport, no redirect following, bounded stage deadlines, the existing 256 KiB decompressed body limit, bounded supported content encodings, strict UTF-8/NUL rejection and authored response-format validation. Authoring enables `includeNonSuccessResponses` only for its observation call, so decodable 4xx/429/5xx responses are returned with their real status while production 429/non-2xx Tool-result semantics remain unchanged.
+
+Connection and credential scope also conform. PLATFORM resolution uses `shopId: null`. PER_SHOP requires a selected shop and invokes the existing Studio `inspection.inspectShop(...)` authorization boundary before credential resolution. Credential material is resolved server-side, applied only to provider transport and reduced to `NONE` / `CONFIGURED` in the returned observation. Provider response headers are not exposed. The implementation introduces no Tool, ToolRevision, Connection, Credential, audit or live-test-receipt write path and does not satisfy `LIVE_TEST_REQUIRED`.
+
+The submitted task tests cover the required Declarative/JavaScript descriptor flow, invalid-input zero-I/O behavior, PLATFORM/PER_SHOP scope, authorization, credential redaction, unsafe origins, private/mixed DNS answers, pinned address/original hostname, no redirect following, body/encoding/UTF-8/media-type failures, 404/429/503 observations, deadline/body termination, header redaction and production JavaScript gating. Existing production executor regressions continue to cover the broader non-global IP matrix and production status semantics.
+
+The Completion Report records launcher-resolved dedicated parent and implementation worktrees, start-of-attempt synchronization, recursive submodule materialization, clean mirrored task branches and pushed implementation/report commits. The submitted archive contains source rather than `.git` metadata, so those branch/worktree assertions are reviewed as recorded execution evidence rather than independently re-derived from Git.
+
+The repository-wide typecheck is not used as an acceptance exemption. `TYPECHECK-001` in `docs/development-baseline.md` is scoped to `moda-interact/`, not this `moda-interact-commerce/` revision. Independent inspection of the submitted Commerce `tsconfig.tsbuildinfo` records 250 semantic diagnostics in unrelated files and zero diagnostics in all eight COMMERCE-051 changed implementation/test files.
 
 ### Reviewed Files
 
-None.
+- `src/commerce/external-http/index.ts`
+- `src/commerce/tool-authoring/external-observation.ts`
+- `src/commerce/integration/external/index.ts`
+- `src/studio/tools/external-validation-server-actions.ts`
+- `tests/external-http-authoring-observation.test.ts`
+- `tests/external-http-authoring-action.test.ts`
+- `tests/external-http-executor.test.ts`
+- `tests/external-wiring.test.ts`
 
 ### Validation Reviewed
 
-None.
+Submitted validation evidence:
+
+```text
+npm run test:arch020-external-http:                     14/14 PASS
+npm run test:arch021-code-request:                      7/7 PASS
+npm run test:arch021-external-tool-authoring-validation: 54/54 PASS
+npm run test:arch020-external-wiring:                   5/5 PASS
+focused four-file task packet:                          45 PASS
+post-fixture observation/wiring rerun:                   26 PASS
+code-runtime:package / code-runtime:smoke:               PASS
+targeted ESLint:                                         PASS
+git diff --check:                                        PASS
+changed-file TypeScript diagnostics:                     0
+```
+
+The review sandbox snapshot does not contain repository `node_modules`, so the npm suites were inspected from their submitted source/results rather than independently rerun. The submitted `tsconfig.tsbuildinfo` was independently inspected for changed-file diagnostics.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-021 and COMMERCE-051. The change is Commerce-local, reuses the accepted Request preview and External HTTP transport/security boundaries, preserves production execution behavior, adds no cross-repository contract or durable schema, keeps credentials/server authorization behind server boundaries, and introduces no new persistence/publication semantics.
 
 ### Follow-up
 
-None.
+COMMERCE-051 is Complete. COMMERCE-053 remains Pending because COMMERCE-052 is still Ready and must become architect-accepted Complete before the dependency set is satisfied. COMMERCE-054 remains Pending behind COMMERCE-053.
