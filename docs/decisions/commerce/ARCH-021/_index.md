@@ -318,10 +318,10 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-060](COMMERCE-060-execute-shopify-admin-graphql-tools.md) | Backend: execute canonical Shopify Admin GraphQL Tool definitions | Ready | COMMERCE-018 |
-| [COMMERCE-061](COMMERCE-061-establish-admin-schema-exploration-domain.md) | Backend/domain: expose Admin schema exploration and bounded query-building primitives | Ready | COMMERCE-018 |
+| [COMMERCE-061](COMMERCE-061-establish-admin-schema-exploration-domain.md) | Backend/domain: expose Admin schema exploration and bounded query-building primitives | Complete | COMMERCE-018 |
 | [COMMERCE-062](COMMERCE-062-derive-shopify-admin-result-contract.md) | Backend/compiler: derive canonical Admin resultSchema and nullable normalization semantics | Ready | COMMERCE-018 |
 | [COMMERCE-063](COMMERCE-063-compile-tool-result-contract.md) | Backend: compile source-neutral ToolResultContract and validate Result Templates | Complete | COMMERCE-043 |
-| [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Pending | COMMERCE-039, COMMERCE-061 |
+| [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Ready | COMMERCE-039, COMMERCE-061 |
 | [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Pending | COMMERCE-062, COMMERCE-064 |
 | [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Ready | COMMERCE-063 |
 | [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Ready | COMMERCE-063 |
@@ -362,6 +362,11 @@ Key invariants:
 - Agent Contract becomes the call-side model contract only;
 - Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
+
+
+### COMMERCE-061 Attempt 2 accepted — 2026-09-27
+
+COMMERCE-061 is **Complete / Accepted, Attempt 2**. Admin exploration/query authoring remains pinned to the retained Admin `2026-07` artifact, and generated/manual Request authoring now shares the canonical Admin document/mapping compatibility path independently of Response-owned result state. Attempt 2 rejects incompatible Tool-input/literal bindings, composes multiple loaded pages for one parent type, and preserves representable manual queries even when `resultPath`/`resultSchema` are stale while continuing to reject invalid Admin pagination/query rules. Submitted validation passed the 56-test focused packet and 22-test canonical Admin compiler script, plus targeted lint, changed-file diagnostics and diff checks. COMMERCE-039 is already Complete, so COMMERCE-064 is promoted to **Ready**.
 
 
 ### COMMERCE-053 Attempt 2 accepted — 2026-09-27

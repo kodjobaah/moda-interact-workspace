@@ -1049,10 +1049,10 @@ Implementation tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
-| ARCH-021-COMMERCE-061 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
-| ARCH-021-COMMERCE-064 | moda_commerce | Pending | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
 | ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-066 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
@@ -1286,10 +1286,10 @@ docs/decisions/commerce/ARCH-021/
 
 
 | ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
-| ARCH-021-COMMERCE-061 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
-| ARCH-021-COMMERCE-064 | moda_commerce | Pending | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
 | ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-066 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
@@ -1331,6 +1331,13 @@ independent of features.
 - Split backend/compiler work from React/UI work wherever the current code boundaries allow.
 - Established Admin-only future Shopify Tool architecture, source-neutral `ToolResultContract`, compiler-derived Admin result schemas, dedicated Result Template authoring, and `sessionStorage`-backed Explore authoring handoff.
 - Kept general tab traversal/gating explicitly deferred.
+
+### 2026-09-27 — COMMERCE-061 Attempt 2 accepted
+
+- Accepted implementation `9063353fe81fbf848b45fc737290a7effb8b352d`: generated Admin argument bindings now pass the canonical Request-authoring mapping compatibility path, multiple loaded schema pages for one parent type compose during field resolution, and manual-query parsing is decoupled from Response-owned `resultPath`/`resultSchema` validity.
+- Accepted focused regressions for incompatible Tool-input/literal mappings, cursor-0 plus cursor-100 `QueryRoot` authoring, stale Response state with representable manual Request state, and continued rejection of invalid pagination/compiler rules.
+- Accepted recorded validation: focused packet 56/56, canonical Admin compiler 22/22, targeted ESLint, changed-file diagnostics and `git diff --check` passed. Repository-wide TypeScript was not rerun for Attempt 2; previously recorded unrelated diagnostics remain outside C061-owned files.
+- Marked COMMERCE-061 Complete. COMMERCE-039 is already Complete, so COMMERCE-064 is promoted to Ready.
 
 ### 2026-09-27 — COMMERCE-058 Attempt 2 accepted
 
