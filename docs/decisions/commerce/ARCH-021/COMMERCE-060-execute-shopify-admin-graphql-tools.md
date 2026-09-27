@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 72
-executor: copilot
-claimed_at: 2026-09-27T15:30:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-018
@@ -314,47 +314,38 @@ Ready for architect review on the existing mirrored task branches. No additional
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 is structurally aligned with the Admin execution architecture: it reuses the pinned Admin compiler before session/provider work, resolves the authorized shop's offline token server-side, pins the `2026-07` endpoint, bounds provider response consumption, validates `resultPath`/persisted `resultSchema`, preserves the response-template boundary, and leaves Storefront/policy/External HTTP execution intact.
+Attempt 2 satisfies the Attempt 1 correction contract. The Admin execution port now recognizes Shopify Admin GraphQL throttling delivered in an HTTP 200 GraphQL envelope when any bounded error entry has `extensions.code === "THROTTLED"`, returning only the minimal Commerce `THROTTLED` result with `retryable: true`. Other GraphQL errors continue to use the existing safe `UNAVAILABLE` mapping.
 
-One task-scoped provider-error defect remains. The implementation maps HTTP `429` to `THROTTLED`, but Shopify Admin GraphQL normally reports rate limiting as an HTTP `200` GraphQL error whose `errors[n].extensions.code` is `THROTTLED`. `src/commerce/query/admin.ts` currently returns `UNAVAILABLE` for every non-empty GraphQL `errors` array, so real Admin throttling loses the required Commerce `THROTTLED`/retryable semantics.
+The regression includes provider message text, a request identifier and access-token-like material and proves none are exposed in the returned Commerce result. The defensive HTTP 429 mapping remains intact. No unrelated execution behavior changed.
 
-Attempt 2 correction contract:
+The broader C060 architecture remains conformant: the pinned Admin compiler runs before session/provider work; the authorized shop domain comes only from execution context; the offline Shopify token is resolved server-side; the provider endpoint is pinned to Admin `2026-07`; provider response consumption is bounded; selected results are checked against `resultPath` and persisted `resultSchema`; the response-template boundary remains unchanged; and Storefront, policy and External HTTP execution remain supported.
 
-1. After decoding a successful HTTP GraphQL envelope, inspect bounded GraphQL error entries before the generic GraphQL-error fallback.
-2. If any error has `extensions.code === "THROTTLED"`, return Commerce `THROTTLED` with `retryable: true`; do not expose provider messages, extensions, request IDs, access tokens or other provider details.
-3. Preserve the existing generic safe mapping for other GraphQL errors unless an already-established Commerce mapping requires otherwise.
-4. Add a focused regression for an HTTP `200` Admin response containing a GraphQL `THROTTLED` error and prove the returned result is `THROTTLED`, retryable, and credential/provider-detail safe. The defensive HTTP-429 regression may remain.
-5. Rerun the focused Admin execution/DefinitionExecutor/backend compatibility packet, targeted lint, changed-file diagnostics and `git diff --check`. No unrelated source churn is requested.
+The submitted snapshot still carried an active executor/claim despite the review handoff. Acceptance normalizes `executor` and `claimed_at` to `null`.
 
 ### Reviewed Files
 
 - `moda-interact-commerce/src/commerce/query/admin.ts`
-- `moda-interact-commerce/src/commerce/execution/executor.ts`
-- `moda-interact-commerce/src/commerce/execution/ports.ts`
-- `moda-interact-commerce/src/commerce/execution/renderer.ts`
-- `moda-interact-commerce/src/commerce/integration/backend.ts`
-- `moda-interact-commerce/src/commerce/integration/backend/executors.ts`
 - `moda-interact-commerce/tests/admin-query-execution.test.ts`
-- `moda-interact-commerce/tests/backend-integration.test.ts`
-- `moda-interact-commerce/tests/definition-execution.test.ts`
+- C060 Completion Report and prior Architect Review
+- Commerce ARCH-021 task index and parent architecture execution tables
 
 ### Validation Reviewed
 
-- Recorded focused compatibility run: 60 tests passed.
-- Recorded targeted ESLint: passed.
-- Recorded changed-file diagnostics: clean.
-- Recorded `git diff --check`: passed.
-- Recorded Shopify Admin `2026-07` schema validation: passed.
-- Architect static review confirmed the submitted GraphQL-error branch maps every non-empty `errors` array to `UNAVAILABLE`; therefore the current tests do not cover Shopify's normal HTTP-200 `THROTTLED` error path.
+- Attempt 2 focused Admin execution suite: 11 tests passed.
+- Five-file Admin/Storefront/DefinitionExecutor/backend/External HTTP compatibility suite: 61 tests passed.
+- Targeted ESLint: passed.
+- Changed-file diagnostics: clean.
+- `git diff --check`: passed.
+- Attempt 1 Shopify Admin `2026-07` schema validation remained recorded as passed; no schema/query-shape change was introduced by Attempt 2.
 
 ### Architecture Conformance
 
-Changes Requested. Credential ownership, tenant/shop authority, endpoint pinning, compiler reuse, bounded provider I/O, result validation, rendering, and preservation of existing execution paths conform. Provider throttling semantics do not yet conform because the real Admin GraphQL throttle signal is not recognized.
+Conforms. Provider throttling semantics now match the required Commerce error contract while preserving credential secrecy, tenant/shop authority, endpoint pinning, compiler reuse, bounded provider I/O, response validation, rendering and compatibility with existing execution paths.
 
 ### Follow-up
 
-Return the same task for Attempt 2 after the bounded GraphQL `THROTTLED` mapping and regression are complete. COMMERCE-069 and COMMERCE-070 remain dependency-gated.
+None for C060. Mark the task Complete. COMMERCE-069 and COMMERCE-070 remain Pending because each still has another dependency in addition to C060; acceptance of C060 alone does not make either task executable.

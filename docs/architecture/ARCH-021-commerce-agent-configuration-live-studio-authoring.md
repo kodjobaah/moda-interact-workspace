@@ -1048,7 +1048,7 @@ Implementation tasks:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-060 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Ready | ARCH-021-COMMERCE-043 |
@@ -1285,7 +1285,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 
 
-| ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-060 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-061 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Ready | ARCH-021-COMMERCE-043 |
