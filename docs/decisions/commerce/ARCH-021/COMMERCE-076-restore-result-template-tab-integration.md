@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 78
-executor: copilot
-claimed_at: 2026-09-27T22:27:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
 enables: []
@@ -246,16 +246,16 @@ Do not satisfy the regression only through snapshots or static string assertions
 
 ## Work Items
 
-- [ ] Restore `result-template` to the shared Tool authoring tab identifier/registry.
-- [ ] Restore call-side-only Agent Contract composition and validation.
-- [ ] Restore ResultTemplateTab integration for new External HTTP authoring.
-- [ ] Restore ResultTemplateTab integration for new Shopify Admin authoring.
-- [ ] Restore ResultTemplateTab integration for persisted External HTTP DRAFT authoring.
-- [ ] Restore ResultTemplateTab integration for persisted Shopify Admin DRAFT authoring.
-- [ ] Restore the source-neutral ToolResultContract adapter/wiring required by the tab.
-- [ ] Restore Review separation of Agent contract, Result contract and Result Template.
-- [ ] Add six-tab/provider/lifecycle regression coverage that would catch this integration disappearing again.
-- [ ] Verify current live Test behaviour is preserved.
+- [x] Restore `result-template` to the shared Tool authoring tab identifier/registry.
+- [x] Restore call-side-only Agent Contract composition and validation.
+- [x] Restore ResultTemplateTab integration for new External HTTP authoring.
+- [x] Restore ResultTemplateTab integration for new Shopify Admin authoring.
+- [x] Restore ResultTemplateTab integration for persisted External HTTP DRAFT authoring.
+- [x] Restore ResultTemplateTab integration for persisted Shopify Admin DRAFT authoring.
+- [x] Restore the source-neutral ToolResultContract adapter/wiring required by the tab.
+- [x] Restore Review separation of Agent contract, Result contract and Result Template.
+- [x] Add six-tab/provider/lifecycle regression coverage that would catch this integration disappearing again.
+- [x] Verify current live Test behaviour is preserved.
 
 ## Interfaces / Contracts
 
@@ -291,31 +291,31 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] New and persisted-DRAFT Tool authoring expose six shared tabs: Request, Response, Test, Agent contract, Result template, Review.
-- [ ] Both External HTTP and Shopify Admin expose the dedicated Result Template tab.
-- [ ] Agent Contract contains no responseTemplate authoring or Result Template validation responsibility.
-- [ ] Agent Contract uses the canonical call-side validation boundary.
-- [ ] ResultTemplateTab edits the existing canonical `definition.responseTemplate` rather than a parallel model.
-- [ ] Result Template tokens/bindings derive from the current COMMERCE-063 ToolResultContract for both providers.
-- [ ] Invalid local Result Template authoring remains visible for correction.
-- [ ] New Tool Result Template edits remain non-durable until final Create.
-- [ ] Persisted-DRAFT Result Template edits remain unsaved until explicit Save.
-- [ ] Review presents Agent contract, Result contract and Result Template separately.
-- [ ] Existing Request, Response and live Test behaviour remains unchanged.
-- [ ] Tabs remain freely selectable; no Previous/Next, readiness gating or mandatory traversal is introduced.
-- [ ] Focused regression tests fail if the Result Template tab/composition is removed again.
+- [x] New and persisted-DRAFT Tool authoring expose six shared tabs: Request, Response, Test, Agent contract, Result template, Review.
+- [x] Both External HTTP and Shopify Admin expose the dedicated Result Template tab.
+- [x] Agent Contract contains no responseTemplate authoring or Result Template validation responsibility.
+- [x] Agent Contract uses the canonical call-side validation boundary.
+- [x] ResultTemplateTab edits the existing canonical `definition.responseTemplate` rather than a parallel model.
+- [x] Result Template tokens/bindings derive from the current COMMERCE-063 ToolResultContract for both providers.
+- [x] Invalid local Result Template authoring remains visible for correction.
+- [x] New Tool Result Template edits remain non-durable until final Create.
+- [x] Persisted-DRAFT Result Template edits remain unsaved until explicit Save.
+- [x] Review presents Agent contract, Result contract and Result Template separately.
+- [x] Existing Request, Response and live Test behaviour remains unchanged.
+- [x] Tabs remain freely selectable; no Previous/Next, readiness gating or mandatory traversal is introduced.
+- [x] Focused regression tests fail if the Result Template tab/composition is removed again.
 
 ## Validation
 
-- [ ] focused shared tab-registry/new-Tool authoring tests
-- [ ] focused persisted-DRAFT Tool authoring tests
-- [ ] focused External HTTP UI regressions
-- [ ] focused Shopify Admin UI regressions
-- [ ] focused Agent Contract/Result Template/Review regressions
-- [ ] existing live Test UI regressions affected by changed authoring composition
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] focused shared tab-registry/new-Tool authoring tests
+- [x] focused persisted-DRAFT Tool authoring tests
+- [x] focused External HTTP UI regressions
+- [x] focused Shopify Admin UI regressions
+- [x] focused Agent Contract/Result Template/Review regressions
+- [x] existing live Test UI regressions affected by changed authoring composition
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics or repository typecheck with baseline reconciliation
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -333,35 +333,44 @@ If implementation reveals that a later accepted task intentionally removed the C
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Restored the shared tab order to Request, Response, Test, Agent contract, Result Template, Review.
+- Added executable regression assertions for both providers in new and persisted-DRAFT authoring, including Agent Contract separation, the distinct Review cards, and local-versus-explicit-Save persistence boundaries.
+- Preserved the existing ResultTemplateTab, source-neutral ToolResultContract adapter, Agent call-side validator, and live-Test implementation; inspection showed this wiring was already present, so no template or persistence semantics needed to change.
 
 ### Validation Results
 
-None
+- `npx vitest run tests/tool-authoring-screen.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/external-tools-ui.test.tsx tests/result-template-tab.test.tsx` — passed, 4 files and 127 tests.
+- Targeted ESLint for all four changed files — passed.
+- Changed-file editor TypeScript diagnostics — no errors.
+- `git diff --check` — passed.
+- Implementation commit `ad0a0cf2c53e7dba199098bc90fedb819e91b4a0` pushed to `task/ARCH-021-COMMERCE-076`.
 
 ### Deviations
 
-None
+The existing editor already contained the accepted ResultTemplateTab, ToolResultContract, Agent Contract, and Review wiring. The regression was the shared tab ordering and missing guard coverage, so implementation behavior was left unchanged.
 
 ### Assumptions
 
-None
+The current COMMERCE-063/066/067/068 behavior in the existing integration remains the intended contract; this task restores and guards its shared authoring order without redesigning it.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None. Architect Review remains Pending.
 
 ## Architect Review
 
