@@ -1061,13 +1061,20 @@ Implementation tasks:
 | ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
-| ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-066 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
+Current remaining executable frontier in this workstream after COMMERCE-066 acceptance:
+
+```text
+COMMERCE-062    COMMERCE-064    COMMERCE-067
+```
+
+COMMERCE-066 Attempt 1 is architect-accepted Complete. COMMERCE-067 remains Ready. COMMERCE-068 is still gated by COMMERCE-065 and COMMERCE-067; its COMMERCE-066 dependency is satisfied. These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
 Current independent execution frontier after COMMERCE-067 acceptance:
 
 ```text
@@ -1299,7 +1306,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
 | ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-066 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
