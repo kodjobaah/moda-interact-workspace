@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052 and Automatic Response generation COMMERCE-053 are Complete; live Test is split into backend COMMERCE-054 (Ready) and frontend COMMERCE-055 (Pending on COMMERCE-054). The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Ready. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -948,12 +948,33 @@ COMMERCE-051 -> COMMERCE-054 -> COMMERCE-055
 The current executable live-authoring frontier is:
 
 ```text
-ARCH-021-COMMERCE-054
-ARCH-021-COMMERCE-053
 ARCH-021-COMMERCE-055
 ```
 
 The Test backend receives the current canonical local candidate directly; it does not reload a saved revision and it does not require a `toolId`/`toolRevisionId`. Test arguments are ephemeral execution inputs and are not part of the durable Tool definition. Publication-proof semantics remain outside this pre-creation Test flow and require a separate later architecture decision after durable creation.
+
+### Manual-validation follow-up — Agent contract tab
+
+The Agent contract surface is already isolated in `AgentContractTab`; manual review found no structural React refactor is required. The remaining bounded work is to make that tab a self-contained validation checkpoint for the agent-facing definition without introducing persistence, provider I/O or navigation gating.
+
+Agreed Agent-contract invariants:
+
+1. Validate Definition version, Agent description, Agent input schema and Agent response template in the Agent contract tab itself.
+2. Reuse canonical Commerce Tool-definition/publication rules; do not duplicate SemVer, input-schema or template-path semantics in Studio UI code.
+3. Raw local authoring state may be temporarily invalid and remains visible for correction. Only schema-valid values are promoted into the canonical local Tool candidate.
+4. Neither raw local state nor the canonical local candidate is durably persisted for a new Tool until the existing final Create boundary.
+5. For persisted DRAFT editing, validation checks the current unsaved candidate and does not save the DRAFT.
+6. Response-template validation uses the current processed-result/output contract and reports deterministic Agent-contract-local issues.
+7. Validation performs no Request execution, provider call, credential read/decryption, Tool write, audit write, receipt or publication-proof write.
+8. Other authoring tabs remain freely navigable; Phase 2 gating remains out of scope.
+
+Agent-contract follow-up task:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-056 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-043 |
+
+COMMERCE-056 is independent of COMMERCE-055 and may execute in parallel under the normal worktree/task-claim protocol.
 
 
 Phase 3 exit criteria:
@@ -1198,6 +1219,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — Agent contract validation follow-up defined
+
+- Confirmed `AgentContractTab` is already the correct bounded React component; no extraction task is required.
+- Added COMMERCE-056 as an independent Ready task for Agent-contract-specific validation, local invalid-state retention and clearer labels/help text.
+- Validation reuses canonical Tool-definition/publication rules, stays non-mutating/zero-provider-I/O and works against the current local candidate rather than requiring persistence first.
+- Preserved free tab navigation and kept live Test/publication-proof semantics outside Agent-contract validation.
 
 ### 2026-09-27 — Live Test split into non-durable backend and decomposed frontend
 

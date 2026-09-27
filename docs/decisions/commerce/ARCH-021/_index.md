@@ -204,8 +204,6 @@ The live work now has two independent branches sharing the accepted secure provi
 Current live-authoring frontier:
 
 ```text
-ARCH-021-COMMERCE-054
-ARCH-021-COMMERCE-053
 ARCH-021-COMMERCE-055
 ```
 
@@ -234,6 +232,22 @@ SCALAR_LIST  -> List of values
 The live Test branch is explicitly pre-creation. It tests the exact current in-memory Request + Response candidate, performs a real provider call and canonical response/result validation, but creates no Tool, ToolRevision, audit, publication receipt or publication proof. It requires no saved revision identifier. Synthetic/sample-response fixtures are not a Test-tab product mode.
 
 COMMERCE-055 must be composed from bounded React responsibilities rather than one large Test component: argument authoring, Run action/state, execution-stage presentation, safe Request summary, bounded provider response, processed result and stage-specific failure presentation remain separable concerns.
+
+## Manual-validation follow-up — Agent contract tab
+
+The Agent contract form is already extracted into `AgentContractTab`; the follow-up is validation/clarity rather than another component refactor.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-056](COMMERCE-056-validate-agent-contract-authoring.md) | Validate the Agent-facing contract in-tab, retain invalid local edits and clarify labels/help text | Ready | COMMERCE-016, COMMERCE-039, COMMERCE-043 |
+
+Current Agent-contract frontier:
+
+```text
+ARCH-021-COMMERCE-056
+```
+
+COMMERCE-056 is independent of COMMERCE-055. It validates Definition version, Agent description, Agent input schema and Agent response template against canonical rules without Request/Test completion, provider I/O, durable writes or tab gating. Validation operates on local authoring state and does not save a persisted DRAFT.
 
 
 ### COMMERCE-053 Attempt 2 accepted — 2026-09-27
