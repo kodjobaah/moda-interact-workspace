@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three bounded External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; the zero-provider-I/O Response authoring chain COMMERCE-043 through COMMERCE-050 is architect-accepted Complete; and live authoring/Test work is materialised as COMMERCE-051 through COMMERCE-054 with COMMERCE-051 architect-accepted Complete and COMMERCE-052 Ready for rework. None of these follow-ups introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has three bounded External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready; the zero-provider-I/O Response authoring chain COMMERCE-043 through COMMERCE-050 is architect-accepted Complete; and live authoring/Test work is materialised as COMMERCE-051 through COMMERCE-054 with COMMERCE-052 architect-accepted Complete and COMMERCE-051 still Ready in this snapshot. None of these follow-ups introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -928,7 +928,7 @@ Live authoring/Test tasks:
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-051 | moda_commerce | Complete | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
-| ARCH-021-COMMERCE-052 | moda_commerce | Ready | ARCH-021-COMMERCE-049 |
+| ARCH-021-COMMERCE-052 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
 | ARCH-021-COMMERCE-053 | moda_commerce | Pending | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
 | ARCH-021-COMMERCE-054 | moda_commerce | Pending | ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-053 |
 
@@ -940,7 +940,7 @@ COMMERCE-049 ----------------> COMMERCE-052 ----+--> COMMERCE-053 -> COMMERCE-05
 COMMERCE-042 + COMMERCE-050 ---------------------+
 ```
 
-COMMERCE-051 and COMMERCE-052 were intentionally independent: secure provider observation does not depend on inference, and pure inference does not depend on network/provider work. COMMERCE-051 is now architect-accepted Complete; COMMERCE-052 remains Ready for correction. COMMERCE-053 therefore remains Pending until COMMERCE-052 is also Complete, and COMMERCE-054 remains behind COMMERCE-053.
+COMMERCE-051 and COMMERCE-052 were intentionally parallel: secure provider observation does not depend on inference, and pure inference does not depend on network/provider work. COMMERCE-052 is now Complete in this snapshot; COMMERCE-053 remains gated until COMMERCE-042 and COMMERCE-051 are also Complete. COMMERCE-054 follows the completed Automatic/shared-arguments composition so Test does not create a second arguments state or Response editor.
 
 Phase 3 exit criteria:
 
