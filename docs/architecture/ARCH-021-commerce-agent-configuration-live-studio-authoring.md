@@ -1068,7 +1068,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
-| ARCH-021-COMMERCE-076 | moda_commerce | Pending | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-076 | moda_commerce | Complete | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1325,7 +1325,7 @@ COMMERCE-071 is independent of final tab traversal/gating and may execute immedi
 
 Manual verification of the current Tool editor found post-acceptance drift from COMMERCE-068: the reusable `ResultTemplateTab` still exists, but the shared tab registry has fallen back to five tabs, Agent Contract again owns `responseTemplate`, new/persisted authoring no longer renders the dedicated Result Template surface, and Review again groups the template under Agent contract. COMMERCE-076 is a bounded restoration task that re-establishes the accepted source-neutral Result Template boundary and adds executable regression coverage without changing Request, Response, live Test, persistence or navigation/gating semantics.
 
-COMMERCE-076 depends on COMMERCE-055 only to avoid racing the current Test/editor composition, and on the already-accepted COMMERCE-068 integration contract. Any later guided-navigation/readiness task must consume the restored six-tab composition rather than recreating Result Template ownership.
+COMMERCE-076 is architect-accepted Complete. It consumed the completed COMMERCE-055 Test/editor composition and accepted COMMERCE-068 Result Template contract; any later guided-navigation/readiness task must consume this restored six-tab composition rather than recreating Result Template ownership.
 
 ## Decisions / Tasks
 
@@ -1376,7 +1376,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
-| ARCH-021-COMMERCE-076 | moda_commerce | Pending | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-076 | moda_commerce | Complete | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
