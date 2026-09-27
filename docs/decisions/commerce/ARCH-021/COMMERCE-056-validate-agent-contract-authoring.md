@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 71
-executor: copilot
-claimed_at: 2026-09-27T11:17:44Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-016
@@ -413,19 +413,100 @@ None
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested
 
 ### Review Notes
-None
+
+Attempt 1 implementation is otherwise architecturally conformant and does not require implementation-source churn.
+
+The named Agent-contract validator is non-mutating and validates only the Agent-facing definition fields plus the current processed-result/output contract. SemVer, bounded input-schema, forbidden authority/credential inputs and response-template schema/path semantics are reused from the canonical Tool-definition/publication boundary; publication and in-tab validation share `responseTemplateCompatibilityIssues(...)`. External HTTP uses the same canonical `values` output wrapper as publication. The ADMIN-authorized Server Action does not resolve Commerce backend/provider/credential state or perform persistence.
+
+`AgentContractTab` remains the single bounded form component. Raw malformed JSON remains in local authoring buffers, validation success is keyed to the complete current Agent/output candidate and therefore becomes stale on relevant edits, persisted-DRAFT validation operates on the unsaved candidate without Save, and no Phase 2 navigation gating is introduced.
+
+The submitted focused validation evidence is acceptable for the task-owned implementation: 92/92 focused tests passed, targeted ESLint and `git diff --check` passed, focused publication checks passed, and changed-file diagnostics are reported clean. The common 85/86 lifecycle fixture mismatch and repository-wide typecheck diagnostics are documented outside the C056 changed files.
+
+#### A1-R1 — reconcile mandatory VCS/worktree evidence in the Completion Report
+
+The Completion Report does not yet contain the complete durable evidence required by `docs/agent-worktree-isolation-policy.md` and `docs/agent-vcs-ownership-policy.md`.
+
+It currently states generally that launcher preparation established dedicated worktrees and the pinned Commerce submodule, but the report must record the concrete physical-isolation and start-of-attempt synchronization fields, together with both published branch/commit records.
+
+For Attempt 2, recover the existing launcher/preparation packet and record the actual values; do not invent them:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <launcher-resolved path>
+  parent worktree: <launcher-resolved path>
+  parent branch: task/ARCH-021-COMMERCE-056
+  implementation worktree: <launcher-resolved path>
+  implementation branch: task/ARCH-021-COMMERCE-056
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Implementation repository:
+  repository: moda-interact-commerce
+  commit: b7cbd97
+  remote branch: origin/task/ARCH-021-COMMERCE-056
+  pushed: yes
+
+Parent workspace:
+  task file: docs/decisions/commerce/ARCH-021/COMMERCE-056-validate-agent-contract-authoring.md
+  commit: bbfa8ef7
+  remote branch: origin/task/ARCH-021-COMMERCE-056
+  pushed: yes
+  submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
+```
+
+Retain the recursive/pinned `database` submodule evidence from the launcher packet.
+
+This is a workflow-evidence/report correction only. No implementation source or test change is required unless validation rerun from the canonical task worktrees exposes a task-owned regression.
 
 ### Reviewed Files
-None
+
+- `src/commerce/tool-authoring/agent-contract-validation.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `src/studio/tools/agent-contract-validation-server-actions.ts`
+- `src/studio/tools/authoring/agent-contract-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/agent-contract-validation.test.ts`
+- `tests/agent-contract-validation-server-actions.test.ts`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `docs/agent-worktree-isolation-policy.md`
+- `docs/agent-vcs-ownership-policy.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
-None
+
+- Focused Agent-contract/UI packet: 92/92 passed.
+- Focused shared publication checks: 18/18 passed.
+- Targeted ESLint: passed.
+- Changed-file diagnostics: no C056-owned diagnostics reported.
+- `git diff --check`: passed.
+- Common Tool-authoring packet: 85/86 with the documented unrelated lifecycle fixture mismatch.
+- Repository `pnpm run typecheck`: 12 documented diagnostics in six files outside the C056 changed-file set.
+- Additional Shopify Admin UI packet: 13/15 with two documented pre-existing assertions on the separate persisted Admin surface.
 
 ### Architecture Conformance
-Pending
+
+Conforms at the implementation level.
+
+C056 preserves the existing Agent-contract component boundary, introduces one named non-mutating validation boundary, reuses canonical Tool-definition/publication semantics, retains invalid local authoring text, validates the current processed-result contract, performs no provider I/O or durable writes, preserves new-Tool/persisted-DRAFT parity where the shared tab is used, and introduces no navigation gating.
+
+Acceptance is withheld only because the durable Completion Report is missing the mandatory full VCS/worktree synchronization evidence.
 
 ### Follow-up
-None
+
+Return the same task through `/moda-task` for Attempt 2. Reconcile the Completion Report with the existing launcher/preparation evidence, rerun only the task-required validation necessary to substantiate that canonical-worktree record, return the task to `review`, clear the active claim, and STOP. No implementation-source change is required unless that validation reveals a C056-owned regression.
