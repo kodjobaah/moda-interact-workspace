@@ -19,8 +19,7 @@ depends_on:
   - ARCH-021-COMMERCE-050
   - ARCH-021-COMMERCE-051
   - ARCH-021-COMMERCE-052
-enables:
-  - ARCH-021-COMMERCE-054
+enables: []
 created: 2026-09-27
 updated: 2026-09-27
 ---
@@ -181,19 +180,18 @@ Move the current Request-tab-local:
 Sample Tool arguments
 ```
 
-text state to `ExternalHttpEditor` (or the closest single parent shared by Request/Response/Test).
+text state to `ExternalHttpEditor` (or the closest single parent shared by Request/Response Automatic).
 
 There must be **one string value** shared by:
 
 ```text
 Request preview
 Response Automatic generation
-COMMERCE-054 Test
 ```
 
 Request must continue to render/edit that value.
 
-Automatic may render/edit the same shared textarea, clearly labelled as the same Sample Tool arguments used by Request/Test. It must not create a second independent arguments state.
+Automatic may render/edit the same shared textarea, clearly labelled as the same Sample Tool arguments used by Request. It must not create a second independent arguments state.
 
 Changing sample arguments:
 
@@ -201,7 +199,6 @@ Changing sample arguments:
 does not dirty/persist the Tool definition
 invalidates prior Request preview
 invalidates prior Automatic observation/candidate state
-later invalidates COMMERCE-054 Test result
 ```
 
 ### R4 — selected-shop plumbing
@@ -465,14 +462,14 @@ No cross-repository contract is introduced.
 
 ## Enables
 
-- ARCH-021-COMMERCE-054
+None.
 
 ## Acceptance Criteria
 
 - [ ] Response visibly offers `Automatic` alongside Visual rules/Direct/JavaScript.
 - [ ] `AUTOMATIC` is not added to any persisted/runtime processing schema.
 - [ ] Selecting Automatic alone does not mutate/dirty the canonical Tool definition.
-- [ ] Request/Automatic/Test share one Sample Tool arguments string/state.
+- [ ] Request and Automatic share one Sample Tool arguments string/state.
 - [ ] Sample arguments remain authoring-only and are never persisted.
 - [ ] New and existing Tool flows provide selected-shop context for PER_SHOP live calls.
 - [ ] Automatic uses the exact current canonical Request candidate, not a stale older Request.
@@ -538,7 +535,7 @@ Do not rerun provider/security suites owned by COMMERCE-051 unless this task cha
 
 ## Stop Condition
 
-After Automatic generation works through the existing Visual editor for both new and existing Tool authoring, all mandatory UI regressions pass and the Completion Report is complete, set the task to `review`, clear the execution claim under the normal workflow, return control to `moda_architect` and STOP. Do not begin COMMERCE-054.
+After Automatic generation works through the existing Visual editor for both new and existing Tool authoring, all mandatory UI regressions pass and the Completion Report is complete, set the task to `review`, clear the execution claim under the normal workflow, return control to `moda_architect` and STOP. Do not begin independent live-Test tasks.
 
 ## Implementation Notes
 
