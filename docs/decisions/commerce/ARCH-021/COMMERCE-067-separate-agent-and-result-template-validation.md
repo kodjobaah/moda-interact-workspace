@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 74
-executor: copilot
-claimed_at: 2026-09-27T15:45:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-063
@@ -222,24 +222,112 @@ None.
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-None.
+C067 cleanly separates the authoring validation ownership without relaxing final
+Tool publication rules.
+
+The canonical Agent boundary is now:
+
+```text
+validateAgentCallContract
+  -> definitionVersion
+  -> description
+  -> inputSchema
+```
+
+It does not require or inspect `responseTemplate` or output/result-schema context.
+The focused regression explicitly proves extra Result Template/output fields do
+not become Agent-validation dependencies.
+
+The accepted Agent validator preserves the COMMERCE-056 semantics for the three
+remaining Agent fields:
+
+- semantic definition version;
+- non-empty bounded description;
+- bounded supported input-schema subset;
+- authority/credential input rejection.
+
+Agent-owned issues remain on Agent-local paths such as:
+
+```text
+/definitionVersion
+/description
+/inputSchema
+```
+
+and do not masquerade as Result Template issues.
+
+Result Template/output compatibility remains owned by COMMERCE-063's:
+
+```text
+validateResponseTemplateAuthoring
+```
+
+The deprecated pre-C068 compatibility adapter is appropriately bounded: it first
+runs the canonical Agent validator and then delegates response-template
+compatibility to COMMERCE-063. It is clearly marked `@deprecated` in both the pure
+helper and Server Action and does not become a second template validator.
+
+The new `validateAgentCallContractAction` remains authenticated with the existing
+Studio ADMIN boundary and performs no Commerce backend access, provider I/O,
+credential lookup or persistence. The focused action test proves the backend is
+not touched.
+
+Final publication remains strict. `validateDefinitionForPublication` first parses
+the complete `CommerceToolDefinitionSchema`, which still enforces the same Agent
+call-side persisted contract (SemVer, bounded description/input schema and
+forbidden authority inputs), and independently runs COMMERCE-063 Result Template
+validation against the canonical compiled output schema. Focused publication
+coverage proves invalid Agent and invalid Result Template contracts are both
+rejected.
+
+The existing Agent Contract UI remains supported through the deprecated adapter;
+no React/UI ownership change was introduced prematurely. COMMERCE-068 remains the
+consumer-migration task.
 
 ### Reviewed Files
 
-None.
+- `src/commerce/tool-authoring/agent-contract-validation.ts`
+- `src/commerce/tool-authoring/result-template-contract.ts`
+- `src/studio/tools/agent-contract-validation-server-actions.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `src/studio/tools/authoring/agent-contract-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `tests/agent-contract-validation.test.ts`
+- `tests/agent-contract-validation-server-actions.test.ts`
+- `tests/arch021-commerce-tool-contract.test.ts`
+- task Completion Report
 
 ### Validation Reviewed
 
-None.
+Submitted evidence:
+
+```text
+focused contract/UI packet: 132 tests PASS across six files
+targeted ESLint:            PASS
+changed-file diagnostics:   PASS / zero C067-owned errors
+git diff --check:           PASS
+```
+
+The Completion Report also records the narrower Agent / Result Template /
+publication packet passing before the integrated authoring/UI packet.
+
+The submitted archive does not contain a self-contained dependency installation
+for an independent full rerun, so acceptance is based on the supplied validation
+evidence plus direct implementation/test inspection.
 
 ### Architecture Conformance
 
-Pending review.
+Conforms.
 
 ### Follow-up
 
-None.
+`ARCH-021-COMMERCE-067` is Complete.
+
+`ARCH-021-COMMERCE-068` remains Pending in this submitted snapshot because its
+other dependencies, COMMERCE-065 and COMMERCE-066, are not both Complete. Do not
+promote C068 solely from C067 acceptance.
