@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 72
 executor: null
 claimed_at: null
@@ -283,24 +283,56 @@ None identified. Storefront exploration remains available and was not migrated o
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None.
+Attempt 1 establishes the correct Admin-only discovery boundary over the pinned `2026-07` artifact, preserves the Storefront path, keeps the query builder pure/non-React, and wires authenticated Studio browsing without live Shopify introspection. The generated happy-path query also conforms to the accepted Admin compiler.
+
+Three task-scoped correctness issues must be corrected before COMMERCE-061 can be accepted:
+
+1. **Generated argument mappings are not guaranteed to satisfy the canonical compiler (R4/R6).** `buildAdminQuery(...)` currently checks that an input property exists, but does not check that the Tool input schema is compatible with the selected GraphQL argument type. It also accepts arbitrary literal values (other than the special `first` bound) without validating their GraphQL input type. Consequently the builder can return a candidate whose document is syntactically valid but whose `variables` mapping makes `createAdminCommerceCompiler().compile(...).validateMappedArguments(...)` return `false`. The builder must reject incompatible Tool-input and literal bindings before returning an authoring candidate, preferably by reusing/refactoring the canonical Admin compiler's argument-compatibility logic rather than introducing a weaker parallel grammar. Add regressions proving incompatible input and literal bindings are rejected and every accepted generated candidate passes canonical mapped-argument validation.
+
+2. **Loaded schema pagination/search pages for one parent type are not composable (R2/R4).** `pageField(...)` uses `pages.find(candidate => candidate.parentTypeName === parentTypeName)`, so only the first loaded page for a type is searched. `QueryRoot` has more than one 100-field page, and repeated searches can also produce multiple loaded pages for the same parent. A field present on a later loaded page is therefore reported as absent even though the UI successfully browsed it. Resolve a selected field across all loaded pages for the requested parent type. Add a regression using at least two `QueryRoot` pages (for example cursor `0` plus cursor `100`) and build a query from a field present only on the later page; the resulting candidate must validate through the canonical compiler.
+
+3. **Manual-query representability is incorrectly coupled to Response-owned result state (R3/R5 and the parent architecture).** `parseAdminQueryForBuilder(...)` calls `createAdminCommerceCompiler().compile(input.execution, input.inputSchema)`, which validates `resultPath` and `resultSchema` in addition to the Request-owned Admin document/variables. The architecture explicitly assigns Shopify Request ownership to document/operation/variable mappings and Shopify Response ownership to `resultPath`/`resultSchema`. A valid, visually representable manual Admin query can therefore be returned as `invalid` solely because the current Response contract is stale or not yet authored. Introduce/reuse a canonical Admin query-authoring validation path that validates the pinned schema identity, document, operation and variable mappings without requiring Response-owned result validity. Add a regression where the Admin query and mappings are valid/representable while `resultPath`/`resultSchema` are intentionally stale; the parser must still recover the builder selection and preserve the exact source. Invalid Admin query syntax/compiler rules must still return `invalid`.
+
+No React/UI work, Storefront removal, provider execution, result-schema derivation, or COMMERCE-064 implementation belongs in this correction.
 
 ### Reviewed Files
 
-None.
+- `lib/discovery/admin-schema.ts`
+- `lib/discovery/service.ts`
+- `lib/discovery/admin-compiler.ts` (canonical contract comparison)
+- `src/commerce/integration/studio/services.ts`
+- `src/studio/contracts.ts`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `src/studio/testing/in-memory-studio-services.ts`
+- `src/studio/discovery/admin-query-builder.ts`
+- `tests/admin-discovery.test.ts`
+- `tests/admin-query-builder.test.ts`
+- `tests/discovery.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-064-rebuild-explore-shopify-admin-authoring.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None.
+Recorded Attempt 1 evidence reviewed:
+
+- focused discovery/query/compiler packet: 51/51 passed;
+- `test:arch021-shopify-admin-compiler`: 22/22 passed;
+- targeted ESLint: passed;
+- changed-file diagnostics: clean;
+- `git diff --check`: passed;
+- repository-wide TypeScript diagnostics are recorded as outside the changed Admin-domain files.
+
+The passing packet does not exercise the three cases above, so it does not establish the full R2/R4/R5 contract.
 
 ### Architecture Conformance
 
-Pending review.
+Partially conformant. The implementation has the correct repository ownership, pinned-artifact boundary, authentication boundary, no-live-introspection behavior, Storefront coexistence, and pure Admin query-authoring shape. Acceptance is blocked by canonical argument-mapping drift, inability to compose multiple loaded schema pages for a parent type, and coupling Request/Explore representability to Response-owned result state.
 
 ### Follow-up
 
-None.
+Return the same task to `moda_commerce` for Attempt 2. Source and focused regression changes are required for the three corrections above. Preserve `attempt: 1`; the next authorized claim increments it to Attempt 2. COMMERCE-064 remains Pending until COMMERCE-061 is accepted Complete.
