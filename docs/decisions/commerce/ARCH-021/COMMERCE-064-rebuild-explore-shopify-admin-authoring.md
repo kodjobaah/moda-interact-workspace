@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 74
-executor: copilot
-claimed_at: 2026-09-27T16:19:23Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-039
@@ -319,60 +319,54 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 is not accepted. The Admin Explore direction is broadly correct, but four corrections are required before COMMERCE-064 can be accepted:
+Attempt 2 substantially resolves all four Attempt 1 findings: Request literal buffers are now controlled/restorable for new and existing authoring, Explore validation is request-owned, the reactive composer has a distinct transient authoring identity, and the Completion Report now records the required worktree/start-of-attempt evidence and exact changed files. Those corrections are accepted and must be preserved.
 
-1. **Preserve the originating Request literal buffers exactly.** `ShopifyAdminEditor` owns browser-local `literalText`, but both new-Tool and existing-DRAFT Explore handoffs currently write `editor.literalText: {}` and the editor has no restoration input for that buffer. A raw literal that is temporarily invalid, or valid text whose exact authoring form differs from `JSON.stringify(...)`, is therefore lost across Request -> Explore -> Request. Make the Request literal buffer controlled/restorable at the parent authoring boundary, snapshot its current value into `ToolAuthoringSession.editor.literalText`, and restore it for both new and existing Tools. Add focused regressions that preserve an invalid raw literal and an exact valid raw literal across route remount and return from Explore without durable writes.
+One functional round-trip defect remains, plus one handoff-state correction:
 
-2. **Keep Explore validation Request-owned instead of re-validating unrelated Tool state.** `AdminExplorer` currently parses the whole session through `CommerceToolDefinitionSchema` and calls the full `validateShopifyAdminDefinitionAction`, so malformed/stale `responseTemplate` or Response-owned `resultSchema` buffers can prevent a valid Admin Request from being explored/validated. This regresses the COMMERCE-061 request-only compiler boundary and conflicts with R4's requirement that Explore merge only `apiVersion`, `schemaHash`, `document`, `operationName` and `variables`. Build/validate the Explore candidate from the current Admin query-authoring fields plus the Tool input schema only; preserve unrelated Response/Agent buffers opaquely and unchanged. Invalid input-schema state may remain blocking where variable compatibility cannot be established. Add regressions proving malformed unrelated Response/Agent buffers do not block a valid Request Explore round trip and are restored unchanged afterwards.
+1. **Reconcile Request literal buffers when `Use in tool` changes the Admin variable mappings.** The current `useInTool()` updates `definition.execution.variables` from the Explorer-built query but intentionally leaves `session.editor.literalText` unchanged. On return, both `NewToolEditor` and `ToolEditor` prefer `authoringSession.editor.literalText` over deriving literal text from the updated execution. Therefore a visual edit that introduces or renames a literal-backed GraphQL variable can return a definition containing `{ literal: ... }` while the visible Request literal input is empty/stale and `ShopifyAdminEditor` marks the mapping invalid. This is especially visible for string literals: Explore stores the semantic string value, while the Request literal editor requires valid JSON text such as `"customer_email:test"`.
 
-3. **Implement R3's Studio composer identity contract.** The task marks the composer work item complete, but `components/studio-composer-context.tsx` still exposes only durable `toolId`/`toolRevisionId` Tool composer state and contains no transient `authoringSessionId` capable of representing an unsaved Tool. Extend the reactive Studio composer model as specified by R3 while preserving existing preview/release semantics; `sessionStorage` remains the remount/refresh recovery layer. Add focused coverage for both new unsaved and existing-DRAFT authoring identities.
+   Correct the `Use in tool` merge so the returned Request editor buffer is consistent with the newly accepted `execution.variables` without losing authored text unnecessarily. The deterministic rule should be:
+   - keep exact existing raw text for a literal variable only when that same variable still exists as a literal mapping and parsing the raw JSON yields the same semantic literal value;
+   - for a new/renamed/changed literal mapping, seed the Request raw buffer with bounded canonical JSON text from that literal value (`JSON.stringify(...)` or an equivalent deterministic helper);
+   - remove/ignore stale literal-buffer entries for variables that are no longer declared as literal mappings;
+   - do not modify unrelated editor buffers.
 
-4. **Reconcile mandatory execution evidence in the Completion Report.** The report does not record the launcher-resolved parent/implementation worktree paths, task branches, shared-checkout non-mutation statements, start-of-attempt synchronization results, or recursive implementation-submodule preparation required by `docs/agent-worktree-isolation-policy.md`. It also gives categories rather than the exact modified-file list. Record the required evidence and exact files. If the original attempt cannot be proven to have run from the canonical dedicated task worktrees, restore/recreate those worktrees, check out the already-pushed task branches, rerun the task's required validation there, and record the corrected evidence; no code churn is required solely for this workflow remediation.
+   Add focused regressions that exercise the **actual** Request -> Explore visual edit -> Validate -> Use in tool -> Request/remount path for at least one newly generated string literal and prove that the returned visible literal is valid JSON text, the mapping remains valid, the updated query/variables are present, unrelated buffers remain unchanged, and no durable Tool write occurs. Preserve the already-covered exact raw Request literal when the corresponding mapping is unchanged.
 
-The accepted parts should be preserved: namespaced/bounded `sessionStorage`, safe return-location validation, session-ID isolation, Admin-only Explore surface, representable/manual-query handling, query-field-only merge shape, Cancel semantics, no Tool persistence during Explore, and no provider I/O.
+2. **Return the task through the required review state on the next handoff.** The submitted Completion Report says `Review`, but the authoritative YAML in this snapshot is still `status: in_progress` with an active `executor`/`claimed_at`. This review returns the task to `ready` and clears the claim. Attempt 3 must perform the normal `ready -> in_progress -> review` lifecycle and submit the task with authoritative `status: review` before Architect acceptance.
+
+Do not broaden this correction into COMMERCE-065/069 work. Preserve the accepted Request-only validation boundary, composer identity separation, exact unchanged raw-buffer restoration, safe session isolation, Cancel semantics, no durable write during Explore and no provider I/O.
 
 ### Reviewed Files
 
-- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
-- `docs/decisions/commerce/ARCH-021/COMMERCE-061-establish-admin-schema-exploration-domain.md`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-064-rebuild-explore-shopify-admin-authoring.md`
-- `docs/agent-worktree-isolation-policy.md`
 - `components/studio-composer-context.tsx`
-- `components/studio-workspace.tsx`
-- `components/production-studio-page.tsx`
-- `app/explore/page.tsx`
-- `app/tools/page.tsx`
-- `app/tools/[id]/page.tsx`
-- `src/studio/tools/authoring-session.ts`
-- `src/studio/tools/tool-authoring-screen.tsx`
-- `src/studio/tools/new-tool-editor.tsx`
-- `src/studio/tools/tool-editor.tsx`
-- `src/studio/tools/shopify-admin-editor.tsx`
+- `src/commerce/tool-authoring/admin-validation.ts`
 - `src/studio/discovery/admin-explorer.tsx`
-- `src/studio/discovery/admin-selection.ts`
 - `src/studio/discovery/admin-argument-bindings.tsx`
-- `src/studio/discovery/admin-schema-browser.tsx`
 - `src/studio/discovery/admin-query-builder.ts`
 - `src/studio/tools/admin-validation-server-actions.ts`
-- `src/commerce/tool-authoring/admin-validation.ts`
-- `tests/tool-authoring-session.test.ts`
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/shopify-admin-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
 - `tests/admin-explorer.test.tsx`
-- `tests/studio-workspace.test.tsx`
-- `tests/tool-authoring-screen.test.tsx`
+- `tests/shopify-admin-authoring-validation.test.ts`
 - `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Validation Reviewed
 
-- Inspected the submitted Completion Report evidence: 65 focused handoff/session/workspace/builder tests and 17 Admin compiler/no-provider-I/O tests reported passing.
-- Inspected the focused regression coverage for session isolation, corrupt/missing sessions, new/existing round trips, Explore Cancel, Explorer selection/tab/literal restoration and no durable Tool creation.
-- Inspected the reported targeted ESLint, changed-file TypeScript diagnostics and `git diff --check` results.
-- Repository-wide TypeScript remains red only on the documented unrelated baseline according to the submitted report; this is not itself a C064 rejection reason.
-- No independent test rerun was performed from the review archive because it contains no installed `node_modules`; source/test inspection was sufficient to identify the corrections above.
+- Inspected the submitted Attempt 2 Completion Report: 98 focused tests across eight files reported passing, targeted ESLint passed, changed-file TypeScript diagnostics were clean, and `git diff --check` passed.
+- Inspected the new regressions covering malformed/exact Request literals, request-only Explore validation, new/existing transient composer identities, session remounts and worktree evidence.
+- Independently traced the post-`Use in tool` state path from `AdminExplorer` into `ToolEditor`/`NewToolEditor`; the remaining literal-buffer mismatch follows directly from the submitted source and is not covered by the current round-trip tests.
+- No independent test rerun was performed from the supplied review archive because it contains no installed `node_modules`.
 
 ### Architecture Conformance
 
-Partially conformant. The implementation preserves the Admin-only, local-session, no-durable-write Explore architecture, but it does not yet satisfy R3's reactive composer identity, R4's exact originating Request-buffer preservation, or the COMMERCE-061 request-only validation boundary. Mandatory worktree/synchronization evidence is also absent from the Completion Report.
+Mostly conformant after Attempt 2. The four prior corrections are implemented, but the complete Request -> Explore -> Use in tool -> Request authoring handoff is not yet correct when Explorer changes literal-backed variable mappings because the canonical query fields and browser-local Request literal buffer can diverge. The submitted task metadata also has not transitioned to `review`.
 
 ### Follow-up
 
-Return the same task to its configured agent path for Attempt 2. Add the focused source/test corrections above, reconcile the Completion Report evidence, rerun the required focused validation, set the task back to `review`, and STOP. Do not begin COMMERCE-065 or COMMERCE-069.
+Return the same task for Attempt 3. Implement the literal-buffer reconciliation and regression described above, preserve all accepted Attempt 2 behavior, rerun the focused validation, complete the authoritative `status: review` handoff with the claim cleared as required by the workflow, and STOP. Do not begin COMMERCE-065 or COMMERCE-069.
