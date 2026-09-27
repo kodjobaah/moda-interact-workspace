@@ -1029,6 +1029,46 @@ Agent-contract follow-up task:
 COMMERCE-056 is architect-accepted Complete and remains independent of COMMERCE-055.
 
 
+### Shopify Admin result-contract and Result Template refinement — 2026-09-27
+
+Manual architecture review of Tool result/prompt authoring establishes the following refinement without introducing final tab gating/traversal:
+
+1. New Shopify Tool authoring and runtime converge on `SHOPIFY_ADMIN_GRAPHQL`; the existing Storefront Tool execution model is pre-production transitional state and will be removed after Admin replacements are operational.
+2. Explore Shopify becomes an Admin `2026-07` schema/query builder. Manual GraphQL remains first-class; Explore only authors the query portion of the current Tool draft.
+3. The specific Request -> Explore -> Use in tool -> Request round trip is part of Explore itself. Unsaved Tool state is identified by a transient `authoringSessionId` and mirrored to versioned `sessionStorage`; no Tool/ToolRevision database row is created for this navigation.
+4. Shopify Request owns document/operation/variable mappings. Shopify Response owns `resultPath` and a compiler-derived `resultSchema`.
+5. Admin result-schema derivation is independent of provider execution. GraphQL non-null object fields become required Commerce properties; nullable object fields become optional, and runtime integration omits null optional properties before validation. Unrepresentable nullable/list/scalar shapes fail derivation rather than being guessed.
+6. External HTTP keeps its accepted Direct/Visual/JavaScript/Automatic Response semantics and existing canonical `resultSchema` production.
+7. A non-persisted source-neutral `ToolResultContract` is compiled from the canonical output/result schema and supplies exact scalar/collection bindings for template authoring. React does not infer provider-specific result paths independently.
+8. `responseTemplate` remains the persisted/runtime representation but receives its own Result Template authoring surface. Agent Contract retains definition version, Agent description and Agent input schema only.
+9. Result Template supports only the existing bounded `text` / `items` runtime grammar in this refinement; no conditional language, arbitrary JavaScript or rich-text dependency is introduced.
+10. General tab traversal/gating, global Next/Back behavior and cross-tab validation checkpoint coordination remain explicitly deferred until all individual tabs are implemented.
+
+Implementation tasks:
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-061 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-063 | moda_commerce | Ready | ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Pending | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+
+Initial independent backend frontier:
+
+```text
+COMMERCE-060    COMMERCE-061    COMMERCE-062    COMMERCE-063
+```
+
+These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
+
+
 Phase 3 exit criteria:
 
 - Commerce owns the accepted request/response/Admin Tool-definition contracts under `src/commerce/tool-definition/`; Shared remains unchanged at 0.14.2;
@@ -1244,6 +1284,19 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-021 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-023, ARCH-021-COMMERCE-005, ARCH-021-COMMERCE-006 |
 | ARCH-021-COMMERCE-022 | moda_commerce | Complete | ARCH-021-COMMERCE-019, ARCH-021-COMMERCE-020, ARCH-021-COMMERCE-024 |
 
+
+| ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-061 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
+| ARCH-021-COMMERCE-063 | moda_commerce | Ready | ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-064 | moda_commerce | Pending | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
 - `moda_database` for conversation/preview frozen model/prompt fields;
@@ -1271,6 +1324,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — Shopify Admin result-contract / Result Template workstream defined
+
+- Added COMMERCE-060..070, starting after the user's independently running COMMERCE-059 and without creating a dependency on it.
+- Split backend/compiler work from React/UI work wherever the current code boundaries allow.
+- Established Admin-only future Shopify Tool architecture, source-neutral `ToolResultContract`, compiler-derived Admin result schemas, dedicated Result Template authoring, and `sessionStorage`-backed Explore authoring handoff.
+- Kept general tab traversal/gating explicitly deferred.
 
 ### 2026-09-27 — COMMERCE-058 Attempt 2 accepted
 
