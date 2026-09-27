@@ -1065,7 +1065,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Ready | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
-| ARCH-021-COMMERCE-069 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
@@ -1114,6 +1114,13 @@ COMMERCE-068    COMMERCE-069
 ```
 
 COMMERCE-065 is architect-accepted Complete. COMMERCE-066 and COMMERCE-067 already satisfy COMMERCE-068's other dependencies, so COMMERCE-068 is promoted to Ready. COMMERCE-069 remains independently Ready.
+Current executable frontier after COMMERCE-069 acceptance:
+
+```text
+COMMERCE-065
+```
+
+COMMERCE-069 Attempt 1 is architect-accepted Complete and enables no downstream task. COMMERCE-065 remains independently Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
 
 Phase 3 exit criteria:
 
@@ -1340,7 +1347,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
-| ARCH-021-COMMERCE-069 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
@@ -1377,6 +1384,14 @@ independent of features.
 - Accepted the real New Tool Request -> Explore visual literal edit -> Validate -> Use in tool -> Request regression, including successful Request re-validation after return and preservation of unrelated authoring buffers.
 - Accepted recorded validation: 55/55 tests across five suites, targeted ESLint and `git diff --check` passed, with no filtered TypeScript diagnostics in the two Attempt 3 files. Repository-wide TypeScript remains red only on previously documented unrelated diagnostics.
 - Marked COMMERCE-064 Complete. COMMERCE-062 is already Complete, so COMMERCE-065 is promoted to Ready. COMMERCE-060 is already Complete, so COMMERCE-069 is promoted to Ready. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
+
+### 2026-09-27 — COMMERCE-069 Attempt 1 accepted
+
+- Accepted the pre-production removal of the obsolete Storefront Tool execution/authoring architecture: canonical `SHOPIFY_STOREFRONT_QUERY` parsing, production executor/availability branches, Storefront-only compiler/query runtime, schema artifact and Explore builder/browser modules are removed.
+- Confirmed Shopify Admin GraphQL remains the canonical Tool runtime/Explore path and legitimate Storefront-named Admin schema/documentation concepts remain intact.
+- Accepted recorded validation: 114 focused tests across 11 files, targeted ESLint, changed-file diagnostics and `git diff --check` passed. Workspace-wide TypeScript retains unrelated diagnostics and the disposable C20 PostgreSQL/Redis integration was unavailable; neither blocks C069's defined acceptance contract.
+- Reconciled the final regression Work Item and stale task claim as clerical task-record inconsistencies; no source rework is required.
+- Marked COMMERCE-069 Complete. It enables no downstream task; COMMERCE-065 remains Ready and COMMERCE-068 remains gated by COMMERCE-065.
 
 ### 2026-09-27 — COMMERCE-070 Attempt 1 accepted
 
