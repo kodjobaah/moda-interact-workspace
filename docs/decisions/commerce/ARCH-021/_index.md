@@ -323,7 +323,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-063](COMMERCE-063-compile-tool-result-contract.md) | Backend: compile source-neutral ToolResultContract and validate Result Templates | Complete | COMMERCE-043 |
 | [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Ready | COMMERCE-039, COMMERCE-061 |
 | [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Pending | COMMERCE-062, COMMERCE-064 |
-| [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Ready | COMMERCE-063 |
+| [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Complete | COMMERCE-063 |
 | [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Ready | COMMERCE-063 |
 | [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Pending | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
 | [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Pending | COMMERCE-060, COMMERCE-064 |
@@ -348,7 +348,7 @@ COMMERCE-060    COMMERCE-061    COMMERCE-062    COMMERCE-063
 COMMERCE-065 + COMMERCE-066 + COMMERCE-067 ---> COMMERCE-068
 ```
 
-COMMERCE-063 Attempt 1 is architect-accepted Complete. Its two direct dependants, COMMERCE-066 and COMMERCE-067, are now Ready and may execute independently. COMMERCE-068 remains dependency-gated by COMMERCE-065 + COMMERCE-066 + COMMERCE-067.
+COMMERCE-063 Attempt 1 is architect-accepted Complete. COMMERCE-066 Attempt 1 is now architect-accepted Complete; COMMERCE-067 remains Ready. COMMERCE-068 remains dependency-gated by COMMERCE-065 + COMMERCE-066 + COMMERCE-067, with the COMMERCE-066 dependency now satisfied.
 
 Key invariants:
 

@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 74
 executor: null
 claimed_at: null
@@ -192,13 +192,13 @@ Emits local authoring callbacks only. It does not persist Tool state.
 
 ## Validation
 
-- [ ] focused ResultTemplateTab tests
-- [ ] token insertion/path tests
-- [ ] text/items mode tests
-- [ ] invalid-local-state/staleness tests
-- [ ] targeted lint
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
+- [x] focused ResultTemplateTab tests
+- [x] token insertion/path tests
+- [x] text/items mode tests
+- [x] invalid-local-state/staleness tests
+- [x] targeted lint
+- [x] changed-file TypeScript diagnostics
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -266,24 +266,28 @@ Recursive implementation submodules: `git submodule sync --recursive` passed; `g
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 accepted. The standalone `ResultTemplateTab` conforms to the task contract: it consumes COMMERCE-063's provider-neutral `ToolResultContract`, authors text/items templates with exact canonical bindings, exposes optionality, retains invalid local drafts, and marks validation stale when either template state or the supplied result contract changes. No Tool registration, persistence, provider-specific path derivation, or rich-text dependency leaked into this task.
+
+The unchecked Validation boxes were a clerical mismatch with the Completion Report, which already recorded the required checks as passed. Architect review treats that mismatch as non-substantive and reconciles the task record here rather than requiring a new implementation attempt.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/src/studio/tools/authoring/result-template-tab.tsx`
+- `moda-interact-commerce/tests/result-template-tab.test.tsx`
+- this task's Completion Report and launcher/worktree evidence
 
 ### Validation Reviewed
 
-None.
+Reviewed the submitted focused validation evidence: 4 focused ResultTemplateTab tests passed, targeted ESLint passed, changed-file TypeScript diagnostics were clean, and `git diff --check` passed. Source/test inspection found no contradiction with the recorded results. No full-project test-suite rerun was required by this task.
 
 ### Architecture Conformance
 
-Pending review.
+Conforms to ARCH-021 and COMMERCE-063. The component remains source-neutral and standalone; COMMERCE-068 retains ownership of Tool-tab registration and parent editor composition.
 
 ### Follow-up
 
-None.
+COMMERCE-066 is Complete. COMMERCE-068 remains dependency-gated by COMMERCE-065 and COMMERCE-067; no additional C066 correction task is required.
