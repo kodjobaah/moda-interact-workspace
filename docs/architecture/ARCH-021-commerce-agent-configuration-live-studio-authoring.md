@@ -1068,6 +1068,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-076 | moda_commerce | Pending | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1320,6 +1321,12 @@ COMMERCE-071 adds a bounded Commerce-owned semantic adapter on top of `@modainte
 
 COMMERCE-071 is independent of final tab traversal/gating and may execute immediately because its declared authoring/runtime dependencies are Complete.
 
+### Result Template integration regression follow-up — 2026-09-27
+
+Manual verification of the current Tool editor found post-acceptance drift from COMMERCE-068: the reusable `ResultTemplateTab` still exists, but the shared tab registry has fallen back to five tabs, Agent Contract again owns `responseTemplate`, new/persisted authoring no longer renders the dedicated Result Template surface, and Review again groups the template under Agent contract. COMMERCE-076 is a bounded restoration task that re-establishes the accepted source-neutral Result Template boundary and adds executable regression coverage without changing Request, Response, live Test, persistence or navigation/gating semantics.
+
+COMMERCE-076 depends on COMMERCE-055 only to avoid racing the current Test/editor composition, and on the already-accepted COMMERCE-068 integration contract. Any later guided-navigation/readiness task must consume the restored six-tab composition rather than recreating Result Template ownership.
+
 ## Decisions / Tasks
 
 Phase 1 is materialised as six Commerce tasks under `docs/decisions/commerce/ARCH-021/`.
@@ -1369,6 +1376,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-076 | moda_commerce | Pending | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1397,6 +1405,12 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — Result Template integration regression task defined
+
+- Manual verification found that the accepted COMMERCE-068 dedicated Result Template integration is absent from the current Tool editor even though `ResultTemplateTab` still exists.
+- Defined COMMERCE-076 to restore the six-tab composition, call-side-only Agent Contract ownership and separate Review presentation for new/persisted External HTTP and Shopify Admin authoring.
+- The correction is dependency-gated behind COMMERCE-055 to avoid racing the current Test/editor composition and explicitly excludes later navigation/readiness gating.
 
 ### 2026-09-27 — Tool-authoring structured diagnostic logging defined
 
