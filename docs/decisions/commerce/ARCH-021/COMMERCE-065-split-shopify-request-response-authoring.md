@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 75
-executor: copilot
-claimed_at: 2026-09-27T17:58:58Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-062
@@ -257,6 +257,37 @@ The repository-wide TypeScript check is blocked by 28 diagnostics in files outsi
 ### Architectural Concerns
 
 None identified within C065 scope.
+
+### Attempt 2 Completion Report
+
+#### Worktree and Synchronization Evidence
+
+- Launcher-resolved canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-065`, branch `task/ARCH-021-COMMERCE-065`.
+- Dedicated implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-065`, branch `task/ARCH-021-COMMERCE-065`.
+- Attempt 2 used these launcher-resolved task worktrees only; no shared/default checkout or another task's worktree was used.
+- Start-of-attempt synchronization for both repositories: task-branch fast-forward was `not-needed`; `origin/main` was `already-current` in each task branch. Both worktrees were clean before implementation edits.
+- Implementation submodules were synchronized and recursively initialized before claim. Recursive status was clean at the recorded database submodule commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
+#### Changes and VCS Publication
+
+- Attempt 2 implementation commit: `cb07cb7837c8bb2072f9363fc98b61ecd493eda6` on `task/ARCH-021-COMMERCE-065`; pushed to `origin`.
+- Synchronous layout-commit invalidation now advances the derivation generation and marks freshness false when the Request identity changes, preventing an obsolete asynchronous completion from promoting its schema.
+- Added deferred stale-completion regressions for both New Tool creation and persisted-DRAFT Save/Publish, asserting that obsolete schema is not promoted and persistence remains blocked.
+- Parent task/report branch: `task/ARCH-021-COMMERCE-065`; this report update is being committed and pushed independently in the parent worktree.
+- No parent database submodule gitlink was staged or changed for C065 task reporting.
+
+#### Attempt 2 Validation
+
+- Focused Vitest: 4 files, 49 tests passed (`shopify-admin-tools-ui`, `tool-authoring-screen`, `tool-authoring-session`, `admin-explorer`).
+- Targeted ESLint passed for all 8 changed source/test files.
+- Changed-file TypeScript/editor diagnostics: no errors in all 8 changed files.
+- `git diff --check` passed.
+- The package-wide typecheck limitation recorded for Attempt 1 remains unrelated to changed files: 28 diagnostics across 17 other package files. It was not treated as a C065 blocker, consistent with the Architect Review.
+
+### Attempt 2 Status
+
+Ready for Architect Review. The Attempt 2 implementation and deferred regressions are published on the task branch; task metadata is set to `review`, with `executor` and `claimed_at` cleared. No follow-on task was started.
 
 ## Architect Review
 
