@@ -319,7 +319,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 |---|---|---|---|
 | [COMMERCE-060](COMMERCE-060-execute-shopify-admin-graphql-tools.md) | Backend: execute canonical Shopify Admin GraphQL Tool definitions | Complete | COMMERCE-018 |
 | [COMMERCE-061](COMMERCE-061-establish-admin-schema-exploration-domain.md) | Backend/domain: expose Admin schema exploration and bounded query-building primitives | Complete | COMMERCE-018 |
-| [COMMERCE-062](COMMERCE-062-derive-shopify-admin-result-contract.md) | Backend/compiler: derive canonical Admin resultSchema and nullable normalization semantics | Ready | COMMERCE-018 |
+| [COMMERCE-062](COMMERCE-062-derive-shopify-admin-result-contract.md) | Backend/compiler: derive canonical Admin resultSchema and nullable normalization semantics | Complete | COMMERCE-018 |
 | [COMMERCE-063](COMMERCE-063-compile-tool-result-contract.md) | Backend: compile source-neutral ToolResultContract and validate Result Templates | Complete | COMMERCE-043 |
 | [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Ready | COMMERCE-039, COMMERCE-061 |
 | [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Pending | COMMERCE-062, COMMERCE-064 |
@@ -327,7 +327,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Ready | COMMERCE-063 |
 | [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Pending | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
 | [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Pending | COMMERCE-060, COMMERCE-064 |
-| [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Pending | COMMERCE-060, COMMERCE-062 |
+| [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Ready | COMMERCE-060, COMMERCE-062 |
 
 Initial executable frontier for this workstream:
 
@@ -363,6 +363,10 @@ Key invariants:
 - Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
+
+### COMMERCE-062 Attempt 2 accepted — 2026-09-27
+
+COMMERCE-062 is **Complete / Accepted, Attempt 2**. Compatible repeated Admin GraphQL response keys now merge recursively after the existing semantic-validation boundary, so complementary repeated aliased selections derive the same canonical Commerce result schema as the equivalent single merged selection. The real pinned `QueryRoot.nodes(ids: [...])` path now carries a truthful literal-ID bound far enough to reject its actual nullable list elements with `UNREPRESENTABLE_NULLABLE_LIST`. Submitted validation passed the required 42-test regression packet, targeted ESLint and diff checks; repository-wide TypeScript remains red only on unrelated files, with zero diagnostics in the two Attempt 2 changed files. COMMERCE-060 is already Complete, so COMMERCE-070 is promoted to **Ready**. COMMERCE-065 remains Pending until COMMERCE-064 is Complete.
 
 ### COMMERCE-062 Attempt 1 changes requested — 2026-09-27
 
