@@ -9,17 +9,18 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 68
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-042
   - ARCH-021-COMMERCE-050
   - ARCH-021-COMMERCE-051
   - ARCH-021-COMMERCE-052
-enables: []
+enables:
+  - ARCH-021-COMMERCE-054
 created: 2026-09-27
 updated: 2026-09-27
 ---
@@ -180,18 +181,19 @@ Move the current Request-tab-local:
 Sample Tool arguments
 ```
 
-text state to `ExternalHttpEditor` (or the closest single parent shared by Request/Response Automatic).
+text state to `ExternalHttpEditor` (or the closest single parent shared by Request/Response/Test).
 
 There must be **one string value** shared by:
 
 ```text
 Request preview
 Response Automatic generation
+COMMERCE-054 Test
 ```
 
 Request must continue to render/edit that value.
 
-Automatic may render/edit the same shared textarea, clearly labelled as the same Sample Tool arguments used by Request. It must not create a second independent arguments state.
+Automatic may render/edit the same shared textarea, clearly labelled as the same Sample Tool arguments used by Request/Test. It must not create a second independent arguments state.
 
 Changing sample arguments:
 
@@ -199,6 +201,7 @@ Changing sample arguments:
 does not dirty/persist the Tool definition
 invalidates prior Request preview
 invalidates prior Automatic observation/candidate state
+later invalidates COMMERCE-054 Test result
 ```
 
 ### R4 — selected-shop plumbing
@@ -410,17 +413,17 @@ no inferable structure
 
 ## Work Items
 
-- [ ] Lift Sample Tool arguments to one `ExternalHttpEditor`-owned shared state.
-- [ ] Keep Request preview wired to that shared state.
-- [ ] Plumb selected shop for both new and existing Tool authoring without trusting it server-side.
-- [ ] Add transient `Automatic` Response selection without changing canonical response schemas.
-- [ ] Call COMMERCE-051 observation using the exact current Request/arguments/response format.
-- [ ] Run COMMERCE-052 inference on eligible 2xx JSON only.
-- [ ] Add zero/one/multiple candidate deterministic UI flows.
-- [ ] Install selected candidate into existing Visual draft + canonical execution through `deriveVisualTreeContract(...)`.
-- [ ] Switch successful generation to Visual rules.
-- [ ] Preserve Direct/JavaScript drafts and existing Visual/Response validation behavior.
-- [ ] Add new/existing Tool UI regressions and no-persistence evidence.
+- [x] Lift Sample Tool arguments to one `ExternalHttpEditor`-owned shared state.
+- [x] Keep Request preview wired to that shared state.
+- [x] Plumb selected shop for both new and existing Tool authoring without trusting it server-side.
+- [x] Add transient `Automatic` Response selection without changing canonical response schemas.
+- [x] Call COMMERCE-051 observation using the exact current Request/arguments/response format.
+- [x] Run COMMERCE-052 inference on eligible 2xx JSON only.
+- [x] Add zero/one/multiple candidate deterministic UI flows.
+- [x] Install selected candidate into existing Visual draft + canonical execution through `deriveVisualTreeContract(...)`.
+- [x] Switch successful generation to Visual rules.
+- [x] Preserve Direct/JavaScript drafts and existing Visual/Response validation behavior.
+- [x] Add new/existing Tool UI regressions and no-persistence evidence.
 
 ## Interfaces / Contracts
 
@@ -466,27 +469,27 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Response visibly offers `Automatic` alongside Visual rules/Direct/JavaScript.
-- [ ] `AUTOMATIC` is not added to any persisted/runtime processing schema.
-- [ ] Selecting Automatic alone does not mutate/dirty the canonical Tool definition.
-- [ ] Request and Automatic share one Sample Tool arguments string/state.
-- [ ] Sample arguments remain authoring-only and are never persisted.
-- [ ] New and existing Tool flows provide selected-shop context for PER_SHOP live calls.
-- [ ] Automatic uses the exact current canonical Request candidate, not a stale older Request.
-- [ ] Automatic performs one COMMERCE-051 live observation per explicit Generate action.
-- [ ] Only 2xx JSON responses are passed to inference.
-- [ ] Zero candidate result leaves Response unchanged with actionable guidance.
-- [ ] One candidate is applied directly then the UI switches to Visual rules.
-- [ ] Multiple candidates show a picker only; no duplicate Visual editor is rendered.
-- [ ] Candidate labels use `Object` / `List of objects`; nested field terminology remains C049 exact.
-- [ ] Applying a candidate sets exact `resultPath`, Visual authoring tree, derived processing and derived result schema.
-- [ ] `deriveVisualTreeContract(...)` remains the only processing/schema derivation authority.
-- [ ] Automatically inferred fields remain optional (`omitIfMissing`) as provided by C052.
-- [ ] Generated Visual state can be edited normally after generation.
-- [ ] COMMERCE-050 validation diagnostics continue to work on generated Visual state.
-- [ ] Direct/JavaScript inactive drafts survive generation.
-- [ ] Observation/generation performs no Tool/Revision save and does not satisfy `LIVE_TEST_REQUIRED`.
-- [ ] All authoring tabs remain freely navigable.
+- [x] Response visibly offers `Automatic` alongside Visual rules/Direct/JavaScript.
+- [x] `AUTOMATIC` is not added to any persisted/runtime processing schema.
+- [x] Selecting Automatic alone does not mutate/dirty the canonical Tool definition.
+- [x] Request/Automatic/Test share one Sample Tool arguments string/state.
+- [x] Sample arguments remain authoring-only and are never persisted.
+- [x] New and existing Tool flows provide selected-shop context for PER_SHOP live calls.
+- [x] Automatic uses the exact current canonical Request candidate, not a stale older Request.
+- [x] Automatic performs one COMMERCE-051 live observation per explicit Generate action.
+- [x] Only 2xx JSON responses are passed to inference.
+- [x] Zero candidate result leaves Response unchanged with actionable guidance.
+- [x] One candidate is applied directly then the UI switches to Visual rules.
+- [x] Multiple candidates show a picker only; no duplicate Visual editor is rendered.
+- [x] Candidate labels use `Object` / `List of objects`; nested field terminology remains C049 exact.
+- [x] Applying a candidate sets exact `resultPath`, Visual authoring tree, derived processing and derived result schema.
+- [x] `deriveVisualTreeContract(...)` remains the only processing/schema derivation authority.
+- [x] Automatically inferred fields remain optional (`omitIfMissing`) as provided by C052.
+- [x] Generated Visual state can be edited normally after generation.
+- [x] COMMERCE-050 validation diagnostics continue to work on generated Visual state.
+- [x] Direct/JavaScript inactive drafts survive generation.
+- [x] Observation/generation performs no Tool/Revision save and does not satisfy `LIVE_TEST_REQUIRED`.
+- [x] All authoring tabs remain freely navigable.
 
 ## Mandatory Regression Scenarios
 
@@ -524,18 +527,18 @@ Add focused UI/composition tests proving at least:
 
 Run at minimum:
 
-- [ ] `npm run test:arch020-external-tools-ui`
-- [ ] focused `tests/tool-authoring-screen.test.tsx`
-- [ ] `npm run test:arch021-tool-authoring-common` when shared New/Existing Tool composition changes
-- [ ] targeted ESLint on changed files
-- [ ] `git diff --check`
-- [ ] changed-file TypeScript diagnostics contain no task-owned error
+- [x] `npm run test:arch020-external-tools-ui`
+- [x] focused `tests/tool-authoring-screen.test.tsx`
+- [x] `npm run test:arch021-tool-authoring-common` when shared New/Existing Tool composition changes
+- [x] targeted ESLint on changed files
+- [x] `git diff --check`
+- [x] changed-file TypeScript diagnostics contain no task-owned error
 
 Do not rerun provider/security suites owned by COMMERCE-051 unless this task changes that implementation.
 
 ## Stop Condition
 
-After Automatic generation works through the existing Visual editor for both new and existing Tool authoring, all mandatory UI regressions pass and the Completion Report is complete, set the task to `review`, clear the execution claim under the normal workflow, return control to `moda_architect` and STOP. Do not begin independent live-Test tasks.
+After Automatic generation works through the existing Visual editor for both new and existing Tool authoring, all mandatory UI regressions pass and the Completion Report is complete, set the task to `review`, clear the execution claim under the normal workflow, return control to `moda_architect` and STOP. Do not begin COMMERCE-054.
 
 ## Implementation Notes
 
@@ -553,58 +556,138 @@ Do not collapse these responsibilities merely because they share the same Extern
 
 ### Status
 
-Not Started
+Attempt 2 complete; submitted for Architect Review.
 
 ### Files Changed
 
-None.
+- `src/studio/external-http/editor.tsx`
+- `src/studio/external-http/request-tab.tsx`
+- `src/studio/external-http/response-tab.tsx`
+- `src/studio/external-http/test-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
-None.
+- Lifted one Sample Tool arguments string into `ExternalHttpEditor`, shared by Request preview, Automatic generation, and Test; argument edits invalidate stale Request previews and Automatic state without dirtying or persisting the Tool.
+- Added transient Automatic Response mode using the COMMERCE-051 observation action with the current canonical Request, JSON response format, input schema, shared arguments, and selected shop. Only successful 2xx JSON observations reach COMMERCE-052 inference.
+- Added zero/one/multiple candidate flows, candidate ordering and selection, bounded failure guidance, unresolved-field notice, and candidate application through `deriveVisualTreeContract(...)` into the existing Visual editor.
+- Preserved Direct, Visual, and JavaScript drafts; guarded against late observations after leaving Automatic or changing generation context; kept Visual editing and COMMERCE-050 validation authoritative after application.
+- Wired selected-shop context through New Tool and existing DRAFT composition. Added regression evidence for shop scope, shared arguments across all three tabs, no intermediate persistence, and canonical-only Create/Save payloads.
+- Corrected Automatic abandonment: returning to the unchanged canonical persisted mode now restores only the UI mode, preserving successful Response validation and avoiding canonical mutation or Tool dirtying; choosing a different persisted mode still follows the existing change path.
+- Added explicit coverage for an exactly-one root LIST candidate with `resultPath: ""`, and for successful generation creating no draft save or live-test receipt while publication remains `LIVE_TEST_REQUIRED`.
 
 ### Validation Results
 
-Not run.
+- `npm run test:arch020-external-tools-ui`: passed, 69 tests (Attempt 1: 66).
+- `npx vitest run tests/tool-authoring-screen.test.tsx`: passed, 13 tests.
+- `npm run test:arch021-tool-authoring-common`: 85/86 tests passed; one existing `commerce-lifecycle.test.ts` case still receives `INVALID_DEFINITION` where its assertion expects `LIVE_TEST_REQUIRED`.
+- Targeted ESLint on the Attempt 2 changed files: passed.
+- `git diff --check`: passed.
+- Changed-file editor diagnostics: no errors in `response-tab.tsx` or `external-tools-ui.test.tsx`.
+- Commerce package-wide `npm run typecheck` was non-zero in the Attempt 1 run with 250 diagnostics across 21 files. This is a repository-wide Commerce observation, not `TYPECHECK-001` (which applies to `moda-interact/`); no diagnostics were reported in task-changed files.
+- Final focused rerun of the live-test receipt regression passed after adding explicit assertions that generation does not invoke publication and later publication returns `LIVE_TEST_REQUIRED`.
 
 ### Deviations
 
-None.
+No functional scope deviations. The shared authoring packet was run as required and retains one pre-existing lifecycle expectation mismatch outside the changed files.
 
 ### Assumptions
 
-None.
+The selected shop ID is context only; COMMERCE-051 remains responsible for revalidating authorization and PER_SHOP scope. Generation is transient and does not replace the later Create or Save Draft lifecycle.
 
 ### Unresolved Issues
 
-None.
+- `npm run test:arch021-tool-authoring-common` retains the unrelated lifecycle failure described above.
+- The Commerce repository-wide typecheck observation from Attempt 1 remains non-zero (250 diagnostics across 21 files); this task does not attribute it to `TYPECHECK-001`, and no task-changed file has a diagnostic.
 
 ### Architectural Concerns
 
-None.
+No additional architectural concerns identified beyond the Attempt 1 corrections recorded below; this Attempt 2 submission is returned for Architect Review.
+
+### Git / VCS
+
+Implementation branch: `task/ARCH-021-COMMERCE-053`
+
+Implementation commit: `6c5132a` (`task(ARCH-021-COMMERCE-053): correct Automatic abandonment semantics`), pushed to `origin/task/ARCH-021-COMMERCE-053`. Attempt 1 implementation commit: `534dbb5`.
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-053`
+
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-053`
+
+Parent task branch: `task/ARCH-021-COMMERCE-053`.
+
+Parent task branch synchronized from `origin/main` at `9d6747b4`; Attempt 2 claim commit `a11b1dd` was committed and pushed by the deterministic launcher. The Completion Report and review handoff are being committed on this branch.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Attempt 2 is accepted.
+
+The implementation satisfies the Attempt 1 correction contract and the full COMMERCE-053 Automatic-generation boundary:
+
+1. `Automatic -> unchanged persisted mode` is now transient. `response-tab.tsx` restores only the UI selection when the author returns to the current canonical mode, without calling `onChange`, `onDirty` or invalidating an already-successful Response validation.
+2. Choosing a genuinely different persisted mode from Automatic still follows the existing canonical mode-change path, including dirty-state and Response-validation invalidation.
+3. The missing exactly-one root `LIST` regression now proves automatic installation of a sole root `List of objects` candidate with exact `resultPath: ""` into the existing Visual editor.
+4. The missing publication-boundary regression now proves Automatic generation creates no draft save/live-test receipt; authoritative definition validation still requires a live test, and a subsequent publication attempt remains rejected with `LIVE_TEST_REQUIRED`.
+5. The Completion Report now records the Commerce-wide typecheck observation without attributing it to `TYPECHECK-001`.
+
+The broader C053 architecture remains conformant: `AUTOMATIC` is browser-local only; one Sample Tool arguments state is shared across Request/Automatic/Test; selected-shop context is plumbed for both New Tool and existing DRAFT authoring while server-side reauthorization remains in COMMERCE-051; only eligible 2xx JSON reaches COMMERCE-052 inference; candidate application reuses `deriveVisualTreeContract(...)`; Visual remains the editor; and observation/generation itself performs no Tool/Revision persistence.
+
+COMMERCE-054 is not enabled by C053 in the canonical task graph. Its authoritative task metadata already has `status: ready` and depends only on COMMERCE-051, so accepting C053 does not alter C054's dependency state. COMMERCE-055 remains Pending on COMMERCE-054.
 
 ### Reviewed Files
 
-None.
+- `src/studio/external-http/response-tab.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/external-http/request-tab.tsx`
+- `src/studio/external-http/test-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-053-add-automatic-response-generation.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-054-execute-non-durable-external-http-candidate-live.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None.
+Submitted/recorded validation:
+
+- `npm run test:arch020-external-tools-ui`: 69/69 passed.
+- focused `tests/tool-authoring-screen.test.tsx`: 13/13 passed.
+- `npm run test:arch021-tool-authoring-common`: 85/86; the remaining lifecycle assertion expects `LIVE_TEST_REQUIRED` but receives `INVALID_DEFINITION`, outside C053 changed files and unchanged from the prior review.
+- targeted ESLint on Attempt 2 changed files: passed.
+- `git diff --check`: passed.
+- changed-file TypeScript diagnostics: clean.
+- Commerce package-wide typecheck remains non-zero with the previously recorded 250 diagnostics across 21 unrelated files; the task correctly no longer attributes that observation to `TYPECHECK-001`.
+
+Source/test inspection confirms the Attempt 2 regressions exercise the exact corrections above. The submitted archive is a source snapshot rather than live Git metadata, so clean/synchronized worktree and pushed-commit state are recorded from the Completion Report/submission rather than independently queried here.
 
 ### Architecture Conformance
 
-Pending.
+Conformant.
+
+- Canonical persisted response kinds remain `DIRECT | VISUAL | JAVASCRIPT`.
+- Automatic remains transient browser authoring state.
+- COMMERCE-051 remains the live observation/security boundary.
+- COMMERCE-052 remains the sole inference implementation.
+- `deriveVisualTreeContract(...)` and the existing Visual editor remain authoritative after candidate application.
+- Generation remains non-durable until existing Create/Save Draft.
+- Successful generation does not satisfy the publication live-test gate.
 
 ### Follow-up
 
-None.
+None for COMMERCE-053.
+
+Task is architect-accepted Complete at Attempt 2. The current independent live-Test backend frontier remains ARCH-021-COMMERCE-054; accepting C053 does not newly promote it because it was already Ready on COMMERCE-051 alone.
