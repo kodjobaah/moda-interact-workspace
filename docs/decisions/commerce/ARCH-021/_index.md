@@ -233,6 +233,26 @@ The live Test branch is explicitly pre-creation. It tests the exact current in-m
 
 COMMERCE-055 must be composed from bounded React responsibilities rather than one large Test component: argument authoring, Run action/state, execution-stage presentation, safe Request summary, bounded provider response, processed result and stage-specific failure presentation remain separable concerns.
 
+## Manual-validation correction — provider diagnostics and Automatic failure state
+
+Manual Automatic testing found that provider decode failures lose actionable response evidence and that the previous canonical Response-processing JSON remains visible while a later Automatic attempt is failing. These are bounded corrections to the accepted C051/C053 branch; they do not introduce another response-processing mode or clear existing authored Visual rules.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-057](COMMERCE-057-preserve-live-provider-response-diagnostics.md) | Preserve bounded provider status/media-type/decode-reason/body-preview evidence for live authoring decode failures | Ready | COMMERCE-051 |
+| [COMMERCE-058](COMMERCE-058-make-automatic-failures-current-and-actionable.md) | Show only current Automatic failure evidence, hide stale underlying processing disclosure and preserve existing Response authoring | Pending | COMMERCE-053, COMMERCE-057 |
+
+Correction frontier:
+
+```text
+COMMERCE-051 -> COMMERCE-057 -> COMMERCE-058
+                                  ^
+                                  |
+                             COMMERCE-053
+```
+
+COMMERCE-057 is independent of COMMERCE-055 and COMMERCE-056 and may execute without changing either task. COMMERCE-058 remains dependency-gated until COMMERCE-057 is architect-accepted Complete. Any Test-specific consumption of the richer diagnostic is assessed after the current COMMERCE-055 attempt returns for review rather than by moving its goalposts.
+
 ## Manual-validation follow-up — Agent contract tab
 
 The Agent contract form is already extracted into `AgentContractTab`; the follow-up is validation/clarity rather than another component refactor.
