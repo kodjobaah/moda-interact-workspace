@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Ready. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Ready. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating. Manual Automatic testing additionally exposed provider-decode diagnostic information loss and stale underlying Response disclosure while Automatic is active; COMMERCE-057 is the independent Ready backend correction and COMMERCE-058 is dependency-gated on it for the Automatic presentation correction.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -953,6 +953,35 @@ ARCH-021-COMMERCE-055
 
 The Test backend receives the current canonical local candidate directly; it does not reload a saved revision and it does not require a `toolId`/`toolRevisionId`. Test arguments are ephemeral execution inputs and are not part of the durable Tool definition. Publication-proof semantics remain outside this pre-creation Test flow and require a separate later architecture decision after durable creation.
 
+#### Manual-validation correction — provider diagnostics and Automatic stale presentation
+
+A live Automatic regression found two bounded defects in the accepted branch rather than a new authoring model:
+
+1. a provider response that fails authored decoding currently collapses to `INVALID_RESPONSE`, discarding actionable HTTP status/media-type/body evidence that the secure transport already received;
+2. when a later Automatic attempt fails, the Response tab still renders the previous canonical processing JSON while `Automatic` is active, making valid older authoring state appear to belong to the failed current Request.
+
+The corrections preserve the existing ownership model. COMMERCE-057 enriches only the live authoring observation with bounded, credential-safe decode diagnostics. It does not relax production response acceptance. COMMERCE-058 consumes that evidence in Automatic, hides underlying Response disclosures while Automatic is active and preserves the existing Response definition on failure.
+
+```text
+COMMERCE-051
+    |
+    v
+COMMERCE-057
+    |
+    v
+COMMERCE-058
+    ^
+    |
+COMMERCE-053
+```
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-057 | moda_commerce | Ready | ARCH-021-COMMERCE-051 |
+| ARCH-021-COMMERCE-058 | moda_commerce | Pending | ARCH-021-COMMERCE-053, ARCH-021-COMMERCE-057 |
+
+COMMERCE-057/058 MUST NOT edit, re-gate or reopen COMMERCE-055 or COMMERCE-056. Those tasks may execute independently. Any Test-specific presentation of the richer provider diagnostic is assessed only after the current COMMERCE-055 attempt returns for architect review.
+
 ### Manual-validation follow-up — Agent contract tab
 
 The Agent contract surface is already isolated in `AgentContractTab`; manual review found no structural React refactor is required. The remaining bounded work is to make that tab a self-contained validation checkpoint for the agent-facing definition without introducing persistence, provider I/O or navigation gating.
@@ -1219,6 +1248,10 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — provider diagnostics / Automatic stale-state corrections defined
+
+- Added COMMERCE-057 and COMMERCE-058 as bounded corrections; COMMERCE-055/056 remain independent.
 
 ### 2026-09-27 — Agent contract validation follow-up defined
 
