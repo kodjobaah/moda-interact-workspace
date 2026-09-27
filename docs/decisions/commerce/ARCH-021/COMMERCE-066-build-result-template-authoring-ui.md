@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 74
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-063
 enables:
@@ -148,14 +148,14 @@ Retain existing template size/syntax bounds. Inserted tokens must be plain text 
 
 ## Work Items
 
-- [ ] Add reusable `ResultTemplateTab` component.
-- [ ] Add text-template structured controls and binding insertion.
-- [ ] Add items-template collection/item controls.
-- [ ] Present required/optional field metadata.
-- [ ] Preserve invalid local authoring values.
-- [ ] Wire non-mutating validation/staleness behavior to COMMERCE-063.
-- [ ] Add read-only canonical disclosure if useful.
-- [ ] Add focused component tests independent of parent Tool tabs.
+- [x] Add reusable `ResultTemplateTab` component.
+- [x] Add text-template structured controls and binding insertion.
+- [x] Add items-template collection/item controls.
+- [x] Present required/optional field metadata.
+- [x] Preserve invalid local authoring values.
+- [x] Wire non-mutating validation/staleness behavior to COMMERCE-063.
+- [x] Assess read-only canonical disclosure; it is not needed for this structured primary surface.
+- [x] Add focused component tests independent of parent Tool tabs.
 
 ## Interfaces / Contracts
 
@@ -179,26 +179,26 @@ Emits local authoring callbacks only. It does not persist Tool state.
 
 ## Acceptance Criteria
 
-- [ ] Text mode shows schema-derived scalar fields and inserts exact canonical tokens.
-- [ ] Items mode only offers supported collection paths.
-- [ ] Item token paths are derived from the selected item schema.
-- [ ] Optional fields are visibly distinguishable from guaranteed fields.
-- [ ] Invalid local text is retained after failed validation.
-- [ ] Validation errors appear in the Result Template surface.
-- [ ] Validation is stale after template or result-contract changes.
-- [ ] The component contains no Shopify/External-specific path derivation.
-- [ ] No Tool/database write occurs.
-- [ ] No new rich-text dependency is required.
+- [x] Text mode shows schema-derived scalar fields and inserts exact canonical tokens.
+- [x] Items mode only offers supported collection paths.
+- [x] Item token paths are derived from the selected item schema.
+- [x] Optional fields are visibly distinguishable from guaranteed fields.
+- [x] Invalid local text is retained after failed validation.
+- [x] Validation errors appear in the Result Template surface.
+- [x] Validation is stale after template or result-contract changes.
+- [x] The component contains no Shopify/External-specific path derivation.
+- [x] No Tool/database write occurs.
+- [x] No new rich-text dependency is required.
 
 ## Validation
 
-- [ ] focused ResultTemplateTab tests
-- [ ] token insertion/path tests
-- [ ] text/items mode tests
-- [ ] invalid-local-state/staleness tests
-- [ ] targeted lint
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
+- [x] focused ResultTemplateTab tests
+- [x] token insertion/path tests
+- [x] text/items mode tests
+- [x] invalid-local-state/staleness tests
+- [x] targeted lint
+- [x] changed-file TypeScript diagnostics
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -212,27 +212,39 @@ Keep component responsibilities bounded. A simple textarea plus schema-backed in
 
 ### Status
 
-Not Started
+Ready for Review (Attempt 1).
 
 ### Files Changed
 
-None.
+Changed in `moda-interact-commerce`:
+
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `tests/result-template-tab.test.tsx`
 
 ### Work Completed
 
-None.
+Added a standalone, provider-neutral `ResultTemplateTab` that consumes COMMERCE-063's derived `ToolResultContract` and an injected canonical validation function. Text and items modes expose bounded plain-text fields, exact schema-derived tokens, supported collection choices, and required/optional metadata. Incomplete local drafts remain visible; only `ResponseTemplateSchema`-parseable values are emitted to the parent. Validation issues are rendered by canonical field path, and a validation result becomes stale when the draft or supplied binding contract changes. No Tool registration, persistence, database write, or rich-text dependency was added.
+
+Implementation commit `0c1f5de` is pushed to `task/ARCH-021-COMMERCE-066`.
 
 ### Validation Results
 
-None.
+Passed:
+
+- `./node_modules/.bin/vitest run tests/result-template-tab.test.tsx` — 1 file, 4 tests.
+- Targeted ESLint on the component and component test.
+- Changed-file editor TypeScript diagnostics — no errors in either changed file.
+- `git diff --check`.
+
+The task worktree had no dependency directory, so focused validation temporarily linked the already-installed Commerce `node_modules` from the canonical source checkout; that symlink was removed after validation and is not part of the task changes.
 
 ### Deviations
 
-None.
+None. The component remains standalone; tab registration and parent Tool-editor composition remain with COMMERCE-068.
 
 ### Assumptions
 
-None.
+The parent integration supplies the COMMERCE-063 validator through `onValidate`; this keeps authorization/server-action composition outside the isolated presentation component while allowing local or server-authoritative validation.
 
 ### Unresolved Issues
 
@@ -242,28 +254,40 @@ None.
 
 None.
 
+### Launcher Evidence
+
+Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-066` on `task/ARCH-021-COMMERCE-066`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-066` on the same task branch. Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+
+Start-of-attempt synchronization: parent remote task branch fast-forwarded `not-needed`; parent `origin/main` incorporated `already-current`; implementation remote task branch fast-forwarded `not-needed`; implementation `origin/main` incorporated `already-current`. Parent start HEAD: `43d061bbc99e4eaa6e5e2c8af9a04e1adbdcfad4`. Implementation start HEAD: `0816bda450586bb0bc45069499fbc028a0b691cd`.
+
+Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`. Launcher claim commit: `7b1ee98e31598a15ba99793dca9a82c7a12b4087`.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 accepted. The standalone `ResultTemplateTab` conforms to the task contract: it consumes COMMERCE-063's provider-neutral `ToolResultContract`, authors text/items templates with exact canonical bindings, exposes optionality, retains invalid local drafts, and marks validation stale when either template state or the supplied result contract changes. No Tool registration, persistence, provider-specific path derivation, or rich-text dependency leaked into this task.
+
+The unchecked Validation boxes were a clerical mismatch with the Completion Report, which already recorded the required checks as passed. Architect review treats that mismatch as non-substantive and reconciles the task record here rather than requiring a new implementation attempt.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/src/studio/tools/authoring/result-template-tab.tsx`
+- `moda-interact-commerce/tests/result-template-tab.test.tsx`
+- this task's Completion Report and launcher/worktree evidence
 
 ### Validation Reviewed
 
-None.
+Reviewed the submitted focused validation evidence: 4 focused ResultTemplateTab tests passed, targeted ESLint passed, changed-file TypeScript diagnostics were clean, and `git diff --check` passed. Source/test inspection found no contradiction with the recorded results. No full-project test-suite rerun was required by this task.
 
 ### Architecture Conformance
 
-Pending review.
+Conforms to ARCH-021 and COMMERCE-063. The component remains source-neutral and standalone; COMMERCE-068 retains ownership of Tool-tab registration and parent editor composition.
 
 ### Follow-up
 
-None.
+COMMERCE-066 is Complete. COMMERCE-068 remains dependency-gated by COMMERCE-065 and COMMERCE-067; no additional C066 correction task is required.

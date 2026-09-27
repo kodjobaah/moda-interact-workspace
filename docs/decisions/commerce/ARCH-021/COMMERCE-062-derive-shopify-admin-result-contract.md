@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 72
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-018
 enables:
@@ -103,6 +103,17 @@ Derivation must follow the actual selected GraphQL response keys, including alia
 
 `resultPath` resolves against response keys exactly as runtime selection does.
 
+GraphQL field-merging semantics are part of the exact selected response shape. A
+validated query may repeat the same response key when GraphQL considers those field
+selections merge-compatible (same underlying field/arguments with compatible
+sub-selections). Derivation must recursively merge those compatible selections
+rather than rejecting them merely because each occurrence contributes a different
+subset of child fields.
+
+Do not use last-write-wins and do not merge semantically conflicting response
+keys. `compileDocument()` already runs GraphQL semantic validation; incompatible
+field merges must continue to fail through that validation boundary.
+
 ### R3 — deterministic scalar mapping
 
 Maintain one explicit Admin GraphQL output-scalar mapping whose JSON representation matches Shopify's actual GraphQL serialization and the Commerce result schema.
@@ -150,13 +161,15 @@ Any server/service action exposed for UI consumption returns the derived result 
 
 ## Work Items
 
-- [ ] Add canonical Admin GraphQL-selection -> `CommerceResultSchema` derivation.
-- [ ] Map aliases, object fields, scalars and bounded arrays deterministically.
-- [ ] Encode GraphQL nullability through required/optional Commerce properties.
-- [ ] Add pure nullable-output normalization semantics/helper for later runtime integration.
-- [ ] Add deterministic canonical equality/fingerprint behavior for a derived schema.
-- [ ] Expose a non-mutating authoring derivation boundary if required by current Studio services.
-- [ ] Add focused derivation, alias, nullability, list-bound and unsupported-scalar tests.
+- [x] Add canonical Admin GraphQL-selection -> `CommerceResultSchema` derivation.
+- [x] Map aliases, object fields, scalars and bounded arrays deterministically.
+- [x] Encode GraphQL nullability through required/optional Commerce properties.
+- [x] Add pure nullable-output normalization semantics/helper for later runtime integration.
+- [x] Add deterministic canonical equality/fingerprint behavior for a derived schema.
+- [x] Expose a non-mutating authoring derivation boundary through an authenticated Server Action.
+- [x] Add focused derivation, alias, nullability, list-bound and unsupported-scalar tests.
+- [x] Merge compatible repeated GraphQL response-key selections recursively instead of rejecting complementary selected shapes.
+- [x] Add direct regressions for GraphQL field merging and real pinned-schema nullable-list rejection.
 
 ## Interfaces / Contracts
 
@@ -189,26 +202,27 @@ No new cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] A valid Admin query/resultPath deterministically derives one canonical Commerce result schema without provider I/O.
-- [ ] GraphQL response aliases become the canonical result keys.
-- [ ] Unselected Shopify fields never appear in the result contract.
-- [ ] Non-null object fields are required Commerce properties.
-- [ ] Nullable object fields are optional Commerce properties.
-- [ ] Pure normalization semantics omit `null` optional object fields and reject `null` required fields.
-- [ ] Selected list shapes are emitted only when a truthful finite `maxItems` is established.
-- [ ] Unrepresentable nullable/list/scalar shapes return actionable derivation issues rather than guessed schemas.
-- [ ] Generated strings are bounded.
-- [ ] Canonical equality/fingerprint behavior is deterministic across equivalent derivations.
-- [ ] Authoring derivation creates no Tool/ToolRevision and performs no Shopify provider request.
-- [ ] Existing Admin compiler validation remains green.
+- [x] A valid Admin query/resultPath deterministically derives one canonical Commerce result schema without provider I/O.
+- [x] GraphQL response aliases become the canonical result keys.
+- [x] Unselected Shopify fields never appear in the result contract.
+- [x] Non-null object fields are required Commerce properties.
+- [x] Nullable object fields are optional Commerce properties.
+- [x] Pure normalization semantics omit `null` optional object fields and reject `null` required fields.
+- [x] Selected list shapes are emitted only when a truthful finite `maxItems` is established.
+- [x] Unrepresentable nullable/list/scalar shapes return actionable derivation issues rather than guessed schemas.
+- [x] Generated strings are bounded.
+- [x] Canonical equality/fingerprint behavior is deterministic across equivalent derivations.
+- [x] Authoring derivation creates no Tool/ToolRevision and performs no Shopify provider request.
+- [x] Existing Admin compiler validation remains green.
+- [x] A valid repeated response-key selection derives the same canonical result schema as the equivalent single merged GraphQL selection.
+- [x] A real pinned Admin list with nullable elements fails derivation with `UNREPRESENTABLE_NULLABLE_LIST`.
 
 ## Validation
 
-- [ ] focused Admin result-contract derivation tests
-- [ ] Admin compiler regression tests
-- [ ] Admin authoring-validation regression tests where affected
-- [ ] targeted lint/type diagnostics for changed files
-- [ ] `git diff --check`
+- [x] `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts --reporter=verbose`
+- [x] targeted ESLint for every Attempt 2 changed source/test file
+- [x] `npm run typecheck` (unrelated repository diagnostics remain; zero C062-owned diagnostics)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -224,58 +238,128 @@ Do not broaden `CommerceResultSchema` to arbitrary JSON Schema unless the accept
 
 ### Status
 
-Not Started
+Attempt 1: submitted for Architect Review. Attempt 2: Ready for Review.
 
 ### Files Changed
 
-None.
+- `moda-interact-commerce/lib/discovery/admin-compiler.ts`
+- `moda-interact-commerce/src/commerce/tool-definition/result-schema.ts`
+- `moda-interact-commerce/src/commerce/tool-authoring/admin-validation.ts`
+- `moda-interact-commerce/src/studio/tools/admin-validation-server-actions.ts`
+- `moda-interact-commerce/tests/admin-result-contract.test.ts`
+- `moda-interact-commerce/tests/shopify-admin-authoring-validation.test.ts`
+
+Additional Attempt 2 files:
+
+- `moda-interact-commerce/lib/discovery/admin-compiler.ts`
+- `moda-interact-commerce/tests/admin-result-contract.test.ts`
 
 ### Work Completed
 
-None.
+- Added `deriveAdminResultContract`, which reuses the pinned Admin schema/document validation and follows response aliases and `resultPath` without provider I/O.
+- Added explicit JSON-serialized Admin scalar mappings using the pinned 2026-07 artifact descriptions. Strings are bounded to 4096 characters; unsupported JSON/unknown output scalars fail with bounded actionable issues.
+- Derived object required/optional properties from GraphQL non-null wrappers. Bounded connection `nodes`/`edges` arrays use the query's literal `first` argument; unrelated, unbounded lists and nullable/nested-list elements are rejected.
+- Added nullable-output normalization that omits null optional object properties and reports null required properties, plus deterministic canonical schema serialization with sorted object keys and required lists.
+- Exposed an input-bounded authoring derivation service and authenticated platform-admin Server Action. The action returns only the derived contract/issues and performs no durable writes or provider calls.
+- Corrected existing Admin compiler type-kind detection so valid pinned-schema scalars such as `UnsignedInt64` are not mistaken for object types during query validation.
+
+Attempt 2 — Architect Review corrections:
+
+- Implemented Finding 1 in `lib/discovery/admin-compiler.ts` and `tests/admin-result-contract.test.ts`: after `compileDocument()` performs GraphQL semantic validation, recursively merge repeated response-key selection sets before generating output shapes. Complementary object fields and nested selections are unioned, arrays retain the same proven bound and recursively merged item schema, and required child keys are combined. Repeated scalar selections collapse to one property. Distinct underlying fields and conflicting selected shapes are not unioned; semantic conflicts continue to return `GRAPHQL_VALIDATION`.
+- Added the exact aliased repeated-`nodes` regression and proved its canonical schema equals the equivalent single merged selection. Exact schema assertion verifies only `id` and `title` are present and both are required; alias `items` is retained in the query path.
+- Implemented Finding 2 in `lib/discovery/admin-compiler.ts` and `tests/admin-result-contract.test.ts`: a literal `QueryRoot.nodes(ids: [...])` query establishes its truthful maximum result count when the list contains 1–20 IDs, allowing the pinned `[Node]!` output to reach the existing nullable-list guard. The test uses the real pinned `QueryRoot.nodes` and `Node.id`, and asserts `UNREPRESENTABLE_NULLABLE_LIST`.
+- Attempt 2 implementation commit `622add6` is pushed to `task/ARCH-021-COMMERCE-062`.
 
 ### Validation Results
 
-Not run.
+- `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts`: passed, 39 tests.
+- Targeted ESLint across all six changed files: passed with no output/errors.
+- `git diff --check`: passed.
+- `npx tsc --noEmit --pretty false`: repository-wide check remains blocked by 252 diagnostics in unrelated files (including missing preview module imports and Prisma client types); no diagnostics referenced C062-changed files.
+
+Attempt 2:
+
+- `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts --reporter=verbose` — 4 files, 42 tests passed.
+- Targeted ESLint on `lib/discovery/admin-compiler.ts` and `tests/admin-result-contract.test.ts` passed.
+- `npm run typecheck` completed with the existing repository-wide failures: 260 diagnostics in 28 files. Neither Attempt 2 changed file appears in the diagnostics; changed-file editor TypeScript diagnostics report no errors for either file.
+- `git diff --check` passed.
 
 ### Deviations
 
-None.
+None. No provider execution, persistence changes, cross-repository contracts, or UI changes were added.
 
 ### Assumptions
 
-None.
+- The pinned Admin 2026-07 introspection descriptions are authoritative for scalar JSON serialization; unsupported JSON scalar output remains rejected because the Commerce result grammar has no general JSON value node.
 
 ### Unresolved Issues
 
-None.
+- Repository-wide TypeScript validation remains red on the unrelated diagnostics noted above; the changed files had no reported TypeScript diagnostics.
 
 ### Architectural Concerns
 
 None.
 
+### Attempt 2 Launcher Evidence
+
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-062` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-062`, both on `task/ARCH-021-COMMERCE-062`. Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+
+Start synchronization from the successful preparation packet: parent remote task branch fast-forwarded `not-needed`; parent `origin/main` incorporated `already-current`; implementation remote task branch fast-forwarded `not-needed`; implementation `origin/main` incorporated `already-current`. Parent start HEAD `a481e3e757a5c0539b6608e665880db482b718fd`; implementation start HEAD `368de55c3b05e5d5fa3cb98e3f3bfae5dbe38e0d`.
+
+Recursive implementation submodules: sync passed; update/init passed; `database` initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`. Attempt 2 launcher claim commit `d6e3b4c3b6d9939defcfc24a2ecba09ada2414d9`.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 2 satisfies both Attempt 1 correction items and is accepted.
+
+The derivation path now preserves GraphQL field-merging semantics after the existing semantic-validation boundary. Compatible repeated response keys are recursively merged without last-write-wins behavior: repeated scalar selections collapse to one property, object child selections are unioned recursively with required keys combined, and repeated arrays preserve the same proven bound while recursively merging their item schemas. Incompatible field/argument selections continue to fail through GraphQL semantic validation rather than being unioned by Commerce.
+
+The exact repeated aliased `nodes` regression proves that two complementary `items: nodes` selections derive the same canonical Commerce result schema as the equivalent single merged selection, preserving alias `items`, including only the selected `id` and `title` fields, and retaining the query-proven `maxItems: 2` bound.
+
+The second correction is also complete. A literal `QueryRoot.nodes(ids: [...])` selection now derives a truthful finite maximum from the 1-20 literal IDs supplied to the real pinned Admin `2026-07` field, allowing its actual `[Node]!` nullable-element type to reach the existing representability guard. The focused regression therefore returns `UNREPRESENTABLE_NULLABLE_LIST` without altering the pinned schema artifact or relaxing the Commerce result grammar.
+
+The rest of the C062 architecture remains conformant: derivation is pure/non-provider; aliases and exact selected shape remain authoritative; scalar serialization is explicit and bounded; GraphQL nullability maps to required/optional Commerce properties; nullable-output normalization remains pure; unbounded or otherwise unrepresentable list/scalar shapes fail deterministically; canonical schema equality remains deterministic; and the authenticated authoring boundary performs no Tool persistence or Shopify provider I/O.
+
+COMMERCE-060 is already Complete. With COMMERCE-062 now accepted Complete, both dependencies of COMMERCE-070 are satisfied, so COMMERCE-070 is promoted from Pending to Ready. COMMERCE-065 remains Pending because its other dependency, COMMERCE-064, is Ready but not Complete.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/lib/discovery/admin-compiler.ts`
+- `moda-interact-commerce/tests/admin-result-contract.test.ts`
+- C062 Completion Report and prior Architect Review
+- `docs/decisions/commerce/ARCH-021/COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md`
+- Commerce ARCH-021 task index
+- ARCH-021 parent architecture execution tables/change history
 
 ### Validation Reviewed
 
-None.
+Submitted/recorded Attempt 2 validation:
+
+- required four-file regression packet: 42/42 tests passed;
+- targeted ESLint on the two Attempt 2 changed files: passed;
+- `npm run typecheck`: repository-wide check remains red with 260 diagnostics across 28 unrelated files, with zero diagnostics in the two C062 Attempt 2 changed files;
+- changed-file editor TypeScript diagnostics: clean;
+- `git diff --check`: passed.
+
+Source inspection confirms the required repeated-field merge and real pinned nullable-list regressions exercise the correction contract. The submitted archive contains no installed dependencies, so the Vitest/ESLint commands were not independently rerun in this review environment; the validation results and clean pushed worktree state are recorded from the Completion Report/submission.
 
 ### Architecture Conformance
 
-Pending.
+Conformant.
+
+- GraphQL semantic validation remains authoritative for conflicting response keys/arguments.
+- Compatible repeated response keys derive one exact canonical Commerce output shape.
+- Real pinned Admin list nullability is preserved rather than guessed away.
+- No provider execution, React/UI change, persistence change, cross-repository contract, or schema-artifact mutation was introduced.
 
 ### Follow-up
 
-None.
+None for COMMERCE-062.
+
+Task is architect-accepted Complete at Attempt 2. ARCH-021-COMMERCE-070 is promoted to Ready because ARCH-021-COMMERCE-060 and ARCH-021-COMMERCE-062 are both Complete. ARCH-021-COMMERCE-065 remains Pending on ARCH-021-COMMERCE-064.
