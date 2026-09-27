@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 72
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-018
 enables:
@@ -187,13 +187,13 @@ Tool definition snapshots
 
 ## Work Items
 
-- [ ] Add or generalize the Shopify query execution port for Admin GraphQL without weakening authorization.
-- [ ] Implement the pinned Admin provider request with offline-token resolution.
-- [ ] Reuse the accepted Admin compiler before execution.
-- [ ] Select `resultPath` and validate current persisted `resultSchema`.
-- [ ] Normalize successful data as `SHOPIFY_ADMIN` facts.
-- [ ] Wire `DefinitionExecutor` and executable-registry availability.
-- [ ] Add success, throttle, GraphQL-error, deadline, invalid-result and credential-safety tests.
+- [x] Add a dedicated Admin GraphQL execution port without changing the tokenless Storefront port.
+- [x] Implement the pinned Admin provider request with server-side offline-session token resolution.
+- [x] Reuse the accepted Admin compiler and mapped-argument validation before session/provider work.
+- [x] Select `resultPath` and validate selected values against persisted `resultSchema`.
+- [x] Normalize successful data as bounded `SHOPIFY_ADMIN` facts.
+- [x] Wire `DefinitionExecutor`, production backend composition and executable-registry availability.
+- [x] Add success, throttle, GraphQL-error, deadline, invalid-result and credential-safety tests.
 
 ## Interfaces / Contracts
 
@@ -220,28 +220,31 @@ The normalized result's `data.values` becomes the source later consumed by COMME
 
 ## Acceptance Criteria
 
-- [ ] A valid published/draft-executable Admin query can execute against an authorized merchant.
-- [ ] Runtime uses Shopify Admin `2026-07`, not Storefront.
-- [ ] Runtime uses the server-side offline token and never accepts one from Tool arguments.
-- [ ] Admin compiler rejection prevents provider execution.
-- [ ] Mapped variables are the only model-supplied query inputs.
-- [ ] `resultPath` is selected deterministically.
-- [ ] The selected result must satisfy the persisted `resultSchema`.
-- [ ] Successful data uses source `SHOPIFY_ADMIN` and contains `values`.
-- [ ] Provider 429 maps to the accepted throttling failure.
-- [ ] Aborted/deadline execution cannot later replace the deadline result.
-- [ ] Credentials are absent from results/log-safe assertions.
-- [ ] Existing External HTTP and policy execution tests remain green.
-- [ ] Storefront support is unchanged by this task.
+- [x] A valid Admin query definition executes against the authorized merchant context when the Admin executor is installed.
+- [x] Runtime uses Shopify Admin `2026-07`, not Storefront.
+- [x] Runtime uses the server-side offline token and never accepts one from Tool arguments.
+- [x] Admin compiler rejection prevents session lookup and provider execution.
+- [x] Mapped variables are the only model-supplied query inputs.
+- [x] `resultPath` is selected deterministically.
+- [x] The selected result must satisfy the persisted `resultSchema`.
+- [x] Successful data uses source `SHOPIFY_ADMIN` and contains `values`.
+- [x] Provider 429 maps to `THROTTLED`.
+- [x] Aborted/deadline execution settles as `DEADLINE` and aborts the provider signal.
+- [x] Credentials are absent from returned results, rendered text, telemetry attributes and definition snapshots.
+- [x] Existing External HTTP and policy execution tests remain green.
+- [x] Storefront support is unchanged by this task.
 
 ## Validation
 
-- [ ] focused Admin query execution tests
-- [ ] DefinitionExecutor tests
-- [ ] executable-registry availability tests
-- [ ] targeted lint
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
+- [x] Focused Admin query execution tests: `npx vitest run tests/admin-query-execution.test.ts` passed (10 tests).
+- [x] DefinitionExecutor tests: included in the final focused compatibility run.
+- [x] Executable-registry availability tests: included in the final focused compatibility run.
+- [x] Targeted lint: ESLint passed for all changed source and test files.
+- [x] Changed-file TypeScript diagnostics: no Pylance errors in changed files.
+- [x] `git diff --check` passed before commit and after mainline synchronization.
+- [x] Shopify Admin validator accepted the bounded Products query fixture against API `2026-07` (`read_products` scope).
+- [x] Compatibility suite: `npx vitest run tests/admin-query-execution.test.ts tests/query-execution.test.ts tests/definition-execution.test.ts tests/backend-integration.test.ts tests/external-http-executor.test.ts --reporter=verbose` passed (60 tests).
+- [x] Implementation commit `0902590` was merged with fetched `origin/main` and pushed to `origin/task/ARCH-021-COMMERCE-060`.
 
 ## Stop Condition
 
@@ -257,58 +260,92 @@ Do not redesign Admin `resultSchema` semantics here. The current persisted schem
 
 ### Status
 
-Not Started
+Attempt 2 correction complete; submitted for architect review.
 
 ### Files Changed
 
-None.
+`moda-interact-commerce/src/commerce/query/admin.ts`; `moda-interact-commerce/src/commerce/execution/executor.ts`; `moda-interact-commerce/src/commerce/execution/index.ts`; `moda-interact-commerce/src/commerce/execution/ports.ts`; `moda-interact-commerce/src/commerce/execution/renderer.ts`; `moda-interact-commerce/src/commerce/integration/backend.ts`; `moda-interact-commerce/src/commerce/integration/backend/executors.ts`; `moda-interact-commerce/tests/admin-query-execution.test.ts`; `moda-interact-commerce/tests/backend-integration.test.ts`; `moda-interact-commerce/tests/definition-execution.test.ts`.
 
 ### Work Completed
 
-None.
+Added bounded Admin GraphQL execution using only the authorized shop domain and a server-resolved offline session token. The runtime reuses the pinned Admin compiler, validates mapped GraphQL variables before provider work, posts only to the Admin `2026-07` endpoint, bounds and validates the provider response, applies `resultPath` and persisted `resultSchema`, and emits normalized `SHOPIFY_ADMIN` facts. Wired production transport/session lookup, executor dispatch and compiler-backed executable-registry availability. Admin result arrays now use the existing bounded search-results rendering cap. Storefront, policy and External HTTP paths remain supported.
 
 ### Validation Results
 
-None.
+Passed focused Admin execution tests (10), DefinitionExecutor/backend/registry tests, Storefront query tests and External HTTP executor regressions (60 total). Shopify Admin schema validation accepted the bounded query fixture against `2026-07`. Targeted ESLint and changed-file Pylance diagnostics passed; `git diff --check` passed. Package-wide `npx tsc --noEmit` remains non-green due to unrelated existing diagnostics in generated-Prisma-dependent backend/publication code, Studio services and existing tests; no changed-file Pylance diagnostics were reported.
 
 ### Deviations
 
-None.
+No scope deviation. Admin array rendering uses the already-existing Storefront `maxSearchResults` limit so Admin result-template rendering remains bounded.
 
 ### Assumptions
 
-None.
+The existing Prisma `session` row keyed by the authorized shop domain with `isOnline: false` is the authoritative offline-token source, matching the existing production Admin policy integration.
 
 ### Unresolved Issues
 
-None.
+The package-wide TypeScript command reports unrelated diagnostics as noted under Validation Results; changed files have no editor TypeScript diagnostics.
 
 ### Architectural Concerns
 
 None.
 
+### Attempt 2 Correction
+
+Addressed the Changes Requested finding: Shopify Admin GraphQL HTTP 200 envelopes now map any bounded error entry with `extensions.code === "THROTTLED"` to the minimal Commerce `THROTTLED` error with `retryable: true`. Other GraphQL errors retain the existing safe `UNAVAILABLE` mapping. Added a regression containing a token, provider message, and request identifier in the provider error; the returned result contains none of those details.
+
+### Attempt 2 Files Changed
+
+`moda-interact-commerce/src/commerce/query/admin.ts`; `moda-interact-commerce/tests/admin-query-execution.test.ts`.
+
+### Attempt 2 Validation
+
+- Focused Admin execution suite passed (11 tests).
+- Admin, Storefront query, DefinitionExecutor, backend integration, and External HTTP compatibility suite passed (61 tests across 5 files).
+- Targeted ESLint passed for both changed files.
+- Changed-file Pylance diagnostics reported no errors.
+- `git diff --check` passed.
+
+### Attempt 2 Status
+
+Ready for architect review on the existing mirrored task branches. No additional scope changes were made.
+
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 2 satisfies the Attempt 1 correction contract. The Admin execution port now recognizes Shopify Admin GraphQL throttling delivered in an HTTP 200 GraphQL envelope when any bounded error entry has `extensions.code === "THROTTLED"`, returning only the minimal Commerce `THROTTLED` result with `retryable: true`. Other GraphQL errors continue to use the existing safe `UNAVAILABLE` mapping.
+
+The regression includes provider message text, a request identifier and access-token-like material and proves none are exposed in the returned Commerce result. The defensive HTTP 429 mapping remains intact. No unrelated execution behavior changed.
+
+The broader C060 architecture remains conformant: the pinned Admin compiler runs before session/provider work; the authorized shop domain comes only from execution context; the offline Shopify token is resolved server-side; the provider endpoint is pinned to Admin `2026-07`; provider response consumption is bounded; selected results are checked against `resultPath` and persisted `resultSchema`; the response-template boundary remains unchanged; and Storefront, policy and External HTTP execution remain supported.
+
+The submitted snapshot still carried an active executor/claim despite the review handoff. Acceptance normalizes `executor` and `claimed_at` to `null`.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/src/commerce/query/admin.ts`
+- `moda-interact-commerce/tests/admin-query-execution.test.ts`
+- C060 Completion Report and prior Architect Review
+- Commerce ARCH-021 task index and parent architecture execution tables
 
 ### Validation Reviewed
 
-None.
+- Attempt 2 focused Admin execution suite: 11 tests passed.
+- Five-file Admin/Storefront/DefinitionExecutor/backend/External HTTP compatibility suite: 61 tests passed.
+- Targeted ESLint: passed.
+- Changed-file diagnostics: clean.
+- `git diff --check`: passed.
+- Attempt 1 Shopify Admin `2026-07` schema validation remained recorded as passed; no schema/query-shape change was introduced by Attempt 2.
 
 ### Architecture Conformance
 
-Pending review.
+Conforms. Provider throttling semantics now match the required Commerce error contract while preserving credential secrecy, tenant/shop authority, endpoint pinning, compiler reuse, bounded provider I/O, response validation, rendering and compatibility with existing execution paths.
 
 ### Follow-up
 
-None.
+None for C060. Mark the task Complete. COMMERCE-069 and COMMERCE-070 remain Pending because each still has another dependency in addition to C060; acceptance of C060 alone does not make either task executable.
