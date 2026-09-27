@@ -325,7 +325,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Complete | COMMERCE-062, COMMERCE-064 |
 | [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Complete | COMMERCE-063 |
 | [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Complete | COMMERCE-063 |
-| [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Ready | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
+| [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Complete | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
 | [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Complete | COMMERCE-060, COMMERCE-064 |
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 
@@ -363,6 +363,13 @@ Key invariants:
 - Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
+
+
+### COMMERCE-068 Attempt 1 accepted — 2026-09-27
+
+COMMERCE-068 is **Complete / Accepted, Attempt 1**. New Tool and persisted-DRAFT authoring now expose a dedicated Result Template tab backed by the source-neutral ToolResultContract boundary; Agent Contract is call-side only; and Review presents Agent contract, Result contract and Result Template separately. Free tab navigation, invalid local authoring retention, explicit Save/Create/Publish boundaries, External HTTP Response behavior and Shopify manual GraphQL remain unchanged. Submitted validation passed 127/127 focused UI tests, targeted ESLint, changed-file diagnostics and `git diff --check`. The recorded `npm ci` Node-engine/audit warnings did not alter manifests or lockfiles.
+
+With COMMERCE-060 through COMMERCE-070 now architect-accepted Complete, this refinement workstream has no remaining executable task.
 
 ### COMMERCE-065 Attempt 2 accepted — 2026-09-27
 
