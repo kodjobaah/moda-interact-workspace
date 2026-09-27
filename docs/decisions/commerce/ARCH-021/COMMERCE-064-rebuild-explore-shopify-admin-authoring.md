@@ -253,7 +253,20 @@ Review
 
 ### Files Changed
 
-Explore route/workspace integration, New and existing Tool Request editors, transient authoring-session storage, Admin Explorer/schema browser/argument controls, and focused session/handoff/workspace tests.
+Implementation repository: `moda-interact-commerce`.
+
+- `components/studio-composer-context.tsx`
+- `src/commerce/tool-authoring/admin-validation.ts`
+- `src/studio/discovery/admin-explorer.tsx`
+- `src/studio/tools/admin-validation-server-actions.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/shopify-admin-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/admin-explorer.test.tsx`
+- `tests/shopify-admin-authoring-validation.test.ts`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
@@ -261,15 +274,25 @@ Explore route/workspace integration, New and existing Tool Request editors, tran
 - Added bounded, versioned `sessionStorage` sessions keyed by opaque IDs; restored exact Request editor buffers and Explorer tab, visual selection, and raw literal text across remounts.
 - Implemented New Tool and existing Admin draft Request -> Explore -> Use in tool -> Request round trips. Use in tool merges only Admin execution query fields after canonical validation; Cancel discards transient Explorer state without changing the originating definition.
 - Preserved representable manual query selections and left valid nonrepresentable manual documents unchanged until a visual edit. Added missing/corrupt-session, cleanup, isolation, no-durable-write, and refresh coverage.
+- Lifted raw Admin literal text into the parent New and existing-draft editors, preserving malformed text and authored whitespace exactly through Explore and route remounts without draft writes.
+- Made Explore validation Request-only: it validates the current InputSchema and the Admin query-authoring execution subset through `compileAdminQueryAuthoring`, without parsing or validating Response/result-template buffers.
+- Added separate reactive composer identities for unsaved and existing authoring sessions. Durable `tool` and `release` preview handoffs remain unchanged; session identity is set on Explore open/restore and cleared on discard, consume, or successful creation.
 
 ### Validation Results
 
-- Focused round-trip/session/workspace/Admin query-builder suite: 6 files, 65 tests passed.
-- Admin GraphQL compiler and no-provider-I/O suites: 2 files, 17 tests passed.
-- Admin Explorer refresh test and focused lint passed after adding selection, tab, and raw literal restoration assertions.
-- ESLint passed across all changed source and test files.
-- Full Commerce `tsc --noEmit` remains blocked by pre-existing diagnostics in preview route imports, `lib/discovery/compiler.ts`, `scripts/validate-shopify-admin-local.ts`, `src/commerce/integration/studio/services.ts`, and the existing Admin query-builder GraphQL `TypeNode` conversion. Filtered diagnostics for C064-touched files are clean.
+- Focused authoring/session/Explorer/Preview/query-builder regression set: 8 files, 98 tests passed.
+- ESLint passed for all 12 changed source and test files.
+- Full Commerce `tsc --noEmit` remains blocked by existing diagnostics in preview route imports, `lib/discovery/compiler.ts`, `scripts/validate-shopify-admin-local.ts`, `src/commerce/integration/studio/services.ts`, and the existing Admin query-builder GraphQL `TypeNode` conversion. A filtered check reported no diagnostics in the 12 changed files after the test fixture annotations were corrected.
+- Prisma client generation passed through the already-installed CLI: `./node_modules/.bin/prisma generate --schema database/prisma/schema.prisma`. The preceding pnpm invocation was blocked by ignored package build scripts; no build-script approval was granted.
 - `git diff --check` passed.
+
+### Attempt 2 Execution Evidence
+
+- Canonical parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-064`, branch `task/ARCH-021-COMMERCE-064`. It started at the launcher-prepared claim commit `e51e7ce60bb7842b8a554a618e7c59341ecf8f0b`; the parent report worktree was clean before this report update.
+- Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-064`, branch `task/ARCH-021-COMMERCE-064`. Launcher synchronization merged current `origin/main`; implementation started clean at `1d3a5234090597a9e09b9a9863ba9f91c6d584db`.
+- Recursive implementation submodule `database` was prepared at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`; `git submodule status --recursive` showed it initialized and clean.
+- Worktree registration checks found one canonical parent and one canonical implementation worktree for C064; no other task worktree was reused. The shared workspace remained on `main` at `b7f4019b0385e3ef40d1e49d10dec446143a97d0`; it had unrelated dirty/untracked workspace content, which this task left untouched. No implementation edits were made in the shared checkout.
+- Launcher Attempt 2 claim `e51e7ce60bb7842b8a554a618e7c59341ecf8f0b` was pushed before implementation work. No startup synchronization or submodule initialization was repeated during this continuation.
 
 ### Deviations
 
