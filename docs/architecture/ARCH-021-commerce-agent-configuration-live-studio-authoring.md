@@ -1066,7 +1066,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-070 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1090,6 +1090,14 @@ COMMERCE-062    COMMERCE-064    COMMERCE-066
 
 COMMERCE-067 is architect-accepted Complete. COMMERCE-068 remains Pending until COMMERCE-065 and COMMERCE-066 are also Complete. These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
 
+
+Current executable frontier after COMMERCE-070 acceptance:
+
+```text
+COMMERCE-064
+```
+
+COMMERCE-070 Attempt 1 is architect-accepted Complete and has no downstream enables. COMMERCE-064 remains independently Ready. COMMERCE-065 and COMMERCE-069 remain gated by COMMERCE-064; COMMERCE-068 remains gated by COMMERCE-065.
 
 Phase 3 exit criteria:
 
@@ -1317,7 +1325,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-070 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+| ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1346,6 +1354,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-070 Attempt 1 accepted
+
+- Accepted implementation `4dea5c8`: production Shopify Admin execution derives the authoritative result contract from the immutable Admin query/result path, rejects stale persisted schemas before provider output is exposed, normalizes nullable output using the shared COMMERCE-062 semantics, and validates normalized values before canonical `data.values` are rendered.
+- Publication/authoring and runtime now use the same exact compiler-derived result-schema equality rather than compatible-but-divergent manually authored schemas.
+- Accepted recorded validation: focused Admin result-contract packet 64/64, adjacent Admin builder/contract tests 30/30, targeted Admin executable-registry integration case passed, targeted ESLint, changed-file diagnostics and `git diff --check` passed. The full backend integration file retains two unrelated process-global `getCommerceBackend()` availability assertion failures; no C070 change touches that initialization path.
+- Marked COMMERCE-070 Complete. It enables no downstream task; COMMERCE-064 remains the current independent executable frontier for this Shopify/Admin workstream.
 
 ### 2026-09-27 — COMMERCE-062 Attempt 2 accepted
 
