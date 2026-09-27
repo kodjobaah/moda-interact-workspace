@@ -1029,6 +1029,14 @@ Agent-contract follow-up task:
 COMMERCE-056 is architect-accepted Complete and remains independent of COMMERCE-055.
 
 
+### 2026-09-27 — COMMERCE-067 Attempt 1 accepted
+
+- Accepted the canonical Agent call-side validator over definition version, description and input schema only.
+- Result Template/output compatibility remains owned by COMMERCE-063; the temporary pre-C068 compatibility adapter is explicitly deprecated and composes the canonical boundaries.
+- Confirmed final publication remains strict for both persisted Agent fields and Result Template compatibility.
+- Accepted the authenticated/non-mutating Server Action and zero-backend-access evidence.
+- Marked COMMERCE-067 Complete. COMMERCE-068 remains Pending because COMMERCE-065 and COMMERCE-066 are not both Complete in this snapshot.
+
 ### Shopify Admin result-contract and Result Template refinement — 2026-09-27
 
 Manual architecture review of Tool result/prompt authoring establishes the following refinement without introducing final tab gating/traversal:
@@ -1053,8 +1061,8 @@ Implementation tasks:
 | ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
-| ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-066 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
@@ -1067,6 +1075,20 @@ COMMERCE-064    COMMERCE-066    COMMERCE-067    COMMERCE-070
 ```
 
 COMMERCE-070 is newly Ready because COMMERCE-060 and COMMERCE-062 are both Complete. COMMERCE-064, COMMERCE-066 and COMMERCE-067 were already Ready from their independent dependency chains. COMMERCE-065 remains Pending until COMMERCE-064 is Complete.
+Current remaining executable frontier in this workstream after COMMERCE-066 acceptance:
+
+```text
+COMMERCE-062    COMMERCE-064    COMMERCE-067
+```
+
+COMMERCE-066 Attempt 1 is architect-accepted Complete. COMMERCE-067 remains Ready. COMMERCE-068 is still gated by COMMERCE-065 and COMMERCE-067; its COMMERCE-066 dependency is satisfied. These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
+Current independent execution frontier after COMMERCE-067 acceptance:
+
+```text
+COMMERCE-062    COMMERCE-064    COMMERCE-066
+```
+
+COMMERCE-067 is architect-accepted Complete. COMMERCE-068 remains Pending until COMMERCE-065 and COMMERCE-066 are also Complete. These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
 
 
 Phase 3 exit criteria:
@@ -1291,8 +1313,8 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
 | ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-066 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |

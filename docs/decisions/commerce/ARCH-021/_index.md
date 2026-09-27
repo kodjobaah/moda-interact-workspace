@@ -323,8 +323,8 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-063](COMMERCE-063-compile-tool-result-contract.md) | Backend: compile source-neutral ToolResultContract and validate Result Templates | Complete | COMMERCE-043 |
 | [COMMERCE-064](COMMERCE-064-rebuild-explore-shopify-admin-authoring.md) | UI: rebuild Explore Shopify on Admin API with sessionStorage authoring handoff | Ready | COMMERCE-039, COMMERCE-061 |
 | [COMMERCE-065](COMMERCE-065-split-shopify-request-response-authoring.md) | UI: split Shopify Request invocation from Response result-contract authoring | Pending | COMMERCE-062, COMMERCE-064 |
-| [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Ready | COMMERCE-063 |
-| [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Ready | COMMERCE-063 |
+| [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Complete | COMMERCE-063 |
+| [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Complete | COMMERCE-063 |
 | [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Pending | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
 | [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Pending | COMMERCE-060, COMMERCE-064 |
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Ready | COMMERCE-060, COMMERCE-062 |
@@ -348,7 +348,7 @@ COMMERCE-060    COMMERCE-061    COMMERCE-062    COMMERCE-063
 COMMERCE-065 + COMMERCE-066 + COMMERCE-067 ---> COMMERCE-068
 ```
 
-COMMERCE-063 Attempt 1 is architect-accepted Complete. Its two direct dependants, COMMERCE-066 and COMMERCE-067, are now Ready and may execute independently. COMMERCE-068 remains dependency-gated by COMMERCE-065 + COMMERCE-066 + COMMERCE-067.
+COMMERCE-063 Attempt 1 is architect-accepted Complete. COMMERCE-066 Attempt 1 is now architect-accepted Complete; COMMERCE-067 remains Ready. COMMERCE-068 remains dependency-gated by COMMERCE-065 + COMMERCE-066 + COMMERCE-067, with the COMMERCE-066 dependency now satisfied.
 
 Key invariants:
 
@@ -380,6 +380,12 @@ field-merging semantics.
 Attempt 2 must also add direct evidence for the already-implemented
 `UNREPRESENTABLE_NULLABLE_LIST` path using the real pinned Admin schema.
 COMMERCE-065 and COMMERCE-070 remain Pending on their other dependencies as well.
+### COMMERCE-067 Attempt 1 accepted — 2026-09-27
+
+COMMERCE-067 is **Complete / Accepted, Attempt 1**. Canonical Agent validation now owns only definition version, description and input schema; Result Template/output compatibility remains exclusively delegated to COMMERCE-063. The pre-C068 compatibility helper/action is explicitly deprecated and composes the two canonical validators without provider or persistence side effects. Final publication remains strict for both Agent and Result Template contracts. Submitted validation passed the 132-test contract/UI packet, targeted lint, changed-file diagnostics and diff checks.
+
+COMMERCE-068 remains Pending because COMMERCE-065 and COMMERCE-066 are not both Complete in this snapshot.
+
 ### COMMERCE-061 Attempt 2 accepted — 2026-09-27
 
 COMMERCE-061 is **Complete / Accepted, Attempt 2**. Admin exploration/query authoring remains pinned to the retained Admin `2026-07` artifact, and generated/manual Request authoring now shares the canonical Admin document/mapping compatibility path independently of Response-owned result state. Attempt 2 rejects incompatible Tool-input/literal bindings, composes multiple loaded pages for one parent type, and preserves representable manual queries even when `resultPath`/`resultSchema` are stale while continuing to reject invalid Admin pagination/query rules. Submitted validation passed the 56-test focused packet and 22-test canonical Admin compiler script, plus targeted lint, changed-file diagnostics and diff checks. COMMERCE-039 is already Complete, so COMMERCE-064 is promoted to **Ready**.
