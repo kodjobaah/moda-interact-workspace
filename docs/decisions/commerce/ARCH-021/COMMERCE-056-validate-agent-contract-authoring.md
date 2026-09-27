@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 71
 executor: null
 claimed_at: null
@@ -401,7 +401,7 @@ Ready for Architect Review
 - `pnpm run typecheck`: failed with 12 existing diagnostics in six unrelated files (`app/api/studio/code-response/validate/route.ts`, `lib/discovery/compiler.ts`, `scripts/validate-shopify-admin-local.ts`, `src/commerce/integration/studio/services.ts`, `tests/agent-configuration-effective.test.ts`, `tests/agent-configuration-prompts-postgres.test.ts`). No diagnostics were reported for changed files.
 - Additional `shopify-admin-tools-ui.test.tsx`: 13/15 passed; two existing assertions expect `Valid Admin GraphQL query.` from the persisted Admin editor, which does not render that status and does not use `AgentContractTab`. New Tool Shopify Admin Agent validation is covered and passes in `tool-authoring-screen.test.tsx`.
 - Implementation repository `moda-interact-commerce`: C056 implementation commit `b7cbd97` is pushed to `origin/task/ARCH-021-COMMERCE-056`; Attempt 2 current-main integration commit `266bd94` is also pushed to that branch. The task branch was not merged to implementation `main`.
-- Parent workspace task file `docs/decisions/commerce/ARCH-021/COMMERCE-056-validate-agent-contract-authoring.md`: initial completion-report commit `bbfa8ef7` and Attempt 2 claim commit `cbf17e6a` are pushed on `origin/task/ARCH-021-COMMERCE-056`; this A1-R1 report correction is being submitted on the same branch. The parent task branch was not merged to workspace `main`.
+- Parent workspace task file `docs/decisions/commerce/ARCH-021/COMMERCE-056-validate-agent-contract-authoring.md`: initial completion-report commit `bbfa8ef7`, Attempt 2 claim commit `cbf17e6a`, and A1-R1 report-correction commit `4ca2355f` are pushed on `origin/task/ARCH-021-COMMERCE-056`. The parent task branch was not merged to workspace `main`.
 
 ### Deviations
 None. Final Create/Save/Publish validation and lifecycle boundaries remain unchanged.
@@ -420,63 +420,18 @@ None
 ## Architect Review
 
 ### Review Status
-Changes Requested
+
+Accepted
 
 ### Review Notes
 
-Attempt 1 implementation is otherwise architecturally conformant and does not require implementation-source churn.
+Attempt 2 is accepted.
 
-The named Agent-contract validator is non-mutating and validates only the Agent-facing definition fields plus the current processed-result/output contract. SemVer, bounded input-schema, forbidden authority/credential inputs and response-template schema/path semantics are reused from the canonical Tool-definition/publication boundary; publication and in-tab validation share `responseTemplateCompatibilityIssues(...)`. External HTTP uses the same canonical `values` output wrapper as publication. The ADMIN-authorized Server Action does not resolve Commerce backend/provider/credential state or perform persistence.
+A1-R1 is fully reconciled in the durable Completion Report. The report now records the launcher-resolved canonical workspace root, dedicated parent and implementation worktrees, matching task branches, absence of shared/default-checkout mutation or another-task worktree reuse, all four required start-of-attempt synchronization outcomes, the recursive pinned `database` submodule state, the published implementation/task-report commits, and the final clean/tracking branch state.
 
-`AgentContractTab` remains the single bounded form component. Raw malformed JSON remains in local authoring buffers, validation success is keyed to the complete current Agent/output candidate and therefore becomes stale on relevant edits, persisted-DRAFT validation operates on the unsaved candidate without Save, and no Phase 2 navigation gating is introduced.
+The required `origin/main` integration exposed two test-fixture conflicts with C055. Those conflicts were resolved by retaining both tasks' mocks/resets rather than dropping either behavior, and the integrated C056 focused packet then passed 99/99. No C056 feature-source correction was required.
 
-The submitted focused validation evidence is acceptable for the task-owned implementation: 92/92 focused tests passed, targeted ESLint and `git diff --check` passed, focused publication checks passed, and changed-file diagnostics are reported clean. The common 85/86 lifecycle fixture mismatch and repository-wide typecheck diagnostics are documented outside the C056 changed files.
-
-#### A1-R1 — reconcile mandatory VCS/worktree evidence in the Completion Report
-
-The Completion Report does not yet contain the complete durable evidence required by `docs/agent-worktree-isolation-policy.md` and `docs/agent-vcs-ownership-policy.md`.
-
-It currently states generally that launcher preparation established dedicated worktrees and the pinned Commerce submodule, but the report must record the concrete physical-isolation and start-of-attempt synchronization fields, together with both published branch/commit records.
-
-For Attempt 2, recover the existing launcher/preparation packet and record the actual values; do not invent them:
-
-```text
-Physical worktree isolation:
-  canonical workspace root: <launcher-resolved path>
-  parent worktree: <launcher-resolved path>
-  parent branch: task/ARCH-021-COMMERCE-056
-  implementation worktree: <launcher-resolved path>
-  implementation branch: task/ARCH-021-COMMERCE-056
-  shared workspace checkout switched/mutated for task work: no
-  shared implementation checkout switched/mutated for task work: no
-  another task worktree reused: no
-
-Start-of-attempt synchronization:
-  parent remote task branch fast-forwarded: yes|not-needed
-  parent origin/main incorporated: yes|already-current
-  implementation remote task branch fast-forwarded: yes|not-needed
-  implementation origin/main incorporated: yes|already-current
-
-Implementation repository:
-  repository: moda-interact-commerce
-  commit: b7cbd97
-  remote branch: origin/task/ARCH-021-COMMERCE-056
-  pushed: yes
-
-Parent workspace:
-  task file: docs/decisions/commerce/ARCH-021/COMMERCE-056-validate-agent-contract-authoring.md
-  commit: bbfa8ef7
-  remote branch: origin/task/ARCH-021-COMMERCE-056
-  pushed: yes
-  submodule gitlink staged: no
-
-Merged to implementation main: no
-Merged to workspace main: no
-```
-
-Retain the recursive/pinned `database` submodule evidence from the launcher packet.
-
-This is a workflow-evidence/report correction only. No implementation source or test change is required unless validation rerun from the canonical task worktrees exposes a task-owned regression.
+The implementation remains architecturally conformant: the named Agent-contract validator is non-mutating; canonical SemVer, input-schema, forbidden-authority-input and response-template compatibility semantics are reused; External HTTP validates against the canonical `values` output wrapper; the ADMIN-authorized Server Action performs no provider/credential/persistence work; `AgentContractTab` remains the single bounded form component; invalid authoring text remains local; successful validation is invalidated by relevant candidate changes; and no Phase 2 navigation gating is introduced.
 
 ### Reviewed Files
 
@@ -497,23 +452,21 @@ This is a workflow-evidence/report correction only. No implementation source or 
 
 ### Validation Reviewed
 
-- Focused Agent-contract/UI packet: 92/92 passed.
-- Focused shared publication checks: 18/18 passed.
-- Targeted ESLint: passed.
-- Changed-file diagnostics: no C056-owned diagnostics reported.
+- Attempt 2 focused C056 packet after `origin/main` integration: 99/99 passed.
+- Targeted ESLint for the resolved C055/C056 fixture files: passed.
 - `git diff --check`: passed.
+- Changed-file diagnostics: no C056-owned diagnostics reported.
+- Focused shared publication checks from Attempt 1: 18/18 passed.
 - Common Tool-authoring packet: 85/86 with the documented unrelated lifecycle fixture mismatch.
-- Repository `pnpm run typecheck`: 12 documented diagnostics in six files outside the C056 changed-file set.
+- Repository typecheck: 12 documented diagnostics in six files outside the C056 changed-file set.
 - Additional Shopify Admin UI packet: 13/15 with two documented pre-existing assertions on the separate persisted Admin surface.
 
 ### Architecture Conformance
 
-Conforms at the implementation level.
+Conforms.
 
-C056 preserves the existing Agent-contract component boundary, introduces one named non-mutating validation boundary, reuses canonical Tool-definition/publication semantics, retains invalid local authoring text, validates the current processed-result contract, performs no provider I/O or durable writes, preserves new-Tool/persisted-DRAFT parity where the shared tab is used, and introduces no navigation gating.
-
-Acceptance is withheld only because the durable Completion Report is missing the mandatory full VCS/worktree synchronization evidence.
+C056 preserves the existing Agent-contract authoring boundary and canonical publication semantics, performs no provider I/O or durable writes, validates the current processed-result/output contract, retains invalid local authoring state, and does not introduce tab gating or weaken final Create/Save/Publish validation.
 
 ### Follow-up
 
-Return the same task through `/moda-task` for Attempt 2. Reconcile the Completion Report with the existing launcher/preparation evidence, rerun only the task-required validation necessary to substantiate that canonical-worktree record, return the task to `review`, clear the active claim, and STOP. No implementation-source change is required unless that validation reveals a C056-owned regression.
+None. ARCH-021-COMMERCE-056 is Complete. No dependent task is promoted by this acceptance.

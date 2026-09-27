@@ -259,12 +259,12 @@ The Agent contract form is already extracted into `AgentContractTab`; the follow
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-056](COMMERCE-056-validate-agent-contract-authoring.md) | Validate the Agent-facing contract in-tab, retain invalid local edits and clarify labels/help text | Ready | COMMERCE-016, COMMERCE-039, COMMERCE-043 |
+| [COMMERCE-056](COMMERCE-056-validate-agent-contract-authoring.md) | Validate the Agent-facing contract in-tab, retain invalid local edits and clarify labels/help text | Complete | COMMERCE-016, COMMERCE-039, COMMERCE-043 |
 
-Current Agent-contract frontier:
+Agent-contract follow-up status:
 
 ```text
-ARCH-021-COMMERCE-056
+ARCH-021-COMMERCE-056 — Complete
 ```
 
 COMMERCE-056 is independent of COMMERCE-055. It validates Definition version, Agent description, Agent input schema and Agent response template against canonical rules without Request/Test completion, provider I/O, durable writes or tab gating. Validation operates on local authoring state and does not save a persisted DRAFT.

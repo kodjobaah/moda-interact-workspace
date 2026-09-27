@@ -11,7 +11,7 @@ updated: 2026-09-27
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Ready. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating. Manual Automatic testing additionally exposed provider-decode diagnostic information loss and stale underlying Response disclosure while Automatic is active; COMMERCE-057 is the independent Ready backend correction and COMMERCE-058 is dependency-gated on it for the Automatic presentation correction.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Complete. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating. Manual Automatic testing additionally exposed provider-decode diagnostic information loss and stale underlying Response disclosure while Automatic is active; COMMERCE-057 is the independent Ready backend correction and COMMERCE-058 is dependency-gated on it for the Automatic presentation correction.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -1001,9 +1001,9 @@ Agent-contract follow-up task:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-056 | moda_commerce | Ready | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-056 | moda_commerce | Complete | ARCH-021-COMMERCE-016, ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-043 |
 
-COMMERCE-056 is independent of COMMERCE-055 and may execute in parallel under the normal worktree/task-claim protocol.
+COMMERCE-056 is architect-accepted Complete and remains independent of COMMERCE-055.
 
 
 Phase 3 exit criteria:
