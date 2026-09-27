@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
-executor: copilot
-claimed_at: 2026-09-27T16:02:31Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-018
@@ -168,8 +168,8 @@ Any server/service action exposed for UI consumption returns the derived result 
 - [x] Add deterministic canonical equality/fingerprint behavior for a derived schema.
 - [x] Expose a non-mutating authoring derivation boundary through an authenticated Server Action.
 - [x] Add focused derivation, alias, nullability, list-bound and unsupported-scalar tests.
-- [ ] Merge compatible repeated GraphQL response-key selections recursively instead of rejecting complementary selected shapes.
-- [ ] Add direct regressions for GraphQL field merging and real pinned-schema nullable-list rejection.
+- [x] Merge compatible repeated GraphQL response-key selections recursively instead of rejecting complementary selected shapes.
+- [x] Add direct regressions for GraphQL field merging and real pinned-schema nullable-list rejection.
 
 ## Interfaces / Contracts
 
@@ -214,15 +214,15 @@ No new cross-repository contract is introduced.
 - [x] Canonical equality/fingerprint behavior is deterministic across equivalent derivations.
 - [x] Authoring derivation creates no Tool/ToolRevision and performs no Shopify provider request.
 - [x] Existing Admin compiler validation remains green.
-- [ ] A valid repeated response-key selection derives the same canonical result schema as the equivalent single merged GraphQL selection.
-- [ ] A real pinned Admin list with nullable elements fails derivation with `UNREPRESENTABLE_NULLABLE_LIST`.
+- [x] A valid repeated response-key selection derives the same canonical result schema as the equivalent single merged GraphQL selection.
+- [x] A real pinned Admin list with nullable elements fails derivation with `UNREPRESENTABLE_NULLABLE_LIST`.
 
 ## Validation
 
-- [ ] `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts --reporter=verbose`
-- [ ] targeted ESLint for every Attempt 2 changed source/test file
-- [ ] `npm run typecheck` (the documented unrelated repository baseline may remain; zero C062-owned diagnostics required)
-- [ ] `git diff --check`
+- [x] `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts --reporter=verbose`
+- [x] targeted ESLint for every Attempt 2 changed source/test file
+- [x] `npm run typecheck` (unrelated repository diagnostics remain; zero C062-owned diagnostics)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -238,7 +238,7 @@ Do not broaden `CommerceResultSchema` to arbitrary JSON Schema unless the accept
 
 ### Status
 
-Implemented; submitted for Architect Review.
+Attempt 1: submitted for Architect Review. Attempt 2: Ready for Review.
 
 ### Files Changed
 
@@ -249,6 +249,11 @@ Implemented; submitted for Architect Review.
 - `moda-interact-commerce/tests/admin-result-contract.test.ts`
 - `moda-interact-commerce/tests/shopify-admin-authoring-validation.test.ts`
 
+Additional Attempt 2 files:
+
+- `moda-interact-commerce/lib/discovery/admin-compiler.ts`
+- `moda-interact-commerce/tests/admin-result-contract.test.ts`
+
 ### Work Completed
 
 - Added `deriveAdminResultContract`, which reuses the pinned Admin schema/document validation and follows response aliases and `resultPath` without provider I/O.
@@ -258,12 +263,26 @@ Implemented; submitted for Architect Review.
 - Exposed an input-bounded authoring derivation service and authenticated platform-admin Server Action. The action returns only the derived contract/issues and performs no durable writes or provider calls.
 - Corrected existing Admin compiler type-kind detection so valid pinned-schema scalars such as `UnsignedInt64` are not mistaken for object types during query validation.
 
+Attempt 2 — Architect Review corrections:
+
+- Implemented Finding 1 in `lib/discovery/admin-compiler.ts` and `tests/admin-result-contract.test.ts`: after `compileDocument()` performs GraphQL semantic validation, recursively merge repeated response-key selection sets before generating output shapes. Complementary object fields and nested selections are unioned, arrays retain the same proven bound and recursively merged item schema, and required child keys are combined. Repeated scalar selections collapse to one property. Distinct underlying fields and conflicting selected shapes are not unioned; semantic conflicts continue to return `GRAPHQL_VALIDATION`.
+- Added the exact aliased repeated-`nodes` regression and proved its canonical schema equals the equivalent single merged selection. Exact schema assertion verifies only `id` and `title` are present and both are required; alias `items` is retained in the query path.
+- Implemented Finding 2 in `lib/discovery/admin-compiler.ts` and `tests/admin-result-contract.test.ts`: a literal `QueryRoot.nodes(ids: [...])` query establishes its truthful maximum result count when the list contains 1–20 IDs, allowing the pinned `[Node]!` output to reach the existing nullable-list guard. The test uses the real pinned `QueryRoot.nodes` and `Node.id`, and asserts `UNREPRESENTABLE_NULLABLE_LIST`.
+- Attempt 2 implementation commit `622add6` is pushed to `task/ARCH-021-COMMERCE-062`.
+
 ### Validation Results
 
 - `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts`: passed, 39 tests.
 - Targeted ESLint across all six changed files: passed with no output/errors.
 - `git diff --check`: passed.
 - `npx tsc --noEmit --pretty false`: repository-wide check remains blocked by 252 diagnostics in unrelated files (including missing preview module imports and Prisma client types); no diagnostics referenced C062-changed files.
+
+Attempt 2:
+
+- `npx vitest run tests/admin-result-contract.test.ts tests/admin-graphql-compiler.test.ts tests/discovery-route.test.ts tests/shopify-admin-authoring-validation.test.ts --reporter=verbose` — 4 files, 42 tests passed.
+- Targeted ESLint on `lib/discovery/admin-compiler.ts` and `tests/admin-result-contract.test.ts` passed.
+- `npm run typecheck` completed with the existing repository-wide failures: 260 diagnostics in 28 files. Neither Attempt 2 changed file appears in the diagnostics; changed-file editor TypeScript diagnostics report no errors for either file.
+- `git diff --check` passed.
 
 ### Deviations
 
@@ -280,6 +299,14 @@ None. No provider execution, persistence changes, cross-repository contracts, or
 ### Architectural Concerns
 
 None.
+
+### Attempt 2 Launcher Evidence
+
+Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-062` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-062`, both on `task/ARCH-021-COMMERCE-062`. Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+
+Start synchronization from the successful preparation packet: parent remote task branch fast-forwarded `not-needed`; parent `origin/main` incorporated `already-current`; implementation remote task branch fast-forwarded `not-needed`; implementation `origin/main` incorporated `already-current`. Parent start HEAD `a481e3e757a5c0539b6608e665880db482b718fd`; implementation start HEAD `368de55c3b05e5d5fa3cb98e3f3bfae5dbe38e0d`.
+
+Recursive implementation submodules: sync passed; update/init passed; `database` initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`. Attempt 2 launcher claim commit `d6e3b4c3b6d9939defcfc24a2ecba09ada2414d9`.
 
 ## Architect Review
 
