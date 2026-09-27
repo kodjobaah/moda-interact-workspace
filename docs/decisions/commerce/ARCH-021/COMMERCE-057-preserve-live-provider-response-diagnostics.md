@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 72
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-051
 enables:
@@ -250,19 +250,19 @@ current attempt finishes.
 
 ## Work Items
 
-- [ ] Refactor bounded body/decode outcomes so invalid provider responses retain the
+- [x] Refactor bounded body/decode outcomes so invalid provider responses retain the
       mandatory diagnostic reason.
-- [ ] Add the bounded provider-response diagnostic contract to the live authoring
+- [x] Add the bounded provider-response diagnostic contract to the live authoring
       observation path.
-- [ ] Preserve status, expected media types and received media type for decode failures.
-- [ ] Add a credential-safe UTF-8 body-preview helper bounded to 4096 UTF-8 bytes.
-- [ ] Propagate the diagnostic through `createExternalHttpAuthoringObservation(...)`
+- [x] Preserve status, expected media types and received media type for decode failures.
+- [x] Add a credential-safe UTF-8 body-preview helper bounded to 4096 UTF-8 bytes.
+- [x] Propagate the diagnostic through `createExternalHttpAuthoringObservation(...)`
       and the existing Server Action without creating another HTTP path.
-- [ ] Keep successful COMMERCE-051 observations unchanged.
-- [ ] Keep production External HTTP execution semantics unchanged.
-- [ ] Add the exact 404 `text/html` regression.
-- [ ] Add malformed-JSON and remaining mandatory reason regressions.
-- [ ] Re-run the affected COMMERCE-054 live-Test backend regressions.
+- [x] Keep successful COMMERCE-051 observations unchanged.
+- [x] Keep production External HTTP execution semantics unchanged.
+- [x] Add the exact 404 `text/html` regression.
+- [x] Add malformed-JSON and remaining mandatory reason regressions.
+- [x] Re-run the affected COMMERCE-054 live-Test backend regressions.
 
 ## Interfaces / Contracts
 
@@ -295,29 +295,29 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] `404 text/html` for a JSON response format produces
+- [x] `404 text/html` for a JSON response format produces
       `stage: providerRequest`, `code: INVALID_RESPONSE`, `retryable: false`.
-- [ ] That failure also carries `reason: UNEXPECTED_MEDIA_TYPE`, `status: 404`,
+- [x] That failure also carries `reason: UNEXPECTED_MEDIA_TYPE`, `status: 404`,
       `receivedMediaType: text/html` and expected media type `application/json`.
-- [ ] For the body `<pre>Cannot GET /categor/products</pre>` (or the equivalent
+- [x] For the body `<pre>Cannot GET /categor/products</pre>` (or the equivalent
       provider HTML page), the safe textual preview contains
       `Cannot GET /categor/products`.
-- [ ] A `200 application/json` body containing malformed JSON reports
+- [x] A `200 application/json` body containing malformed JSON reports
       `MALFORMED_JSON`, not `UNEXPECTED_MEDIA_TYPE`.
-- [ ] Missing Content-Type, unsupported charset, invalid UTF-8, NUL content, unsafe
+- [x] Missing Content-Type, unsupported charset, invalid UTF-8, NUL content, unsafe
       JSON value, unsupported content encoding, oversized body and body-read failure
       have deterministic distinct reasons.
-- [ ] `bodyPreview` is never more than 4096 UTF-8 bytes and truncation is reported.
-- [ ] Markup is returned only as text data; no diagnostic path introduces HTML
+- [x] `bodyPreview` is never more than 4096 UTF-8 bytes and truncation is reported.
+- [x] Markup is returned only as text data; no diagnostic path introduces HTML
       execution/rendering.
-- [ ] Credentials, authorization headers, cookies and general provider response
+- [x] Credentials, authorization headers, cookies and general provider response
       headers are absent from the browser-visible diagnostic contract.
-- [ ] Valid JSON successful observations retain the accepted COMMERCE-051 shape.
-- [ ] Production Tool execution still rejects/handles invalid/non-success provider
+- [x] Valid JSON successful observations retain the accepted COMMERCE-051 shape.
+- [x] Production Tool execution still rejects/handles invalid/non-success provider
       responses exactly as before this task.
-- [ ] COMMERCE-054 live-Test backend regressions remain passing.
-- [ ] No Tool, ToolRevision, audit, receipt or publication-proof write is introduced.
-- [ ] COMMERCE-055 and COMMERCE-056 task state/scope are unchanged by this task.
+- [x] COMMERCE-054 live-Test backend regressions remain passing.
+- [x] No Tool, ToolRevision, audit, receipt or publication-proof write is introduced.
+- [x] COMMERCE-055 and COMMERCE-056 task state/scope are unchanged by this task.
 
 ## Validation
 
@@ -326,15 +326,15 @@ repository scripts that actually exist.
 
 Required focused validation:
 
-- [ ] External HTTP executor/security tests covering body/decode bounds.
-- [ ] COMMERCE-051 authoring-observation tests.
-- [ ] Authoring Server Action tests.
-- [ ] COMMERCE-054 live-Test backend tests.
-- [ ] Exact `404 text/html` + `Cannot GET /categor/products` regression.
-- [ ] Malformed JSON and mandatory diagnostic-reason regressions.
-- [ ] Targeted lint for changed files.
-- [ ] Changed-file TypeScript diagnostics.
-- [ ] `git diff --check`.
+- [x] External HTTP executor/security tests covering body/decode bounds.
+- [x] COMMERCE-051 authoring-observation tests.
+- [x] Authoring Server Action tests.
+- [x] COMMERCE-054 live-Test backend tests.
+- [x] Exact `404 text/html` + `Cannot GET /categor/products` regression.
+- [x] Malformed JSON and mandatory diagnostic-reason regressions.
+- [x] Targeted lint for changed files.
+- [x] Changed-file TypeScript diagnostics.
+- [x] `git diff --check`.
 
 Do not turn unrelated documented repository baseline failures into task-owned work.
 
@@ -364,31 +364,43 @@ Do not weaken the accepted response format merely to obtain a preview.
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+- `src/commerce/external-http/index.ts`
+- `src/commerce/tool-authoring/external-observation.ts`
+- `tests/external-http-authoring-action.test.ts`
+- `tests/external-http-authoring-observation.test.ts`
 
 ### Work Completed
 
-None
+- Added a typed `ProviderResponseDiagnostic` contract with deterministic reasons, response status, expected media types, sanitized received media type, and an optional bounded textual preview.
+- Refactored body reading and response decoding to preserve distinct reasons for unsupported encoding, oversized/read-failed body, missing or unexpected media type, unsupported charset, invalid UTF-8, NUL, malformed JSON and unsafe JSON values.
+- Added a strict UTF-8 preview helper that excludes invalid/NUL text, redacts resolved/request credential values, truncates at a valid UTF-8 boundary to at most 4096 bytes, and reports truncation.
+- Emits and propagates diagnostics only when the existing `includeNonSuccessResponses` live-authoring observation path is explicitly enabled. Production execution still maps invalid responses to `UNAVAILABLE` and does not receive preview details.
+- Preserved the existing Server Action result shape additively and added coverage proving the diagnostic passes through without exposing response headers or adding mutations.
+- Added the exact 404 HTML regression, malformed JSON and all mandatory reason cases, oversized/read-failed body coverage, UTF-8 truncation/redaction coverage, and retained successful-observation/production executor behavior.
 
 ### Validation Results
 
-Not run.
+- Launcher preparation passed for Attempt 1: dependency `ARCH-021-COMMERCE-051` is complete; task claim was committed/pushed. Dedicated mirrored worktrees are parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-057` and implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-057`; recursive submodule initialization passed with `database` at pinned commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Passed: `./node_modules/.bin/vitest run tests/external-http-authoring-observation.test.ts tests/external-http-authoring-action.test.ts tests/external-http-executor.test.ts tests/external-http-live-test.test.ts` (4 files, 64 tests), covering COMMERCE-051 authoring, action propagation, production transport/executor and COMMERCE-054 live Test.
+- Passed: targeted ESLint for all four changed files; `git diff --check`.
+- `./node_modules/.bin/tsc --noEmit --pretty false` reports existing repository-wide errors, including missing generated Prisma Client exports and unrelated preview imports/types. Filtering the output for all four changed files found no TypeScript diagnostics in task-owned changes. Prisma generation was not required for the focused tests and no schema/submodule change was made.
+- The first `pnpm exec vitest` invocation attempted pnpm auto-install and stopped because pnpm blocked dependency build scripts. Retried using the installed local Vitest binary; focused tests passed. The two generated untracked pnpm metadata files were removed and are not part of the task diff.
 
 ### Deviations
 
-None
+None. No production acceptance, transport security, status mapping, persistence, COMMERCE-055 or COMMERCE-056 behavior was changed.
 
 ### Assumptions
 
-None
+- Redaction removes exact resolved authentication values and values of request headers with credential-bearing names before exposing any valid textual body preview. General response headers are never included.
 
 ### Unresolved Issues
 
-None
+The repository-wide TypeScript check remains blocked by missing generated Prisma Client types and unrelated existing diagnostics; no changed-file diagnostics were reported.
 
 ### Architectural Concerns
 
@@ -398,24 +410,67 @@ None
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 is accepted.
+
+The implementation satisfies the COMMERCE-057 provider-diagnostic correction contract:
+
+1. `ProviderResponseDiagnosticReason` preserves the mandatory decode/body failure distinctions instead of collapsing provider-response decode failures directly to an unqualified `INVALID_RESPONSE`.
+2. The additive diagnostic preserves provider HTTP status, authored expected media types and a bounded received media type while keeping the existing `providerRequest / INVALID_RESPONSE` failure boundary.
+3. Diagnostic collection remains authoring-only through the existing `includeNonSuccessResponses` observation path. Production execution continues to call the shared descriptor observer without that flag and therefore does not receive provider body diagnostics.
+4. `previewBody(...)` uses fatal UTF-8 decoding, rejects NUL-containing text, redacts resolved/request credential-bearing values before truncation, and caps the browser-visible preview at 4096 UTF-8 bytes while backing off to a valid code-point boundary.
+5. Unsupported content encoding, decompressed-body overflow and body-read failure remain bounded transport/decode failures with deterministic diagnostic reasons and no raw transport error disclosure.
+6. Valid JSON observations retain the accepted COMMERCE-051 response shape, while existing production 429/non-2xx handling and production invalid-response mapping remain unchanged.
+7. The exact `404 text/html` regression preserves `UNEXPECTED_MEDIA_TYPE`, status `404`, expected `application/json`, received `text/html` and the textual `Cannot GET /categor/products` evidence without exposing provider headers or credentials.
+8. The affected COMMERCE-054 live-Test backend remains compatible with the additive observation contract.
+
+The submitted snapshot still had `executor: copilot` and a non-null `claimed_at` while the handoff described the claim as cleared. This acceptance overlay normalizes those lifecycle fields to `null`; the discrepancy does not affect the reviewed implementation.
+
+Accepting COMMERCE-057 satisfies the remaining dependency of COMMERCE-058. COMMERCE-058 is therefore promoted from Pending to Ready. COMMERCE-055 and COMMERCE-056 remain independent and are not re-gated or modified.
 
 ### Reviewed Files
 
-None
+- `src/commerce/external-http/index.ts`
+- `src/commerce/tool-authoring/external-observation.ts`
+- `src/commerce/tool-authoring/external-live-test.ts`
+- `tests/external-http-authoring-observation.test.ts`
+- `tests/external-http-authoring-action.test.ts`
+- `tests/external-http-executor.test.ts`
+- `tests/external-http-live-test.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-057-preserve-live-provider-response-diagnostics.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-058-make-automatic-failures-current-and-actionable.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+Submitted/recorded validation:
+
+- focused Vitest packet across authoring observation, Server Action, production executor and COMMERCE-054 live-Test backend: 64/64 passed.
+- targeted ESLint on the four changed files: passed.
+- `git diff --check`: passed.
+- repository-wide TypeScript remains non-zero on unrelated existing diagnostics, including missing generated Prisma Client types; the Completion Report records zero diagnostics in the four changed files.
+
+Source/test inspection confirms the mandatory diagnostic reasons, exact 404 HTML regression, malformed JSON handling, bounded UTF-8 preview/truncation, credential/header non-disclosure and production-behaviour regressions are represented by the submitted implementation/tests.
+
+The submitted archive is a source snapshot rather than live Git metadata, so pushed-commit and clean/synchronized worktree state are recorded from the Completion Report/submission rather than independently queried here.
 
 ### Architecture Conformance
 
-Pending.
+Conformant.
+
+- COMMERCE-051 remains the single secure live External HTTP observation/transport boundary.
+- Rich provider diagnostics are additive and authoring-only.
+- Production External HTTP response acceptance and non-2xx semantics remain unchanged.
+- No cross-repository contract, persistence write or publication proof is introduced.
+- COMMERCE-054 remains compatible with the additive observation result.
+- COMMERCE-055 and COMMERCE-056 remain independent.
 
 ### Follow-up
 
-None
+ARCH-021-COMMERCE-058 is now Ready because ARCH-021-COMMERCE-053 and ARCH-021-COMMERCE-057 are both Complete.
+
+Task is architect-accepted Complete at Attempt 1.

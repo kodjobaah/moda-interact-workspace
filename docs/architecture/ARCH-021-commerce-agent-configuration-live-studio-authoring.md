@@ -977,8 +977,8 @@ COMMERCE-053
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-057 | moda_commerce | Ready | ARCH-021-COMMERCE-051 |
-| ARCH-021-COMMERCE-058 | moda_commerce | Pending | ARCH-021-COMMERCE-053, ARCH-021-COMMERCE-057 |
+| ARCH-021-COMMERCE-057 | moda_commerce | Complete | ARCH-021-COMMERCE-051 |
+| ARCH-021-COMMERCE-058 | moda_commerce | Ready | ARCH-021-COMMERCE-053, ARCH-021-COMMERCE-057 |
 
 COMMERCE-057/058 MUST NOT edit, re-gate or reopen COMMERCE-055 or COMMERCE-056. Those tasks may execute independently. Any Test-specific presentation of the richer provider diagnostic is assessed only after the current COMMERCE-055 attempt returns for architect review.
 
@@ -1248,6 +1248,16 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-057 Attempt 1 accepted
+
+- Accepted implementation `514e526`.
+- Confirmed the live-authoring observation preserves deterministic provider-response diagnostic reasons, status, expected/received media type and an optional credential-redacted textual body preview capped at 4096 UTF-8 bytes.
+- Confirmed preview truncation preserves valid UTF-8 boundaries and provider response headers/raw transport errors are not exposed.
+- Confirmed the richer diagnostic is emitted only through the authoring/non-success observation path; production External HTTP execution retains its accepted non-2xx and invalid-response semantics.
+- Accepted submitted focused validation: 64/64 across authoring observation, Server Action, production executor and COMMERCE-054 live-Test backend, plus targeted ESLint/diff checks and clean changed-file TypeScript diagnostics.
+- Marked COMMERCE-057 Complete and promoted COMMERCE-058 to Ready because COMMERCE-053 and COMMERCE-057 are both Complete.
+- Left COMMERCE-055 and COMMERCE-056 independent and unchanged.
 
 ### 2026-09-27 — provider diagnostics / Automatic stale-state corrections defined
 
