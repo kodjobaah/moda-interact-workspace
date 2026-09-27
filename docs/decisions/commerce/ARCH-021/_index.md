@@ -326,7 +326,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-066](COMMERCE-066-build-result-template-authoring-ui.md) | UI: build reusable schema-backed Result Template authoring component | Complete | COMMERCE-063 |
 | [COMMERCE-067](COMMERCE-067-separate-agent-and-result-template-validation.md) | Backend: separate Agent call-side and Result Template validation ownership | Complete | COMMERCE-063 |
 | [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Pending | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
-| [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Ready | COMMERCE-060, COMMERCE-064 |
+| [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Complete | COMMERCE-060, COMMERCE-064 |
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 
 Initial executable frontier for this workstream:
@@ -369,6 +369,12 @@ Key invariants:
 COMMERCE-064 is **Complete / Accepted, Attempt 3**. The Admin Explore authoring handoff now keeps Request literal buffers consistent with accepted variable mappings across the real New Tool Request -> Explore -> Validate -> Use in tool -> Request flow: semantically unchanged literals retain exact raw text, changed/new literals receive bounded canonical JSON, and stale entries are removed without disturbing unrelated editor buffers. The accepted Attempt 1/2 boundaries remain intact: browser-session authoring identity, Request-only validation, exact session isolation/return, manual GraphQL authority, Cancel semantics, no provider I/O and no durable Tool creation merely for Explore navigation. Submitted Attempt 3 validation passed 55 tests across five suites, targeted ESLint and `git diff --check`; neither Attempt 3 file has filtered TypeScript diagnostics.
 
 COMMERCE-062 is already Complete, so COMMERCE-065 is promoted to **Ready**. COMMERCE-060 is already Complete, so COMMERCE-069 is also promoted to **Ready**. COMMERCE-068 remains Pending until COMMERCE-065 is Complete.
+
+### COMMERCE-069 Attempt 1 accepted — 2026-09-27
+
+COMMERCE-069 is **Complete / Accepted, Attempt 1**. The canonical Commerce Tool union, production executor/availability path and Studio authoring no longer support `SHOPIFY_STOREFRONT_QUERY`; obsolete Storefront compiler/query/runtime/schema-browser artifacts were removed while legitimate Storefront-named Shopify Admin schema/documentation concepts were preserved. The focused removal/regression packet passed 114 tests across 11 files, targeted ESLint and `git diff --check`; changed-file diagnostics are clean while workspace-wide TypeScript retains unrelated diagnostics. The disposable C20 PostgreSQL/Redis integration was unavailable and is non-blocking for this task. The task-record regression checkbox and stale review claim were clerical inconsistencies reconciled during acceptance.
+
+C069 enables no downstream task. The remaining executable Shopify/Admin frontier is **COMMERCE-065**; COMMERCE-068 remains dependency-gated by COMMERCE-065.
 
 ### COMMERCE-070 Attempt 1 accepted — 2026-09-27
 

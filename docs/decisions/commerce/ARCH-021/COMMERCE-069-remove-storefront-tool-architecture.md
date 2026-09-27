@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 76
-executor: copilot
-claimed_at: 2026-09-27T17:16:35Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-060
@@ -138,7 +138,7 @@ No compatibility parser is retained.
 - [x] Remove obsolete Storefront schema artifact/provenance only if no legitimate consumer remains.
 - [x] Replace/remove Storefront Tool fixtures, seeds and tests.
 - [x] Add negative canonical-contract test proving removed kind is rejected.
-- [ ] Verify Admin runtime/Explore/Request/Response regressions remain green.
+- [x] Verify Admin runtime/Explore/Request/Response regressions remain green.
 
 ## Interfaces / Contracts
 
@@ -234,24 +234,49 @@ None identified. No compatibility adapter, data conversion, or migration was int
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 is accepted. The obsolete `SHOPIFY_STOREFRONT_QUERY` Tool execution/authoring architecture is removed from canonical Commerce definitions, production execution/availability, Storefront-only compiler/query-builder/browser artifacts and their obsolete tests. Shopify Admin GraphQL remains the canonical Shopify Tool path, and the retained Storefront-named Admin schema/documentation content is legitimate non-Tool terminology rather than compatibility drift.
+
+The final unchecked regression Work Item was a task-record inconsistency only: the Completion Report and focused 114-test validation packet already record the Admin runtime/Explore/Request/Response regressions as green. The archived task file also still carried the execution claim despite the reported review handoff; architect acceptance reconciles `executor`/`claimed_at` to null. Neither issue requires implementation churn.
+
+The unavailable disposable C20 PostgreSQL/Redis integration and workspace-wide TypeScript diagnostics are non-blocking for C069 because neither is part of the task's required validation contract, changed-file diagnostics/lint passed, and the focused removal/regression packet is green.
 
 ### Reviewed Files
 
-None.
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-definition/mappings.ts`
+- `src/commerce/execution/executor.ts`
+- `src/commerce/execution/ports.ts`
+- `src/commerce/integration/backend/executors.ts`
+- `src/commerce/integration/backend.ts`
+- `lib/discovery/service.ts`
+- `app/api/studio/discovery/route.ts`
+- `components/studio-workspace.tsx`
+- `src/studio/discovery/admin-explorer.tsx`
+- `src/studio/discovery/admin-query-builder.ts`
+- `tests/arch021-commerce-tool-contract.test.ts`
+- `tests/commerce-lifecycle.test.ts`
+- `tests/shopify-admin-tools-ui.test.tsx`
+
+Also reviewed repository searches confirming no production `SHOPIFY_STOREFRONT_QUERY` branch and no remaining Storefront-only Tool compiler/browser/query-builder module.
 
 ### Validation Reviewed
 
-None.
+- Focused Vitest packet: 11 files / 114 tests passed.
+- Canonical negative tests reject `SHOPIFY_STOREFRONT_QUERY`.
+- Admin runtime, Admin Explore/query-builder, preview/Studio and authoring regressions are included in the reported focused green packet.
+- Targeted ESLint passed for changed JavaScript/TypeScript files.
+- Changed-file TypeScript diagnostics are clean; workspace-wide diagnostics remain outside C069-owned implementation paths.
+- `git diff --check` passed.
+- Disposable C20 PostgreSQL/Redis integration was not run because the required isolated services were unavailable; this does not block the task's defined acceptance contract.
 
 ### Architecture Conformance
 
-Pending review.
+Conforms. C069 performs the approved pre-production breaking removal rather than introducing conversion or compatibility shims, preserves the Admin replacement paths from C060/C064, and leaves legitimate Storefront terminology that belongs to Shopify Admin schema/documentation capabilities intact. No database migration or cross-repository contract change is introduced.
 
 ### Follow-up
 
-None.
+None. C069 enables no downstream task.
