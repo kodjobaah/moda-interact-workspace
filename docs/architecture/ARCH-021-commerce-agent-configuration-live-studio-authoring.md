@@ -1051,22 +1051,22 @@ Implementation tasks:
 | ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-061 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
-| ARCH-021-COMMERCE-063 | moda_commerce | Ready | ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Pending | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
 | ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-066 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-067 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 
-Initial independent backend frontier:
+Current independent execution frontier after COMMERCE-063 acceptance:
 
 ```text
-COMMERCE-060    COMMERCE-061    COMMERCE-062    COMMERCE-063
+COMMERCE-060    COMMERCE-061    COMMERCE-062    COMMERCE-066    COMMERCE-067
 ```
 
-These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
+COMMERCE-066 and COMMERCE-067 were promoted independently when COMMERCE-063 became Complete. These tasks do not depend on the deferred terminal system test and do not depend on unrelated in-flight follow-up work.
 
 
 Phase 3 exit criteria:
@@ -1288,11 +1288,11 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-060 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-061 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-062 | moda_commerce | Ready | ARCH-021-COMMERCE-018 |
-| ARCH-021-COMMERCE-063 | moda_commerce | Ready | ARCH-021-COMMERCE-043 |
+| ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Pending | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
 | ARCH-021-COMMERCE-065 | moda_commerce | Pending | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-066 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-067 | moda_commerce | Pending | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-066 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-067 | moda_commerce | Ready | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Pending | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
