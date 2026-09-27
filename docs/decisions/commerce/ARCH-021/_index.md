@@ -204,6 +204,7 @@ Current live-authoring frontier:
 
 ```text
 ARCH-021-COMMERCE-051
+ARCH-021-COMMERCE-052
 ```
 
 Dependency graph:
@@ -229,6 +230,10 @@ SCALAR_LIST  -> List of values
 
 The Request preview, Automatic flow and Test share one Sample Tool arguments value. None of COMMERCE-051..054 writes a live-test publication receipt; `LIVE_TEST_REQUIRED` remains unsatisfied until a later exact-saved-revision receipt task is explicitly defined.
 
+
+### COMMERCE-051 Attempt 1 accepted — 2026-09-27
+
+COMMERCE-051 is **Complete / Accepted, Attempt 1**. Live External HTTP authoring now previews the exact current Declarative or JavaScript Request into the accepted safe descriptor, revalidates ADMIN/PER_SHOP scope, resolves credentials server-side and reuses the production descriptor transport/security primitive. Decodable 4xx/429/5xx responses are bounded authoring observations without changing production JavaScript gating or production non-2xx Tool semantics; credentials and provider response headers never enter the browser contract, and no Tool/Revision/Connection/Credential/audit/live-test-receipt mutation is introduced. Submitted validation passed the required executor, Request-runtime, authoring-validation/action and wiring suites plus focused security tests, lint and diff checks. Independent inspection of the submitted Commerce `tsconfig.tsbuildinfo` confirms zero diagnostics in all eight changed C051 files. COMMERCE-053 remains Pending because COMMERCE-052 is still Ready.
 
 ### COMMERCE-050 Attempt 2 accepted — 2026-09-27
 

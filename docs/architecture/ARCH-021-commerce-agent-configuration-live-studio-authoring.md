@@ -927,7 +927,7 @@ Live authoring/Test tasks:
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-051 | moda_commerce | Ready | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
+| ARCH-021-COMMERCE-051 | moda_commerce | Complete | ARCH-021-COMMERCE-041, ARCH-021-COMMERCE-047 |
 | ARCH-021-COMMERCE-052 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
 | ARCH-021-COMMERCE-053 | moda_commerce | Pending | ARCH-021-COMMERCE-042, ARCH-021-COMMERCE-050, ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-052 |
 | ARCH-021-COMMERCE-054 | moda_commerce | Pending | ARCH-021-COMMERCE-051, ARCH-021-COMMERCE-053 |
@@ -1184,6 +1184,16 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-051 Attempt 1 accepted
+
+- Accepted implementation `e56fc8b34c7f2b7c6b346a425814a2eaf41ce300` and parent review submission `93a0244462b2151b558a1ac57e728705328698b9`.
+- Confirmed authoring resolves the exact current Declarative/JavaScript Request through `previewExternalRequest(...)` and reaches the provider only through the shared descriptor-based External HTTP observation primitive.
+- Confirmed production JavaScript Request execution remains disabled and production 429/non-2xx Tool-result semantics remain unchanged; only the authoring observation requests bounded decodable non-success responses.
+- Confirmed ADMIN/PER_SHOP reauthorization, server-only credential resolution, public/global DNS validation, address pinning, original-host TLS verification, no redirect following, <=5 second provider stages, 256 KiB decompressed body bounds and response-format decoding remain enforced.
+- Confirmed browser output contains no credential material or provider response headers and the flow writes no Tool/Revision/Connection/Credential/audit/live-test receipt.
+- Accepted submitted executor/Request-runtime/authoring-validation/wiring/focused security validation, targeted lint and diff checks. Independent inspection of the submitted Commerce `tsconfig.tsbuildinfo` records zero diagnostics in all eight changed C051 files; the repository-wide 250 diagnostics are outside those files and `TYPECHECK-001` is not treated as a Commerce baseline exemption.
+- Marked COMMERCE-051 Complete. COMMERCE-053 remains Pending because COMMERCE-052 remains Ready; COMMERCE-054 remains Pending behind COMMERCE-053.
 
 ### 2026-09-27 — COMMERCE-050 Attempt 2 accepted
 
