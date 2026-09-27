@@ -274,7 +274,7 @@ None identified within C065 scope.
 - Attempt 2 implementation commit: `cb07cb7837c8bb2072f9363fc98b61ecd493eda6` on `task/ARCH-021-COMMERCE-065`; pushed to `origin`.
 - Synchronous layout-commit invalidation now advances the derivation generation and marks freshness false when the Request identity changes, preventing an obsolete asynchronous completion from promoting its schema.
 - Added deferred stale-completion regressions for both New Tool creation and persisted-DRAFT Save/Publish, asserting that obsolete schema is not promoted and persistence remains blocked.
-- Parent task/report branch: `task/ARCH-021-COMMERCE-065`; this report update is being committed and pushed independently in the parent worktree.
+- Parent report-content commit: `524c5de4f5c4e5c013ae1b9b044ed9bcda19be1c` on the parent `task/ARCH-021-COMMERCE-065` branch; pushed to `origin`.
 - No parent database submodule gitlink was staged or changed for C065 task reporting.
 
 #### Attempt 2 Validation
