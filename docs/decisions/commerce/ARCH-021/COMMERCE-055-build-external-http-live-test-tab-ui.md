@@ -471,7 +471,11 @@ Implementation repository: `moda-interact-commerce`.
 - Remote branch: `origin/task/ARCH-021-COMMERCE-055`.
 - Pushed: yes.
 
-Parent workspace task file: `docs/decisions/commerce/ARCH-021/COMMERCE-055-build-external-http-live-test-tab-ui.md`. Parent report commit and push status will be recorded after publication. No submodule gitlink is staged. Neither task branch is merged to `main` by this executor.
+Parent workspace task file: `docs/decisions/commerce/ARCH-021/COMMERCE-055-build-external-http-live-test-tab-ui.md`.
+- Parent report commit: `4b872169` (records the implementation commit and push evidence).
+- Remote branch: `origin/task/ARCH-021-COMMERCE-055`.
+- Pushed: yes.
+- No submodule gitlink is staged. Neither task branch is merged to `main` by this executor.
 
 ### Work Completed
 
@@ -482,6 +486,7 @@ Lifted Request draft/validity into the editor and Response validity into Test ga
 Files changed:
 - `src/studio/external-http/editor.tsx`
 - `src/studio/external-http/request-tab.tsx`
+- `src/studio/external-http/response-tab.tsx` (preserved from the integrated C053 change)
 - `src/studio/external-http/test-tab.tsx`
 - `src/studio/tools/new-tool-editor.tsx`
 - `src/studio/tools/tool-authoring-screen.tsx`
@@ -491,11 +496,10 @@ Files changed:
 
 ### Validation Results
 
-Passed:
-- `npm run test:arch020-external-tools-ui`: 75 tests passed after integrating the newer C053 Automatic Response UI changes.
-- `vitest run tests/tool-authoring-screen.test.tsx`: 14 tests passed after integrating shared ephemeral arguments across Request, Automatic Response, and Test.
-- Targeted ESLint across all eight changed TypeScript files.
-- Changed-file editor diagnostics: no errors.
+Passed on the published merge commit:
+- `vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`: 89 tests passed.
+- Targeted ESLint across all nine changed TypeScript files.
+- Changed-file editor diagnostics: no errors in all nine changed TypeScript files.
 - `git diff --check`.
 
 Partial/blocked:
