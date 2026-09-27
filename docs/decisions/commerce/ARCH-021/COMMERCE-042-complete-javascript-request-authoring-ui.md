@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 62
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-041
@@ -315,19 +315,498 @@ None.
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
-None
+
+#### Attempt 1 review — 2026-09-27
+
+Reviewed the submitted C042 implementation against the complete task contract,
+accepted COMMERCE-040 binding semantics, and the accepted COMMERCE-041 Request-tab
+architecture.
+
+The implementation contains useful work that MUST be preserved:
+
+- JavaScript Request values are exposed through the canonical COMMERCE-040
+  `bindings` map;
+- Agent input and Literal sources are explicit;
+- bounded JSON literals preserve JSON types instead of coercing everything to text;
+- the JavaScript contract guidance correctly says `args` contains only resolved
+  Request values;
+- Request JavaScript uses a dedicated resizable multi-line CodeMirror wrapper;
+- invalid/partial JavaScript and malformed literal text remain local rather than
+  snapping back to the previous value;
+- separate Declarative and JavaScript local mode drafts survive mode switching;
+- only the active canonical request is emitted through `onChange`;
+- validation/preview display is keyed to the current Request state so stale results
+  disappear after source/binding edits;
+- no provider execution, database change or tab locking was added;
+- submitted TypeScript metadata contains no semantic diagnostics in the C042 changed
+  source/test files.
+
+Attempt 1 is not accepted because C042 introduces an unapproved final
+Create/Save gate and the JavaScript binding table has two local-state/data-loss
+defects.
+
+The following is the complete and authoritative Attempt 2 correction contract. Do
+not infer additional work from chat history. Do not redesign Response/Test/Agent/
+Review tabs and do not implement Phase 2 gating or live provider execution.
+
+##### A1-R1 — remove the JavaScript Validate/Preview checkpoint from final Create/Save gating
+
+Change the minimum required files:
+
+```text
+moda-interact-commerce/src/studio/external-http/request-tab.tsx
+moda-interact-commerce/src/studio/external-http/editor.tsx
+moda-interact-commerce/src/studio/tools/new-tool-editor.tsx
+moda-interact-commerce/src/studio/tools/tool-editor.tsx
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+moda-interact-commerce/tests/tool-authoring-screen.test.tsx
+```
+
+The submitted implementation currently creates:
+
+```ts
+const requestCanPersist =
+  requestDraftValid &&
+  (requestDraft.kind !== "JAVASCRIPT" || checkedRequestKey === validationKey);
+```
+
+and reports:
+
+```text
+Validate or preview the current JavaScript request before saving.
+```
+
+It then feeds `onRequestDraftValidityChange(false)` into:
+
+```text
+NewToolEditor externalRequestDraftValid -> Create disabled
+ToolEditor externalDefinitionValid      -> Save/Validate disabled
+```
+
+This is architecturally incorrect.
+
+The accepted COMMERCE-041 Architect Review explicitly states:
+
+```text
+COMMERCE-041 does NOT own cross-tab gating or final Create/Save/Publish blocking.
+Request-local raw state may temporarily differ from the last schema-valid canonical
+Tool draft while the author is editing.
+```
+
+C042 R8 also states that JavaScript Request errors are Request-tab state only and do
+not introduce progression/gating.
+
+Required behavior:
+
+```text
+Validate request
+Preview request
+```
+
+remain non-mutating Request-local diagnostics/checkpoints only.
+
+Changing JavaScript source/bindings MUST:
+
+```text
+invalidate/hide stale validation result
+invalidate/hide stale preview result
+retain local raw source/literal text
+```
+
+but MUST NOT make successful Request validation/preview a prerequisite for final
+Create or Save.
+
+Preserve R5:
+
+```text
+invalid local Request form/source
+-> retained locally
+-> NOT emitted through onChange until ExternalRequestConstructionSchema accepts it
+
+schema-valid canonical active Request
+-> may be emitted through onChange
+```
+
+Do not persist the inactive mode draft.
+
+Remove the visible:
+
+```text
+Validate or preview the current JavaScript request before saving.
+```
+
+persistence-gate message.
+
+Do not replace it with another validation-completion gate.
+
+The existing parent Create/Save boundaries may still reject malformed Agent/Response
+JSON or other previously accepted full-draft constraints. This correction is only
+about the new C042 Request-validation/preview checkpoint.
+
+Required regressions:
+
+```text
+NEW TOOL:
+switch to JavaScript
+edit a schema-valid source/binding
+do NOT Validate or Preview
+-> Review remains freely reachable
+-> Create is not disabled merely because Request validation/preview has not run
+-> final Create persists the active canonical JavaScript request
+
+PERSISTED DRAFT:
+edit a schema-valid JavaScript source/binding
+do NOT Validate or Preview
+-> Save is not disabled merely because Request validation/preview has not run
+-> Save persists the active canonical JavaScript request
+
+AFTER A SUCCESSFUL VALIDATION/PREVIEW:
+edit JavaScript source or binding
+-> prior result/output disappears immediately
+-> Save/Create is not newly gated by the now-stale checkpoint
+```
+
+Do not call Validate/Preview implicitly from Create/Save.
+
+##### A1-R2 — scope malformed literal errors to the Literal source only
+
+Change:
+
+```text
+moda-interact-commerce/src/studio/external-http/request-tab.tsx
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+```
+
+The current `activeLiteralErrors` logic treats an error as active whenever the
+binding name still exists:
+
+```ts
+Object.entries(literalErrors)
+  .filter(([name]) => name in requestDraft.bindings)
+```
+
+This is wrong after a binding switches from:
+
+```text
+Literal -> Agent input
+```
+
+because the stale literal text/error remains in `literalErrors` even though the
+active canonical binding is now `{ input: ... }`.
+
+Concrete current failure:
+
+```text
+set Literal text to malformed "{"
+-> visible literal error
+-> Validate/Preview disabled
+
+switch Source to Agent input
+enter valid input name "sku"
+-> literal field/error disappears from the UI
+-> stale literal error still counts as active internally
+-> Validate/Preview remain disabled with no visible reason
+```
+
+Required behavior:
+
+```text
+Literal binding
+-> its current literal parsing/bounds error is active
+
+Agent input binding
+-> any retained inactive literal text/error for that binding is NOT active
+-> it does not invalidate Request validation/preview
+
+switch back to Literal
+-> previously typed literal text may be restored
+-> if that retained literal text is malformed, its error becomes active/visible again
+```
+
+A source switch may preserve inactive literal authoring text for convenience, but an
+inactive source's validation error must never block the active source.
+
+Use one helper for "active literal errors" and reuse it in normal editing and mode
+switch logic so the two paths cannot drift.
+
+Required regression:
+
+```text
+add binding
+switch to Literal
+enter malformed "{"
+-> error visible
+-> Validate/Preview disabled
+
+switch to Agent input
+enter "sku"
+-> literal error not visible
+-> current Request can Validate/Preview
+
+switch back to Literal
+-> malformed "{" text is restored
+-> literal error visible again
+```
+
+##### A1-R3 — prevent JavaScript binding add/rename from silently overwriting another binding
+
+Change:
+
+```text
+moda-interact-commerce/src/studio/external-http/request-tab.tsx
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+```
+
+The submitted Add logic uses:
+
+```ts
+requestValue${Object.keys(bindings).length + 1}
+```
+
+which can collide after deletion.
+
+Example:
+
+```text
+requestValue1
+requestValue2
+
+remove requestValue1
+bindings.length = 1
+
+Add request value
+-> generated name = requestValue2
+-> existing requestValue2 is silently overwritten
+```
+
+`renameBinding()` also currently does:
+
+```ts
+delete bindings[name];
+bindings[nextName] = binding;
+```
+
+so renaming onto an existing binding silently destroys the target row.
+
+This violates C042's requirement to preserve local Request authoring work.
+
+Required behavior:
+
+```text
+Add request value
+-> choose a deterministic unused safe name
+-> never overwrite an existing binding
+
+Rename binding A -> existing binding B
+-> do NOT overwrite either binding
+-> retain both rows
+-> show a local actionable error such as:
+   "Request value name already exists."
+-> no canonical request update is emitted for the invalid rename
+
+Rename to a new valid unused name
+-> exact binding + local literal text/source state move to the new name
+```
+
+The duplicate-name error is Request-local authoring state; do not add a second
+canonical bindings representation.
+
+Required regressions:
+
+```text
+add requestValue1 + requestValue2
+remove requestValue1
+Add request value
+-> requestValue2 unchanged
+-> a different unused requestValueN is created
+
+rename requestValue1 -> requestValue2
+-> both original rows remain
+-> duplicate-name error visible
+-> canonical binding map is not destructively changed
+```
+
+##### A1-R4 — preserve all accepted C042 behavior
+
+Do not regress:
+
+```text
+typed bounded JSON literal values
+Agent input/Literal source semantics
+resolved-bindings guidance
+resizable multi-line Request CodeMirror + line numbers
+partial/incomplete JavaScript retained locally
+Declarative -> JavaScript -> Declarative local draft retention
+JavaScript -> Declarative -> JavaScript local draft retention
+active-mode-only canonical persistence
+validation/preview staleness fencing
+late async validation not authorizing changed Request state
+new-Tool non-durability until final Create
+zero provider I/O
+free tab navigation
+```
+
+No inactive mode draft may be serialized into the Tool definition.
+
+##### A1-R5 — deterministic validation
+
+Run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+
+npm exec vitest run \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx \
+  tests/external-tool-authoring-validation.test.ts \
+  tests/external-tool-authoring-server-actions.test.ts \
+  tests/code-request-processor.test.ts
+
+npm run test:arch021-tool-authoring-common
+
+npm exec eslint \
+  src/studio/external-http/request-tab.tsx \
+  src/studio/external-http/editor.tsx \
+  src/studio/tools/new-tool-editor.tsx \
+  src/studio/tools/tool-editor.tsx \
+  tests/external-tools-ui.test.tsx \
+  tests/tool-authoring-screen.test.tsx
+
+npm run typecheck
+git diff --check
+```
+
+All C042-focused tests must execute with zero skips.
+
+The known unrelated common-packet lifecycle fixture may remain documented only if it
+reproduces unchanged and no C042 file/stack is involved.
+
+No TypeScript diagnostic in these C042 causal files may be classified as baseline:
+
+```text
+src/studio/external-http/request-tab.tsx
+src/studio/external-http/editor.tsx
+src/studio/tools/new-tool-editor.tsx
+src/studio/tools/tool-editor.tsx
+tests/external-tools-ui.test.tsx
+tests/tool-authoring-screen.test.tsx
+```
+
+##### A1-R6 — reconcile Completion Report and final execution evidence
+
+The Attempt 1 Completion Report records the prepared worktrees, start synchronization,
+claim and database submodule, but does not record the final implementation commit,
+final parent report commit, push parity or final clean-worktree evidence.
+
+Attempt 2 must record the exact fresh launcher-provided:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-042
+implementation branch = task/ARCH-021-COMMERCE-042
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 2 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not infer or reuse Attempt 1 claim/synchronization values.
+
+Reconcile Work Items, Acceptance Criteria and Validation to the actual Attempt 2
+results.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+##### Attempt 2 stop condition
+
+Return to architect review only when:
+
+```text
+Request validation/preview no longer gates Create/Save
+AND malformed inactive Literal errors cannot block an Agent-input binding
+AND binding add/rename cannot overwrite existing local work
+AND every accepted C042 mode/source/editor/staleness regression remains green
+AND focused/common/typecheck/lint/diff validation is recorded
+AND zero C042-owned diagnostic remains
+AND the fresh Attempt 2 launcher/report packet is complete
+```
+
+Then push implementation and parent task branches, return control to
+`moda_architect`, and STOP.
+
+Do not begin COMMERCE-053 or any live-provider/Test-tab follow-up.
 
 ### Reviewed Files
-None
+
+- `moda-interact-commerce/src/studio/external-http/request-tab.tsx`
+- `moda-interact-commerce/src/studio/external-http/editor.tsx`
+- `moda-interact-commerce/src/studio/code-response/code-editor.tsx`
+- `moda-interact-commerce/src/studio/tools/new-tool-editor.tsx`
+- `moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+- `moda-interact-commerce/app/styles.css`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
+- COMMERCE-040 accepted contract
+- COMMERCE-041 accepted Architect Review
+- submitted `tsconfig.tsbuildinfo`
+- Attempt 1 Completion Report
 
 ### Validation Reviewed
-None
+
+Submitted Attempt 1 evidence:
+
+```text
+focused packet:
+  5 files / 83 tests PASS
+
+targeted ESLint:
+  PASS
+
+editor diagnostics:
+  no errors in six changed TS/TSX files
+
+git diff --check:
+  PASS
+
+full typecheck:
+  249 diagnostics across 20 unrelated repository files
+  0 semantic diagnostics in the six C042 changed source/test files
+```
+
+Independent `tsconfig.tsbuildinfo` inspection confirms no semantic diagnostic in the
+C042 changed source/test files.
+
+The focused tests currently encode the unapproved validation-before-save behavior;
+green tests do not make that gate architecture-conformant.
 
 ### Architecture Conformance
-Pending
+
+Changes Requested. The JavaScript bindings/editor/mode-draft direction conforms to
+COMMERCE-040/C042, but final Create/Save gating contradicts the accepted COMMERCE-041
+no-gating boundary and C042 R8. The malformed-Literal source switch and binding-name
+collision paths also violate local authoring-state correctness. No schema,
+persistence, provider or cross-repository redesign is required.
 
 ### Follow-up
-None
+
+Return this same task through `/moda-task ARCH-021-COMMERCE-042` for Attempt 2.
+
+COMMERCE-053 remains Pending on COMMERCE-042 plus its other declared dependencies.
+Do not start COMMERCE-053 or live-provider/Test-tab work from this review.
