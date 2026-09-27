@@ -596,7 +596,7 @@ Implementation repository:
 
 Parent workspace:
   task file: `docs/decisions/commerce/ARCH-021/COMMERCE-051-add-live-external-http-authoring-observation.md`
-  commit: recorded after this report commit
+  review-submission commit: `93a0244462b2151b558a1ac57e728705328698b9`
   remote branch: `origin/task/ARCH-021-COMMERCE-051`
   pushed: yes
   submodule gitlink staged: no
