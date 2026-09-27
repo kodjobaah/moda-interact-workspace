@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 65
-executor: copilot
-claimed_at: 2026-09-27T07:25:54Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-049
@@ -403,15 +403,15 @@ work. Existing Response Server Action zero-I/O proofs must remain green.
 
 ## Work Items
 
-- [ ] Add one Response diagnostic-presentation mapper for stable Visual/server issues.
-- [ ] Short-circuit Validate response on an invalid local Visual tree instead of sending null placeholders.
-- [ ] Distinguish Scalar `Result type` from SCALAR_LIST `Item type` diagnostics.
-- [ ] Replace raw path/code-first validation rendering with actionable field/control text.
-- [ ] Keep optional technical path/code details secondary/collapsed if retained.
-- [ ] Translate top-level malformed Response Server Action values into bounded domain diagnostics.
-- [ ] Preserve safe JavaScript compiler diagnostics and existing canonical validation behavior.
-- [ ] Deduplicate local/server presentation without losing invalid raw edits.
-- [ ] Add focused UI/server regressions for the manual reproduction and adjacent Visual cases.
+- [x] Add one Response diagnostic-presentation mapper for stable Visual/server issues.
+- [x] Short-circuit Validate response on an invalid local Visual tree instead of sending null placeholders.
+- [x] Distinguish Scalar `Result type` from SCALAR_LIST `Item type` diagnostics.
+- [x] Replace raw path/code-first validation rendering with actionable field/control text.
+- [x] Keep optional technical path/code details secondary/collapsed if retained.
+- [x] Translate top-level malformed Response Server Action values into bounded domain diagnostics.
+- [x] Preserve safe JavaScript compiler diagnostics and existing canonical validation behavior.
+- [x] Deduplicate local/server presentation without losing invalid raw edits.
+- [x] Add focused UI/server regressions for the manual reproduction and adjacent Visual cases.
 
 ## Interfaces / Contracts
 
@@ -443,20 +443,20 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Invalid local Visual authoring is diagnosed locally when Validate response is clicked; no null placeholder is sent to the Server Action.
-- [ ] A missing Scalar result type names the actual field and tells the user to choose string/integer/number/boolean.
-- [ ] A missing SCALAR_LIST item type says `Item type`, not generic `Result type`.
-- [ ] Invalid Visual path, limit, duplicate name and empty projection have explicit corrective text.
-- [ ] Normal UI no longer leads with JSON pointers, issue codes, `invalid_type`, `custom`, `Invalid input`, or `expected object, received null`.
-- [ ] Optional technical details may retain deterministic path/code without replacing the actionable explanation.
-- [ ] Valid Visual candidates still invoke authoritative Response validation exactly once.
-- [ ] DIRECT and JAVASCRIPT authoritative validation behavior is unchanged apart from clearer presentation.
-- [ ] Safe JavaScript compiler diagnostics remain visible.
-- [ ] Malformed direct Server Action callers receive bounded Response-domain issues without raw rejected values.
-- [ ] Invalid raw edits remain visible and previous validation remains stale.
-- [ ] Other authoring tabs remain navigable.
-- [ ] Response validation remains zero provider/credential/network/persistence I/O.
-- [ ] No Shared/Prisma/database/result-schema/runtime-processing change is introduced.
+- [x] Invalid local Visual authoring is diagnosed locally when Validate response is clicked; no null placeholder is sent to the Server Action.
+- [x] A missing Scalar result type names the actual field and tells the user to choose string/integer/number/boolean.
+- [x] A missing SCALAR_LIST item type says `Item type`, not generic `Result type`.
+- [x] Invalid Visual path, limit, duplicate name and empty projection have explicit corrective text.
+- [x] Normal UI no longer leads with JSON pointers, issue codes, `invalid_type`, `custom`, `Invalid input`, or `expected object, received null`.
+- [x] Optional technical details may retain deterministic path/code without replacing the actionable explanation.
+- [x] Valid Visual candidates still invoke authoritative Response validation exactly once.
+- [x] DIRECT and JAVASCRIPT authoritative validation behavior is unchanged apart from clearer presentation.
+- [x] Safe JavaScript compiler diagnostics remain visible.
+- [x] Malformed direct Server Action callers receive bounded Response-domain issues without raw rejected values.
+- [x] Invalid raw edits remain visible and previous validation remains stale.
+- [x] Other authoring tabs remain navigable.
+- [x] Response validation remains zero provider/credential/network/persistence I/O.
+- [x] No Shared/Prisma/database/result-schema/runtime-processing change is introduced.
 
 ## Mandatory Regression Scenarios
 
@@ -505,23 +505,12 @@ Add named tests proving at least:
 
 ## Validation
 
-Run the focused repository scripts covering:
-
-```text
-External HTTP UI
-External Response authoring validation
-External validation Server Actions
-common Tool authoring regression packet where required by repository conventions
-```
-
-Then run targeted lint/diagnostics for changed files and:
-
-```bash
-git diff --check
-```
-
-Repository-wide typecheck may retain the established unrelated baseline only when no
-C050-modified file has a diagnostic; record exact evidence in the Completion Report.
+- [x] `npm run test:arch020-external-tools-ui`: 47 tests passed, zero skipped.
+- [x] `npm run test:arch021-external-tool-authoring-validation`: 54 tests passed, zero skipped; includes Response Server Action zero-I/O coverage.
+- [x] `npm run test:arch021-tool-authoring-common`: 85 passed; one unrelated `tests/commerce-lifecycle.test.ts` fixture failure is documented in the Completion Report.
+- [x] Required targeted `npm exec eslint` over the five task-specified files: clean.
+- [x] `npm run typecheck`: 251 diagnostics in 22 files; zero diagnostics in the five C050-modified files.
+- [x] `git diff --check`: clean.
 
 ## Stop Condition
 
@@ -535,7 +524,23 @@ kinds, publication policy or unrelated authoring diagnostics.
 ## Completion Report
 
 ### Status
-Ready for Architect Review (Attempt 1; implementation commit `e4f6226` pushed)
+Ready for Architect Review (Attempt 2; implementation commit recorded below and pushed)
+
+### Physical Worktree Isolation
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-050`
+- Parent branch: `task/ARCH-021-COMMERCE-050`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-050`
+- Implementation branch: `task/ARCH-021-COMMERCE-050`
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+
+### Start-of-Attempt Synchronization and Claim
+- Parent task synchronization started from `b88fe45e` (Attempt 1 review corrections); `origin/main` was already an ancestor. The remote task branch was current before the Attempt 2 claim commit.
+- Implementation synchronization started from `e4f622695c460a588dc788fead80de00ce2fde01`; local branch matched `origin/task/ARCH-021-COMMERCE-050`, and `origin/main` was already an ancestor. No fast-forward or mainline merge was needed.
+- Attempt 2 claim evidence: parent commit `01177a2403d428f5858d0e6fd6083331db6d8b38`, which records `status: in_progress`, `executor: copilot`, `claimed_at: 2026-09-27T07:25:54Z`, `attempt: 2`.
+- Recursive implementation submodules were materialized by the prepared execution. `git submodule status --recursive` verified database commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45` with no uninitialized, mismatched, or unresolved entries. No `--remote` submodule update was used.
 
 ### Files Changed
 - `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
@@ -547,21 +552,21 @@ Ready for Architect Review (Attempt 1; implementation commit `e4f6226` pushed)
 ### Work Completed
 - Invalid browser-local Visual trees now short-circuit Response validation locally; canonical Visual candidates continue through the authoritative Server Action.
 - Added field/control-specific Visual guidance for all stable derivation codes, including Scalar versus SCALAR_LIST item types; issue paths/codes are confined to collapsed Technical details.
+- Action-level validation failures now render as separate bounded system diagnostics for `DATABASE_UNAVAILABLE`, `INTERNAL_ERROR`, `FORBIDDEN`, and rejected Promises; server messages and fabricated Response paths are not shown, and `onValidationChange(false)` is preserved.
 - Mapped malformed top-level Response format, processing, schema, and path values to bounded domain diagnostics; preserved safe Response JavaScript compiler messages and locations.
 - Added UI and Server Action regressions for the manual `field2` reproduction, SCALAR_LIST type/limit, unsafe paths, duplicates, empty projections, server mismatch, JavaScript causes, Direct schema failures, retained edits/navigation, and null payloads.
 
 ### Validation Results
-- `npm run test:arch020-external-tools-ui`: passed, 40 tests.
+- `npm run test:arch020-external-tools-ui`: passed, 47 tests; includes `DATABASE_UNAVAILABLE`, `INTERNAL_ERROR`, `FORBIDDEN`, Promise rejection, raw-message suppression, retained Visual/Direct/JavaScript values, validation invalidation and real Request/Response navigation.
 - `npm run test:arch021-external-tool-authoring-validation`: passed, 54 tests across Response validation and Server Actions; includes the existing zero-I/O proof.
-- Targeted `npx eslint` over all five modified files: passed with zero errors and warnings.
-- Editor diagnostics via `get_errors`: no diagnostics in any of the five modified files.
-- `git diff --check`: passed.
-- `npm run typecheck`: repository baseline remains at 251 errors in 22 files; none reference a C050-modified file.
-- `npm run test:arch021-tool-authoring-common`: 85 passed, 1 failed. The unrelated existing `tests/commerce-lifecycle.test.ts` publication fixture uses an empty result schema, so it fails with `INVALID_DEFINITION` before its expected `LIVE_TEST_REQUIRED` assertion. The exact test was rerun in isolation and reproduces the same failure; no lifecycle fixture or schema contract was changed for C050.
-- Implementation commit `e4f6226` was pushed to `task/ARCH-021-COMMERCE-050`.
+- `npm run test:arch021-tool-authoring-common`: 85 passed, 1 failed. The unchanged `tests/commerce-lifecycle.test.ts` publication fixture uses an empty external `resultSchema`, so it fails with `INVALID_DEFINITION` before its expected `LIVE_TEST_REQUIRED` assertion. No lifecycle fixture or schema/publication semantics were changed for C050.
+- Required `npm exec eslint` over `src/studio/external-http/response-tab.tsx`, `src/commerce/tool-authoring/external-validation.ts`, `tests/external-tools-ui.test.tsx`, `tests/external-tool-authoring-validation.test.ts`, and `tests/external-tool-authoring-server-actions.test.ts`: clean.
+- `npm run typecheck`: 251 diagnostics in 22 files; final captured output contains no diagnostics in any of the five C050-modified files.
+- `git diff --check`: clean.
+- Implementation commit: `823dd4511d195343f2b76dcf1206377960f5b31a`; pushed to `origin/task/ARCH-021-COMMERCE-050`, with upstream parity verified.
 
 ### Deviations
-The common Tool-authoring packet has the unrelated lifecycle fixture failure recorded above; it was not changed because publication and result-schema semantics are outside C050.
+The common Tool-authoring packet retains the unrelated lifecycle fixture failure recorded above; it is outside C050's Response-validation presentation scope.
 
 ### Assumptions
 None.
@@ -571,6 +576,12 @@ The unrelated common-packet lifecycle fixture and repository-wide TypeScript bas
 
 ### Architectural Concerns
 None.
+
+### Attempt 2 Commits and Push Parity
+- Implementation commit: `823dd4511d195343f2b76dcf1206377960f5b31a`; push to `origin/task/ARCH-021-COMMERCE-050` verified; implementation worktree clean.
+- Final parent Completion Report commit: the parent task branch tip published with this report; exact SHA recorded in the task handoff.
+- Parent push: to be verified against `origin/task/ARCH-021-COMMERCE-050`.
+- Final parent worktree: to be verified clean after publication.
 
 ## Architect Review
 
