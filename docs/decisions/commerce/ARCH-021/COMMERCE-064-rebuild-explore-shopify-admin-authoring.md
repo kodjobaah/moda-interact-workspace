@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
 executor: copilot
 claimed_at: 2026-09-27T15:20:54Z
@@ -186,14 +186,14 @@ When it cannot, explain that the query remains valid/manual but is not represent
 
 ## Work Items
 
-- [ ] Extend Studio composer authoring state with `authoringSessionId` and optional durable Tool IDs.
-- [ ] Add versioned `sessionStorage` persistence/hydration/cleanup for Tool authoring sessions.
-- [ ] Replace Explore schema/browser/query builder with Admin equivalents from COMMERCE-061.
-- [ ] Support current-manual-query seeding when representable.
-- [ ] Add `Use in tool` merge semantics that update only Admin query fields.
-- [ ] Return to the exact originating Request authoring location.
-- [ ] Preserve unrelated Tool draft fields across the round trip.
-- [ ] Add cancel/corrupt-session/multiple-session/refresh tests.
+- [x] Extend Studio composer authoring state with `authoringSessionId` and optional durable Tool IDs.
+- [x] Add versioned `sessionStorage` persistence/hydration/cleanup for Tool authoring sessions.
+- [x] Replace Explore schema/browser/query builder with Admin equivalents from COMMERCE-061.
+- [x] Support current-manual-query seeding when representable.
+- [x] Add `Use in tool` merge semantics that update only Admin query fields.
+- [x] Return to the exact originating Request authoring location.
+- [x] Preserve unrelated Tool draft fields across the round trip.
+- [x] Add cancel/corrupt-session/multiple-session/refresh tests.
 
 ## Interfaces / Contracts
 
@@ -213,27 +213,27 @@ Introduces one browser-only, versioned authoring-session shape owned by Commerce
 
 ## Acceptance Criteria
 
-- [ ] New unsaved Shopify Tool -> Explore -> Use in tool returns to the same draft.
-- [ ] Existing Tool draft -> Explore -> Use in tool returns to the same draft.
-- [ ] The round trip survives a route remount/refresh in the same browser session.
-- [ ] Other draft fields are unchanged by `Use in tool`.
-- [ ] Cancel leaves the originating draft unchanged.
-- [ ] Two authoring sessions cannot cross-write.
-- [ ] Manual GraphQL is still editable after returning from Explore.
-- [ ] Representable manual GraphQL seeds Explore; unsupported visual forms are preserved rather than rewritten.
-- [ ] No Tool/ToolRevision is created merely by opening or using Explore.
-- [ ] No credentials are stored in `sessionStorage`.
-- [ ] General tab gating/traversal is unchanged.
+- [x] New unsaved Shopify Tool -> Explore -> Use in tool returns to the same draft.
+- [x] Existing Tool draft -> Explore -> Use in tool returns to the same draft.
+- [x] The round trip survives a route remount/refresh in the same browser session.
+- [x] Other draft fields are unchanged by `Use in tool`.
+- [x] Cancel leaves the originating draft unchanged.
+- [x] Two authoring sessions cannot cross-write.
+- [x] Manual GraphQL is still editable after returning from Explore.
+- [x] Representable manual GraphQL seeds Explore; unsupported visual forms are preserved rather than rewritten.
+- [x] No Tool/ToolRevision is created merely by opening or using Explore.
+- [x] No credentials are stored in `sessionStorage`.
+- [x] General tab gating/traversal is unchanged.
 
 ## Validation
 
-- [ ] focused Studio composer/session-storage tests
-- [ ] Explore Shopify Admin UI tests
-- [ ] new-Tool round-trip tests
-- [ ] persisted-draft round-trip tests
-- [ ] targeted lint
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
+- [x] focused Studio composer/session-storage tests
+- [x] Explore Shopify Admin UI tests
+- [x] new-Tool round-trip tests
+- [x] persisted-draft round-trip tests
+- [x] targeted lint
+- [x] changed-file TypeScript diagnostics
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -249,19 +249,27 @@ The implementation may split storage serialization into a focused module rather 
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+Explore route/workspace integration, New and existing Tool Request editors, transient authoring-session storage, Admin Explorer/schema browser/argument controls, and focused session/handoff/workspace tests.
 
 ### Work Completed
 
-None.
+- Replaced the Explore surface with the pinned Shopify Admin GraphQL schema browser and query-authoring flow.
+- Added bounded, versioned `sessionStorage` sessions keyed by opaque IDs; restored exact Request editor buffers and Explorer tab, visual selection, and raw literal text across remounts.
+- Implemented New Tool and existing Admin draft Request -> Explore -> Use in tool -> Request round trips. Use in tool merges only Admin execution query fields after canonical validation; Cancel discards transient Explorer state without changing the originating definition.
+- Preserved representable manual query selections and left valid nonrepresentable manual documents unchanged until a visual edit. Added missing/corrupt-session, cleanup, isolation, no-durable-write, and refresh coverage.
 
 ### Validation Results
 
-None.
+- Focused round-trip/session/workspace/Admin query-builder suite: 6 files, 65 tests passed.
+- Admin GraphQL compiler and no-provider-I/O suites: 2 files, 17 tests passed.
+- Admin Explorer refresh test and focused lint passed after adding selection, tab, and raw literal restoration assertions.
+- ESLint passed across all changed source and test files.
+- Full Commerce `tsc --noEmit` remains blocked by pre-existing diagnostics in preview route imports, `lib/discovery/compiler.ts`, `scripts/validate-shopify-admin-local.ts`, `src/commerce/integration/studio/services.ts`, and the existing Admin query-builder GraphQL `TypeNode` conversion. Filtered diagnostics for C064-touched files are clean.
+- `git diff --check` passed.
 
 ### Deviations
 
@@ -273,7 +281,7 @@ None.
 
 ### Unresolved Issues
 
-None.
+The full Commerce TypeScript check is not clean due to the unrelated baseline diagnostics listed above; no C064-touched file reports a TypeScript diagnostic.
 
 ### Architectural Concerns
 
