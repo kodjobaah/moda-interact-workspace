@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 72
-executor: copilot
-claimed_at: 2026-09-27T14:55:32Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-018
@@ -291,56 +291,68 @@ None identified. Storefront exploration remains available and was not migrated o
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 establishes the correct Admin-only discovery boundary over the pinned `2026-07` artifact, preserves the Storefront path, keeps the query builder pure/non-React, and wires authenticated Studio browsing without live Shopify introspection. The generated happy-path query also conforms to the accepted Admin compiler.
+Attempt 2 is accepted.
 
-Three task-scoped correctness issues must be corrected before COMMERCE-061 can be accepted:
+The implementation satisfies all three Attempt 1 correction items and the full COMMERCE-061 Admin exploration/query-authoring contract:
 
-1. **Generated argument mappings are not guaranteed to satisfy the canonical compiler (R4/R6).** `buildAdminQuery(...)` currently checks that an input property exists, but does not check that the Tool input schema is compatible with the selected GraphQL argument type. It also accepts arbitrary literal values (other than the special `first` bound) without validating their GraphQL input type. Consequently the builder can return a candidate whose document is syntactically valid but whose `variables` mapping makes `createAdminCommerceCompiler().compile(...).validateMappedArguments(...)` return `false`. The builder must reject incompatible Tool-input and literal bindings before returning an authoring candidate, preferably by reusing/refactoring the canonical Admin compiler's argument-compatibility logic rather than introducing a weaker parallel grammar. Add regressions proving incompatible input and literal bindings are rejected and every accepted generated candidate passes canonical mapped-argument validation.
+1. Generated Tool-input and literal argument bindings are now checked through the canonical Admin query-authoring compiler boundary before a candidate is returned. The builder therefore cannot return a candidate whose mappings fail the same Admin compatibility rules used by execution compilation.
+2. Field resolution composes every loaded schema page for the requested parent type rather than only the first page. The cursor-0/cursor-100 `QueryRoot` regression proves a field available only on the later loaded page can be selected and compiled successfully.
+3. Manual-query parsing now uses a canonical Request-owned Admin authoring validator that checks pinned schema identity, document/operation semantics and variable mappings without requiring Response-owned `resultPath`/`resultSchema` validity. Invalid Admin query/compiler rules, including unbounded pagination, continue to return `invalid`.
 
-2. **Loaded schema pagination/search pages for one parent type are not composable (R2/R4).** `pageField(...)` uses `pages.find(candidate => candidate.parentTypeName === parentTypeName)`, so only the first loaded page for a type is searched. `QueryRoot` has more than one 100-field page, and repeated searches can also produce multiple loaded pages for the same parent. A field present on a later loaded page is therefore reported as absent even though the UI successfully browsed it. Resolve a selected field across all loaded pages for the requested parent type. Add a regression using at least two `QueryRoot` pages (for example cursor `0` plus cursor `100`) and build a query from a field present only on the later page; the resulting candidate must validate through the canonical compiler.
+The small `typeNode(...)` correction also preserves valid GraphQL list element nullability such as `[Type!]` while continuing to reject an invalid nested non-null wrapper. This remains within the query-authoring contract.
 
-3. **Manual-query representability is incorrectly coupled to Response-owned result state (R3/R5 and the parent architecture).** `parseAdminQueryForBuilder(...)` calls `createAdminCommerceCompiler().compile(input.execution, input.inputSchema)`, which validates `resultPath` and `resultSchema` in addition to the Request-owned Admin document/variables. The architecture explicitly assigns Shopify Request ownership to document/operation/variable mappings and Shopify Response ownership to `resultPath`/`resultSchema`. A valid, visually representable manual Admin query can therefore be returned as `invalid` solely because the current Response contract is stale or not yet authored. Introduce/reuse a canonical Admin query-authoring validation path that validates the pinned schema identity, document, operation and variable mappings without requiring Response-owned result validity. Add a regression where the Admin query and mappings are valid/representable while `resultPath`/`resultSchema` are intentionally stale; the parser must still recover the builder selection and preserve the exact source. Invalid Admin query syntax/compiler rules must still return `invalid`.
+The broader C061 architecture remains conformant: the pinned Admin `2026-07` artifact is the source of truth; discovery/query-building are pure non-React Commerce-domain capabilities; no live Shopify introspection or mutation is introduced; generated output is limited to Admin Request/execution authoring fields; manual GraphQL remains first-class; managed shop/auth values are excluded from Tool inputs; and the Storefront path remains intact for COMMERCE-064 migration.
 
-No React/UI work, Storefront removal, provider execution, result-schema derivation, or COMMERCE-064 implementation belongs in this correction.
+COMMERCE-039 is already Complete. With COMMERCE-061 now accepted Complete, both dependencies of COMMERCE-064 are satisfied, so COMMERCE-064 is promoted from Pending to Ready.
 
 ### Reviewed Files
 
+- `lib/discovery/admin-compiler.ts`
 - `lib/discovery/admin-schema.ts`
 - `lib/discovery/service.ts`
-- `lib/discovery/admin-compiler.ts` (canonical contract comparison)
-- `src/commerce/integration/studio/services.ts`
+- `src/studio/discovery/admin-query-builder.ts`
 - `src/studio/contracts.ts`
 - `src/studio/server-actions.ts`
 - `src/studio/server-services.ts`
 - `src/studio/testing/in-memory-studio-services.ts`
-- `src/studio/discovery/admin-query-builder.ts`
 - `tests/admin-discovery.test.ts`
 - `tests/admin-query-builder.test.ts`
 - `tests/discovery.test.ts`
+- `tests/admin-graphql-compiler.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-061-establish-admin-schema-exploration-domain.md`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-064-rebuild-explore-shopify-admin-authoring.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-Recorded Attempt 1 evidence reviewed:
+Submitted/recorded Attempt 2 validation:
 
-- focused discovery/query/compiler packet: 51/51 passed;
-- `test:arch021-shopify-admin-compiler`: 22/22 passed;
-- targeted ESLint: passed;
-- changed-file diagnostics: clean;
+- focused Admin discovery/query/compiler packet: 56/56 passed;
+- `npm run test:arch021-shopify-admin-compiler`: 22/22 passed;
+- targeted ESLint on Attempt 2 changed files: passed;
+- changed-file TypeScript/editor diagnostics: clean;
 - `git diff --check`: passed;
-- repository-wide TypeScript diagnostics are recorded as outside the changed Admin-domain files.
+- repository-wide TypeScript checking was not rerun for Attempt 2; the previously recorded unrelated repository diagnostics remain outside the task-owned Admin-domain changes.
 
-The passing packet does not exercise the three cases above, so it does not establish the full R2/R4/R5 contract.
+Source inspection confirms the regressions exercise the three required correction cases and that the extracted authoring validator is reused by the full Admin compiler rather than creating a second compatibility grammar. The submitted archive does not contain installable dependencies, so the test commands were not independently rerun in this review environment; the pushed/clean worktree and validation results are recorded from the Completion Report/submission.
 
 ### Architecture Conformance
 
-Partially conformant. The implementation has the correct repository ownership, pinned-artifact boundary, authentication boundary, no-live-introspection behavior, Storefront coexistence, and pure Admin query-authoring shape. Acceptance is blocked by canonical argument-mapping drift, inability to compose multiple loaded schema pages for a parent type, and coupling Request/Explore representability to Response-owned result state.
+Conformant.
+
+- Admin `2026-07` pinned schema identity remains authoritative.
+- Query-authoring validation and execution compilation share one document/mapping compatibility implementation.
+- Request-owned Admin query validity is independent of Response-owned result-contract state.
+- Loaded discovery pages compose deterministically for query building.
+- No React/UI implementation, provider execution, Storefront removal, result-schema derivation or COMMERCE-064 implementation was added.
 
 ### Follow-up
 
-Return the same task to `moda_commerce` for Attempt 2. Source and focused regression changes are required for the three corrections above. Preserve `attempt: 1`; the next authorized claim increments it to Attempt 2. COMMERCE-064 remains Pending until COMMERCE-061 is accepted Complete.
+None for COMMERCE-061.
+
+Task is architect-accepted Complete at Attempt 2. ARCH-021-COMMERCE-064 is promoted to Ready because ARCH-021-COMMERCE-039 and ARCH-021-COMMERCE-061 are both Complete.
