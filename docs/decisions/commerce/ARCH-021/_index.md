@@ -179,16 +179,28 @@ Response-tab manual review identified a separate bounded workstream. It is indep
 | [COMMERCE-045](COMMERCE-045-complete-external-http-response-tab-authoring.md) | Complete Response-tab Source-path, JavaScript panel, derived-contract and per-mode local-draft UX | Complete | COMMERCE-043, COMMERCE-044, COMMERCE-006, COMMERCE-039 |
 | [COMMERCE-048](COMMERCE-048-support-nested-visual-response-results.md) | Add bounded recursive Visual result trees with Commerce-owned result-schema validation | Complete | COMMERCE-045 |
 | [COMMERCE-049](COMMERCE-049-support-primitive-scalar-arrays-in-visual-results.md) | Add an explicit Visual list-of-scalar-values node for results such as `{tags:["red","blue"]}` | Complete | COMMERCE-048 |
-| [COMMERCE-050](COMMERCE-050-make-response-validation-diagnostics-actionable.md) | Replace raw Response validation parser errors with field-specific corrective diagnostics | Ready | COMMERCE-049 |
+| [COMMERCE-050](COMMERCE-050-make-response-validation-diagnostics-actionable.md) | Replace raw Response validation parser errors with field-specific corrective diagnostics | Complete | COMMERCE-049 |
 
 Current Response-tab manual-validation frontier:
 
 ```text
-ARCH-021-COMMERCE-050
+No implementation task currently Ready in this Response chain.
 ```
 
-The Response chain remains zero-provider-I/O. COMMERCE-049 is architect-accepted Complete: primitive scalar arrays such as `{tags:["red","blue"]}` now use explicit `SCALAR_LIST` leaves without overloading object-row `LIST`. Manual validation exposed a separate presentation defect where locally invalid Visual authoring can produce raw null-placeholder/Zod errors in the Validate response summary; COMMERCE-050 is Ready to replace those with field-specific corrective diagnostics while preserving the authoritative server boundary. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to later Test-tab review. All authoring tabs remain freely navigable.
+The zero-provider-I/O Response authoring chain through COMMERCE-050 is architect-accepted Complete. Invalid local Visual state is diagnosed locally, canonical candidates still use authoritative server validation, configuration issues are field/control-specific, and action-level validation-system failures no longer masquerade as Response-field errors. Direct/JavaScript sample-derived schema generation and real provider execution remain deferred to later Test-tab review. All authoring tabs remain freely navigable.
 
+
+### COMMERCE-050 Attempt 2 accepted — 2026-09-27
+
+COMMERCE-050 is **Complete / Accepted, Attempt 2**. Invalid local Visual authoring
+remains browser-local with field/control-specific corrective guidance, canonical
+Response candidates retain authoritative zero-I/O validation, and action-level
+`DATABASE_UNAVAILABLE` / `INTERNAL_ERROR` / `FORBIDDEN` / rejected-Promise failures
+now render as bounded validation-system diagnostics without fabricated Response
+paths or raw server messages. Submitted evidence includes 47/47 External HTTP UI and
+54/54 Response-validation/Server Action tests, targeted lint/diff checks and zero
+C050-owned TypeScript diagnostics. The one common-packet lifecycle fixture failure is
+unchanged and outside C050's presentation scope. No downstream task is enabled.
 
 ### COMMERCE-049 Attempt 1 accepted — 2026-09-26
 

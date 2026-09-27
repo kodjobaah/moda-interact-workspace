@@ -4,14 +4,14 @@ title: CommerceAgent configuration and live Studio authoring
 status: agreed
 coordinator: moda_architect
 created: 2026-09-23
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 # ARCH-021: CommerceAgent configuration and live Studio authoring
 
 ## Status
 
-Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while Response has COMMERCE-043 through COMMERCE-049 architect-accepted Complete with actionable-validation-diagnostics follow-up COMMERCE-050 Ready behind it. Neither workstream introduces Phase 2 tab gating.
+Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has two independent External HTTP follow-up workstreams: Request has COMMERCE-040 and COMMERCE-041 architect-accepted Complete with COMMERCE-042 Ready, while the zero-provider-I/O Response authoring chain COMMERCE-043 through COMMERCE-050 is architect-accepted Complete. Neither workstream introduces Phase 2 tab gating.
 
 This initiative defines the target product contract before implementation tasks are
 materialised. It supersedes the ARCH-020 assumption that feature/capability revisions
@@ -871,7 +871,7 @@ Response follow-up tasks:
 | ARCH-021-COMMERCE-045 | moda_commerce | Complete | ARCH-021-COMMERCE-043, ARCH-021-COMMERCE-044, ARCH-021-COMMERCE-006, ARCH-021-COMMERCE-039 |
 | ARCH-021-COMMERCE-048 | moda_commerce | Complete | ARCH-021-COMMERCE-045 |
 | ARCH-021-COMMERCE-049 | moda_commerce | Complete | ARCH-021-COMMERCE-048 |
-| ARCH-021-COMMERCE-050 | moda_commerce | Ready | ARCH-021-COMMERCE-049 |
+| ARCH-021-COMMERCE-050 | moda_commerce | Complete | ARCH-021-COMMERCE-049 |
 
 ```text
 COMMERCE-043 -> COMMERCE-044 -> COMMERCE-045 -> COMMERCE-048 -> COMMERCE-049 -> COMMERCE-050
@@ -1153,6 +1153,25 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — COMMERCE-050 Attempt 2 accepted
+
+- Accepted implementation `823dd4511d195343f2b76dcf1206377960f5b31a`.
+- Confirmed invalid local Visual trees remain browser-local and canonical
+  Visual/DIRECT/JAVASCRIPT candidates continue through authoritative zero-provider-I/O
+  Response validation.
+- Confirmed field/control-specific corrective diagnostics remain primary while stable
+  path/code data stays in collapsed Technical details.
+- Confirmed action-level `DATABASE_UNAVAILABLE`, `INTERNAL_ERROR`, `FORBIDDEN` and
+  rejected-Promise failures use separate bounded validation-system diagnostics rather
+  than fabricated Response-field issues; raw server/thrown messages are not exposed.
+- Accepted submitted validation: 47/47 External HTTP UI, 54/54 Response authoring/
+  Server Action tests, targeted ESLint/diff checks and zero C050-owned TypeScript
+  diagnostics. The single common-packet lifecycle fixture failure remains unchanged
+  and outside C050's presentation-only scope.
+- Marked COMMERCE-050 Complete. No downstream task is enabled; real provider/Test-tab
+  execution and sample-derived Direct/JavaScript schema work remain separately
+  deferred.
 
 ### 2026-09-26 — COMMERCE-049 Attempt 1 accepted; actionable Response diagnostics follow-up defined
 

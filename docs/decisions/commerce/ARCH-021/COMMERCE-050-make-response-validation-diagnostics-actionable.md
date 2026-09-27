@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 65
 executor: null
 claimed_at: null
@@ -586,9 +586,120 @@ None.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-09-27
+
+Reviewed implementation `823dd4511d195343f2b76dcf1206377960f5b31a` and the
+submitted Attempt 2 Completion Report against the complete Attempt 1 correction
+contract.
+
+Attempt 2 is accepted.
+
+The primary C050 local/canonical diagnostic split remains intact: invalid browser-local
+Visual trees short-circuit locally; no synthetic null placeholders are sent; Scalar
+and SCALAR_LIST result-type guidance remains distinct; canonical
+Visual/DIRECT/JAVASCRIPT candidates continue through the authoritative Response
+validation action; stable issue paths/codes remain secondary Technical details; and
+the production validation composition remains zero provider/DNS/credential I/O.
+
+The Attempt 1 action-error defect is corrected. Authoritative action failures are now
+represented through a separate `ResponseActionDiagnostic` rather than fabricated
+Response-field issues. The accepted visible guidance is bounded and code-driven:
+
+```text
+DATABASE_UNAVAILABLE
+  Response validation is temporarily unavailable. Retry.
+
+INTERNAL_ERROR
+  Response validation could not be completed. Retry.
+
+FORBIDDEN
+  You are not allowed to validate this Response configuration.
+
+rejected Promise / unknown action availability
+  Response validation is unavailable. Keep your edits and retry.
+```
+
+For those action-level failures:
+
+- no `/execution/responseProcessing` or other fake Response JSON pointer is created;
+- the UI does not tell the administrator to change processing/schema/path fields;
+- the raw Server Action/thrown message is not exposed;
+- the stable action error code is available only in collapsed Technical details;
+- local Visual/Direct/JavaScript authoring values remain unchanged;
+- `onValidationChange(false)` is preserved;
+- Request/Response navigation remains available.
+
+The focused UI regressions prove `DATABASE_UNAVAILABLE` across all three Response
+modes, plus explicit `FORBIDDEN`, `INTERNAL_ERROR`, rejected-Promise and real
+Request-navigation cases. The normal server issue list remains reserved for
+configuration diagnostics returned from successful authoritative validation.
+
+All Work Items, Acceptance Criteria and Validation checkboxes are reconciled.
+
+Submitted validation:
+
+```text
+npm run test:arch020-external-tools-ui:
+  47/47 PASS, zero skipped
+
+npm run test:arch021-external-tool-authoring-validation:
+  54/54 PASS, zero skipped
+
+npm run test:arch021-tool-authoring-common:
+  85 PASS / 1 unrelated lifecycle fixture failure
+
+targeted ESLint:
+  PASS
+
+npm run typecheck:
+  251 diagnostics across 22 baseline files
+  0 diagnostics in the five C050-modified files
+
+git diff --check:
+  PASS
+```
+
+Independent inspection of the submitted `tsconfig.tsbuildinfo` confirms zero semantic
+diagnostics in:
+
+```text
+src/studio/external-http/response-tab.tsx
+src/commerce/tool-authoring/external-validation.ts
+tests/external-tools-ui.test.tsx
+tests/external-tool-authoring-validation.test.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+The common-packet failure remains the documented unrelated
+`tests/commerce-lifecycle.test.ts` fixture whose empty EXTERNAL_HTTP `resultSchema`
+fails as `INVALID_DEFINITION` before that test's expected `LIVE_TEST_REQUIRED`.
+C050 changes no lifecycle, publication, result-schema or gate semantics, so that
+fixture failure does not block this presentation-only task.
+
+The Completion Report now records the canonical parent/implementation worktrees,
+matching task branches, start-of-attempt synchronization, fresh Attempt 2 claim,
+recursive submodule materialization, database submodule commit and implementation
+push parity.
+
+The final user handoff identifies parent report commit
+`358a4482860bdac30544f2e9222fc47537bc40e2` and states both task branches are
+upstream-aligned and clean. The embedded report intentionally cannot self-record that
+final report-publication hash and still says the final parent push/clean state will be
+verified after publication. The archive contains no Git metadata from which the
+architect can reconstruct that self-referential final step. The explicit final
+handoff supplies that evidence, so the bookkeeping distinction does not block
+acceptance.
+
+No new Visual node semantics, result-schema semantics, provider/Test execution,
+persistence, publication policy or authoring-navigation gating was introduced.
+
+C050 has no downstream task to promote.
+
+#### Historical Attempt 1 Changes Requested
 
 #### Attempt 1 review — 2026-09-27
 
@@ -894,39 +1005,34 @@ node kinds, publication policy or unrelated authoring diagnostics.
 - `moda-interact-commerce/tests/external-tool-authoring-validation.test.ts`
 - `moda-interact-commerce/tests/external-tool-authoring-server-actions.test.ts`
 - submitted `tsconfig.tsbuildinfo`
-- Attempt 1 Completion Report
+- Attempt 2 Completion Report
 
 ### Validation Reviewed
 
-Submitted Attempt 1 evidence:
-
-```text
-External HTTP UI: 40 tests PASS
-External Response authoring + Server Actions: 54 tests PASS
-targeted ESLint: PASS
-editor diagnostics: no issues in five changed files
-git diff --check: PASS
-full typecheck: 251 diagnostics / 22 files, 0 in C050-modified files
-common Tool-authoring packet: 85 PASS / 1 unrelated lifecycle fixture FAIL
-```
-
-Independent inspection of `tsconfig.tsbuildinfo` confirms the 22 diagnostic files are
-outside all five C050-modified files.
-
-Static review confirms the local Visual short-circuit, field/control presentation,
-secondary Technical details, bounded top-level server diagnostics and zero-I/O
-composition. Static review also confirms the remaining action-error misclassification
-described in A1-R1.
+- External HTTP UI: 47/47 passed, zero skipped.
+- External Response authoring / Server Actions: 54/54 passed, zero skipped.
+- Common Tool-authoring packet: 85 passed; one unchanged unrelated lifecycle fixture
+  failure documented.
+- Targeted ESLint over all five task-specified files: passed.
+- `git diff --check`: passed.
+- Full typecheck: 251 diagnostics across 22 baseline files; zero diagnostics in all
+  five C050-modified files.
+- Independent static review confirms action-level failures use a separate system
+  diagnostic path with bounded code-based guidance, raw-message suppression,
+  preserved authoring state and no fabricated Response JSON pointer.
 
 ### Architecture Conformance
 
-Changes Requested. The core local/canonical diagnostic split conforms to ARCH-021 and
-C048/C049. The only remaining runtime issue is presentation of action-level
-validation failure as a Response-processing field problem. No contract/schema/
-persistence/provider architecture change is required.
+Conforms. C050 changes only Response diagnostic presentation. Local invalid Visual
+state remains local, canonical candidates remain server-authoritative, action-level
+validation failures remain distinct from Response-field configuration failures,
+stable technical codes remain secondary, and provider/persistence/publication/
+navigation semantics are unchanged.
 
 ### Follow-up
 
-Return this same task through `/moda-task ARCH-021-COMMERCE-050` for Attempt 2.
-No downstream task is enabled by C050. Do not start unrelated manual-validation
-follow-up work from this review.
+`ARCH-021-COMMERCE-050` is Complete / Accepted at Attempt 2.
+
+No downstream task is enabled by C050. Real provider execution and any future
+Test-tab/sample-derived Direct/JavaScript result-schema work remain separate manual
+validation follow-up and are not started from this review.
