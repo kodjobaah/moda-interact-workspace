@@ -328,6 +328,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-068](COMMERCE-068-integrate-result-template-tool-authoring.md) | UI: integrate Result Template tab and rebalance Agent Contract/Review | Complete | COMMERCE-065, COMMERCE-066, COMMERCE-067 |
 | [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Complete | COMMERCE-060, COMMERCE-064 |
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
+| [COMMERCE-071](COMMERCE-071-add-tool-authoring-structured-logging.md) | Observability: add shared structured diagnostics for Tool authoring, Admin Explore/schema derivation, live Test, mutations and reconciliation | Ready | COMMERCE-039, COMMERCE-054, COMMERCE-056, COMMERCE-060, COMMERCE-061, COMMERCE-062, COMMERCE-064, COMMERCE-065, COMMERCE-067 |
 
 Initial executable frontier for this workstream:
 
@@ -349,6 +350,12 @@ COMMERCE-065 + COMMERCE-066 + COMMERCE-067 ---> COMMERCE-068
 ```
 
 COMMERCE-063 Attempt 1 is architect-accepted Complete. COMMERCE-066 Attempt 1 is now architect-accepted Complete; COMMERCE-067 remains Ready. COMMERCE-068 remains dependency-gated by COMMERCE-065 + COMMERCE-066 + COMMERCE-067, with the COMMERCE-066 dependency now satisfied.
+
+### Tool-authoring diagnostic logging follow-up — 2026-09-27
+
+Manual debugging of the completed Tool-authoring flows identified a semantic logging gap: the Commerce process already uses the shared structured logger and production execution has `commerce.definition.outcome` telemetry, but Studio authoring mostly logs unexpected exceptions. COMMERCE-071 adds bounded shared-logger diagnostics for Request/Response validation, Shopify Admin Explore schema browsing/query validation/result-contract derivation, non-durable live Test stages, Agent/Admin validation, Tool mutations and reconciliation without logging authored GraphQL/schema payloads, provider bodies or credentials. Existing discovery telemetry remains authoritative for metrics; the new structured logs add only correlation/timing and bounded safe compiler/schema metadata needed for debugging. It is independent of tab-gating/UI work and does not duplicate generic framework HTTP telemetry.
+
+COMMERCE-071 is **Ready**; all of its dependencies are architect-accepted Complete.
 
 Key invariants:
 

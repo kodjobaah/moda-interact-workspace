@@ -370,6 +370,7 @@ This task instruments Studio authoring, Shopify Admin Explore/schema derivation,
 
 ## Work Items
 
+<<<<<<< HEAD
 - [x] Add a bounded Tool-authoring semantic logging adapter using the shared logger.
 - [x] Add started/outcome diagnostics to External HTTP Request/Response/definition authoring Server Actions.
 - [x] Add safe stage/outcome diagnostics to non-durable External HTTP live Test.
@@ -381,6 +382,19 @@ This task instruments Studio authoring, Shopify Admin Explore/schema derivation,
 - [x] Consolidate unexpected-error diagnostics into bounded semantic outcomes without logging raw exceptions.
 - [x] Add sensitive-data exclusion and logger-failure-isolation regressions.
 - [x] Add focused success/expected-failure/unexpected-failure logging tests.
+=======
+- [ ] Add a bounded Tool-authoring semantic logging adapter using the shared logger.
+- [ ] Add started/outcome diagnostics to External HTTP Request/Response/definition authoring Server Actions.
+- [ ] Add safe stage/outcome diagnostics to non-durable External HTTP live Test.
+- [ ] Add Agent call-side validation diagnostics.
+- [ ] Add Shopify Admin schema-browse/Explore diagnostics with safe metadata and no GraphQL/schema payloads.
+- [ ] Add Shopify Admin Request/definition validation and result-contract/schema-derivation diagnostics.
+- [ ] Add Tool create/save/publish mutation outcome diagnostics without logging payloads/reasons.
+- [ ] Add unknown-operation reconciliation diagnostics.
+- [ ] Preserve existing unexpected-error logs or deliberately consolidate them without reducing information.
+- [ ] Add sensitive-data exclusion and logger-failure-isolation regressions.
+- [ ] Add focused success/expected-failure/unexpected-failure logging tests.
+>>>>>>> origin/main
 
 ## Interfaces / Contracts
 
@@ -426,6 +440,7 @@ None.
 
 ## Acceptance Criteria
 
+<<<<<<< HEAD
 - [x] All new generic logging uses `@modainteract/moda-interact-shared/logging`; no competing generic logger is created.
 - [x] Tool-authoring Server Actions emit bounded semantic started/outcome diagnostics for the scoped actions.
 - [x] Successful actions, expected bounded failures and unexpected failures are distinguishable in logs.
@@ -455,6 +470,37 @@ None.
 - [x] targeted ESLint for changed files
 - [x] changed-file TypeScript diagnostics or repository typecheck with baseline reconciliation
 - [x] `git diff --check`
+=======
+- [ ] All new generic logging uses `@modainteract/moda-interact-shared/logging`; no competing generic logger is created.
+- [ ] Tool-authoring Server Actions emit bounded semantic started/outcome diagnostics for the scoped actions.
+- [ ] Successful actions, expected bounded failures and unexpected failures are distinguishable in logs.
+- [ ] Duration is available for scoped server-side actions so slow/hanging boundaries can be identified.
+- [ ] External HTTP live Test diagnostics identify request construction, connection resolution, provider request, response processing and result validation outcomes.
+- [ ] Live-Test logs contain no request/provider/processed payload values or credentials.
+- [ ] Tool create/save/publish outcomes are traceable by bounded operation identity without logging mutation payloads or publication reasons.
+- [ ] Unknown-operation reconciliation outcome is traceable.
+- [ ] Request/Response/Agent/Admin validation outcomes expose safe issue counts/status without authored content.
+- [ ] Shopify Admin Explore schema browsing emits traceable start/outcome/duration diagnostics with safe bounded schema metadata only.
+- [ ] Shopify Admin result-contract/schema derivation emits traceable outcome diagnostics without GraphQL documents, selected field names or schema JSON.
+- [ ] Existing `CommerceTelemetry.discovery(...)` is not mechanically duplicated; structured logs add only correlation/timing/debug metadata absent from the existing telemetry.
+- [ ] Logging/sink failure cannot change validation, live-Test, mutation or reconciliation results.
+- [ ] No duplicate production `CommerceExecutor` lifecycle telemetry is introduced.
+- [ ] No database migration, durable diagnostic record, UI behaviour change, metric, trace, dashboard or alert is introduced.
+
+## Validation
+
+- [ ] focused Tool-authoring logging adapter tests
+- [ ] focused External HTTP authoring Server Action logging tests
+- [ ] focused live-Test stage logging tests
+- [ ] focused Tool mutation/reconciliation logging tests
+- [ ] focused Agent/Admin validation logging tests
+- [ ] focused Admin Explore schema-browse and result-contract/schema-derivation logging tests
+- [ ] explicit sensitive-data canary test proving prohibited payload/source/credential values are absent from emitted records
+- [ ] logger/sink failure-isolation regression
+- [ ] targeted ESLint for changed files
+- [ ] changed-file TypeScript diagnostics or repository typecheck with baseline reconciliation
+- [ ] `git diff --check`
+>>>>>>> origin/main
 
 ## Stop Condition
 
@@ -479,6 +525,7 @@ Do not introduce permanent application metrics merely to mirror these logs. Fram
 ## Completion Report
 
 ### Status
+<<<<<<< HEAD
 Ready for Architect Review
 
 ### Files Changed
@@ -510,6 +557,27 @@ No new authenticated Result Template validation Server Action existed at impleme
 
 ### Unresolved Issues
 The repository-wide typecheck has 264 pre-existing diagnostics across 30 files. Changed-file diagnostics and targeted lint/tests pass.
+=======
+Not Started
+
+### Files Changed
+None
+
+### Work Completed
+None
+
+### Validation Results
+None
+
+### Deviations
+None
+
+### Assumptions
+None
+
+### Unresolved Issues
+None
+>>>>>>> origin/main
 
 ### Architectural Concerns
 None
