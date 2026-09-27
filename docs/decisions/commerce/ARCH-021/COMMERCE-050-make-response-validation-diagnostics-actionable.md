@@ -9,16 +9,16 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 65
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-049
 enables: []
 created: 2026-09-26
-updated: 2026-09-26
+updated: 2026-09-27
 ---
 
 # Make Response validation diagnostics actionable in Studio
@@ -403,15 +403,15 @@ work. Existing Response Server Action zero-I/O proofs must remain green.
 
 ## Work Items
 
-- [ ] Add one Response diagnostic-presentation mapper for stable Visual/server issues.
-- [ ] Short-circuit Validate response on an invalid local Visual tree instead of sending null placeholders.
-- [ ] Distinguish Scalar `Result type` from SCALAR_LIST `Item type` diagnostics.
-- [ ] Replace raw path/code-first validation rendering with actionable field/control text.
-- [ ] Keep optional technical path/code details secondary/collapsed if retained.
-- [ ] Translate top-level malformed Response Server Action values into bounded domain diagnostics.
-- [ ] Preserve safe JavaScript compiler diagnostics and existing canonical validation behavior.
-- [ ] Deduplicate local/server presentation without losing invalid raw edits.
-- [ ] Add focused UI/server regressions for the manual reproduction and adjacent Visual cases.
+- [x] Add one Response diagnostic-presentation mapper for stable Visual/server issues.
+- [x] Short-circuit Validate response on an invalid local Visual tree instead of sending null placeholders.
+- [x] Distinguish Scalar `Result type` from SCALAR_LIST `Item type` diagnostics.
+- [x] Replace raw path/code-first validation rendering with actionable field/control text.
+- [x] Keep optional technical path/code details secondary/collapsed if retained.
+- [x] Translate top-level malformed Response Server Action values into bounded domain diagnostics.
+- [x] Preserve safe JavaScript compiler diagnostics and existing canonical validation behavior.
+- [x] Deduplicate local/server presentation without losing invalid raw edits.
+- [x] Add focused UI/server regressions for the manual reproduction and adjacent Visual cases.
 
 ## Interfaces / Contracts
 
@@ -443,20 +443,20 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Invalid local Visual authoring is diagnosed locally when Validate response is clicked; no null placeholder is sent to the Server Action.
-- [ ] A missing Scalar result type names the actual field and tells the user to choose string/integer/number/boolean.
-- [ ] A missing SCALAR_LIST item type says `Item type`, not generic `Result type`.
-- [ ] Invalid Visual path, limit, duplicate name and empty projection have explicit corrective text.
-- [ ] Normal UI no longer leads with JSON pointers, issue codes, `invalid_type`, `custom`, `Invalid input`, or `expected object, received null`.
-- [ ] Optional technical details may retain deterministic path/code without replacing the actionable explanation.
-- [ ] Valid Visual candidates still invoke authoritative Response validation exactly once.
-- [ ] DIRECT and JAVASCRIPT authoritative validation behavior is unchanged apart from clearer presentation.
-- [ ] Safe JavaScript compiler diagnostics remain visible.
-- [ ] Malformed direct Server Action callers receive bounded Response-domain issues without raw rejected values.
-- [ ] Invalid raw edits remain visible and previous validation remains stale.
-- [ ] Other authoring tabs remain navigable.
-- [ ] Response validation remains zero provider/credential/network/persistence I/O.
-- [ ] No Shared/Prisma/database/result-schema/runtime-processing change is introduced.
+- [x] Invalid local Visual authoring is diagnosed locally when Validate response is clicked; no null placeholder is sent to the Server Action.
+- [x] A missing Scalar result type names the actual field and tells the user to choose string/integer/number/boolean.
+- [x] A missing SCALAR_LIST item type says `Item type`, not generic `Result type`.
+- [x] Invalid Visual path, limit, duplicate name and empty projection have explicit corrective text.
+- [x] Normal UI no longer leads with JSON pointers, issue codes, `invalid_type`, `custom`, `Invalid input`, or `expected object, received null`.
+- [x] Optional technical details may retain deterministic path/code without replacing the actionable explanation.
+- [x] Valid Visual candidates still invoke authoritative Response validation exactly once.
+- [x] DIRECT and JAVASCRIPT authoritative validation behavior is unchanged apart from clearer presentation.
+- [x] Safe JavaScript compiler diagnostics remain visible.
+- [x] Malformed direct Server Action callers receive bounded Response-domain issues without raw rejected values.
+- [x] Invalid raw edits remain visible and previous validation remains stale.
+- [x] Other authoring tabs remain navigable.
+- [x] Response validation remains zero provider/credential/network/persistence I/O.
+- [x] No Shared/Prisma/database/result-schema/runtime-processing change is introduced.
 
 ## Mandatory Regression Scenarios
 
@@ -505,23 +505,12 @@ Add named tests proving at least:
 
 ## Validation
 
-Run the focused repository scripts covering:
-
-```text
-External HTTP UI
-External Response authoring validation
-External validation Server Actions
-common Tool authoring regression packet where required by repository conventions
-```
-
-Then run targeted lint/diagnostics for changed files and:
-
-```bash
-git diff --check
-```
-
-Repository-wide typecheck may retain the established unrelated baseline only when no
-C050-modified file has a diagnostic; record exact evidence in the Completion Report.
+- [x] `npm run test:arch020-external-tools-ui`: 47 tests passed, zero skipped.
+- [x] `npm run test:arch021-external-tool-authoring-validation`: 54 tests passed, zero skipped; includes Response Server Action zero-I/O coverage.
+- [x] `npm run test:arch021-tool-authoring-common`: 85 passed; one unrelated `tests/commerce-lifecycle.test.ts` fixture failure is documented in the Completion Report.
+- [x] Required targeted `npm exec eslint` over the five task-specified files: clean.
+- [x] `npm run typecheck`: 251 diagnostics in 22 files; zero diagnostics in the five C050-modified files.
+- [x] `git diff --check`: clean.
 
 ## Stop Condition
 
@@ -535,45 +524,515 @@ kinds, publication policy or unrelated authoring diagnostics.
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Architect Review (Attempt 2; implementation commit recorded below and pushed)
+
+### Physical Worktree Isolation
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-050`
+- Parent branch: `task/ARCH-021-COMMERCE-050`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-050`
+- Implementation branch: `task/ARCH-021-COMMERCE-050`
+- Shared workspace checkout switched/mutated for task work: no.
+- Shared implementation checkout switched/mutated for task work: no.
+- Another task worktree reused: no.
+
+### Start-of-Attempt Synchronization and Claim
+- Parent task synchronization started from `b88fe45e` (Attempt 1 review corrections); `origin/main` was already an ancestor. The remote task branch was current before the Attempt 2 claim commit.
+- Implementation synchronization started from `e4f622695c460a588dc788fead80de00ce2fde01`; local branch matched `origin/task/ARCH-021-COMMERCE-050`, and `origin/main` was already an ancestor. No fast-forward or mainline merge was needed.
+- Attempt 2 claim evidence: parent commit `01177a2403d428f5858d0e6fd6083331db6d8b38`, which records `status: in_progress`, `executor: copilot`, `claimed_at: 2026-09-27T07:25:54Z`, `attempt: 2`.
+- Recursive implementation submodules were materialized by the prepared execution. `git submodule status --recursive` verified database commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45` with no uninitialized, mismatched, or unresolved entries. No `--remote` submodule update was used.
 
 ### Files Changed
-None
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/src/commerce/tool-authoring/external-validation.ts`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/external-tool-authoring-validation.test.ts`
+- `moda-interact-commerce/tests/external-tool-authoring-server-actions.test.ts`
 
 ### Work Completed
-None
+- Invalid browser-local Visual trees now short-circuit Response validation locally; canonical Visual candidates continue through the authoritative Server Action.
+- Added field/control-specific Visual guidance for all stable derivation codes, including Scalar versus SCALAR_LIST item types; issue paths/codes are confined to collapsed Technical details.
+- Action-level validation failures now render as separate bounded system diagnostics for `DATABASE_UNAVAILABLE`, `INTERNAL_ERROR`, `FORBIDDEN`, and rejected Promises; server messages and fabricated Response paths are not shown, and `onValidationChange(false)` is preserved.
+- Mapped malformed top-level Response format, processing, schema, and path values to bounded domain diagnostics; preserved safe Response JavaScript compiler messages and locations.
+- Added UI and Server Action regressions for the manual `field2` reproduction, SCALAR_LIST type/limit, unsafe paths, duplicates, empty projections, server mismatch, JavaScript causes, Direct schema failures, retained edits/navigation, and null payloads.
 
 ### Validation Results
-None
+- `npm run test:arch020-external-tools-ui`: passed, 47 tests; includes `DATABASE_UNAVAILABLE`, `INTERNAL_ERROR`, `FORBIDDEN`, Promise rejection, raw-message suppression, retained Visual/Direct/JavaScript values, validation invalidation and real Request/Response navigation.
+- `npm run test:arch021-external-tool-authoring-validation`: passed, 54 tests across Response validation and Server Actions; includes the existing zero-I/O proof.
+- `npm run test:arch021-tool-authoring-common`: 85 passed, 1 failed. The unchanged `tests/commerce-lifecycle.test.ts` publication fixture uses an empty external `resultSchema`, so it fails with `INVALID_DEFINITION` before its expected `LIVE_TEST_REQUIRED` assertion. No lifecycle fixture or schema/publication semantics were changed for C050.
+- Required `npm exec eslint` over `src/studio/external-http/response-tab.tsx`, `src/commerce/tool-authoring/external-validation.ts`, `tests/external-tools-ui.test.tsx`, `tests/external-tool-authoring-validation.test.ts`, and `tests/external-tool-authoring-server-actions.test.ts`: clean.
+- `npm run typecheck`: 251 diagnostics in 22 files; final captured output contains no diagnostics in any of the five C050-modified files.
+- `git diff --check`: clean.
+- Implementation commit: `823dd4511d195343f2b76dcf1206377960f5b31a`; pushed to `origin/task/ARCH-021-COMMERCE-050`, with upstream parity verified.
 
 ### Deviations
-None
+The common Tool-authoring packet retains the unrelated lifecycle fixture failure recorded above; it is outside C050's Response-validation presentation scope.
 
 ### Assumptions
-None
+None.
 
 ### Unresolved Issues
-None
+The unrelated common-packet lifecycle fixture and repository-wide TypeScript baseline remain for their owning workstreams; no C050-specific issue is unresolved.
 
 ### Architectural Concerns
-None
+None.
+
+### Attempt 2 Commits and Push Parity
+- Implementation commit: `823dd4511d195343f2b76dcf1206377960f5b31a`; push to `origin/task/ARCH-021-COMMERCE-050` verified; implementation worktree clean.
+- Final parent Completion Report commit: the parent task branch tip published with this report; exact SHA recorded in the task handoff.
+- Parent push: to be verified against `origin/task/ARCH-021-COMMERCE-050`.
+- Final parent worktree: to be verified clean after publication.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
-None
+
+#### Attempt 2 review — Accepted — 2026-09-27
+
+Reviewed implementation `823dd4511d195343f2b76dcf1206377960f5b31a` and the
+submitted Attempt 2 Completion Report against the complete Attempt 1 correction
+contract.
+
+Attempt 2 is accepted.
+
+The primary C050 local/canonical diagnostic split remains intact: invalid browser-local
+Visual trees short-circuit locally; no synthetic null placeholders are sent; Scalar
+and SCALAR_LIST result-type guidance remains distinct; canonical
+Visual/DIRECT/JAVASCRIPT candidates continue through the authoritative Response
+validation action; stable issue paths/codes remain secondary Technical details; and
+the production validation composition remains zero provider/DNS/credential I/O.
+
+The Attempt 1 action-error defect is corrected. Authoritative action failures are now
+represented through a separate `ResponseActionDiagnostic` rather than fabricated
+Response-field issues. The accepted visible guidance is bounded and code-driven:
+
+```text
+DATABASE_UNAVAILABLE
+  Response validation is temporarily unavailable. Retry.
+
+INTERNAL_ERROR
+  Response validation could not be completed. Retry.
+
+FORBIDDEN
+  You are not allowed to validate this Response configuration.
+
+rejected Promise / unknown action availability
+  Response validation is unavailable. Keep your edits and retry.
+```
+
+For those action-level failures:
+
+- no `/execution/responseProcessing` or other fake Response JSON pointer is created;
+- the UI does not tell the administrator to change processing/schema/path fields;
+- the raw Server Action/thrown message is not exposed;
+- the stable action error code is available only in collapsed Technical details;
+- local Visual/Direct/JavaScript authoring values remain unchanged;
+- `onValidationChange(false)` is preserved;
+- Request/Response navigation remains available.
+
+The focused UI regressions prove `DATABASE_UNAVAILABLE` across all three Response
+modes, plus explicit `FORBIDDEN`, `INTERNAL_ERROR`, rejected-Promise and real
+Request-navigation cases. The normal server issue list remains reserved for
+configuration diagnostics returned from successful authoritative validation.
+
+All Work Items, Acceptance Criteria and Validation checkboxes are reconciled.
+
+Submitted validation:
+
+```text
+npm run test:arch020-external-tools-ui:
+  47/47 PASS, zero skipped
+
+npm run test:arch021-external-tool-authoring-validation:
+  54/54 PASS, zero skipped
+
+npm run test:arch021-tool-authoring-common:
+  85 PASS / 1 unrelated lifecycle fixture failure
+
+targeted ESLint:
+  PASS
+
+npm run typecheck:
+  251 diagnostics across 22 baseline files
+  0 diagnostics in the five C050-modified files
+
+git diff --check:
+  PASS
+```
+
+Independent inspection of the submitted `tsconfig.tsbuildinfo` confirms zero semantic
+diagnostics in:
+
+```text
+src/studio/external-http/response-tab.tsx
+src/commerce/tool-authoring/external-validation.ts
+tests/external-tools-ui.test.tsx
+tests/external-tool-authoring-validation.test.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+The common-packet failure remains the documented unrelated
+`tests/commerce-lifecycle.test.ts` fixture whose empty EXTERNAL_HTTP `resultSchema`
+fails as `INVALID_DEFINITION` before that test's expected `LIVE_TEST_REQUIRED`.
+C050 changes no lifecycle, publication, result-schema or gate semantics, so that
+fixture failure does not block this presentation-only task.
+
+The Completion Report now records the canonical parent/implementation worktrees,
+matching task branches, start-of-attempt synchronization, fresh Attempt 2 claim,
+recursive submodule materialization, database submodule commit and implementation
+push parity.
+
+The final user handoff identifies parent report commit
+`358a4482860bdac30544f2e9222fc47537bc40e2` and states both task branches are
+upstream-aligned and clean. The embedded report intentionally cannot self-record that
+final report-publication hash and still says the final parent push/clean state will be
+verified after publication. The archive contains no Git metadata from which the
+architect can reconstruct that self-referential final step. The explicit final
+handoff supplies that evidence, so the bookkeeping distinction does not block
+acceptance.
+
+No new Visual node semantics, result-schema semantics, provider/Test execution,
+persistence, publication policy or authoring-navigation gating was introduced.
+
+C050 has no downstream task to promote.
+
+#### Historical Attempt 1 Changes Requested
+
+#### Attempt 1 review — 2026-09-27
+
+Reviewed implementation `e4f6226` and parent report `b2cacad2` against the complete
+C050 task contract.
+
+The primary C050 implementation is architecturally correct and MUST be preserved:
+
+- an invalid browser-local Visual tree short-circuits `Validate response` locally;
+- no synthetic `responseProcessing:null` / `resultSchema:null` payload is sent for
+  that local-invalid case;
+- Scalar `MISSING_RESULT_TYPE` is presented as `Result type`;
+- SCALAR_LIST `MISSING_RESULT_TYPE` is presented as `Item type`;
+- stable Visual derivation codes are mapped to field/control-specific corrective
+  guidance;
+- the normal issue list leads with product-facing title/guidance while path/code are
+  confined to collapsed Technical details;
+- canonical Visual/DIRECT/JAVASCRIPT candidates still use the authoritative Response
+  validation Server Action;
+- malformed top-level Response values receive bounded Response-domain diagnostics;
+- safe JavaScript compiler diagnostics remain visible;
+- local invalid edits remain browser-local and do not gate Request/Response/Test/etc.
+  navigation;
+- the production authoring validation composition remains zero provider/DNS/
+  credential I/O;
+- submitted `tsconfig.tsbuildinfo` contains zero semantic diagnostics in all five
+  C050-modified files.
+
+Attempt 1 is not accepted because one action-level error path is currently presented
+as if the administrator's Response processing were invalid, and the Completion
+Report does not contain the mandatory prepared-execution/worktree packet or reconciled
+task checkboxes.
+
+The following is the complete and authoritative Attempt 2 correction contract.
+Do not redesign Visual derivation, result schemas, provider execution, persistence,
+publication policy or authoring navigation.
+
+##### A1-R1 — do not turn Server Action availability/auth failures into Response-processing diagnostics
+
+Change:
+
+```text
+moda-interact-commerce/src/studio/external-http/response-tab.tsx
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+```
+
+The current `result.kind === "error"` branch does:
+
+```ts
+setResponseValidation({
+  state: "invalid",
+  message: "Response validation is unavailable. Keep your edits and retry.",
+  issues: [{
+    path: "/execution/responseProcessing",
+    code: result.code,
+    message: result.message
+  }]
+});
+```
+
+`presentServerIssue()` then sees `/execution/responseProcessing` and renders guidance
+equivalent to:
+
+```text
+Response processing
+Choose a valid processing mode and correct its settings.
+```
+
+for failures such as:
+
+```text
+DATABASE_UNAVAILABLE
+INTERNAL_ERROR
+FORBIDDEN
+```
+
+That is product-wrong. The Response configuration may be perfectly valid; the
+validation action itself failed.
+
+Required presentation boundary:
+
+```text
+authoritative validation returns kind:'ok', valid:false
+-> issue list remains field/control-specific Response configuration diagnostics
+
+authoritative validation returns kind:'error'
+-> DO NOT fabricate /execution/responseProcessing
+-> DO NOT tell the user to change response-processing fields
+-> preserve local authoring values
+-> keep onValidationChange(false)
+-> present one bounded validation-system diagnostic
+```
+
+Use deterministic code-based guidance for at least:
+
+```text
+DATABASE_UNAVAILABLE
+  title:   Response validation
+  message: Response validation is temporarily unavailable. Retry.
+
+INTERNAL_ERROR
+  title:   Response validation
+  message: Response validation could not be completed. Retry.
+
+FORBIDDEN
+  title:   Response validation
+  message: You are not allowed to validate this Response configuration.
+```
+
+Equivalent concise wording is acceptable, but it MUST NOT instruct the administrator
+to edit Response processing/schema/path when the failure is action availability or
+authorization.
+
+The stable action error code may appear only inside collapsed Technical details.
+There is no legitimate Response JSON-pointer path for this action-level failure; do
+not invent one under `/execution/...`.
+
+A small distinct `PresentedResponseIssue`/system-issue shape or a separate
+action-error rendering branch is acceptable. Do not weaken the existing
+`ResponseActionResult` contract.
+
+Also preserve Promise-rejection behavior as an unavailable/retry presentation with
+no fabricated Response-field issue.
+
+##### A1-R2 — add executable action-error presentation regressions
+
+In:
+
+```text
+moda-interact-commerce/tests/external-tools-ui.test.tsx
+```
+
+add focused tests through the actual Response tab for:
+
+```text
+1. validateExternalResponse action returns:
+   {
+     kind:'error',
+     code:'DATABASE_UNAVAILABLE',
+     message:'database unavailable',
+     retryable:true
+   }
+
+   -> status/guidance says validation is temporarily unavailable / retry
+   -> normal visible text does NOT say:
+      "Choose a valid processing mode"
+      "Correct the result schema"
+      "/execution/responseProcessing"
+   -> local Visual/Direct/JavaScript values remain unchanged
+   -> onValidationChange remains false
+   -> Request tab remains navigable
+
+2. action returns FORBIDDEN
+   -> visible guidance is authorization-specific
+   -> no Response-field correction is suggested
+
+3. action Promise rejects
+   -> visible unavailable/retry message
+   -> no fabricated Response-field issue
+   -> no raw thrown message is exposed
+```
+
+If path/code technical data is retained for action errors, assert it is available only
+inside collapsed Technical details and does not use a fake `/execution/...` path.
+
+Keep the existing local-Visual and canonical-server issue regressions unchanged.
+
+##### A1-R3 — reconcile Work Items and Acceptance Criteria
+
+The task was moved to `review` with every Work Item and Acceptance Criterion still
+unchecked.
+
+After A1-R1/A1-R2 pass, update each actually satisfied:
+
+```text
+## Work Items
+## Acceptance Criteria
+## Validation
+```
+
+checkbox to `[x]`.
+
+Do not mark a criterion satisfied solely from this Architect Review. The implementing
+agent owns the durable checklist reconciliation.
+
+The existing common-packet lifecycle failure MAY remain documented as unrelated:
+
+```text
+tests/commerce-lifecycle.test.ts
+empty EXTERNAL_HTTP resultSchema fixture
+-> INVALID_DEFINITION before expected LIVE_TEST_REQUIRED
+```
+
+only if it reproduces unchanged and no C050-modified file is involved. C050 MUST NOT
+change lifecycle/publication/result-schema semantics merely to make that unrelated
+fixture green.
+
+##### A1-R4 — deterministic validation
+
+Run exactly:
+
+```bash
+npm run test:arch020-external-tools-ui
+npm run test:arch021-external-tool-authoring-validation
+npm run test:arch021-tool-authoring-common
+
+npm exec eslint \
+  src/studio/external-http/response-tab.tsx \
+  src/commerce/tool-authoring/external-validation.ts \
+  tests/external-tools-ui.test.tsx \
+  tests/external-tool-authoring-validation.test.ts \
+  tests/external-tool-authoring-server-actions.test.ts
+
+npm run typecheck
+git diff --check
+```
+
+Required result:
+
+```text
+External HTTP UI: all tests pass, zero skipped
+External Response authoring/Server Actions: all tests pass, zero skipped
+common packet: all C050-relevant tests pass; only the explicitly unrelated lifecycle
+fixture above may remain if unchanged
+targeted ESLint: clean
+git diff --check: clean
+zero TypeScript diagnostics in all C050-modified files
+```
+
+No diagnostic in:
+
+```text
+src/studio/external-http/response-tab.tsx
+src/commerce/tool-authoring/external-validation.ts
+tests/external-tools-ui.test.tsx
+tests/external-tool-authoring-validation.test.ts
+tests/external-tool-authoring-server-actions.test.ts
+```
+
+may be classified as baseline.
+
+##### A1-R5 — record the exact Attempt 2 prepared-execution packet
+
+The submitted Completion Report records implementation/report commits and validation
+results, but not the exact launcher-prepared physical-isolation/synchronization
+packet required by the repository workflow.
+
+Attempt 2 must record the exact launcher-provided:
+
+```text
+parent worktree path
+implementation worktree path
+parent branch = task/ARCH-021-COMMERCE-050
+implementation branch = task/ARCH-021-COMMERCE-050
+start-of-attempt parent synchronization
+start-of-attempt implementation synchronization
+Attempt 2 claim evidence / commit
+recursive submodule materialization
+database submodule commit
+implementation commit
+final parent report commit
+push parity
+clean parent worktree
+clean implementation worktree
+```
+
+Do not infer or reuse Attempt 1 values.
+
+Before handoff set exactly:
+
+```yaml
+status: review
+attempt: 2
+executor: null
+claimed_at: null
+```
+
+##### Attempt 2 stop condition
+
+Return to architect review only when:
+
+```text
+action-level validation failures no longer masquerade as Response-field failures
+AND DATABASE_UNAVAILABLE / INTERNAL_ERROR / FORBIDDEN / Promise rejection have
+    actionable non-field presentation
+AND all existing C050 local/canonical diagnostic regressions remain green
+AND task checkboxes are reconciled
+AND zero C050-owned type/lint/diff diagnostics remain
+AND the exact fresh Attempt 2 launcher/report packet is recorded
+```
+
+Then push implementation and parent task branches, return control to
+`moda_architect`, and STOP.
+
+Do not continue into Response visual redesign, provider/Test execution, new Visual
+node kinds, publication policy or unrelated authoring diagnostics.
 
 ### Reviewed Files
-None
+
+- `moda-interact-commerce/src/studio/external-http/response-tab.tsx`
+- `moda-interact-commerce/src/commerce/tool-authoring/external-validation.ts`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/external-tool-authoring-validation.test.ts`
+- `moda-interact-commerce/tests/external-tool-authoring-server-actions.test.ts`
+- submitted `tsconfig.tsbuildinfo`
+- Attempt 2 Completion Report
 
 ### Validation Reviewed
-None
+
+- External HTTP UI: 47/47 passed, zero skipped.
+- External Response authoring / Server Actions: 54/54 passed, zero skipped.
+- Common Tool-authoring packet: 85 passed; one unchanged unrelated lifecycle fixture
+  failure documented.
+- Targeted ESLint over all five task-specified files: passed.
+- `git diff --check`: passed.
+- Full typecheck: 251 diagnostics across 22 baseline files; zero diagnostics in all
+  five C050-modified files.
+- Independent static review confirms action-level failures use a separate system
+  diagnostic path with bounded code-based guidance, raw-message suppression,
+  preserved authoring state and no fabricated Response JSON pointer.
 
 ### Architecture Conformance
-Pending
+
+Conforms. C050 changes only Response diagnostic presentation. Local invalid Visual
+state remains local, canonical candidates remain server-authoritative, action-level
+validation failures remain distinct from Response-field configuration failures,
+stable technical codes remain secondary, and provider/persistence/publication/
+navigation semantics are unchanged.
 
 ### Follow-up
-None
+
+`ARCH-021-COMMERCE-050` is Complete / Accepted at Attempt 2.
+
+No downstream task is enabled by C050. Real provider execution and any future
+Test-tab/sample-derived Direct/JavaScript result-schema work remain separate manual
+validation follow-up and are not started from this review.
