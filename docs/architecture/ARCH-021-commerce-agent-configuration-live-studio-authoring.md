@@ -1067,6 +1067,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-068 | moda_commerce | Ready | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+| ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1301,6 +1302,15 @@ with shop prompts, without access to platform defaults.
 Prove the complete live authoring-to-production flow and remove obsolete human-facing
 fixture/per-capability-prompt behaviour while retaining deterministic test fixtures.
 
+
+### Tool-authoring diagnostic observability follow-up — 2026-09-27
+
+Studio Tool authoring now spans local Request/Response authoring, Shopify Admin Explore/schema browsing and compiler-derived result contracts, server-authoritative validation, non-durable live provider testing, Agent/Admin contract validation and durable create/save/publish/reconciliation. Existing production execution already emits semantic Commerce telemetry, while Studio authoring currently records mainly unexpected failures.
+
+COMMERCE-071 adds a bounded Commerce-owned semantic adapter on top of `@modainteract/moda-interact-shared/logging`. The target is queryable start/outcome/duration diagnostics, safe Shopify Admin Explore/schema-derivation diagnostics and safe live-Test stage outcomes, not duplicate HTTP/discovery metrics or payload logging. No authored request values, JavaScript/GraphQL source, selected Admin field names/argument values, schema JSON/templates, provider bodies, processed values or credentials may enter these events. Existing `CommerceTelemetry.discovery(...)` remains the metric signal for discovery; C071 structured logs may complement it with correlation/timing and bounded safe schema/compiler metadata but must not mirror it mechanically. Observability remains best-effort and must not become a correctness dependency.
+
+COMMERCE-071 is independent of final tab traversal/gating and may execute immediately because its declared authoring/runtime dependencies are Complete.
+
 ## Decisions / Tasks
 
 Phase 1 is materialised as six Commerce tasks under `docs/decisions/commerce/ARCH-021/`.
@@ -1349,6 +1359,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
+| ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1377,6 +1388,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-27 — Tool-authoring structured diagnostic logging defined
+
+- Added COMMERCE-071 to instrument Studio Tool-authoring semantic boundaries with the architecture-approved shared structured logger.
+- Scoped diagnostics to server-side Request/Response/Agent/Admin validation, Shopify Admin Explore schema browsing/query validation/result-contract derivation, non-durable live-Test stages, Tool mutation outcomes and reconciliation.
+- Explicitly excluded authored/provider payloads and credentials, GraphQL documents/selected field names/schema JSON, duplicate generic HTTP or existing discovery telemetry, new metrics/traces/dashboards, UI behaviour changes and durable diagnostic state.
+- COMMERCE-071 is Ready; its dependencies are already Complete.
+
 
 ### 2026-09-27 — COMMERCE-064 Attempt 3 accepted
 
