@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
 executor: copilot
 claimed_at: 2026-09-27T15:45:11Z
@@ -129,12 +129,12 @@ Both validation boundaries remain non-mutating and perform no provider calls, cr
 
 ## Work Items
 
-- [ ] Extract/rename the canonical Agent call-side validator.
-- [ ] Remove result/output-schema dependency from that canonical Agent validator.
-- [ ] Route responseTemplate compatibility through COMMERCE-063 only.
-- [ ] Preserve final publication validation of both boundaries.
-- [ ] Add a temporary compatibility adapter only if required by the pre-C068 UI.
-- [ ] Update focused validation tests and issue-path assertions.
+- [x] Extract/rename the canonical Agent call-side validator.
+- [x] Remove result/output-schema dependency from that canonical Agent validator.
+- [x] Route responseTemplate compatibility through COMMERCE-063 only.
+- [x] Preserve final publication validation of both boundaries.
+- [x] Add a temporary compatibility adapter only if required by the pre-C068 UI.
+- [x] Update focused validation tests and issue-path assertions.
 
 ## Interfaces / Contracts
 
@@ -159,22 +159,22 @@ No persistent or Shared contract changes.
 
 ## Acceptance Criteria
 
-- [ ] Canonical Agent validation no longer needs `responseTemplate` or output schema.
-- [ ] Canonical Result Template validation is the only authoring owner of template/output compatibility.
-- [ ] Publication still rejects invalid Agent or Result Template contracts.
-- [ ] Existing UI remains buildable/testable before COMMERCE-068 through a bounded compatibility path if necessary.
-- [ ] Agent issues never masquerade as Result Template issues and vice versa.
-- [ ] Validation remains zero-provider-I/O and zero-persistence.
+- [x] Canonical Agent validation no longer needs `responseTemplate` or output schema.
+- [x] Canonical Result Template validation is the only authoring owner of template/output compatibility.
+- [x] Publication still rejects invalid Agent or Result Template contracts.
+- [x] Existing UI remains buildable/testable before COMMERCE-068 through a bounded compatibility path if necessary.
+- [x] Agent issues never masquerade as Result Template issues and vice versa.
+- [x] Validation remains zero-provider-I/O and zero-persistence.
 
 ## Validation
 
-- [ ] focused Agent validation tests
-- [ ] focused Result Template validation tests
-- [ ] publication validation tests
-- [ ] current AgentContractTab integration regression tests
-- [ ] targeted lint
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
+- [x] focused Agent validation tests: passed (10 Agent validator tests, including the compatibility adapter).
+- [x] focused Result Template validation tests: passed (6 tests).
+- [x] publication validation tests: passed, including invalid Agent and Result Template contracts.
+- [x] current AgentContractTab integration regression tests: passed in the six-file, 132-test authoring/UI packet.
+- [x] targeted lint passed for all changed TypeScript/TSX files.
+- [x] changed-file TypeScript diagnostics: no errors.
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -188,27 +188,27 @@ This task is an ownership refactor, not a relaxation. Keep COMMERCE-056's accept
 
 ### Status
 
-Not Started
+Implementation complete; submitted for architect review (Attempt 1).
 
 ### Files Changed
 
-None.
+`moda-interact-commerce/src/commerce/tool-authoring/agent-contract-validation.ts`; `moda-interact-commerce/src/studio/tools/agent-contract-validation-server-actions.ts`; `moda-interact-commerce/tests/agent-contract-validation.test.ts`; `moda-interact-commerce/tests/agent-contract-validation-server-actions.test.ts`; `moda-interact-commerce/tests/arch021-commerce-tool-contract.test.ts`.
 
 ### Work Completed
 
-None.
+Added canonical `validateAgentCallContract`, whose schema accepts the Agent call-side fields only and validates SemVer, description, bounded input schema and forbidden authority/credential fields. Added an authorized `validateAgentCallContractAction` with no backend access. Kept `validateAgentContract` and its server action as explicitly deprecated pre-C068 compatibility adapters that compose Agent validation with COMMERCE-063's `validateResponseTemplateAuthoring`; the existing Agent Contract UI remains unchanged. Final publication continues to parse the complete Tool definition and independently validates response-template compatibility against the compiler's canonical output schema. Tests cover Agent-only and template-only paths, compatibility behavior, authorized zero-backend execution, and publication rejection for either contract.
 
 ### Validation Results
 
-None.
+Passed focused Agent, Result Template, and publication tests (35 tests across 4 files), then passed the current authoring/UI integration packet (132 tests across 6 files, including `tool-authoring-screen.test.tsx` and `external-tools-ui.test.tsx`). Targeted ESLint passed; changed-file Pylance diagnostics reported no errors; `git diff --check` passed. The newly created implementation worktree lacked installed dependencies, so validation temporarily reused the Commerce reference checkout's `node_modules` through a symlink; that untracked symlink was removed after validation.
 
 ### Deviations
 
-None.
+No scope deviation. The deprecated compatibility validator/action remain only for the pre-C068 consumer, as specified; no React/UI changes were made.
 
 ### Assumptions
 
-None.
+COMMERCE-063's `validateResponseTemplateAuthoring` is the canonical Result Template validation boundary for authoring and publication.
 
 ### Unresolved Issues
 
