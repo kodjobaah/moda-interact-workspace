@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 77
 executor: null
 claimed_at: null
@@ -305,7 +305,8 @@ Recorded implementation database submodule commit: 0a8d3b9feade69690b6c1e33aeda0
 Durable claim commit: 7dc34e31f5cfac56dbdeea5159f79dc026d9fd86
 Implementation commit: 5cca63d6b056b95ebea359e69232c1e26ee0ff6f
 Implementation task branch pushed: yes
-Parent report commit/push: this C068 report commit on the mirrored task branch
+Parent report commit: e6e9b655 on task/ARCH-021-COMMERCE-068
+Parent report branch pushed: yes
 Changed implementation submodule gitlink staged in parent: no
 Shared/default checkouts switched for this task: no
 Implementation branch push target: explicitly corrected local upstream from origin/main to origin/task/ARCH-021-COMMERCE-068 before push
@@ -315,24 +316,51 @@ Implementation branch push target: explicitly corrected local upstream from orig
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 is accepted.
+
+C068 composes the previously accepted Result Template, Agent-validation and Shopify result-contract capabilities without changing their ownership boundaries. New Tool and persisted-DRAFT authoring now expose `Result Template` as a first-class freely navigable tab. `Agent contract` owns only definition version, Agent description and Agent input schema and delegates validation through COMMERCE-067's call-side action.
+
+Both Shopify Admin and External HTTP feed the dedicated Result Template surface through the source-neutral result-contract boundary. React does not introduce a second provider-specific path walker. Invalid/incomplete template authoring remains local and visible, while final Create/Save/Publish continues to use the existing canonicalization and persistence boundaries.
+
+Review now presents Agent contract, Result contract and Result Template as separate concerns. Existing External HTTP Response processing, Shopify manual GraphQL authoring, Admin Save/Publish controls, free tab navigation and explicit-save/publish lifecycle semantics remain intact. No traversal gating, Next/Back workflow, automatic tab transition, database change or parent submodule gitlink change was introduced.
+
+The launcher/VCS evidence is complete: dedicated parent and implementation worktrees were used; all four start-of-attempt synchronization outcomes are recorded; recursive submodule preparation passed at the pinned `database` commit; the implementation commit `5cca63d6b056b95ebea359e69232c1e26ee0ff6f` and parent report commit `e6e9b655` are pushed; the active claim is cleared.
+
+The `npm ci` Node-engine mismatch and audit findings are recorded environment/dependency observations rather than C068 regressions. No dependency manifest or lockfile changed, and the task-required implementation validation passed.
 
 ### Reviewed Files
 
-None.
+- `src/studio/tools/authoring/agent-contract-tab.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/authoring/result-template-contract-adapter.ts`
+- `src/studio/tools/authoring/review-tab.tsx`
+- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/result-template-tab.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None.
+- Focused C068 UI packet: 127/127 passed across four suites.
+- Targeted ESLint over the 11 changed implementation/test files: passed with no warnings or errors.
+- Changed-file diagnostics: no errors reported.
+- `git diff --check`: passed.
+- Fresh-worktree `npm ci`: completed; reported Node `24.21.0` vs declared `24.19.0` engine and 9 high-severity audit findings; no manifest/lockfile change resulted.
 
 ### Architecture Conformance
 
-Pending review.
+Conforms.
+
+C068 is limited to UI composition/integration. It preserves source-neutral Result Template ownership, call-side Agent validation, provider-specific Request/Response ownership, local invalid authoring buffers, explicit persistence boundaries and ungated tab navigation.
 
 ### Follow-up
 
-None.
+None. ARCH-021-COMMERCE-068 is Complete. This closes the COMMERCE-060 through COMMERCE-070 refinement workstream; no dependent task is promoted by C068.
