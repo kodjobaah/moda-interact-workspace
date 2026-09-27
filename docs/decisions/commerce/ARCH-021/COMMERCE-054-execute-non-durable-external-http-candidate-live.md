@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 69
-executor: copilot
-claimed_at: 2026-09-27T10:30:04Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-051
@@ -459,11 +459,23 @@ Exposed the runner through the external integration and an ADMIN-authorized Serv
 
 Real integration tests cover malformed arguments before credentials, JavaScript Request execution through C051, 404 short-circuiting, successful 200 processing, credential redaction and zero durable writes for both success and failure.
 
+Addressed Architect Review A1-R1 by typing the observation mock with `ExternalHttpLiveTestDependencies['observe']` and explicitly annotating its promise as `ExternalHttpAuthoringObservation`, so the fixture supports both response and failure variants without weakening production types.
+
+Addressed A1-R2 by recording the launcher-resolved paths, branch synchronization and recursive submodule evidence for Attempts 1 and 2 below.
+
+The Attempt 2 test correction is committed as `7d8102f` and pushed to `task/ARCH-021-COMMERCE-054`.
+
 ### Validation Results
 
-Passed: focused Vitest regression set, 11 files and 150 tests. Final `external-wiring.test.ts` rerun passed all 5 tests after adding the real JavaScript Request and no-write success scenario.
+Passed: focused Vitest regression set, 11 files and 150 tests. Final `external-wiring.test.ts` rerun passed all 5 tests after adding the real JavaScript Request and no-write success scenario. On Attempt 2 after the A1-R1 typing correction, `vitest run tests/external-http-live-test.test.ts` passed all 13 tests.
 
-Passed: targeted ESLint on changed files, changed-file diagnostics (no task-owned errors), and `git diff --check`.
+Passed: targeted ESLint on the corrected test, changed-file editor diagnostics (no errors), and `git diff --check`.
+
+Passed: fresh `tsc --noEmit --pretty false --incremental false` reported no diagnostics for `tests/external-http-live-test.test.ts` (the two reviewed TS2322 diagnostics are resolved). The project command exited 2 due to unrelated existing diagnostics in `app/api/studio/code-response/validate/route.ts`, `lib/discovery/compiler.ts`, and `scripts/validate-shopify-admin-local.ts`.
+
+Prepared execution evidence, Attempt 1: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-054`, branch `task/ARCH-021-COMMERCE-054`, created for this task at start HEAD `bc87a1229cf41221cd305a4b26d71e51af6a2aa9`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-054`, same task branch, created at start HEAD `e31a981133cd439684523647fb526b3a0ecf60d3`. For both worktrees, task-branch fast-forward was `not-needed` and `origin/main` was `already-current`. Recursive implementation submodule sync and update/init both passed; status was `ready`, with `database` initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`. The launcher claim commit was `f34eed90e31e820538a1d5a278c96855f26fc380`.
+
+Prepared execution evidence, Attempt 2: the same canonical workspace and dedicated task worktrees/branches were reused. Parent start HEAD was `bac734d9339820ebb300241d7cc6065056e23d00`; implementation start HEAD was `137c017be770ad78034c9f89ed1a2aeac8a15418`. Both task-branch fast-forwards were `not-needed`, and both `origin/main` incorporations were `already-current`. Recursive implementation submodule sync and update/init passed again; status was `ready`, with `database` initialized at the same recorded commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45`. The Attempt 2 launcher claim commit was `6d8406b6f441188ab4f87168fdd45de86eb98321`.
 
 `npm run typecheck` was attempted but remains blocked by unrelated existing errors: unresolved `lib/preview`/Commerce preview imports in `app/api/studio/code-response/validate/route.ts`, incompatible compiler/schema types in `lib/discovery/compiler.ts`, and a Shopify Admin fixture type mismatch in `scripts/validate-shopify-admin-local.ts`.
 
@@ -477,7 +489,7 @@ No saved Tool/revision lookup is performed; the supplied candidate is validated 
 
 ### Unresolved Issues
 
-The full project typecheck has baseline failures outside the touched task files, recorded under Validation Results. Changed-file editor diagnostics are clean.
+The full project typecheck still has baseline failures outside the touched task files, recorded under Validation Results. The Architect-identified diagnostics in the touched test file are resolved.
 
 ### Architectural Concerns
 
