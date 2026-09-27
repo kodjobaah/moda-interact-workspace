@@ -242,6 +242,7 @@ The normalized result's `data.values` becomes the source later consumed by COMME
 - [x] Targeted lint: ESLint passed for all changed source and test files.
 - [x] Changed-file TypeScript diagnostics: no Pylance errors in changed files.
 - [x] `git diff --check` passed before commit and after mainline synchronization.
+- [x] Shopify Admin validator accepted the bounded Products query fixture against API `2026-07` (`read_products` scope).
 - [x] Compatibility suite: `npx vitest run tests/admin-query-execution.test.ts tests/query-execution.test.ts tests/definition-execution.test.ts tests/backend-integration.test.ts tests/external-http-executor.test.ts --reporter=verbose` passed (60 tests).
 - [x] Implementation commit `0902590` was merged with fetched `origin/main` and pushed to `origin/task/ARCH-021-COMMERCE-060`.
 
@@ -271,7 +272,7 @@ Added bounded Admin GraphQL execution using only the authorized shop domain and 
 
 ### Validation Results
 
-Passed focused Admin execution tests (10), DefinitionExecutor/backend/registry tests, Storefront query tests and External HTTP executor regressions (60 total). Targeted ESLint and changed-file Pylance diagnostics passed; `git diff --check` passed. Package-wide `npx tsc --noEmit` remains non-green due to unrelated existing diagnostics in generated-Prisma-dependent backend/publication code, Studio services and existing tests; no changed-file Pylance diagnostics were reported.
+Passed focused Admin execution tests (10), DefinitionExecutor/backend/registry tests, Storefront query tests and External HTTP executor regressions (60 total). Shopify Admin schema validation accepted the bounded query fixture against `2026-07`. Targeted ESLint and changed-file Pylance diagnostics passed; `git diff --check` passed. Package-wide `npx tsc --noEmit` remains non-green due to unrelated existing diagnostics in generated-Prisma-dependent backend/publication code, Studio services and existing tests; no changed-file Pylance diagnostics were reported.
 
 ### Deviations
 
