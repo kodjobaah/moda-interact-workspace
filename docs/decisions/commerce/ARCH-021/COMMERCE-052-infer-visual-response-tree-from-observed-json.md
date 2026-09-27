@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 67
 executor: null
 claimed_at: null
@@ -633,24 +633,44 @@ Ready for Review
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 is not accepted. The implementation correctly reuses the existing C048/C049 Visual authoring grammar and delegates final contract derivation to `deriveVisualTreeContract(...)`, but the submitted inference behavior and regression coverage do not yet satisfy the task contract.
+
+1. **A1-R1 — field-level null evidence incorrectly conflicts with array evidence.** `inferNode(...)` removes `null` before deciding that a field is array-shaped, but then calls `inferArray(...)` with the original values. For merged observations such as `[{ tags: null }, { tags: ["red"] }]`, the field is therefore reported as `MIXED_ARRAY` and omitted. R4 requires missing/null field observations to provide no conflicting type evidence. Treat field-level null as no evidence for LIST/SCALAR_LIST classification while continuing to reject null *items inside an observed array* under R9. Add regressions for both scalar-list and list-of-objects evidence merged with field-level null.
+
+2. **A1-R2 — the 128-node budget counts descendants that are not returned and can discard a parent that would fit with a bounded subset of its children.** `inferFields(...)` recursively builds a child node before reserving/counting the parent. When nested inference exhausts the budget, the parent is then skipped, leaving orphaned counts in `nodeCount`. Reserve/consume budget so only emitted projection nodes count, `nodeCount` equals the actual recursive node count in `authoring`, and deterministic traversal retains the portion that fits. Add a regression with four sorted top-level OBJECT fields each containing 32 scalar children: the returned candidate must remain valid, contain exactly 128 emitted nodes, retain the deterministic prefix of the fourth branch that fits, and report `TOO_MANY_NODES` for the truncated remainder.
+
+3. **A1-R3 — uninferable/unsafe source keys currently consume the 32-field traversal window.** `keys.slice(0, MAX_FIELDS)` is applied before a key is proven inferable. This can hide a later safe/inferable field even though the generated container would contain fewer than 32 fields. Traverse keys in deterministic order, omit unsafe/unresolved keys without consuming emitted-field capacity, and cap the generated container at 32 actual fields. Add a regression where the first sorted source keys are unresolved/unsafe and a later valid key must still be inferred.
+
+4. **A1-R4 — the mandatory regression contract is incomplete.** The seven broad tests cover only part of the 31 required named scenarios and several behaviors are executed without asserting the required outcome. Add explicit focused assertions for every mandatory scenario, including at minimum: mixed scalar categories produce `MIXED_TYPES` and omit the field; a genuinely missing field in some LIST rows remains optional; `[{a:1}, null]` is `MIXED_ARRAY`; a root array of objects produces a root LIST candidate; nested LIST/SCALAR_LIST paths remain relative; the >128-node case; fifth-container `MAX_DEPTH`; recursive client-id uniqueness; and `deriveVisualTreeContract(...).ok === true` for every emitted candidate.
+
+5. **A1-R5 — the durable task record was moved to `review` with all Work Items, Acceptance Criteria and Validation checkboxes still unchecked.** On Attempt 2, reconcile those agent-owned sections with the work actually completed and leave any unsatisfied requirement unchecked. The task must not return to review until every required checkbox is truthfully satisfied or an explicit blocker is recorded.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-commerce/src/commerce/tool-authoring/visual-response-inference.ts`
+- `moda-interact-commerce/tests/visual-response-inference.test.ts`
+- `moda-interact-commerce/src/commerce/tool-authoring/visual-result-contract.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-052-infer-visual-response-tree-from-observed-json.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None.
+- Submitted focused result: `tests/visual-response-inference.test.ts` — 7 tests passed.
+- Submitted targeted ESLint — passed.
+- Submitted `git diff --check` — passed.
+- Submitted changed-file TypeScript assessment — no task-owned diagnostics reported.
+- Physical worktree/start synchronization evidence is present and conforms to the task-isolation protocol.
+- Source review identified the A1-R1/A1-R2/A1-R3 behavioral defects and incomplete mandatory regression/task-record coverage above; no independent test rerun was required to establish these corrections.
 
 ### Architecture Conformance
 
-Pending.
+Partial. The implementation keeps inference Commerce-local and pure, reuses `SCALAR` / `OBJECT` / `LIST` / `SCALAR_LIST`, introduces no parallel persisted grammar, and delegates candidate validation to `deriveVisualTreeContract(...)`. It does not yet conform to R4 null-evidence semantics, R10 deterministic field/node bounding, the Mandatory Regression Scenarios, or the repository task-record completion protocol.
 
 ### Follow-up
 
-None.
+Return the same task through `/moda-task ARCH-021-COMMERCE-052` for Attempt 2. Implement A1-R1 through A1-R4, reconcile the agent-owned task checkboxes per A1-R5, rerun the task-required validation, update the Completion Report, set status back to `review`, clear the execution claim, and STOP. Do not begin ARCH-021-COMMERCE-053.
