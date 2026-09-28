@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 75
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-078
   - ARCH-021-COMMERCE-079
@@ -429,20 +429,20 @@ Use `isCurrentTestPassed(session)` wherever new-Tool UI logic needs to decide wh
 
 ## Work Items
 
-- [ ] Consume C078/C079 common authoring Test state; do not create a competing authoritative Test store.
-- [ ] Pass the exact assembled current External definition to `testExternalHttpCandidateAction`.
-- [ ] Gate Test execution on current VALID Tool Definition, Request, Response and Result Template sections.
-- [ ] Capture the current authoring snapshot and provider-local run identity before every backend invocation.
-- [ ] Drive common RUNNING/PASSED/FAILED/STALE transitions exactly as defined above.
-- [ ] Stale common Test state on Test-argument or selected-shop changes.
-- [ ] Preserve stale-response/concurrent-run protection.
-- [ ] Render `Result shown to agent` first from server `renderedText`.
-- [ ] Keep safe stage/request/provider/processed-result diagnostics secondary.
-- [ ] Add current Test PASSED to new External Create eligibility.
-- [ ] Add current Test PASSED to persisted External Save eligibility without changing C079 persistence-dirty/CAS semantics.
-- [ ] Prove Test state/arguments/output remain non-durable and do not make a persisted draft dirty.
-- [ ] Remove every External Test instruction that points to Agent Contract.
-- [ ] Add all required regressions.
+- [x] Consume C078/C079 common authoring Test state; do not create a competing authoritative Test store.
+- [x] Pass the exact assembled current External definition to `testExternalHttpCandidateAction`.
+- [x] Gate Test execution on current VALID Tool Definition, Request, Response and Result Template sections.
+- [x] Capture the current authoring snapshot and provider-local run identity before every backend invocation.
+- [x] Drive common RUNNING/PASSED/FAILED/STALE transitions exactly as defined above.
+- [x] Stale common Test state on Test-argument or selected-shop changes.
+- [x] Preserve stale-response/concurrent-run protection.
+- [x] Render `Result shown to agent` first from server `renderedText`.
+- [x] Keep safe stage/request/provider/processed-result diagnostics secondary.
+- [x] Add current Test PASSED to new External Create eligibility.
+- [x] Add current Test PASSED to persisted External Save eligibility without changing C079 persistence-dirty/CAS semantics.
+- [x] Prove Test state/arguments/output remain non-durable and do not make a persisted draft dirty.
+- [x] Remove every External Test instruction that points to Agent Contract.
+- [x] Add all required regressions.
 
 ## Interfaces / Contracts
 
@@ -482,42 +482,42 @@ No new database, Shared, queue or cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] No second authoritative External Test/dirty/validated state is created outside the C078/C079 authoring session.
-- [ ] Test cannot invoke the backend while any of Tool Definition, Request, Response or Result Template is not current VALID.
-- [ ] External Test sends the exact current assembled Tool definition, arguments and nullable shopId to `testExternalHttpCandidateAction`.
-- [ ] Test start captures the current section-revision snapshot and marks the common Test RUNNING.
-- [ ] Only a backend result with every C080 stage passed and server `renderedText` present may mark the current Test PASSED.
-- [ ] Backend/action failure marks the current matching Test FAILED.
-- [ ] An edit/argument/shop change during an in-flight Test prevents the late response from changing current Test readiness.
-- [ ] Tool Definition/Request/Response/Result Template changes stale Test through the common session model.
-- [ ] Test-argument and selected-shop changes also stale Test and clear the displayed prior result.
-- [ ] Successful Test displays server `renderedText` first under `Result shown to agent`.
-- [ ] Existing safe Request/provider/processed-result/stage diagnostics remain available after the primary result.
-- [ ] New External Create is disabled unless the common Test is PASSED for the exact current snapshot.
-- [ ] Persisted External Save is disabled unless C079 Save eligibility is satisfied and the common Test is PASSED for the exact current snapshot.
-- [ ] Review remains navigable while Test is NOT_RUN/RUNNING/FAILED/STALE.
-- [ ] Test actions/results do not create/save Tool state, publication proof, audit/receipt state or persisted-draft dirtiness.
-- [ ] Shopify Create/Save gating is unchanged by this task.
+- [x] No second authoritative External Test/dirty/validated state is created outside the C078/C079 authoring session.
+- [x] Test cannot invoke the backend while any of Tool Definition, Request, Response or Result Template is not current VALID.
+- [x] External Test sends the exact current assembled Tool definition, arguments and nullable shopId to `testExternalHttpCandidateAction`.
+- [x] Test start captures the current section-revision snapshot and marks the common Test RUNNING.
+- [x] Only a backend result with every C080 stage passed and server `renderedText` present may mark the current Test PASSED.
+- [x] Backend/action failure marks the current matching Test FAILED.
+- [x] An edit/argument/shop change during an in-flight Test prevents the late response from changing current Test readiness.
+- [x] Tool Definition/Request/Response/Result Template changes stale Test through the common session model.
+- [x] Test-argument and selected-shop changes also stale Test and clear the displayed prior result.
+- [x] Successful Test displays server `renderedText` first under `Result shown to agent`.
+- [x] Existing safe Request/provider/processed-result/stage diagnostics remain available after the primary result.
+- [x] New External Create is disabled unless the common Test is PASSED for the exact current snapshot.
+- [x] Persisted External Save is disabled unless C079 Save eligibility is satisfied and the common Test is PASSED for the exact current snapshot.
+- [x] Review remains navigable while Test is NOT_RUN/RUNNING/FAILED/STALE.
+- [x] Test actions/results do not create/save Tool state, publication proof, audit/receipt state or persisted-draft dirtiness.
+- [x] Shopify Create/Save gating is unchanged by this task.
 
 ## Validation
 
-- [ ] `npx vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/external-http-live-test-action.test.ts`
-- [ ] New Tool: all four sections current VALID + Test NOT_RUN -> Create disabled.
-- [ ] New Tool: current successful External Test -> Create enabled when all other C078 gates pass.
-- [ ] New Tool: edit Result Template after PASS -> common Test STALE -> Create disabled.
-- [ ] New Tool: edit Tool Definition after PASS -> common Test STALE -> Create disabled.
-- [ ] Persisted DRAFT: C079 persistence-dirty/current-valid + Test NOT_RUN -> Save disabled.
-- [ ] Persisted DRAFT: same state + current PASS -> Save enabled.
-- [ ] Persisted DRAFT: changing only Test arguments/shop does not set persistence-dirty but does stale Test/disable Save.
-- [ ] Start run at snapshot N, edit Request before completion, resolve old successful response -> Test remains STALE and Create/Save remains disabled.
-- [ ] Start run N, then run N+1; late N response cannot overwrite N+1 result/checkpoint.
-- [ ] Backend `kind: ok` with any failed C080 stage -> common Test FAILED, never PASSED.
-- [ ] Successful result renders `Result shown to agent` before diagnostics and displays server `renderedText` exactly.
-- [ ] Invalid/stale prerequisite messages point only to Tool Definition, Request, Response or Result Template as defined.
-- [ ] Focused zero-write assertion proves Test invokes no create/save/publication mutation.
-- [ ] Targeted ESLint for changed files.
-- [ ] Changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation.
-- [ ] `git diff --check`.
+- [x] `npx vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/external-http-live-test-action.test.ts`
+- [x] New Tool: all four sections current VALID + Test NOT_RUN -> Create disabled.
+- [x] New Tool: current successful External Test -> Create enabled when all other C078 gates pass.
+- [x] New Tool: edit Result Template after PASS -> common Test STALE -> Create disabled.
+- [x] New Tool: edit Tool Definition after PASS -> common Test STALE -> Create disabled.
+- [x] Persisted DRAFT: C079 persistence-dirty/current-valid + Test NOT_RUN -> Save disabled.
+- [x] Persisted DRAFT: same state + current PASS -> Save enabled.
+- [x] Persisted DRAFT: changing only Test arguments/shop does not set persistence-dirty but does stale Test/disable Save.
+- [x] Start run at snapshot N, edit Request before completion, resolve old successful response -> Test remains STALE and Create/Save remains disabled.
+- [x] Start run N, then run N+1; late N response cannot overwrite N+1 result/checkpoint.
+- [x] Backend `kind: ok` with any failed C080 stage -> common Test FAILED, never PASSED.
+- [x] Successful result renders `Result shown to agent` before diagnostics and displays server `renderedText` exactly.
+- [x] Invalid/stale prerequisite messages point only to Tool Definition, Request, Response or Result Template as defined.
+- [x] Focused zero-write assertion proves Test invokes no create/save/publication mutation.
+- [x] Targeted ESLint for changed files.
+- [x] Changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -533,58 +533,135 @@ The uploaded 2026-09-28 snapshot already contains the accepted COMMERCE-080 back
 
 ### Status
 
-Not Started
+Ready for architect review (Attempt 2; status: `review`).
 
 ### Files Changed
 
-None
+In `moda-interact-commerce`:
+
+- `src/studio/external-http/editor.tsx`
+- `src/studio/external-http/request-tab.tsx`
+- `src/studio/external-http/test-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+
+Attempt 2 changed only `src/studio/external-http/test-tab.tsx` and `tests/external-tools-ui.test.tsx`.
 
 ### Work Completed
 
-None
+Consumed the accepted C078/C079 common authoring Test snapshot and lifecycle for new and persisted External authoring. Test now uses the exact assembled candidate, requires current authored validations, enforces bounded object arguments, and accepts PASS only when every C080 stage passed and server `renderedText` is present. The server-rendered text is shown first; safe diagnostics remain secondary.
+
+Attempt 2 addresses the architect-requested transient identity race. Test arguments and selected-shop changes now advance a monotonic provider-local generation, synchronously clear the displayed submission and stale the common checkpoint. The generation is captured in each run identity and checked before completion can update provider display state, so changing arguments/shop away and back cannot revive a pending or completed result. The common persisted authoring revision ledger remains unchanged; transient values stay non-durable.
+
+Added argument A-to-B-to-A tests for pending and already-displayed results, a selected-shop A-to-B-to-A pending-result test, and persisted-DRAFT assertions proving transient changes cause no Tool/publication writes and a fresh Test restores Save eligibility. Existing run-N/run-N+1 protection remains intact. No C080 backend, database, Shopify gate, or unrelated task file was changed.
 
 ### Validation Results
 
-None
+- `npx vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/external-http-live-test-action.test.ts`: 3 files passed, 124 tests passed.
+- Targeted ESLint on the two Attempt 2 files: passed with no output or warnings.
+- Changed-file diagnostics across all eight C081 implementation/test files: no errors found.
+- `git diff --check`: passed.
+- Attempt 1's repository TypeScript check reported two Result Template prop-union diagnostics in `src/studio/tools/tool-editor.tsx`; that file was unchanged in Attempt 2. The Attempt 2 changed-file diagnostics are clean. A full repository typecheck was not rerun for Attempt 2.
+- Launcher verified recursive submodule synchronization/update passed and database is initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`database`, `heads/main`).
 
 ### Deviations
 
-None
+Attempt 2 implements the required correction from the Architect Review without changing the task's scope or API.
 
 ### Assumptions
 
-None
+No new assumptions. The Attempt 1 broad typecheck findings are retained as context; Attempt 2's changed-file diagnostics are clean.
 
 ### Unresolved Issues
 
-None
+The last full repository typecheck (Attempt 1) reported two Result Template prop-union diagnostics in `tool-editor.tsx`; Attempt 2 did not change that file or rerun the full typecheck. No errors were reported for any C081 changed file in the Attempt 2 diagnostics pass.
 
 ### Architectural Concerns
 
-None
+C081 consumes the canonical C078/C079 checkpoint and C080 action/rendered output; no competing authoritative Test state or backend was introduced.
+
+### Git / Worktree Evidence
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-081`, branch `task/ARCH-021-COMMERCE-081`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-081`, branch `task/ARCH-021-COMMERCE-081`; Attempt 2 launcher claim commit `6e8ca5e33dceea41deab74dd98b1d880d9616d1a` (pushed).
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-081`, branch `task/ARCH-021-COMMERCE-081`.
+- Parent synchronization: remote task branch fast-forwarded `not-needed`; `origin/main` incorporated `already-current`.
+- Implementation synchronization: remote task branch fast-forwarded `not-needed`; `origin/main` incorporated `already-current`.
+- Both physical worktrees were dedicated to C081; the canonical shared workspace and shared implementation source checkout were not switched or mutated; no other task worktree was reused.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; database commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (initialized).
+- Attempt 1 implementation commit `52e09a27a0d81189757870fd584144f4a2f8d51c` and Attempt 2 correction commit `64a7709` are pushed to `task/ARCH-021-COMMERCE-081` in `moda-interact-commerce`.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 is accepted.
+
+The sole Attempt 1 correction is satisfied. External Test now uses a monotonic provider-local transient generation in addition to the common C078/C079 authored-section snapshot.
+
+The implementation guarantees:
+
+- every Test-arguments mutation invalidates the current provider-local generation;
+- every selected-shop change invalidates the current provider-local generation;
+- the exact generation is captured at Test start;
+- provider-local displayed submission/result state is cleared immediately on transient mutation;
+- a completion is accepted for display only when the submitted generation is still current;
+- argument A -> B -> A cannot resurrect an in-flight or already-displayed A result;
+- shop A -> B -> A cannot resurrect an in-flight A result;
+- stale completions cannot repopulate stage, request, provider or processed-result diagnostics;
+- the common C078/C079 checkpoint remains authoritative for persistence readiness;
+- transient Test arguments/shop/result state remains non-durable and does not make a persisted DRAFT persistence-dirty;
+- a fresh successful Test after staleness restores External Save/Create eligibility when all other existing gates are satisfied; and
+- existing run-N/run-N+1 protection remains intact.
+
+The correction does not add Test arguments or shop identity to the persisted four-revision authoring ledger. The monotonic generation is provider-local/transient only, as required.
+
+The rest of the C081 architecture remains conformant: C080 is still the only External live-Test backend; the exact assembled candidate is submitted; Tool Definition/Request/Response/Result Template validation gates Test; server `renderedText` is the primary success surface; diagnostics remain secondary and bounded; and new External Create plus persisted External Save require `isCurrentTestPassed(...)`.
+
+The submitted task snapshot still contains `executor: copilot` and a non-null `claimed_at` despite the handoff reporting a cleared claim. This acceptance overlay normalizes both fields to `null`; it is not an implementation defect.
 
 ### Reviewed Files
 
-None
+- `src/studio/external-http/test-tab.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/external-http/request-tab.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-http-live-test-action.test.ts`
+- C081 Completion Report — Attempt 2
 
 ### Validation Reviewed
 
-None
+- Submitted focused packet: 3 files, 124 tests passed.
+- Submitted targeted ESLint for Attempt 2 files: passed.
+- Submitted changed-file diagnostics across all eight C081 implementation/test files: clean.
+- Submitted `git diff --check`: passed.
+- Full repository typecheck was not rerun in Attempt 2. Attempt 1 recorded only the two known Result Template prop-union diagnostics in `tool-editor.tsx`; Attempt 2 did not modify that file and its changed-file diagnostics are clean.
+- Review source inspection confirms the monotonic transient generation is provider-local only and no C080 backend, database, Shopify gate or persistence contract was changed.
+- Focused regressions cover in-flight argument A -> B -> A, already-displayed argument A -> B -> A, selected-shop A -> B -> A, persisted zero-write behavior and fresh-Test Save restoration.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C081 now cleanly composes the C078/C079 common Test checkpoint with the C080 External provider backend and adds only provider-local non-durable result identity/presentation state. Persistence readiness remains owned by the common checkpoint, and transient Test context cannot resurrect stale provider results.
 
 ### Follow-up
 
-None
+C081 is Complete / Accepted — Attempt 2.
+
+COMMERCE-083 becomes Ready because C078, C079, C081 and C082 are Complete.
+
+ARCH-021-SYSTEM-TEST-002 remains Pending until COMMERCE-083 is Complete.
