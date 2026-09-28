@@ -334,9 +334,9 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-078](COMMERCE-078-compose-new-tool-authoring-flow.md) | UI: exact new-Tool flow, Result Template before Test, derived Agent Contract in Review | Complete | COMMERCE-077, 063, 066, 067, 068 |
 | [COMMERCE-079](COMMERCE-079-align-persisted-draft-authoring-flow.md) | UI: persisted-DRAFT parity, CAS Save and Cancel reset | Ready | COMMERCE-078 |
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
-| [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Ready | COMMERCE-078, COMMERCE-080 |
+| [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Pending | COMMERCE-078, COMMERCE-079, COMMERCE-080 |
 | [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Complete | COMMERCE-060, 062, 063, 070 |
-| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Ready | COMMERCE-078, COMMERCE-082 |
+| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Pending | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082 |
 
 Initial executable frontier for this workstream:
 
@@ -1051,3 +1051,8 @@ Current executable refinement frontier:
 ```text
 COMMERCE-079    COMMERCE-081    COMMERCE-083
 ```
+
+
+### COMMERCE-079 Attempt 1 review — Changes Requested — 2026-09-28
+
+Manual validation confirms the persisted six-tab composition is present. Attempt 1 remains unaccepted for three bounded corrections: remove the unreachable duplicate legacy External DRAFT branch; keep Shopify durable Save/Validate/Publish/Cancel actions Review-owned only; and establish the persisted provider-neutral four-revision/Test freshness checkpoint required by C081/C083. C081 and C083 are therefore Pending until C079 is Complete.

@@ -9,14 +9,16 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 76
-executor: copilot
-claimed_at: 2026-09-28T11:13:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-078
 enables:
+  - ARCH-021-COMMERCE-081
+  - ARCH-021-COMMERCE-083
   - ARCH-021-SYSTEM-TEST-002
 created: 2026-09-28
 updated: 2026-09-28
@@ -136,6 +138,8 @@ Publish controls for SUPER_ADMIN where currently supported
 
 For persisted Shopify DRAFTs, Request -> Explore -> Use in tool -> Request must preserve `toolId`, `toolRevisionId`, tab/editor buffers and the existing sessionStorage identity checks. Returning from Explore must not auto-save.
 
+\n### R7 — persisted DRAFTs own the same provider-neutral Test freshness checkpoint semantics\n\nCOMMERCE-081 and COMMERCE-083 consume C079 as the persisted-DRAFT authoring-session/persistence boundary. C079 must therefore establish the persisted equivalent of the C078 provider-neutral Test freshness checkpoint before either downstream Test-integration task executes.\n\nDo not add provider execution in C079. C080 and C082 remain the canonical External HTTP and Shopify Admin Test backends.\n\nFor persisted `EXTERNAL_HTTP` and `SHOPIFY_ADMIN_GRAPHQL` DRAFT authoring, maintain one common checkpoint state with semantics equivalent to the accepted C078 contract:\n\n```ts\ntype AuthoringTestStatus =\n  | "NOT_RUN"\n  | "RUNNING"\n  | "PASSED"\n  | "FAILED"\n  | "STALE";\n\ntype AuthoringTestSnapshot = {\n  toolDefinitionRevision: number;\n  requestRevision: number;\n  responseRevision: number;\n  resultTemplateRevision: number;\n};\n\ntype AuthoringTestState = {\n  status: AuthoringTestStatus;\n  testedSnapshot: AuthoringTestSnapshot | null;\n};\n```\n\nThe persisted authoring model must expose semantic operations equivalent to:\n\n```text\ncurrentAuthoringSnapshot(...)\nisCurrentTestPassed(...)\nmark Test RUNNING for an exact submitted snapshot\nmark Test PASSED for that submitted snapshot\nmark Test FAILED for that submitted snapshot\nmark Test STALE and clear testedSnapshot\n```\n\nReuse/extract the accepted C078 provider-neutral helpers where practical; do not create a competing Test-result authority.\n\nPersisted authoring must keep **persistence dirtiness** distinct from **Test freshness**:\n\n- changing Tool Definition, Request, Response or Result Template is a persisted authoring mutation, advances the corresponding freshness revision and sets persistence-dirty;\n- changing only the selected tab must not change persistence dirtiness or Test freshness;\n- provider-specific Test arguments, selected shop, Test output or diagnostic state are transient and must not become persisted Tool definition state or persistence-dirty;\n- C081/C083 may stale the common checkpoint for Test-only argument/shop changes without making the persisted DRAFT dirty;\n- Cancel unsaved changes restores the saved candidate, clears transient Test/validation state and returns the common Test checkpoint to `NOT_RUN` / `testedSnapshot: null`;\n- a stale in-flight completion must never mark the current persisted candidate PASSED.\n\nC079 establishes this common persisted-session state only. C081/C083 remain responsible for invoking C080/C082 and for provider-specific safe Test diagnostics/presentation.\n
+
 ## Work Items
 
 - [x] Apply the six-step shared flow to persisted External HTTP DRAFTs.
@@ -149,6 +153,9 @@ For persisted Shopify DRAFTs, Request -> Explore -> Use in tool -> Request must 
 - [x] Preserve one-CAS Save and canonical refresh/editVersion update.
 - [x] Preserve persisted Shopify Explore handoff without auto-save.
 - [x] Add persisted-provider regression coverage.
+- [ ] Remove the unreachable legacy External persisted-DRAFT authoring branch after the six-step C079 branch.
+- [ ] Keep all persisted Shopify Save/Validate/Publish/Cancel actions owned by Review; remove duplicate Save/Publish controls from non-Review tabs.
+- [ ] Add the persisted provider-neutral validation/Test freshness checkpoint required by C081/C083, separate from persistence dirtiness.
 
 ## Interfaces / Contracts
 
@@ -169,6 +176,8 @@ No new database or cross-repository contract.
 
 ## Enables
 
+- ARCH-021-COMMERCE-081
+- ARCH-021-COMMERCE-083
 - ARCH-021-SYSTEM-TEST-002
 
 ## Acceptance Criteria
@@ -182,6 +191,11 @@ No new database or cross-repository contract.
 - [x] CAS conflicts remain visible and do not overwrite newer state.
 - [x] Save/Publish authorization and current publication gates are unchanged.
 - [x] Persisted Shopify Explore return remains session-isolated and non-durable until Save.
+- [ ] Persisted External and Shopify have exactly one active authoring implementation path each; no unreachable legacy External DRAFT editor remains.
+- [ ] Persisted Shopify durable Save/Validate/Publish/Cancel controls appear only in Review.
+- [ ] Persisted DRAFT authoring exposes the common four-revision Test freshness checkpoint required by C081/C083.
+- [ ] Authored-section mutations stale/advance the common checkpoint and set persistence-dirty; Test-only transient state never sets persistence-dirty.
+- [ ] Cancel restores the saved candidate and resets common Test state to `NOT_RUN` with `testedSnapshot: null`.
 
 ## Validation
 
@@ -191,6 +205,9 @@ No new database or cross-repository contract.
 - [x] targeted ESLint for changed files
 - [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
 - [x] `git diff --check`
+- [ ] focused regression proving no duplicate legacy External persisted editor path remains
+- [ ] focused regression proving Shopify Save/Validate/Publish/Cancel controls are Review-owned only
+- [ ] focused persisted common-Test-state regressions covering initial state, four authored revisions, stale mismatch and Cancel reset without provider execution
 
 ## Stop Condition
 
@@ -247,24 +264,150 @@ None identified; Architect Review remains pending.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not accepted.
+
+Manual validation confirms that the persisted Shopify DRAFT **does** expose the required six tabs:
+
+```text
+Tool Definition -> Request -> Response -> Result Template -> Test -> Review
+```
+
+The earlier concern that C079 removed the tabs was based on the Tool Library screen and is withdrawn. The six-tab persisted composition itself is correct.
+
+Three task/architecture corrections remain.
+
+#### 1. Remove the unreachable duplicate External persisted-DRAFT implementation
+
+`tool-editor.tsx` contains two consecutive branches with the same condition:
+
+```ts
+if (
+  selected?.status === "DRAFT" &&
+  definition.execution.kind === "EXTERNAL_HTTP"
+) {
+  // new C079 six-step persisted editor
+  return ...
+}
+
+if (
+  selected?.status === "DRAFT" &&
+  definition.execution.kind === "EXTERNAL_HTTP"
+) {
+  // old pre-C079 persisted editor
+  return ...
+}
+```
+
+The second branch is unreachable, but it still contains the pre-C079 ownership model: inline Definition fields, inline Input JSON Schema, inline Response template, inline review facts and its own Save/Validate/Publish controls.
+
+C079 exists specifically to replace that regressed persisted ownership model. Do not leave the old editor dormant behind an unreachable duplicate condition.
+
+Attempt 2 must remove the obsolete External persisted-DRAFT branch and its now-unused code paths/imports while preserving the accepted six-step C079 branch.
+
+Add a focused regression/source-level guard sufficient to prevent both persisted External authoring implementations from coexisting again.
+
+#### 2. Shopify durable actions must be Review-owned only
+
+The Shopify C079 path correctly renders `ReviewTab` with:
+
+```text
+Cancel unsaved changes
+Save draft
+Validate
+Publish tool version
+```
+
+but it also renders another `Save draft` / `Publish tool version` button row whenever:
+
+```ts
+externalSection !== "review"
+```
+
+The submitted manual screenshot demonstrates this directly on the **Result Template** tab.
+
+That violates C079 R4's Review ownership model and creates two persistence surfaces for the same candidate.
+
+Attempt 2 must:
+
+- remove the non-Review Shopify Save/Publish controls;
+- keep persisted Save, Validate, Cancel and publication controls in Review;
+- preserve the existing one-call CAS `updateToolDraft` implementation and authorization/publication gates;
+- preserve navigation among all six tabs while the candidate is dirty.
+
+Add regressions proving Request, Response, Result Template and Test expose no durable Save/Publish mutation controls, while Review exposes the correct role-authorized actions.
+
+#### 3. Establish the persisted common Test freshness/session model required by C081/C083
+
+C078 is already Complete and owns the provider-neutral new-Tool Test checkpoint over:
+
+```text
+Tool Definition revision
+Request revision
+Response revision
+Result Template revision
+```
+
+The downstream accepted task contracts explicitly require C079 to provide the persisted-DRAFT equivalent:
+
+- C081: “COMMERCE-079 applies the same session/persistence model to persisted DRAFT authoring.”
+- C083: “Persisted-DRAFT Test freshness remains governed by the persisted authoring state model introduced by C079.”
+
+The submitted C079 implementation still relies on provider-local booleans such as `externalValidated`, `adminValidated` and `adminResultContractFresh`; it does not establish one persisted provider-neutral `AuthoringTestState`/four-revision freshness checkpoint that C081/C083 can consume.
+
+Attempt 2 must implement R7 added by this review:
+
+- one persisted common four-revision freshness ledger;
+- common `NOT_RUN/RUNNING/PASSED/FAILED/STALE` Test checkpoint semantics equivalent to C078;
+- authored-section edits advance/stale the corresponding checkpoint and remain persistence-dirty;
+- Test-only transient arguments/shop/result changes remain non-durable and must not create persistence dirtiness;
+- Cancel restores the saved candidate and resets transient Test state to `NOT_RUN` / `testedSnapshot: null`;
+- no C080/C082 provider Test execution is added here.
+
+Reuse/extract the accepted C078 provider-neutral checkpoint helpers rather than creating a second incompatible Test authority.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `src/studio/tools/authoring/tool-definition-tab.tsx`
+- `src/studio/tools/authoring/review-tab.tsx`
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-081-show-rendered-template-in-external-test.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-083-integrate-shopify-admin-test-tab.md`
+- submitted manual screenshot of the persisted Shopify DRAFT Result Template tab
 
 ### Validation Reviewed
 
-None
+- Submitted C079 focused packet: 3 files, 136 tests passed.
+- Submitted targeted ESLint: passed.
+- Submitted changed-file diagnostics: clean.
+- Submitted `git diff --check`: passed.
+- Manual validation confirms the six-tab persisted Shopify flow.
+- Source inspection confirms the unreachable duplicate External DRAFT branch and duplicate non-Review Shopify Save/Publish controls.
+- Source/contract inspection confirms the persisted common Test checkpoint required by C081/C083 is not present.
 
 ### Architecture Conformance
 
-Pending
+Partial.
+
+The six-step persisted External/Shopify ownership split, immutable/read-only Tool identity, Result Template ownership, CAS Save implementation, Cancel reset and Shopify Explore handoff are aligned.
+
+Acceptance is blocked by:
+1. retained duplicate legacy External persisted authoring code;
+2. Shopify persistence actions outside Review; and
+3. the missing persisted common Test freshness/session model required by downstream C081/C083.
 
 ### Follow-up
 
-None
+Return the same task as Attempt 2.
+
+Correct only the three items above, preserve the accepted C079 behavior, rerun the focused persisted authoring packet plus the new regressions, and STOP.
+
+COMMERCE-081 and COMMERCE-083 remain dependency-gated until C079 is architect-accepted Complete.
