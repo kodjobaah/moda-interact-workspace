@@ -1037,6 +1037,13 @@ COMMERCE-056 is architect-accepted Complete and remains independent of COMMERCE-
 - Accepted the authenticated/non-mutating Server Action and zero-backend-access evidence.
 - Marked COMMERCE-067 Complete. COMMERCE-068 remains Pending because COMMERCE-065 and COMMERCE-066 are not both Complete in this snapshot.
 
+
+### External live-Test Result Template rendering follow-up — 2026-09-28
+
+COMMERCE-080 is architect-accepted Complete. Non-durable External HTTP Test now receives the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, uses the canonical External `data.values` envelope, and delegates agent-facing text generation to the production `renderDefinitionResult` boundary. The Test remains non-durable and does not widen provider credentials, persistence or template grammar.
+
+COMMERCE-081 remains the separate presentation task for showing the returned rendered agent-facing text. It is not materialized in this submitted parent snapshot; when materialized, its C080 dependency is already satisfied.
+
 ### Shopify Admin result-contract and Result Template refinement — 2026-09-27
 
 Manual architecture review of Tool result/prompt authoring establishes the following refinement without introducing final tab gating/traversal:

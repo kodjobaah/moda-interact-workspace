@@ -330,7 +330,8 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 | [COMMERCE-071](COMMERCE-071-add-tool-authoring-structured-logging.md) | Observability: add shared structured diagnostics for Tool authoring, Admin Explore/schema derivation, live Test, mutations and reconciliation | Ready | COMMERCE-039, COMMERCE-054, COMMERCE-056, COMMERCE-060, COMMERCE-061, COMMERCE-062, COMMERCE-064, COMMERCE-065, COMMERCE-067 |
 | [COMMERCE-076](COMMERCE-076-restore-result-template-tab-integration.md) | Regression: restore dedicated Result Template tab/composition and guard the accepted C068 boundary | Pending | COMMERCE-055, COMMERCE-068 |
-| [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: execute and render a non-durable current Shopify Admin candidate live | Complete | COMMERCE-060, COMMERCE-062, COMMERCE-063, COMMERCE-070 |
+0165| [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: execute and render a non-durable current Shopify Admin candidate live | Complete | COMMERCE-060, COMMERCE-062, COMMERCE-063, COMMERCE-070 |
+| [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render the complete unsaved External HTTP candidate during non-durable Test | Complete | COMMERCE-054, COMMERCE-063 |
 
 Initial executable frontier for this workstream:
 
@@ -385,6 +386,13 @@ Key invariants:
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
 
+
+
+### COMMERCE-080 Attempt 1 accepted — 2026-09-28
+
+COMMERCE-080 is **Complete / Accepted, Attempt 1**. External HTTP live Test now consumes the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, validates processed values against the canonical result contract, builds the production `ExternalHttpResultDataSchema` `data.values` envelope and delegates final text rendering to `renderDefinitionResult`. Both existing External editors pass the current local candidate into Test; rendered-result presentation remains deferred to COMMERCE-081. Submitted validation passed the 24-test backend/action/integration packet, all 81 External Tools UI tests, targeted Test-tab assertions, ESLint and `git diff --check`. Repository TypeScript remains non-green only on the documented baseline; no new C080 payload/backend diagnostic is present.
+
+COMMERCE-081 is not materialized in this parent snapshot, so no downstream task-status edit is made by this acceptance.
 
 ### COMMERCE-068 Attempt 1 accepted — 2026-09-27
 
