@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 76
 executor: copilot
 claimed_at: 2026-09-28T11:13:16Z
@@ -138,17 +138,17 @@ For persisted Shopify DRAFTs, Request -> Explore -> Use in tool -> Request must 
 
 ## Work Items
 
-- [ ] Apply the six-step shared flow to persisted External HTTP DRAFTs.
-- [ ] Apply the six-step shared flow to persisted Shopify Admin DRAFTs.
-- [ ] Add persisted Tool Definition read-only/editable field split.
-- [ ] Move External persisted input schema to Request.
-- [ ] Integrate persisted ResultTemplateTab with production-envelope contracts.
-- [ ] Remove persisted Agent Contract authoring tab/use.
-- [ ] Derive read-only Agent Contract in Review.
-- [ ] Add `Cancel unsaved changes` reset semantics.
-- [ ] Preserve one-CAS Save and canonical refresh/editVersion update.
-- [ ] Preserve persisted Shopify Explore handoff without auto-save.
-- [ ] Add persisted-provider regression coverage.
+- [x] Apply the six-step shared flow to persisted External HTTP DRAFTs.
+- [x] Apply the six-step shared flow to persisted Shopify Admin DRAFTs.
+- [x] Add persisted Tool Definition read-only/editable field split.
+- [x] Move External persisted input schema to Request.
+- [x] Integrate persisted ResultTemplateTab with production-envelope contracts.
+- [x] Remove persisted Agent Contract authoring tab/use.
+- [x] Derive read-only Agent Contract in Review.
+- [x] Add `Cancel unsaved changes` reset semantics.
+- [x] Preserve one-CAS Save and canonical refresh/editVersion update.
+- [x] Preserve persisted Shopify Explore handoff without auto-save.
+- [x] Add persisted-provider regression coverage.
 
 ## Interfaces / Contracts
 
@@ -173,24 +173,24 @@ No new database or cross-repository contract.
 
 ## Acceptance Criteria
 
-- [ ] Persisted External and Shopify DRAFTs expose the same six-step sequence as new Tools.
-- [ ] MCP name/provider kind are visibly read-only in Tool Definition.
-- [ ] Input schema is owned by Request; Result Template owns `responseTemplate`.
-- [ ] Agent Contract is review-only and contains no Result Template content.
-- [ ] Cancel restores the exact saved revision locally with zero mutation call.
-- [ ] Save performs exactly one `updateToolDraft` CAS write using current editVersion.
-- [ ] CAS conflicts remain visible and do not overwrite newer state.
-- [ ] Save/Publish authorization and current publication gates are unchanged.
-- [ ] Persisted Shopify Explore return remains session-isolated and non-durable until Save.
+- [x] Persisted External and Shopify DRAFTs expose the same six-step sequence as new Tools.
+- [x] MCP name/provider kind are visibly read-only in Tool Definition.
+- [x] Input schema is owned by Request; Result Template owns `responseTemplate`.
+- [x] Agent Contract is review-only and contains no Result Template content.
+- [x] Cancel restores the exact saved revision locally with zero mutation call.
+- [x] Save performs exactly one `updateToolDraft` CAS write using current editVersion.
+- [x] CAS conflicts remain visible and do not overwrite newer state.
+- [x] Save/Publish authorization and current publication gates are unchanged.
+- [x] Persisted Shopify Explore return remains session-isolated and non-durable until Save.
 
 ## Validation
 
-- [ ] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`
-- [ ] focused CAS Save and Cancel-zero-write regressions
-- [ ] focused persisted Explore round-trip regression
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`
+- [x] focused CAS Save and Cancel-zero-write regressions
+- [x] focused persisted Explore round-trip regression
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -204,35 +204,44 @@ Do not merge Tool-level metadata updates into revision Save. The task is about a
 
 ### Status
 
-Not Started
+Completed for Architect Review (Attempt 1)
 
 ### Files Changed
 
-None
+`src/studio/tools/authoring/review-tab.tsx`
+`src/studio/tools/authoring/tool-authoring-tabs.tsx`
+`src/studio/tools/authoring/tool-definition-tab.tsx`
+`src/studio/tools/tool-editor.tsx`
+`tests/external-tools-ui.test.tsx`
+`tests/shopify-admin-tools-ui.test.tsx`
 
 ### Work Completed
 
-None
+Aligned persisted External HTTP and Shopify Admin DRAFT authoring with the six-step Tool Definition, Request, Response, Result Template, Test and Review flow. Identity and provider fields remain read-only; description/version edits, input-schema ownership, production-envelope Result Template contracts and separate review cards now follow C078 ownership. Cancel restores the selected saved revision and local buffers without a mutation. Save remains a single revision-scoped CAS update, uses the current edit version, and adopts the canonical returned revision; conflicts retain the local candidate. Shopify Explore preserves the existing revision/session identity and editor buffers without auto-saving.
 
 ### Validation Results
 
-None
+`npx vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx`: passed, 3 test files and 136 tests.
+Targeted ESLint over the six changed files: passed.
+Changed-file editor diagnostics: no errors.
+`git diff --check`: passed.
+Regression coverage includes six-tab order/field ownership, zero-write Cancel, one-call CAS Save with canonical refresh, visible CAS conflicts, and Shopify Explore buffer round-trip without mutation.
 
 ### Deviations
 
-None
+No implementation deviations. A repeat Vitest invocation through `pnpm exec` attempted dependency setup and was blocked by pnpm's ignored-build-script policy (`ERR_PNPM_IGNORED_BUILDS`); the focused suites had already passed using the successful `npx vitest` invocation above.
 
 ### Assumptions
 
-None
+Validation used the focused UI suites and changed-file diagnostics; a full repository typecheck was not run. Shopify Explore return behavior is covered with the existing persisted-session fixture and verifies the relevant identity, buffers and absence of writes.
 
 ### Unresolved Issues
 
-None
+No unresolved implementation issues identified. Full repository typecheck remains unrun.
 
 ### Architectural Concerns
 
-None
+None identified; Architect Review remains pending.
 
 ## Architect Review
 
