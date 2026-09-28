@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 74
-executor: copilot
-claimed_at: 2026-09-28T10:22:02Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-077
@@ -201,6 +201,136 @@ Changing Tool Definition, Request, Response or Result Template and running local
 
 Do not restore C076's six-tab order (`Request -> Response -> Test -> Agent contract -> Result template -> Review`). The new flow replaces it. Reuse the surviving C066/C067/C068 implementation primitives but follow this task's product order/ownership.
 
+
+### R9 — Test state is part of the authoring session; C078 does not reimplement Test execution
+
+COMMERCE-080 and COMMERCE-082 already provide the canonical External HTTP and Shopify Admin non-durable live-Test backends respectively.
+
+C078 MUST NOT:
+
+```text
+- implement another External live-Test service;
+- implement another Shopify live-Test service;
+- duplicate either Server Action;
+- duplicate provider execution;
+- duplicate Result Template rendering;
+- create another Test result contract.
+```
+
+C078 establishes only the common session-level Test freshness/checkpoint model that COMMERCE-081 and COMMERCE-083 will drive.
+
+Add exactly one Test state to the new-Tool authoring session:
+
+```ts
+type AuthoringTestStatus =
+  | "NOT_RUN"
+  | "RUNNING"
+  | "PASSED"
+  | "FAILED"
+  | "STALE";
+
+type AuthoringTestSnapshot = {
+  toolDefinitionRevision: number;
+  requestRevision: number;
+  responseRevision: number;
+  resultTemplateRevision: number;
+};
+
+type AuthoringTestState = {
+  status: AuthoringTestStatus;
+  testedSnapshot: AuthoringTestSnapshot | null;
+};
+```
+
+Initial state is exactly:
+
+```ts
+{
+  status: "NOT_RUN",
+  testedSnapshot: null
+}
+```
+
+Do not store provider result payloads in this common state model as part of C078. COMMERCE-081 and COMMERCE-083 may keep their provider-specific safe Test result/diagnostic state while updating this common Test checkpoint.
+
+Define:
+
+```ts
+function currentAuthoringSnapshot(
+  session: ToolAuthoringSession
+): AuthoringTestSnapshot {
+  return {
+    toolDefinitionRevision:
+      session.validation.toolDefinition.revision,
+    requestRevision:
+      session.validation.request.revision,
+    responseRevision:
+      session.validation.response.revision,
+    resultTemplateRevision:
+      session.validation.resultTemplate.revision,
+  };
+}
+```
+
+Define current successful Test exactly as:
+
+```ts
+function isCurrentTestPassed(
+  session: ToolAuthoringSession
+): boolean {
+  if (
+    session.test.status !== "PASSED" ||
+    session.test.testedSnapshot === null
+  ) {
+    return false;
+  }
+
+  return (
+    session.test.testedSnapshot.toolDefinitionRevision ===
+      session.validation.toolDefinition.revision &&
+    session.test.testedSnapshot.requestRevision ===
+      session.validation.request.revision &&
+    session.test.testedSnapshot.responseRevision ===
+      session.validation.response.revision &&
+    session.test.testedSnapshot.resultTemplateRevision ===
+      session.validation.resultTemplate.revision
+  );
+}
+```
+
+C078 must expose sufficient session operations for COMMERCE-081 and COMMERCE-083 to drive the following transitions without duplicating provider execution.
+
+On Test start, downstream integration must be able to capture the exact current snapshot and set:
+
+```ts
+test.status = "RUNNING";
+```
+
+On successful backend Test, if the current authoring snapshot still equals the submitted snapshot:
+
+```ts
+test.status = "PASSED";
+test.testedSnapshot = submittedSnapshot;
+```
+
+On backend Test failure, if the snapshot still matches:
+
+```ts
+test.status = "FAILED";
+test.testedSnapshot = submittedSnapshot;
+```
+
+If authoring state changed while Test was running, the returned result must not mark the current candidate PASSED:
+
+```ts
+test.status = "STALE";
+test.testedSnapshot = null;
+```
+
+C078 establishes these common session semantics only.
+
+COMMERCE-081 and COMMERCE-083 remain responsible for invoking the already-existing COMMERCE-080 / COMMERCE-082 provider Test backends, holding any provider-specific safe result/diagnostic state and applying the transitions above.
+
 ## Work Items
 
 - [x] Replace the new-Tool tab registry with the exact six-step sequence.
@@ -214,6 +344,7 @@ Do not restore C076's six-tab order (`Request -> Response -> Test -> Agent contr
 - [x] Make Save use the single current Tool Definition identity/description plus the assembled candidate.
 - [x] Make Cancel abandon all local/session handoff state without persistence.
 - [x] Add exact tab-order/ownership/persistence regressions for both provider kinds.
+- [ ] Add the common Test checkpoint/freshness state, exact snapshot helpers and downstream transition operations without provider execution.
 
 ## Interfaces / Contracts
 
@@ -259,6 +390,12 @@ No new persistent/cross-repository contract is introduced.
 - [x] Save performs exactly one final create operation; Cancel performs none.
 - [x] No edit/validation/tab navigation before Save creates durable Tool state.
 - [x] Existing Shopify Explore round-trip and current Request/Response authoring remain functional.
+- [ ] New-Tool authoring session contains exactly one common `test` checkpoint with initial `NOT_RUN` / `testedSnapshot: null`.
+- [ ] `currentAuthoringSnapshot(session)` returns exactly the Tool Definition, Request, Response and Result Template validation revisions.
+- [ ] `isCurrentTestPassed(session)` returns true only for `PASSED` with an exact current snapshot match.
+- [ ] Session operations support RUNNING, PASSED, FAILED and STALE transitions without storing provider payloads in the common Test state.
+- [ ] A stale completion clears `testedSnapshot` and cannot make the current candidate PASSED.
+- [ ] C078 does not call, duplicate or replace the COMMERCE-080 / COMMERCE-082 live-Test backends, Server Actions, provider execution, Result Template rendering or result contracts.
 
 ## Validation
 
@@ -270,6 +407,8 @@ No new persistent/cross-repository contract is introduced.
 - [x] targeted ESLint for changed files
 - [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
 - [x] `git diff --check`
+- [ ] focused unit regressions for initial Test state, exact snapshot creation, exact-current PASSED semantics and stale mismatch semantics
+- [ ] focused regression proving C078 common Test-state operations do not invoke provider Test services/Server Actions
 
 ## Stop Condition
 
@@ -357,135 +496,187 @@ Changes Requested
 
 ### Review Notes
 
-This amended Attempt 2 review supersedes the earlier Attempt 2 review wording.
+Attempt 3 satisfies the clarified navigation and pristine-session corrections from the amended Attempt 2 review.
 
-Attempt 2 successfully fixes both findings from Attempt 1:
+The following Attempt 3 behaviors are accepted:
 
-1. persisted External and Shopify DRAFT authoring retains the pre-C078 composition and Agent Contract remains available until COMMERCE-079; and
-2. External Request now renders `Input JSON Schema` before the connection/request mapping controls.
+- before provider selection, the blank new-Tool session shows only `Tool Definition` plus provider-selection guidance;
+- selecting Shopify Admin GraphQL or External HTTP/API reveals exactly `Tool Definition -> Request -> Response -> Result Template -> Test -> Review` without requiring the remaining Tool Definition fields to validate;
+- provider-switch confirmation preserves the committed provider until reset is confirmed;
+- the pristine new-Tool session starts clean, so immediate Back does not open the discard dialog;
+- a real authoring mutation still enables the existing discard protection;
+- persisted External/Shopify DRAFT composition remains outside C078; and
+- External `Input JSON Schema` remains before the connection/request mapping controls.
 
-Those corrections are accepted.
+The submitted 139-test packet and manual validation are sufficient for those corrections.
 
-Manual validation and source inspection exposed two remaining C078 defects. The intended new-Tool navigation behavior is now clarified as follows.
+C078 is not accepted yet because the architecture now requires the common Test checkpoint/freshness state described in R9. This requirement is intentionally session-only and MUST NOT move provider Test execution into C078.
 
-#### 1. Navigation visibility is controlled only by whether a Tool type/provider has been committed
+#### Required Attempt 4 correction — establish the common Test freshness model only
 
-The blank new-Tool authoring session may show only `Tool Definition`. This is acceptable and preferred.
+COMMERCE-080 and COMMERCE-082 already own the canonical External HTTP and Shopify Admin non-durable Test backends.
 
-While no Tool type/provider has been committed:
-
-- show only the `Tool Definition` tab;
-- show clear instructional copy explaining that the operator must select a Tool type before the remaining authoring tabs become available;
-- do not expose Request/Response/Result Template/Test/Review provider-specific surfaces yet.
-
-Use instructional copy equivalent to:
-
-> Select a Tool type to continue. Request, Response, Result Template, Test and Review become available after a Tool type is selected.
-
-Once either supported provider is committed:
-
-- `Shopify Admin GraphQL`; or
-- `External HTTP/API`;
-
-the new-Tool page must immediately expose exactly:
+C078 MUST NOT:
 
 ```text
-Tool Definition -> Request -> Response -> Result Template -> Test -> Review
+- implement another External live-Test service;
+- implement another Shopify live-Test service;
+- duplicate either Server Action;
+- duplicate provider execution;
+- duplicate Result Template rendering;
+- create another Test result contract.
 ```
 
-Visibility of those five downstream tabs must depend only on a committed Tool type/provider. It must **not** depend on MCP name, display name, description, definition version or the rest of Tool Definition being schema-valid.
+Implement exactly one common Test checkpoint on the new-Tool authoring session:
 
-The current implementation still couples downstream-tab visibility to `showWorkspace`, which is based on a schema-valid provider definition. The submitted manual screenshots demonstrate that selecting Shopify Admin GraphQL or External HTTP/API still leaves only `Tool Definition` visible when the other definition fields are blank.
+```ts
+type AuthoringTestStatus =
+  | "NOT_RUN"
+  | "RUNNING"
+  | "PASSED"
+  | "FAILED"
+  | "STALE";
 
-Provider-dependent tabs may reject/disable actions that require missing local state, but they must be visible after provider selection.
+type AuthoringTestSnapshot = {
+  toolDefinitionRevision: number;
+  requestRevision: number;
+  responseRevision: number;
+  resultTemplateRevision: number;
+};
 
-Provider switching must preserve committed-provider semantics:
+type AuthoringTestState = {
+  status: AuthoringTestStatus;
+  testedSnapshot: AuthoringTestSnapshot | null;
+};
+```
 
-- choosing another Tool type while a provider is already committed must not replace the committed provider until the destructive reset is explicitly confirmed;
-- while confirmation is pending, the existing provider remains committed and its six-tab navigation remains visible;
-- `Cancel` retains the original provider and authoring state;
-- `Reset and change Tool type` commits the new provider, clears the provider-owned downstream state as already designed, and keeps the same six-tab navigation visible.
+Initial state:
 
-#### 2. Opening the blank local authoring session must not make it dirty
+```ts
+{
+  status: "NOT_RUN",
+  testedSnapshot: null
+}
+```
 
-`ToolAuthoringScreen` currently launches the local session with an immediate dirty transition. This causes `Back` to display `Discard unsaved changes?` even when the operator has entered nothing.
+The common state must not contain provider response/result payloads or provider-specific diagnostics.
 
-Creating the blank browser-local session is not an authoring mutation.
+Define the exact snapshot helper:
 
-Required behavior:
+```ts
+function currentAuthoringSnapshot(
+  session: ToolAuthoringSession
+): AuthoringTestSnapshot {
+  return {
+    toolDefinitionRevision:
+      session.validation.toolDefinition.revision,
+    requestRevision:
+      session.validation.request.revision,
+    responseRevision:
+      session.validation.response.revision,
+    resultTemplateRevision:
+      session.validation.resultTemplate.revision,
+  };
+}
+```
 
-- `Create Tool` opens the blank local authoring session with `Tool Definition` active and `dirty = false`;
-- `Back` immediately after `Create Tool`, before any user mutation, returns to `/tools` without a discard dialog and without any durable write;
-- selecting a Tool type/provider is a real authoring mutation and may mark the session dirty;
-- edits to Tool Definition, Request, Response, Result Template or other canonical authoring state remain real mutations and must continue to trigger the existing discard protection;
-- after the first real mutation, `Back` must still show the existing discard confirmation.
+Define the exact current-pass predicate:
 
-Add focused regressions proving all of the following:
+```ts
+function isCurrentTestPassed(
+  session: ToolAuthoringSession
+): boolean {
+  if (
+    session.test.status !== "PASSED" ||
+    session.test.testedSnapshot === null
+  ) {
+    return false;
+  }
 
-1. `Create Tool` with no provider selected:
-   - only `Tool Definition` is present in the tablist;
-   - the provider-selection instructional message is visible;
-   - `Back` returns to `/tools` without a discard dialog;
-   - no Tool/create persistence action is called.
+  return (
+    session.test.testedSnapshot.toolDefinitionRevision ===
+      session.validation.toolDefinition.revision &&
+    session.test.testedSnapshot.requestRevision ===
+      session.validation.request.revision &&
+    session.test.testedSnapshot.responseRevision ===
+      session.validation.response.revision &&
+    session.test.testedSnapshot.resultTemplateRevision ===
+      session.validation.resultTemplate.revision
+  );
+}
+```
 
-2. Selecting `Shopify Admin GraphQL` with MCP name/display name/description still blank:
-   - immediately exposes exactly `Tool Definition -> Request -> Response -> Result Template -> Test -> Review`;
-   - downstream tab visibility does not require the rest of Tool Definition to validate.
+Expose session operations sufficient for COMMERCE-081 and COMMERCE-083 to perform these transitions:
 
-3. Selecting `External HTTP/API` with identity fields still blank:
-   - immediately exposes the same six tabs.
+1. **Start**
+   - capture `submittedSnapshot = currentAuthoringSnapshot(session)`;
+   - set `test.status = "RUNNING"`.
 
-4. Provider switch confirmation:
-   - Shopify committed -> choose External -> before confirmation, Shopify remains the committed provider and six tabs remain visible;
-   - `Cancel` preserves Shopify and its state;
-   - `Reset and change Tool type` commits External, clears provider-owned downstream state and leaves the six tabs visible.
+2. **Successful backend result with unchanged authoring snapshot**
+   ```ts
+   test.status = "PASSED";
+   test.testedSnapshot = submittedSnapshot;
+   ```
 
-5. Dirty navigation:
-   - pristine session -> Back has no confirmation;
-   - after provider selection or another real edit -> Back shows `Discard unsaved changes?`.
+3. **Failed backend result with unchanged authoring snapshot**
+   ```ts
+   test.status = "FAILED";
+   test.testedSnapshot = submittedSnapshot;
+   ```
 
-6. Attempt 1 corrections remain protected:
-   - persisted External/Shopify DRAFT composition remains unchanged by C078 and retains Agent Contract until C079;
-   - External `Input JSON Schema` remains before connection/request mapping controls.
+4. **Any backend completion after the authoring snapshot changed**
+   ```ts
+   test.status = "STALE";
+   test.testedSnapshot = null;
+   ```
 
-No persisted-DRAFT migration, provider networking, Result Template grammar change, database change, COMMERCE-079 implementation, COMMERCE-081 implementation or COMMERCE-083 implementation is requested.
+A stale completion must never mark the current candidate PASSED.
+
+COMMERCE-081 and COMMERCE-083, not C078, will invoke the existing provider backends, hold provider-specific safe Test result/diagnostic state and drive these common transitions.
+
+Add focused regressions for:
+- exact initial `NOT_RUN` state;
+- exact four-revision snapshot creation;
+- `PASSED` + exact matching snapshot => current pass;
+- `PASSED` + any one revision mismatch => not current;
+- RUNNING/FAILED/STALE never count as current pass;
+- stale completion clears `testedSnapshot`;
+- common Test state contains no provider payload;
+- the C078 transition operations perform no provider request and call no C080/C082 Server Action.
+
+Do not start COMMERCE-081 or COMMERCE-083 as part of this correction.
 
 ### Reviewed Files
 
-- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/authoring-session.ts`
 - `src/studio/tools/new-tool-editor.tsx`
 - `src/studio/tools/tool-authoring-screen.tsx`
-- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
 - `tests/tool-authoring-screen.test.tsx`
 - `tests/external-tools-ui.test.tsx`
-- submitted manual screenshots showing:
-  - only Tool Definition before provider selection;
-  - only Tool Definition after Shopify Admin GraphQL selection;
-  - only Tool Definition after External HTTP/API selection;
-  - pristine Back triggering the discard dialog.
+- submitted Attempt 3 manual screenshot showing the six-tab provider-selected flow
+- C078 task Completion Report
 
 ### Validation Reviewed
 
-- Submitted Attempt 2 packet: 4 suites, 135 tests passed.
+- Submitted Attempt 3 packet: 4 suites, 139 tests passed.
 - Submitted targeted ESLint: passed.
 - Submitted changed-file diagnostics: clean.
 - Submitted `git diff --check`: passed.
-- Attempt 1 corrections were confirmed in source/tests.
-- Manual validation exposes the two remaining defects above.
-- Source inspection confirms downstream-tab visibility is still gated by overall definition validity rather than committed provider presence, and the blank launcher path marks the new session dirty immediately.
+- Manual validation confirms the provider-navigation and pristine-session fixes.
+- Source inspection confirms the requested `AuthoringTestStatus`, `AuthoringTestSnapshot`, `AuthoringTestState`, `currentAuthoringSnapshot` and `isCurrentTestPassed` common session model is not yet present.
 
 ### Architecture Conformance
 
 Partial.
 
-The C078 ownership model, persisted-DRAFT boundary, External Request schema placement, Result Template contract, Review separation and Save persistence boundary are aligned.
+The new-Tool composition/navigation, Request ownership, Result Template integration, read-only Review separation, final Save/Cancel boundary, pristine-session semantics and persisted-DRAFT scope boundary now conform.
 
-C078 is not accepted until:
-
-1. blank new-Tool authoring provides explicit provider-selection guidance and remains clean;
-2. committing a Tool type/provider immediately reveals the complete six-tab new-Tool navigation independently of the remaining Tool Definition validity; and
-3. the discard guard activates only after a real authoring mutation.
+C078 remains incomplete only because the common session-level Test freshness/checkpoint semantics required by R9 have not yet been established.
 
 ### Follow-up
 
-Return the same task as Attempt 3. Implement only the corrections defined above and add the focused regressions. Do not start COMMERCE-079, COMMERCE-081 or COMMERCE-083 until C078 is accepted Complete.
+Return the same task as Attempt 4. Implement R9 only, add the focused Test-state regressions, preserve all accepted Attempt 1-3 behavior and STOP.
+
+Do not implement or duplicate C080/C082 provider execution and do not begin COMMERCE-079, COMMERCE-081 or COMMERCE-083 until C078 is accepted Complete.
