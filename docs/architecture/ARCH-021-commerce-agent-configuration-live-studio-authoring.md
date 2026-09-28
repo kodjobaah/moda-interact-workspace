@@ -1037,6 +1037,13 @@ COMMERCE-056 is architect-accepted Complete and remains independent of COMMERCE-
 - Accepted the authenticated/non-mutating Server Action and zero-backend-access evidence.
 - Marked COMMERCE-067 Complete. COMMERCE-068 remains Pending because COMMERCE-065 and COMMERCE-066 are not both Complete in this snapshot.
 
+
+### External live-Test Result Template rendering follow-up — 2026-09-28
+
+COMMERCE-080 is architect-accepted Complete. Non-durable External HTTP Test now receives the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, uses the canonical External `data.values` envelope, and delegates agent-facing text generation to the production `renderDefinitionResult` boundary. The Test remains non-durable and does not widen provider credentials, persistence or template grammar.
+
+COMMERCE-081 remains the separate presentation task for showing the returned rendered agent-facing text. It is not materialized in this submitted parent snapshot; when materialized, its C080 dependency is already satisfied.
+
 ### Shopify Admin result-contract and Result Template refinement — 2026-09-27
 
 Manual architecture review of Tool result/prompt authoring establishes the following refinement without introducing final tab gating/traversal:
@@ -1432,10 +1439,10 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
-| ARCH-021-COMMERCE-065 | moda_commerce | Ready | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Complete | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
@@ -1459,6 +1466,13 @@ Later runtime phases are intentionally not decomposed yet. Expected later owners
 No implementation task may depend on a system-test task.
 
 Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending on COMMERCE-079, COMMERCE-081 and COMMERCE-083. It becomes Ready only after those Commerce tasks are architect-accepted Complete.
+### COMMERCE-082 Attempt 1 accepted — 2026-09-28
+
+- Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
+- The Server Action requires platform `ADMIN`, resolves `shopId` through the server-authoritative Studio execution context and passes only the narrow Admin provider context into the already-accepted production execution port; access tokens remain entirely server-side.
+- Candidate schema, mapped arguments, compiler-derived result contract and Result Template compatibility are checked before provider I/O. Successful execution returns only the five bounded stage outcomes, canonical normalized `values` and canonical rendered text; one provider request is budgeted and `LIVE_TEST_REQUIRED` remains unchanged.
+- Accepted submitted validation: 96/96 focused tests across eight files, targeted ESLint and `git diff --check`; repository TypeScript remains red only on 30 unrelated diagnostics with no C082 changed-file diagnostics.
+- C082 names COMMERCE-083 as the UI follow-up, but no C083 task definition is materialised in this submitted architecture snapshot; no dependent promotion is recorded until that task exists.
 
 ## Open Questions
 

@@ -333,9 +333,9 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-077](COMMERCE-077-start-tool-definition-authoring-flow.md) | UI/state: Create Tool launcher + first-class local Tool Definition | Ready | COMMERCE-039, COMMERCE-064 |
 | [COMMERCE-078](COMMERCE-078-compose-new-tool-authoring-flow.md) | UI: exact new-Tool flow, Result Template before Test, derived Agent Contract in Review | Pending | COMMERCE-077, 063, 066, 067, 068 |
 | [COMMERCE-079](COMMERCE-079-align-persisted-draft-authoring-flow.md) | UI: persisted-DRAFT parity, CAS Save and Cancel reset | Pending | COMMERCE-078 |
-| [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Ready | COMMERCE-054, COMMERCE-063 |
+| [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
 | [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Pending | COMMERCE-078, COMMERCE-080 |
-| [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Ready | COMMERCE-060, 062, 063, 070 |
+| [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | C | COMMERCE-060, 062, 063, 070 |
 | [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Pending | COMMERCE-078, COMMERCE-082 |
 
 Initial executable frontier for this workstream:
@@ -364,6 +364,12 @@ COMMERCE-063 Attempt 1 is architect-accepted Complete. COMMERCE-066 Attempt 1 is
 Manual debugging of the completed Tool-authoring flows identified a semantic logging gap: the Commerce process already uses the shared structured logger and production execution has `commerce.definition.outcome` telemetry, but Studio authoring mostly logs unexpected exceptions. COMMERCE-071 adds bounded shared-logger diagnostics for Request/Response validation, Shopify Admin Explore schema browsing/query validation/result-contract derivation, non-durable live Test stages, Agent/Admin validation, Tool mutations and reconciliation without logging authored GraphQL/schema payloads, provider bodies or credentials. Existing discovery telemetry remains authoritative for metrics; the new structured logs add only correlation/timing and bounded safe compiler/schema metadata needed for debugging. It is independent of tab-gating/UI work and does not duplicate generic framework HTTP telemetry.
 
 COMMERCE-071 is **Ready**; all of its dependencies are architect-accepted Complete.
+
+### COMMERCE-082 Attempt 1 accepted — 2026-09-28
+
+COMMERCE-082 is **Complete / Accepted, Attempt 1**. Studio can now execute the exact current non-durable Shopify Admin candidate against the server-authoritative selected shop using the existing production Admin execution port, compiler-derived result contract and canonical Result Template renderer. Candidate/result/template failures remain pre-I/O, browser-supplied shop credentials are rejected by the strict input boundary, one provider request is budgeted, browser-visible results are bounded, and no Tool/revision/audit/publication-proof write is created. Submitted validation passed 96/96 tests across the focused eight-file packet plus targeted ESLint and diff checks; changed C082 files are clean under the submitted TypeScript diagnostics.
+
+C082 references COMMERCE-083 as its enabled UI follow-up, but no COMMERCE-083 task file is materialised in this snapshot, so no dependent status promotion is applied here.
 
 ### Result Template integration regression follow-up — 2026-09-27
 
@@ -425,6 +431,13 @@ Key invariants:
 - global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
 
 
+
+
+### COMMERCE-080 Attempt 1 accepted — 2026-09-28
+
+COMMERCE-080 is **Complete / Accepted, Attempt 1**. External HTTP live Test now consumes the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, validates processed values against the canonical result contract, builds the production `ExternalHttpResultDataSchema` `data.values` envelope and delegates final text rendering to `renderDefinitionResult`. Both existing External editors pass the current local candidate into Test; rendered-result presentation remains deferred to COMMERCE-081. Submitted validation passed the 24-test backend/action/integration packet, all 81 External Tools UI tests, targeted Test-tab assertions, ESLint and `git diff --check`. Repository TypeScript remains non-green only on the documented baseline; no new C080 payload/backend diagnostic is present.
+
+COMMERCE-081 is not materialized in this parent snapshot, so no downstream task-status edit is made by this acceptance.
 
 ### COMMERCE-068 Attempt 1 accepted — 2026-09-27
 
