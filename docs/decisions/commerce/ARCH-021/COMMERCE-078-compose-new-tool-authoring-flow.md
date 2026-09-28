@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 74
-executor: copilot
-claimed_at: 2026-09-28T09:39:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-077
@@ -352,47 +352,135 @@ Changes Requested
 
 ### Review Notes
 
-Attempt 1 is not accepted. The new-Tool composition is broadly aligned with the agreed C078 ownership model, but two task-scoped corrections are required.
+This amended Attempt 2 review supersedes the earlier Attempt 2 review wording.
 
-1. **Do not change persisted-DRAFT tab composition in C078.** C078 is explicitly scoped to new-Tool composition; persisted-DRAFT parity belongs to COMMERCE-079. The shared `ToolAuthoringTabs` registry is currently globally ordered as `Tool Definition -> Request -> Response -> Result Template -> Test -> Agent contract -> Review`. Existing `ToolEditor` consumers call that registry without the new-Tool filters, so persisted External/Admin DRAFTs are already changed to the hybrid order `Request -> Response -> Result Template -> Test -> Agent contract -> Review`. That is a C079 scope leak. Preserve the pre-C078 persisted-DRAFT ordering/behavior until C079 executes. Implement the exact six-step C078 ordering through a new-Tool-specific registry/composition or an explicit mode/order parameter that does not alter persisted consumers.
+Attempt 2 successfully fixes both findings from Attempt 1:
 
-2. **Place the External Request-owned Input JSON Schema before/with the request mapping editor.** In `NewToolWorkspace`, `ExternalHttpEditor` renders the connection/request construction panel before the separate `Input JSON Schema` section. R2 requires the schema authoring control to appear before/with the existing connection/request mapping editor. Recompose the External Request surface so `Input JSON Schema` is encountered before the connection/request mapping controls while continuing to feed the latest valid/parsed Request-owned schema into validation, preview, Automatic generation and live Test.
+1. persisted External and Shopify DRAFT authoring retains the pre-C078 composition and Agent Contract remains available until COMMERCE-079; and
+2. External Request now renders `Input JSON Schema` before the connection/request mapping controls.
 
-Add focused regressions that prove:
-- new Tools still expose exactly `Tool Definition -> Request -> Response -> Result Template -> Test -> Review`;
-- persisted External and Shopify DRAFT tab ordering/composition remains unchanged by C078 and still retains Agent Contract until C079;
-- on the new External Request surface, `Input JSON Schema` precedes the connection/request mapping controls in DOM/user order;
-- no additional durable write is introduced by either correction.
+Those corrections are accepted.
 
-No provider networking, Result Template grammar, persisted-DRAFT ownership refactor, C079 implementation, live-Test backend, database or cross-repository changes are requested.
+Manual validation and source inspection exposed two remaining C078 defects. The intended new-Tool navigation behavior is now clarified as follows.
+
+#### 1. Navigation visibility is controlled only by whether a Tool type/provider has been committed
+
+The blank new-Tool authoring session may show only `Tool Definition`. This is acceptable and preferred.
+
+While no Tool type/provider has been committed:
+
+- show only the `Tool Definition` tab;
+- show clear instructional copy explaining that the operator must select a Tool type before the remaining authoring tabs become available;
+- do not expose Request/Response/Result Template/Test/Review provider-specific surfaces yet.
+
+Use instructional copy equivalent to:
+
+> Select a Tool type to continue. Request, Response, Result Template, Test and Review become available after a Tool type is selected.
+
+Once either supported provider is committed:
+
+- `Shopify Admin GraphQL`; or
+- `External HTTP/API`;
+
+the new-Tool page must immediately expose exactly:
+
+```text
+Tool Definition -> Request -> Response -> Result Template -> Test -> Review
+```
+
+Visibility of those five downstream tabs must depend only on a committed Tool type/provider. It must **not** depend on MCP name, display name, description, definition version or the rest of Tool Definition being schema-valid.
+
+The current implementation still couples downstream-tab visibility to `showWorkspace`, which is based on a schema-valid provider definition. The submitted manual screenshots demonstrate that selecting Shopify Admin GraphQL or External HTTP/API still leaves only `Tool Definition` visible when the other definition fields are blank.
+
+Provider-dependent tabs may reject/disable actions that require missing local state, but they must be visible after provider selection.
+
+Provider switching must preserve committed-provider semantics:
+
+- choosing another Tool type while a provider is already committed must not replace the committed provider until the destructive reset is explicitly confirmed;
+- while confirmation is pending, the existing provider remains committed and its six-tab navigation remains visible;
+- `Cancel` retains the original provider and authoring state;
+- `Reset and change Tool type` commits the new provider, clears the provider-owned downstream state as already designed, and keeps the same six-tab navigation visible.
+
+#### 2. Opening the blank local authoring session must not make it dirty
+
+`ToolAuthoringScreen` currently launches the local session with an immediate dirty transition. This causes `Back` to display `Discard unsaved changes?` even when the operator has entered nothing.
+
+Creating the blank browser-local session is not an authoring mutation.
+
+Required behavior:
+
+- `Create Tool` opens the blank local authoring session with `Tool Definition` active and `dirty = false`;
+- `Back` immediately after `Create Tool`, before any user mutation, returns to `/tools` without a discard dialog and without any durable write;
+- selecting a Tool type/provider is a real authoring mutation and may mark the session dirty;
+- edits to Tool Definition, Request, Response, Result Template or other canonical authoring state remain real mutations and must continue to trigger the existing discard protection;
+- after the first real mutation, `Back` must still show the existing discard confirmation.
+
+Add focused regressions proving all of the following:
+
+1. `Create Tool` with no provider selected:
+   - only `Tool Definition` is present in the tablist;
+   - the provider-selection instructional message is visible;
+   - `Back` returns to `/tools` without a discard dialog;
+   - no Tool/create persistence action is called.
+
+2. Selecting `Shopify Admin GraphQL` with MCP name/display name/description still blank:
+   - immediately exposes exactly `Tool Definition -> Request -> Response -> Result Template -> Test -> Review`;
+   - downstream tab visibility does not require the rest of Tool Definition to validate.
+
+3. Selecting `External HTTP/API` with identity fields still blank:
+   - immediately exposes the same six tabs.
+
+4. Provider switch confirmation:
+   - Shopify committed -> choose External -> before confirmation, Shopify remains the committed provider and six tabs remain visible;
+   - `Cancel` preserves Shopify and its state;
+   - `Reset and change Tool type` commits External, clears provider-owned downstream state and leaves the six tabs visible.
+
+5. Dirty navigation:
+   - pristine session -> Back has no confirmation;
+   - after provider selection or another real edit -> Back shows `Discard unsaved changes?`.
+
+6. Attempt 1 corrections remain protected:
+   - persisted External/Shopify DRAFT composition remains unchanged by C078 and retains Agent Contract until C079;
+   - External `Input JSON Schema` remains before connection/request mapping controls.
+
+No persisted-DRAFT migration, provider networking, Result Template grammar change, database change, COMMERCE-079 implementation, COMMERCE-081 implementation or COMMERCE-083 implementation is requested.
 
 ### Reviewed Files
 
 - `src/studio/tools/authoring/tool-authoring-tabs.tsx`
 - `src/studio/tools/new-tool-editor.tsx`
 - `src/studio/tools/tool-authoring-screen.tsx`
-- `src/studio/tools/authoring/result-template-contract-adapter.ts`
-- `src/studio/tools/authoring/result-template-tab.tsx`
-- `src/studio/tools/authoring/review-tab.tsx`
 - `src/studio/tools/new-tool-authoring-state.ts`
-- `src/studio/tools/tool-editor.tsx`
-- `src/studio/external-http/request-tab.tsx`
 - `tests/tool-authoring-screen.test.tsx`
 - `tests/external-tools-ui.test.tsx`
-- `docs/decisions/commerce/ARCH-021/COMMERCE-079-align-persisted-draft-authoring-flow.md`
+- submitted manual screenshots showing:
+  - only Tool Definition before provider selection;
+  - only Tool Definition after Shopify Admin GraphQL selection;
+  - only Tool Definition after External HTTP/API selection;
+  - pristine Back triggering the discard dialog.
 
 ### Validation Reviewed
 
-- Submitted focused packet: 4 suites, 133 tests passed.
+- Submitted Attempt 2 packet: 4 suites, 135 tests passed.
 - Submitted targeted ESLint: passed.
 - Submitted changed-file diagnostics: clean.
 - Submitted `git diff --check`: passed.
-- Source/test inspection confirmed the two missing regressions above are not covered.
+- Attempt 1 corrections were confirmed in source/tests.
+- Manual validation exposes the two remaining defects above.
+- Source inspection confirms downstream-tab visibility is still gated by overall definition validity rather than committed provider presence, and the blank launcher path marks the new session dirty immediately.
 
 ### Architecture Conformance
 
-Partial. The new-Tool six-step flow, Request ownership, production-envelope Result Template contract, read-only Review separation and final Save/Cancel persistence boundary are aligned. Acceptance is blocked by the persisted-DRAFT scope leak and the External Request schema placement mismatch.
+Partial.
+
+The C078 ownership model, persisted-DRAFT boundary, External Request schema placement, Result Template contract, Review separation and Save persistence boundary are aligned.
+
+C078 is not accepted until:
+
+1. blank new-Tool authoring provides explicit provider-selection guidance and remains clean;
+2. committing a Tool type/provider immediately reveals the complete six-tab new-Tool navigation independently of the remaining Tool Definition validity; and
+3. the discard guard activates only after a real authoring mutation.
 
 ### Follow-up
 
-Return the same task as Attempt 2. Do not start COMMERCE-079, COMMERCE-081 or COMMERCE-083 until C078 is accepted Complete.
+Return the same task as Attempt 3. Implement only the corrections defined above and add the focused regressions. Do not start COMMERCE-079, COMMERCE-081 or COMMERCE-083 until C078 is accepted Complete.
