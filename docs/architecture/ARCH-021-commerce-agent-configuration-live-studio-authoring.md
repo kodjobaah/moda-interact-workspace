@@ -1085,9 +1085,9 @@ Implementation tasks:
 | ARCH-021-COMMERCE-078 | moda_commerce | Complete | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
 | ARCH-021-COMMERCE-079 | moda_commerce | Complete | ARCH-021-COMMERCE-078 |
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-081 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1451,9 +1451,9 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-078 | moda_commerce | Complete | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
 | ARCH-021-COMMERCE-079 | moda_commerce | Complete | ARCH-021-COMMERCE-078 |
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-081 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -2650,4 +2650,11 @@ Persisted External HTTP and Shopify Admin DRAFT authoring is architect-accepted.
 
 The persisted authoring boundary also reuses the C078 provider-neutral Test freshness checkpoint over Tool Definition, Request, Response and Result Template revisions. Authored mutations stale the checkpoint independently of persistence dirtiness; transient Test arguments/shop/result state remains non-durable. C079 does not add provider Test execution.
 
-The executable refinement frontier is now COMMERCE-081. COMMERCE-083 remains Pending on COMMERCE-081, and SYSTEM-TEST-002 remains terminally gated on C079 + C081 + C083.
+COMMERCE-081 is Complete / Accepted at Attempt 2. The executable refinement frontier is now COMMERCE-083; SYSTEM-TEST-002 remains terminally gated until C083 is Complete.
+
+
+### COMMERCE-081 Attempt 2 accepted — 2026-09-28
+
+External live-Test presentation and persistence gating are architect-accepted. C081 reuses the C080 backend, drives the C078/C079 common Test checkpoint, presents server-rendered Result Template text first, and uses a monotonic non-durable transient generation so argument/shop reversion cannot resurrect stale provider-local results. New External Create and persisted External Save require a current common PASS.
+
+With C078, C079, C081 and C082 Complete, COMMERCE-083 is Ready. SYSTEM-TEST-002 remains Pending until C083 is Complete.
