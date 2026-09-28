@@ -9,8 +9,8 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
-priority: 77
+status: ready
+priority: 75
 executor: null
 claimed_at: null
 attempt: 0
@@ -446,6 +446,28 @@ Cancel semantics
 ```
 
 Do not auto-save after Explore, Response derivation, template validation or Test.
+
+
+### R7 — drive the C078 common Test checkpoint for new Tools
+
+For the new-Tool Shopify Admin flow, C083 MUST consume the C078 common Test freshness model rather than create a second canonical pass/freshness checkpoint.
+
+On Test start capture the exact C078 `currentAuthoringSnapshot(session)` and transition the common session Test state to `RUNNING`.
+
+On C082 success complete the checkpoint with `PASSED`; on C082 failure complete it with `FAILED`.
+
+If any Tool Definition, Request, Response or Result Template revision changed while C082 was running, the completion must become:
+
+```text
+status = STALE
+testedSnapshot = null
+```
+
+and the provider result must not mark the current candidate passed.
+
+The reusable Shopify Admin Test component may retain bounded provider-specific result/stage diagnostics separately. Those payloads must not be copied into the C078 common `test` state.
+
+Use `isCurrentTestPassed(session)` for new-Tool current-pass decisions. Persisted-DRAFT Test freshness remains governed by the persisted authoring state model introduced by C079; do not force the new-Tool session object into persisted DRAFTs.
 
 ## Work Items
 

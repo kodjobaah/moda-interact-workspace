@@ -1042,12 +1042,12 @@ COMMERCE-056 is architect-accepted Complete and remains independent of COMMERCE-
 
 COMMERCE-080 is architect-accepted Complete. Non-durable External HTTP Test now receives the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, uses the canonical External `data.values` envelope, and delegates agent-facing text generation to the production `renderDefinitionResult` boundary. The Test remains non-durable and does not widen provider credentials, persistence or template grammar.
 
-COMMERCE-081 is materialised as the External Test/session-integration task. It consumes the accepted C080 backend, the C078 common authoring Test state and the C079 persisted-draft parity model; it remains Pending until C078 and C079 are Complete. Its C080 backend dependency is already satisfied.
+COMMERCE-081 remains the separate presentation task for showing the returned rendered agent-facing text. It is materialised and Ready after C078 Attempt 4 acceptance because C078 and C080 are Complete.
 
 
 ### First-class Tool Definition follow-up — 2026-09-28
 
-COMMERCE-077 is architect-accepted Complete. New Tool creation now begins from a browser-local Tool Definition surface rather than the Tool-library form, and provider initialization is protected against stale asynchronous metadata completion. Durable creation remains exclusively at Review. COMMERCE-078 remains the downstream composition task and is not materialized in this submitted parent snapshot.
+COMMERCE-077 is architect-accepted Complete. New Tool creation begins from a browser-local Tool Definition surface rather than the Tool-library form, and provider initialization is protected against stale asynchronous metadata completion. COMMERCE-078 is now architect-accepted Complete at Attempt 4; durable creation remains exclusively at Review.
 
 ### Shopify Admin result-contract and Result Template refinement — 2026-09-27
 
@@ -1082,12 +1082,12 @@ Implementation tasks:
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
 | ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-078 | moda_commerce | Ready | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
-| ARCH-021-COMMERCE-079 | moda_commerce | Pending | ARCH-021-COMMERCE-078 |
+| ARCH-021-COMMERCE-078 | moda_commerce | Complete | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-079 | moda_commerce | Ready | ARCH-021-COMMERCE-078 |
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-081 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-082 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1448,12 +1448,12 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
 | ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-078 | moda_commerce | Ready | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
-| ARCH-021-COMMERCE-079 | moda_commerce | Pending | ARCH-021-COMMERCE-078 |
+| ARCH-021-COMMERCE-078 | moda_commerce | Complete | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-079 | moda_commerce | Ready | ARCH-021-COMMERCE-078 |
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-081 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-082 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1472,7 +1472,7 @@ Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending o
 - The Server Action requires platform `ADMIN`, resolves `shopId` through the server-authoritative Studio execution context and passes only the narrow Admin provider context into the already-accepted production execution port; access tokens remain entirely server-side.
 - Candidate schema, mapped arguments, compiler-derived result contract and Result Template compatibility are checked before provider I/O. Successful execution returns only the five bounded stage outcomes, canonical normalized `values` and canonical rendered text; one provider request is budgeted and `LIVE_TEST_REQUIRED` remains unchanged.
 - Accepted submitted validation: 96/96 focused tests across eight files, targeted ESLint and `git diff --check`; repository TypeScript remains red only on 30 unrelated diagnostics with no C082 changed-file diagnostics.
-- COMMERCE-083 is materialised. It is intentionally sequenced after COMMERCE-079 and COMMERCE-081 so persisted authoring state and provider-aware Save/Test gating are accepted before Shopify UI integration begins; C082 is already Complete.
+- C082's COMMERCE-083 UI follow-up is materialised and Ready after C078 Attempt 4 acceptance; both dependencies are Complete.
 
 ## Open Questions
 
@@ -2630,3 +2630,10 @@ architect-accepted Complete.
 - Returned COMMERCE-020 to Ready because the production Tools route still passes function-valued `controlled` orchestration from `StudioWorkspace`, preserving the old generic catch-to-unknown and mutation-replay reconciliation path.
 - Required exact Tool mutation Server Action results, audit-only reconciliation with explicit Tool audit actions/shared logging, independently reconcilable composite external creation, newer-edit dirty protection and executable R8 regressions.
 - COMMERCE-021/022 remain Pending.
+
+
+### COMMERCE-078 Attempt 4 accepted — 2026-09-28
+
+The new-Tool authoring composition is architect-accepted. In addition to the six-step provider-aware flow and browser-local Save boundary, the session now owns a single provider-neutral Test freshness checkpoint over Tool Definition, Request, Response and Result Template validation revisions. `PASSED` is current only when all four revisions still match the tested snapshot; in-flight completion after a revision change becomes `STALE` with no tested snapshot. C078 contains no provider execution or provider Test payload state.
+
+With C080 and C082 already Complete, the refinement's executable UI frontier is now COMMERCE-079, COMMERCE-081 and COMMERCE-083.

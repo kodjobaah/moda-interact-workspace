@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 75
 executor: null
 claimed_at: null
@@ -397,6 +397,35 @@ src/commerce/tool-authoring/external-live-test.ts
 unless a concrete integration defect in the accepted C080 API is proven. If such a defect is found, stop and return the issue to `moda_architect`; do not silently redesign C080 inside this UI task.
 
 Do not create another renderer, another Test result shape or another provider observation path.
+
+
+### R6 — drive the C078 common Test checkpoint
+
+For the new-Tool session, C081 MUST consume the C078 common Test freshness model rather than maintain a second canonical candidate-pass checkpoint.
+
+On Test start:
+
+```text
+submittedSnapshot = currentAuthoringSnapshot(session)
+session = startAuthoringTest(session).session
+```
+
+The exact submitted snapshot must be retained with the in-flight request.
+
+On C080 success, call the C078 completion operation with `PASSED`. On C080 failure, call it with `FAILED`.
+
+If any Tool Definition, Request, Response or Result Template revision changed while the request was in flight, the completion must resolve to:
+
+```text
+status = STALE
+testedSnapshot = null
+```
+
+and the returned provider result must not mark the current candidate passed.
+
+Provider-specific safe result/diagnostic state may remain local to the External Test UI. Do not copy provider result payloads into the C078 common `test` state.
+
+Use `isCurrentTestPassed(session)` wherever new-Tool UI logic needs to decide whether the current candidate has a current successful Test checkpoint.
 
 ## Work Items
 
