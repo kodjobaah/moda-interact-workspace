@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
 executor: copilot
 claimed_at: 2026-09-28T09:39:18Z
@@ -285,7 +285,17 @@ The flow is ordered for comprehension, not as a full wizard gate. After provider
 
 ### Status
 
-Complete; submitted for Architect Review.
+Attempt 2 complete; resubmitted for Architect Review.
+
+### Execution Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-078`, `task/ARCH-021-COMMERCE-078`
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-078`, `task/ARCH-021-COMMERCE-078`
+- Shared workspace and implementation reference checkouts were not switched or modified; no other task worktree was reused.
+- Parent task remote branch fast-forwarded: not-needed; `origin/main` incorporated: yes.
+- Implementation remote task branch fast-forwarded: not-needed; `origin/main` incorporated: already-current.
+- Recursive submodule sync and initialization passed; `database` is initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 ### Files Changed
 
@@ -293,10 +303,12 @@ Complete; submitted for Architect Review.
 - `src/studio/tools/authoring/result-template-tab.tsx`
 - `src/studio/tools/authoring/review-tab.tsx`
 - `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `src/studio/external-http/editor.tsx`
 - `src/studio/tools/new-tool-authoring-state.ts`
 - `src/studio/tools/new-tool-editor.tsx`
 - `src/studio/tools/tool-authoring-screen.tsx`
 - `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
 - `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
@@ -305,18 +317,20 @@ Complete; submitted for Architect Review.
 - Connected Result Template authoring to canonical `responseTemplate` validation and provider production output envelopes, including Shopify Admin compiler output.
 - Added read-only, separately grouped Review sections and Save/Cancel actions; Save uses the single atomic create path and Cancel clears local/session state without writing.
 - Added provider, tab-order, Save-once, Cancel-zero-write, and no-premature-persistence regressions.
+- Attempt 2 correction: split new-Tool and persisted-DRAFT tab registries so persisted External and Shopify flows retain `Request -> Response -> Test -> Agent contract -> Review` until C079; focused tests assert both orders and preserve Agent Contract editing without persistence.
+- Attempt 2 correction: moved the External Request Input JSON Schema control ahead of the connection/request mapping editor; a DOM-order regression verifies it precedes Connection while invalid local input creates no durable Tool state.
 
 ### Validation Results
 
-- Required Vitest command passed: 4 files, 133 tests.
-- Targeted ESLint passed for all changed implementation and test files.
-- Editor diagnostics reported no errors in any changed C078 file.
+- Required Vitest command passed on Attempt 2: 4 files, 135 tests.
+- Targeted ESLint passed for all Attempt 2 changed implementation and test files.
+- Editor diagnostics reported no errors in any Attempt 2 changed C078 file.
 - `git diff --check` passed.
 - `npm run typecheck` remains non-green due existing repository diagnostics outside the C078 changes, including untouched integration services, persisted tool-editor call sites, and result-contract tests; the changed C078 files have no editor diagnostics.
 
 ### Deviations
 
-The full repository typecheck has an existing non-green baseline; it was recorded rather than broadening this task into unrelated files.
+The full repository typecheck has an existing non-green baseline from Attempt 1; Attempt 2 introduced no editor diagnostics in changed files and did not broaden into unrelated files.
 
 ### Assumptions
 
