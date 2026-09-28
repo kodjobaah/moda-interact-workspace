@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 73
 executor: null
 claimed_at: null
@@ -343,3 +343,42 @@ implementation claim commit: f66b697d434e3088c4f8989ea224b6db523c5887
 parent task-definition materialization commit: 2e6d469143d02edbedfc7ed5bfcb5d280cef136c
 dependency gate: passed (COMMERCE-060, 062, 063, 070 complete)
 ```
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 1 conforms to the C082 contract. The live-Test boundary validates the complete current Shopify Admin candidate and mapped arguments before shop/provider work, resolves only the server-authoritative selected shop, reuses the existing `AdminQueryExecutionPort` and canonical renderer, and returns only bounded stage/result data. No browser-supplied domain/token, fabricated production grant/release/conversation identity, duplicate GraphQL transport, durable Tool/publication write or publication-proof receipt was introduced.
+
+The submitted task file omitted the standard Architect Review section; this acceptance overlay restores that architect-owned section rather than returning otherwise-valid implementation work for report-only churn.
+
+### Reviewed Files
+
+- `moda-interact-commerce/src/commerce/execution/ports.ts`
+- `moda-interact-commerce/src/commerce/execution/index.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
+- `moda-interact-commerce/src/commerce/tool-authoring/shopify-admin-live-test.ts`
+- `moda-interact-commerce/src/studio/tools/shopify-admin-live-test-server-actions.ts`
+- `moda-interact-commerce/tests/shopify-admin-live-test.test.ts`
+- `moda-interact-commerce/tests/shopify-admin-live-test-action.test.ts`
+- `moda-interact-commerce/tests/definition-execution.test.ts`
+
+### Validation Reviewed
+
+- Submitted focused compatibility packet: 8 files / 96 tests passed.
+- Submitted targeted ESLint: passed.
+- Submitted `git diff --check`: passed.
+- Submitted repository-wide TypeScript check remains non-green with 30 diagnostics in 17 unrelated files; no C082 changed implementation/test file is reported with diagnostics.
+- Automated tests correctly use fixtures/adapters rather than requiring live Shopify I/O; no live Shopify call or migration is required by C082 acceptance.
+
+### Architecture Conformance
+
+Conforms to ARCH-021 and the accepted C060/C062/C063/C070 boundaries. `AdminQueryExecutionPort` is narrowed only to provider-execution context and remains structurally usable by production. Authoring reuses the production Admin transport/session lookup/result normalization and `renderDefinitionResult`, enforces one provider-request budget, keeps access tokens server-only, exposes only bounded canonical values/rendered text, and performs no durable/publication-proof write. The current publication `LIVE_TEST_REQUIRED` gate remains unchanged.
+
+### Follow-up
+
+`ARCH-021-COMMERCE-083` is referenced by C082 `enables`, but no C083 task file is present in the submitted snapshot. C082 acceptance therefore cannot promote a non-materialised dependent task in this overlay. Materialise/reconcile C083 separately before execution.
