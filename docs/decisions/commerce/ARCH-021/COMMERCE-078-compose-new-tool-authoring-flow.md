@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
 executor: copilot
 claimed_at: 2026-09-28T10:22:02Z
@@ -285,7 +285,7 @@ The flow is ordered for comprehension, not as a full wizard gate. After provider
 
 ### Status
 
-Attempt 2 complete; resubmitted for Architect Review.
+Attempt 3 complete; resubmitted for Architect Review.
 
 ### Execution Evidence
 
@@ -293,8 +293,8 @@ Attempt 2 complete; resubmitted for Architect Review.
 - Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-078`, `task/ARCH-021-COMMERCE-078`
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-078`, `task/ARCH-021-COMMERCE-078`
 - Shared workspace and implementation reference checkouts were not switched or modified; no other task worktree was reused.
-- Parent task remote branch fast-forwarded: not-needed; `origin/main` incorporated: yes.
-- Implementation remote task branch fast-forwarded: not-needed; `origin/main` incorporated: already-current.
+- Parent task remote branch fast-forwarded: not-needed; `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed; `origin/main` incorporated: yes.
 - Recursive submodule sync and initialization passed; `database` is initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 ### Files Changed
@@ -319,18 +319,23 @@ Attempt 2 complete; resubmitted for Architect Review.
 - Added provider, tab-order, Save-once, Cancel-zero-write, and no-premature-persistence regressions.
 - Attempt 2 correction: split new-Tool and persisted-DRAFT tab registries so persisted External and Shopify flows retain `Request -> Response -> Test -> Agent contract -> Review` until C079; focused tests assert both orders and preserve Agent Contract editing without persistence.
 - Attempt 2 correction: moved the External Request Input JSON Schema control ahead of the connection/request mapping editor; a DOM-order regression verifies it precedes Connection while invalid local input creates no durable Tool state.
+- Attempt 3 correction: downstream tabs are shown whenever a provider is committed, independently of MCP name, display name, description, or overall definition validity; an unselected session shows only Tool Definition with provider-selection guidance.
+- Attempt 3 correction: provider-switch confirmation keeps the original provider and tabs until confirmed; Cancel preserves it, while reset commits the new provider and retains the six-tab navigation.
+- Attempt 3 correction: opening a blank local session no longer marks it dirty; provider selection or another authoring mutation still activates discard protection.
+- Added focused regressions for pristine Back/no write, blank-identity selection of both providers, provider switch cancel/reset, and pristine-versus-mutated dirty navigation. Attempt 1 tab-boundary and External schema-order regressions remain in place.
 
 ### Validation Results
 
-- Required Vitest command passed on Attempt 2: 4 files, 135 tests.
-- Targeted ESLint passed for all Attempt 2 changed implementation and test files.
-- Editor diagnostics reported no errors in any Attempt 2 changed C078 file.
+- Required Vitest command passed on Attempt 3: 4 files, 139 tests.
+- Focused `tests/tool-authoring-screen.test.tsx` suite passed: 29 tests.
+- Targeted ESLint passed for all Attempt 3 changed implementation and test files.
+- Editor diagnostics reported no errors in any Attempt 3 changed C078 file.
 - `git diff --check` passed.
-- `npm run typecheck` remains non-green due existing repository diagnostics outside the C078 changes, including untouched integration services, persisted tool-editor call sites, and result-contract tests; the changed C078 files have no editor diagnostics.
+- Full repository typecheck was not rerun on Attempt 3; Attempt 1 recorded the existing non-green repository baseline. Changed-file diagnostics are clean.
 
 ### Deviations
 
-The full repository typecheck has an existing non-green baseline from Attempt 1; Attempt 2 introduced no editor diagnostics in changed files and did not broaden into unrelated files.
+The full repository typecheck was not rerun on Attempt 3. Attempt 1 recorded the existing non-green repository baseline; no editor diagnostics were reported for changed C078 files.
 
 ### Assumptions
 
@@ -338,7 +343,7 @@ Existing Agent Contract consumers remain supported; persisted-DRAFT parity stays
 
 ### Unresolved Issues
 
-No unresolved C078 implementation or validation issues. The repository-wide typecheck baseline remains as noted above.
+No unresolved C078 implementation or validation issues. The full repository typecheck was not rerun on Attempt 3; the previously recorded baseline remains noted above.
 
 ### Architectural Concerns
 
