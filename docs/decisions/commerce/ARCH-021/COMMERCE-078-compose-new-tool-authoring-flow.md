@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
 executor: copilot
 claimed_at: 2026-09-28T10:45:57Z
@@ -344,7 +344,7 @@ COMMERCE-081 and COMMERCE-083 remain responsible for invoking the already-existi
 - [x] Make Save use the single current Tool Definition identity/description plus the assembled candidate.
 - [x] Make Cancel abandon all local/session handoff state without persistence.
 - [x] Add exact tab-order/ownership/persistence regressions for both provider kinds.
-- [ ] Add the common Test checkpoint/freshness state, exact snapshot helpers and downstream transition operations without provider execution.
+- [x] Add the common Test checkpoint/freshness state, exact snapshot helpers and downstream transition operations without provider execution.
 
 ## Interfaces / Contracts
 
@@ -390,12 +390,12 @@ No new persistent/cross-repository contract is introduced.
 - [x] Save performs exactly one final create operation; Cancel performs none.
 - [x] No edit/validation/tab navigation before Save creates durable Tool state.
 - [x] Existing Shopify Explore round-trip and current Request/Response authoring remain functional.
-- [ ] New-Tool authoring session contains exactly one common `test` checkpoint with initial `NOT_RUN` / `testedSnapshot: null`.
-- [ ] `currentAuthoringSnapshot(session)` returns exactly the Tool Definition, Request, Response and Result Template validation revisions.
-- [ ] `isCurrentTestPassed(session)` returns true only for `PASSED` with an exact current snapshot match.
-- [ ] Session operations support RUNNING, PASSED, FAILED and STALE transitions without storing provider payloads in the common Test state.
-- [ ] A stale completion clears `testedSnapshot` and cannot make the current candidate PASSED.
-- [ ] C078 does not call, duplicate or replace the COMMERCE-080 / COMMERCE-082 live-Test backends, Server Actions, provider execution, Result Template rendering or result contracts.
+- [x] New-Tool authoring session contains exactly one common `test` checkpoint with initial `NOT_RUN` / `testedSnapshot: null`.
+- [x] `currentAuthoringSnapshot(session)` returns exactly the Tool Definition, Request, Response and Result Template validation revisions.
+- [x] `isCurrentTestPassed(session)` returns true only for `PASSED` with an exact current snapshot match.
+- [x] Session operations support RUNNING, PASSED, FAILED and STALE transitions without storing provider payloads in the common Test state.
+- [x] A stale completion clears `testedSnapshot` and cannot make the current candidate PASSED.
+- [x] C078 does not call, duplicate or replace the COMMERCE-080 / COMMERCE-082 live-Test backends, Server Actions, provider execution, Result Template rendering or result contracts.
 
 ## Validation
 
@@ -407,8 +407,8 @@ No new persistent/cross-repository contract is introduced.
 - [x] targeted ESLint for changed files
 - [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
 - [x] `git diff --check`
-- [ ] focused unit regressions for initial Test state, exact snapshot creation, exact-current PASSED semantics and stale mismatch semantics
-- [ ] focused regression proving C078 common Test-state operations do not invoke provider Test services/Server Actions
+- [x] focused unit regressions for initial Test state, exact snapshot creation, exact-current PASSED semantics and stale mismatch semantics
+- [x] focused regression proving C078 common Test-state operations do not invoke provider Test services/Server Actions
 
 ## Stop Condition
 
@@ -424,7 +424,7 @@ The flow is ordered for comprehension, not as a full wizard gate. After provider
 
 ### Status
 
-Attempt 3 complete; resubmitted for Architect Review.
+Ready for Review; Attempt 4 complete.
 
 ### Execution Evidence
 
@@ -435,6 +435,7 @@ Attempt 3 complete; resubmitted for Architect Review.
 - Parent task remote branch fast-forwarded: not-needed; `origin/main` incorporated: already-current.
 - Implementation remote task branch fast-forwarded: not-needed; `origin/main` incorporated: yes.
 - Recursive submodule sync and initialization passed; `database` is initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- Launcher-prepared Attempt 4 evidence: parent task claim commit `8c3b9d10`; parent launcher head `83e2f229`; implementation prior head `c1bebe0c`; database submodule `0a8d3b9`. Prepared worktrees and dependency gates were reused; the launcher and synchronization protocol were not rerun.
 
 ### Files Changed
 
@@ -449,6 +450,7 @@ Attempt 3 complete; resubmitted for Architect Review.
 - `tests/external-tools-ui.test.tsx`
 - `tests/shopify-admin-tools-ui.test.tsx`
 - `tests/tool-authoring-screen.test.tsx`
+- `tests/new-tool-authoring-state.test.ts`
 
 ### Work Completed
 
@@ -462,6 +464,7 @@ Attempt 3 complete; resubmitted for Architect Review.
 - Attempt 3 correction: provider-switch confirmation keeps the original provider and tabs until confirmed; Cancel preserves it, while reset commits the new provider and retains the six-tab navigation.
 - Attempt 3 correction: opening a blank local session no longer marks it dirty; provider selection or another authoring mutation still activates discard protection.
 - Added focused regressions for pristine Back/no write, blank-identity selection of both providers, provider switch cancel/reset, and pristine-versus-mutated dirty navigation. Attempt 1 tab-boundary and External schema-order regressions remain in place.
+- Attempt 4 correction: added one common session-only `test` checkpoint with exact initial `NOT_RUN` state, four validation revision counters, exact snapshot/pass helpers, and pure start/completion operations. Relevant authoring reducers advance their own revisions; changed-snapshot completion becomes `STALE` with a null tested snapshot. The common state contains no provider result or diagnostic data, and its module has no provider request or C080/C082 Test Server Action dependency.
 
 ### Validation Results
 
@@ -471,18 +474,22 @@ Attempt 3 complete; resubmitted for Architect Review.
 - Editor diagnostics reported no errors in any Attempt 3 changed C078 file.
 - `git diff --check` passed.
 - Full repository typecheck was not rerun on Attempt 3; Attempt 1 recorded the existing non-green repository baseline. Changed-file diagnostics are clean.
+- Attempt 4 focused state suite passed: 16 tests, including initial state, exact four-revision snapshot, current-pass matching/mismatches, transition states, stale completion, provider-free operations and revision advancement.
+- Attempt 4 C078 regression packet passed: 5 suites, 155 tests (`new-tool-authoring-state`, Tool authoring screen, External tools UI, Shopify Admin tools UI and Result Template tab).
+- Targeted ESLint passed for `src/studio/tools/new-tool-authoring-state.ts` and `tests/new-tool-authoring-state.test.ts`; changed-file editor diagnostics reported no errors.
+- Attempt 4 `git diff --check` passed. Full repository typecheck was not rerun; the previously recorded baseline remains noted above.
 
 ### Deviations
 
-The full repository typecheck was not rerun on Attempt 3. Attempt 1 recorded the existing non-green repository baseline; no editor diagnostics were reported for changed C078 files.
+The full repository typecheck was not rerun on Attempt 4. Attempt 1 recorded the existing non-green repository baseline; no editor diagnostics were reported for the Attempt 4 changed files.
 
 ### Assumptions
 
-Existing Agent Contract consumers remain supported; persisted-DRAFT parity stays with COMMERCE-079.
+Existing Agent Contract consumers remain supported; persisted-DRAFT parity stays with COMMERCE-079. Validation revisions start at zero for a new local session and advance with the corresponding local authoring changes.
 
 ### Unresolved Issues
 
-No unresolved C078 implementation or validation issues. The full repository typecheck was not rerun on Attempt 3; the previously recorded baseline remains noted above.
+No unresolved C078 implementation or validation issues. The full repository typecheck was not rerun on Attempt 4; the previously recorded baseline remains noted above.
 
 ### Architectural Concerns
 
