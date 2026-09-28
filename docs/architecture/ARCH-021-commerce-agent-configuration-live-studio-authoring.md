@@ -1083,11 +1083,11 @@ Implementation tasks:
 | ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
 | ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-078 | moda_commerce | Complete | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
-| ARCH-021-COMMERCE-079 | moda_commerce | Ready | ARCH-021-COMMERCE-078 |
+| ARCH-021-COMMERCE-079 | moda_commerce | Complete | ARCH-021-COMMERCE-078 |
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-081 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1449,11 +1449,11 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
 | ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-078 | moda_commerce | Complete | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
-| ARCH-021-COMMERCE-079 | moda_commerce | Ready | ARCH-021-COMMERCE-078 |
+| ARCH-021-COMMERCE-079 | moda_commerce | Complete | ARCH-021-COMMERCE-078 |
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-081 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -2636,4 +2636,18 @@ architect-accepted Complete.
 
 The new-Tool authoring composition is architect-accepted. In addition to the six-step provider-aware flow and browser-local Save boundary, the session now owns a single provider-neutral Test freshness checkpoint over Tool Definition, Request, Response and Result Template validation revisions. `PASSED` is current only when all four revisions still match the tested snapshot; in-flight completion after a revision change becomes `STALE` with no tested snapshot. C078 contains no provider execution or provider Test payload state.
 
-With C080 and C082 already Complete, the refinement's executable UI frontier is now COMMERCE-079, COMMERCE-081 and COMMERCE-083.
+With C080 and C082 already Complete, C079 was the persisted-DRAFT parity gate. After C079 Attempt 2 acceptance, COMMERCE-081 is Ready; COMMERCE-083 remains Pending on COMMERCE-081.
+
+
+### COMMERCE-079 Attempt 1 review — Changes Requested — 2026-09-28
+
+The persisted External/Shopify six-tab composition is present, but C079 remains Ready for correction. Acceptance requires removal of the duplicate legacy External persisted editor, Review-only Shopify persistence controls, and the persisted provider-neutral Test freshness/checkpoint model consumed by C081/C083. Until C079 is Complete, C081 and C083 remain Pending.
+
+
+### COMMERCE-079 Attempt 2 accepted — 2026-09-28
+
+Persisted External HTTP and Shopify Admin DRAFT authoring is architect-accepted. Both providers use the same Tool Definition -> Request -> Response -> Result Template -> Test -> Review ownership model as new Tools while preserving persisted lifecycle semantics: immutable Tool identity/provider kind, exact-session Shopify Explore, one CAS Save, explicit zero-write Cancel restoration and existing publication authorization/gates.
+
+The persisted authoring boundary also reuses the C078 provider-neutral Test freshness checkpoint over Tool Definition, Request, Response and Result Template revisions. Authored mutations stale the checkpoint independently of persistence dirtiness; transient Test arguments/shop/result state remains non-durable. C079 does not add provider Test execution.
+
+The executable refinement frontier is now COMMERCE-081. COMMERCE-083 remains Pending on COMMERCE-081, and SYSTEM-TEST-002 remains terminally gated on C079 + C081 + C083.
