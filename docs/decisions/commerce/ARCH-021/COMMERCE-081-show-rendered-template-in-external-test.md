@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 75
 executor: copilot
 claimed_at: 2026-09-28T20:06:56Z
@@ -533,7 +533,7 @@ The uploaded 2026-09-28 snapshot already contains the accepted COMMERCE-080 back
 
 ### Status
 
-Ready for architect review (Attempt 1; status: `review`).
+Ready for architect review (Attempt 2; status: `review`).
 
 ### Files Changed
 
@@ -548,31 +548,36 @@ In `moda-interact-commerce`:
 - `tests/external-tools-ui.test.tsx`
 - `tests/tool-authoring-screen.test.tsx`
 
+Attempt 2 changed only `src/studio/external-http/test-tab.tsx` and `tests/external-tools-ui.test.tsx`.
+
 ### Work Completed
 
 Consumed the accepted C078/C079 common authoring Test snapshot and lifecycle for new and persisted External authoring. Test now uses the exact assembled candidate, requires current authored validations, enforces bounded object arguments, and accepts PASS only when every C080 stage passed and server `renderedText` is present. The server-rendered text is shown first; safe diagnostics remain secondary.
 
-External Create and persisted DRAFT Save require a current common Test PASS. Request/definition/result-template edits and Test argument/shop changes stale the checkpoint; late results cannot restore readiness. Test state and output remain transient and do not dirty or persist the draft. Added regressions for failure, output rendering, persistence gates, zero writes, transient staleness, section-edit-during-flight, and out-of-order responses. No C080 backend, database, Shopify gate, or unrelated task file was changed.
+Attempt 2 addresses the architect-requested transient identity race. Test arguments and selected-shop changes now advance a monotonic provider-local generation, synchronously clear the displayed submission and stale the common checkpoint. The generation is captured in each run identity and checked before completion can update provider display state, so changing arguments/shop away and back cannot revive a pending or completed result. The common persisted authoring revision ledger remains unchanged; transient values stay non-durable.
+
+Added argument A-to-B-to-A tests for pending and already-displayed results, a selected-shop A-to-B-to-A pending-result test, and persisted-DRAFT assertions proving transient changes cause no Tool/publication writes and a fresh Test restores Save eligibility. Existing run-N/run-N+1 protection remains intact. No C080 backend, database, Shopify gate, or unrelated task file was changed.
 
 ### Validation Results
 
-- `npx vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/external-http-live-test-action.test.ts`: 3 files passed, 121 tests passed.
-- Targeted ESLint on all eight changed files: passed with no output or warnings.
+- `npx vitest run tests/external-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/external-http-live-test-action.test.ts`: 3 files passed, 124 tests passed.
+- Targeted ESLint on the two Attempt 2 files: passed with no output or warnings.
+- Changed-file diagnostics across all eight C081 implementation/test files: no errors found.
 - `git diff --check`: passed.
-- Repository TypeScript check was run and reconciled: two existing Result Template prop-union errors remain in `src/studio/tools/tool-editor.tsx` at the new/persisted editor call sites; no other changed-file diagnostics were reported. The C081 obsolete-prop diagnostic in `external-http/editor.tsx` was removed. Typecheck is not reported as fully clean.
-- Recursive submodule status is clean at database commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`database`, `heads/main`).
+- Attempt 1's repository TypeScript check reported two Result Template prop-union diagnostics in `src/studio/tools/tool-editor.tsx`; that file was unchanged in Attempt 2. The Attempt 2 changed-file diagnostics are clean. A full repository typecheck was not rerun for Attempt 2.
+- Launcher verified recursive submodule synchronization/update passed and database is initialized at `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (`database`, `heads/main`).
 
 ### Deviations
 
-Added a persisted-editor Request-edit-during-in-flight regression and an action-error-to-FAILED regression during final acceptance review. No scope or API deviation.
+Attempt 2 implements the required correction from the Architect Review without changing the task's scope or API.
 
 ### Assumptions
 
-The two `tool-editor.tsx` Result Template type errors are pre-existing baseline issues outside C081’s behavioral changes; they are retained for architect review rather than broadened into this task.
+No new assumptions. The Attempt 1 broad typecheck findings are retained as context; Attempt 2's changed-file diagnostics are clean.
 
 ### Unresolved Issues
 
-The repository typecheck is not clean because of the two Result Template prop-union diagnostics noted above.
+The last full repository typecheck (Attempt 1) reported two Result Template prop-union diagnostics in `tool-editor.tsx`; Attempt 2 did not change that file or rerun the full typecheck. No errors were reported for any C081 changed file in the Attempt 2 diagnostics pass.
 
 ### Architectural Concerns
 
@@ -581,9 +586,14 @@ C081 consumes the canonical C078/C079 checkpoint and C080 action/rendered output
 ### Git / Worktree Evidence
 
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-081`, branch `task/ARCH-021-COMMERCE-081`.
-- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-081`, branch `task/ARCH-021-COMMERCE-081`; launcher claim commit `68939f9b494f344e596bf827da987d1c69fdd184`.
-- Both worktrees were dedicated to C081; the shared checkout was not switched or mutated. The task was prepared from `origin/main` at `89aacdf8`; recursive submodule synchronization/update completed, with the database submodule at the commit recorded above. Exact launcher fast-forward/incorporation booleans were not present in the retained packet output and are intentionally not inferred.
-- Implementation commit `52e09a2` is pushed to `task/ARCH-021-COMMERCE-081` in `moda-interact-commerce`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-081`, branch `task/ARCH-021-COMMERCE-081`; Attempt 2 launcher claim commit `6e8ca5e33dceea41deab74dd98b1d880d9616d1a` (pushed).
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-081`, branch `task/ARCH-021-COMMERCE-081`.
+- Parent synchronization: remote task branch fast-forwarded `not-needed`; `origin/main` incorporated `already-current`.
+- Implementation synchronization: remote task branch fast-forwarded `not-needed`; `origin/main` incorporated `already-current`.
+- Both physical worktrees were dedicated to C081; the canonical shared workspace and shared implementation source checkout were not switched or mutated; no other task worktree was reused.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; database commit `0a8d3b9feade69690b6c1e33aeda051ea588bd45` (initialized).
+- Attempt 1 implementation commit `52e09a27a0d81189757870fd584144f4a2f8d51c` and Attempt 2 correction commit `64a7709` are pushed to `task/ARCH-021-COMMERCE-081` in `moda-interact-commerce`.
 
 ## Architect Review
 
