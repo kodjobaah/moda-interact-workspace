@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 75
 executor: null
 claimed_at: null
@@ -125,6 +125,28 @@ Clear/mark stale prior results when current Tool Definition fields, Request/inpu
 
 Running Test neither creates a new Tool nor saves a persisted draft. For new Tools, only Review -> Save may create. For persisted DRAFTs, only explicit Save draft may write.
 
+
+### R7 — drive the C078 common Test checkpoint for new Tools
+
+For the new-Tool Shopify Admin flow, C083 MUST consume the C078 common Test freshness model rather than create a second canonical pass/freshness checkpoint.
+
+On Test start capture the exact C078 `currentAuthoringSnapshot(session)` and transition the common session Test state to `RUNNING`.
+
+On C082 success complete the checkpoint with `PASSED`; on C082 failure complete it with `FAILED`.
+
+If any Tool Definition, Request, Response or Result Template revision changed while C082 was running, the completion must become:
+
+```text
+status = STALE
+testedSnapshot = null
+```
+
+and the provider result must not mark the current candidate passed.
+
+The reusable Shopify Admin Test component may retain bounded provider-specific result/stage diagnostics separately. Those payloads must not be copied into the C078 common `test` state.
+
+Use `isCurrentTestPassed(session)` for new-Tool current-pass decisions. Persisted-DRAFT Test freshness remains governed by the persisted authoring state model introduced by C079; do not force the new-Tool session object into persisted DRAFTs.
+
 ## Work Items
 
 - [ ] Add one reusable Shopify Admin Test component.
@@ -135,12 +157,13 @@ Running Test neither creates a new Tool nor saves a persisted draft. For new Too
 - [ ] Show `Result shown to agent` first using server renderedText.
 - [ ] Keep safe normalized-result/stage diagnostics secondary.
 - [ ] Add complete stale-result identity.
+- [ ] Drive the C078 common RUNNING/PASSED/FAILED/STALE checkpoint for new-Tool Test without storing provider payloads in it.
 - [ ] Prove Test never invokes create/save mutation actions.
 - [ ] Add new/persisted UI regressions.
 
 ## Interfaces / Contracts
 
-Consumes C078 flow composition and C082 Shopify Admin live-Test contract. No new persistent/cross-repository contract.
+Consumes C078 flow composition plus its common new-Tool Test checkpoint/freshness operations, and consumes the C082 Shopify Admin live-Test contract. No new persistent/cross-repository contract.
 
 ## Dependencies
 
@@ -161,6 +184,7 @@ Consumes C078 flow composition and C082 Shopify Admin live-Test contract. No new
 - [ ] Any candidate/template/argument/shop change stales the prior result; tab selection does not.
 - [ ] Test performs zero create/save mutation.
 - [ ] Existing Explore/Response/Review behaviour remains intact.
+- [ ] New-Tool Admin Test drives the C078 common checkpoint; stale in-flight completions cannot mark the current candidate passed.
 
 ## Validation
 
@@ -169,6 +193,7 @@ Consumes C078 flow composition and C082 Shopify Admin live-Test contract. No new
 - [ ] focused rendered-result DOM-order assertion
 - [ ] focused stale-on-template/shop-change assertion
 - [ ] focused zero-write assertion
+- [ ] focused C078 RUNNING/PASSED/FAILED/STALE checkpoint integration assertions for the new-Tool flow
 - [ ] targeted ESLint for changed files
 - [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
 - [ ] `git diff --check`

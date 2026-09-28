@@ -331,12 +331,12 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-071](COMMERCE-071-add-tool-authoring-structured-logging.md) | Observability: add shared structured diagnostics for Tool authoring, Admin Explore/schema derivation, live Test, mutations and reconciliation | Ready | COMMERCE-039, COMMERCE-054, COMMERCE-056, COMMERCE-060, COMMERCE-061, COMMERCE-062, COMMERCE-064, COMMERCE-065, COMMERCE-067 |
 | [COMMERCE-076](COMMERCE-076-restore-result-template-tab-integration.md) | Superseded regression restoration; replaced by the 2026-09-28 authoring-flow refinement | Superseded | - |
 | [COMMERCE-077](COMMERCE-077-start-tool-definition-authoring-flow.md) | UI/state: Create Tool launcher + first-class local Tool Definition | Complete | COMMERCE-039, COMMERCE-064 |
-| [COMMERCE-078](COMMERCE-078-compose-new-tool-authoring-flow.md) | UI: exact new-Tool flow, Result Template before Test, derived Agent Contract in Review | Ready | COMMERCE-077, 063, 066, 067, 068 |
-| [COMMERCE-079](COMMERCE-079-align-persisted-draft-authoring-flow.md) | UI: persisted-DRAFT parity, CAS Save and Cancel reset | Pending | COMMERCE-078 |
+| [COMMERCE-078](COMMERCE-078-compose-new-tool-authoring-flow.md) | UI: exact new-Tool flow, Result Template before Test, derived Agent Contract in Review | Complete | COMMERCE-077, 063, 066, 067, 068 |
+| [COMMERCE-079](COMMERCE-079-align-persisted-draft-authoring-flow.md) | UI: persisted-DRAFT parity, CAS Save and Cancel reset | Ready | COMMERCE-078 |
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
-| [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Pending | COMMERCE-078, COMMERCE-080 |
+| [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Ready | COMMERCE-078, COMMERCE-080 |
 | [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Complete | COMMERCE-060, 062, 063, 070 |
-| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Pending | COMMERCE-078, COMMERCE-082 |
+| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Ready | COMMERCE-078, COMMERCE-082 |
 
 Initial executable frontier for this workstream:
 
@@ -369,7 +369,7 @@ COMMERCE-071 is **Ready**; all of its dependencies are architect-accepted Comple
 
 COMMERCE-082 is **Complete / Accepted, Attempt 1**. Studio can now execute the exact current non-durable Shopify Admin candidate against the server-authoritative selected shop using the existing production Admin execution port, compiler-derived result contract and canonical Result Template renderer. Candidate/result/template failures remain pre-I/O, browser-supplied shop credentials are rejected by the strict input boundary, one provider request is budgeted, browser-visible results are bounded, and no Tool/revision/audit/publication-proof write is created. Submitted validation passed 96/96 tests across the focused eight-file packet plus targeted ESLint and diff checks; changed C082 files are clean under the submitted TypeScript diagnostics.
 
-C082 references COMMERCE-083 as its enabled UI follow-up, but no COMMERCE-083 task file is materialised in this snapshot, so no dependent status promotion is applied here.
+C082's COMMERCE-083 UI follow-up is materialised. After C078 Attempt 4 acceptance, both C078 and C082 are Complete, so COMMERCE-083 is Ready.
 
 ### Result Template integration regression follow-up — 2026-09-27
 
@@ -437,14 +437,14 @@ Key invariants:
 
 COMMERCE-080 is **Complete / Accepted, Attempt 1**. External HTTP live Test now consumes the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, validates processed values against the canonical result contract, builds the production `ExternalHttpResultDataSchema` `data.values` envelope and delegates final text rendering to `renderDefinitionResult`. Both existing External editors pass the current local candidate into Test; rendered-result presentation remains deferred to COMMERCE-081. Submitted validation passed the 24-test backend/action/integration packet, all 81 External Tools UI tests, targeted Test-tab assertions, ESLint and `git diff --check`. Repository TypeScript remains non-green only on the documented baseline; no new C080 payload/backend diagnostic is present.
 
-COMMERCE-081 is not materialized in this parent snapshot, so no downstream task-status edit is made by this acceptance.
+COMMERCE-081 is materialised. After C078 Attempt 4 acceptance, C078 and C080 are Complete, so COMMERCE-081 is Ready.
 
 
 ### COMMERCE-077 Attempt 2 accepted — 2026-09-28
 
 COMMERCE-077 is **Complete / Accepted, Attempt 2**. The stale asynchronous provider-selection race is fixed with a monotonic local generation guard; deferred regressions prove late Shopify metadata cannot replace a newer External selection and older Shopify metadata cannot overwrite a newer Shopify selection. The local-first Tool Definition architecture, Explore handoff and final `createToolWithInitialDraft` write boundary remain unchanged.
 
-COMMERCE-078 is not materialized in this parent snapshot; when materialized, its dependency on C077 is already satisfied.
+COMMERCE-078 is Complete / Accepted, Attempt 4. Its new-Tool authoring session now includes the provider-neutral Test checkpoint/freshness model consumed by C081/C083.
 
 ### COMMERCE-068 Attempt 1 accepted — 2026-09-27
 
@@ -1041,3 +1041,14 @@ Pending.
 ### COMMERCE-020 Attempt 1 changes requested — 2026-09-25
 
 The Tool-domain extraction is accepted in substance, but COMMERCE-020 remains **Ready** for Attempt 2 because production still supplies the extracted screen with `StudioWorkspace` function-valued `controlled` orchestration and therefore still uses the old catch-to-unknown / replay-the-original-mutation path. Attempt 2 must complete the serializable Tool boundary, exact bounded Tool mutation results, audit-only reconciliation, composite external-create operation identity and the executable R8 regressions. COMMERCE-021/022 remain Pending.
+
+
+### COMMERCE-078 Attempt 4 accepted — 2026-09-28
+
+COMMERCE-078 is **Complete / Accepted, Attempt 4**. New Tool authoring now uses the agreed provider-aware six-step composition and browser-local Save boundary, and the shared new-Tool session owns exactly one provider-neutral Test checkpoint based on Tool Definition, Request, Response and Result Template validation revisions. C078 does not execute providers or store provider Test payloads; C081/C083 consume the C078 checkpoint while invoking the already-accepted C080/C082 backends.
+
+Current executable refinement frontier:
+
+```text
+COMMERCE-079    COMMERCE-081    COMMERCE-083
+```

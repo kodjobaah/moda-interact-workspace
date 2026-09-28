@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 74
-executor: copilot
-claimed_at: 2026-09-28T10:45:57Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-021-COMMERCE-077
@@ -499,191 +499,64 @@ None identified.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 3 satisfies the clarified navigation and pristine-session corrections from the amended Attempt 2 review.
+Attempt 4 is accepted.
 
-The following Attempt 3 behaviors are accepted:
+The R9 common Test checkpoint/freshness model is implemented exactly at the browser-local new-Tool session boundary:
 
-- before provider selection, the blank new-Tool session shows only `Tool Definition` plus provider-selection guidance;
-- selecting Shopify Admin GraphQL or External HTTP/API reveals exactly `Tool Definition -> Request -> Response -> Result Template -> Test -> Review` without requiring the remaining Tool Definition fields to validate;
-- provider-switch confirmation preserves the committed provider until reset is confirmed;
-- the pristine new-Tool session starts clean, so immediate Back does not open the discard dialog;
-- a real authoring mutation still enables the existing discard protection;
-- persisted External/Shopify DRAFT composition remains outside C078; and
-- External `Input JSON Schema` remains before the connection/request mapping controls.
+- `AuthoringTestStatus` contains exactly `NOT_RUN | RUNNING | PASSED | FAILED | STALE`;
+- `AuthoringTestSnapshot` contains exactly the Tool Definition, Request, Response and Result Template validation revisions;
+- the new session starts with `test: { status: "NOT_RUN", testedSnapshot: null }`;
+- `currentAuthoringSnapshot(session)` returns exactly those four revisions;
+- `isCurrentTestPassed(session)` returns true only when status is `PASSED`, a tested snapshot exists and all four revisions still match;
+- `startAuthoringTest(session)` captures the exact submitted snapshot and returns the session in `RUNNING`;
+- `completeAuthoringTest(...)` records `PASSED` or `FAILED` only when the current snapshot still matches the submitted snapshot, otherwise it records `STALE` and clears `testedSnapshot`;
+- Tool Definition, Request, Response and Result Template mutations advance only their corresponding common freshness revisions; provider selection/reset advances all affected provider-owned surfaces;
+- common Test state contains no provider response/result payload or provider-specific diagnostics.
 
-The submitted 139-test packet and manual validation are sufficient for those corrections.
+The implementation remains provider-free. C078 does not add or duplicate either C080/C082 live-Test backend, Server Action, provider transport, Result Template rendering or Test result contract. COMMERCE-081 and COMMERCE-083 remain the owners that will invoke the existing provider Test backends and drive these common session transitions.
 
-C078 is not accepted yet because the architecture now requires the common Test checkpoint/freshness state described in R9. This requirement is intentionally session-only and MUST NOT move provider Test execution into C078.
+Attempts 1-3 accepted behavior also remains intact: new-Tool navigation is provider-aware, pristine authoring starts clean, provider switching is explicitly confirmed, persisted-DRAFT composition remains deferred to C079, External Request owns its input schema before request mapping, Result Template is its own tab, Agent Contract is derived/read-only in Review, and Review Save remains the only durable new-Tool create boundary.
 
-#### Required Attempt 4 correction — establish the common Test freshness model only
-
-COMMERCE-080 and COMMERCE-082 already own the canonical External HTTP and Shopify Admin non-durable Test backends.
-
-C078 MUST NOT:
-
-```text
-- implement another External live-Test service;
-- implement another Shopify live-Test service;
-- duplicate either Server Action;
-- duplicate provider execution;
-- duplicate Result Template rendering;
-- create another Test result contract.
-```
-
-Implement exactly one common Test checkpoint on the new-Tool authoring session:
-
-```ts
-type AuthoringTestStatus =
-  | "NOT_RUN"
-  | "RUNNING"
-  | "PASSED"
-  | "FAILED"
-  | "STALE";
-
-type AuthoringTestSnapshot = {
-  toolDefinitionRevision: number;
-  requestRevision: number;
-  responseRevision: number;
-  resultTemplateRevision: number;
-};
-
-type AuthoringTestState = {
-  status: AuthoringTestStatus;
-  testedSnapshot: AuthoringTestSnapshot | null;
-};
-```
-
-Initial state:
-
-```ts
-{
-  status: "NOT_RUN",
-  testedSnapshot: null
-}
-```
-
-The common state must not contain provider response/result payloads or provider-specific diagnostics.
-
-Define the exact snapshot helper:
-
-```ts
-function currentAuthoringSnapshot(
-  session: ToolAuthoringSession
-): AuthoringTestSnapshot {
-  return {
-    toolDefinitionRevision:
-      session.validation.toolDefinition.revision,
-    requestRevision:
-      session.validation.request.revision,
-    responseRevision:
-      session.validation.response.revision,
-    resultTemplateRevision:
-      session.validation.resultTemplate.revision,
-  };
-}
-```
-
-Define the exact current-pass predicate:
-
-```ts
-function isCurrentTestPassed(
-  session: ToolAuthoringSession
-): boolean {
-  if (
-    session.test.status !== "PASSED" ||
-    session.test.testedSnapshot === null
-  ) {
-    return false;
-  }
-
-  return (
-    session.test.testedSnapshot.toolDefinitionRevision ===
-      session.validation.toolDefinition.revision &&
-    session.test.testedSnapshot.requestRevision ===
-      session.validation.request.revision &&
-    session.test.testedSnapshot.responseRevision ===
-      session.validation.response.revision &&
-    session.test.testedSnapshot.resultTemplateRevision ===
-      session.validation.resultTemplate.revision
-  );
-}
-```
-
-Expose session operations sufficient for COMMERCE-081 and COMMERCE-083 to perform these transitions:
-
-1. **Start**
-   - capture `submittedSnapshot = currentAuthoringSnapshot(session)`;
-   - set `test.status = "RUNNING"`.
-
-2. **Successful backend result with unchanged authoring snapshot**
-   ```ts
-   test.status = "PASSED";
-   test.testedSnapshot = submittedSnapshot;
-   ```
-
-3. **Failed backend result with unchanged authoring snapshot**
-   ```ts
-   test.status = "FAILED";
-   test.testedSnapshot = submittedSnapshot;
-   ```
-
-4. **Any backend completion after the authoring snapshot changed**
-   ```ts
-   test.status = "STALE";
-   test.testedSnapshot = null;
-   ```
-
-A stale completion must never mark the current candidate PASSED.
-
-COMMERCE-081 and COMMERCE-083, not C078, will invoke the existing provider backends, hold provider-specific safe Test result/diagnostic state and drive these common transitions.
-
-Add focused regressions for:
-- exact initial `NOT_RUN` state;
-- exact four-revision snapshot creation;
-- `PASSED` + exact matching snapshot => current pass;
-- `PASSED` + any one revision mismatch => not current;
-- RUNNING/FAILED/STALE never count as current pass;
-- stale completion clears `testedSnapshot`;
-- common Test state contains no provider payload;
-- the C078 transition operations perform no provider request and call no C080/C082 Server Action.
-
-Do not start COMMERCE-081 or COMMERCE-083 as part of this correction.
+The submitted task record still carried an active executor/claim despite `status: review`; this acceptance overlay normalizes both fields to `null`.
 
 ### Reviewed Files
 
 - `src/studio/tools/new-tool-authoring-state.ts`
-- `src/studio/tools/authoring-session.ts`
+- `tests/new-tool-authoring-state.test.ts`
 - `src/studio/tools/new-tool-editor.tsx`
 - `src/studio/tools/tool-authoring-screen.tsx`
 - `src/studio/tools/authoring/tool-authoring-tabs.tsx`
 - `tests/tool-authoring-screen.test.tsx`
 - `tests/external-tools-ui.test.tsx`
-- submitted Attempt 3 manual screenshot showing the six-tab provider-selected flow
-- C078 task Completion Report
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/result-template-tab.test.tsx`
+- C078 Completion Report and prior Architect Review history
 
 ### Validation Reviewed
 
-- Submitted Attempt 3 packet: 4 suites, 139 tests passed.
+- Attempt 4 focused state suite: 16 tests passed.
+- Attempt 4 C078 regression packet: 5 suites, 155 tests passed.
 - Submitted targeted ESLint: passed.
 - Submitted changed-file diagnostics: clean.
 - Submitted `git diff --check`: passed.
-- Manual validation confirms the provider-navigation and pristine-session fixes.
-- Source inspection confirms the requested `AuthoringTestStatus`, `AuthoringTestSnapshot`, `AuthoringTestState`, `currentAuthoringSnapshot` and `isCurrentTestPassed` common session model is not yet present.
+- Full repository typecheck was not rerun; this does not block C078 because Attempt 4 changed-file diagnostics are clean and the package-wide baseline was already recorded.
+- Review environment does not contain `node_modules`, so the submitted Vitest/ESLint commands were inspected rather than independently rerun.
+- Direct source inspection confirms the Test checkpoint module contains no provider request or C080/C082 Test Server Action dependency.
 
 ### Architecture Conformance
 
-Partial.
+Conforms.
 
-The new-Tool composition/navigation, Request ownership, Result Template integration, read-only Review separation, final Save/Cancel boundary, pristine-session semantics and persisted-DRAFT scope boundary now conform.
-
-C078 remains incomplete only because the common session-level Test freshness/checkpoint semantics required by R9 have not yet been established.
+C078 now establishes the exact new-Tool composition, ownership and persistence boundaries plus the provider-neutral Test freshness/checkpoint contract required by downstream C081/C083. Provider execution remains owned by C080/C082 and no durable Test/publication proof is introduced.
 
 ### Follow-up
 
-Return the same task as Attempt 4. Implement R9 only, add the focused Test-state regressions, preserve all accepted Attempt 1-3 behavior and STOP.
+C078 is Complete.
 
-Do not implement or duplicate C080/C082 provider execution and do not begin COMMERCE-079, COMMERCE-081 or COMMERCE-083 until C078 is accepted Complete.
+Promote COMMERCE-079, COMMERCE-081 and COMMERCE-083 when their remaining dependencies are Complete. C080 is already Complete. C082 was already architect-accepted Complete; this acceptance overlay also restores its architect-owned task record from unresolved conflict markers to that previously accepted durable state.
+
+COMMERCE-081 and COMMERCE-083 must consume the C078 common Test checkpoint/freshness operations rather than maintaining a second candidate-freshness model for the new-Tool session.
