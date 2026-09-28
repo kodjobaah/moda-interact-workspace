@@ -4,7 +4,7 @@ title: CommerceAgent configuration and live Studio authoring
 status: agreed
 coordinator: moda_architect
 created: 2026-09-23
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 
 # ARCH-021: CommerceAgent configuration and live Studio authoring
@@ -1080,9 +1080,14 @@ Implementation tasks:
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
-| ARCH-021-COMMERCE-076 | moda_commerce | Pending | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
 | ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-078 | moda_commerce | Ready | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-079 | moda_commerce | Pending | ARCH-021-COMMERCE-078 |
+| ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-082 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1341,6 +1346,62 @@ Manual verification of the current Tool editor found post-acceptance drift from 
 
 COMMERCE-076 depends on COMMERCE-055 only to avoid racing the current Test/editor composition, and on the already-accepted COMMERCE-068 integration contract. Any later guided-navigation/readiness task must consume the restored six-tab composition rather than recreating Result Template ownership.
 
+### Tool creation authoring-flow refinement — 2026-09-28
+
+Product review supersedes COMMERCE-076 before execution. The Tool library is no longer an authoring surface: it launches a browser-local Tool session with **Create Tool**. The canonical authoring sequence is now:
+
+```text
+Tool library
+   |
+   +-- Create Tool
+          |
+          v
+Tool Definition
+   -> Request
+   -> Response
+   -> Result Template
+   -> Test
+   -> Review
+          |
+          +-- Cancel  (zero write)
+          +-- Save    (single final create for a new Tool)
+```
+
+The architectural ownership rules are:
+
+1. **Tool Definition** owns MCP name, display name, description, definition version and provider kind. New authoring has a separate incomplete browser state; durable/draft schemas are not weakened to represent blank fields.
+2. Provider kind selects the provider-specific Request/Response/Test implementation. Switching an already-selected kind is an explicit destructive reset; incompatible provider state is never silently retained.
+3. **Request** owns the agent-call input schema as well as provider request/mapping configuration.
+4. **Response** owns the canonical processed result contract.
+5. **Result Template** owns `responseTemplate` and compiles bindings from the production result envelope (`data.values` for External/Admin), not from a UI-only shape.
+6. **Test** executes the complete current candidate and prominently shows the server-rendered **Result shown to agent**. Provider/request/processed-result information is secondary diagnostic evidence.
+7. **Agent Contract is not an authoring tab.** Review derives it read-only from definition version + description + Request input schema and presents Result Template separately.
+8. New authoring remains non-durable until Review -> Save invokes the existing atomic `createToolWithInitialDraft`. Cancel performs zero write. Persisted DRAFT Save remains an explicit CAS boundary.
+9. External live-Test rendering and Shopify Admin live-Test execution are separate backend mechanisms and therefore separate tasks. Neither Test creates publication proof or changes the current publication gate.
+10. No Database, Shared, Background or Gateway implementation is required for this refinement. Commerce owns all runtime/UI changes. A terminal System-Test task validates the integrated flow after Commerce implementation is Complete.
+
+Implementation graph:
+
+```text
+COMMERCE-077 --------------------> COMMERCE-078 ----------------> COMMERCE-079
+                                      |                               |
+                                      +----> COMMERCE-081 ------------+
+                                      |          ^                    |
+COMMERCE-080 -------------------------+----------+                    |
+                                      |                               +--> SYSTEM-TEST-002
+                                      +----> COMMERCE-083 ------------+
+                                                 ^
+COMMERCE-082 ------------------------------------+
+```
+
+Initial executable frontier:
+
+```text
+COMMERCE-077    COMMERCE-080    COMMERCE-082
+```
+
+COMMERCE-076 is `superseded` and must not execute.
+
 ## Decisions / Tasks
 
 Phase 1 is materialised as six Commerce tasks under `docs/decisions/commerce/ARCH-021/`.
@@ -1390,9 +1451,14 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
-| ARCH-021-COMMERCE-076 | moda_commerce | Pending | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
 | ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-078 | moda_commerce | Ready | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-079 | moda_commerce | Pending | ARCH-021-COMMERCE-078 |
+| ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-081 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-082 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1404,6 +1470,7 @@ Later runtime phases are intentionally not decomposed yet. Expected later owners
 
 No implementation task may depend on a system-test task.
 
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending on COMMERCE-079, COMMERCE-081 and COMMERCE-083. It becomes Ready only after those Commerce tasks are architect-accepted Complete.
 ### COMMERCE-082 Attempt 1 accepted — 2026-09-28
 
 - Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
@@ -1429,6 +1496,14 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-28 — Tool creation flow refined around Tool Definition and rendered Test
+
+- Superseded unexecuted COMMERCE-076 because its Agent Contract authoring tab and Result Template-after-Test order no longer match the agreed product flow.
+- Established `Tool Definition -> Request -> Response -> Result Template -> Test -> Review`, with Agent Contract derived/read-only in Review.
+- Defined COMMERCE-077..083 with separate UI/state, External live-Test backend/UI and Shopify Admin live-Test backend/UI ownership.
+- Preserved local-until-Save atomic new-Tool creation and persisted-DRAFT CAS Save semantics; Test and Cancel remain non-durable.
+- Added terminal SYSTEM-TEST-002 after COMMERCE-079/081/083.
 
 ### 2026-09-27 — Result Template integration regression task defined
 

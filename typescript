@@ -1,0 +1,111 @@
+Script started on Thu Sep 17 23:58:59 2026
+[1m[7m%[27m[1m[0m                                                                                                                                                                                      [0m[27m[24m[Jkwadwoadomafriyie@kwadwos-iMac moda-interact-workspace % [K[?2004h
+bck-i-search: _[K[A[42Ccat prisma/migrations/20260917122109_add_merchant_pricing_economics_override/migration.[4ms[24mql[1B[133Ds_[A[128C[87Dnpx[7C [6Ce deploy --schema prisma/[4ms[4mc[24mhema.prisma                                [24m   [1B[132Dc_[A[82C[42Dcat[7C/[6Cions/20260917122109_add_m[24me[24mrchant_pricing_economics_override/migration.[4ms[24mql[1B[132D_ [A[127C[87D                                                                                       [24m   [1B[133D_ [A[41Cexi[4mt[24m[1B[47Dt_[A[44Csed[24m -n '100,155p' \[1B  src/components/admin/merchant/merchant-pricing-plan-catalog.[4mts[24mx
+bck-i-search: ts_[K[A[45C[Anpx [4mt[4ms[4mc[24m --noEmit   [1B[M[16Cc_[A[43C[24mt[24ms[24mc[1B[K[A[61C[?2004l[1B⠙[1G[0K⠹[1G[0K⠸[1G[0K
+[41m                                                                               [0m
+[41m[37m                This is not the tsc command you are looking for                [0m
+[41m                                                                               [0m
+
+To get access to the TypeScript compiler, [34mtsc[0m, from the command line either:
+
+- Use [1mnpm install typescript[0m to first add TypeScript to your project [1mbefore[0m using npx
+- Use [1myarn[0m to avoid accidentally running code from un-installed packages
+⠙[1G[0K[1m[7m%[27m[1m[0m                                                                                                                                                                                      [0m[27m[24m[Jkwadwoadomafriyie@kwadwos-iMac moda-interact-workspace % [K[?2004hcc cd moda-interact-admin[?2004l
+[1m[7m%[27m[1m[0m                                                                                                                                                                                      [0m[27m[24m[Jkwadwoadomafriyie@kwadwos-iMac moda-interact-admin % [K[?2004h
+bck-i-search: _[K[A[38Ccd moda-interac[4mt[24m-admin[1B[61Dt_[A[52C[15Dnpx [4mt[4ms[24mc --noEmi[24mt      [1B[60Ds_[A[40C[1C[4ms[4mc[24m[1B[44Dc_[A[39C[24mt[24ms[24mc[1B[K[A[57C[?2004l[1B⠙[1G[0K[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m156[0m:[93m5[0m - [91merror[0m[90m TS2322: [0mType '{ readonly id: true; readonly name: true; readonly scope: true; readonly quantity: true; readonly targetPlanId: true; readonly targetPlan: { readonly select: { readonly name: true; }; }; readonly targetShopId: true; ... 7 more ...; readonly _count: { ...; }; }' is not assignable to type 'PromotionCampaignSelect<DefaultArgs>'.
+  Types of property 'events' are incompatible.
+    Type '{ readonly orderBy: readonly [{ readonly createdAt: "desc"; }]; readonly take: 5; readonly select: { readonly kind: true; readonly createdAt: true; }; }' is not assignable to type 'boolean | PromotionCampaign$eventsArgs<DefaultArgs> | undefined'.
+      Type '{ readonly orderBy: readonly [{ readonly createdAt: "desc"; }]; readonly take: 5; readonly select: { readonly kind: true; readonly createdAt: true; }; }' is not assignable to type 'PromotionCampaign$eventsArgs<DefaultArgs>'.
+        Types of property 'orderBy' are incompatible.
+          Type 'readonly [{ readonly createdAt: "desc"; }]' is not assignable to type 'PromotionCampaignEventOrderByWithRelationInput | PromotionCampaignEventOrderByWithRelationInput[] | undefined'.
+            The type 'readonly [{ readonly createdAt: "desc"; }]' is 'readonly' and cannot be assigned to the mutable type 'PromotionCampaignEventOrderByWithRelationInput[]'.
+
+[7m156[0m     select: campaignSummarySelect,
+[7m   [0m [91m    ~~~~~~[0m
+
+[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m160[0m:[93m60[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ name: string; id: string; scope: PromotionTargetScope; createdAt: Date; updatedAt: Date; version: number; expiresAt: Date; status: PromotionCampaignStatus; ... 5 more ...; createdByPlatformAdminId: string; }' is not assignable to parameter of type '{ id: string; name: string; scope: PromotionTargetScope; quantity: number; targetPlanId: string | null; targetPlan: { name: string; } | null; targetShopId: string | null; ... 7 more ...; _count: { ...; }; }'.
+  Type '{ name: string; id: string; scope: PromotionTargetScope; createdAt: Date; updatedAt: Date; version: number; expiresAt: Date; status: PromotionCampaignStatus; ... 5 more ...; createdByPlatformAdminId: string; }' is missing the following properties from type '{ id: string; name: string; scope: PromotionTargetScope; quantity: number; targetPlanId: string | null; targetPlan: { name: string; } | null; targetShopId: string | null; ... 7 more ...; _count: { ...; }; }': targetPlan, targetShop, createdByPlatformAdmin, events, _count
+
+[7m160[0m     items: campaigns.map((campaign) => summaryFromCampaign(campaign, now)),
+[7m   [0m [91m                                                           ~~~~~~~~[0m
+
+[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m175[0m:[93m5[0m - [91merror[0m[90m TS2322: [0mType '{ translations: { orderBy: { locale: "asc"; }; }; id: true; name: true; scope: true; quantity: true; targetPlanId: true; targetPlan: { readonly select: { readonly name: true; }; }; targetShopId: true; targetShop: { ...; }; ... 6 more ...; _count: { ...; }; }' is not assignable to type 'PromotionCampaignSelect<DefaultArgs>'.
+  Types of property 'events' are incompatible.
+    Type '{ readonly orderBy: readonly [{ readonly createdAt: "desc"; }]; readonly take: 5; readonly select: { readonly kind: true; readonly createdAt: true; }; }' is not assignable to type 'boolean | PromotionCampaign$eventsArgs<DefaultArgs> | undefined'.
+      Type '{ readonly orderBy: readonly [{ readonly createdAt: "desc"; }]; readonly take: 5; readonly select: { readonly kind: true; readonly createdAt: true; }; }' is not assignable to type 'PromotionCampaign$eventsArgs<DefaultArgs>'.
+        Types of property 'orderBy' are incompatible.
+          Type 'readonly [{ readonly createdAt: "desc"; }]' is not assignable to type 'PromotionCampaignEventOrderByWithRelationInput | PromotionCampaignEventOrderByWithRelationInput[] | undefined'.
+            The type 'readonly [{ readonly createdAt: "desc"; }]' is 'readonly' and cannot be assigned to the mutable type 'PromotionCampaignEventOrderByWithRelationInput[]'.
+
+[7m175[0m     select: {
+[7m   [0m [91m    ~~~~~~[0m
+
+  [96mnode_modules/.prisma/client/index.d.ts[0m:[93m47841[0m:[93m5[0m
+    [7m47841[0m     select?: PromotionCampaignSelect<ExtArgs> | null
+    [7m     [0m [96m    ~~~~~~[0m
+    The expected type comes from property 'select' which is declared here on type '{ select?: PromotionCampaignSelect<DefaultArgs> | null | undefined; omit?: PromotionCampaignOmit<DefaultArgs> | null | undefined; include?: PromotionCampaignInclude<...> | ... 1 more ... | undefined; where: PromotionCampaignWhereUniqueInput; }'
+
+[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m182[0m:[93m39[0m - [91merror[0m[90m TS2345: [0mArgument of type '{ name: string; id: string; scope: PromotionTargetScope; createdAt: Date; updatedAt: Date; version: number; expiresAt: Date; status: PromotionCampaignStatus; ... 5 more ...; createdByPlatformAdminId: string; }' is not assignable to parameter of type '{ id: string; name: string; scope: PromotionTargetScope; quantity: number; targetPlanId: string | null; targetPlan: { name: string; } | null; targetShopId: string | null; ... 7 more ...; _count: { ...; }; }'.
+  Type '{ name: string; id: string; scope: PromotionTargetScope; createdAt: Date; updatedAt: Date; version: number; expiresAt: Date; status: PromotionCampaignStatus; ... 5 more ...; createdByPlatformAdminId: string; }' is missing the following properties from type '{ id: string; name: string; scope: PromotionTargetScope; quantity: number; targetPlanId: string | null; targetPlan: { name: string; } | null; targetShopId: string | null; ... 7 more ...; _count: { ...; }; }': targetPlan, targetShop, createdByPlatformAdmin, events, _count
+
+[7m182[0m   const summary = summaryFromCampaign(campaign, now);
+[7m   [0m [91m                                      ~~~~~~~~[0m
+
+[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m183[0m:[93m28[0m - [91merror[0m[90m TS2339: [0mProperty 'translations' does not exist on type '{ name: string; id: string; scope: PromotionTargetScope; createdAt: Date; updatedAt: Date; version: number; expiresAt: Date; status: PromotionCampaignStatus; ... 5 more ...; createdByPlatformAdminId: string; }'.
+
+[7m183[0m   const english = campaign.translations.find(
+[7m   [0m [91m                           ~~~~~~~~~~~~[0m
+
+[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m184[0m:[93m6[0m - [91merror[0m[90m TS7006: [0mParameter 'translation' implicitly has an 'any' type.
+
+[7m184[0m     (translation) => translation.locale === "en",
+[7m   [0m [91m     ~~~~~~~~~~~[0m
+
+[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m186[0m:[93m37[0m - [91merror[0m[90m TS2339: [0mProperty 'translations' does not exist on type '{ name: string; id: string; scope: PromotionTargetScope; createdAt: Date; updatedAt: Date; version: number; expiresAt: Date; status: PromotionCampaignStatus; ... 5 more ...; createdByPlatformAdminId: string; }'.
+
+[7m186[0m   const translationCount = campaign.translations.filter(
+[7m   [0m [91m                                    ~~~~~~~~~~~~[0m
+
+[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m187[0m:[93m6[0m - [91merror[0m[90m TS7006: [0mParameter 'translation' implicitly has an 'any' type.
+
+[7m187[0m     (translation) =>
+[7m   [0m [91m     ~~~~~~~~~~~[0m
+
+[96msrc/lib/admin/promotions/campaigns.ts[0m:[93m197[0m:[93m28[0m - [91merror[0m[90m TS2339: [0mProperty 'translations' does not exist on type '{ name: string; id: string; scope: PromotionTargetScope; createdAt: Date; updatedAt: Date; version: number; expiresAt: Date; status: PromotionCampaignStatus; ... 5 more ...; createdByPlatformAdminId: string; }'.
+
+[7m197[0m     translations: campaign.translations,
+[7m   [0m [91m                           ~~~~~~~~~~~~[0m
+
+[96mtests/unit/promotion-catalogue.test.ts[0m:[93m25[0m:[93m20[0m - [91merror[0m[90m TS7053: [0mElement implicitly has an 'any' type because expression of type '0' can't be used to index type 'PromotionCampaignWhereInput | PromotionCampaignWhereInput[]'.
+  Property '0' does not exist on type 'PromotionCampaignWhereInput | PromotionCampaignWhereInput[]'.
+
+[7m25[0m   assert.deepEqual(where.AND?.[0], { scope: "PLAN" });
+[7m  [0m [91m                   ~~~~~~~~~~~~~~[0m
+
+[96mtests/unit/promotion-catalogue.test.ts[0m:[93m26[0m:[93m18[0m - [91merror[0m[90m TS7053: [0mElement implicitly has an 'any' type because expression of type '1' can't be used to index type 'PromotionCampaignWhereInput | PromotionCampaignWhereInput[]'.
+  Property '1' does not exist on type 'PromotionCampaignWhereInput | PromotionCampaignWhereInput[]'.
+
+[7m26[0m   const search = where.AND?.[1];
+[7m  [0m [91m                 ~~~~~~~~~~~~~~[0m
+
+[96mtests/unit/promotion-catalogue.test.ts[0m:[93m38[0m:[93m20[0m - [91merror[0m[90m TS7053: [0mElement implicitly has an 'any' type because expression of type '0' can't be used to index type 'PromotionCampaignWhereInput | PromotionCampaignWhereInput[]'.
+  Property '0' does not exist on type 'PromotionCampaignWhereInput | PromotionCampaignWhereInput[]'.
+
+[7m38[0m   assert.deepEqual(where.AND?.[0], { scope: "SHOP" });
+[7m  [0m [91m                   ~~~~~~~~~~~~~~[0m
+
+[96mtests/unit/promotion-catalogue.test.ts[0m:[93m39[0m:[93m18[0m - [91merror[0m[90m TS7053: [0mElement implicitly has an 'any' type because expression of type '1' can't be used to index type 'PromotionCampaignWhereInput | PromotionCampaignWhereInput[]'.
+  Property '1' does not exist on type 'PromotionCampaignWhereInput | PromotionCampaignWhereInput[]'.
+
+[7m39[0m   const search = where.AND?.[1];
+[7m  [0m [91m                 ~~~~~~~~~~~~~~[0m
+
+
+Found 13 errors in 2 files.
+
+Errors  Files
+     9  src/lib/admin/promotions/campaigns.ts[90m:156[0m
+     4  tests/unit/promotion-catalogue.test.ts[90m:25[0m
+⠙[1G[0K[1m[7m%[27m[1m[0m                                                                                                                                                                                      [0m[27m[24m[Jkwadwoadomafriyie@kwadwos-iMac moda-interact-admin % [K[?2004heexit[?2004l
+
+Script done on Thu Sep 17 23:59:39 2026

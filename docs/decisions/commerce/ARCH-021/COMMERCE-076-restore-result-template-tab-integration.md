@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 78
 executor: null
 claimed_at: null
@@ -17,7 +17,7 @@ attempt: 0
 depends_on:
 enables: []
 created: 2026-09-27
-updated: 2026-09-27
+updated: 2026-09-28
 ---
 
 # Restore Result Template tab integration after authoring regression
@@ -371,7 +371,7 @@ Pending
 
 ### Review Notes
 
-None
+Superseded before execution on 2026-09-28. The agreed product flow now removes Agent Contract as an authoring tab and orders Result Template before Test; COMMERCE-078 owns the replacement composition.
 
 ### Reviewed Files
 
@@ -387,4 +387,4 @@ Pending
 
 ### Follow-up
 
-None
+Replaced by ARCH-021-COMMERCE-077 through ARCH-021-COMMERCE-083. Do not execute this task.

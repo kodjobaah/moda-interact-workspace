@@ -51,3 +51,11 @@ COMMERCE-029 acceptance. SYSTEM-TEST-001 is therefore Pending again and now depe
 on COMMERCE-032, COMMERCE-033, COMMERCE-034 and COMMERCE-035. This preserves the invariant that
 terminal system validation runs only after all required implementation corrections
 are architect-accepted Complete.
+
+## Tool creation authoring-flow refinement — 2026-09-28
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083 |
+
+SYSTEM-TEST-002 is terminal validation and must remain Pending until every listed Commerce dependency is architect-accepted Complete. No Commerce implementation task depends on it.
