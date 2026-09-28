@@ -330,8 +330,8 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 | [COMMERCE-071](COMMERCE-071-add-tool-authoring-structured-logging.md) | Observability: add shared structured diagnostics for Tool authoring, Admin Explore/schema derivation, live Test, mutations and reconciliation | Ready | COMMERCE-039, COMMERCE-054, COMMERCE-056, COMMERCE-060, COMMERCE-061, COMMERCE-062, COMMERCE-064, COMMERCE-065, COMMERCE-067 |
 | [COMMERCE-076](COMMERCE-076-restore-result-template-tab-integration.md) | Superseded regression restoration; replaced by the 2026-09-28 authoring-flow refinement | Superseded | - |
-| [COMMERCE-077](COMMERCE-077-start-tool-definition-authoring-flow.md) | UI/state: Create Tool launcher + first-class local Tool Definition | Ready | COMMERCE-039, COMMERCE-064 |
-| [COMMERCE-078](COMMERCE-078-compose-new-tool-authoring-flow.md) | UI: exact new-Tool flow, Result Template before Test, derived Agent Contract in Review | Pending | COMMERCE-077, 063, 066, 067, 068 |
+| [COMMERCE-077](COMMERCE-077-start-tool-definition-authoring-flow.md) | UI/state: Create Tool launcher + first-class local Tool Definition | Complete | COMMERCE-039, COMMERCE-064 |
+| [COMMERCE-078](COMMERCE-078-compose-new-tool-authoring-flow.md) | UI: exact new-Tool flow, Result Template before Test, derived Agent Contract in Review | Ready | COMMERCE-077, 063, 066, 067, 068 |
 | [COMMERCE-079](COMMERCE-079-align-persisted-draft-authoring-flow.md) | UI: persisted-DRAFT parity, CAS Save and Cancel reset | Pending | COMMERCE-078 |
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
 | [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Pending | COMMERCE-078, COMMERCE-080 |
@@ -438,6 +438,13 @@ Key invariants:
 COMMERCE-080 is **Complete / Accepted, Attempt 1**. External HTTP live Test now consumes the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, validates processed values against the canonical result contract, builds the production `ExternalHttpResultDataSchema` `data.values` envelope and delegates final text rendering to `renderDefinitionResult`. Both existing External editors pass the current local candidate into Test; rendered-result presentation remains deferred to COMMERCE-081. Submitted validation passed the 24-test backend/action/integration packet, all 81 External Tools UI tests, targeted Test-tab assertions, ESLint and `git diff --check`. Repository TypeScript remains non-green only on the documented baseline; no new C080 payload/backend diagnostic is present.
 
 COMMERCE-081 is not materialized in this parent snapshot, so no downstream task-status edit is made by this acceptance.
+
+
+### COMMERCE-077 Attempt 2 accepted — 2026-09-28
+
+COMMERCE-077 is **Complete / Accepted, Attempt 2**. The stale asynchronous provider-selection race is fixed with a monotonic local generation guard; deferred regressions prove late Shopify metadata cannot replace a newer External selection and older Shopify metadata cannot overwrite a newer Shopify selection. The local-first Tool Definition architecture, Explore handoff and final `createToolWithInitialDraft` write boundary remain unchanged.
+
+COMMERCE-078 is not materialized in this parent snapshot; when materialized, its dependency on C077 is already satisfied.
 
 ### COMMERCE-068 Attempt 1 accepted — 2026-09-27
 

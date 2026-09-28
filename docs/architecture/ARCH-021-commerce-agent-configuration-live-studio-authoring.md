@@ -1044,6 +1044,11 @@ COMMERCE-080 is architect-accepted Complete. Non-durable External HTTP Test now 
 
 COMMERCE-081 remains the separate presentation task for showing the returned rendered agent-facing text. It is not materialized in this submitted parent snapshot; when materialized, its C080 dependency is already satisfied.
 
+
+### First-class Tool Definition follow-up — 2026-09-28
+
+COMMERCE-077 is architect-accepted Complete. New Tool creation now begins from a browser-local Tool Definition surface rather than the Tool-library form, and provider initialization is protected against stale asynchronous metadata completion. Durable creation remains exclusively at Review. COMMERCE-078 remains the downstream composition task and is not materialized in this submitted parent snapshot.
+
 ### Shopify Admin result-contract and Result Template refinement — 2026-09-27
 
 Manual architecture review of Tool result/prompt authoring establishes the following refinement without introducing final tab gating/traversal:
@@ -1076,12 +1081,12 @@ Implementation tasks:
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
-| ARCH-021-COMMERCE-077 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-078 | moda_commerce | Pending | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-078 | moda_commerce | Ready | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
 | ARCH-021-COMMERCE-079 | moda_commerce | Pending | ARCH-021-COMMERCE-078 |
-| ARCH-021-COMMERCE-080 | moda_commerce | Ready | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080 |
-| ARCH-021-COMMERCE-082 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
+| ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
 | ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-082 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
@@ -1447,12 +1452,12 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-076 | moda_commerce | Superseded | Replaced by COMMERCE-077..083 |
-| ARCH-021-COMMERCE-077 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
-| ARCH-021-COMMERCE-078 | moda_commerce | Pending | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
+| ARCH-021-COMMERCE-077 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-078 | moda_commerce | Ready | ARCH-021-COMMERCE-077, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067, ARCH-021-COMMERCE-068 |
 | ARCH-021-COMMERCE-079 | moda_commerce | Pending | ARCH-021-COMMERCE-078 |
-| ARCH-021-COMMERCE-080 | moda_commerce | Ready | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080 |
-| ARCH-021-COMMERCE-082 | moda_commerce | Ready | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
+| ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
 | ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-082 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:

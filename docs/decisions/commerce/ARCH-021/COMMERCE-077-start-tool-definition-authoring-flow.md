@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 72
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-039
   - ARCH-021-COMMERCE-064
@@ -206,16 +206,16 @@ The final durable operation remains `createToolWithInitialDraft`; this task must
 
 ## Work Items
 
-- [ ] Remove the inline New Tool form and all provider-bootstrap state/effects from `ToolLibrary`.
-- [ ] Add the single `Create Tool` launcher.
-- [ ] Add the incomplete local new-Tool authoring-state model without weakening durable/draft schemas.
-- [ ] Add the Tool Definition tab/component and make it the initial tab.
-- [ ] Move Shopify Admin metadata bootstrap from ToolLibrary into provider selection in the local authoring flow.
-- [ ] Move External default-draft bootstrap into provider selection in the local authoring flow.
-- [ ] Make Tool Definition description feed both Tool metadata creation input and definition description.
-- [ ] Implement explicit provider-switch reset confirmation.
-- [ ] Preserve Shopify Explore session handoff after Shopify initialization.
-- [ ] Add zero-write and provider-switch regression coverage.
+- [x] Remove the inline New Tool form and all provider-bootstrap state/effects from `ToolLibrary`.
+- [x] Add the single `Create Tool` launcher.
+- [x] Add the incomplete local new-Tool authoring-state model without weakening durable/draft schemas.
+- [x] Add the Tool Definition tab/component and make it the initial tab.
+- [x] Move Shopify Admin metadata bootstrap from ToolLibrary into provider selection in the local authoring flow.
+- [x] Move External default-draft bootstrap into provider selection in the local authoring flow.
+- [x] Make Tool Definition description feed both Tool metadata creation input and definition description.
+- [x] Implement explicit provider-switch reset confirmation.
+- [x] Preserve Shopify Explore session handoff after Shopify initialization.
+- [x] Add zero-write and provider-switch regression coverage.
 
 ## Interfaces / Contracts
 
@@ -243,24 +243,24 @@ No new cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] `/tools` renders the Tool library plus one `Create Tool` launcher and no inline Tool-definition form.
-- [ ] Pressing `Create Tool` opens a local authoring session on `Tool Definition` with blank identity fields, SemVer `1.0.0`, and no provider selected.
-- [ ] Starting/editing Tool Definition performs zero durable writes.
-- [ ] Tool Definition exposes only the five specified controls and validates them against canonical limits.
-- [ ] New Tool description has one authoritative editable value used by both Tool metadata creation and definition description.
-- [ ] Selecting Shopify initializes the current Admin defaults only after authoritative metadata is available.
-- [ ] Selecting External initializes the current External defaults without inventing a connection.
-- [ ] Switching provider kind requires explicit destructive-reset confirmation and never silently preserves incompatible provider state.
-- [ ] Shopify Explore round-trip still restores the same new authoring session after Shopify initialization.
-- [ ] Final Tool persistence is still absent from this task.
+- [x] `/tools` renders the Tool library plus one `Create Tool` launcher and no inline Tool-definition form.
+- [x] Pressing `Create Tool` opens a local authoring session on `Tool Definition` with blank identity fields, SemVer `1.0.0`, and no provider selected.
+- [x] Starting/editing Tool Definition performs zero durable writes.
+- [x] Tool Definition exposes only the five specified controls and validates them against canonical limits.
+- [x] New Tool description has one authoritative editable value used by both Tool metadata creation and definition description.
+- [x] Selecting Shopify initializes the current Admin defaults only after authoritative metadata is available.
+- [x] Selecting External initializes the current External defaults without inventing a connection.
+- [x] Switching provider kind requires explicit destructive-reset confirmation and never silently preserves incompatible provider state.
+- [x] Shopify Explore round-trip still restores the same new authoring session after Shopify initialization.
+- [x] Final Tool persistence is still absent from this task.
 
 ## Validation
 
-- [ ] `npx vitest run tests/tool-authoring-screen.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/external-tools-ui.test.tsx`
-- [ ] focused zero-provider/write assertions proving Tool-library launch and Tool Definition edits do not call mutation actions
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `npx vitest run tests/tool-authoring-screen.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/external-tools-ui.test.tsx`
+- [x] focused zero-provider/write assertions proving Tool-library launch and Tool Definition edits do not call mutation actions
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -276,6 +276,142 @@ The task may factor provider-default builders into pure functions so UI tests ca
 
 ### Status
 
+Ready for Architect Review
+
+### Files Changed
+
+- `src/studio/tools/tool-library.tsx`, `src/studio/tools/tool-authoring-screen.tsx`, and `src/studio/tools/new-tool-editor.tsx`.
+- `src/studio/tools/new-tool-authoring-state.ts` and `src/studio/tools/authoring/tool-definition-tab.tsx`, with the shared authoring tabs and Agent Contract presentation updated for new Tools.
+- Focused tests in `tests/tool-authoring-screen.test.tsx`, `tests/shopify-admin-tools-ui.test.tsx`, `tests/external-tools-ui.test.tsx`, `tests/new-tool-authoring-state.test.ts`, and `tests/admin-explorer.test.tsx`.
+
+### Work Completed
+
+- Replaced the ToolLibrary identity/provider form with one `Create Tool` launcher and a separate incomplete, browser-local authoring state. Durable/draft schemas remain unchanged.
+- Added the first Tool Definition step with canonical name, trimmed display-name, SemVer, and description limits. The single description feeds both Tool metadata and the proposed definition; Review cannot open while it is blank.
+- Moved Shopify metadata loading and External defaults into provider selection. Shopify uses the server metadata; External uses the first authorized listed revision or remains unavailable without inventing a connection.
+- Added explicit provider-reset confirmation. Cancel retains the active provider state; confirmation remounts provider editors and prevents restored buffers from the previous provider from rehydrating.
+- Preserved the versioned Shopify Explore sessionStorage round trip and kept the sole durable create operation at Review via `createToolWithInitialDraft`.
+- Added launcher/definition zero-write, defaults, validation, provider-reset, missing-connection, metadata-timing, and Explore regressions.
+- Implementation commit `31b1a2a2593be815877b180ae39f3bdec79c5c5e` was pushed to `task/ARCH-021-COMMERCE-077`. Local and remote task refs match; no main branch was changed.
+
+### Validation Results
+
+- Focused command `npx vitest run tests/tool-authoring-screen.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/external-tools-ui.test.tsx tests/new-tool-authoring-state.test.ts tests/admin-explorer.test.tsx` passed: 5 files, 134 tests.
+- Targeted ESLint across all changed source and test files passed with no warnings or errors.
+- `npm run typecheck` exits 2 with 262 repository-wide TypeScript diagnostics. No diagnostics remain in the C077 implementation or changed test files, including the migrated `tests/admin-explorer.test.tsx` consumer.
+- `git diff --check` passed. The implementation worktree was clean after commit; the `database` submodule remained at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+- The implementation branch was pushed; `HEAD` and `origin/task/ARCH-021-COMMERCE-077` both resolve to `31b1a2a2593be815877b180ae39f3bdec79c5c5e`.
+
+### Attempt 2 Rework
+
+- Addressed the Architect Review's R5 stale asynchronous provider-selection finding in `src/studio/tools/new-tool-editor.tsx`: each provider selection receives a monotonic generation; metadata success, error, and state updates are ignored when their generation is no longer current. Functional state updates recheck the generation before replacing provider state.
+- Added deferred regressions in `tests/tool-authoring-screen.test.tsx` for Shopify pending followed by External selection and late Shopify completion, and for two Shopify metadata requests resolving out of order. Both assert the newest provider/metadata remains active and no durable create occurs.
+- Updated the existing new-Tool live-test assertion in the same test file to verify the current `{ definition, arguments, shopId }` action contract and nested request path.
+- Implementation commit `e4deb44883dd6d498b44850dc2e4a0d6d14f8fe1` was pushed to `task/ARCH-021-COMMERCE-077`; local and remote refs match.
+- Final Attempt 2 focused command, including all three required suites, the state suite, and the direct Explore suite: 5 files and 136 tests passed.
+- Attempt 2 targeted ESLint and `git diff --check` passed.
+- Attempt 2 `npm run typecheck` exits 2 with 261 repository-wide TypeScript diagnostics; none are in C077-changed source or test files.
+
+### Deviations
+
+- The prepared implementation worktree had no installed dependencies, so `npm ci` was run from its existing lockfile. It completed without project-file changes and reported engine/peer/deprecation warnings and 9 high npm audit findings.
+- The repository typecheck remains nonzero because of 262 diagnostics outside the changed C077 files; all changed-file diagnostics were resolved.
+
+### Assumptions
+
+- The existing `createToolWithInitialDraft` command remains the authoritative single durable creation boundary; this task changes its local authoring inputs, not its persistence contract.
+- Shopify API version and schema hash continue to come from `getShopifyAdminAuthoringMetadataAction`; External revisions are taken only from the authorized catalogue.
+
+### Unresolved Issues
+
+- Repository-wide typecheck still reports 261 TypeScript diagnostics outside C077-changed files. No changed-file diagnostics remain.
+
+### Architectural Concerns
+
+None.
+
+### Physical Worktree Isolation and Synchronization
+
+Recorded from the deterministic launcher preparation packets. Attempt 1 and Attempt 2 startup values below are launcher evidence; implementation publication was verified after each commit.
+
+Attempt 1:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-077
+  parent branch: task/ARCH-021-COMMERCE-077
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-077
+  implementation branch: task/ARCH-021-COMMERCE-077
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation source checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization (launcher packet):
+  parent worktree reused: yes
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  parent prepared head: 09449250adcee6274629307c97bae8d602a11b0c
+  implementation worktree created: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+  implementation prepared head: efcc1f6abec0e1c5ce39275c5e15c951c0ca470a
+  parent claim commit: f2d402163c2b43bc16075db533fa45c653a0c5fa (pushed)
+
+Recursive implementation submodule:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recursive status: ready
+  database commit: 0a8d3b9feade69690b6c1e33aeda051ea588bd45
+
+Published task state:
+  implementation commit: 31b1a2a2593be815877b180ae39f3bdec79c5c5e
+  implementation remote: origin/task/ARCH-021-COMMERCE-077
+  implementation pushed: yes; local and remote task refs match
+  parent report commit: d2b0142f4298af58758527389dcf87e953674968 (pushed)
+  merged to implementation main: no
+  merged to workspace main: no
+```
+
+Attempt 2:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-077
+  parent branch: task/ARCH-021-COMMERCE-077
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-077
+  implementation branch: task/ARCH-021-COMMERCE-077
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation source checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization (launcher packet):
+  parent worktree reused: yes
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  parent prepared head: 1ae8d82baf2882f57b7b4d9a3b5c18fc87261a60
+  implementation worktree reused: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: yes
+  implementation prepared head: 626dedbdeebca9e02a5a188d70591e0b58c37449
+  parent claim commit: acd1b30a94220a340aee3d543a747d4c1ab236d5 (pushed)
+
+Recursive implementation submodule:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recursive status: ready
+  database commit: 0a8d3b9feade69690b6c1e33aeda051ea588bd45
+
+Published task state:
+  Attempt 1 implementation commit: 31b1a2a2593be815877b180ae39f3bdec79c5c5e (pushed)
+  Attempt 2 implementation commit: e4deb44883dd6d498b44850dc2e4a0d6d14f8fe1 (pushed)
+  implementation local and remote task refs match: yes
+  parent claim commit: acd1b30a94220a340aee3d543a747d4c1ab236d5 (pushed)
+  completion report committed and pushed on the parent task branch: yes
+  merged to implementation main: no
+  merged to workspace main: no
+```
 Not Started
 
 ### Files Changed
@@ -310,6 +446,58 @@ None
 
 ### Review Status
 
+Accepted
+
+### Review Notes
+
+Attempt 2 is accepted.
+
+The original R5 stale-provider-selection defect is corrected with a browser-local monotonic provider-selection generation. Every provider initialization receives a new generation; asynchronous Shopify metadata success/error completions are ignored once a newer selection exists, and the state write itself rechecks the generation before replacing provider state. No durable state or persistence contract was added.
+
+The required deferred regressions now cover both critical races: `Shopify pending -> select External -> late Shopify completion` leaves External active, and multiple Shopify metadata requests resolving out of order leave the newest metadata active. Both regressions also retain the zero-write invariant.
+
+The rest of the C077 architecture remains unchanged and conformant: ToolLibrary is a launcher only; incomplete identity/provider state remains browser-local; Tool Definition is the first authoring surface; provider defaults are initialized only after selection; explicit destructive reset remains required when switching an installed provider; Shopify Explore preserves its accepted session handoff; and durable creation remains solely at Review through `createToolWithInitialDraft`.
+
+The Attempt 2 Completion Report also contains complete launcher/worktree evidence for both attempts, including dedicated parent/implementation worktrees, all four synchronization outcomes, recursive database submodule state, pushed implementation/report commits, and clean matching local/remote task refs.
+
+### Reviewed Files
+
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-library.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/authoring/tool-definition-tab.tsx`
+- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/new-tool-authoring-state.test.ts`
+- `tests/admin-explorer.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+
+### Validation Reviewed
+
+- Attempt 2 focused packet: 5 files / 136 tests passed.
+- Deferred Shopify-pending -> External race regression: passed.
+- Out-of-order Shopify metadata regression: passed.
+- Targeted ESLint: passed.
+- `git diff --check`: passed.
+- Repository typecheck: 261 diagnostics remain outside the C077 changed-file set; no C077-changed source/test diagnostic remains.
+- Attempt 2 implementation commit: `e4deb44883dd6d498b44850dc2e4a0d6d14f8fe1`.
+- Attempt 2 parent report commit: `84d614aa`.
+- Recursive `database` submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
+
+### Architecture Conformance
+
+Conforms.
+
+C077 now satisfies R5 under asynchronous/concurrent provider selection without altering provider-default shape, Explore/session behavior, final-write boundaries, persisted-DRAFT scope, or downstream composition responsibilities.
+
+### Follow-up
+
+None for C077. ARCH-021-COMMERCE-077 is Complete.
+
+COMMERCE-078 is listed as enabled by C077 but is not materialized in this submitted parent snapshot. When C078 is materialized, the C077 dependency is satisfied.
 Pending
 
 ### Review Notes
