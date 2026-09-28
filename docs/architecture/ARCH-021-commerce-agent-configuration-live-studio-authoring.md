@@ -1383,15 +1383,10 @@ The architectural ownership rules are:
 Implementation graph:
 
 ```text
-COMMERCE-077 --------------------> COMMERCE-078 ----------------> COMMERCE-079
-                                      |                               |
-                                      +----> COMMERCE-081 ------------+
-                                      |          ^                    |
-COMMERCE-080 -------------------------+----------+                    |
-                                      |                               +--> SYSTEM-TEST-002
-                                      +----> COMMERCE-083 ------------+
-                                                 ^
-COMMERCE-082 ------------------------------------+
+COMMERCE-077 -> COMMERCE-078 -> COMMERCE-079 -> COMMERCE-081 -> COMMERCE-083 -> SYSTEM-TEST-002
+                                             ^              ^
+COMMERCE-080 --------------------------------+              |
+COMMERCE-082 -----------------------------------------------+
 ```
 
 Initial executable frontier:
