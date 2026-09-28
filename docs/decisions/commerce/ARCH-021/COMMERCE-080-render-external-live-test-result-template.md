@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 73
-executor: copilot
-claimed_at: 2026-09-28T06:23:53Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-054
@@ -270,24 +270,58 @@ None
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 is accepted.
+
+C080 satisfies the complete-candidate External HTTP live-Test contract. The backend parses one complete `CommerceToolDefinition`, rejects non-External definitions, validates Result Template compatibility against `externalOutputSchema(execution.resultSchema)` before provider observation, preserves the existing Request/connection/provider/Response/result-validation stages, and adds the required `resultRendering` stage.
+
+After Response processing succeeds, the implementation validates processed values with the canonical Commerce result schema, constructs the same `ExternalHttpResultDataSchema` envelope used by production (`source`, `connectionRevisionId`, `observedAt`, `values`), constructs a valid `CommerceToolResult`, and delegates rendering to the production `renderDefinitionResult` boundary. No second template renderer is introduced.
+
+The successful Test result returns the existing bounded processed-result diagnostics plus the exact bounded `renderedText` returned by the production renderer. Template incompatibility fails before provider I/O; renderer failure is mapped to a stable bounded rendering-stage failure. Existing request/provider diagnostics and zero-write semantics remain unchanged.
+
+Both new and persisted External HTTP editors now pass the current unsaved Tool identity, Result Template text, execution/Request state, input schema, arguments and selected shop into the Test tab. The Test tab schema-parses the full local definition immediately before execution and invalidates stale results when candidate identity changes. This is candidate-payload wiring only; presentation of rendered Test output remains correctly deferred to COMMERCE-081.
+
+The launcher/worktree evidence is complete: dedicated parent and implementation worktrees were used, dependency gating for COMMERCE-054 and COMMERCE-063 passed, task-branch synchronization was not needed, `origin/main` was current at preparation, recursive submodule synchronization passed, and the pinned `database` commit is recorded. Implementation commit `ee876163` and parent report commit `937c54df` are pushed and the worktrees are reported clean.
 
 ### Reviewed Files
 
-None
+- `src/commerce/tool-authoring/external-live-test.ts`
+- `src/studio/tools/external-validation-server-actions.ts`
+- `src/studio/external-http/test-tab.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `src/commerce/tool-definition/publication.ts`
+- `src/commerce/execution/renderer.ts`
+- `tests/external-http-live-test.test.ts`
+- `tests/external-http-live-test-action.test.ts`
+- `tests/external-wiring.test.ts`
+- `tests/external-tools-ui.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Backend/action/integration packet: 24/24 passed across three files.
+- External Tools UI suite: 81/81 passed.
+- Targeted Test-tab UI selection: 8 tests passed.
+- Invalid-template/no-provider assertion: passed.
+- Production `result.values.*` renderer integration assertion: passed.
+- Zero-write Test-path assertions: passed.
+- Targeted ESLint: passed.
+- `git diff --check`: passed.
+- Repository `tsc --noEmit`: 29 diagnostics remain. The new complete-definition Test payload and backend/action/integration paths have no diagnostics; four diagnostics in touched files are documented at pre-existing unchanged template-typing/mock-assertion sites.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C080 reuses the production External result envelope and renderer without widening provider authorization, persistence, shared contracts, template grammar or Test presentation scope. Live Test remains a staff-authorized, non-durable execution of the current unsaved candidate.
 
 ### Follow-up
 
-None
+None for C080. ARCH-021-COMMERCE-080 is Complete.
+
+COMMERCE-081 is listed as enabled by C080 but is not materialized in this submitted parent snapshot, so no task-status promotion is performed here. When C081 is materialized, its dependency on C080 is satisfied.
