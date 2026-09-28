@@ -1,0 +1,49 @@
+Phase 0 — Freeze the new Studio product contract. Before implementation, define the target architecture precisely: Studio is an authoring environment for the real CommerceAgent; fixtures are for automated tests, not the normal admin experience; tool tests make real read-only calls; conversation previews use real models and real tools; preview conversations retain history; Shopify tools use the selected shop's offline session; external tools use immutable external connection revisions; and one model applies to the whole agent configuration, not individual features. We should also decide here that a release/agent configuration is the model ownership boundary and that an active preview freezes its model, prompts, capabilities and tool revisions. Exit: there is one architecture document that the later phases implement against, rather than trying to reconcile contradictory C20/C21 assumptions as we go.
+Phase 1 — Real Studio service wiring and shop execution context. Fix the Studio composition before adding new functionality. /connections must stop using createConnectionFixtures() and use the production connection service/server actions. External connection CRUD, immutable revisions and credential status become real. Introduce a proper Studio shop-selection/execution context: the user chooses which merchant shop they are testing against, and the server validates that shop. Shopify tools resolve the shop's real offline session; external tools resolve their external connection revision plus PLATFORM/PER_SHOP credentials. No arbitrary tokens reach the browser. This is also where I would break StudioWorkspace into smaller page/domain components as we touch them, rather than doing one giant UI rewrite. Exit: Connections and shop selection are genuinely production-backed even though tool testing is not yet live.
+Phase 2 — Model catalogue and agent-level model selection. Remove the concept of the Studio model being COMMERCE_PREVIEW_MODEL. Moda owns a server-side catalogue of enabled models, initially OpenAI and Groq entries. The Studio queries this catalogue and lets the user select one model for the agent configuration as a whole. Features and capabilities do not carry model IDs. Secrets/API keys remain server configuration and never become catalogue data. The release contract gains an immutable model selection, and the conversation-grant contract is designed to pin that model later. This phase should establish provider-neutral Shared contracts so Commerce and Background cannot invent different meanings for model selection. Exit: the Studio can show real available models and hold one model selection independently of how many features are selected.
+Phase 3 — Complete tool authoring. Make tool authoring represent the execution you actually intend to deploy. Shopify tools have Shopify execution definitions and no artificial Connection object. External tools bind to an exact immutable external connection revision. For response handling, add a true direct/pass-through path: if the provider's output already conforms to resultSchema, no mapping code should be necessary. Preserve visual transformation and the existing bounded QuickJS response transformation for responses that need reshaping. Add the missing request-side JavaScript capability separately: JavaScript may construct a bounded request descriptor from toolarguments, but it must not perform the network request itself, decrypt credentials, change the pinned origin or bypass SSRF/read-only controls. Commerce still owns the actual HTTP execution. Exit: a persisted tool draft can represent Shopify, declarative external HTTP, custom request shaping, direct responses, visual responses and JavaScript responses without using fixtures.
+Phase 4 — Live single-tool testing. Replace the administrator-facing synthetic Tool Test with real execution. A tool test requires a selected shop. Shopify tools use its actual offline session. External tools resolve the selected connection revision and real applicable credential and make the real provider request. The Studio should expose a useful diagnostic pipeline such as request description → provider response → transformation → resultSchema validation → final CommerceToolResult, while redacting credentials and sensitive headers. Preserve the cancellation, idempotency, deadline and replay mechanisms we have just been fixing. Synthetic fixtures remain in unit/integration tests, but disappear as the primary Tool Test experience. A successful real test can also become publication evidence instead of requiring a fabricated response fixture. Exit: an admin can build a tool and see the same data the deployed tool would return.
+Phase 5 — Agent composition: features, prompts and tools. Once individual tools are trustworthy, build the agent configuration experience around them. A feature/capability owns its prompt and exact tool-revision bindings. The user can select Feature A alone, Feature A + B, A + B + C, etc., while the model remains the single model selected for the agent. The Studio should make the composed prompt/tool surface visible enough to understand what is being tested. Conflicting tool names, unavailable credentials, unpublished/incompatible revisions and other invalid combinations should fail before starting a conversation. Exit: the Studio can construct a frozen candidate agent configuration containing one model plus any valid combination of feature revisions and tool revisions.
+Phase 6 — Real multi-turn CommerceAgent preview. This is the major user-facing goal. Starting a preview freezes the selected shop, model, feature/capability revisions, prompts and exact tool revisions. It then invokes the real selected OpenAI/Groq model and allows the Shared Commerce runner to invoke the real tools. The preview keeps its own persisted message history and supplies that history on subsequent turns, so asking a second or third question behaves like an actual ongoing customer conversation. Preview messages must stay isolated from real WhatsApp/customer ConversationMessage state; the current Redis-backed preview state can remain initially if its lifecycle is sufficient. Editing a prompt/tool/model does not mutate an already-running conversation—the user starts/reset a preview to test the new configuration. Exit: an admin can hold a multi-turn conversation and observe essentially what a customer would experience, including real tool calls.
+Phase 7 — Deployment parity and Background model resolution. Only after Studio preview works should we change production execution. CommerceRelease pins the selected model along with its capabilities. CommerceConversationGrant freezes that model for a particular conversation. Background stops using GROQ_COMMERCE_MODEL as the source of truth for CommerceAgent selection and instead resolves the provider/model from the frozen grant/release. OpenAI and Groq use the same provider-neutral selection contract as Studio. Existing conversations continue using the model with which they started; changing the Studio model affects subsequently created grants, not an active conversation. We also define model disable/deprecation semantics here. Exit: the configuration tested in Studio and the configuration executed by Background are the same model + prompts + capabilities + exact tool revisions.
+Phase 8 — Merchant-ready ownership and authorization. This is not necessary to get the internal administrator Studio working, so I would deliberately leave it until the execution model is stable. At this point we remove assumptions that authoring necessarily belongs to a PlatformAdmin. Introduce a proper actor/tenant boundary capable of representing platform staff and authorised merchant users. Connections, PER_SHOP credentials, agent configurations and preview sessions get explicit merchant ownership/authorization. Moda still controls which model catalogue entries are available; merchants choose from that approved list rather than supplying arbitrary provider credentials/models. We can then expose the authoring components through the merchant application without giving merchants platform-admin powers. Exit: the underlying authoring APIs can safely support both internal Moda staff and merchant-scoped Studio experiences.
+Phase 9 — Integrated validation and removal of obsolete production preview behaviour. Run one deterministic but real assembled development scenario: create external connection → credential → tool → request/response processing → live tool test → feature → second feature → selected model → several preview conversation turns → release → conversation grant → Background CommerceAgent → real tool invocation. Verify that Studio and Background use the same model, prompt/tool revisions and results. Validate cancellations, credential failures, provider 4xx/5xx, model failures, stale revisions, history, tenant isolation and secret redaction. Once that passes, remove or hide obsolete fixture-driven production UI paths and hard-coded preview model configuration while retaining fixture infrastructure for automated tests. Exit: there is one coherent production execution model and fixtures are purely test infrastructure.
+
+Phase 0 — architecture contract
+       |
+       +--------------------+
+       |                    |
+       v                    v
+Phase 1                 Phase 2
+real wiring/shop        model catalogue
+       |                    |
+       v                    |
+Phase 3 <-------------------+
+tool authoring
+       |
+       v
+Phase 4
+live tool test
+       |
+       +--------------------+
+       |                    |
+       v                    v
+Phase 5                 model selection
+agent composition           |
+       +--------------------+
+       |
+       v
+Phase 6
+live multi-turn preview
+       |
+       v
+Phase 7
+release/grant + Background parity
+       |
+       v
+Phase 8
+merchant enablement
+       |
+       v
+Phase 9
+integrated validation/cutover

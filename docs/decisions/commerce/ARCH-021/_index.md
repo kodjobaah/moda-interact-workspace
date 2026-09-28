@@ -329,7 +329,14 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-069](COMMERCE-069-remove-storefront-tool-architecture.md) | Backend cleanup: remove obsolete Storefront Tool execution/discovery architecture | Complete | COMMERCE-060, COMMERCE-064 |
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 | [COMMERCE-071](COMMERCE-071-add-tool-authoring-structured-logging.md) | Observability: add shared structured diagnostics for Tool authoring, Admin Explore/schema derivation, live Test, mutations and reconciliation | Ready | COMMERCE-039, COMMERCE-054, COMMERCE-056, COMMERCE-060, COMMERCE-061, COMMERCE-062, COMMERCE-064, COMMERCE-065, COMMERCE-067 |
-| [COMMERCE-076](COMMERCE-076-restore-result-template-tab-integration.md) | Regression: restore dedicated Result Template tab/composition and guard the accepted C068 boundary | Pending | COMMERCE-055, COMMERCE-068 |
+| [COMMERCE-076](COMMERCE-076-restore-result-template-tab-integration.md) | Superseded regression restoration; replaced by the 2026-09-28 authoring-flow refinement | Superseded | - |
+| [COMMERCE-077](COMMERCE-077-start-tool-definition-authoring-flow.md) | UI/state: Create Tool launcher + first-class local Tool Definition | Ready | COMMERCE-039, COMMERCE-064 |
+| [COMMERCE-078](COMMERCE-078-compose-new-tool-authoring-flow.md) | UI: exact new-Tool flow, Result Template before Test, derived Agent Contract in Review | Pending | COMMERCE-077, 063, 066, 067, 068 |
+| [COMMERCE-079](COMMERCE-079-align-persisted-draft-authoring-flow.md) | UI: persisted-DRAFT parity, CAS Save and Cancel reset | Pending | COMMERCE-078 |
+| [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Ready | COMMERCE-054, COMMERCE-063 |
+| [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Pending | COMMERCE-078, COMMERCE-080 |
+| [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Ready | COMMERCE-060, 062, 063, 070 |
+| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Pending | COMMERCE-078, COMMERCE-082 |
 
 Initial executable frontier for this workstream:
 
@@ -360,9 +367,49 @@ COMMERCE-071 is **Ready**; all of its dependencies are architect-accepted Comple
 
 ### Result Template integration regression follow-up — 2026-09-27
 
-The accepted COMMERCE-068 Result Template integration has regressed in the current source: `ResultTemplateTab` survives, but the shared registry exposes only five tabs, Agent Contract again owns `responseTemplate`, and Review no longer presents Result Template separately. COMMERCE-076 restores that accepted composition for new/persisted External HTTP and Shopify Admin authoring and adds executable regression coverage.
+The accepted COMMERCE-068 Result Template integration has regressed in the current source: `ResultTemplateTab` survives, but the shared registry exposes only five tabs, Agent Contract again owns `responseTemplate`, and Review no longer presents Result Template separately.
 
-COMMERCE-076 is **Pending** on COMMERCE-055 so it does not race the current live-Test/editor composition; COMMERCE-068 is already Complete. The task does not implement navigation/readiness gating.
+COMMERCE-076 was originally defined to restore the old six-tab composition, but it is **Superseded before execution** by the 2026-09-28 product flow below.
+
+### Tool creation authoring-flow refinement — 2026-09-28
+
+Canonical product flow:
+
+```text
+Tools: Create Tool
+        |
+        v
+Tool Definition -> Request -> Response -> Result Template -> Test -> Review
+                                                                  |       |
+                                                                Cancel   Save
+```
+
+Ownership:
+
+- Tool Definition owns name/display name/description/SemVer/provider kind;
+- Request owns input schema and provider request/mappings;
+- Response owns canonical result contract;
+- Result Template owns `responseTemplate`;
+- Test executes the complete candidate and shows server-rendered `Result shown to agent`;
+- Agent Contract is derived/read-only in Review, not a tab;
+- new authoring/Cancel/Test are non-durable; new Save is the one atomic create;
+- persisted DRAFT Save stays CAS-based.
+
+Executable frontier:
+
+```text
+COMMERCE-077    COMMERCE-080    COMMERCE-082
+```
+
+Then:
+
+```text
+077 -> 078 -> 079
+       |       |
+080 -> 081 ---+--> SYSTEM-TEST-002
+       |
+082 -> 083 ---+
+```
 
 Key invariants:
 
