@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 75
-executor: copilot
-claimed_at: 2026-09-28T18:46:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-078
@@ -589,24 +589,156 @@ C081 consumes the canonical C078/C079 checkpoint and C080 action/rendered output
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not accepted.
+
+The main C081 architecture is implemented correctly:
+
+- the existing COMMERCE-080 External live-Test action remains the only backend;
+- the exact assembled current candidate is submitted;
+- Tool Definition, Request, Response and Result Template prerequisites gate Test;
+- the C078/C079 common RUNNING/PASSED/FAILED/STALE checkpoint is authoritative;
+- server `renderedText` is the primary successful result;
+- External new Create and persisted Save require `isCurrentTestPassed(...)`;
+- Test arguments/shop/result state remains non-durable and does not make the persisted DRAFT dirty; and
+- late run N cannot overwrite a later run N+1.
+
+One provider-local stale-result race remains.
+
+#### Required Attempt 2 correction — transient Test identity must be mutation-sensitive, not only value-sensitive
+
+`ExternalHttpTestTab` currently derives provider-local identity from:
+
+```ts
+canonicalJson([
+  currentAuthoringSnapshot(authoringState),
+  argumentsText,
+  shopId ?? null,
+])
+```
+
+and uses that value to decide whether a completed submission/result is current.
+
+This correctly detects a value that is currently different, but it does **not** record that a transient value changed while a request was in flight.
+
+Example:
+
+```text
+run N starts with arguments A
+        |
+arguments change A -> B
+        |
+common Test becomes STALE
+        |
+arguments change B -> A
+        |
+run N returns
+```
+
+At completion the value-derived identity is again identical to run N's submitted identity. `completeAuthoringTest(...)` correctly refuses to restore the common checkpoint because it is already STALE, so Create/Save readiness remains safe. However the old run N `submission` is stored with the now-current identity and its provider/stage/processed-result diagnostics can become visible again.
+
+The same issue exists for:
+
+```text
+shop A -> shop B -> shop A
+```
+
+and for a previously displayed provider result: changing a transient value away and then back can make the old `submission.key` match again, effectively resurrecting a result that R5 requires to be cleared.
+
+C081 R4/R5 requires stronger semantics:
+
+> If Test arguments or selected shop change **at any point** while a Test is running, that returned response is stale, even if the user later restores the exact prior text/shop value.
+
+and:
+
+> Changing Test arguments or selected shop clears the provider-specific displayed result; an old result must not become visible again merely because the transient values are restored.
+
+Implement a monotonic provider-local mutation/run generation (or equivalent non-value-reversible identity) for transient Test context.
+
+The correction must ensure:
+
+1. every Test-arguments mutation increments/invalidates the provider-local transient generation;
+2. every selected-shop change increments/invalidates the same generation;
+3. the generation captured at Test start is part of the submitted run identity;
+4. a completion is accepted for display only when that exact generation is still current;
+5. transient mutation immediately clears the provider-specific displayed submission/result in addition to marking the common Test checkpoint STALE;
+6. changing a transient value away and then back must **not** resurrect the prior result;
+7. a stale completion must not repopulate stage/request/provider/processed-result diagnostics;
+8. the common C078/C079 checkpoint semantics remain unchanged;
+9. Test-only transient mutations remain non-durable and do not set persisted-DRAFT dirtiness; and
+10. existing run-N/run-N+1 concurrency protection remains intact.
+
+Do not solve this by adding arguments/shop to the persisted authoring revision ledger. They remain transient Test-only state.
+
+Add focused regressions for at least:
+
+```text
+A. in-flight argument reversion
+   run with arguments A
+   A -> B -> A before completion
+   resolve old success
+   -> common Test remains STALE
+   -> Result shown to agent absent
+   -> stages/provider/processed result absent
+   -> Create/Save disabled
+
+B. displayed-result reversion
+   successful current Test with arguments A
+   A -> B -> A
+   -> old result never reappears without another Test run
+   -> common Test remains STALE
+
+C. selected-shop reversion
+   run with shop A
+   A -> B -> A before completion
+   resolve old success
+   -> result remains discarded and common Test remains STALE
+
+D. no durability regression
+   all transient mutations above invoke zero Tool create/save/publication mutations
+   and do not make a persisted DRAFT persistence-dirty
+```
+
+The existing focused tests and implementation outside this transient-identity issue do not require redesign.
 
 ### Reviewed Files
 
-None
+- `src/studio/external-http/test-tab.tsx`
+- `src/studio/external-http/editor.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-http-live-test-action.test.ts`
+- C081 Completion Report
 
 ### Validation Reviewed
 
-None
+- Submitted focused packet: 3 files, 121 tests passed.
+- Submitted targeted ESLint: passed.
+- Submitted `git diff --check`: passed.
+- Submitted changed-file/typecheck reconciliation records only the two known Result Template prop-union diagnostics in `tool-editor.tsx`; the prior obsolete C081 External editor diagnostic is gone.
+- Review environment contains no `node_modules`, so the submitted Vitest/ESLint commands were inspected rather than independently rerun.
+- Source inspection confirms the common Test checkpoint/persistence gates are correct, but the provider-local identity is reversible because it is derived only from current snapshot/argument/shop values.
+- The current regression set covers ordinary argument/shop staleness and run-N/run-N+1 ordering, but not transient value reversion while a run is in flight or after a displayed result.
 
 ### Architecture Conformance
 
-Pending
+Partial.
+
+C081 conforms to the C078/C079 common checkpoint boundary, C080 backend ownership, server-rendered Result Template presentation, zero-write Test behavior and External Create/Save gate.
+
+Acceptance is blocked only by the provider-local transient identity race described above.
 
 ### Follow-up
 
-None
+Return the same task as Attempt 2.
+
+Implement only the monotonic transient-Test identity/invalidation correction and focused regressions above, rerun the C081 focused packet, targeted ESLint, changed-file diagnostics and `git diff --check`, then return to Architect Review.
+
+Do not start COMMERCE-083 until C081 is accepted Complete.
