@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 73
-executor: copilot
-claimed_at: 2026-09-28T06:22:15Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-060
@@ -176,19 +176,19 @@ The Test performs no Tool/ToolRevision/audit/operation receipt/publication-proof
 
 ## Work Items
 
-- [ ] Add complete-candidate Shopify Admin live-Test domain service.
-- [ ] Add authenticated Server Action.
-- [ ] Resolve `shopId` to server-authoritative shop context/domain/session; never trust browser domain/token.
-- [ ] Narrow `AdminQueryExecutionPort` to the exact provider-execution context shared by production and authoring.
-- [ ] Expose the existing Admin execution port through `CommerceBackend` without exposing credentials.
-- [ ] Reuse Admin compiler/mapping/result normalization semantics.
-- [ ] Reuse existing Admin execution port/transport rather than duplicate GraphQL networking.
-- [ ] Validate Result Template against compiler output before I/O.
-- [ ] Reuse `renderDefinitionResult`.
-- [ ] Return the five bounded stage outcomes, canonical processed values and renderedText.
-- [ ] Preserve one-provider-request/deadline/throttle rules.
-- [ ] Prove zero durable/publication-proof writes.
-- [ ] Add credential-leak and no-provider-on-invalid-candidate tests.
+- [x] Add complete-candidate Shopify Admin live-Test domain service.
+- [x] Add authenticated Server Action.
+- [x] Resolve `shopId` to server-authoritative shop context/domain/session; never trust browser domain/token.
+- [x] Narrow `AdminQueryExecutionPort` to the exact provider-execution context shared by production and authoring.
+- [x] Expose the existing Admin execution port through `CommerceBackend` without exposing credentials.
+- [x] Reuse Admin compiler/mapping/result normalization semantics.
+- [x] Reuse existing Admin execution port/transport rather than duplicate GraphQL networking.
+- [x] Validate Result Template against compiler output before I/O.
+- [x] Reuse `renderDefinitionResult`.
+- [x] Return the five bounded stage outcomes, canonical processed values and renderedText.
+- [x] Preserve one-provider-request/deadline/throttle rules.
+- [x] Prove zero durable/publication-proof writes.
+- [x] Add credential-leak and no-provider-on-invalid-candidate tests.
 
 ## Interfaces / Contracts
 
@@ -219,26 +219,26 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] ADMIN-authorized Test accepts a complete current Shopify Admin definition + arguments + shopId.
-- [ ] Browser cannot supply shop domain/access token.
-- [ ] Invalid definition/mapping/result-contract/template fails before provider I/O.
-- [ ] Provider execution reuses the existing Admin execution transport/normalization semantics through the narrow context; no fake grant/release/conversation identity is constructed.
-- [ ] Canonical renderer produces the returned `renderedText`.
-- [ ] Result stages are exactly candidateValidation, shopResolution, providerRequest, resultValidation, resultRendering.
-- [ ] At most one provider request is reserved per Test call.
-- [ ] Credentials/auth headers/raw secrets are absent from result and logs.
-- [ ] Test performs zero durable/publication-proof write and does not change publish eligibility.
+- [x] ADMIN-authorized Test accepts a complete current Shopify Admin definition + arguments + shopId.
+- [x] Browser cannot supply shop domain/access token.
+- [x] Invalid definition/mapping/result-contract/template fails before provider I/O.
+- [x] Provider execution reuses the existing Admin execution transport/normalization semantics through the narrow context; no fake grant/release/conversation identity is constructed.
+- [x] Canonical renderer produces the returned `renderedText`.
+- [x] Result stages are exactly candidateValidation, shopResolution, providerRequest, resultValidation, resultRendering.
+- [x] At most one provider request is reserved per Test call.
+- [x] Credentials/auth headers/raw secrets are absent from result and logs.
+- [x] Test performs zero durable/publication-proof write and does not change publish eligibility.
 
 ## Validation
 
-- [ ] `npx vitest run tests/shopify-admin-live-test.test.ts tests/shopify-admin-live-test-action.test.ts`
-- [ ] focused invalid-candidate/no-provider-call tests
-- [ ] focused selected-shop/domain/token trust-boundary tests
-- [ ] focused renderer/output-envelope tests
-- [ ] focused zero-write/publication-gate test
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `npx vitest run tests/shopify-admin-live-test.test.ts tests/shopify-admin-live-test-action.test.ts`
+- [x] focused invalid-candidate/no-provider-call tests
+- [x] focused selected-shop/domain/token trust-boundary tests
+- [x] focused renderer/output-envelope tests
+- [x] focused zero-write/publication-gate test
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -252,58 +252,94 @@ Prefer dependency injection around the existing Admin execution port so tests re
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+```text
+moda-interact-commerce/src/commerce/execution/index.ts
+moda-interact-commerce/src/commerce/execution/ports.ts
+moda-interact-commerce/src/commerce/integration/backend.ts
+moda-interact-commerce/src/commerce/tool-authoring/shopify-admin-live-test.ts
+moda-interact-commerce/src/studio/tools/shopify-admin-live-test-server-actions.ts
+moda-interact-commerce/tests/definition-execution.test.ts
+moda-interact-commerce/tests/shopify-admin-live-test-action.test.ts
+moda-interact-commerce/tests/shopify-admin-live-test.test.ts
+```
 
 ### Work Completed
 
-None
+Implemented the complete-candidate Admin live-Test service and ADMIN-authorized Server Action. Candidate schema, Admin compilation, exact compiler-derived result schema, mapped arguments, and Result Template compatibility are checked before shop resolution or provider I/O. The action resolves `shopId` through the existing server-authoritative Studio service; the provider port resolves the offline access token server-side.
+
+Narrowed `AdminQueryExecutionPort` to shop domain, deadline, abort signal, request budget, trace ID, and span ID, and exposed the existing port on `CommerceBackend`. The live Test reuses that port, canonical result normalization, and `renderDefinitionResult`; it returns only the five bounded stages, normalized result values, and rendered text. No durable Tool/revision/audit/receipt/proof writes or UI changes were added.
 
 ### Validation Results
 
-None
+Agent-executed validation:
+
+- `npx vitest run tests/shopify-admin-live-test.test.ts tests/shopify-admin-live-test-action.test.ts tests/definition-execution.test.ts tests/admin-query-execution.test.ts tests/admin-graphql-compiler.test.ts tests/result-template-authoring.test.ts tests/commerce-lifecycle.test.ts tests/tool-authoring-validation.test.ts` — passed, 8 files and 96 tests.
+- `npx eslint src/commerce/execution/ports.ts src/commerce/execution/index.ts src/commerce/integration/backend.ts src/commerce/tool-authoring/shopify-admin-live-test.ts src/studio/tools/shopify-admin-live-test-server-actions.ts tests/shopify-admin-live-test.test.ts tests/shopify-admin-live-test-action.test.ts tests/definition-execution.test.ts` — passed with no output.
+- `npx tsc --noEmit --pretty false` — repository-wide check reports 30 existing errors across 17 files; no diagnostics are reported in the new service/action, narrowed execution port/barrel, or directly updated tests. The remaining errors are in unrelated existing editor, discovery, result-template, fixture, and test files.
+- `git diff --check` — passed.
+- Prisma client generated from `database/prisma/schema.prisma` in this isolated worktree for TypeScript validation; no database migration or shared database change was made.
+
+The focused tests cover invalid definition/mapping/result contract/template before I/O, selected-shop/offline-session trust, narrow provider context, one reserved request, bounded throttle diagnostics, normalized output and canonical rendering, credential exclusion, ADMIN authorization, no publication writes, and unchanged `LIVE_TEST_REQUIRED` publication gating.
 
 ### Deviations
 
-None
+No scope deviations. Repository-wide TypeScript validation remains non-green because of the 30 unrelated diagnostics noted above; task-owned source and direct test files are clean under the isolated TypeScript scan.
 
 ### Assumptions
 
-None
+Node and npm were available in the task environment. `npm ci` emitted the repository's engine warning because the available Node is 24.21.0 while `package.json` declares 24.19.0; focused tests, lint, Prisma generation, and task-file type diagnostics ran successfully.
 
 ### Unresolved Issues
 
-None
+Repository-wide `npx tsc --noEmit` still reports 30 errors in 17 files, including existing editor/template/discovery/test typing issues. These are outside the task changes and are not required to implement the Admin live-Test path.
 
 ### Architectural Concerns
 
-None
+None identified. The live Test is non-durable and does not provide saved-revision publication proof; the existing `LIVE_TEST_REQUIRED` gate remains in force.
 
-## Architect Review
+### Launcher Evidence
 
-### Review Status
+Physical worktree isolation:
 
-Pending
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-082
+parent branch: task/ARCH-021-COMMERCE-082
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-082
+implementation branch: task/ARCH-021-COMMERCE-082
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+```
 
-### Review Notes
+Start-of-attempt synchronization from launcher packet:
 
-None
+```text
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+```
 
-### Reviewed Files
+Recursive implementation submodules from launcher packet:
 
-None
+```text
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded submodule commit: database @ 0a8d3b9feade69690b6c1e33aeda051ea588bd45
+```
 
-### Validation Reviewed
+Task execution:
 
-None
-
-### Architecture Conformance
-
-Pending
-
-### Follow-up
-
-None
+```text
+task: ARCH-021-COMMERCE-082
+executor: copilot
+attempt: 1
+implementation claim commit: f66b697d434e3088c4f8989ea224b6db523c5887
+parent task-definition materialization commit: 2e6d469143d02edbedfc7ed5bfcb5d280cef136c
+dependency gate: passed (COMMERCE-060, 062, 063, 070 complete)
+```
