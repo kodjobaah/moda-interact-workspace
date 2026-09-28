@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 72
-executor: copilot
-claimed_at: 2026-09-28T07:47:41Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-039
@@ -302,6 +302,16 @@ Ready for Architect Review
 - `git diff --check` passed. The implementation worktree was clean after commit; the `database` submodule remained at `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 - The implementation branch was pushed; `HEAD` and `origin/task/ARCH-021-COMMERCE-077` both resolve to `31b1a2a2593be815877b180ae39f3bdec79c5c5e`.
 
+### Attempt 2 Rework
+
+- Addressed the Architect Review's R5 stale asynchronous provider-selection finding in `src/studio/tools/new-tool-editor.tsx`: each provider selection receives a monotonic generation; metadata success, error, and state updates are ignored when their generation is no longer current. Functional state updates recheck the generation before replacing provider state.
+- Added deferred regressions in `tests/tool-authoring-screen.test.tsx` for Shopify pending followed by External selection and late Shopify completion, and for two Shopify metadata requests resolving out of order. Both assert the newest provider/metadata remains active and no durable create occurs.
+- Updated the existing new-Tool live-test assertion in the same test file to verify the current `{ definition, arguments, shopId }` action contract and nested request path.
+- Implementation commit `e4deb44883dd6d498b44850dc2e4a0d6d14f8fe1` was pushed to `task/ARCH-021-COMMERCE-077`; local and remote refs match.
+- Final Attempt 2 focused command, including all three required suites, the state suite, and the direct Explore suite: 5 files and 136 tests passed.
+- Attempt 2 targeted ESLint and `git diff --check` passed.
+- Attempt 2 `npm run typecheck` exits 2 with 261 repository-wide TypeScript diagnostics; none are in C077-changed source or test files.
+
 ### Deviations
 
 - The prepared implementation worktree had no installed dependencies, so `npm ci` was run from its existing lockfile. It completed without project-file changes and reported engine/peer/deprecation warnings and 9 high npm audit findings.
@@ -314,7 +324,7 @@ Ready for Architect Review
 
 ### Unresolved Issues
 
-- Repository-wide typecheck still reports 262 TypeScript diagnostics outside C077-changed files. No changed-file diagnostics remain.
+- Repository-wide typecheck still reports 261 TypeScript diagnostics outside C077-changed files. No changed-file diagnostics remain.
 
 ### Architectural Concerns
 
@@ -322,7 +332,9 @@ None.
 
 ### Physical Worktree Isolation and Synchronization
 
-Recorded from the deterministic launcher preparation packet. The canonical paths and prepared commit values below are launcher evidence; implementation publication was verified after the commit.
+Recorded from the deterministic launcher preparation packets. Attempt 1 and Attempt 2 startup values below are launcher evidence; implementation publication was verified after each commit.
+
+Attempt 1:
 
 ```text
 Physical worktree isolation:
@@ -356,8 +368,47 @@ Published task state:
   implementation commit: 31b1a2a2593be815877b180ae39f3bdec79c5c5e
   implementation remote: origin/task/ARCH-021-COMMERCE-077
   implementation pushed: yes; local and remote task refs match
-  parent claim/report branch: task/ARCH-021-COMMERCE-077
-  parent claim is pushed; completion report is committed and will be pushed on this branch
+  parent report commit: d2b0142f4298af58758527389dcf87e953674968 (pushed)
+  merged to implementation main: no
+  merged to workspace main: no
+```
+
+Attempt 2:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-077
+  parent branch: task/ARCH-021-COMMERCE-077
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-077
+  implementation branch: task/ARCH-021-COMMERCE-077
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation source checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization (launcher packet):
+  parent worktree reused: yes
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: yes
+  parent prepared head: 1ae8d82baf2882f57b7b4d9a3b5c18fc87261a60
+  implementation worktree reused: yes
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: yes
+  implementation prepared head: 626dedbdeebca9e02a5a188d70591e0b58c37449
+  parent claim commit: acd1b30a94220a340aee3d543a747d4c1ab236d5 (pushed)
+
+Recursive implementation submodule:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  recursive status: ready
+  database commit: 0a8d3b9feade69690b6c1e33aeda051ea588bd45
+
+Published task state:
+  Attempt 1 implementation commit: 31b1a2a2593be815877b180ae39f3bdec79c5c5e (pushed)
+  Attempt 2 implementation commit: e4deb44883dd6d498b44850dc2e4a0d6d14f8fe1 (pushed)
+  implementation local and remote task refs match: yes
+  parent claim commit: acd1b30a94220a340aee3d543a747d4c1ab236d5 (pushed)
+  completion report committed and pushed on the parent task branch: yes
   merged to implementation main: no
   merged to workspace main: no
 ```
