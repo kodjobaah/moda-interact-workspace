@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 74
-executor: copilot
-claimed_at: 2026-09-28T08:38:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-077
@@ -334,24 +334,51 @@ None identified.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not accepted. The new-Tool composition is broadly aligned with the agreed C078 ownership model, but two task-scoped corrections are required.
+
+1. **Do not change persisted-DRAFT tab composition in C078.** C078 is explicitly scoped to new-Tool composition; persisted-DRAFT parity belongs to COMMERCE-079. The shared `ToolAuthoringTabs` registry is currently globally ordered as `Tool Definition -> Request -> Response -> Result Template -> Test -> Agent contract -> Review`. Existing `ToolEditor` consumers call that registry without the new-Tool filters, so persisted External/Admin DRAFTs are already changed to the hybrid order `Request -> Response -> Result Template -> Test -> Agent contract -> Review`. That is a C079 scope leak. Preserve the pre-C078 persisted-DRAFT ordering/behavior until C079 executes. Implement the exact six-step C078 ordering through a new-Tool-specific registry/composition or an explicit mode/order parameter that does not alter persisted consumers.
+
+2. **Place the External Request-owned Input JSON Schema before/with the request mapping editor.** In `NewToolWorkspace`, `ExternalHttpEditor` renders the connection/request construction panel before the separate `Input JSON Schema` section. R2 requires the schema authoring control to appear before/with the existing connection/request mapping editor. Recompose the External Request surface so `Input JSON Schema` is encountered before the connection/request mapping controls while continuing to feed the latest valid/parsed Request-owned schema into validation, preview, Automatic generation and live Test.
+
+Add focused regressions that prove:
+- new Tools still expose exactly `Tool Definition -> Request -> Response -> Result Template -> Test -> Review`;
+- persisted External and Shopify DRAFT tab ordering/composition remains unchanged by C078 and still retains Agent Contract until C079;
+- on the new External Request surface, `Input JSON Schema` precedes the connection/request mapping controls in DOM/user order;
+- no additional durable write is introduced by either correction.
+
+No provider networking, Result Template grammar, persisted-DRAFT ownership refactor, C079 implementation, live-Test backend, database or cross-repository changes are requested.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/authoring/result-template-contract-adapter.ts`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/authoring/review-tab.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/external-http/request-tab.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-079-align-persisted-draft-authoring-flow.md`
 
 ### Validation Reviewed
 
-None
+- Submitted focused packet: 4 suites, 133 tests passed.
+- Submitted targeted ESLint: passed.
+- Submitted changed-file diagnostics: clean.
+- Submitted `git diff --check`: passed.
+- Source/test inspection confirmed the two missing regressions above are not covered.
 
 ### Architecture Conformance
 
-Pending
+Partial. The new-Tool six-step flow, Request ownership, production-envelope Result Template contract, read-only Review separation and final Save/Cancel persistence boundary are aligned. Acceptance is blocked by the persisted-DRAFT scope leak and the External Request schema placement mismatch.
 
 ### Follow-up
 
-None
+Return the same task as Attempt 2. Do not start COMMERCE-079, COMMERCE-081 or COMMERCE-083 until C078 is accepted Complete.
