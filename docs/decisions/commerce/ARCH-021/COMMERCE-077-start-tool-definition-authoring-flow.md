@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 72
 executor: null
 claimed_at: null
@@ -417,61 +417,55 @@ Published task state:
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 is architecturally aligned in its main flow: the Tool library is now a launcher, incomplete Tool Definition state is browser-local, identity/provider controls moved into the first tab, provider defaults are initialized locally, the single description remains authoritative, Shopify Explore still uses the accepted session handoff, and durable creation remains at Review through `createToolWithInitialDraft`.
+Attempt 2 is accepted.
 
-One R5 correctness defect remains in asynchronous provider selection. `selectProvider()` captures `state.tool.kind` before awaiting Shopify Admin metadata and does not guard the eventual completion against a newer provider-selection intent. A reproducible sequence is:
+The original R5 stale-provider-selection defect is corrected with a browser-local monotonic provider-selection generation. Every provider initialization receives a new generation; asynchronous Shopify metadata success/error completions are ignored once a newer selection exists, and the state write itself rechecks the generation before replacing provider state. No durable state or persistence contract was added.
 
-```text
-1. New Tool has kind = null.
-2. Select Shopify Admin GraphQL; metadata request A is now pending.
-3. Before A resolves, select External HTTP/API. External defaults are installed immediately.
-4. Metadata request A resolves. Its stale continuation installs Shopify defaults.
-```
+The required deferred regressions now cover both critical races: `Shopify pending -> select External -> late Shopify completion` leaves External active, and multiple Shopify metadata requests resolving out of order leave the newest metadata active. Both regressions also retain the zero-write invariant.
 
-The user's newer External selection is therefore silently replaced by the older Shopify selection, without the destructive-reset confirmation required once External state exists. The same underlying issue permits multiple in-flight Shopify selections to resolve out of order. Provider bootstrap must be current-intent/generation guarded so an obsolete async completion cannot mutate Tool kind/provider state or clear provider-derived editor/Test state.
+The rest of the C077 architecture remains unchanged and conformant: ToolLibrary is a launcher only; incomplete identity/provider state remains browser-local; Tool Definition is the first authoring surface; provider defaults are initialized only after selection; explicit destructive reset remains required when switching an installed provider; Shopify Explore preserves its accepted session handoff; and durable creation remains solely at Review through `createToolWithInitialDraft`.
 
-This is a bounded C077 correction. No persistence contract, provider-default shape, Explore contract, C078 composition, persisted-DRAFT flow, or cross-repository work should change.
+The Attempt 2 Completion Report also contains complete launcher/worktree evidence for both attempts, including dedicated parent/implementation worktrees, all four synchronization outcomes, recursive database submodule state, pushed implementation/report commits, and clean matching local/remote task refs.
 
 ### Reviewed Files
 
+- `src/studio/tools/new-tool-editor.tsx`
 - `src/studio/tools/tool-library.tsx`
 - `src/studio/tools/tool-authoring-screen.tsx`
-- `src/studio/tools/new-tool-editor.tsx`
 - `src/studio/tools/new-tool-authoring-state.ts`
 - `src/studio/tools/authoring/tool-definition-tab.tsx`
 - `src/studio/tools/authoring/tool-authoring-tabs.tsx`
-- `src/studio/tools/authoring/agent-contract-tab.tsx`
 - `tests/tool-authoring-screen.test.tsx`
 - `tests/shopify-admin-tools-ui.test.tsx`
 - `tests/external-tools-ui.test.tsx`
 - `tests/new-tool-authoring-state.test.ts`
 - `tests/admin-explorer.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-- Completion Report: 5 focused suites / 134 tests passed.
-- Completion Report: targeted ESLint passed.
-- Completion Report: `git diff --check` passed.
-- Completion Report: repository typecheck remains nonzero only outside the C077 changed-file set.
-- Source/test inspection confirmed the required zero-write boundary, provider defaults, reset dialog and Explore round trip, but the submitted regressions do not cover stale/out-of-order provider-bootstrap completion.
+- Attempt 2 focused packet: 5 files / 136 tests passed.
+- Deferred Shopify-pending -> External race regression: passed.
+- Out-of-order Shopify metadata regression: passed.
+- Targeted ESLint: passed.
+- `git diff --check`: passed.
+- Repository typecheck: 261 diagnostics remain outside the C077 changed-file set; no C077-changed source/test diagnostic remains.
+- Attempt 2 implementation commit: `e4deb44883dd6d498b44850dc2e4a0d6d14f8fe1`.
+- Attempt 2 parent report commit: `84d614aa`.
+- Recursive `database` submodule: `0a8d3b9feade69690b6c1e33aeda051ea588bd45`.
 
 ### Architecture Conformance
 
-Changes Requested. The local-first Tool Definition architecture and final-write boundary conform to ARCH-021, but R5 is not yet satisfied under concurrent/asynchronous provider selection because stale metadata completion can replace a newer provider choice without confirmation.
+Conforms.
+
+C077 now satisfies R5 under asynchronous/concurrent provider selection without altering provider-default shape, Explore/session behavior, final-write boundaries, persisted-DRAFT scope, or downstream composition responsibilities.
 
 ### Follow-up
 
-Attempt 2 must:
+None for C077. ARCH-021-COMMERCE-077 is Complete.
 
-1. Make provider initialization commit only when its async result still belongs to the current provider-selection intent. A monotonic generation/request token or equivalent browser-local guard is acceptable; do not add durable state.
-2. Ensure selecting External while an initial Shopify metadata load is pending makes the earlier Shopify completion inert. The final Tool kind/provider draft must remain External.
-3. Ensure stale or out-of-order Shopify metadata completions cannot overwrite a newer selection or reset current Request/Response/Result Template/Test state.
-4. Preserve the existing explicit confirmation contract for switching away from an already-installed provider. Failed/stale metadata loads must leave the current provider and authored state unchanged.
-5. Add a deferred-metadata regression for at least `Shopify pending -> select External -> Shopify resolves -> External remains`, plus any focused regression needed for the chosen stale-completion guard.
-6. Rerun the C077 focused packet, targeted ESLint, changed-file diagnostics and `git diff --check`; update the Completion Report and return the same task to review.
-
-Do not start COMMERCE-078.
+COMMERCE-078 is listed as enabled by C077 but is not materialized in this submitted parent snapshot. When C078 is materialized, the C077 dependency is satisfied.
