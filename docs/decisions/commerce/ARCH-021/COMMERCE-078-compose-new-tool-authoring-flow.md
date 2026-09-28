@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
 executor: copilot
 claimed_at: 2026-09-28T08:38:52Z
@@ -203,17 +203,17 @@ Do not restore C076's six-tab order (`Request -> Response -> Test -> Agent contr
 
 ## Work Items
 
-- [ ] Replace the new-Tool tab registry with the exact six-step sequence.
-- [ ] Remove Agent Contract as a new-Tool authoring tab.
-- [ ] Move/retain all input-schema authoring under Request for both providers.
-- [ ] Wire `ResultTemplateTab` immediately after Response using production-envelope result contracts.
-- [ ] Use canonical Result Template validation and stale-state semantics.
-- [ ] Build a read-only derived Agent Contract Review card.
-- [ ] Separate Tool Definition, Request, Result Contract, Result Template and Agent Contract in Review.
-- [ ] Change new-Tool Review actions to `Cancel` + `Save`.
-- [ ] Make Save use the single current Tool Definition identity/description plus the assembled candidate.
-- [ ] Make Cancel abandon all local/session handoff state without persistence.
-- [ ] Add exact tab-order/ownership/persistence regressions for both provider kinds.
+- [x] Replace the new-Tool tab registry with the exact six-step sequence.
+- [x] Remove Agent Contract as a new-Tool authoring tab.
+- [x] Move/retain all input-schema authoring under Request for both providers.
+- [x] Wire `ResultTemplateTab` immediately after Response using production-envelope result contracts.
+- [x] Use canonical Result Template validation and stale-state semantics.
+- [x] Build a read-only derived Agent Contract Review card.
+- [x] Separate Tool Definition, Request, Result Contract, Result Template and Agent Contract in Review.
+- [x] Change new-Tool Review actions to `Cancel` + `Save`.
+- [x] Make Save use the single current Tool Definition identity/description plus the assembled candidate.
+- [x] Make Cancel abandon all local/session handoff state without persistence.
+- [x] Add exact tab-order/ownership/persistence regressions for both provider kinds.
 
 ## Interfaces / Contracts
 
@@ -247,29 +247,29 @@ No new persistent/cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] New Tool authoring exposes exactly `Tool Definition -> Request -> Response -> Result Template -> Test -> Review`.
-- [ ] Agent Contract is absent from the tab list.
-- [ ] External and Shopify input schemas are authored only from Request.
-- [ ] Result Template is authored only from its dedicated tab and edits the canonical `responseTemplate`.
-- [ ] External template bindings include production `values` paths rather than inner-schema-only paths.
-- [ ] Shopify template bindings come from the Admin compiler output contract.
-- [ ] Review shows Agent Contract read-only and contains no template editor/template JSON under Agent Contract.
-- [ ] Review shows Result Template separately.
-- [ ] New Tool final buttons are `Cancel` and `Save`.
-- [ ] Save performs exactly one final create operation; Cancel performs none.
-- [ ] No edit/validation/tab navigation before Save creates durable Tool state.
-- [ ] Existing Shopify Explore round-trip and current Request/Response authoring remain functional.
+- [x] New Tool authoring exposes exactly `Tool Definition -> Request -> Response -> Result Template -> Test -> Review`.
+- [x] Agent Contract is absent from the tab list.
+- [x] External and Shopify input schemas are authored only from Request.
+- [x] Result Template is authored only from its dedicated tab and edits the canonical `responseTemplate`.
+- [x] External template bindings include production `values` paths rather than inner-schema-only paths.
+- [x] Shopify template bindings come from the Admin compiler output contract.
+- [x] Review shows Agent Contract read-only and contains no template editor/template JSON under Agent Contract.
+- [x] Review shows Result Template separately.
+- [x] New Tool final buttons are `Cancel` and `Save`.
+- [x] Save performs exactly one final create operation; Cancel performs none.
+- [x] No edit/validation/tab navigation before Save creates durable Tool state.
+- [x] Existing Shopify Explore round-trip and current Request/Response authoring remain functional.
 
 ## Validation
 
-- [ ] `npx vitest run tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/result-template-tab.test.tsx`
-- [ ] focused assertions for exact tab order and absence of Agent Contract tab
-- [ ] focused assertions for Request-owned input schema for External + Shopify
-- [ ] focused assertions for production-envelope Result Template bindings
-- [ ] focused Save-once / Cancel-zero-write tests
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `npx vitest run tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/result-template-tab.test.tsx`
+- [x] focused assertions for exact tab order and absence of Agent Contract tab
+- [x] focused assertions for Request-owned input schema for External + Shopify
+- [x] focused assertions for production-envelope Result Template bindings
+- [x] focused Save-once / Cancel-zero-write tests
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -285,35 +285,50 @@ The flow is ordered for comprehension, not as a full wizard gate. After provider
 
 ### Status
 
-Not Started
+Complete; submitted for Architect Review.
 
 ### Files Changed
 
-None
+- `src/studio/tools/authoring/result-template-contract-adapter.ts`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/authoring/review-tab.tsx`
+- `src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
-None
+- Composed the six required new-Tool tabs, moved input-schema authoring to Request, and retained the legacy Agent Contract tab for existing consumers.
+- Connected Result Template authoring to canonical `responseTemplate` validation and provider production output envelopes, including Shopify Admin compiler output.
+- Added read-only, separately grouped Review sections and Save/Cancel actions; Save uses the single atomic create path and Cancel clears local/session state without writing.
+- Added provider, tab-order, Save-once, Cancel-zero-write, and no-premature-persistence regressions.
 
 ### Validation Results
 
-None
+- Required Vitest command passed: 4 files, 133 tests.
+- Targeted ESLint passed for all changed implementation and test files.
+- Editor diagnostics reported no errors in any changed C078 file.
+- `git diff --check` passed.
+- `npm run typecheck` remains non-green due existing repository diagnostics outside the C078 changes, including untouched integration services, persisted tool-editor call sites, and result-contract tests; the changed C078 files have no editor diagnostics.
 
 ### Deviations
 
-None
+The full repository typecheck has an existing non-green baseline; it was recorded rather than broadening this task into unrelated files.
 
 ### Assumptions
 
-None
+Existing Agent Contract consumers remain supported; persisted-DRAFT parity stays with COMMERCE-079.
 
 ### Unresolved Issues
 
-None
+No unresolved C078 implementation or validation issues. The repository-wide typecheck baseline remains as noted above.
 
 ### Architectural Concerns
 
-None
+None identified.
 
 ## Architect Review
 
