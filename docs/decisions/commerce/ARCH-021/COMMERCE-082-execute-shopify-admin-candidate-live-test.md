@@ -184,21 +184,6 @@ The Test performs no Tool/ToolRevision/audit/operation receipt/publication-proof
 
 ## Work Items
 
-<<<<<<< HEAD
-- [ ] Add complete-candidate Shopify Admin live-Test domain service.
-- [ ] Add authenticated Server Action.
-- [ ] Resolve `shopId` to server-authoritative shop context/domain/session; never trust browser domain/token.
-- [ ] Narrow `AdminQueryExecutionPort` to the exact provider-execution context shared by production and authoring.
-- [ ] Expose the existing Admin execution port through `CommerceBackend` without exposing credentials.
-- [ ] Reuse Admin compiler/mapping/result normalization semantics.
-- [ ] Reuse existing Admin execution port/transport rather than duplicate GraphQL networking.
-- [ ] Validate Result Template against compiler output before I/O.
-- [ ] Reuse `renderDefinitionResult`.
-- [ ] Return the five bounded stage outcomes, canonical processed values and renderedText.
-- [ ] Preserve one-provider-request/deadline/throttle rules.
-- [ ] Prove zero durable/publication-proof writes.
-- [ ] Add credential-leak and no-provider-on-invalid-candidate tests.
-=======
 - [x] Add complete-candidate Shopify Admin live-Test domain service.
 - [x] Add authenticated Server Action.
 - [x] Resolve `shopId` to server-authoritative shop context/domain/session; never trust browser domain/token.
@@ -212,7 +197,6 @@ The Test performs no Tool/ToolRevision/audit/operation receipt/publication-proof
 - [x] Preserve one-provider-request/deadline/throttle rules.
 - [x] Prove zero durable/publication-proof writes.
 - [x] Add credential-leak and no-provider-on-invalid-candidate tests.
->>>>>>> e44d01d530cf6d9f4eb803a7cd17b4cd15291938
 
 ## Interfaces / Contracts
 
@@ -243,28 +227,6 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-<<<<<<< HEAD
-- [ ] ADMIN-authorized Test accepts a complete current Shopify Admin definition + arguments + shopId.
-- [ ] Browser cannot supply shop domain/access token.
-- [ ] Invalid definition/mapping/result-contract/template fails before provider I/O.
-- [ ] Provider execution reuses the existing Admin execution transport/normalization semantics through the narrow context; no fake grant/release/conversation identity is constructed.
-- [ ] Canonical renderer produces the returned `renderedText`.
-- [ ] Result stages are exactly candidateValidation, shopResolution, providerRequest, resultValidation, resultRendering.
-- [ ] At most one provider request is reserved per Test call.
-- [ ] Credentials/auth headers/raw secrets are absent from result and logs.
-- [ ] Test performs zero durable/publication-proof write and does not change publish eligibility.
-
-## Validation
-
-- [ ] `npx vitest run tests/shopify-admin-live-test.test.ts tests/shopify-admin-live-test-action.test.ts`
-- [ ] focused invalid-candidate/no-provider-call tests
-- [ ] focused selected-shop/domain/token trust-boundary tests
-- [ ] focused renderer/output-envelope tests
-- [ ] focused zero-write/publication-gate test
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
-=======
 - [x] ADMIN-authorized Test accepts a complete current Shopify Admin definition + arguments + shopId.
 - [x] Browser cannot supply shop domain/access token.
 - [x] Invalid definition/mapping/result-contract/template fails before provider I/O.
@@ -285,7 +247,6 @@ No cross-repository contract is introduced.
 - [x] targeted ESLint for changed files
 - [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
 - [x] `git diff --check`
->>>>>>> e44d01d530cf6d9f4eb803a7cd17b4cd15291938
 
 ## Stop Condition
 
@@ -299,37 +260,6 @@ Prefer dependency injection around the existing Admin execution port so tests re
 
 ### Status
 
-<<<<<<< HEAD
-Not Started
-
-### Files Changed
-
-None
-
-### Work Completed
-
-None
-
-### Validation Results
-
-None
-
-### Deviations
-
-None
-
-### Assumptions
-
-None
-
-### Unresolved Issues
-
-None
-
-### Architectural Concerns
-
-None
-=======
 Ready for Review
 
 ### Files Changed
@@ -421,35 +351,11 @@ implementation claim commit: f66b697d434e3088c4f8989ea224b6db523c5887
 parent task-definition materialization commit: 2e6d469143d02edbedfc7ed5bfcb5d280cef136c
 dependency gate: passed (COMMERCE-060, 062, 063, 070 complete)
 ```
->>>>>>> e44d01d530cf6d9f4eb803a7cd17b4cd15291938
 
 ## Architect Review
 
 ### Review Status
 
-<<<<<<< HEAD
-Pending
-
-### Review Notes
-
-None
-
-### Reviewed Files
-
-None
-
-### Validation Reviewed
-
-None
-
-### Architecture Conformance
-
-Pending
-
-### Follow-up
-
-None
-=======
 Accepted
 
 ### Review Notes
@@ -484,4 +390,3 @@ Conforms to ARCH-021 and the accepted C060/C062/C063/C070 boundaries. `AdminQuer
 ### Follow-up
 
 `ARCH-021-COMMERCE-083` is referenced by C082 `enables`, but no C083 task file is present in the submitted snapshot. C082 acceptance therefore cannot promote a non-materialised dependent task in this overlay. Materialise/reconcile C083 separately before execution.
->>>>>>> e44d01d530cf6d9f4eb803a7cd17b4cd15291938
