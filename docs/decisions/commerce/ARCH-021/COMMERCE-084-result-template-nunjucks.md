@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 75
 executor: copilot
 claimed_at: 2026-09-28T23:07:06Z
@@ -898,35 +898,46 @@ The default generator is an authoring convenience, not a second runtime grammar.
 
 ### Status
 
-Not Started
+Attempt 2 corrections implemented; submitted for architect review.
 
 ### Files Changed
 
-None
+Commerce implementation commits `161b34d` and `bdc1502` on `task/ARCH-021-COMMERCE-084` contain the AST validator, restricted renderer, generator corrections and focused regressions, and pin database fixture commit `4da3139`. The fixture migration is independently committed and pushed on the matching database task branch. No Shared or C085-owned UI/state file was modified.
 
 ### Work Completed
 
-None
+- **Review item 1, amended grammar:** Nunjucks parser/AST is the syntax authority; Commerce applies an explicit AST allowlist, schema-aware expression typing, bounded `for`/`if` control flow, supported literals/operators, and deterministic rejection for unsupported constructs and implicit coercion.
+- **Review item 2, loader isolation:** Renderer uses an explicit empty loader list; a regression verifies there are zero loaders, while loading tags remain rejected.
+- **Review item 3, generator consistency:** Root scalar/array templates are supported. Every generated template passes `validateResponseTemplateAuthoring`; source, AST-node, loop-count and nesting overflow maps to `template_generation_too_large`.
+- **Review item 4, fixture migration:** Migrated `database/scripts/fixtures/arch020-commerce-capability-cases.mjs` to `nunjucks.v1`; Commerce pins database commit `4da3139`.
+- **Review item 5, durable handoff:** This report and `status: review` are committed and pushed on the parent task branch. The `## Architect Review` section is intentionally unchanged.
+- Division/modulo by zero and non-finite arithmetic receive stable internal codes and bounded messages before mapping to existing `INVALID_INPUT`/unavailable semantics. No `Infinity`/`NaN` output is emitted.
+- Preserved the pre-production breaking replacement and canonical publication/Test/production boundary. The bounded R11 ownership audit found no non-Commerce deployable runtime consumer; old local revisions must be re-authored.
 
 ### Validation Results
 
-None
+- Attempt 2 focused packet: 10 files, 123 tests passed, covering parser, authoring, generator, renderer, definition execution, External publication/live Test, Shopify Admin authoring validation, Commerce lifecycle and Studio integration.
+- Focused renderer suite after stable arithmetic classification: 4 tests passed. Focused generator suite after canonical-boundary self-validation: 5 tests passed.
+- Targeted ESLint on changed TypeScript files passed. `git diff --check` passed for Commerce and the nested database repository. `node --check database/scripts/fixtures/arch020-commerce-capability-cases.mjs` passed.
+- Attempt 2 `npx tsc --noEmit --pretty false` remains nonzero with 266 repository-wide diagnostics; none reference changed C084 parser, renderer, generator or focused test files.
+- Attempt 1 full-suite baseline was 35 failed files, 91 passed and 2 skipped (184 failed tests, 952 passed, 6 skipped, 51 uncaught errors), primarily from C085-owned legacy editor/state assumptions. Full suite was not rerun in Attempt 2.
+- Attempt 1 QuickJS preview checks reported worker `MODULE_NOT_FOUND`; disposable C20/MCP suites require PostgreSQL/Redis configuration. Those environment-dependent suites were not rerun in Attempt 2.
 
 ### Deviations
 
-None
+Whole-package typecheck remains non-green at the documented 266-diagnostic baseline. Full Commerce Vitest and environment-dependent QuickJS/C20/MCP checks were not rerun. C085-owned UI/state files remain untouched.
 
 ### Assumptions
 
-None
+COMMERCE-085 will migrate the editor/state draft assumptions to the strict persisted Nunjucks v1 contract before full UI integration is expected to pass.
 
 ### Unresolved Issues
 
-None
+Workspace-wide TypeScript/UI validation still depends on C085 editor/state migration and existing generated-Prisma/baseline fixes. QuickJS preview validation needs its packaged runtime artifact; disposable C20/MCP suites need task-owned PostgreSQL/Redis configuration.
 
 ### Architectural Concerns
 
-None
+None identified by the bounded R11 audit. No Shared contract or database migration was introduced.
 
 ## Architect Review
 
