@@ -332,9 +332,9 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-076](COMMERCE-076-restore-result-template-tab-integration.md) | Superseded regression restoration; replaced by the 2026-09-28 authoring-flow refinement | Superseded | - |
 | [COMMERCE-077](COMMERCE-077-start-tool-definition-authoring-flow.md) | UI/state: Create Tool launcher + first-class local Tool Definition | Complete | COMMERCE-039, COMMERCE-064 |
 | [COMMERCE-078](COMMERCE-078-compose-new-tool-authoring-flow.md) | UI: exact new-Tool flow, Result Template before Test, derived Agent Contract in Review | Complete | COMMERCE-077, 063, 066, 067, 068 |
-| [COMMERCE-079](COMMERCE-079-align-persisted-draft-authoring-flow.md) | UI: persisted-DRAFT parity, CAS Save and Cancel reset | Ready | COMMERCE-078 |
+| [COMMERCE-079](COMMERCE-079-align-persisted-draft-authoring-flow.md) | UI: persisted-DRAFT parity, CAS Save and Cancel reset | Complete | COMMERCE-078 |
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
-| [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Pending | COMMERCE-078, COMMERCE-079, COMMERCE-080 |
+| [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Ready | COMMERCE-078, COMMERCE-079, COMMERCE-080 |
 | [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Complete | COMMERCE-060, 062, 063, 070 |
 | [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Pending | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082 |
 
@@ -369,7 +369,7 @@ COMMERCE-071 is **Ready**; all of its dependencies are architect-accepted Comple
 
 COMMERCE-082 is **Complete / Accepted, Attempt 1**. Studio can now execute the exact current non-durable Shopify Admin candidate against the server-authoritative selected shop using the existing production Admin execution port, compiler-derived result contract and canonical Result Template renderer. Candidate/result/template failures remain pre-I/O, browser-supplied shop credentials are rejected by the strict input boundary, one provider request is budgeted, browser-visible results are bounded, and no Tool/revision/audit/publication-proof write is created. Submitted validation passed 96/96 tests across the focused eight-file packet plus targeted ESLint and diff checks; changed C082 files are clean under the submitted TypeScript diagnostics.
 
-C082's COMMERCE-083 UI follow-up is materialised. After C078 Attempt 4 acceptance, both C078 and C082 are Complete, so COMMERCE-083 is Ready.
+C082's COMMERCE-083 UI follow-up is materialised. C078, C079 and C082 are Complete after C079 Attempt 2 acceptance, but COMMERCE-083 remains Pending until COMMERCE-081 is also Complete.
 
 ### Result Template integration regression follow-up — 2026-09-27
 
@@ -436,7 +436,7 @@ Key invariants:
 
 COMMERCE-080 is **Complete / Accepted, Attempt 1**. External HTTP live Test now consumes the complete current unsaved Tool definition, validates Result Template compatibility before provider I/O, validates processed values against the canonical result contract, builds the production `ExternalHttpResultDataSchema` `data.values` envelope and delegates final text rendering to `renderDefinitionResult`. Both existing External editors pass the current local candidate into Test; rendered-result presentation remains deferred to COMMERCE-081. Submitted validation passed the 24-test backend/action/integration packet, all 81 External Tools UI tests, targeted Test-tab assertions, ESLint and `git diff --check`. Repository TypeScript remains non-green only on the documented baseline; no new C080 payload/backend diagnostic is present.
 
-COMMERCE-081 is materialised. After C078 Attempt 4 acceptance, C078 and C080 are Complete, so COMMERCE-081 is Ready.
+COMMERCE-081 is materialised. After C079 Attempt 2 acceptance, C078, C079 and C080 are Complete, so COMMERCE-081 is Ready.
 
 
 ### COMMERCE-077 Attempt 2 accepted — 2026-09-28
@@ -1046,13 +1046,22 @@ The Tool-domain extraction is accepted in substance, but COMMERCE-020 remains **
 
 COMMERCE-078 is **Complete / Accepted, Attempt 4**. New Tool authoring now uses the agreed provider-aware six-step composition and browser-local Save boundary, and the shared new-Tool session owns exactly one provider-neutral Test checkpoint based on Tool Definition, Request, Response and Result Template validation revisions. C078 does not execute providers or store provider Test payloads; C081/C083 consume the C078 checkpoint while invoking the already-accepted C080/C082 backends.
 
-Current executable refinement frontier:
+Current executable refinement frontier after C079 Attempt 2 acceptance:
 
 ```text
-COMMERCE-079    COMMERCE-081    COMMERCE-083
+COMMERCE-081
 ```
+
+COMMERCE-083 remains Pending on COMMERCE-081.
 
 
 ### COMMERCE-079 Attempt 1 review — Changes Requested — 2026-09-28
 
 Manual validation confirms the persisted six-tab composition is present. Attempt 1 remains unaccepted for three bounded corrections: remove the unreachable duplicate legacy External DRAFT branch; keep Shopify durable Save/Validate/Publish/Cancel actions Review-owned only; and establish the persisted provider-neutral four-revision/Test freshness checkpoint required by C081/C083. C081 and C083 are therefore Pending until C079 is Complete.
+
+
+### COMMERCE-079 Attempt 2 accepted — 2026-09-28
+
+COMMERCE-079 is **Complete / Accepted, Attempt 2**. Persisted External HTTP and Shopify Admin DRAFTs now use the canonical six-step ownership model with one active supported editor path per provider, Review-only durable actions, one-CAS Save/Cancel restoration semantics and the shared four-revision provider-neutral Test freshness checkpoint inherited from C078. Test-only transient state remains separate from persistence dirtiness and C079 adds no provider Test backend.
+
+C078, C079 and C080 are Complete, so COMMERCE-081 is **Ready**. COMMERCE-083 remains **Pending** until COMMERCE-081 is Complete. SYSTEM-TEST-002 remains Pending on C079 + C081 + C083.
