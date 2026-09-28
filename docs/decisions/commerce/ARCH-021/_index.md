@@ -336,7 +336,9 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
 | [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-080 |
 | [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Complete | COMMERCE-060, 062, 063, 070 |
-| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Ready | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082 |
+| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Pending | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085 |
+| [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Ready | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
+| [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Pending | COMMERCE-078, COMMERCE-084 |
 
 Initial executable frontier for this workstream:
 
@@ -1072,3 +1074,10 @@ C078, C079, C080 and C081 are Complete. COMMERCE-083 is **Ready**. SYSTEM-TEST-0
 COMMERCE-081 is **Complete / Accepted, Attempt 2**. External live Test now combines the C078/C079 common authored-section checkpoint with a monotonic provider-local transient generation, so argument/shop A -> B -> A reversion cannot resurrect pending or displayed provider results. Server-rendered Result Template text remains the primary Test output, diagnostics remain bounded/secondary, and Test-only state stays non-durable.
 
 C078, C079, C081 and C082 are Complete, so COMMERCE-083 is **Ready**. SYSTEM-TEST-002 remains Pending until C083 is Complete.
+
+
+### COMMERCE-084 Attempt 1 changes requested — 2026-09-28
+
+C084 is **Ready** for Attempt 2. The current one-runtime Nunjucks foundation is accepted in substance, but the canonical `nunjucks.v1` contract is expanded before acceptance to bounded `if`/`elif`/`else`, primitive literals, comparisons, boolean expressions and numeric arithmetic with schema-aware static typing. Attempt 2 must also use the installed Nunjucks parser/AST as syntax authority, remove the accidental default filesystem loader, make generated templates self-validating (including root scalar/parallel complexity cases), migrate the remaining C084-owned ARCH-020 fixture, and produce a durable committed/pushed Completion Report.
+
+C085 remains **Pending** on C084 and owns the legacy Text/Items editor/state migration. C079/C081 are already Complete and must be preserved rather than re-executed. C083 is re-gated **Pending** on C085 so Shopify Admin Test UI integration consumes the final Nunjucks authoring surface.

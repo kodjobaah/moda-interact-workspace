@@ -1087,7 +1087,9 @@ Implementation tasks:
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085 |
+| ARCH-021-COMMERCE-084 | moda_commerce | Ready | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-085 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1453,7 +1455,9 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085 |
+| ARCH-021-COMMERCE-084 | moda_commerce | Ready | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
+| ARCH-021-COMMERCE-085 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -2658,3 +2662,14 @@ COMMERCE-081 is Complete / Accepted at Attempt 2. The executable refinement fron
 External live-Test presentation and persistence gating are architect-accepted. C081 reuses the C080 backend, drives the C078/C079 common Test checkpoint, presents server-rendered Result Template text first, and uses a monotonic non-durable transient generation so argument/shop reversion cannot resurrect stale provider-local results. New External Create and persisted External Save require a current common PASS.
 
 With C078, C079, C081 and C082 Complete, COMMERCE-083 is Ready. SYSTEM-TEST-002 remains Pending until C083 is Complete.
+
+
+### Result Template `nunjucks.v1` refinement — 2026-09-28
+
+The earlier ARCH-021 text/items Result Template statement describes the pre-refinement state and is superseded for the remaining pre-production rollout.
+
+COMMERCE-084 replaces the persisted/runtime Result Template grammar with one Commerce-owned constrained `nunjucks.v1` source contract. Its canonical validator must use the installed Nunjucks parser/AST for syntax and then apply Moda's own AST allowlist, path resolution and static type semantics. The supported v1 expression surface is deliberately bounded to literal text, property-only interpolation, bounded for/else loops, bounded if/elif/else, primitive literals, compatible comparisons, boolean `and/or/not`, parentheses and numeric `+ - * / %` plus unary negation. Calls, methods, filters, set/macro/import/include/inheritance, array/object literals, computed/bracket access, globals, `loop.*`, raw/dynamic loading and other Nunjucks features remain prohibited.
+
+The server renderer has no loader, globals, application callables or custom filters; it renders only a sanitized JSON/null-prototype `{ result }` context. Division/modulo by zero is a deterministic safe render failure mapped to the existing `INVALID_INPUT` + unavailable Tool-result semantics, never `Infinity`/`NaN`.
+
+COMMERCE-085 owns the subsequent CodeMirror authoring migration and deterministic generated-template UX. C079/C081 remain accepted lifecycle/Test boundaries that C085 must preserve. COMMERCE-083 is Pending on C085 so Shopify Admin Test UI integration consumes the final Nunjucks editor contract.
