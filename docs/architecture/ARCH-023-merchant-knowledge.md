@@ -30,20 +30,22 @@ the agent.
 
 The missing capability must solve several separate concerns without conflating them:
 
-1. **Commercial entitlement** — a pricing plan must limit how much Merchant Knowledge a
-   shop may configure.
-2. **Merchant configuration** — the merchant needs to create logical knowledge entries,
-   attach public URLs and trigger refreshes from the existing Shopify application UI.
+1. **Commercial entitlement** — a pricing plan must limit how many Merchant Knowledge
+   URLs a shop may configure and how much normalized content each URL may contribute.
+2. **Merchant configuration** — the merchant needs to create ordered knowledge sources,
+   classify each source by purpose, select its source language and trigger refreshes
+   from the existing Shopify application UI.
 3. **Asynchronous ingestion** — page fetching, SSRF protection, extraction, content
    limiting, chunking and embedding must not occur in the browser or request lifecycle.
 4. **Semantic retrieval** — the CommerceAgent needs bounded, tenant-scoped retrieval of
-   relevant passages during a conversation.
+   relevant passages during a conversation, including cross-language retrieval.
 5. **Instruction safety** — merchant/customer/web/tool content is untrusted data and
    must never expand tool authority or override higher-trust instructions.
 6. **Store identity** — merchants select a store category which seeds a default Shop
    Instruction prompt from an Admin-managed template library.
-7. **Internationalisation** — store configuration language and customer conversation
-   language are independent. Shop configuration/knowledge selection uses the shop
+7. **Internationalisation** — shop configuration language, Merchant Knowledge source
+   language and customer conversation language are independent. Shop configuration
+   language selects localized configuration/defaults; each URL records its own source
    language; the final reply uses the customer conversation language.
 8. **Prompt ownership** — platform/shop behavioural instructions belong in the Admin
    application; capability-local operational instructions and tool contracts belong in
@@ -51,20 +53,32 @@ The missing capability must solve several separate concerns without conflating t
 
 ## Goals
 
-- Add a normal `merchant_knowledge` Feature to the existing pricing/feature catalogue.
+- Add `merchant_knowledge` as an ordinary Feature using the existing `ALWAYS_ENABLED`
+  activation mode. Application/domain plan policy includes it by default on every
+  merchant pricing plan; the database schema does not make this Feature structurally
+  special or required.
 - Represent plan limits as generic plan-feature configuration rather than hard-coded
   Free/Starter checks.
-- Limit Merchant Knowledge by **logical knowledge entries**, not physical URLs.
-- Allow one logical entry to have one source per supported Moda language.
+- Limit Merchant Knowledge by **configured URL sources**: one source row / one URL
+  consumes one plan source slot.
+- Allow multiple sources to use the same Knowledge Purpose, for example multiple
+  `PRODUCT_INFORMATION` pages on a higher plan.
+- Store one supported Moda `languageTag` on every source. The Shopify UI defaults the
+  selector from `ShopSettings.defaultLanguageTag`, but the merchant may choose another
+  supported language for that URL.
 - Use deterministic language-neutral **content units**, not word counts.
+- Enforce `maxKnowledgeSources` independently from `maxContentUnitsPerSource`.
 - Store extracted source text durably in PostgreSQL.
 - Store semantic chunk embeddings in PostgreSQL using pgvector.
+- Use one multilingual embedding model for document chunks and lookup queries so
+  semantically equivalent queries may retrieve relevant content across source languages.
 - Keep Redis/BullMQ as queue/reconciliation infrastructure; do not make Redis the
   Merchant Knowledge source of truth or vector index in v1.
 - Process Merchant Knowledge asynchronously in `moda-interact-background` and write the
   resulting durable state directly to PostgreSQL.
-- Create exactly one global, FEATURE-bound `merchant_knowledge` Commerce capability.
-- Give that capability one bounded lookup operation, `merchantKnowledge.lookup`.
+- Deterministically system-provision exactly one global, FEATURE-bound `merchant_knowledge` Commerce capability identity in Commerce application/bootstrap code; it is not created through Commerce Studio.
+- Deterministically system-provision exactly one `merchant_knowledge_lookup` Commerce Tool identity, backed by the Commerce-internal policy operation `merchantKnowledge.lookup`.
+- Use Commerce Studio only for the versioned behaviour of those fixed identities: Tool revision authoring/publication, capability-local prompt/configuration authoring, Tool-to-capability revision binding, capability revision publication and release membership.
 - Ensure merchant configuration creates **knowledge data**, never new Commerce
   capabilities/releases.
 - Add initial Store Category selection to the **existing Shopify onboarding page**.
@@ -76,14 +90,16 @@ The missing capability must solve several separate concerns without conflating t
 - Make each Store Category have exactly one explicit default prompt template.
 - Translate each current template edit into all 20 supported Moda languages before the
   template can be selected for new shops.
-- Resolve the template/knowledge language from `ShopSettings.defaultLanguageTag`, with
-  English fallback.
+- Resolve Store Category/template presentation from `ShopSettings.defaultLanguageTag`,
+  with English fallback.
 - Keep customer conversation language independent and use it only for the generated
-  customer response.
+  customer response; it must not select or exclude Merchant Knowledge sources.
 - Make Platform Instructions and Shop Instructions additive.
 - Keep the immutable security/protocol kernel code-owned and non-editable.
 - Use the existing reconciliation pattern to recover durable PENDING knowledge work
   when queue publication or worker execution is interrupted.
+- Automatically reconcile ACTIVE sources when a plan downgrade lowers
+  `maxContentUnitsPerSource`, using a revisioned `ENTITLEMENT_CHANGE` replacement.
 - Allow any public HTTPS URL that passes the ingestion security policy; do not require
   the URL to share the Shopify storefront domain.
 - Make refresh merchant-initiated in v1; do not introduce automatic crawling.
@@ -93,20 +109,22 @@ The missing capability must solve several separate concerns without conflating t
 ARCH-023 does not introduce:
 
 - a new public or private Commerce ingestion HTTP endpoint;
-- one Commerce capability per merchant URL or per knowledge entry;
+- one Commerce capability per merchant URL;
 - a Redis vector index;
 - a new database or object-storage service;
 - a headless browser/JavaScript-rendering crawler;
 - arbitrary merchant-authored prompt instructions attached to URLs;
 - automatic scheduled webpage refreshes;
-- customer-language selection of Shop Instructions or knowledge sources;
+- customer-language selection or filtering of Merchant Knowledge sources;
+- mandatory translated copies of a Merchant Knowledge page for every customer language;
 - per-shop embedding-model selection;
 - an Admin UI for selecting embedding models;
 - a generic capability-dependency graph;
 - automatic execution of business actions merely because merchant knowledge says an
   action should occur;
 - background jobs whose purpose is to create merchant-specific Commerce capabilities;
-- a second Shopify onboarding wizard or a separate Merchant Knowledge settings page.
+- a second Shopify onboarding wizard or a separate Merchant Knowledge settings page;
+- a merchant-facing enable/disable toggle for Merchant Knowledge.
 
 ## Current Architecture
 
@@ -117,7 +135,7 @@ The current database already provides:
 - `Feature` with `FeatureActivationMode` and `systemRequired`;
 - `MerchantPricingPlanFeature` for pricing-catalogue feature membership;
 - `BillingPlanFeature` for materialised runtime plan-feature membership;
-- `ShopFeaturePreference` for merchant opt-in state;
+- `ShopFeaturePreference` for merchant opt-in state on optional features; ARCH-023 does not use `ShopFeaturePreference` to enable or disable `merchant_knowledge`;
 - `Subscription.status` using `SubscriptionProjectionStatus` including `ACTIVE` and
   `TRIALING`.
 
@@ -189,37 +207,93 @@ for Merchant Knowledge semantic retrieval.
 
 ```text
 FEATURE
-    commercial entitlement / merchant opt-in
+    commercial entitlement / generic plan feature
         |
         v
 CAPABILITY
     agent behaviour + executable tool authority
         |
         v
-KNOWLEDGE
-    shop-scoped factual reference material
+KNOWLEDGE SOURCE
+    one shop-scoped public URL + classification + source language
 ```
 
-The platform creates one Feature with key:
+The platform creates one ordinary Feature using the existing generic Feature model:
 
 ```text
-merchant_knowledge
+key:            merchant_knowledge
+displayName:    Merchant Knowledge
+active:         true
+activationMode: ALWAYS_ENABLED
+systemRequired: false
 ```
 
-Commerce Studio creates one global FEATURE-bound capability with key:
+`merchant_knowledge` is **not** a database-required Feature. The database schema,
+migrations and constraints MUST NOT contain a `merchant_knowledge`-specific rule
+requiring a pricing plan or billing plan to contain it.
+
+Application/domain plan policy is responsible for the product rule that every merchant
+pricing plan includes `merchant_knowledge` by default. The supported pricing-plan
+create/update workflow must add or retain one enabled `MerchantPricingPlanFeature`
+mapping for this Feature before the plan can be made available. This is code-level
+validation keyed by the stable Feature key, not a database invariant.
+
+`BillingPlan` materialisation remains generic: it copies the already-approved
+`MerchantPricingPlanFeature` rows and their configuration without a
+`merchant_knowledge`-specific branch. Because the Feature uses the existing
+`ALWAYS_ENABLED` activation mode, the normal generic feature resolver does not require
+a `ShopFeaturePreference` row for it. `systemRequired` remains `false`.
+
+ARCH-023 system-provisions the Commerce capability identity with exactly these values:
 
 ```text
-merchant_knowledge
+CommerceCapability.key              = merchant_knowledge
+CommerceCapability.displayName      = Merchant Knowledge
+CommerceCapability.description      = Merchant Knowledge lookup capability
+CommerceCapability.selectionBinding = FEATURE
+CommerceCapability.featureId        = Feature.id where Feature.key = merchant_knowledge
+CommerceCapability.enabled          = true
 ```
 
-and that capability exposes the lookup operation:
+The provisioning operation is idempotent by `CommerceCapability.key`. It MUST use the existing Commerce lifecycle/storage boundary rather than direct SQL, MUST reject a conflicting existing row whose selection binding or Feature binding differs, and MUST NOT create a capability revision or release membership.
+
+ARCH-023 also system-provisions the Commerce Tool identity with exactly these values:
+
+```text
+CommerceTool.name        = merchant_knowledge_lookup
+CommerceTool.displayName = Merchant Knowledge Lookup
+CommerceTool.description = Search the current shop's configured Merchant Knowledge.
+CommerceTool.enabled     = true
+```
+
+The Tool-identity provisioning operation is idempotent by `CommerceTool.name`. It MUST reject a conflicting existing Tool identity and MUST NOT create or publish a Tool revision.
+
+The Tool is backed internally by the Commerce policy operation:
 
 ```text
 merchantKnowledge.lookup
 ```
 
-Merchant actions create/update/delete knowledge rows only. They do not create or
-publish Commerce capabilities, capability revisions or releases.
+`merchant_knowledge_lookup` is the ToolDefinition/MCP name.
+`merchantKnowledge.lookup` is an internal Commerce execution identifier and is never
+emitted by MCP `tools/list`.
+
+Commerce Studio does not create either fixed identity. After provisioning, Studio may:
+
+1. create/edit/publish Tool revisions under `merchant_knowledge_lookup`;
+2. create/edit/publish capability revisions under `merchant_knowledge`;
+3. author the capability-local prompt/configuration;
+4. bind a published `merchant_knowledge_lookup` Tool revision into the capability revision; and
+5. include the published capability revision in Commerce releases.
+
+The Merchant Knowledge capability is runtime-usable only after a published capability revision containing the intended published Tool revision is a member of the active release.
+
+Merchant actions create/update/delete `MerchantKnowledgeSource` rows and their revisions
+only. They do not create Commerce capability/tool identities, revisions or releases.
+
+A merchant whose plan contains the Feature but has no configured knowledge sources
+still has the capability available; the lookup returns no matches. Providing the first
+knowledge source requires no separate feature-toggle transition.
 
 Knowledge may inform an otherwise-authorised capability. Knowledge must never:
 
@@ -231,40 +305,47 @@ Knowledge may inform an otherwise-authorised capability. Knowledge must never:
 - change tenant identity;
 - override platform/shop/capability instructions.
 
-### D2 — plan limits apply to logical knowledge entries
+### D2 — plan limits apply to configured URL sources
 
-A plan does not count physical URLs. It limits logical entries such as:
+One configured URL is one plan-counted `MerchantKnowledgeSource`.
 
-```text
-Customer Support
-Returns & Refunds
-Shipping & Delivery
-About the Company
-```
-
-One entry may have localized source variants, for example:
+A plan may therefore allow, for example:
 
 ```text
-Customer Support
-    fr -> https://example.fr/aide
-    en -> https://example.com/help
+position 0  /about              COMPANY_INFORMATION
+position 1  /support            CUSTOMER_SUPPORT
+position 2  /returns            POLICIES
+position 3  /products/shoes     PRODUCT_INFORMATION
+position 4  /products/jackets   PRODUCT_INFORMATION
 ```
 
-Both localized URLs consume one logical-entry slot.
+Knowledge Purpose is classification only. There is no uniqueness constraint on purpose;
+a higher plan may allow multiple sources with the same purpose.
 
 The Merchant Knowledge feature configuration is exactly:
 
 ```json
 {
   "schemaVersion": 1,
-  "maxKnowledgeEntries": 5,
-  "maxContentUnitsPerLocaleSource": 1500
+  "maxKnowledgeSources": 5,
+  "maxContentUnitsPerSource": 1500
 }
 ```
 
-The values are plan data, not application constants. `1500` content units is the
-initial recommended per-locale-source allowance; individual plans may configure a
-different positive value.
+The field names and semantics are architectural; the actual values configured for Free,
+Starter, Growth or private plans are plan data and are not hard-coded in application
+logic.
+
+`maxKnowledgeSources` limits the number of source positions currently entitled for the
+shop. `maxContentUnitsPerSource` limits normalized content independently for each
+entitled source.
+
+For example, if the current BillingPlan configuration allows three sources, sources are
+ordered by `(position ASC, id ASC)` and only the first three are currently entitled.
+Excess persisted sources are retained but are not processed/retrieved while outside the
+current allowance.
+
+There is no per-purpose quota and no per-language multiplier.
 
 ### D3 — content units are deterministic and language-neutral
 
@@ -285,37 +366,67 @@ The canonical normalization algorithm is:
 7. trim leading/trailing SPACE and LF;
 8. count Unicode code points using code-point iteration, not UTF-16 code units.
 
-If normalized content exceeds the configured allowance, Background truncates it to:
+If normalized content exceeds the current BillingPlan configuration's
+`maxContentUnitsPerSource`, Background truncates it to:
 
 ```text
-maxContentUnitsPerLocaleSource * 4
+maxContentUnitsPerSource * 4
 ```
 
-Unicode code points before chunking and records `truncated = true`. It does not fail
-an otherwise-valid page solely because it is longer than the plan allowance.
+Unicode code points before chunking and records `truncated = true`. It does not fail an
+otherwise-valid page solely because it is longer than the current plan allowance.
 
-### D4 — store language and customer language are independent
+A decrease in `maxContentUnitsPerSource` is reconciled automatically under D21. An
+increase does not automatically refetch existing content; the merchant may press
+Refresh to ingest additional content under the higher allowance.
 
-`ShopSettings.defaultLanguageTag` controls:
+### D4 — shop language, source language and customer language are independent
 
-- which localized category template is used to seed Shop Instructions;
-- which Merchant Knowledge source locale is preferred at runtime.
+ARCH-023 has three distinct language concepts:
 
-The current customer's resolved conversation language controls only the generated
-customer-facing response.
+```text
+SHOP CONFIGURATION LANGUAGE
+    ShopSettings.defaultLanguageTag
+    -> selects localized Store Category / default Shop Instruction presentation
+    -> supplies the default value when the merchant adds a knowledge URL
+
+SOURCE LANGUAGE
+    MerchantKnowledgeSource.languageTag
+    -> selected by the merchant for that URL
+    -> records provenance/diagnostic metadata
+    -> does NOT exclude the source from multilingual vector retrieval
+
+CUSTOMER CONVERSATION LANGUAGE
+    existing conversation-language resolution
+    -> controls the generated customer-facing response only
+```
+
+When a merchant adds a source, the UI pre-selects
+`resolveModaConfigurationLocale(ShopSettings.defaultLanguageTag)`. The merchant may
+choose any other D5-supported language before saving the source.
 
 Example:
 
 ```text
-shop default language = fr
-Shop Instructions      = French localized template text
-Merchant Knowledge     = French source text
-customer language      = English
-customer reply         = English
+shop configuration language = fr
+Shop Instructions           = French localized template text
+
+source A language            = fr
+source A content             = French support page
+
+source B language            = en
+source B content             = English product page
+
+customer language            = de
+customer reply               = German
 ```
 
-Changing customer language must not change feature entitlement, tool authority,
-knowledge source selection, Shop Instructions or security semantics.
+Commerce may search both source A and source B for the German query. Neither shop
+language nor customer conversation language is a hard Merchant Knowledge retrieval
+filter.
+
+Changing customer language must not change feature entitlement, tool authority, source
+eligibility, Shop Instructions or security semantics.
 
 ### D5 — supported configuration locales are the existing 20 Moda locales
 
@@ -351,12 +462,19 @@ The Admin application is the product-management surface for:
 - category/template translations;
 - plan-feature Merchant Knowledge limits.
 
-Commerce Studio owns:
+Commerce application/bootstrap code owns deterministic provisioning of architecture-defined capability/Tool identities such as `merchant_knowledge` and `merchant_knowledge_lookup`.
 
-- capability-local operational instructions;
-- tool definitions/contracts;
-- tool/provider testing;
-- capability publication/release membership.
+Commerce Studio owns the versioned authoring lifecycle after those identities exist:
+
+- capability-local operational instructions/configuration;
+- Tool revision definitions/contracts;
+- Tool/provider testing;
+- Tool revision publication;
+- Tool-revision association with capability revisions;
+- capability revision publication; and
+- release membership.
+
+Commerce Studio MUST NOT create, rename, rebind or delete the architecture-defined `merchant_knowledge` capability identity or `merchant_knowledge_lookup` Tool identity.
 
 Capability-local instructions must remain limited to the capability's own operational
 contract. Platform/store personality, tone and general behavioural policy belong in
@@ -532,7 +650,8 @@ The existing Recovery Settings page gains two sections:
 
 ```text
 Conversation features
-    existing FeaturePreferences including Merchant Knowledge toggle
+    existing FeaturePreferences remain unchanged
+    Merchant Knowledge is not rendered as an editable FeaturePreferences checkbox
 
 Store Profile
     active Store Category
@@ -540,16 +659,27 @@ Store Profile
     change-category action
 
 Merchant Knowledge
-    plan allowance
-    ordered logical entries
-    localized URLs
-    status
-    content-unit usage
-    last refreshed timestamp
-    Refresh / Edit / Delete actions
+    plan allowance: configured / maxKnowledgeSources
+    ordered URL sources
+    each source:
+        name
+        URL
+        purpose
+        language
+        status
+        content-unit usage / maxContentUnitsPerSource
+        last refreshed timestamp
+        Refresh / Edit / Delete actions
 
 Existing recovery-specific settings
 ```
+
+When adding/editing a source:
+
+- the Purpose selector uses C3 stable purpose values with localized UI labels;
+- the Language selector contains the D5 supported language set;
+- Language defaults from `ShopSettings.defaultLanguageTag` through C1;
+- the merchant may change that default before saving.
 
 No separate Merchant Knowledge settings navigation is introduced in v1.
 
@@ -559,18 +689,18 @@ The ingestion path is:
 
 ```text
 Shopify application
-    persist Entry/Source/Revision(PENDING)
+    persist Source/Revision(PENDING)
         |
         v
 BullMQ merchant-knowledge job
         |
         v
 moda-interact-background worker
-    validate current generation + entitlement
+    validate current generation + current BillingPlan entitlement
     fetch public URL safely
-    extract/normalize/truncate
+    extract/normalize/truncate to maxContentUnitsPerSource
     chunk
-    create embeddings
+    create multilingual embeddings
     persist chunks/pgvector
     promote revision ACTIVE
 ```
@@ -581,20 +711,24 @@ Background already has access to the shared PostgreSQL database and is the owner
 asynchronous business workflows. A network hop to Commerce would add failure and
 authentication boundaries without adding authority or persistence ownership.
 
-### D15 — refresh and URL replacement are revisioned
+### D15 — refresh, URL replacement and entitlement reprocessing are revisioned
 
-Each localized source has a monotonically increasing `currentGeneration`.
+Each `MerchantKnowledgeSource` has a monotonically increasing `currentGeneration`.
 
 Creating a source, changing its URL or pressing Refresh creates a new PENDING revision
-with that generation. The existing ACTIVE revision remains active while the new
+with the new generation. The existing ACTIVE revision remains active while the new
 revision is PENDING/PROCESSING.
+
+A content-limit downgrade may also create a new PENDING revision with reason
+`ENTITLEMENT_CHANGE` using the same currently requested/resolved URL.
 
 On success, one database transaction:
 
-1. changes the old ACTIVE revision to `SUPERSEDED`;
-2. changes the new revision to `ACTIVE`;
-3. deletes semantic chunks belonging to the superseded revision;
-4. leaves the superseded revision's normalized content/metadata for audit/history.
+1. re-checks `revision.generation == source.currentGeneration`;
+2. changes the old ACTIVE revision to `SUPERSEDED`;
+3. changes the new revision to `ACTIVE`;
+4. deletes semantic chunks belonging to the superseded revision;
+5. leaves the superseded revision's normalized content/metadata for audit/history.
 
 On failure, the new revision becomes `FAILED`; the previous ACTIVE revision and chunks
 remain unchanged.
@@ -660,14 +794,35 @@ version.
 
 The embedding model is not database-configurable and has no Admin UI in ARCH-023.
 
+Cross-language retrieval is a required capability of the selected embedding model.
+ARCH-023 does not require identical vector scores/rankings for equivalent queries in
+different languages. It requires semantic retrieval quality: for the architecture-level
+multilingual fixture, an equivalent query in English must retrieve the expected source
+chunk written in each of the other 19 D5 locales within the top 5 results, and the
+equivalent non-English query must retrieve the expected English source chunk within the
+top 5. Failure for a supported locale blocks integrated ARCH-023 acceptance for that
+embedding configuration.
+
 ### D18 — PostgreSQL/pgvector is the vector store
 
-PostgreSQL remains authoritative for entries, sources, revisions, normalized content,
-chunks and embeddings.
+PostgreSQL remains authoritative for sources, revisions, normalized content, chunks and
+embeddings.
 
 V1 does not build HNSW/IVFFlat. Retrieval first applies highly selective relational
-filters for the authenticated shop, current entitlement, purpose, locale and ACTIVE
-revision and then performs exact cosine-distance ranking over the remaining vectors.
+filters for:
+
+```text
+authenticated shopId
++ currently entitled source positions
++ optional purpose set
++ ACTIVE revision
++ current embedding provenance
+```
+
+and then performs exact cosine-distance ranking over the remaining vectors.
+
+`MerchantKnowledgeSource.languageTag` is returned as source metadata but is not a
+relational exclusion filter for semantic retrieval.
 
 This is intentionally optimised for the expected shape:
 
@@ -682,30 +837,63 @@ Redis remains BullMQ/reconciliation infrastructure only.
 
 During a CommerceAgent turn:
 
-1. the normal release/feature resolver determines whether the global
-   `merchant_knowledge` capability is eligible;
-2. if eligible, `merchantKnowledge.lookup` is included in the conversation's exact
-   granted-tool set;
-3. the model may supply only semantic query text and optional Knowledge Purposes;
-4. `shopId` is supplied exclusively from the trusted conversation/grant context;
-5. Commerce loads current plan-feature configuration and selects only the first
-   `maxKnowledgeEntries` ordered entries;
-6. Commerce resolves the store locale from `ShopSettings.defaultLanguageTag` using D5;
-7. for each entry it prefers that locale and falls back to `en`; if neither exists the
-   entry contributes no chunks;
-8. Commerce embeds the query using the configured embedding environment;
-9. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
-   chunks with matching embedding provenance;
-10. at most 5 chunks are returned to the model as **untrusted reference data**.
+1. the normal generic release/feature resolver evaluates the active/trialing shop's
+   current `BillingPlanFeature` mappings and the `Feature.activationMode`;
+2. when the plan contains an enabled `merchant_knowledge` mapping, the global
+   `merchant_knowledge` capability is eligible and the conversation grant pins the exact
+   `merchant_knowledge_lookup` Tool revision owned by that capability. Because its
+   activation mode is `ALWAYS_ENABLED`, no `ShopFeaturePreference` check is required. If
+   a mapping is absent because data was created outside the supported plan-authoring
+   policy, the generic resolver simply leaves the capability/tool absent; no
+   database-specific Merchant Knowledge invariant is introduced;
+3. MCP `tools/list` exposes `merchant_knowledge_lookup` only when that exact pinned Tool
+   remains currently authorised and at least one of its owning capability keys remains
+   eligible;
+4. MCP `tools/list` exposes the ToolDefinition name, description and input schema only;
+   it does not expose the internal policy-operation name, `shopId`, source language, plan
+   limits, embedding configuration or result-count authority;
+5. an MCP `tools/call` for `merchant_knowledge_lookup` maps to the Commerce-internal
+   `merchantKnowledge.lookup` policy operation;
+6. the model may supply only semantic query text and optional Knowledge Purposes;
+7. `shopId` is supplied exclusively from the trusted conversation/grant context;
+8. Commerce loads the current `BillingPlanFeature.configuration`, validates C2 and selects
+   only the first `maxKnowledgeSources` sources ordered by `(position ASC, id ASC)`;
+9. if `purposes` was supplied, Commerce filters the entitled sources to those purposes;
+   no source-language filter is applied;
+10. Commerce embeds the query using the current D17 embedding environment;
+11. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
+    chunks with matching embedding provenance;
+12. at most 5 chunks are returned to the model as **untrusted reference data**, each
+    retaining its source `languageTag`.
 
-The customer's conversation language does not participate in steps 5-9. The model may
-use French Shop Instructions/French knowledge to answer an English customer in English.
+MCP surface separation is explicit:
+
+```text
+tools/list
+    -> executable ToolDefinitions currently authorised by the conversation grant
+
+prompts/list / prompts/get
+    -> eligible capability-local prompt instructions
+
+commerce://capabilities
+    -> pinned capability/release manifest information
+```
+
+`tools/list` is not a catalogue of every Commerce Studio Tool and does not return a
+capability list. A shop with no configured Merchant Knowledge still receives
+`merchant_knowledge_lookup` when the normal plan/feature resolver makes the capability
+eligible; a call returns zero matches rather than changing the tool grant.
+
+The customer's conversation language does not participate in source eligibility or
+vector filtering. The multilingual embedding model bridges query/source languages; the
+Commerce model uses the existing conversation language to produce the final response.
 
 ### D20 — no capability-to-capability dependency is introduced
 
-Other capabilities work with or without Merchant Knowledge. When Merchant Knowledge is
-present they may benefit from facts returned by its lookup tool. It does not become a
-formal prerequisite for product search, recovery, discounts, returns or future tools.
+Other capabilities work whether or not the merchant has configured Merchant Knowledge
+data. The `merchant_knowledge` capability may therefore be granted while its lookup
+returns zero matches. Merchant Knowledge does not become a formal prerequisite for
+product search, recovery, discounts, returns or future tools.
 
 Example:
 
@@ -715,6 +903,45 @@ Knowledge result: "Returns are accepted within 30 days."
 
 may allow the agent to answer a policy question. It does not make a hypothetical
 `refundOrder` tool executable unless a separately eligible capability grants that tool.
+
+### D21 — current plan limits are enforced at authoring, ingestion and lookup boundaries
+
+For Feature key `merchant_knowledge`, C2 is enforced as follows:
+
+| Boundary | `maxKnowledgeSources` | `maxContentUnitsPerSource` |
+|---|---|---|
+| Admin plan authoring | validate positive/bounded value | validate positive/bounded value |
+| BillingPlan materialisation | validate/copy configuration unchanged | validate/copy configuration unchanged |
+| Shopify UI | display `configured / max` | display source usage / max |
+| Shopify server action | reject creation that would exceed source allowance | no content decision before fetch |
+| Background processing | re-check source position against current allowance | normalize/truncate before chunking/embedding |
+| Commerce lookup | search only currently entitled source positions | consume ACTIVE indexed content |
+| Background reconciliation | retain excess sources but do not enqueue/process them | automatically reprocess oversized ACTIVE entitled sources after a decrease |
+
+Source-count downgrades are non-destructive. Sources beyond the current
+`maxKnowledgeSources` remain persisted, including their revision history, but are
+excluded from new processing and Commerce lookup while outside the current allowance.
+
+When `maxContentUnitsPerSource` decreases, Background reconciliation identifies ACTIVE,
+currently entitled sources whose ACTIVE revision has
+`contentUnits > maxContentUnitsPerSource`. For each such source, it atomically:
+
+1. locks the source;
+2. verifies no newer PENDING/PROCESSING revision already represents the current
+   generation;
+3. increments `currentGeneration` by exactly one;
+4. inserts a new PENDING revision with reason `ENTITLEMENT_CHANGE`;
+5. uses the ACTIVE revision's `requestedUrl` as the new revision's `requestedUrl`;
+6. commits;
+7. publishes C4 using the normal deterministic job-id contract.
+
+The prior ACTIVE revision remains available until the bounded replacement succeeds.
+Once the replacement becomes ACTIVE, D15 supersedes the predecessor and deletes its
+semantic chunks.
+
+A plan increase in `maxContentUnitsPerSource` does **not** automatically refetch existing
+sources. The merchant may press Refresh to ingest additional content using the higher
+allowance.
 
 ## Exact Target Data Model
 
@@ -735,9 +962,24 @@ Add to `billing.MerchantPricingPlanFeature`:
 configuration Json @default("{}") @db.JsonB
 ```
 
-For Feature key `merchant_knowledge`, both JSON values must validate as
-`MerchantKnowledgeFeatureConfigurationV1` defined under Contracts. Materialisation from
-`MerchantPricingPlan` to `BillingPlan` copies this JSON without semantic transformation.
+The two `configuration` columns are **generic plan-feature configuration**, not Merchant
+Knowledge-specific database fields. The database stores JSON and MUST NOT inspect its
+shape based on a Feature key. No Merchant Knowledge-specific entitlement table, check
+constraint, trigger or required-feature constraint is introduced.
+
+For Feature key `merchant_knowledge`, application/domain code validates the JSON with C2
+before the pricing plan can be made available. The plan-authoring domain policy also adds
+or retains the ordinary `MerchantPricingPlanFeature` mapping for `merchant_knowledge` by
+default on every plan. This default-inclusion rule is enforced in code, not in the
+database schema.
+
+`BillingPlan` materialisation copies the generic plan-feature mappings and their
+`configuration` JSON without semantic transformation and without a
+`merchant_knowledge`-specific materialisation branch. Runtime entitlement uses the
+materialised `BillingPlanFeature.configuration`, not the mutable pricing-catalogue row.
+
+ARCH-023 is pre-production and there are no existing plans requiring compatibility
+backfill.
 
 No Merchant Knowledge limit is read from plan display names or hard-coded plan kinds.
 
@@ -765,7 +1007,7 @@ following names so every relation in this document is deterministic:
 
 ```text
 Shop.commerceShopProfile
-Shop.merchantKnowledgeEntries
+Shop.merchantKnowledgeSources
 
 CommercePromptTemplateCategory.defaultTemplate
 CommercePromptTemplateCategory.translations
@@ -976,6 +1218,7 @@ enum MerchantKnowledgeRevisionReason {
   CREATE
   URL_CHANGE
   REFRESH
+  ENTITLEMENT_CHANGE
 
   @@schema("commerce")
 }
@@ -995,80 +1238,68 @@ enum MerchantKnowledgeRevisionStatus {
 }
 ```
 
-### New table — `MerchantKnowledgeEntry`
-
-```prisma
-model MerchantKnowledgeEntry {
-  id        String                   @id @default(cuid()) @db.Text
-  shopId    String                   @db.Text
-  name      String                   @db.VarChar(160)
-  purpose   MerchantKnowledgePurpose
-  position  Int
-  createdAt DateTime                 @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime                 @default(now()) @updatedAt @db.Timestamptz(3)
-
-  shop    Shop                      @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  sources MerchantKnowledgeSource[]
-
-  @@unique([shopId, position])
-  @@index([shopId, purpose, position])
-  @@schema("commerce")
-}
-```
-
-`position` is zero-based and non-negative. Runtime entitlement selects entries by
-`position ASC, id ASC` and takes the first `maxKnowledgeEntries`.
-
 ### New table — `MerchantKnowledgeSource`
+
+One source is one configured URL slot and therefore one plan-counted Merchant Knowledge
+unit.
 
 ```prisma
 model MerchantKnowledgeSource {
-  id                String   @id @default(cuid()) @db.Text
-  entryId           String   @db.Text
-  languageTag       String   @db.VarChar(16)
-  currentGeneration Int      @default(0)
-  createdAt         DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt         DateTime @default(now()) @updatedAt @db.Timestamptz(3)
+  id                String                   @id @default(cuid()) @db.Text
+  shopId            String                   @db.Text
+  name              String                   @db.VarChar(160)
+  purpose           MerchantKnowledgePurpose
+  languageTag       String                   @db.VarChar(16)
+  position          Int
+  currentGeneration Int                      @default(0)
+  createdAt         DateTime                 @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime                 @default(now()) @updatedAt @db.Timestamptz(3)
 
-  entry     MerchantKnowledgeEntry            @relation(fields: [entryId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  shop      Shop                              @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   revisions MerchantKnowledgeSourceRevision[]
 
-  @@unique([entryId, languageTag])
-  @@index([languageTag])
+  @@unique([shopId, position])
+  @@index([shopId, purpose, position])
+  @@index([shopId, languageTag])
   @@schema("commerce")
 }
 ```
 
-`languageTag` must be exactly one D5 supported locale. `currentGeneration` is
-non-negative and increments by exactly one whenever CREATE/URL_CHANGE/REFRESH creates a
-new revision for this source.
+`position` is zero-based and non-negative. Runtime entitlement orders sources by
+`position ASC, id ASC` and takes the first `maxKnowledgeSources`.
+
+`languageTag` must be exactly one C1/D5 supported locale. It is source metadata and is
+not a vector-retrieval exclusion filter.
+
+`currentGeneration` is non-negative and increments by exactly one whenever
+CREATE/URL_CHANGE/REFRESH/ENTITLEMENT_CHANGE creates a new revision for this source.
 
 ### New table — `MerchantKnowledgeSourceRevision`
 
 ```prisma
 model MerchantKnowledgeSourceRevision {
-  id                  String                          @id @default(cuid()) @db.Text
-  sourceId            String                          @db.Text
+  id                  String                           @id @default(cuid()) @db.Text
+  sourceId            String                           @db.Text
   generation          Int
   reason              MerchantKnowledgeRevisionReason
-  requestedUrl        String                          @db.VarChar(2048)
-  resolvedUrl         String?                         @db.VarChar(2048)
-  status              MerchantKnowledgeRevisionStatus @default(PENDING)
-  contentType         String?                         @db.VarChar(128)
+  requestedUrl        String                           @db.VarChar(2048)
+  resolvedUrl         String?                          @db.VarChar(2048)
+  status              MerchantKnowledgeRevisionStatus  @default(PENDING)
+  contentType         String?                          @db.VarChar(128)
   httpStatus          Int?
-  normalizedContent   String?                         @db.Text
+  normalizedContent   String?                          @db.Text
   contentUnits        Int?
-  contentHash         String?                         @db.VarChar(64)
-  truncated           Boolean                         @default(false)
-  failureCode         String?                         @db.VarChar(128)
-  requestedAt         DateTime                        @default(now()) @db.Timestamptz(3)
-  processingStartedAt DateTime?                       @db.Timestamptz(3)
-  fetchedAt           DateTime?                       @db.Timestamptz(3)
-  completedAt         DateTime?                       @db.Timestamptz(3)
-  createdAt           DateTime                        @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime                        @default(now()) @updatedAt @db.Timestamptz(3)
+  contentHash         String?                          @db.VarChar(64)
+  truncated           Boolean                          @default(false)
+  failureCode         String?                          @db.VarChar(128)
+  requestedAt         DateTime                         @default(now()) @db.Timestamptz(3)
+  processingStartedAt DateTime?                        @db.Timestamptz(3)
+  fetchedAt           DateTime?                        @db.Timestamptz(3)
+  completedAt         DateTime?                        @db.Timestamptz(3)
+  createdAt           DateTime                         @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime                         @default(now()) @updatedAt @db.Timestamptz(3)
 
-  source MerchantKnowledgeSource  @relation(fields: [sourceId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  source MerchantKnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade, onUpdate: Restrict)
   chunks MerchantKnowledgeChunk[]
 
   @@unique([sourceId, generation])
@@ -1087,8 +1318,13 @@ ON "commerce"."MerchantKnowledgeSourceRevision" ("sourceId")
 WHERE "status" = 'ACTIVE';
 ```
 
-`contentUnits` and `contentHash` are required for ACTIVE/SUPERSEDED revisions.
-`contentHash` is lowercase SHA-256 of exact UTF-8 normalized/truncated content.
+`generation` is positive. `contentUnits` and `contentHash` are required for
+ACTIVE/SUPERSEDED revisions. `contentHash` is lowercase SHA-256 of exact UTF-8
+normalized/truncated content.
+
+For `ENTITLEMENT_CHANGE`, `requestedUrl` is copied from the currently ACTIVE revision.
+The worker still performs a new fetch; the reason records why the new generation was
+created.
 
 ### New table — `MerchantKnowledgeChunk`
 
@@ -1171,10 +1407,13 @@ export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION = 1 as cons
 
 export const MerchantKnowledgeFeatureConfigurationSchema = z.object({
   schemaVersion: z.literal(1),
-  maxKnowledgeEntries: z.number().int().min(1).max(100),
-  maxContentUnitsPerLocaleSource: z.number().int().min(1).max(25000),
+  maxKnowledgeSources: z.number().int().min(1).max(100),
+  maxContentUnitsPerSource: z.number().int().min(1).max(25000),
 }).strict();
 ```
+
+The values are plan configuration. ARCH-023 does not assign specific Free/Starter/Growth
+values.
 
 No downstream consumer may redefine this shape locally.
 
@@ -1201,7 +1440,11 @@ The Shared Zod enum and TypeScript type must exactly match the database enum nam
 
 Owner: `moda-interact-shared`
 
-Producer: `moda-interact`
+Producers:
+
+- `moda-interact` for CREATE / URL_CHANGE / REFRESH requests;
+- `moda-interact-background` reconciliation for durable PENDING recovery and
+  ENTITLEMENT_CHANGE requests.
 
 Consumer: `moda-interact-background`
 
@@ -1228,11 +1471,10 @@ merchant-knowledge-process-
 
 encoded as lowercase hexadecimal after the prefix.
 
-There is no Shared `create-capability` Merchant Knowledge job. Capability creation and
-publication remain Commerce Studio operations.
+There is no Shared `create-capability` or `create-tool` Merchant Knowledge job. The fixed `merchant_knowledge` capability identity and `merchant_knowledge_lookup` Tool identity are deterministically provisioned inside `moda-interact-commerce`; Studio owns only their revision authoring/binding/publication and release membership.
 
-Background-only reconciliation jobs/contracts remain Background-owned unless a later
-producer in another repository is introduced.
+Background-only scheduling/reconciliation state that does not cross an application
+boundary remains Background-owned.
 
 ### C5 — configuration translation queue
 
@@ -1289,10 +1531,26 @@ Background may reuse the existing translation provider/batching primitives inter
 but the Admin/Background runtime boundary is this contract rather than support-message-
 specific translation payloads.
 
-### C6 — `merchantKnowledge.lookup` tool contract
+### C6 — `merchant_knowledge_lookup` MCP tool / `merchantKnowledge.lookup` policy contract
 
 This contract is Commerce-owned, not Shared, because it does not cross an application
 boundary.
+
+The exact MCP-visible Tool name is:
+
+```text
+merchant_knowledge_lookup
+```
+
+The exact internal Commerce policy-operation identifier is:
+
+```text
+merchantKnowledge.lookup
+```
+
+The published ToolDefinition must use `name = "merchant_knowledge_lookup"`. Its
+`POLICY_OPERATION` execution must use `operation = "merchantKnowledge.lookup"` and
+`operationVersion = "1.0.0"`.
 
 Agent input:
 
@@ -1303,8 +1561,48 @@ Agent input:
 }
 ```
 
-The model cannot supply `shopId`, language, plan limits, embedding model/version or
-result count.
+The exact MCP input schema is:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "purposes": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 6,
+      "items": {
+        "type": "string",
+        "enum": [
+          "COMPANY_INFORMATION",
+          "CUSTOMER_SUPPORT",
+          "POLICIES",
+          "FAQ",
+          "PRODUCT_INFORMATION",
+          "SHIPPING_AND_DELIVERY"
+        ]
+      }
+    }
+  },
+  "required": ["query"],
+  "additionalProperties": false
+}
+```
+
+The policy-operation argument mapping is exactly:
+
+```text
+query    <- agent input query
+purposes <- agent input purposes, omitted when absent
+```
+
+The model cannot supply `shopId`, source language, plan limits, embedding model/version
+or result count.
 
 Trusted runtime inputs are:
 
@@ -1312,7 +1610,6 @@ Trusted runtime inputs are:
 shopId                 <- conversation grant/context
 current BillingPlan    <- subscription projection
 feature configuration  <- BillingPlanFeature.configuration
-shop language          <- ShopSettings.defaultLanguageTag
 embedding provenance   <- server environment
 ```
 
@@ -1322,7 +1619,7 @@ Each returned match has exactly:
 
 ```ts
 {
-  entryId: string;
+  sourceId: string;
   sourceRevisionId: string;
   purpose: MerchantKnowledgePurpose;
   languageTag: ModaSupportedLanguageTag;
@@ -1331,6 +1628,9 @@ Each returned match has exactly:
   content: string;
 }
 ```
+
+`languageTag` describes the returned source. It is not an authorization signal and is
+not used to exclude otherwise-entitled sources before vector ranking.
 
 Vector distance is used for ranking but is not exposed as authority or permission and
 need not be returned to the model.
@@ -1418,10 +1718,20 @@ promote pending category to active
 Recovery Settings -> Merchant Knowledge
     |
     v
-validate feature entitlement + logical-entry limit
+resolve current BillingPlanFeature.configuration (C2)
+    |
+    +--> CREATE:
+    |      count/order existing sources
+    |      reject if new source would exceed maxKnowledgeSources
+    |      default language selector from ShopSettings.defaultLanguageTag
+    |      merchant confirms/changes purpose + language + URL
+    |
+    +--> URL_CHANGE / REFRESH:
+           existing source slot retained
     |
     v
 transaction:
+  create/update source as applicable
   increment source.currentGeneration
   insert PENDING source revision
     |
@@ -1434,7 +1744,7 @@ best-effort BullMQ process-source-revision enqueue
                   and reconciliation re-enqueues later
 ```
 
-### Flow E — Background source processing
+### Flow E — Background source processing and entitlement reconciliation
 
 ```text
 process-source-revision job
@@ -1443,10 +1753,10 @@ process-source-revision job
 runtime-validate Shared payload
     |
     v
-load source/revision/entry/shop/plan entitlement
+load source/revision/shop/current BillingPlan entitlement
     |
-    +--> stale generation -> skip without mutation
-    +--> no longer entitled -> fail/leave active predecessor intact
+    +--> stale generation -> skip without promotion
+    +--> source position outside maxKnowledgeSources -> do not process
     |
     v
 claim PENDING -> PROCESSING
@@ -1455,13 +1765,13 @@ claim PENDING -> PROCESSING
 secure public HTTPS fetch
     |
     v
-extract + D3 normalize/truncate
+extract + D3 normalize/truncate to maxContentUnitsPerSource
     |
     v
 D17 chunk
     |
     v
-embed each chunk with platform embedding configuration
+embed each chunk with platform multilingual embedding configuration
     |
     v
 transaction:
@@ -1473,6 +1783,11 @@ transaction:
   delete predecessor chunks
 ```
 
+Background reconciliation also compares currently entitled ACTIVE revisions with the
+current `maxContentUnitsPerSource`. If an ACTIVE revision exceeds a newly-lower limit,
+reconciliation creates an `ENTITLEMENT_CHANGE` PENDING revision and enqueues it through
+the same C4 contract. It does not automatically reprocess on allowance increases.
+
 ### Flow F — conversation lookup
 
 ```text
@@ -1481,12 +1796,12 @@ conversation grant
     v
 normal capability selection
     |
-    +--> merchant_knowledge not eligible -> tool absent
+    +--> merchant_knowledge mapping absent/disabled -> generic resolver leaves tool absent
     |
-    +--> merchant_knowledge eligible
+    +--> merchant_knowledge mapping present/enabled (normal application-created plan)
               |
               v
-        merchantKnowledge.lookup granted
+        merchant_knowledge_lookup granted
               |
               v
         agent submits query + optional purposes
@@ -1495,19 +1810,19 @@ normal capability selection
         Commerce injects trusted shopId
               |
               v
-        resolve current feature config + first N ordered entries
+        resolve current C2 config + first maxKnowledgeSources ordered sources
               |
               v
-        resolve shop configuration locale; per entry locale -> en fallback
+        optional purpose filter; NO source-language filter
               |
               v
-        embed query using current embedding provenance
+        embed query using current multilingual embedding provenance
               |
               v
         exact pgvector cosine ranking over eligible ACTIVE chunks
               |
               v
-        <=5 untrusted reference chunks returned
+        <=5 untrusted reference chunks + source language returned
               |
               v
         model answers using current customer conversation language
@@ -1517,15 +1832,29 @@ normal capability selection
 
 ### Knowledge configuration transaction
 
-Creating/changing/refreshing a localized source must atomically:
+Creating a new source must atomically:
+
+1. resolve/validate the current C2 BillingPlan configuration;
+2. lock the shop's source ordering scope sufficiently to prevent two concurrent creates
+   from both exceeding `maxKnowledgeSources`;
+3. allocate a unique zero-based `position`;
+4. insert the `MerchantKnowledgeSource`;
+5. set `currentGeneration = 1`;
+6. insert exactly one CREATE PENDING revision with generation `1`;
+7. commit before BullMQ publication.
+
+Changing a source URL or pressing Refresh must atomically:
 
 1. lock/load the source row;
-2. increment `currentGeneration` by one;
-3. insert exactly one PENDING revision with the same generation;
+2. increment `currentGeneration` by exactly one;
+3. insert exactly one URL_CHANGE or REFRESH PENDING revision with the same generation;
 4. commit before BullMQ publication.
 
-Queue publication is outside the transaction. Reconciliation recovers committed
-PENDING work that did not reach BullMQ.
+ENTITLEMENT_CHANGE revisions are created by Background reconciliation under D21 using
+the same source-generation invariant.
+
+Queue publication is outside the transaction. Reconciliation recovers committed PENDING
+work that did not reach BullMQ.
 
 ### Knowledge processing promotion transaction
 
@@ -1550,9 +1879,10 @@ revision/template edit identity. No design assumes exactly-once delivery.
 
 ## Ordering
 
-- Merchant Knowledge entries are ordered by `(position ASC, id ASC)`.
-- Source generations are strictly increasing per `(entry, languageTag)` source.
+- Merchant Knowledge sources are ordered by `(position ASC, id ASC)`.
+- Source generations are strictly increasing per source.
 - Only the latest source generation may become ACTIVE.
+- Source language does not alter source ordering or plan slot consumption.
 - Category suggestion ties are resolved by `(displayOrder ASC, category.id ASC)`.
 - Conversation messages retain the existing conversation-ordering architecture; ARCH-023
   does not introduce global serialization.
@@ -1593,30 +1923,47 @@ older snapshots continue unchanged.
 Pending category/template state remains pending and inactive. Re-entering onboarding
 restores the pending selection.
 
+### Plan entitlement decrease
+
+If `maxKnowledgeSources` decreases, no source rows are deleted. Commerce immediately
+excludes sources beyond the current ordered allowance, and Background does not start new
+processing for those sources while they remain outside the allowance.
+
+If `maxContentUnitsPerSource` decreases, Background reconciliation creates a bounded
+`ENTITLEMENT_CHANGE` replacement for each currently entitled ACTIVE source whose
+`contentUnits` exceeds the new limit. The predecessor remains ACTIVE until replacement
+success, preserving availability during asynchronous convergence.
+
+If the content allowance later increases, no automatic refetch occurs; merchant Refresh
+is the explicit mechanism to use the larger allowance.
+
 ## Scalability
 
 Merchant Knowledge is not on the high-volume Shopify webhook hot path. Work occurs on
-merchant configuration/refresh and on CommerceAgent turns that actually call the lookup
-tool.
+merchant configuration/refresh, entitlement reconciliation and CommerceAgent turns that
+actually call the lookup tool.
 
 Expected vector-query shape is tenant-selective:
 
 ```text
 shopId
-+ current plan limit
-+ purpose
-+ shop locale
++ current maxKnowledgeSources ordered-source allowance
++ optional purpose
 + ACTIVE revision
-+ embedding version
++ embedding provenance
 ```
 
-A typical lookup should therefore rank tens rather than hundreds of thousands of
-vectors even when the global table is large. V1 uses exact pgvector cosine search. ANN
-indexes are deferred until measured query latency/QPS demonstrates a need.
+Source language is not a vector-search partition key. The multilingual embedding model
+allows query/source languages to differ.
+
+A typical lookup should therefore rank tens rather than hundreds of thousands of vectors
+even when the global table is large. V1 uses exact pgvector cosine search. ANN indexes
+are deferred until measured query latency/QPS demonstrates a need.
 
 Background ingestion is horizontally scalable because each source revision is an
 independent idempotent job. No global per-shop serialization is required beyond the
-per-source generation guard.
+source-generation guard and the bounded critical section used when allocating source
+positions.
 
 ## Security
 
@@ -1690,21 +2037,23 @@ Commerce trust instructions.
 ### `moda-interact-admin` / `moda_admin`
 
 Owns Admin UI/actions for Platform Instructions, Shop Instructions, Store Categories,
-default templates, template/category translation status and Merchant Knowledge plan
-limits. Produces C5 translation jobs.
+default templates, template/category translation status and generic plan-feature Merchant
+Knowledge limits. It validates C2 when authoring plans and produces C5 translation jobs.
 
 ### `moda-interact` / `moda_app`
 
 Owns the merchant-facing onboarding category section, Recovery Settings Store Profile
-and Merchant Knowledge sections, merchant CRUD/refresh actions, entitlement checks and
-C4 processing-job publication.
+and Merchant Knowledge sections, source CRUD/refresh actions, server-side
+`maxKnowledgeSources` enforcement, source-language defaulting/selection and C4
+processing-job publication. Merchant Knowledge has no merchant enable/disable preference.
 
 ### `moda-interact-background` / `moda_background`
 
-Owns C4 consumption, reconciliation, URL fetching/security, extraction, normalization,
-content-unit enforcement, deterministic chunking, document embeddings, vector writes and
-revision state transitions. It also consumes C5 and reuses the existing translation
-provider/runtime for category/template localization.
+Owns C4 consumption and production for reconciliation, URL fetching/security, extraction,
+normalization, `maxContentUnitsPerSource` enforcement, deterministic chunking,
+multilingual document embeddings, vector writes, revision state transitions and
+ENTITLEMENT_CHANGE reconciliation. It also consumes C5 and reuses the existing
+translation provider/runtime for category/template localization.
 
 The target worker modules/entrypoints are fixed as:
 
@@ -1724,15 +2073,11 @@ src/entrypoints/commerce-configuration.ts
 `merchant-knowledge.worker.ts` is the only ARCH-023 worker that processes merchant
 knowledge source revisions. It does not create Commerce capabilities.
 
-There is no Background worker whose purpose is to add Commerce capabilities. The one
-`merchant_knowledge` capability is authored/published through Commerce Studio before
-merchant knowledge can be used.
+There is no Background worker whose purpose is to add Commerce capabilities or Tools. The fixed `merchant_knowledge` capability identity and `merchant_knowledge_lookup` Tool identity are provisioned idempotently by Commerce application/bootstrap code. Commerce Studio then authors/publishes their revisions, associates the published Tool revision with the capability revision, and adds the published capability revision to a release before Merchant Knowledge can be used.
 
 ### `moda-interact-commerce` / `moda_commerce`
 
-Owns creation/publication of the one global `merchant_knowledge` capability/tool,
-`merchantKnowledge.lookup`, additive platform/shop/capability instruction composition,
-query embedding and exact pgvector retrieval.
+Owns deterministic, idempotent provisioning of the fixed `merchant_knowledge` `CommerceCapability` identity and fixed `merchant_knowledge_lookup` `CommerceTool` identity through the existing Commerce lifecycle/storage boundary; registration/execution of the internal `merchantKnowledge.lookup` policy operation; Studio revision authoring/binding/publication and release membership for those identities; additive platform/shop/capability instruction composition; query embedding; current `maxKnowledgeSources` lookup enforcement; and exact pgvector retrieval across all entitled source languages.
 
 ### `moda-interact-gateway` / `moda_gateway`
 
@@ -1742,8 +2087,9 @@ new public/private HTTP service is required by the architecture itself.
 
 ### `moda-interact-system-test` / `moda_system_test`
 
-Owns final integrated validation after all implementation/infrastructure dependencies
-are Complete and after developer manual validation.
+Owns final integrated validation after all implementation/infrastructure dependencies are
+Complete and after developer manual validation, including the D17 cross-language
+retrieval fixture.
 
 ## Infrastructure Assessment
 
@@ -1810,14 +2156,30 @@ amended during Patch 1 review before task files are created.
 
 - Created ARCH-023 as a separate initiative from ARCH-021/ARCH-022.
 - Chose PostgreSQL + pgvector rather than Redis vectors for v1.
-- Chose logical knowledge-entry limits and deterministic content units.
+- Made one configured URL one plan-counted `MerchantKnowledgeSource`; removed the
+  logical-entry/localized-source hierarchy.
+- Kept `merchant_knowledge` as an ordinary Feature (`ALWAYS_ENABLED`,
+  `systemRequired=false`); application/domain plan policy includes it by default on every
+  merchant pricing plan, with no database-level required-feature invariant.
+- Defined generic feature configuration as `maxKnowledgeSources` plus
+  `maxContentUnitsPerSource`.
+- Made source language merchant-selectable metadata defaulted from shop settings, not a
+  runtime retrieval filter.
+- Required multilingual embedding retrieval across source/query languages and defined a
+  cross-language top-5 acceptance fixture.
+- Added revisioned `ENTITLEMENT_CHANGE` reconciliation for content-limit decreases;
+  source-count decreases remain non-destructive.
 - Made Background the ingestion owner with direct PostgreSQL writes.
-- Kept a single global Merchant Knowledge Commerce capability.
+- Kept a single global Merchant Knowledge Commerce capability, but made its identity architecture-defined and system-provisioned rather than Studio-created.
+- Made the `merchant_knowledge_lookup` Tool identity architecture-defined and system-provisioned; Studio owns only Tool/capability revisions, Tool binding, publication and release membership.
+- Defined `merchant_knowledge_lookup` as the MCP-visible Tool name and `merchantKnowledge.lookup` as its Commerce-internal policy operation.
+- Defined MCP `tools/list` as the current conversation-grant tool surface, separate from
+  capability prompts and `commerce://capabilities`.
 - Added Store Category/default-template onboarding on the existing onboarding page.
 - Added Store Profile and Merchant Knowledge to the existing Recovery Settings page.
 - Made Platform + Shop Instructions additive and Admin-managed.
 - Kept capability-local tool instructions Commerce-owned.
-- Defined shop-language/template/knowledge resolution independently from customer reply
-  language.
+- Defined shop configuration language independently from source language and customer
+  conversation language.
 - Defined exact target tables, keys, indexes and cross-application contracts for review
   before implementation-task creation.
