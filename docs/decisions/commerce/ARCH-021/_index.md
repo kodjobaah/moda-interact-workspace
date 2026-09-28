@@ -330,6 +330,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-070](COMMERCE-070-enforce-shopify-admin-result-contract-runtime.md) | Backend integration: enforce compiler-derived Admin result contract at runtime | Complete | COMMERCE-060, COMMERCE-062 |
 | [COMMERCE-071](COMMERCE-071-add-tool-authoring-structured-logging.md) | Observability: add shared structured diagnostics for Tool authoring, Admin Explore/schema derivation, live Test, mutations and reconciliation | Ready | COMMERCE-039, COMMERCE-054, COMMERCE-056, COMMERCE-060, COMMERCE-061, COMMERCE-062, COMMERCE-064, COMMERCE-065, COMMERCE-067 |
 | [COMMERCE-076](COMMERCE-076-restore-result-template-tab-integration.md) | Regression: restore dedicated Result Template tab/composition and guard the accepted C068 boundary | Pending | COMMERCE-055, COMMERCE-068 |
+0165| [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: execute and render a non-durable current Shopify Admin candidate live | Complete | COMMERCE-060, COMMERCE-062, COMMERCE-063, COMMERCE-070 |
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render the complete unsaved External HTTP candidate during non-durable Test | Complete | COMMERCE-054, COMMERCE-063 |
 
 Initial executable frontier for this workstream:
@@ -358,6 +359,12 @@ COMMERCE-063 Attempt 1 is architect-accepted Complete. COMMERCE-066 Attempt 1 is
 Manual debugging of the completed Tool-authoring flows identified a semantic logging gap: the Commerce process already uses the shared structured logger and production execution has `commerce.definition.outcome` telemetry, but Studio authoring mostly logs unexpected exceptions. COMMERCE-071 adds bounded shared-logger diagnostics for Request/Response validation, Shopify Admin Explore schema browsing/query validation/result-contract derivation, non-durable live Test stages, Agent/Admin validation, Tool mutations and reconciliation without logging authored GraphQL/schema payloads, provider bodies or credentials. Existing discovery telemetry remains authoritative for metrics; the new structured logs add only correlation/timing and bounded safe compiler/schema metadata needed for debugging. It is independent of tab-gating/UI work and does not duplicate generic framework HTTP telemetry.
 
 COMMERCE-071 is **Ready**; all of its dependencies are architect-accepted Complete.
+
+### COMMERCE-082 Attempt 1 accepted — 2026-09-28
+
+COMMERCE-082 is **Complete / Accepted, Attempt 1**. Studio can now execute the exact current non-durable Shopify Admin candidate against the server-authoritative selected shop using the existing production Admin execution port, compiler-derived result contract and canonical Result Template renderer. Candidate/result/template failures remain pre-I/O, browser-supplied shop credentials are rejected by the strict input boundary, one provider request is budgeted, browser-visible results are bounded, and no Tool/revision/audit/publication-proof write is created. Submitted validation passed 96/96 tests across the focused eight-file packet plus targeted ESLint and diff checks; changed C082 files are clean under the submitted TypeScript diagnostics.
+
+C082 references COMMERCE-083 as its enabled UI follow-up, but no COMMERCE-083 task file is materialised in this snapshot, so no dependent status promotion is applied here.
 
 ### Result Template integration regression follow-up — 2026-09-27
 

@@ -1076,7 +1076,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-076 | moda_commerce | Pending | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
-| ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1377,15 +1377,15 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-062 | moda_commerce | Complete | ARCH-021-COMMERCE-018 |
 | ARCH-021-COMMERCE-063 | moda_commerce | Complete | ARCH-021-COMMERCE-043 |
 | ARCH-021-COMMERCE-064 | moda_commerce | Complete | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-061 |
-| ARCH-021-COMMERCE-065 | moda_commerce | Ready | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
+| ARCH-021-COMMERCE-065 | moda_commerce | Complete | ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-066 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-067 | moda_commerce | Complete | ARCH-021-COMMERCE-063 |
-| ARCH-021-COMMERCE-068 | moda_commerce | Pending | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
+| ARCH-021-COMMERCE-068 | moda_commerce | Complete | ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-066, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-069 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-064 |
 | ARCH-021-COMMERCE-070 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062 |
 | ARCH-021-COMMERCE-071 | moda_commerce | Ready | ARCH-021-COMMERCE-039, ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-056, ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-061, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-064, ARCH-021-COMMERCE-065, ARCH-021-COMMERCE-067 |
 | ARCH-021-COMMERCE-076 | moda_commerce | Pending | ARCH-021-COMMERCE-055, ARCH-021-COMMERCE-068 |
-| ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
+| ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1396,6 +1396,14 @@ Later runtime phases are intentionally not decomposed yet. Expected later owners
 - `moda_system_test` only after the required implementation dependencies are Complete.
 
 No implementation task may depend on a system-test task.
+
+### COMMERCE-082 Attempt 1 accepted — 2026-09-28
+
+- Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
+- The Server Action requires platform `ADMIN`, resolves `shopId` through the server-authoritative Studio execution context and passes only the narrow Admin provider context into the already-accepted production execution port; access tokens remain entirely server-side.
+- Candidate schema, mapped arguments, compiler-derived result contract and Result Template compatibility are checked before provider I/O. Successful execution returns only the five bounded stage outcomes, canonical normalized `values` and canonical rendered text; one provider request is budgeted and `LIVE_TEST_REQUIRED` remains unchanged.
+- Accepted submitted validation: 96/96 focused tests across eight files, targeted ESLint and `git diff --check`; repository TypeScript remains red only on 30 unrelated diagnostics with no C082 changed-file diagnostics.
+- C082 names COMMERCE-083 as the UI follow-up, but no C083 task definition is materialised in this submitted architecture snapshot; no dependent promotion is recorded until that task exists.
 
 ## Open Questions
 
