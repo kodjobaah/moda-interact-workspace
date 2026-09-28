@@ -902,7 +902,7 @@ Attempt 2 corrections implemented; submitted for architect review.
 
 ### Files Changed
 
-Commerce implementation commits `161b34d` and `bdc1502` on `task/ARCH-021-COMMERCE-084` contain the AST validator, restricted renderer, generator corrections and focused regressions, and pin database fixture commit `4da3139`. The fixture migration is independently committed and pushed on the matching database task branch. No Shared or C085-owned UI/state file was modified.
+Commerce implementation commits `161b34d`, `bdc1502` and `5efd2d1` on `task/ARCH-021-COMMERCE-084` contain the AST validator, restricted renderer, generator corrections and focused regressions, and pin database fixture commit `4da3139`. The fixture migration is independently committed and pushed on the matching database task branch. No Shared or C085-owned UI/state file was modified.
 
 ### Work Completed
 
@@ -916,8 +916,8 @@ Commerce implementation commits `161b34d` and `bdc1502` on `task/ARCH-021-COMMER
 
 ### Validation Results
 
-- Attempt 2 focused packet: 10 files, 123 tests passed, covering parser, authoring, generator, renderer, definition execution, External publication/live Test, Shopify Admin authoring validation, Commerce lifecycle and Studio integration.
-- Focused renderer suite after stable arithmetic classification: 4 tests passed. Focused generator suite after canonical-boundary self-validation: 5 tests passed.
+- Attempt 2 focused packet: 10 files, 124 tests passed, covering parser, authoring, generator, renderer, definition execution, External publication/live Test, Shopify Admin authoring validation, Commerce lifecycle and Studio integration.
+- Focused renderer suite after conditional branches and stable arithmetic classification: 5 tests passed. Focused generator suite after canonical-boundary self-validation: 5 tests passed.
 - Targeted ESLint on changed TypeScript files passed. `git diff --check` passed for Commerce and the nested database repository. `node --check database/scripts/fixtures/arch020-commerce-capability-cases.mjs` passed.
 - Attempt 2 `npx tsc --noEmit --pretty false` remains nonzero with 266 repository-wide diagnostics; none reference changed C084 parser, renderer, generator or focused test files.
 - Attempt 1 full-suite baseline was 35 failed files, 91 passed and 2 skipped (184 failed tests, 952 passed, 6 skipped, 51 uncaught errors), primarily from C085-owned legacy editor/state assumptions. Full suite was not rerun in Attempt 2.
