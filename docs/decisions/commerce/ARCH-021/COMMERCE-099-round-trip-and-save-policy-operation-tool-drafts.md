@@ -9,10 +9,8 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-29T18:53:45Z
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-097
@@ -261,14 +259,14 @@ Opening an existing persisted Policy Operation revision performs no write.
 
 ## Work Items
 
-- [ ] Connect Policy Operation local editor state to the common persisted authoring session.
-- [ ] Add deterministic section validation/freshness propagation.
-- [ ] Integrate one Policy Operation Test tab with COMMERCE-098 and common Test state.
-- [ ] Gate Save on current validation plus current successful Test.
-- [ ] Save through canonical CAS `updateToolDraft` without changing operation/version.
-- [ ] Preserve local work on CAS conflict/unknown outcome using the existing recovery model.
-- [ ] Add exact save/remount/round-trip regressions.
-- [ ] Add no-write-on-open and no-rebind regressions.
+- [x] Connect Policy Operation local editor state to the common persisted authoring session.
+- [x] Add deterministic section validation/freshness propagation.
+- [x] Integrate one Policy Operation Test tab with COMMERCE-098 and common Test state.
+- [x] Gate Save on current validation plus current successful Test.
+- [x] Save through canonical CAS `updateToolDraft` without changing operation/version.
+- [x] Preserve local work on CAS conflict/unknown outcome using the existing recovery model.
+- [x] Add exact save/remount/round-trip regressions.
+- [x] Add no-write-on-open and no-rebind regressions.
 
 ## Interfaces / Contracts
 
@@ -292,28 +290,28 @@ Produces no new cross-service contract.
 
 ## Acceptance Criteria
 
-- [ ] Existing `POLICY_OPERATION` DRAFT opens with exact persisted operation/version and no write.
-- [ ] All editable Policy Operation fields participate in the common validation/Test freshness model.
-- [ ] Operation/version cannot be rebound in Studio.
-- [ ] Test executes the exact current candidate through COMMERCE-098.
-- [ ] Editing after Test makes the checkpoint stale.
-- [ ] Save is blocked until all owned sections are current-valid and the exact current candidate has a PASSED Test.
-- [ ] Save uses the canonical DRAFT CAS operation and preserves operation/version.
-- [ ] CAS conflict/unknown outcome does not silently overwrite local work.
-- [ ] Successful Save/remount restores the exact saved Policy Operation candidate and returned editVersion.
-- [ ] No new Tool identity, publication, release or grant is created by Save.
-- [ ] Existing External HTTP and Shopify Admin Save/Test flows are unchanged.
+- [x] Existing `POLICY_OPERATION` DRAFT opens with exact persisted operation/version and no write.
+- [x] All editable Policy Operation fields participate in the common validation/Test freshness model.
+- [x] Operation/version cannot be rebound in Studio.
+- [x] Test executes the exact current candidate through COMMERCE-098.
+- [x] Editing after Test makes the checkpoint stale.
+- [x] Save is blocked until all owned sections are current-valid and the exact current candidate has a PASSED Test.
+- [x] Save uses the canonical DRAFT CAS operation and preserves operation/version.
+- [x] CAS conflict/unknown outcome does not silently overwrite local work.
+- [x] Successful Save/remount restores the exact saved Policy Operation candidate and returned editVersion.
+- [x] No new Tool identity, publication, release or grant is created by Save.
+- [x] Existing External HTTP and Shopify Admin Save/Test flows are unchanged.
 
 ## Validation
 
-- [ ] Focused persisted Policy Operation editor/round-trip tests.
-- [ ] Focused Test freshness/stale-after-edit tests.
-- [ ] Focused CAS conflict/unknown-outcome tests.
-- [ ] Focused no-rebind/no-write-on-open tests.
-- [ ] Existing provider regression packet required by the current Tool editor.
-- [ ] Targeted TypeScript diagnostics for changed files.
-- [ ] Targeted ESLint for changed files.
-- [ ] `git diff --check`.
+- [x] Focused persisted Policy Operation editor/round-trip tests.
+- [x] Focused Test freshness/stale-after-edit tests.
+- [x] Focused CAS conflict/unknown-outcome tests.
+- [x] Focused no-rebind/no-write-on-open tests.
+- [x] Existing provider regression packet required by the current Tool editor.
+- [x] Targeted TypeScript diagnostics for changed files.
+- [x] Targeted ESLint for changed files.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -327,35 +325,62 @@ The fixed operation binding is intentional. Studio is authoring a revision of a 
 
 ### Status
 
-Not Started
+Ready for Architect Review (Attempt 1).
 
 ### Files Changed
 
-None
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/policy-operation-editor.tsx`
+- `src/studio/tools/authoring/policy-operation-test-tab.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/new-tool-authoring-state.test.ts`
+- `tests/shopify-admin-tools-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Extended the canonical authoring validation ledger with per-section current-valid markers; advancing a section revision clears its marker. Added focused shared-state coverage for validity and invalidation.
+- Connected persisted Policy Operation editing to the common authored-section and Test snapshot lifecycle. The editor tracks Tool Definition, Request, descriptor-backed Response, and Result Template validity; current candidate edits stale Test and Save remains gated on all four current validations plus a passed Test.
+- Added a single Policy Test tab that calls the authenticated C098 server action with exactly `{ definition, arguments, shopId }`. It enforces the selected shop and bounded JSON-object arguments, renders agent-facing text first, and presents bounded stage/result diagnostics second.
+- Kept candidate assembly in the parent editor and preserved the loaded immutable name and operation/version binding. Save uses `updateToolDraft` with the selected revision ID, current CAS editVersion, exact candidate, and structured audit reason; successful results are identity-checked and the returned definition/editVersion restore the editor state.
+- Preserved local edits on CAS conflict and exercised the real `ToolAuthoringScreen` unknown-outcome lock/recovery state after a thrown mutation. Existing open/no-write, fixed-binding, no-create/no-publish assertions remain covered.
+- Left External HTTP and Shopify Admin behavior unchanged; their existing provider UI regressions pass.
 
 ### Validation Results
 
-None
+- Focused regression packet: 8 files passed, 174 tests passed (`new-tool-authoring-state`, persisted Shopify Admin/Policy UI, External HTTP UI, Policy live-Test service/action/authoring action, and shared authoring validation/server-action suites).
+- Targeted ESLint over all six changed implementation/test files: passed without warnings.
+- `git diff --check`: passed.
+- `prisma generate --schema database/prisma/schema.prisma`: passed; generated output remains under ignored `node_modules` and no schema/submodule pointer changed.
+- `tsc --noEmit --pretty false`: package-wide check remains non-green with 38 diagnostics in unrelated existing source/tests after Prisma Client generation; no diagnostic targets any C099-changed file. The C099 TypeScript diagnostics are clear; the repository-wide check is not claimed as passing.
 
 ### Deviations
 
-None
+None. The shared validity marker was added to the existing authoring ledger rather than introducing Policy-specific validation/Test state.
 
 ### Assumptions
 
-None
+The existing C098 authenticated Test action and canonical `updateToolDraft` lifecycle are the authoritative execution and persistence boundaries. The selected draft's loaded operation/version binding remains fixed for the editor session.
 
 ### Unresolved Issues
 
-None
+The package-wide TypeScript check retains 38 diagnostics outside the six changed files, primarily unrelated Commerce source and tests. They are recorded for Architect review and were not changed as out-of-scope work.
 
 ### Architectural Concerns
 
-None
+None identified. The implementation reuses the common persisted authoring ledger/Test model and existing CAS lifecycle; it adds no cross-service contract or provider-specific reconciliation path.
+
+### Prepared Execution Evidence
+
+- Launcher returned `prepared_execution: true`, `execution_state: claimed`, dependency gate passed for COMMERCE-097/098, Attempt 1, and claim commit `4beb41df2840c0bfd80f4243a69f937f9735e1f7` pushed.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-099`, `task/ARCH-021-COMMERCE-099`; prepared parent head `144643a3a8dad3390f2b93664f29687867bd4deb`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-099`, `task/ARCH-021-COMMERCE-099`; prepared implementation head `6c9326b5ee8ca2ee817b29009c86cc26a1e009f1`.
+- Recursive `database` submodule is ready at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- Implementation commit: `d7bd1990694e5b2a4a6c8c3c3f7b9b734aaceff6` (`feat(ARCH-021-COMMERCE-099): integrate persisted policy draft lifecycle`), pushed to `origin/task/ARCH-021-COMMERCE-099` and verified equal to the remote head. Parent completion-report commit: pending publication. No main merge, unrelated task, submodule pointer, or Architect Review section is changed.
+
+### Submission Evidence
+
+Return control to `moda_architect` for review. Stop before COMMERCE-100.
 
 ## Architect Review
 
