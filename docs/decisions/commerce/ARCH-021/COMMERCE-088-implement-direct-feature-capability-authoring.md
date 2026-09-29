@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 90
-executor: copilot
-claimed_at: 2026-09-29T12:38:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-003
@@ -291,24 +291,112 @@ No C088-specific architecture deviation identified. Production database behavior
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implementation is technically and architecturally conformant. No C088 implementation-source or test change is required at this stage.
+
+The new Feature-domain API is correctly isolated under `src/studio/features/`. Feature reads consume the direct Feature -> Capability -> Tool model and do not derive Capability revision/publication state or consult billing/subscription eligibility. Feature behaviour uses one current `CommerceFeatureConfiguration` row with version-0 creation semantics, monotonic CAS, immutable audit receipt/replay, and no draft/revision lifecycle.
+
+`createFeatureCapability` is a narrow atomic transaction. It validates Feature existence, Tool existence/enabled state, presence of at least one PUBLISHED Tool revision and Capability-key uniqueness, then creates one direct Capability plus immutable audit/replay receipt. The new contract carries one `toolId`, not Tool bindings or Tool-revision selection. Same-operation exact replay returns the original result and conflicting reuse fails without duplicate Capability rows. Legacy Capability APIs remain separate for existing consumers and are not used as adapters by the new Feature path.
+
+The focused unit/service/replay/authorization evidence is sufficient for the implementation-level review. The unrun PostgreSQL rehearsal is not a C088 acceptance blocker because it is not listed as required task Validation and requires a developer-confirmed isolated `DATABASE_URL`; the Completion Report records this limitation transparently. The production PostgreSQL behavior should still be exercised during the owning integration/system validation.
+
+#### A1-R1 — record mandatory task-worktree and synchronization evidence
+
+The Completion Report does not contain the durable physical-isolation/start-of-attempt evidence required by `docs/agent-worktree-isolation-policy.md`.
+
+For Attempt 2, recover the original launcher/preparation packet if retained and record the actual values. If the original packet is unavailable, say so explicitly and perform a fresh canonical-worktree reconciliation verification rather than inventing historical outcomes.
+
+Record at minimum:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <actual launcher/current verified path>
+  parent worktree: <actual path>
+  parent branch: task/ARCH-021-COMMERCE-088
+  implementation worktree: <actual path>
+  implementation branch: task/ARCH-021-COMMERCE-088
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+
+Recursive implementation submodule:
+  database path: <actual path>
+  database commit: e9fb60221f1532205650154dfff2aadb6270b14c
+  clean/current for task worktree: yes|no
+
+Published task state:
+  implementation commits:
+    - 47b1c4a
+    - be6a71e
+  implementation remote branch: origin/task/ARCH-021-COMMERCE-088
+  implementation pushed: yes
+
+  parent task-report commit: <actual commit>
+  parent remote branch: origin/task/ARCH-021-COMMERCE-088
+  parent pushed: yes
+
+  merged to implementation main: no
+  merged to workspace main: no
+```
+
+If the original synchronization packet is unavailable, replace the four historical synchronization lines with an explicitly labelled current reconciliation block covering local/remote task equality and `origin/main` ancestry/state for both repositories.
+
+#### A1-R2 — reconcile cleared-claim metadata
+
+The submitted task is in `review` but still records an active executor and claim timestamp. Reconcile the durable task metadata so the returned task is reclaimable:
+
+```text
+status: ready
+executor: null
+claimed_at: null
+```
+
+No implementation-source change is required for A1-R2.
+
+After recording A1-R1/A1-R2, rerun only the task-required focused validation needed to substantiate the canonical-worktree record, return the task to `review`, clear the claim, and STOP.
 
 ### Reviewed Files
 
-None
+- `src/studio/features/contracts.ts`
+- `src/studio/features/persistence.ts`
+- `src/studio/features/services.ts`
+- `src/studio/features/reconciliation-server-actions.ts`
+- `src/studio/server-actions.ts`
+- `tests/feature-authoring.test.ts`
+- `tests/feature-operation-reconciliation.test.ts`
+- `database/prisma/schema.prisma` at the prepared DATABASE-003 submodule state
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Focused Feature/Capability packet: 31/31 passed across four files.
+- Dedicated C088 Feature tests: 12 passed.
+- Focused ESLint over all changed files: passed with no warnings.
+- Changed-file/Pylance diagnostics: no errors.
+- New Feature API retired-concept scan: no prohibited R7 concepts found.
+- `git diff --check`: passed.
+- Repository `npm run typecheck`: 144 diagnostics in 15 files, all outside the C088 changed-file set.
+- Live PostgreSQL rehearsal: not run because no developer-confirmed isolated `DATABASE_URL` was available; not a required C088 validation item.
 
 ### Architecture Conformance
 
-Pending
+Conforms at the implementation level.
+
+C088 establishes the direct Feature authoring backend required by ARCH-021: Admin-owned Features remain identity/read sources, Commerce owns one current Feature behaviour configuration, direct Capabilities bind exactly one Feature to exactly one Tool, authoring creates no durable shell before final create, and release/runtime Tool-revision pinning remains outside this task.
+
+Acceptance is withheld only until the mandatory task-worktree/synchronization and cleared-claim evidence is durably recorded.
 
 ### Follow-up
 
-None
+Return the same task through `/moda-task` for Attempt 2. Reconcile A1-R1 and A1-R2 in the Completion Report/task metadata, rerun the necessary focused validation from the canonical implementation worktree, return to `review`, clear the claim, and STOP.
+
+Do not start COMMERCE-089 or COMMERCE-090 until C088 is architect-accepted Complete.
