@@ -1120,7 +1120,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-083 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
-| ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
+| ARCH-021-COMMERCE-086 | moda_commerce | Complete | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
@@ -1584,7 +1584,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-083 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
-| ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
+| ARCH-021-COMMERCE-086 | moda_commerce | Complete | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
@@ -2984,3 +2984,10 @@ COMMERCE-099 remains Pending until COMMERCE-097 is also Complete.
 The persisted Policy Operation authoring surface is architect-accepted. Studio and the production Policy renderer now share one bounded result-schema projection, so Policy templates use direct `result.<field>` paths consistently while External HTTP and Shopify Admin keep their existing envelope semantics. The exact descriptor result schema remains authoritative/read-only in Response and Review.
 
 COMMERCE-097 and COMMERCE-098 are both Complete. COMMERCE-099 is therefore **Ready** for canonical persisted-session Test/CAS-save integration. COMMERCE-100 remains Pending.
+
+
+### COMMERCE-086 Attempt 2 accepted — 2026-09-29
+
+The Result Template user-guide delivery path is architect-accepted end to end. Commerce owns the canonical HTML source, the normal build deterministically packages it into generated `public/manuals/`, and the Result Template authoring surface links to that static asset without coupling documentation to validation/Test/persistence state.
+
+C093/C094 resolved the unrelated build blockers. A clean normal Commerce build now packages the manual and completes successfully, and the built application serves `/manuals/result-template-guide.html` through `npm run start` with HTTP 200 and the expected HTML title. C086 is Complete and has no dependent implementation task to promote.
