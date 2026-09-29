@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 93
-executor: copilot
-claimed_at: 2026-09-29T14:14:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-088
@@ -130,15 +130,15 @@ Do not refactor unrelated Tools/Releases/Shops merely to reduce that file.
 
 ## Work Items
 
-- [ ] Add dedicated Feature configuration route/component ownership.
-- [ ] Render Feature identity/metadata as read-only Admin-owned context.
-- [ ] Render human-readable Capability -> Tool associations.
-- [ ] Add one Feature Behaviour prompt editor and CAS Save handling.
-- [ ] Add `Add capability` navigation/entry point with zero mutation.
-- [ ] Remove the current raw `Linked configurations` Feature presentation.
-- [ ] Remove the current immediate `Add behaviour` mutation form.
-- [ ] Extract Feature-detail UI ownership out of the generic Studio workspace.
-- [ ] Add focused Feature loading, prompt-save, stale-CAS and navigation tests.
+- [x] Add dedicated Feature configuration route/component ownership.
+- [x] Render Feature identity/metadata as read-only Admin-owned context.
+- [x] Render human-readable Capability -> Tool associations.
+- [x] Add one Feature Behaviour prompt editor and CAS Save handling.
+- [x] Add `Add capability` navigation/entry point with zero mutation.
+- [x] Remove the current raw `Linked configurations` Feature presentation.
+- [x] Remove the current immediate `Add behaviour` mutation form.
+- [x] Extract Feature-detail UI ownership out of the generic Studio workspace.
+- [x] Add focused Feature loading, prompt-save, stale-CAS and navigation tests.
 
 ## Interfaces / Contracts
 
@@ -156,22 +156,22 @@ Produces the Feature surface consumed by COMMERCE-091.
 
 ## Acceptance Criteria
 
-- [ ] The Feature screen shows current Capabilities and assigned Tools without revision terminology.
-- [ ] Exactly one Behaviour prompt editor exists per Feature.
-- [ ] Behaviour Save is CAS-safe and a conflict never silently overwrites newer text.
-- [ ] Empty Feature behaviour text is supported.
-- [ ] `Add capability` performs no durable mutation before entering the authoring flow.
-- [ ] No billing/subscription data is required to render or edit the Feature configuration surface.
-- [ ] The old `Linked configurations` + immediate `Add behaviour` form is no longer the Feature UX.
-- [ ] Feature-detail implementation is owned by a dedicated Feature module/component rather than the generic workspace branch.
+- [x] The Feature screen shows current Capabilities and assigned Tools without revision terminology.
+- [x] Exactly one Behaviour prompt editor exists per Feature.
+- [x] Behaviour Save is CAS-safe and a conflict never silently overwrites newer text.
+- [x] Empty Feature behaviour text is supported.
+- [x] `Add capability` performs no durable mutation before entering the authoring flow.
+- [x] No billing/subscription data is required to render or edit the Feature configuration surface.
+- [x] The old `Linked configurations` + immediate `Add behaviour` form is no longer the Feature UX.
+- [x] Feature-detail implementation is owned by a dedicated Feature module/component rather than the generic workspace branch.
 
 ## Validation
 
-- [ ] focused Feature UI tests
-- [ ] focused server-action integration mocks/fixtures for Feature reads and behaviour Save
-- [ ] targeted ESLint
-- [ ] changed-file TypeScript diagnostics / repository typecheck evidence per baseline policy
-- [ ] `git diff --check`
+- [x] focused Feature UI tests
+- [x] focused server-action integration mocks/fixtures for Feature reads and behaviour Save
+- [x] targeted ESLint
+- [x] changed-file TypeScript diagnostics / repository typecheck evidence per baseline policy
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -185,35 +185,73 @@ Use the current Tool creation UX as a visual/interaction reference, not as a rea
 
 ### Status
 
-Not Started
+Attempt 1 is ready for Architect Review. Claim metadata is cleared.
 
 ### Files Changed
 
-None
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/features/feature-configuration-screen.tsx`
+- `tests/feature-configuration-page.test.tsx`
+- `tests/feature-configuration-screen.test.tsx`
+- `tests/studio-workspace.test.tsx`
 
 ### Work Completed
 
-None
+- Added a dedicated Feature list/detail surface using only `listFeatureAuthoring`, `getFeatureAuthoring`, and `updateFeatureBehaviour`; Feature routes bypass generic shop-selection, shell publication, and legacy Feature reads.
+- Rendered Admin-owned Feature identity read-only, one shared Behaviour prompt, and human-readable Capability-to-Tool associations without revision/billing concepts.
+- Added empty-prompt CAS save, explicit refresh after stale CAS, preserved local text on conflicts, and refresh-before-retry for unknown mutation outcomes.
+- Added Add capability navigation to the COMMERCE-091 route without invoking a creation action.
+- Removed Feature detail ownership and the obsolete Feature title from `StudioWorkspace`.
+- Committed implementation as `7f7b075` (`feat(commerce): add Feature configuration surface`) and pushed `task/ARCH-021-COMMERCE-090`.
 
 ### Validation Results
 
-None
+- `npm exec -- vitest run tests/feature-configuration-page.test.tsx tests/feature-configuration-screen.test.tsx`: passed, 2 files / 8 tests.
+- Targeted ESLint on all six changed files: passed with no warnings or errors.
+- Pylance diagnostics on all six changed files: no errors found.
+- `git diff --check`: passed.
+- `npm run typecheck`: did not pass; 271 errors remain across 27 repository files. The changed Feature files are absent from the final compiler error summary; task-introduced diagnostics found in the initial run were corrected.
+- `npm exec -- vitest run tests/studio-workspace.test.tsx`: 7 passed, 6 failed in existing generic Studio/Tools editor workflows; the focused Feature route/screen suite passes independently.
 
 ### Deviations
 
-None
+The full repository typecheck and neighboring StudioWorkspace suite are not green; both results are recorded above rather than expanding this task into unrelated backend/type/test repairs.
 
 ### Assumptions
 
-None
+- COMMERCE-091 owns the destination capability-creation route; this task provides navigation only.
+- Admin Feature identity and Capability/Tool associations are read-only in this surface; only the shared behaviour prompt is mutable here.
 
 ### Unresolved Issues
 
-None
+- Repository-wide typecheck remains blocked by 271 errors in 27 files outside the changed Feature files.
+- The neighboring StudioWorkspace suite remains partially failing in generic editor workflows (6 failures, 7 passes).
 
 ### Architectural Concerns
 
-None
+- No Feature-scope architecture deviation identified. The generic StudioWorkspace failures and repository-wide compiler errors should be triaged separately from this Feature surface.
+
+### Attempt 1 Worktree and Handoff Evidence
+
+Physical worktree isolation:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-090`, `task/ARCH-021-COMMERCE-090`.
+- Implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-090`, `task/ARCH-021-COMMERCE-090`.
+- Both worktrees were newly created for this task; neither shared/default checkout was switched or used for implementation, and no other task worktree was reused.
+
+Start-of-attempt synchronization from the launcher packet:
+
+- Parent remote task branch fast-forwarded: `not-needed`; parent `origin/main` incorporated: `already-current`.
+- Implementation remote task branch fast-forwarded: `not-needed`; implementation `origin/main` incorporated: `already-current`.
+- Recursive implementation submodule synchronization and initialization passed. `database` was initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`; launcher status was `ready`.
+
+Published task state:
+
+- Implementation commit `7f7b075` is pushed to `origin/task/ARCH-021-COMMERCE-090`.
+- No task branch was merged into `main`.
+- Task status is `review`; `executor` and `claimed_at` are cleared. The Architect Review section below remains unchanged.
 
 ## Architect Review
 
