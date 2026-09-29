@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 9
 executor: null
 claimed_at: null
@@ -77,7 +77,22 @@ Implementation repository:
 moda-interact-commerce/
 ```
 
-Allowed implementation files are limited to the 12 diagnostic-bearing files listed above, plus focused tests only if a reported source diagnostic requires a test adjustment. Do not modify C086 packaging, manual source, or guide-link files except where an existing diagnostic in the listed Result Template files requires a strictly minimal type correction.
+Attempt 1/2 established that all diagnostics in the original 12-file C093-era baseline are resolved.
+
+For Attempt 3, the allowed implementation boundary is explicitly expanded to include exactly the three newly exposed project-wide blocker files below in addition to the already-authorized C094 files:
+
+```text
+src/commerce/execution/renderer.ts
+tests/add-capability-screen.test.tsx
+tests/feature-authoring.test.ts
+```
+
+The current 19 diagnostics are:
+- 2 renderer narrowing errors reading `operation` / `operationVersion` from the wrong execution variant;
+- 16 test typing errors reading `disabled` from values typed only as `HTMLElement`;
+- 1 Feature-authoring fixture typing error where the mocked `featureModel.findUnique` result is incomplete for the current selected shape.
+
+Do not broaden beyond these three newly authorized files and the original C094 file set. Do not modify C086 packaging, manual source, or guide-link files except where an existing diagnostic in the already-authorized Result Template files requires a strictly minimal type correction.
 
 ## Out of Scope
 
@@ -93,7 +108,17 @@ Allowed implementation files are limited to the 12 diagnostic-bearing files list
 
 ### R1 — resolve the observed diagnostic set
 
-Use the current branch's actual compiler output as authoritative because diagnostics may shift after C093 is accepted. Resolve only the diagnostics in the 12 listed files that prevent the required build from passing. Do not assume the original count remains exactly 23 after code changes.
+Use the current branch's actual compiler output as authoritative because diagnostics may shift after synchronization and accepted ARCH-021 work.
+
+Attempts 1 and 2 resolved the complete original 12-file diagnostic set. Attempt 3 is authorized to resolve the current remaining 19 diagnostics only in:
+
+```text
+src/commerce/execution/renderer.ts
+tests/add-capability-screen.test.tsx
+tests/feature-authoring.test.ts
+```
+
+If `npx tsc --noEmit --pretty false` exposes a new diagnostic outside the original C094 files plus these three explicitly authorized files, do not fix it opportunistically; stop and return the exact blocker to `moda_architect`.
 
 ### R2 — preserve runtime behavior
 
@@ -117,6 +142,7 @@ Do not start C086 Attempt 2. `moda_architect` must accept C093 and C094 and expl
 
 - [x] Run TypeScript diagnostics and reconcile the current errors with the 12-file baseline recorded by C093.
 - [x] Correct the locally resolvable type errors in the enumerated files, preserving runtime behavior.
+- [ ] Attempt 3: resolve the 19 current diagnostics in the three newly authorized blocker files, preserving runtime/test semantics.
 - [x] Add or adjust focused tests only when needed to substantiate changed behavior or type-safe fixtures.
 - [x] Run targeted ESLint for changed files.
 - [ ] Run `npx tsc --noEmit --pretty false` and verify there are no remaining project diagnostics.
@@ -137,6 +163,7 @@ Do not start C086 Attempt 2. `moda_architect` must accept C093 and C094 and expl
 - [x] The listed TypeScript diagnostics are resolved without suppressing type checking or adding blanket ignores.
 - [x] Runtime behavior remains unchanged except for necessary type-safe corrections.
 - [x] Changes remain limited to the listed files and directly required focused tests.
+- [ ] Attempt 3 changes remain limited to the original C094 scope plus `src/commerce/execution/renderer.ts`, `tests/add-capability-screen.test.tsx`, and `tests/feature-authoring.test.ts`.
 - [x] Targeted lint passes for changed files.
 - [ ] `npx tsc --noEmit --pretty false` passes with no diagnostics.
 - [x] `git diff --check` passes.
@@ -228,24 +255,76 @@ The original C093-era diagnostics in C094's allowed files are resolved, but the 
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 2 correctly resolved every diagnostic in C094's original 12-file boundary and demonstrated that the earlier missing-Prisma-model diagnosis was caused by stale installed dependencies rather than the current ARCH-021 schema/client.
+
+The remaining production-build blocker is now bounded to 19 TypeScript diagnostics in exactly three Commerce-owned files outside the original task boundary:
+
+```text
+src/commerce/execution/renderer.ts          2
+tests/add-capability-screen.test.tsx       16
+tests/feature-authoring.test.ts             1
+```
+
+These errors belong naturally to C094's existing bounded outcome—restore a clean repository typecheck and production build before C086 resumes. Creating a second build-unblocker task would artificially split one repository-owned validation gate. The C094 implementation boundary is therefore expanded narrowly for Attempt 3.
+
+#### A2-R1 — resolve the current 19 diagnostics in the three newly authorized files
+
+Authorized files:
+
+```text
+src/commerce/execution/renderer.ts
+tests/add-capability-screen.test.tsx
+tests/feature-authoring.test.ts
+```
+
+Correction requirements:
+
+- In `renderer.ts`, correct execution-union narrowing so POLICY_OPERATION-only fields (`operation`, `operationVersion`) are accessed only after proving the policy execution variant. Preserve renderer behavior and existing template/result contracts.
+- In `tests/add-capability-screen.test.tsx`, make button disabled-state assertions type-correct without weakening assertions or using unsafe casts/suppressions. Prefer Testing Library/Jest-DOM semantics or an appropriate element type.
+- In `tests/feature-authoring.test.ts`, update the fake `featureModel.findUnique` result so it satisfies the current selected Feature shape used by the production persistence path. Preserve the test's intended behavior.
+- Do not change Prisma schema, generated model definitions, TypeScript compiler options, lint rules, dependency manifests/lockfiles, C086 files, or unrelated runtime behavior.
+- Do not add `@ts-ignore`, `@ts-nocheck`, blanket suppressions, or unsafe `any` escapes merely to silence the compiler.
+
+After the corrections:
+
+1. run focused tests covering the three corrected sites plus the existing C094 focused packet as appropriate;
+2. run targeted ESLint over all C094-changed files;
+3. run `npx tsc --noEmit --pretty false` and require zero diagnostics;
+4. run `git diff --check`;
+5. run the normal `npm run build` and require exit code zero;
+6. reconcile the Completion Report;
+7. return C094 to `review`, clear the claim, and STOP.
+
+Do not start C086 Attempt 2 or its production-start smoke. C086 remains blocked until C094 is architect-accepted Complete.
 
 ### Reviewed Files
 
-None
+- `src/commerce/execution/renderer.ts`
+- `tests/add-capability-screen.test.tsx`
+- `tests/feature-authoring.test.ts`
+- C094 task Completion Report and Attempt-2 validation evidence
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Original C094 diagnostic set: resolved.
+- Focused C094 tests: 48/48 passed.
+- Targeted ESLint: zero errors, one documented unused-variable warning.
+- Prisma generation: passed.
+- Code-runtime packaging and packaged smoke during `npm run build`: passed.
+- Next.js production compilation: passed before TypeScript validation.
+- Current global TypeScript blocker: 19 diagnostics in the three newly authorized files.
+- Current production build blocker: the same 19 TypeScript diagnostics.
+- `git diff --check`: passed.
 
 ### Architecture Conformance
 
-Pending
+C094 remains the correct repository-owned production-build gate. The three-file scope expansion is a bounded type-safety correction and does not change ARCH-021 runtime ownership or Feature/Capability architecture.
 
 ### Follow-up
 
-None
+Return the same task through `/moda-task` for Attempt 3. Execute A2-R1 only, satisfy the global typecheck and production-build criteria, return to `review`, clear the claim, and STOP.
