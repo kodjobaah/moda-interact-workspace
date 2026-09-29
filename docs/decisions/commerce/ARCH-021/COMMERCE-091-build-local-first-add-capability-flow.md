@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 94
 executor: null
 claimed_at: null
@@ -329,363 +329,84 @@ Attempt 2 review submission:
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 is accepted in substance for the local-first persistence boundary, Tool eligibility filtering, derived read-only Review surface, exactly-one final `createFeatureCapability` mutation and unknown-outcome reconciliation.
+COMMERCE-091 Attempt 2 is **Accepted / Complete**.
 
-Attempt 2 is narrowly bounded to **navigation-frontier correctness plus workflow synchronization evidence**. Do not redesign the Capability flow and do not begin COMMERCE-092.
+Attempt 2 satisfies the exact correction contract from the previous Architect Review without reopening the accepted local-first Capability design.
 
-#### A. Replace live-predicate phase locking with a monotonic unlock frontier
-
-The current `AddCapabilityFlow` derives phase access directly from the current candidate:
-
-```ts
-const enabled =
-  item === 'Capability' ||
-  (item === 'Tool' && validCapability) ||
-  (item === 'Review' && canReview);
-```
-
-and `goTo()` re-checks the same live predicates.
-
-That violates R1 / the Acceptance Criterion that a phase remains directly clickable after it has been enabled. A later edit to an upstream field currently re-locks Tool/Review.
-
-Implement one session-local monotonic access frontier for this **new Capability authoring session only**.
-
-Use these exact phase identifiers and order:
-
-```ts
-type Phase = 'Capability' | 'Tool' | 'Review';
-
-const phases: Phase[] = [
-  'Capability',
-  'Tool',
-  'Review',
-];
-```
-
-Add one local state value with initial value `Capability`:
-
-```ts
-const [enabledThrough, setEnabledThrough] =
-  useState<Phase>('Capability');
-```
-
-The exact helper semantics must be equivalent to:
-
-```ts
-function phaseIndex(candidate: Phase): number {
-  return phases.indexOf(candidate);
-}
-
-function isPhaseEnabled(candidate: Phase): boolean {
-  return phaseIndex(candidate) <= phaseIndex(enabledThrough);
-}
-
-function unlockThrough(candidate: Phase): void {
-  if (phaseIndex(candidate) > phaseIndex(enabledThrough)) {
-    setEnabledThrough(candidate);
-  }
-}
-```
-
-Do not store one boolean per phase. Do not derive access from `validCapability` / `canReview` after a phase has already been unlocked.
-
-#### B. Exact first-unlock rules
-
-First-time forward unlock remains validation/readiness-gated:
+The reviewed implementation now has one session-local monotonic `enabledThrough` frontier over:
 
 ```text
-Capability -> Tool
-    first unlock requires validCapability === true
-
-Tool -> Review
-    first unlock requires canReview === true
+Capability -> Tool -> Review
 ```
 
-On successful first-time forward traversal:
+and keeps navigation access separate from current candidate readiness:
 
-```text
-Capability -> Tool
-    unlockThrough('Tool')
-    setPhase('Tool')
+- `Capability -> Tool` requires current `validCapability` only for the first unlock;
+- `Tool -> Review` requires current `canReview` only for the first unlock;
+- once Tool or Review has been unlocked, later upstream edits do not re-lock it;
+- direct phase clicks use the unlock frontier rather than live `validCapability` / `canReview` predicates;
+- Previous never lowers the frontier;
+- Next reuses an already-unlocked destination without re-checking predecessor readiness;
+- pending / unknown-outcome state continues to lock navigation independently of the normal authoring frontier.
 
-Tool -> Review
-    unlockThrough('Review')
-    setPhase('Review')
-```
-
-Once a destination is already enabled, navigation to it MUST NOT re-check its predecessor readiness.
-
-Therefore this is required:
-
-```text
-Tool was previously unlocked
-user returns to Capability
-user makes Capability invalid
-Tool remains enabled/clickable
-direct Tool click succeeds
-```
-
-and:
-
-```text
-Review was previously unlocked
-user returns upstream
-user makes Capability invalid or clears/replaces the Tool
-Review remains enabled/clickable
-direct Review click succeeds
-```
-
-Navigation access and candidate readiness are separate concerns.
-
-#### C. Exact direct-tab navigation contract
-
-For the phase-tab buttons:
-
-```text
-disabled = !isPhaseEnabled(item) || pending || outcomeUnknown
-```
-
-Do not use current `validCapability` or `canReview` to disable a phase that is already within `enabledThrough`.
-
-The active phase remains represented by `aria-current="step"` exactly as today.
-
-A direct click on an enabled phase changes only the active phase. It must not:
-
-- run validation;
-- call `createFeatureCapability`;
-- generate a new operation id merely because navigation occurred;
-- alter the selected Tool;
-- alter candidate fields;
-- lower `enabledThrough`.
-
-#### D. Exact Previous / Next semantics
-
-`Previous` never performs validation and never lowers `enabledThrough`.
-
-Exact Previous destinations:
-
-```text
-Tool   -> Capability
-Review -> Tool
-```
-
-For `Next`:
-
-```text
-Capability -> Tool
-Tool       -> Review
-```
-
-If the destination has never been unlocked, use the first-unlock predicate from section B.
-
-If the destination is already enabled, `Next` navigates there even if the current predecessor has since become invalid/stale.
-
-Do not add forced sequential traversal after a phase has been unlocked.
-
-#### E. Review may remain accessible while Create becomes invalid
-
-After Review has been unlocked, upstream edits may make the current candidate invalid. Review must remain accessible because access is controlled by `enabledThrough`.
-
-Create readiness remains controlled by the **current** candidate.
-
-Change the final button gate from the current equivalent of:
-
-```tsx
-disabled={pending || outcomeUnknown}
-```
-
-to:
+The final Create boundary is also corrected independently from navigation access. Review may remain visible after an upstream edit or when the previously selected Tool is no longer present in the eligible Tool set, while:
 
 ```tsx
 disabled={!canReview || pending || outcomeUnknown}
 ```
 
-The existing `create()` guard:
+keeps `Create capability` unavailable until the **current** candidate is valid again. The existing `create()` guard remains in place, so an accessible stale Review cannot issue a Capability mutation.
 
-```ts
-if (!canReview || submitting.current || pending || outcomeUnknown) return;
-```
+The focused Attempt 2 regression proves the required lifecycle: initial lock state, both first unlocks, upstream invalidation after unlock, direct phase navigation, Previous/Next traversal, selected-Tool eligibility loss/recovery, Create disable/re-enable behaviour and zero Capability mutations caused by navigation. Existing exactly-one-create and unknown-outcome reconciliation coverage continues to pass.
 
-must remain.
+The Attempt 1 start-of-attempt synchronization non-conformance is corrected. The Completion Report records canonical launcher preparation for both dedicated task worktrees with `origin/main incorporated: yes`, synchronized HEADs and recursive submodule preparation evidence. Attempt 1 history remains preserved.
 
-This means:
+The original C091 architectural invariants remain intact:
 
-```text
-Review unlocked earlier
-    +
-current Capability metadata invalid
-or current selected Tool absent
-    ->
-Review remains clickable
-Create capability is disabled
-zero create mutation occurs
-```
-
-When the current candidate becomes valid again, Create may re-enable without requiring Tool/Review to be unlocked again.
-
-#### F. Preserve pending / unknown-outcome locking
-
-Do not weaken the accepted mutation-safety behavior.
-
-While `pending || outcomeUnknown`:
-
-- keep navigation locked as currently implemented;
-- keep candidate edits protected as currently implemented;
-- do not unlock or traverse phases merely because the monotonic frontier exists;
-- do not issue a duplicate create mutation.
-
-The monotonic frontier applies to normal authoring navigation only; it does not override the existing admitted/uncertain-operation lock.
-
-#### G. Preserve all local-first persistence invariants
-
-Attempt 2 must not change these accepted C091 behaviors:
-
-- opening/editing/traversing/cancelling performs zero Capability mutation;
-- only the final Create action calls `createFeatureCapability`;
-- exactly one existing Tool identity is submitted;
-- no Tool revision is selected in the UI;
-- recoverable create failures preserve the local candidate;
-- an unknown outcome is reconciled instead of blindly replaying the mutation;
-- successful create returns to the Feature configuration surface;
-- old Capability revision/binding/type/limit terminology stays absent.
-
-Do not add a database, Shared, Background or release/runtime change.
-
-#### H. Required executable regressions
-
-Extend `tests/add-capability-screen.test.tsx` with deterministic regressions proving all of the following:
-
-```text
-1. Initial state:
-   Capability enabled
-   Tool disabled
-   Review disabled
-
-2. Enter valid Capability metadata.
-   Use Next or the newly enabled Tool tab to unlock Tool.
-
-3. Return to Capability.
-   Clear Display name (or otherwise make validCapability false).
-   Tool remains enabled and directly clickable.
-
-4. While Capability is invalid and Tool is already unlocked:
-   clicking Tool succeeds;
-   no createFeatureCapability call occurs.
-
-5. Restore valid Capability metadata.
-   Select the eligible Tool.
-   Unlock Review.
-
-6. Return to Capability.
-   Make Capability invalid again.
-   Tool and Review both remain enabled and directly clickable.
-
-7. Navigate directly to Review while the current candidate is invalid.
-   Review renders.
-   `Create capability` is disabled.
-   `createFeatureCapability` has not been called.
-
-8. Restore the Capability to a valid current state.
-   Review remains unlocked.
-   `Create capability` becomes enabled without any re-unlock step.
-
-9. From Review use Previous to Tool, then Previous to Capability.
-   `enabledThrough` remains Review-equivalent;
-   Tool and Review are still directly clickable.
-
-10. Once Review is unlocked, clearing/changing Tool selection or otherwise
-    making `canReview` false does not re-lock Review; it only disables Create.
-
-11. Phase clicks, Previous, Next, unlock operations and upstream invalidation
-    perform zero Capability mutation Server Actions.
-
-12. Existing pending / unknown-outcome navigation locking and reconciliation
-    regressions continue to pass.
-```
-
-If implementation structure makes test 10 impossible because Tool selection currently cannot be cleared from the UI, prove the equivalent by making another `canReview` dependency false without changing the accepted product surface. Do not add a new "clear Tool" feature solely for the test.
-
-#### I. Start-of-attempt synchronization correction
-
-Attempt 1's Completion Report records:
-
-```text
-parent origin/main incorporated: no
-```
-
-That is workflow non-conformance under the mandatory task-worktree isolation/startup policy.
-
-Before Attempt 2 implementation begins, the canonical launcher/preparation path MUST synchronize the dedicated C091 parent and implementation worktrees according to current `origin/main`.
-
-The Attempt 2 Completion Report must record launcher-resolved evidence for both worktrees, including:
-
-```text
-parent worktree path
-parent branch
-parent remote task-branch fast-forward result
-parent origin/main incorporated: yes | already-current
-parent synchronized HEAD
-
-implementation worktree path
-implementation branch
-implementation remote task-branch fast-forward result
-implementation origin/main incorporated: yes | already-current
-implementation synchronized HEAD
-
-recursive submodule preparation evidence
-```
-
-Do not manually bypass the launcher by executing Attempt 2 from a stale/shared checkout.
-
-If preparation cannot incorporate current `origin/main`, stop before claim and return the synchronization conflict to `moda_architect`.
-
-Preserve all Attempt 1 history. Do not rewrite or remove the Attempt 1 Completion Report.
+- Capability authoring is browser-local until the final Create boundary;
+- only enabled Tools with at least one PUBLISHED revision are selectable;
+- the author selects one Tool identity, not a Tool revision;
+- Review is derived/read-only;
+- final Create performs one `createFeatureCapability` mutation;
+- recoverable/uncertain outcomes preserve the candidate and avoid blind duplicate mutation;
+- no legacy Capability revision/binding/type/limit authoring is reintroduced.
 
 ### Reviewed Files
 
 - `docs/decisions/commerce/ARCH-021/COMMERCE-091-build-local-first-add-capability-flow.md`
+- `src/studio/features/add-capability/add-capability-screen.tsx`
+- `tests/add-capability-screen.test.tsx`
+- `app/features/[id]/capabilities/new/page.tsx`
+- `tests/add-capability-route.test.tsx`
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 - `docs/decisions/commerce/ARCH-021/_index.md`
-- `moda-interact-commerce/src/studio/features/add-capability/add-capability-screen.tsx`
-- `moda-interact-commerce/tests/add-capability-screen.test.tsx`
-- `moda-interact-commerce/app/features/[id]/capabilities/new/page.tsx`
-- `moda-interact-commerce/tests/add-capability-route.test.tsx`
 
 ### Validation Reviewed
 
-Attempt 1 evidence reviewed:
+Attempt 2 submitted evidence:
 
-- focused Add Capability / Feature configuration / Studio shell packet: 5 files, 19 tests passed;
-- targeted ESLint passed for the four C091 changed files;
-- changed-file diagnostics are clean;
-- repository-wide `npm run typecheck` remains red on 271 diagnostics in 27 files outside the four C091 task files;
-- `git diff --check` passed.
+- focused Add Capability / Feature configuration / Studio shell packet: **5 suites, 20 tests passed**;
+- targeted ESLint: passed;
+- changed-file diagnostics: clean;
+- `git diff --check`: passed;
+- Attempt 1 repository-wide `npm run typecheck` remains documented at 271 diagnostics across 27 files outside C091's four changed implementation/test files.
 
-The repository-wide unrelated diagnostics do not by themselves block this bounded correction. Attempt 2 must rerun the C091-focused packet plus the new navigation-frontier regressions, targeted ESLint, changed-file diagnostics and `git diff --check`.
+The Attempt 2 implementation and focused regression source were inspected directly from the submitted review snapshot. The supplied review archive does not include installed dependencies, so the focused commands were not independently rerun in this review environment. Nothing in the inspected C091 changes introduces a task-owned diagnostic or requires reopening the unrelated repository-wide typecheck baseline.
 
 ### Architecture Conformance
 
-Changes Requested.
+Accepted.
 
-The local-first persistence boundary, Tool eligibility, Review derivation, exactly-one final create mutation and uncertain-outcome reconciliation conform. The current phase-access implementation does not conform because it re-locks previously enabled phases using live `validCapability` / `canReview` predicates. The parent start-of-attempt synchronization evidence also does not conform.
+C091 conforms to the Phase 5 Feature/Capability authoring model and to the Attempt 2 navigation-frontier correction contract. Navigation accessibility is monotonic after first unlock, persistence remains final-Create-only, and current candidate readiness remains authoritative for mutation admission.
 
 ### Follow-up
 
-Return the SAME `ARCH-021-COMMERCE-091` task through `/moda-task` for Attempt 2 after this parent review update is committed/pushed.
+Set `ARCH-021-COMMERCE-091` to **Complete**.
 
-Task state for rework:
+C091's dependency edge into COMMERCE-092 is now satisfied. COMMERCE-092 remains **Pending** until its other declared dependencies (`COMMERCE-089` and `BACKGROUND-002`) are also architect-accepted Complete.
 
-```text
-status: ready
-executor: null
-claimed_at: null
-attempt: 1
-```
-
-The next authorized launcher claim increments to Attempt 2.
-
-COMMERCE-092 remains dependency-gated and MUST NOT start until C091 is architect-accepted Complete.
+Do not start COMMERCE-092 solely because C091 is complete.
