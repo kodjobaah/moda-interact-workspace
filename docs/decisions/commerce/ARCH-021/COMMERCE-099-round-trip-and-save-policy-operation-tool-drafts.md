@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
 executor: null
 claimed_at: null
@@ -434,9 +434,21 @@ Return control to `moda_architect` for review. Stop before COMMERCE-100.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
+
+#### Attempt 2 — Accepted
+
+ARCH-021-COMMERCE-099 is **Complete / Accepted, Attempt 2**.
+
+The bounded Attempt 1 freshness defect is corrected without changing the accepted Policy Operation candidate, persistence or reconciliation boundaries. `PolicyOperationTestTab` now reuses the accepted Shopify Admin monotonic transient-generation mechanism: every Test-argument or selected-shop identity change advances a generation, each run captures its submitted generation, and successful results, structured action errors and thrown failures are ignored unless that generation is still current.
+
+The deferred C098 regression exercises the exact A -> B -> A race called out in Attempt 1. An obsolete A result is ignored after arguments and shop cycle away and back, the common Test checkpoint remains `STALE`, no result is redisplayed, and `Save draft` remains disabled until a new explicit Test for the current transient state passes.
+
+Attempt 1's candidate assembly, fixed operation/version binding, common authored-section validation ledger, C098 execution boundary, CAS `updateToolDraft` save, conflict/unknown-outcome preservation, successful edit-version restoration and no-write-on-open behavior remain unchanged and accepted.
+
+#### Attempt 1 — Changes Requested (historical)
 
 Attempt 1 is architecturally sound in its persisted Policy Operation candidate assembly, fixed operation/version binding, section validation, C098 invocation, CAS Save and conflict/unknown-outcome preservation. One live-Test freshness defect remains.
 
@@ -467,34 +479,35 @@ The accepted Shopify Admin Test implementation prevents exactly this class of A 
 
 ### Validation Reviewed
 
-- Submitted focused packet: 174 tests across eight files passed.
-- Targeted ESLint: passed.
+#### Attempt 2
+
+- Focused C099 regression packet: 8 files, **175/175 tests passed**, including the deferred Policy Test A -> B -> A arguments/shop reversion regression.
+- Targeted ESLint on the two Attempt 2 changed files: passed.
+- Changed-file diagnostics: no errors.
+- `npx tsc --noEmit --pretty false`: **passed with exit code 0** on the synchronized Attempt 2 baseline.
 - `git diff --check`: passed.
-- Package-wide TypeScript remains non-green with 38 diagnostics outside C099 changed files; no submitted C099 file is implicated.
-- Static review confirms the fixed persisted operation/version checks and CAS `updateToolDraft` boundary are present.
-- Static comparison with the accepted Shopify Admin Test tab exposes the missing monotonic transient-generation completion guard described above.
+- Static comparison confirms the Policy Test completion guards now match the accepted Shopify Admin transient-generation pattern for successful action results, structured action errors and thrown failures.
+- Attempt 2 implementation commit `46f715a` changes only `src/studio/tools/authoring/policy-operation-test-tab.tsx` and `tests/shopify-admin-tools-ui.test.tsx`.
+- Parent/implementation task branches were prepared against current `origin/main`, recursive database submodule preparation passed, and both submitted task refs are reported clean and remote-aligned.
+
+#### Attempt 1
+
+- Submitted focused packet: 174 tests across eight files passed.
+- Targeted ESLint and `git diff --check` passed.
+- Changed-file diagnostics were clear.
+- Static review accepted the fixed persisted operation/version checks, common validation/Test ledger, C098 boundary, CAS `updateToolDraft` save, conflict/unknown-outcome preservation and exact save/remount behavior.
+- Attempt 1's only blocking defect was the transient Test reversion race corrected in Attempt 2.
 
 ### Architecture Conformance
 
-Changes Requested.
+Accepted.
 
-The implementation conforms to C097/C098 and the common persisted authoring lifecycle except for Test freshness across transient Test-input/shop reversion. The correction remains entirely within C099 scope and does not require a new task or any Save/CAS redesign.
+C099 now conforms fully to C097/C098 and the accepted persisted authoring lifecycle. Policy Operation remains an editor for an existing Moda-owned operation binding rather than a function IDE; operation and operationVersion stay fixed. Test remains non-durable and snapshot/generation-bound, Save remains CAS-protected and requires the exact current PASSED Test checkpoint, and conflict/unknown outcomes preserve local work without implicit overwrite or replay.
+
+No External HTTP, Shopify Admin, publication, release, grant or cross-service contract behavior is changed.
 
 ### Follow-up
 
-Return ARCH-021-COMMERCE-099 through the same task for Attempt 2.
+Mark ARCH-021-COMMERCE-099 Complete.
 
-Required bounded correction:
-
-1. In `src/studio/tools/authoring/policy-operation-test-tab.tsx`, reuse the accepted Shopify Admin transient-generation pattern:
-   - keep a monotonic `transientGeneration` plus ref;
-   - increment it whenever the transient `{argumentsText, shopId}` identity changes;
-   - include the generation in the submission identity;
-   - capture `submittedGeneration` when a run starts;
-   - require the current generation to equal `submittedGeneration` before accepting either successful or failed completion.
-2. Preserve the existing behavior that changing arguments/shop clears transient output and stales the common Test checkpoint.
-3. Add a focused regression with a deferred C098 action proving A -> B -> A reversion cannot resurrect the original A result or set the common checkpoint back to `PASSED`; Save must remain disabled until a new explicit Test completes for the current transient state.
-4. Cover both Test-argument and selected-shop reversion if the existing test harness can do so without broadening scope; at minimum prove the shared monotonic mechanism with one reversion regression and retain direct coverage that both arguments and shop participate in the transient identity.
-5. Do not change Policy Operation candidate assembly, fixed operation/version binding, CAS Save, conflict/unknown-outcome recovery, External HTTP, Shopify Admin semantics, or COMMERCE-100.
-
-Re-run the focused C099 packet, targeted ESLint/changed-file diagnostics and `git diff --check`. Record package-wide TypeScript baseline only as evidence; do not repair unrelated diagnostics. Return the task to `review` and STOP before COMMERCE-100.
+ARCH-021-COMMERCE-100 is now **Ready** because C099 is Complete. C100 owns only the normal publication/reopen/regression-validation boundary for the persisted Policy Operation Tool flow. No C100 work was started by C099.

@@ -2965,10 +2965,10 @@ The C096 descriptor schemas are Commerce-local JSON-compatible schemas generated
 | ARCH-021-COMMERCE-096 | moda_commerce | Complete | ARCH-021-COMMERCE-095 |
 | ARCH-021-COMMERCE-097 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
 | ARCH-021-COMMERCE-098 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
-| ARCH-021-COMMERCE-099 | moda_commerce | Ready | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
-| ARCH-021-COMMERCE-100 | moda_commerce | Pending | ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-099 | moda_commerce | Complete | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
+| ARCH-021-COMMERCE-100 | moda_commerce | Ready | ARCH-021-COMMERCE-099 |
 
-C096, C097 and C098 are architect-accepted. C099 is now the executable frontier. This follow-up remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge using the same Policy Operation mechanism without a Merchant Knowledge special case in ARCH-021.
+C096, C097, C098 and C099 are architect-accepted Complete. C100 is now the executable frontier. This follow-up remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge using the same Policy Operation mechanism without a Merchant Knowledge special case in ARCH-021.
 
 
 ### COMMERCE-098 Attempt 1 accepted — 2026-09-29
@@ -2984,6 +2984,14 @@ COMMERCE-099 remains Pending until COMMERCE-097 is also Complete.
 The persisted Policy Operation authoring surface is architect-accepted. Studio and the production Policy renderer now share one bounded result-schema projection, so Policy templates use direct `result.<field>` paths consistently while External HTTP and Shopify Admin keep their existing envelope semantics. The exact descriptor result schema remains authoritative/read-only in Response and Review.
 
 COMMERCE-097 and COMMERCE-098 are both Complete. COMMERCE-099 is therefore **Ready** for canonical persisted-session Test/CAS-save integration. COMMERCE-100 remains Pending.
+
+### COMMERCE-099 Attempt 2 accepted — 2026-09-29
+
+The persisted Policy Operation session/Test/CAS-save integration is architect-accepted. The editor preserves its fixed registered operation/version binding, uses the common authored-section validation and Test checkpoint, delegates live execution through C098, and saves only through the canonical CAS DRAFT lifecycle.
+
+Attempt 2 closes the transient Test race with the accepted monotonic provider-local generation pattern. Arguments/shop A -> B -> A reversion cannot make an obsolete in-flight result current again; Save remains disabled until a fresh current Test passes.
+
+C099 is Complete and C100 is **Ready** for publication/reopen/regression validation.
 
 
 ### COMMERCE-086 Attempt 2 accepted — 2026-09-29

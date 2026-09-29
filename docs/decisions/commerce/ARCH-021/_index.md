@@ -1229,8 +1229,8 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 | [COMMERCE-096](COMMERCE-096-expose-policy-operation-authoring-descriptors.md) | Canonical policy registration owns runtime validators + browser-safe authoring descriptor | Complete | COMMERCE-095 |
 | [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Complete | COMMERCE-096 |
 | [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Complete | COMMERCE-096 |
-| [COMMERCE-099](COMMERCE-099-round-trip-and-save-policy-operation-tool-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Ready | COMMERCE-097, COMMERCE-098 |
-| [COMMERCE-100](COMMERCE-100-publish-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Pending | COMMERCE-099 |
+| [COMMERCE-099](COMMERCE-099-round-trip-and-save-policy-operation-tool-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Complete | COMMERCE-097, COMMERCE-098 |
+| [COMMERCE-100](COMMERCE-100-publish-and-regression-validate-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Ready | COMMERCE-099 |
 
 ```text
                     C096 Complete
@@ -1239,10 +1239,10 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
           C097 Complete      C098 Complete
                    \             /
                     v           v
-                      C099 Ready
+                    C099 Complete
                            |
                            v
-                     C100 Pending
+                      C100 Ready
 ```
 
 ### COMMERCE-096 Attempt 1 accepted — 2026-09-29
@@ -1265,6 +1265,14 @@ COMMERCE-099 remains **Pending** because COMMERCE-097 is still Ready. No depende
 COMMERCE-097 is **Complete / Accepted, Attempt 2**. Policy Operation Result Template authoring now shares the production Policy result-schema projection and exposes descriptor fields directly as `result.<field>`; External HTTP and Shopify Admin retain their existing `result.values.*` envelopes. Response/Review continue to show the exact descriptor schema read-only, and C097 remains local-only.
 
 Because COMMERCE-098 is already Complete, both dependencies of COMMERCE-099 are now satisfied. COMMERCE-099 is **Ready**; COMMERCE-100 remains Pending on C099.
+
+### COMMERCE-099 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-099 is **Complete / Accepted, Attempt 2**. Persisted Policy Operation DRAFTs now share the common four-section validation/Test freshness ledger, execute live Test through C098, and CAS-save the exact current candidate while preserving the original operation/version binding. Conflict and unknown mutation outcomes retain local work; successful Save restores the returned definition and edit version.
+
+Attempt 2 adds the same monotonic transient-generation protection already accepted for Shopify Admin Test, so Test arguments/shop A -> B -> A reversion cannot resurrect an obsolete in-flight result or re-enable Save. The focused packet passes 175/175 tests and the synchronized package-wide TypeScript check exits 0.
+
+COMMERCE-100 is now **Ready** as the final generic Policy Operation publication/reopen/regression-validation task.
 
 
 ### COMMERCE-086 Attempt 2 accepted — 2026-09-29
