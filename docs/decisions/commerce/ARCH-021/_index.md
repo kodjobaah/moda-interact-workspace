@@ -1280,3 +1280,15 @@ COMMERCE-100 is now **Ready** as the final generic Policy Operation publication/
 COMMERCE-086 is **Complete / Accepted, Attempt 2**. The Result Template guide has one canonical Commerce-owned source, is deterministically packaged into `public/manuals/` by the normal build, and is linked from Result Template authoring without authoring-state mutation.
 
 After accepted C093/C094 removed the unrelated production-build blockers, C086's clean `npm run build` completed and the normal `npm run start` application served `/manuals/result-template-guide.html` with HTTP 200, HTML content type and the exact required title. No manual deployment copy step or Attempt 2 source change was required.
+
+## Manual-validation follow-up — Tool execution target and interaction safety — 2026-09-29
+
+Manual Shopify Admin Test validation exposed two bounded interaction-safety defects in the accepted Tool-authoring flow: the shell validates the selected shop but the Tools workspace still receives the raw URL `shopId`, and several consequential authoring actions rely on React pending state rather than a synchronous re-entry gate.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-102](COMMERCE-102-harden-tool-authoring-execution-context-and-single-flight-actions.md) | Make validated selected-shop context authoritative and make consequential Tool-authoring actions single-flight | Ready | COMMERCE-083, COMMERCE-095 |
+
+COMMERCE-102 is an independent manual-validation correction. It does not reopen C082/C083/C095 and it does not depend on the Policy Operation C096..100 chain. C082 remains the server-authoritative Shopify Admin execution boundary; C102 fixes the browser execution-target presentation/admission contract and same-tick action re-entry.
+
+`ARCH-021-SYSTEM-TEST-002` is re-gated **Pending** on COMMERCE-102 so terminal Tool-authoring validation runs only after the selected-shop and single-flight corrections are architect-accepted.

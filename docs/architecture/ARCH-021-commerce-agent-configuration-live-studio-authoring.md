@@ -1123,6 +1123,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-086 | moda_commerce | Complete | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1587,6 +1588,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-086 | moda_commerce | Complete | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1608,7 +1610,7 @@ Phase 5 Feature Capability simplification is now decomposed through DATABASE-003
 
 No implementation task may depend on a system-test task.
 
-Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. COMMERCE-079, COMMERCE-081, COMMERCE-083 and COMMERCE-095 are architect-accepted Complete, so SYSTEM-TEST-002 is Ready for terminal validation.
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. Manual validation has added COMMERCE-102 as a required implementation correction, so SYSTEM-TEST-002 is Pending until C102 is architect-accepted Complete.
 ### COMMERCE-082 Attempt 1 accepted — 2026-09-28
 
 - Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
@@ -2999,3 +3001,52 @@ C099 is Complete and C100 is **Ready** for publication/reopen/regression validat
 The Result Template user-guide delivery path is architect-accepted end to end. Commerce owns the canonical HTML source, the normal build deterministically packages it into generated `public/manuals/`, and the Result Template authoring surface links to that static asset without coupling documentation to validation/Test/persistence state.
 
 C093/C094 resolved the unrelated build blockers. A clean normal Commerce build now packages the manual and completes successfully, and the built application serves `/manuals/result-template-guide.html` through `npm run start` with HTTP 200 and the expected HTML title. C086 is Complete and has no dependent implementation task to promote.
+
+### Tool authoring execution-target and single-flight correction — 2026-09-29
+
+Manual validation of the accepted Shopify Admin Test flow exposed a bounded browser-side execution-context mismatch: `ProductionStudioPage` resolves a server-authoritative `StudioShopSelection`, but the normal Tools workspace still receives the raw route `shopId`. The architecture now requires `shopSelection.selectedShop` to be the sole Tool-authoring execution target after resolution. Shopify Admin Test remains navigable but must visibly identify the selected shop domain/offline-session availability and keep Run Test disabled when there is no executable selected shop. C082 remains the server-authoritative shop/session/token boundary; no credential material moves into browser state.
+
+The same validation pass also exposed a common interaction-admission gap. React pending/disabled state is presentation feedback, not a same-tick correctness gate. COMMERCE-102 therefore adds synchronous single-flight admission to consequential Tool-authoring mutations, provider/validation actions and the Explore Shopify one-shot hand-off while preserving existing operation IDs, CAS, unknown-outcome reconciliation and candidate-staleness semantics. Local repeatable controls are not globally debounced.
+
+```text
+route shopId
+    |
+    v
+resolveStudioShopSelection
+    |
+    +-- selectedShop = null ----------------> Shopify Run Test unavailable
+    |
+    +-- selectedShop/offline unavailable ---> Shopify Run Test unavailable
+    |
+    v
+validated selectedShop
+    |
+    v
+Tool authoring/Test target
+    |
+    v
+C082 server re-resolution + offline session/token lookup
+```
+
+```text
+user activation
+    |
+    v
+synchronous action gate
+    |
+    +-- already admitted -> no second dispatch / no second operationId
+    |
+    v
+existing async mutation/provider/validation action
+    |
+    +-- known settle -> release
+    |
+    +-- unknown mutation -> retain original operationId for reconciliation
+```
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-102 |
+
+COMMERCE-102 is independent of the Policy Operation C096..100 chain. SYSTEM-TEST-002 is re-gated behind C102 and remains terminal validation; no Commerce implementation task depends on the system-test task.

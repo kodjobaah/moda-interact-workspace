@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 90
 executor: null
 claimed_at: null
@@ -19,6 +19,7 @@ depends_on:
   - ARCH-021-COMMERCE-081
   - ARCH-021-COMMERCE-083
   - ARCH-021-COMMERCE-095
+  - ARCH-021-COMMERCE-102
 enables: []
 created: 2026-09-28
 updated: 2026-09-29
@@ -84,9 +85,17 @@ Prove no Agent Contract tab exists; input schema is edited under Request; templa
 
 With deterministic External fixture response, prove Request/Response produces canonical values, Result Template is rendered server-side, and Test displays the exact populated `Result shown to agent` before diagnostics. Change the template and prove the old Test result becomes stale.
 
-### R4 — Shopify Admin complete Test
+### R4 — Shopify Admin complete Test and explicit execution target
 
-With deterministic Admin fixture/session, prove selected-shop execution maps arguments, validates compiler-derived result contract, renders the Result Template and displays the exact populated `Result shown to agent`. Prove no access token/shop credential appears in rendered UI/diagnostics.
+With deterministic Admin fixture/session, prove the Test surface visibly identifies the selected shop domain and offline-session availability before execution. Prove:
+
+```text
+no selected shop                     -> Run Test disabled, zero live-Test dispatch
+selected shop + offline unavailable  -> Run Test disabled, zero live-Test dispatch
+selected shop + offline available    -> normal Test prerequisites may enable Run Test
+```
+
+For the executable target, prove selected-shop execution maps arguments, validates compiler-derived result contract, renders the Result Template and displays the exact populated `Result shown to agent`. Prove no access token/shop credential appears in rendered UI/diagnostics. Prove a stale/invalid URL shop cannot remain an execution target when the shell has no selected shop.
 
 ### R5 — Save/Cancel boundaries
 
@@ -108,26 +117,36 @@ Save draft             -> one CAS update
 
 Author provider-specific state, request a provider-kind change, prove no state is cleared before explicit confirmation, then confirm and prove Request/Response/Result Template/Test state is reset to the new provider defaults.
 
+### R7 — consequential Tool-authoring actions are single-flight
+
+Exercise representative integrated consequential actions with rapid repeated activation and prove one admitted operation per current action/candidate. At minimum cover one lifecycle mutation and Shopify Admin Run Test. The Commerce implementation tests own exhaustive per-button same-tick coverage; this system test proves the integrated boundary does not duplicate durable mutation/provider execution.
+
+For an unknown lifecycle mutation outcome, prove reconciliation checks the original operation and does not replay the mutation.
+
 ## Work Items
 
 - [ ] Add Tool-library/Tool Definition zero-write scenario.
 - [ ] Add exact six-step ownership scenario for External HTTP.
 - [ ] Add exact six-step ownership scenario for Shopify Admin.
 - [ ] Add External rendered-template Test scenario.
-- [ ] Add Shopify rendered-template Test scenario with credential-leak assertions.
-- [ ] Add new Tool Save/Cancel persistence scenario.
+- [ ] Add Shopify rendered-template Test scenario with explicit selected-shop/offline-session gating and credential-leak assertions.
+- [ ] Add invalid/stale selected-shop route scenario proving no hidden Shopify execution target remains.
+- [ ] Add rapid repeated-activation scenario proving one Shopify Test dispatch.
+- [ ] Add new Tool Save/Cancel persistence scenario, including rapid repeated Save admission.
 - [ ] Add persisted DRAFT CAS Save/Cancel scenario.
 - [ ] Add provider-switch destructive-reset confirmation scenario.
 
 ## Interfaces / Contracts
 
-Consumes only architect-accepted outputs of COMMERCE-079, COMMERCE-081 and COMMERCE-083 and their transitive prerequisites.
+Consumes only architect-accepted outputs of COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095 and COMMERCE-102 and their transitive prerequisites.
 
 ## Dependencies
 
 - ARCH-021-COMMERCE-079
 - ARCH-021-COMMERCE-081
 - ARCH-021-COMMERCE-083
+- ARCH-021-COMMERCE-095
+- ARCH-021-COMMERCE-102
 
 ## Enables
 
@@ -139,10 +158,15 @@ None.
 - [ ] No Agent Contract authoring tab exists.
 - [ ] Agent Contract shown in Review is derived/read-only.
 - [ ] External Test displays exact server-rendered agent text and stales on template changes.
+- [ ] Shopify Test identifies the selected shop domain and offline-session availability before execution.
+- [ ] No-shop/offline-unavailable Shopify targets keep Run Test disabled and dispatch zero live-Test calls.
+- [ ] Invalid/stale route shop context cannot survive as a hidden Tool-authoring execution target.
 - [ ] Shopify Test displays exact server-rendered agent text and leaks no credential material.
+- [ ] Rapid repeated Shopify Test activation dispatches one current-candidate live Test.
 - [ ] New authoring/Test/Cancel creates no durable Tool state.
-- [ ] New Save creates exactly one Tool + revision-1 DRAFT.
+- [ ] New Save creates exactly one Tool + revision-1 DRAFT, including under rapid repeated activation.
 - [ ] Persisted Cancel writes nothing; persisted Save uses CAS and one mutation.
+- [ ] Unknown mutation reconciliation checks the original operation without replaying the mutation.
 - [ ] Provider switch does not clear state before confirmation and does reset after confirmation.
 
 ## Validation
