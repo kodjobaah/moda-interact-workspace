@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 74
-executor: copilot
-claimed_at: 2026-09-29T08:50:05Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-084
@@ -272,6 +272,9 @@ The runtime result has already passed the canonical Result contract before rende
 
 ## Completion Report
 
+### Attempt 1
+
+
 ### Status
 
 Ready for Rework
@@ -369,191 +372,8 @@ Parent workspace:
 Merged to implementation main: no
 Merged to workspace main: no
 
-## Architect Review
+### Attempt 2
 
-### Review Status
-
-Changes Requested
-
-### Review Notes
-
-Attempt 1 is not accepted.
-
-The implementation correctly reproduces the original live-Test failure and demonstrates that schema-permitted omission is the cause. It also proves that guarding optional paths can prevent `RESULT_RENDERING_FAILED` while preserving required-field validation, and the focused External/Admin execution coverage is useful.
-
-However, the submitted implementation does **not** conform to the canonical C087 contract that is indexed by the Commerce architecture.
-
-There are two required corrections.
-
-#### 1. Do not broaden accepted `nunjucks.v1` with `is defined`
-
-The canonical C087 task explicitly states:
-
-```text
-R5 — preserve accepted C084 grammar semantics
-
-Do not reopen the accepted scalar-only equality/comparison rules merely as a shortcut.
-
-If optional object/array safety cannot be expressed with the currently accepted grammar plus a template-safe normalized context, stop and return the grammar gap to moda_architect rather than silently broadening nunjucks.v1.
-```
-
-Attempt 1 instead changes the canonical language/validator/runtime by adding:
-
-```nunjucks
-{% if path is defined %}
-```
-
-and then requires manually authored optional paths to use that new construct through `unguarded_optional_result_path`.
-
-That is a semantic grammar expansion outside the authoritative task contract.
-
-The accepted C084 grammar already has the pieces needed for this correction without adding a Nunjucks test:
-
-```text
-if / elif / else
-scalar/null equality and inequality
-property-only paths
-for loops
-```
-
-Attempt 2 must therefore restore the accepted C084 grammar and implement optional safety at the canonical render-context + generator boundary.
-
-Required semantics:
-
-1. Add a pure, deterministic, non-mutating **template-safe normalization** of the already contract-valid runtime result before Nunjucks evaluation.
-2. For schema-permitted omitted optional values, normalize only the template context:
-   - omitted optional scalar -> `null`;
-   - omitted optional array -> an empty array;
-   - omitted optional object -> a schema-shaped template-only object whose missing descendants are recursively represented safely (`null`, empty array, or nested template-only object as appropriate).
-3. Preserve every present valid runtime value exactly.
-4. Never fabricate a non-null business value.
-5. Never mutate the processed/provider result.
-6. Keep required-field omission invalid in canonical result validation before render.
-7. Remove C087's `is defined` grammar/test registration and the corresponding canonical-validator language expansion.
-8. Remove the requirement that manually authored templates must use `is defined`; return the validator to the accepted C084 expression grammar.
-
-The generator must propagate **effective optionality** recursively.
-
-For a scalar that is optional itself, or sits beneath any optional ancestor, emit a guard using the existing C084 scalar/null grammar, for example:
-
-```nunjucks
-{% if item.image != null %}
-  Image: {{ item.image }}
-{% endif %}
-```
-
-Required scalars whose entire ancestor chain is required remain direct:
-
-```nunjucks
-Name: {{ item.name }}
-```
-
-Optional/effectively-optional arrays can be looped safely because the template-only normalized context supplies an empty array when absent. The current deterministic `{% else %} No ... available. {% endfor %}` behavior may remain.
-
-Optional objects must be safe recursively through the template-only schema-shaped context. A required child under an omitted optional object is **effectively optional for rendering** and must not be directly emitted as though the parent existed in the provider value.
-
-Do not change the persisted template shape, `runtimeVersion`, provider execution, C085 UI/state, or strict `throwOnUndefined`.
-
-Add focused regressions proving:
-
-```text
-- generated optional scalar source uses existing `!= null` semantics, not `is defined`;
-- `is defined` remains unsupported by the canonical C084 grammar;
-- optional scalar omitted -> normalized null -> guarded line omitted;
-- optional array omitted -> normalized [] -> deterministic empty-list fallback;
-- optional object omitted -> nested required/optional descendants render safely without fabricated business values;
-- nested optional object/list combinations remain total;
-- 0 / false / "" remain present and render normally;
-- present runtime values are byte/value-preserved by normalization;
-- the original runtime result object is not mutated;
-- missing required fields still fail result validation before render;
-- External live Test and Shopify Admin production execution both use the same canonical correction.
-```
-
-#### 2. Reconcile the duplicate C087 task record
-
-The submitted snapshot contains two files with the same task ID:
-
-Canonical/indexed task:
-
-```text
-docs/decisions/commerce/ARCH-021/COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md
-```
-
-Non-canonical duplicate used for Attempt 1:
-
-```text
-docs/decisions/commerce/ARCH-021/COMMERCE-087-make-generated-nunjucks-optional-safe.md
-```
-
-The Commerce `_index.md` and parent architecture point to the first file. The duplicate contains a materially different R3/R4/R5 contract and cannot remain as a second source of truth.
-
-This architect patch:
-
-- keeps the indexed architect-created file as canonical;
-- records the real first attempt as `attempt: 1`;
-- preserves the submitted Attempt 1 Completion Report evidence in the canonical task; and
-- removes the duplicate task file.
-
-Attempt 2 must claim and update **only** the canonical task file.
-
-Do not recreate or rename another C087 task definition.
-
-### Reviewed Files
-
-- `src/commerce/tool-authoring/result-template-generator.ts`
-- `src/commerce/tool-authoring/nunjucks-template.ts`
-- `src/commerce/execution/renderer.ts`
-- `tests/result-template-optionality.test.ts`
-- `tests/result-template-generator.test.ts`
-- `tests/result-template-renderer.test.ts`
-- `tests/external-http-live-test.test.ts`
-- Admin production-execution optional-result regression
-- canonical C087 task file
-- duplicate C087 task/report file
-- Commerce `_index.md`
-- parent ARCH-021 architecture task graph
-
-### Validation Reviewed
-
-Submitted Attempt 1 evidence preserved from the implementation report:
-
-- focused packet: **11 files, 132 tests passed**;
-- supplemental packet: 152/154, with the two failures attributed to the previously documented QuickJS `MODULE_NOT_FOUND` preview baseline;
-- targeted ESLint: passed;
-- changed-file diagnostics: clean;
-- `git diff --check`: passed;
-- repository-wide TypeScript remains non-green on unrelated C085/baseline diagnostics, with no C087 changed-file diagnostics.
-
-Those results establish that the implemented `is defined` approach works mechanically. They do not make the grammar expansion architecture-conformant.
-
-Source inspection additionally confirms:
-
-- no renderer normalization/template-safe schema shaping was implemented;
-- the strict renderer remains strict;
-- the generator emits `is defined` guards for optional scalar/object/array paths;
-- the canonical validator now admits the `Is` AST node and enforces `unguarded_optional_result_path`; and
-- the renderer registers a `defined` Nunjucks test.
-
-### Architecture Conformance
-
-Partial.
-
-The runtime-totality goal, required-field strictness, provider-neutral correction location and focused execution coverage are aligned.
-
-Acceptance is blocked because Attempt 1 changed the canonical `nunjucks.v1` grammar contrary to C087 R5 and executed under a duplicate, non-canonical task definition.
-
-### Follow-up
-
-Return the canonical C087 task as Attempt 2.
-
-Replace the `is defined` grammar expansion with template-safe schema-derived context normalization plus generator guards expressed in the already-accepted C084 grammar. Remove the duplicate-task-derived validator/runtime grammar additions, add the focused normalization/generator/execution regressions above, rerun the focused C087 packet and required changed-file checks, update the canonical Completion Report, and STOP.
-
-Do not modify C085 UI/state.
-
-COMMERCE-083 remains Pending until canonical C087 is accepted Complete.
-
-## Attempt 2 Completion Report
 
 ### Status
 
@@ -609,3 +429,91 @@ Parent workspace:
 
 Merged to implementation main: no
 Merged to workspace main: no
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 2 is accepted.
+
+Attempt 1 was previously returned for correction because it expanded the accepted C084 `nunjucks.v1` grammar with `is defined` and executed against a duplicate C087 task definition. That history is preserved in the Completion Report and prior review record; the duplicate task file has been removed and the indexed canonical task is now authoritative.
+
+Attempt 2 satisfies the canonical C087 contract.
+
+The implementation now preserves the accepted C084 grammar and solves optional-field totality at the canonical generator/render-context boundary:
+
+- generated optional/effectively-optional scalar paths use the existing scalar/null grammar (`!= null`);
+- `is defined` is no longer accepted by the canonical validator and no `defined` Nunjucks test is registered;
+- omitted optional scalars become template-only `null`;
+- omitted optional arrays become template-only empty arrays;
+- omitted optional objects become recursively schema-shaped template-only objects whose missing descendants are represented safely;
+- present runtime values are copied without semantic changes;
+- the processed/provider result is not mutated;
+- no non-null business value is fabricated;
+- required-field omissions remain invalid under the canonical Result contract and are not normalized away;
+- optionality propagates effectively through optional object ancestors;
+- required scalars on fully required paths remain direct;
+- optional arrays safely use the existing deterministic empty-list fallback through normalized `[]`;
+- the renderer remains strict (`throwOnUndefined` is preserved);
+- External live Test, Shopify Admin production execution and normal production rendering all consume the same canonical correction; and
+- no C085 UI/state file or provider-specific optionality implementation was introduced.
+
+The original observed boundary is now regression-covered:
+
+```text
+resultValidation  Passed
+resultRendering   Passed
+```
+
+for a provider result with schema-permitted omitted optional projected fields.
+
+The focused optionality matrix also covers top-level optional properties, optional siblings, nested optional objects, optional arrays, optional fields inside object-list items, falsy-present values (`0`, `false`, `""`), non-mutation and required-field rejection.
+
+The submitted task record still carried `executor: copilot` and a non-null `claimed_at` despite the review handoff indicating a clean pushed review state. This acceptance overlay normalizes both fields to `null`; it is not an implementation defect.
+
+### Reviewed Files
+
+- `src/commerce/execution/renderer.ts`
+- `src/commerce/tool-authoring/result-template-generator.ts`
+- `src/commerce/tool-authoring/nunjucks-template.ts`
+- `tests/result-template-optionality.test.ts`
+- `tests/result-template-generator.test.ts`
+- `tests/result-template-renderer.test.ts`
+- `tests/result-template-authoring.test.ts`
+- `tests/external-http-live-test.test.ts`
+- Shopify Admin production-execution optional-result regression
+- canonical C087 task record and Attempt 2 Completion Report
+
+### Validation Reviewed
+
+Attempt 2 submitted evidence:
+
+- six focused suites: **60 tests passed**;
+- targeted ESLint: passed;
+- changed-file diagnostics: clean;
+- `git diff --check`: passed;
+- implementation commit: `80861a0`;
+- parent canonical task-report commit: `db0bbab8`;
+- both task branches reported pushed/clean.
+
+The review snapshot contains no installed `node_modules`, so Vitest/ESLint were not independently rerun. Direct source/test inspection confirms the grammar restoration, normalization path, effective-optional generation and execution-boundary regressions.
+
+The broad repository typecheck was not rerun in Attempt 2; changed-file diagnostics are clean and no C085 file is changed.
+
+### Architecture Conformance
+
+Conforms.
+
+C087 restores the C084 grammar boundary while making generated Result Templates total over schema-valid optional omissions through a pure template-safe context plus deterministic generator guards. Required-field validation remains strict, provider/runtime ownership remains centralized, and C085 editor ownership is unchanged.
+
+### Follow-up
+
+C087 is Complete / Accepted — Attempt 2.
+
+COMMERCE-083 becomes Ready because C078, C079, C081, C082, C085 and C087 are Complete.
+
+ARCH-021-SYSTEM-TEST-002 remains Pending until COMMERCE-083 is Complete.

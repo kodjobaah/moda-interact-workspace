@@ -1087,11 +1087,11 @@ Implementation tasks:
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
-| ARCH-021-COMMERCE-087 | moda_commerce | Ready | ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1457,11 +1457,11 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
-| ARCH-021-COMMERCE-087 | moda_commerce | Ready | ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -2695,3 +2695,10 @@ The user-guide packaging/link task COMMERCE-086 is Ready.
 Manual live Test subsequently proved a separate runtime/generator invariant gap: a generated template can directly interpolate a property that the canonical Result schema permits to be omitted, while the strict renderer rejects undefined interpolation. COMMERCE-087 owns that correction at the C084 generator/template-context boundary. It must make every generated template safe for every schema-valid optional omission without weakening required-field validation, mutating provider results or reopening C085 UI semantics.
 
 COMMERCE-083 remains Pending on COMMERCE-087. SYSTEM-TEST-002 remains terminally gated behind COMMERCE-083.
+
+
+### COMMERCE-087 Attempt 2 accepted — 2026-09-29
+
+The optional-result runtime correction is architect-accepted. Commerce keeps the C084 `nunjucks.v1` grammar unchanged and makes schema-permitted omissions safe through a non-mutating template-only normalized context plus deterministic effective-optional generator guards. The strict renderer remains strict, required omissions still fail canonical Result validation, and External live Test / Shopify Admin execution / production rendering share the same correction.
+
+The executable refinement frontier is now COMMERCE-083. SYSTEM-TEST-002 remains terminally gated until C083 is Complete.
