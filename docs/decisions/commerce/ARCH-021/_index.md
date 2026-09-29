@@ -341,6 +341,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
 | [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Ready | COMMERCE-084, COMMERCE-085 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
+| [COMMERCE-088](COMMERCE-088-add-progressive-new-tool-tab-navigation.md) | UI/navigation: progressive Previous/Next traversal for new External + Shopify Tool authoring without re-locking enabled tabs | Pending | COMMERCE-078, COMMERCE-083 |
 
 Initial executable frontier for this workstream:
 
@@ -1107,7 +1108,6 @@ COMMERCE-087 is **Complete / Accepted, Attempt 2**. Generated Nunjucks templates
 
 C078, C079, C081, C082, C085 and C087 are Complete, so COMMERCE-083 is **Ready**. SYSTEM-TEST-002 remains Pending until C083 is Complete.
 
-
 ### COMMERCE-083 Attempt 1 blocked / scope refined — 2026-09-29
 
 C083 is **Blocked** because the prepared Commerce implementation worktree does not physically contain the already-accepted C082 Shopify Admin live-Test service/action contract. C083 correctly made no source change and must not recreate C082.
@@ -1115,3 +1115,9 @@ C083 is **Blocked** because the prepared Commerce implementation worktree does n
 The C083 task has been reduced to one bounded integration outcome: consume the existing C082 backend from one reusable Shopify Test surface, drive the accepted C078/C079 Test checkpoint using the C081 transient-generation pattern, show server-rendered `renderedText`, and require a current PASS for Shopify Create/Save.
 
 Unblock only after the accepted C082 implementation (`c4876fa` or a later integrated equivalent) is present in the Commerce base used by task worktrees. SYSTEM-TEST-002 remains Pending.
+
+### Progressive new-Tool traversal task — 2026-09-29
+
+COMMERCE-088 is defined for the shared **new Tool** authoring surface used by both External HTTP and Shopify Admin. It adds one session-scoped unlock frontier plus Previous/Next controls. Validation/Test readiness gates first-time forward unlock only; once a tab has been enabled, direct tab clicks and Previous/Next navigation may revisit it without re-checking predecessor validity. Persisted-DRAFT navigation is unchanged.
+
+COMMERCE-088 remains Pending until COMMERCE-083 is architect-accepted Complete. SYSTEM-TEST-002 remains terminally gated on COMMERCE-088 after that implementation.

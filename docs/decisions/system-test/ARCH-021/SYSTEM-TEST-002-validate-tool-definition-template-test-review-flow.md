@@ -18,6 +18,7 @@ depends_on:
   - ARCH-021-COMMERCE-079
   - ARCH-021-COMMERCE-081
   - ARCH-021-COMMERCE-083
+  - ARCH-021-COMMERCE-088
 enables: []
 created: 2026-09-28
 updated: 2026-09-28
@@ -45,7 +46,7 @@ Validate the integrated Commerce Studio Tool authoring flow for both External HT
 
 ## Context
 
-This is terminal architecture validation for the 2026-09-28 Tool-creation-flow refinement. It runs only after the Commerce implementation tasks are architect-accepted Complete. It must not implement missing Commerce behaviour.
+This is terminal architecture validation for the Tool-creation-flow refinement, including the 2026-09-29 progressive new-Tool navigation addition. It runs only after the Commerce implementation tasks are architect-accepted Complete. It must not implement missing Commerce behaviour.
 
 ## Scope
 
@@ -107,6 +108,14 @@ Save draft             -> one CAS update
 
 Author provider-specific state, request a provider-kind change, prove no state is cleared before explicit confirmation, then confirm and prove Request/Response/Result Template/Test state is reset to the new provider defaults.
 
+### R7 — progressive traversal for both provider kinds
+
+For **new Tool creation** with both External HTTP and Shopify Admin, prove all six canonical tabs are visible from session start, only Tool Definition is initially enabled, and `Next` unlocks exactly one subsequent step when the current step's accepted readiness predicate is satisfied. Prove `Previous` navigates to the immediately preceding enabled step without validation or mutation.
+
+After a tab has once been unlocked, edit an upstream section so its validation/Test state becomes stale or invalid and prove the already-unlocked tab remains directly clickable and reachable by Previous/Next. Prove Save/Create remains disabled according to the existing validation/Test persistence gate.
+
+Prove a cancelled provider-kind change preserves the unlock frontier and a confirmed destructive provider-kind change resets the active step/frontier to Tool Definition. Persisted-DRAFT navigation must remain unchanged.
+
 ## Work Items
 
 - [ ] Add Tool-library/Tool Definition zero-write scenario.
@@ -117,16 +126,21 @@ Author provider-specific state, request a provider-kind change, prove no state i
 - [ ] Add new Tool Save/Cancel persistence scenario.
 - [ ] Add persisted DRAFT CAS Save/Cancel scenario.
 - [ ] Add provider-switch destructive-reset confirmation scenario.
+- [ ] Add progressive External new-Tool Previous/Next/unlock-frontier scenario.
+- [ ] Add progressive Shopify Admin new-Tool Previous/Next/unlock-frontier scenario.
+- [ ] Add regression proving enabled tabs remain accessible after upstream state becomes stale/invalid.
+- [ ] Add regression proving persisted-DRAFT tab navigation remains unchanged.
 
 ## Interfaces / Contracts
 
-Consumes only architect-accepted outputs of COMMERCE-079, COMMERCE-081 and COMMERCE-083 and their transitive prerequisites.
+Consumes only architect-accepted outputs of COMMERCE-079, COMMERCE-081, COMMERCE-083 and COMMERCE-088 and their transitive prerequisites.
 
 ## Dependencies
 
 - ARCH-021-COMMERCE-079
 - ARCH-021-COMMERCE-081
 - ARCH-021-COMMERCE-083
+- ARCH-021-COMMERCE-088
 
 ## Enables
 
@@ -143,6 +157,13 @@ None.
 - [ ] New Save creates exactly one Tool + revision-1 DRAFT.
 - [ ] Persisted Cancel writes nothing; persisted Save uses CAS and one mutation.
 - [ ] Provider switch does not clear state before confirmation and does reset after confirmation.
+- [ ] External and Shopify new-Tool authoring both expose progressive Previous/Next traversal with the same canonical six-step order.
+- [ ] All six new-Tool tabs are visible from session start; only the current unlock frontier is clickable.
+- [ ] `Next` unlocks only the immediate next step and does not run validation itself.
+- [ ] Once enabled, a tab remains directly accessible after upstream edits make current state stale/invalid.
+- [ ] Existing Save/Create readiness still blocks persistence when current validation/Test state is not ready.
+- [ ] Confirmed provider replacement resets progressive navigation to Tool Definition; cancelled replacement does not.
+- [ ] Persisted-DRAFT tab navigation is unchanged by COMMERCE-088.
 
 ## Validation
 

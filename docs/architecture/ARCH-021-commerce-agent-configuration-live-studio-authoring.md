@@ -1062,7 +1062,7 @@ Manual architecture review of Tool result/prompt authoring establishes the follo
 7. A non-persisted source-neutral `ToolResultContract` is compiled from the canonical output/result schema and supplies exact scalar/collection bindings for template authoring. React does not infer provider-specific result paths independently.
 8. `responseTemplate` remains the persisted/runtime representation but receives its own Result Template authoring surface. Agent Contract retains definition version, Agent description and Agent input schema only.
 9. Result Template supports only the existing bounded `text` / `items` runtime grammar in this refinement; no conditional language, arbitrary JavaScript or rich-text dependency is introduced.
-10. General tab traversal/gating, global Next/Back behavior and cross-tab validation checkpoint coordination remain explicitly deferred until all individual tabs are implemented.
+10. General tab traversal/gating and global Previous/Next behavior were initially deferred until the individual tabs were implemented. COMMERCE-088 now owns progressive traversal for **new Tool creation only**; persisted-DRAFT tab navigation remains unchanged.
 
 Implementation tasks:
 
@@ -1092,6 +1092,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1387,7 +1388,7 @@ The architectural ownership rules are:
 Implementation graph:
 
 ```text
-COMMERCE-077 -> COMMERCE-078 -> COMMERCE-079 -> COMMERCE-081 -> COMMERCE-083 -> SYSTEM-TEST-002
+COMMERCE-077 -> COMMERCE-078 -> COMMERCE-079 -> COMMERCE-081 -> COMMERCE-083 -> COMMERCE-088 -> SYSTEM-TEST-002
                                              ^              ^
 COMMERCE-080 --------------------------------+              |
 COMMERCE-082 -----------------------------------------------+
@@ -1462,6 +1463,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -1473,7 +1475,7 @@ Later runtime phases are intentionally not decomposed yet. Expected later owners
 
 No implementation task may depend on a system-test task.
 
-Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending on COMMERCE-079, COMMERCE-081 and COMMERCE-083. It becomes Ready only after those Commerce tasks are architect-accepted Complete.
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending on COMMERCE-079, COMMERCE-081, COMMERCE-083 and COMMERCE-088. It becomes Ready only after those Commerce tasks are architect-accepted Complete.
 ### COMMERCE-082 Attempt 1 accepted — 2026-09-28
 
 - Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
@@ -2703,7 +2705,6 @@ The optional-result runtime correction is architect-accepted. Commerce keeps the
 
 The executable refinement frontier is now COMMERCE-083. SYSTEM-TEST-002 remains terminally gated until C083 is Complete.
 
-
 ### COMMERCE-083 integration blocker / refined scope — 2026-09-29
 
 C083 is Blocked by implementation-integration drift: the accepted C082 Shopify Admin live-Test capability is recorded Complete in architecture state but is absent from the prepared Commerce implementation base used by C083. C083 must not recreate that backend.
@@ -2711,3 +2712,11 @@ C083 is Blocked by implementation-integration drift: the accepted C082 Shopify A
 After the accepted C082 implementation (`c4876fa` or a later integrated equivalent) is physically present, C083 resumes as a narrow Studio integration task: one reusable Shopify Test surface consumes C082, drives the existing C078/C079 common Test checkpoint with the C081 stale-result pattern, displays server-rendered Result Template output, and gates Shopify Create/Save on a current PASS.
 
 SYSTEM-TEST-002 remains Pending until C083 is Complete.
+
+### Progressive new-Tool traversal — 2026-09-29
+
+COMMERCE-088 owns progressive Previous/Next traversal for **new Tool creation only** across both External HTTP and Shopify Admin authoring. All six canonical tabs remain visible from session start. Validation/Test readiness gates only the **first unlock** of the next step; after a step has been unlocked it remains directly clickable even if an upstream section later becomes dirty, stale, invalid or untested. Save/Create readiness remains independently governed by the accepted validation/Test persistence gates.
+
+The unlock frontier is browser/session state only and is monotonic within one provider path. A confirmed destructive provider-kind change resets the frontier to Tool Definition; cancelling the provider change leaves navigation state untouched. Persisted-DRAFT tab traversal is explicitly outside COMMERCE-088.
+
+COMMERCE-088 depends on the accepted C078 authoring-session model and on C083 so both provider Test integrations expose the final current-Test checkpoint required for the first Test -> Review unlock. SYSTEM-TEST-002 remains terminal and now includes COMMERCE-088 as an implementation dependency.
