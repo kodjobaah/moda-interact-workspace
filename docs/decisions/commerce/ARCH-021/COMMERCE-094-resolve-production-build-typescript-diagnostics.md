@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 9
-executor: copilot
-claimed_at: 2026-09-29T18:20:36Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-093
@@ -134,9 +134,9 @@ Do not start C086 Attempt 2. `moda_architect` must accept C093 and C094 and expl
 
 ## Acceptance Criteria
 
-- [ ] The listed TypeScript diagnostics are resolved without suppressing type checking or adding blanket ignores.
-- [ ] Runtime behavior remains unchanged except for necessary type-safe corrections.
-- [ ] Changes remain limited to the listed files and directly required focused tests.
+- [x] The listed TypeScript diagnostics are resolved without suppressing type checking or adding blanket ignores.
+- [x] Runtime behavior remains unchanged except for necessary type-safe corrections.
+- [x] Changes remain limited to the listed files and directly required focused tests.
 - [x] Targeted lint passes for changed files.
 - [ ] `npx tsc --noEmit --pretty false` passes with no diagnostics.
 - [x] `git diff --check` passes.
@@ -145,10 +145,10 @@ Do not start C086 Attempt 2. `moda_architect` must accept C093 and C094 and expl
 
 ## Validation
 
-- [ ] Inspect actual TypeScript diagnostics after C093 is accepted.
-- [ ] Targeted ESLint for changed files.
+- [x] Inspect actual TypeScript diagnostics after C093 is accepted.
+- [x] Targeted ESLint for changed files.
 - [ ] `npx tsc --noEmit --pretty false`.
-- [ ] `git diff --check`.
+- [x] `git diff --check`.
 - [ ] `npm run build`.
 
 ## Stop Condition
@@ -159,7 +159,7 @@ After all Work Items, Acceptance Criteria, and Validation items pass, set this t
 
 ### Status
 
-Blocked; not submitted for Architect Review because the required project typecheck and production build remain blocked by ARCH-021 legacy Prisma consumers outside C094's implementation-file boundary.
+Blocked on Attempt 2; not submitted for Architect Review because the required project typecheck and production build remain blocked by TypeScript errors in files outside C094's implementation-file boundary.
 
 ### Files Changed
 
@@ -181,7 +181,7 @@ Implementation files:
 
 Corrected type narrowing in GraphQL AST construction and result-schema rendering; aligned fixture types with the Commerce result/template contracts; corrected nullable result assertions and prompt-result test narrowing; updated selected-shop tests to use the current server-action-backed API. No runtime contract was intentionally changed.
 
-The current compiler baseline exposed an architecture-level blocker: the Prisma Client generated from the launcher-pinned `database` submodule commit `e9fb60221f1532205650154dfff2aadb6270b14c` does not expose `CommerceCapabilityRevision`, the release-capability `revision` relation / `capabilityRevisionId`, or capability `selectionBinding`. The affected production consumers are outside C094's allowed implementation files and belong to the ARCH-021 legacy-removal work in COMMERCE-092. No database schema, submodule pointer, compiler configuration, or out-of-scope source was changed.
+Attempt 2 first found stale generated dependencies in the reused implementation worktree: `package.json` and `package-lock.json` pin Shared 1.0.0, but `node_modules` contained 0.14.2. `npm ci` restored the locked package and `npm run prisma:generate` regenerated Prisma Client from the pinned schema. With that corrected state, all diagnostics in C094's 12-file baseline are gone, but project-wide checking still reports 19 errors in three out-of-scope files: `src/commerce/execution/renderer.ts` (2 errors reading `operation` and `operationVersion` from an `EXTERNAL_HTTP` definition), `tests/add-capability-screen.test.tsx` (16 errors reading `disabled` from `HTMLElement`), and `tests/feature-authoring.test.ts` (1 incomplete `featureModel.findUnique` mock result). These are outside the task's allowed implementation files. No out-of-scope source, dependency declaration/lockfile, compiler configuration, database schema, or submodule pointer was changed.
 
 Prepared execution evidence:
 
@@ -190,36 +190,39 @@ Prepared execution evidence:
 - Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-094`, branch `task/ARCH-021-COMMERCE-094`
 - Shared workspace and implementation checkouts were not switched or edited; no other task worktree was reused.
 - The prepared launcher synchronized both task branches and initialized recursive submodules; the `database` submodule remained at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- Attempt 2 claim: executor `copilot`, claim commit `042e8121d23d93f7e70559247b679e1e6d644124`, pushed. Implementation task commit from Attempt 1 is `b6e9ac0e9223a90cdcb3d3eb037c909b37afc44b`; current `main` incorporation is merge commit `d04cf146a9c801f1f3a265bc553ae5fd2cb209bc`.
 
 ### Validation Results
 
 Passed:
 
 - `npx eslint scripts/validate-shopify-admin-local.ts src/studio/discovery/admin-query-builder.ts src/studio/tools/authoring/result-template-tab.tsx tests/admin-query-execution.test.ts tests/agent-configuration-effective.test.ts tests/agent-configuration-prompts-postgres.test.ts tests/local-external-mcp-diagnostic.test.ts tests/result-template-tab.test.tsx tests/selected-shop-context.test.ts tests/shopify-admin-live-test.test.ts tests/tool-result-contract.test.ts`
+- Attempt 2 targeted ESLint: zero errors, one warning (`capabilityDraft` unused in `tests/local-external-mcp-diagnostic.test.ts`).
 - Focused Vitest suites: 48 tests passed across `tests/admin-query-execution.test.ts`, `tests/agent-configuration-effective.test.ts`, `tests/result-template-tab.test.tsx`, `tests/selected-shop-context.test.ts`, `tests/tool-result-contract.test.ts`, and `tests/shopify-admin-live-test.test.ts`.
 - `git diff --check`
 - `npm run prisma:generate` completed using the task-pinned database submodule.
+- Attempt 2 `npm ci` restored the lockfile-pinned `@modainteract/moda-interact-shared@1.0.0`; generated dependency files were not added to the source diff.
 
 Blocked:
 
-- `npx tsc --noEmit --pretty false`: 122 errors in five files, all involving the missing ARCH-021-removed Prisma models/relations or cascading implicit types: `src/commerce/integration/backend.ts` (72), `src/commerce/integration/backend/c20-test-fixture.ts` (12), `src/commerce/integration/backend/publication-storage.ts` (18), `tests/c20-integration-fixture.test.ts` (16), and `tests/local-external-mcp-diagnostic.test.ts` (4).
-- `npm run build`: failed at Next.js TypeScript validation with the same 122 errors; build did not complete.
+- Attempt 2 `npx tsc --noEmit --pretty false`: 19 errors in three files, all outside this task's allowed implementation set: `src/commerce/execution/renderer.ts` (2), `tests/add-capability-screen.test.tsx` (16), and `tests/feature-authoring.test.ts` (1). No diagnostics remained in C094's 12-file baseline.
+- Attempt 2 `npm run build`: code-runtime packaging and packaged smoke passed; Prisma Client generation passed; Next.js production compilation passed with a Nunjucks critical-dependency warning; the build then failed during TypeScript validation on the same 19 errors. Exit code was nonzero.
 
 ### Deviations
 
-Required project-wide typecheck and normal production build could not pass without editing out-of-scope legacy consumers or changing the database schema, both prohibited by this task. The task remains `blocked`, not `review`.
+Required project-wide typecheck and normal production build could not pass without editing the three out-of-scope diagnostic files or expanding this task's implementation boundary. The task remains `blocked`, not `review`; Attempt 2 did not start C086 or its production-start smoke.
 
 ### Assumptions
 
-The removed Prisma model/fields are intentionally absent under ARCH-021; C094 must not restore them or add compatibility suppressions. C094 should be resumed after the COMMERCE-092 legacy-consumer/fixture cleanup is accepted, or after the Architect explicitly re-scopes its dependency and remaining work.
+The dependency lockfile and generated Prisma Client are authoritative for this attempt. Remaining errors must be fixed by their owning task(s), or the Architect must explicitly expand C094's allowed file set before implementation continues.
 
 ### Unresolved Issues
 
-`moda_architect` must coordinate COMMERCE-092 before C094 can satisfy the global typecheck/build criteria. The architecture agent recommended making C092 an explicit C094 prerequisite or otherwise re-scoping C094 around C092 completion. DATABASE-003 task metadata also reportedly has a completion/review/index-state inconsistency that should be reconciled before relying on it as accepted.
+`moda_architect` must coordinate ownership of the three remaining diagnostic files or explicitly re-scope C094 before the global typecheck/build criteria can be met. The previous Attempt 1 diagnosis of missing ARCH-021 Prisma models was not reproduced after correcting the stale installed Shared package; it is superseded by Attempt 2's current compiler output.
 
 ### Architectural Concerns
 
-The production build's Prisma type errors show that the staged ARCH-021 legacy-removal work is not yet reconciled with this task's original C093-era diagnostic baseline. C086 Attempt 2 and its production-start HTTP smoke were not started.
+The original C093-era diagnostics in C094's allowed files are resolved, but the production build remains blocked by 19 project-wide type errors outside the task boundary. C086 Attempt 2 and its production-start HTTP smoke were not started.
 
 ## Architect Review
 
