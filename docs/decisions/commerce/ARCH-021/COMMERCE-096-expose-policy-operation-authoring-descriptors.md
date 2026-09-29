@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 80
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-095
 enables:
@@ -98,13 +98,25 @@ Do not create a second function/execution abstraction. A policy operation remain
 Extend the canonical policy-operation registration so each `(operation, operationVersion)` registration owns all of the following:
 
 ```ts
+type PolicyOperationJsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | PolicyOperationJsonValue[]
+  | { [key: string]: PolicyOperationJsonValue };
+
+type PolicyOperationAuthoringSchema = {
+  [keyword: string]: PolicyOperationJsonValue;
+};
+
 type PolicyOperationAuthoringDescriptor = {
   operation: PolicyOperation;
   operationVersion: PolicyOperationVersion;
   displayName: string;
   description: string;
-  argumentsSchema: SubsetSchema;
-  resultSchema: CommerceResultSchema;
+  argumentsSchema: PolicyOperationAuthoringSchema;
+  resultSchema: PolicyOperationAuthoringSchema;
 };
 
 type PolicyOperationRegistration = {
@@ -117,11 +129,18 @@ type PolicyOperationRegistration = {
 };
 ```
 
-Mechanically equivalent names are allowed only where required by repository-local naming, but there must be one registration object per operation/version containing the adapter, runtime validators and authoring descriptor.
+The authoring schemas are Commerce-local, JSON-compatible schema values derived from the same canonical Zod validators held by the registration. They are intentionally **not** the Shared `SubsetSchema` or the current `CommerceResultSchema`:
+
+- the accepted `discounts.evaluate` input contains nested proposal/operation structures that `SubsetSchema` cannot represent faithfully; and
+- accepted policy outputs contain nullable values and collection bounds such as 50, 100 and 128 that the current `CommerceResultSchema` cannot represent without loss.
+
+Do not publish a lossy Studio descriptor merely to force these contracts into those narrower types.
+
+Mechanically equivalent names are allowed only where required by repository-local naming, but there must be one resolved registration object per operation/version containing the adapter, runtime validators and authoring descriptor.
 
 `argumentsSchema` describes the object accepted **after** Tool argument mapping. `resultSchema` describes the successful `CommerceToolResult.data` shape available to Result Template authoring.
 
-Do not maintain a second Studio-only operation metadata list.
+Do not maintain a second Studio-only operation metadata list. C097 must consume this Commerce-local descriptor contract rather than re-deriving operation schemas independently.
 
 ### R3 — registry resolution is canonical for runtime and authoring
 
@@ -216,13 +235,13 @@ Descriptor availability alone never grants execution.
 
 ## Work Items
 
-- [ ] Extend the canonical policy-operation registration with runtime validators and the exact bounded authoring descriptor.
-- [ ] Move existing policy-operation runtime input/output validation ownership out of executor-local `POLICY_SCHEMAS` into registrations.
-- [ ] Add canonical `resolve`/`describe` registry behaviour with deterministic duplicate rejection.
-- [ ] Populate descriptors for every policy operation valid on the accepted base without changing business behaviour.
-- [ ] Add the ADMIN-authorized descriptor read boundary.
-- [ ] Add focused registry/executor/descriptor tests.
-- [ ] Record exact changed files and validation evidence in the Completion Report.
+- [x] Extend the canonical policy-operation registration with runtime validators and the exact bounded authoring descriptor.
+- [x] Move existing policy-operation runtime input/output validation ownership out of executor-local `POLICY_SCHEMAS` into registrations.
+- [x] Add canonical `resolve`/`describe` registry behaviour with deterministic duplicate rejection.
+- [x] Populate descriptors for every policy operation valid on the accepted base without changing business behaviour.
+- [x] Add the ADMIN-authorized descriptor read boundary.
+- [x] Add focused registry/executor/descriptor tests.
+- [x] Record exact changed files and validation evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -241,23 +260,23 @@ This is a repository-local Commerce authoring contract. It is not a cross-servic
 
 ## Acceptance Criteria
 
-- [ ] `POLICY_OPERATION` remains the existing Tool execution kind; no new function execution type exists.
-- [ ] Each accepted existing operation/version has exactly one canonical registration containing adapter, runtime validators and authoring descriptor.
-- [ ] `DefinitionExecutor` uses the canonical registration validators and adapter; executor-local `POLICY_SCHEMAS` no longer owns a duplicate operation contract.
-- [ ] Duplicate operation/version registration fails deterministically.
-- [ ] `describe()` returns the exact bounded descriptor for a registered operation/version and `null`/`UNAVAILABLE` for an unknown pair.
-- [ ] Studio's server read boundary is ADMIN-authorized and performs no durable write.
-- [ ] Descriptor output contains no executable adapter, secret, credential or tenant/grant state.
-- [ ] Existing policy-operation execution tests retain their accepted behaviour.
-- [ ] Shopify Admin GraphQL and External HTTP execution tests show no regression attributable to this task.
+- [x] `POLICY_OPERATION` remains the existing Tool execution kind; no new function execution type exists.
+- [x] Each accepted existing operation/version has exactly one canonical registration containing adapter, runtime validators and authoring descriptor.
+- [x] `DefinitionExecutor` uses the canonical registration validators and adapter; executor-local `POLICY_SCHEMAS` no longer owns a duplicate operation contract.
+- [x] Duplicate operation/version registration fails deterministically.
+- [x] `describe()` returns the exact bounded descriptor for a registered operation/version and `null`/`UNAVAILABLE` for an unknown pair.
+- [x] Studio's server read boundary is ADMIN-authorized and performs no durable write.
+- [x] Descriptor output contains no executable adapter, secret, credential or tenant/grant state.
+- [x] Existing policy-operation execution tests retain their accepted behaviour.
+- [x] Shopify Admin GraphQL and External HTTP execution tests show no regression attributable to this task.
 
 ## Validation
 
-- [ ] Focused policy registry/executor tests.
-- [ ] Focused Studio descriptor server-action/read-boundary tests.
-- [ ] Targeted TypeScript diagnostics for changed files.
-- [ ] Targeted ESLint for changed files.
-- [ ] `git diff --check`.
+- [x] Focused policy registry/executor tests.
+- [x] Focused Studio descriptor server-action/read-boundary tests.
+- [x] Targeted TypeScript diagnostics for changed files.
+- [x] Targeted ESLint for changed files.
+- [x] `git diff --check`.
 
 If repository-wide typecheck/build is already required by the current ARCH-021 baseline/task convention, run it and classify only pre-existing diagnostics according to `docs/development-baseline.md`; this task must introduce no changed-file diagnostic.
 
@@ -273,58 +292,156 @@ Keep the descriptor boundary server-owned. Do not serialize functions or Zod obj
 
 ### Status
 
-Not Started
+Ready for Architect Review.
 
 ### Files Changed
 
-None
+Implementation changes are in `moda-interact-commerce` on `task/ARCH-021-COMMERCE-096`:
+
+- `src/commerce/execution/ports.ts`
+- `src/commerce/execution/policy-operation-authoring.ts`
+- `src/commerce/execution/index.ts`
+- `src/commerce/execution/executor.ts`
+- `src/commerce/execution/renderer.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/integration/backend/executors.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/studio/tools/policy-operation-authoring-server-actions.ts`
+- `tests/policy-operation-registry.test.ts`
+- `tests/policy-operation-authoring-server-actions.test.ts`
+- `tests/definition-execution.test.ts`
+- `tests/recommendation-contract.test.ts`
 
 ### Work Completed
 
-None
+- Added one canonical Commerce policy-operation contract catalogue for all six existing operation/version pairs. Each runtime registration now contains its adapter, input/output Zod validators and bounded authoring descriptor; the descriptor schemas are generated from those same validators.
+- Added canonical registry `resolve` and `describe` behavior, deterministic duplicate rejection, and cloned/deeply frozen JSON-compatible descriptor responses. The operation identity is validated by a schema exported from the Commerce Tool contract.
+- `DefinitionExecutor` resolves the policy registration once per call and uses its input validator, adapter and output validator. Removed executor-local `POLICY_SCHEMAS` and the duplicate renderer output-validator map; the renderer's policy result schema now starts from the canonical operation contract catalogue.
+- Exposed the same active server-side policy registry through `CommerceBackend`; runtime execution, executable-availability checks and Studio reads share that registry instance.
+- Added an ADMIN-authorized read-only Studio server action. Invalid or unregistered identities return `UNAVAILABLE`; it exposes only the descriptor fields and performs no database operation.
+- Added tests for all six descriptor contracts, nested `discounts.evaluate` arguments, nullable and bounded result fields, descriptor cloning/freezing, duplicates, successful/unavailable reads, authorization denial and unchanged execution.
+- Preserved the existing execution kind and all policy operation identifiers, versions, adapters and runtime validator semantics. No Shared, Database, Shopify Admin execution, External HTTP behavior or durable persistence contracts were changed.
 
 ### Validation Results
 
-None
+- `./node_modules/.bin/vitest run tests/policy-operation-registry.test.ts tests/policy-operation-authoring-server-actions.test.ts tests/definition-execution.test.ts tests/recommendation-contract.test.ts tests/admin-graphql-compiler.test.ts tests/external-http-executor.test.ts --reporter=dot` — 6 files passed, 54 tests passed.
+- `./node_modules/.bin/eslint` on all 13 changed source/test files — passed with no warnings.
+- VS Code/Pylance changed-file diagnostics for all 13 changed files — no errors.
+- `git diff --check` — passed.
+- Additional `tests/backend-integration.test.ts` run: 6 passed, 2 failed. The two failures are existing tests that expect `getCommerceBackend()` to fail when production dependencies are absent; in this environment it initializes successfully. The suite's production policy registration and backend composition tests passed. This did not fail in any changed C096 assertion.
+- Generated the local Prisma Client with `./node_modules/.bin/prisma generate --schema database/prisma/schema.prisma` to load the backend integration suite. This changed only ignored worktree dependencies; no schema or submodule pointer changed.
 
 ### Deviations
 
-None
+After a concrete schema expressiveness conflict was identified, `moda_architect` confirmed the descriptor contract must use a Commerce-owned JSON-schema type rather than unchanged Shared `SubsetSchema` and current `CommerceResultSchema`. The shared input validator cannot represent the nested `discounts.evaluate` proposal operations; the current result schema cannot represent nullable values or existing collection bounds such as basket lines (100), unknown fields (128), and discount offers (50). Lossy descriptors would misstate accepted arguments/results. The task therefore keeps the descriptor Commerce-local and accurate; no Shared contract was changed.
 
 ### Assumptions
 
-None
+The registry's authoring descriptor is the canonical browser-safe authoring contract; the existing Tool definition remains the authority for persisted execution and publication.
 
 ### Unresolved Issues
 
-None
+No unresolved implementation issue. The two environment-sensitive backend integration assertions are recorded under Validation Results for Architect review.
 
 ### Architectural Concerns
 
-None
+The task's original literal `SubsetSchema` / `CommerceResultSchema` field types could not faithfully express all accepted operation contracts. The Commerce-local descriptor type was approved by `moda_architect` for this attempt and avoids a cross-repository Shared change.
+
+### Prepared Execution Evidence
+
+- Launcher: prepared execution succeeded; dependency gate passed (`ARCH-021-COMMERCE-095` complete); Attempt 1 claim committed and pushed as `7e6356580edb21735a92d35c1bf958688329bf87` by `copilot` at `2026-09-29T16:58:47Z`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; canonical root was not derived from a previous task worktree.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-096`, `task/ARCH-021-COMMERCE-096`; launcher head `2bf177c5d2074d7cd42418ff8a8c517657a237ba`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-096`, `task/ARCH-021-COMMERCE-096`; launcher head `229d5548e18cf5ae2b41ead25f97717a625d3a5a`.
+- Both remote task branches were already current (`remote_task_branch_fast_forwarded: not-needed`; `origin/main_incorporated: already-current`). Neither shared checkout was switched/mutated and no other task worktree was reused.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- Implementation commit `e37408b` was pushed on the implementation task branch. Parent report/lifecycle commit `623375c5` was pushed on the mirrored parent task branch. No main branch or submodule pointer was changed.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 is accepted.
+
+C096 establishes the required single server-owned Policy Operation registration/descriptor boundary without introducing a new execution kind or Studio-authored executable runtime.
+
+The implementation conforms in the important runtime and authoring boundaries:
+
+- `POLICY_OPERATION` remains the existing canonical Tool execution kind;
+- all six accepted operation/version pairs are represented by the canonical Commerce policy contract catalogue and assembled into runtime registrations containing adapter, input validator, output validator and authoring descriptor;
+- production registration construction deterministically rejects missing, duplicate and unregistered adapter identities;
+- `DefinitionExecutor` resolves the policy registration once and uses that registration's input validator, adapter and output validator;
+- executor-local `POLICY_SCHEMAS` ownership is removed;
+- executable-availability checks use the same registry identity;
+- `CommerceBackend` exposes the same active policy registry instance used by runtime execution;
+- `describe()` returns a cloned/deeply frozen JSON-compatible descriptor and never exposes adapter references, Zod objects, tenant context, credentials or environment state;
+- the Studio descriptor action validates the persisted operation/version identity, requires the existing ADMIN Studio authorization boundary, reads only the server-side registry, returns `UNAVAILABLE` for invalid/unregistered identities and performs no durable write;
+- descriptor availability does not grant execution; normal Tool publication/grant/runtime authorization remains authoritative.
+
+The task's originally specified `SubsetSchema` / `CommerceResultSchema` descriptor fields were too narrow for the already-accepted operation contracts. The architect accepts the Commerce-local JSON-schema descriptor used by this implementation because it is generated from the same runtime Zod validators and preserves contracts that would otherwise be misstated:
+
+- nested `discounts.evaluate` proposal/operation structures;
+- nullable output values; and
+- accepted collection bounds including basket lines 100, unknown fields 128 and discount offers 50.
+
+The task definition is reconciled by this acceptance overlay to make that accurate Commerce-local contract authoritative. No Shared contract change is required because the descriptor is consumed only inside Commerce Studio/Commerce runtime.
+
+The additional backend-integration run reported 6 passes and 2 failures. Both failing tests assert that process-global production backend initialization must throw when production dependencies are absent. That assumption is environment-sensitive: in this prepared worktree the ambient production configuration was sufficient for `getCommerceBackend()` to initialize. The failures are not in changed C096 behavior and do not demonstrate a policy-registry/Admin/External regression. The required focused C096 packet passed.
+
+The implementation branch's configured Git upstream still points at `origin/main`, but the Completion Report explicitly verifies the local task-branch ref equals the pushed `origin/task/ARCH-021-COMMERCE-096` ref. This is a local tracking configuration discrepancy, not missing task publication or a source defect.
 
 ### Reviewed Files
 
-None
+- `src/commerce/execution/ports.ts`
+- `src/commerce/execution/policy-operation-authoring.ts`
+- `src/commerce/execution/index.ts`
+- `src/commerce/execution/executor.ts`
+- `src/commerce/execution/renderer.ts`
+- `src/commerce/integration/backend/executors.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/studio/tools/policy-operation-authoring-server-actions.ts`
+- `tests/policy-operation-registry.test.ts`
+- `tests/policy-operation-authoring-server-actions.test.ts`
+- `tests/definition-execution.test.ts`
+- `tests/recommendation-contract.test.ts`
+- `tests/backend-integration.test.ts`
+- C096 Completion Report
 
 ### Validation Reviewed
 
-None
+Submitted required C096 evidence:
+
+- focused six-file packet: **54/54 tests passed**;
+- packet includes policy registry, descriptor Server Action, DefinitionExecutor, recommendation contract, Shopify Admin compiler and External HTTP executor coverage;
+- targeted ESLint across all 13 changed source/test files: passed;
+- changed-file TypeScript/Pylance diagnostics: clean;
+- `git diff --check`: passed.
+
+Additional backend-integration packet:
+
+- **6 passed / 2 failed**;
+- the two failures are the environment-sensitive `getCommerceBackend()`-must-throw assertions described above;
+- production policy registration/backend composition assertions in that suite passed.
+
+Prisma Client generation was used only to load the integration suite; no schema/submodule pointer changed.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C096 makes policy operations self-describing through one Commerce-owned registration/registry source, preserves exact runtime validation/business behavior, exposes only bounded browser-safe metadata, and keeps descriptor reads separate from execution authority.
 
 ### Follow-up
 
-None
+C096 is Complete / Accepted — Attempt 1.
+
+COMMERCE-097 and COMMERCE-098 become Ready and may execute independently.
+
+COMMERCE-099 remains Pending until both C097 and C098 are Complete.
+
+COMMERCE-100 remains Pending on C099.
