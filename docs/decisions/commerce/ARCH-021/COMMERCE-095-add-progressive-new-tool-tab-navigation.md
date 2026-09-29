@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 76
 executor: null
 claimed_at: null
@@ -134,11 +134,11 @@ Create one pure Commerce Studio navigation module containing the exact new-Tool 
 
 ```ts
 export const NEW_TOOL_AUTHORING_STEPS = [
-Ready for Review after Attempt 2.
+  "tool-definition",
   "request",
   "response",
   "result-template",
-Attempt 1 implementation commit `96ffdeca8f1e1cc420df9d2c1878fc459f82b530` added the progressive navigation implementation and baseline regression matrix. Attempt 2 correction commit `fb0c5fe00c816c7e599de7611049f4f89e6e4b32` updates `src/studio/tools/authoring/tool-authoring-tabs.tsx`, `src/studio/tools/new-tool-editor.tsx`, and `tests/tool-authoring-screen.test.tsx`. Both commits are pushed to `origin/task/ARCH-021-COMMERCE-095`.
+  "test",
   "review",
 ] as const;
 
@@ -146,22 +146,18 @@ export type NewToolAuthoringStepId =
   (typeof NEW_TOOL_AUTHORING_STEPS)[number];
 ```
 
-- A1-R1: while provider replacement confirmation is unresolved, the new-Tool tab list disables navigation away from the active Tool Definition step, and Next/Previous/tab handlers reject navigation. Cancel clears only the pending choice and restores the prior frontier; successful replacement still resets it. Covered in `tool-authoring-screen.test.tsx`.
-- A1-R2: replaced the pre-provider text with accurate guidance to complete Tool Definition and use Next to unlock each step; the screen regression asserts the exact guidance.
-- A1-R3: added the prepared worktree, branch synchronization, claim and recursive submodule evidence below. The Architect Review section was not modified.
 `ToolAuthoringTabs` and the Previous/Next logic must consume this same order. Do not maintain a second independently ordered six-step array for new Tool navigation.
 
 The existing persisted Tool tab order may continue to use its current representation; this task must not alter persisted-DRAFT behaviour.
 
-- Focused provider-confirmation regression — 1 test passed; asserts navigation is frozen during the decision, cancellation restores the enabled Request step, and confirmation starts the new provider at Tool Definition before Next.
-- Targeted ESLint across all 13 changed source/test paths passed in Attempt 1; Attempt 2 ESLint on all three corrected files passed with no warnings. Changed-file TypeScript diagnostics report no errors.
-- `git diff --check` — passed after Attempt 2.
-- Repository `pnpm run typecheck` from Attempt 1 reported 146 TypeScript errors across 17 unchanged files; none referenced C095-changed files. Attempt 2 changed-file diagnostics remain clean.
+### R2 — session-scoped unlock frontier
+
+Extend `NewToolAuthoringState` with exactly one navigation frontier:
 
 ```ts
 type NewToolAuthoringNavigationState = {
   enabledThrough: NewToolAuthoringStepId;
-No implementation scope deviations. The persisted editor retains its pre-existing tablist accessible name; only new-Tool creation uses the provider-neutral label. The enabled `ARCH-021-SYSTEM-TEST-002` task was not started.
+};
 ```
 
 Initial new Tool state is exactly:
@@ -795,99 +791,83 @@ Attempt 2 implementation correction commit `fb0c5fe00c816c7e599de7611049f4f89e6e
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 is accepted in substance for the canonical six-step order, monotonic
-session-local frontier, exact existing validation/Test checkpoints, shared
-Previous/Next presentation, Explore-session restoration and persisted-DRAFT
-isolation. The implementation remains within Commerce ownership and the focused
-regression packet is broad.
+Attempt 2 resolves every correction from the Attempt 1 review.
 
-Two implementation corrections and one durable execution-evidence correction are
-required before acceptance:
+1. **A1-R1 resolved — provider-reset confirmation now freezes traversal.** While
+   `pendingProvider` is non-null, already-enabled tabs other than the active Tool
+   Definition tab are disabled and the direct-tab, Previous and Next handlers all
+   reject navigation. Cancel clears only the pending provider choice so the prior
+   frontier becomes traversable again, while successful replacement continues to
+   reset the active step/frontier through the existing provider-reset path. The
+   focused regression proves the user cannot leave Tool Definition while the
+   decision is unresolved, can traverse the preserved Request frontier after
+   Cancel, and starts the confirmed replacement from Tool Definition before Next
+   unlocks Request.
 
-1. **A1-R1 — provider-reset confirmation does not actually preserve the active
-   step.** R9 requires the current provider, active step and frontier to remain
-   unchanged until the destructive provider replacement is confirmed or
-   cancelled. `pendingProvider` correctly blocks a first-time Tool Definition
-   unlock, but an already-enabled Request/Response/etc. tab remains clickable and
-   Case-A `Next` remains enabled. Because the confirmation is rendered inside the
-   Tool Definition panel rather than as a browser-modal primitive, the user can
-   navigate away while the confirmation is still pending. The hidden
-   `pendingProvider` state then survives on another step. Navigation must be
-   frozen at Tool Definition while the provider-reset decision is unresolved;
-   cancel must restore normal traversal without changing the frontier, and a
-   successful replacement must continue to reset the frontier to Tool Definition.
+2. **A1-R2 resolved — fresh-session guidance matches progressive unlocking.** The
+   obsolete statement that later steps become available merely after provider
+   selection is replaced with guidance to complete Tool Definition and use Next
+   to unlock each authoring step.
 
-2. **A1-R2 — the pre-provider instruction now contradicts progressive unlock
-   semantics.** The screen still says that Request, Response, Result Template,
-   Test and Review "become available after a Tool type is selected", while R9 and
-   the accepted implementation intentionally keep Request locked after initial
-   provider selection until Tool Definition satisfies its checkpoint and later
-   steps unlock one at a time. Replace the message with wording that accurately
-   describes progressive `Next`-based unlock; do not change the actual predicates.
+3. **A1-R3 resolved — prepared execution evidence is durable.** The Completion
+   Report records the launcher claim, dedicated parent and implementation
+   worktrees, start-of-attempt synchronization, recursive submodule preparation
+   and the initialized database submodule revision.
 
-3. **A1-R3 — the Completion Report does not durably record the required prepared
-   worktree evidence.** The report identifies the implementation commit and says
-   the work ran in an isolated worktree, but it does not record the
-   launcher-resolved dedicated parent and Commerce worktree evidence,
-   start-of-attempt synchronization evidence, or recursive submodule preparation
-   evidence required by the task execution policy. This is report/evidence work;
-   do not create code churn merely to manufacture a new implementation commit.
+During review, the architect also found that the Attempt 2 report update had
+accidentally inserted Completion Report text into the architect-owned R1/R2
+Requirements block, deleting the literal `tool-definition` and `test` entries
+from the documented canonical order and the R2 heading/body text. This was a
+coordination-record write-boundary violation, but it did not alter the submitted
+runtime implementation. The architect restored the canonical Requirements block
+from the pre-Attempt-2 task record as part of this acceptance reconciliation; no
+implementation rework or additional attempt is required solely for that record
+repair.
 
-The supplied archive contains no Git metadata or installed `node_modules`, so the
-architect inspected the submitted source/tests/task record directly but could not
-independently verify the pushed refs or rerun the 181-test/lint/typecheck packet.
+The supplied review archive contains no Git metadata or installed `node_modules`,
+so the architect could not independently verify the pushed refs or rerun the
+reported test/lint/typecheck commands. Source, tests, task evidence and the
+Attempt-1 -> Attempt-2 implementation delta were inspected directly.
 
 ### Reviewed Files
 
-- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-navigation.ts`
-- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-step-navigation.tsx`
 - `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-tabs.tsx`
-- `moda-interact-commerce/src/studio/tools/new-tool-authoring-state.ts`
 - `moda-interact-commerce/src/studio/tools/new-tool-editor.tsx`
-- `moda-interact-commerce/src/studio/tools/tool-authoring-screen.tsx`
-- `moda-interact-commerce/src/studio/tools/authoring-session.ts`
-- `moda-interact-commerce/src/studio/external-http/editor.tsx`
-- the five focused C095 test files listed by the task
-- the C095 Completion Report and dependency task records
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
+- the accepted Attempt 1 C095 implementation files and five focused test suites
+- the C095 Completion Report / Attempt 2 prepared execution evidence
+- `ARCH-021-SYSTEM-TEST-002` dependency and execution-frontier records
 
 ### Validation Reviewed
 
-- Submitted focused packet: 5 suites / 181 tests passed.
-- Submitted targeted ESLint: passed.
+- Submitted Attempt 2 focused packet: 5 suites / 181 tests passed.
+- Submitted provider-confirmation regression: passed.
+- Submitted targeted ESLint: passed with no warnings.
+- Submitted changed-file diagnostics: clean.
 - Submitted `git diff --check`: passed.
-- Submitted repository typecheck: 146 diagnostics across 17 unchanged files, with
-  no C095 changed-file diagnostics.
-- Static architect inspection confirmed the provider-confirmation navigation gap
-  described in A1-R1 and the contradictory instruction described in A1-R2.
+- Repository typecheck remains at 146 diagnostics across 17 unchanged files, with
+  no C095 changed-file diagnostics reported.
+- Static architect inspection confirmed the navigation lock is enforced both in
+  tab presentation and in the tab/Previous/Next handlers, and that Cancel and
+  confirmed provider reset preserve the required R9 semantics.
 
 ### Architecture Conformance
 
-Changes Requested. The progressive-navigation architecture is otherwise
-conformant, but R9 is not fully enforced while provider replacement confirmation
-is pending. The durable execution record also requires the missing prepared
-worktree/synchronization/submodule evidence before acceptance.
+Accepted. The six-step new-Tool traversal uses the canonical shared order,
+monotonic session-local unlock frontier and existing Request/Response/Template/Test
+checkpoints; provider replacement now preserves the active Tool Definition step
+until the decision resolves; Explore restoration and persisted-DRAFT behavior
+remain unchanged; no durable navigation state or cross-repository contract was
+introduced.
 
 ### Follow-up
 
-Attempt 2 must:
-
-1. make a pending provider-reset confirmation preserve the active Tool Definition
-   step even when later tabs were already enabled; clicking those tabs or `Next`
-   while the decision is unresolved must not navigate or mutate the frontier;
-2. prove cancel preserves the prior frontier and re-enables normal traversal, and
-   prove successful replacement still resets active step/frontier to Tool
-   Definition;
-3. replace the stale "steps become available after Tool type selection" text with
-   progressive-unlock guidance;
-4. add focused regressions for the pending-confirmation navigation case and the
-   corrected guidance; and
-5. amend the Completion Report with the prepared launcher packet's dedicated
-   parent/implementation worktree, start synchronization and recursive submodule
-   evidence.
-
-Return the same task to review after the focused validation required by the task.
-Do not start `ARCH-021-SYSTEM-TEST-002`.
+`ARCH-021-SYSTEM-TEST-002` is now Ready because COMMERCE-079, COMMERCE-081,
+COMMERCE-083 and COMMERCE-095 are all architect-accepted Complete. It remains a
+terminal validation task and must not be started implicitly by this acceptance;
+the developer may leave it Ready while manually exercising the completed Tool
+authoring flow.

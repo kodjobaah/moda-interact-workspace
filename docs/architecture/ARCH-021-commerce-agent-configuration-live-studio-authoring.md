@@ -1122,7 +1122,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
-| ARCH-021-COMMERCE-095 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1552,7 +1552,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
-| ARCH-021-COMMERCE-095 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1574,7 +1574,7 @@ Phase 5 Feature Capability simplification is now decomposed through DATABASE-003
 
 No implementation task may depend on a system-test task.
 
-Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending on COMMERCE-079, COMMERCE-081, COMMERCE-083 and COMMERCE-095. It becomes Ready only after those Commerce tasks are architect-accepted Complete.
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. COMMERCE-079, COMMERCE-081, COMMERCE-083 and COMMERCE-095 are architect-accepted Complete, so SYSTEM-TEST-002 is Ready for terminal validation.
 ### COMMERCE-082 Attempt 1 accepted — 2026-09-28
 
 - Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
@@ -1590,6 +1590,20 @@ ARCH-021 and terminal SYSTEM-TEST-002 is re-gated behind C095. Attempt 1 is
 accepted in substance but remains Ready for correction because an unresolved
 provider-reset confirmation does not freeze navigation at Tool Definition and
 the pre-provider guidance still describes the superseded unlock model.
+
+### COMMERCE-095 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-095 is **Complete / Accepted, Attempt 2**. The provider-reset decision
+now freezes progressive traversal at Tool Definition, Cancel restores the prior
+frontier, confirmed replacement resets it, and the pre-provider guidance matches
+the accepted Next-based unlock model. The Completion Report also contains the
+required prepared execution evidence. During acceptance reconciliation, the
+architect restored accidental report text that had been written into the
+architect-owned R1/R2 Requirements block; the runtime implementation itself did
+not require further correction.
+
+With C079, C081, C083 and C095 Complete, terminal
+`ARCH-021-SYSTEM-TEST-002` is now **Ready**.
 
 ## Open Questions
 
