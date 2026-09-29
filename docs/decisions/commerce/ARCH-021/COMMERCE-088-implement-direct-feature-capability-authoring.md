@@ -312,7 +312,7 @@ Published task state:
 
 - Implementation commits `47b1c4a` (`Implement direct Feature capability authoring backend`) and `be6a71e` (`Avoid redundant revision read in Capability result`) are on `origin/task/ARCH-021-COMMERCE-088`.
 - The launcher-created synchronization merge `a9c728c` incorporates current `origin/main`; it was pushed non-forced to `origin/task/ARCH-021-COMMERCE-088`. The implementation worktree and remote task ref now match at `a9c728c`.
-- The prior Attempt 1 task-report commit is `afd8df87`; Attempt 2 report changes are committed and pushed on `origin/task/ARCH-021-COMMERCE-088` (the final report commit is recorded in the handoff).
+- The prior Attempt 1 task-report commit is `afd8df87`; the full Attempt 2 reconciliation report is committed as `59608bab` and pushed on `origin/task/ARCH-021-COMMERCE-088`.
 - The parent task branch was clean and matched `origin/task/ARCH-021-COMMERCE-088` at the Attempt 2 claim commit `a35ea45c` before report edits; `origin/main` is an ancestor of both task worktree heads.
 - Neither task branch was merged into its `main` branch.
 
