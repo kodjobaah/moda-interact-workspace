@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 93
-executor: copilot
-claimed_at: 2026-09-29T14:57:49Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-088
@@ -185,7 +185,7 @@ Use the current Tool creation UX as a visual/interaction reference, not as a rea
 
 ### Status
 
-Attempt 1 is ready for Architect Review. Claim metadata is cleared.
+Attempt 2 corrections are ready for Architect Review. Claim metadata is cleared.
 
 ### Files Changed
 
@@ -195,21 +195,28 @@ Attempt 1 is ready for Architect Review. Claim metadata is cleared.
 - `tests/feature-configuration-page.test.tsx`
 - `tests/feature-configuration-screen.test.tsx`
 - `tests/studio-workspace.test.tsx`
+- `tests/studio-shell.test.tsx`
 
 ### Work Completed
 
 - Added a dedicated Feature list/detail surface using only `listFeatureAuthoring`, `getFeatureAuthoring`, and `updateFeatureBehaviour`; Feature routes bypass generic shop-selection, shell publication, and legacy Feature reads.
 - Rendered Admin-owned Feature identity read-only, one shared Behaviour prompt, and human-readable Capability-to-Tool associations without revision/billing concepts.
 - Added empty-prompt CAS save, explicit refresh after stale CAS, preserved local text on conflicts, and refresh-before-retry for unknown mutation outcomes.
+- Attempt 2 A1-R1: captured the prompt edit revision at save admission; successful mutation/read results update canonical `editVersion` but replace/clear prompt state only if no newer edit occurred. Pending saves also hold the navigation blocker, and status distinguishes submitted text from newer unsaved edits.
+- Attempt 2 A1-R2: kept stale-CAS gating through further local edits and added a regression proving saving resumes only after explicit refresh, using the refreshed CAS version.
+- Attempt 2 A1-R3: Feature list and detail routes now pass an explicit unavailable release model to `StudioShell`; focused route assertions verify this without calling `getShell`, and shell coverage verifies this renders “Release status unavailable,” not “No active release.”
 - Added Add capability navigation to the COMMERCE-091 route without invoking a creation action.
 - Removed Feature detail ownership and the obsolete Feature title from `StudioWorkspace`.
-- Committed implementation as `7f7b075` (`feat(commerce): add Feature configuration surface`) and pushed `task/ARCH-021-COMMERCE-090`.
+- Attempt 1 implementation commit `7f7b075` (`feat(commerce): add Feature configuration surface`) and Attempt 2 correction commit `515c234` (`fix(commerce): address Feature surface review findings`) are pushed to `task/ARCH-021-COMMERCE-090`.
 
 ### Validation Results
 
 - `npm exec -- vitest run tests/feature-configuration-page.test.tsx tests/feature-configuration-screen.test.tsx`: passed, 2 files / 8 tests.
+- Attempt 2 `npm exec -- vitest run tests/feature-configuration-page.test.tsx tests/feature-configuration-screen.test.tsx tests/studio-shell.test.tsx`: passed, 3 files / 11 tests, including A1-R1 in-flight edit retention, A1-R2 stale gate/refresh, and A1-R3 unavailable shell status.
 - Targeted ESLint on all six changed files: passed with no warnings or errors.
+- Attempt 2 targeted ESLint on the route, Feature screen, shell, and regression test files: passed with no warnings or errors.
 - Pylance diagnostics on all six changed files: no errors found.
+- Attempt 2 Pylance diagnostics on all seven changed files: no errors found.
 - `git diff --check`: passed.
 - `npm run typecheck`: did not pass; 271 errors remain across 27 repository files. The changed Feature files are absent from the final compiler error summary; task-introduced diagnostics found in the initial run were corrected.
 - `npm exec -- vitest run tests/studio-workspace.test.tsx`: 7 passed, 6 failed in existing generic Studio/Tools editor workflows; the focused Feature route/screen suite passes independently.
@@ -252,6 +259,21 @@ Published task state:
 - Implementation commit `7f7b075` is pushed to `origin/task/ARCH-021-COMMERCE-090`.
 - No task branch was merged into `main`.
 - Task status is `review`; `executor` and `claimed_at` are cleared. The Architect Review section below remains unchanged.
+
+### Attempt 2 Changes-Requested Reconciliation
+
+- A1-R1 is addressed in `src/studio/features/feature-configuration-screen.tsx`; the regression is in `tests/feature-configuration-screen.test.tsx` (“preserves edits made while an admitted save is unresolved”). An edit made after save admission remains visible and dirty; subsequent save uses the successful mutation's `editVersion`.
+- A1-R2 is addressed in `src/studio/features/feature-configuration-screen.tsx`; the regression in `tests/feature-configuration-screen.test.tsx` (“keeps stale CAS gated through further edits until explicit refresh”) verifies local text retention, continued save blocking and successful retry only after canonical refresh.
+- A1-R3 is addressed in `components/production-studio-page.tsx`; route-model assertions in `tests/feature-configuration-page.test.tsx` and actual shell rendering coverage in `tests/studio-shell.test.tsx` verify Feature authoring does not imply “No active release” and does not add `getShell` or shop-selection reads.
+
+Attempt 2 launcher evidence:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Reused exact parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-090` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-090`, both on `task/ARCH-021-COMMERCE-090`; neither shared checkout nor another task worktree was used.
+- Parent `origin/main` was incorporated (`yes`); implementation `origin/main` was already current. Remote task branch fast-forward was `not-needed` for both.
+- Recursive submodule sync and initialization passed; `database` is initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`, status `ready`.
+- The launcher claim is `a8d8873c4e5168a9c6538c00cb4263b11d1ace7a`. Attempt 2 implementation commit `515c234e8d9c3d8707e47d77e126394592583dee` is pushed to the mirrored task branch. No task branch was merged to `main`.
+- Task status is `review`, `executor: null`, and `claimed_at: null`. The Architect Review section above is unchanged.
 
 ## Architect Review
 
