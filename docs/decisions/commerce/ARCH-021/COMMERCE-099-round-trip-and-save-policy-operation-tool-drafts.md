@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-29T20:55:59Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-097
@@ -327,7 +327,9 @@ The fixed operation binding is intentional. Studio is authoring a revision of a 
 
 ### Status
 
-Ready for Architect Review (Attempt 1).
+Attempt 2 is complete and ready for Architect re-review. The required transient
+Test-generation correction and deferred A-to-B-to-A regression are complete;
+the Attempt 1 implementation and its evidence remain preserved below.
 
 ### Files Changed
 
@@ -338,6 +340,11 @@ Ready for Architect Review (Attempt 1).
 - `tests/new-tool-authoring-state.test.ts`
 - `tests/shopify-admin-tools-ui.test.tsx`
 
+Attempt 2 correction commit `46f715a` on `task/ARCH-021-COMMERCE-099`:
+
+- `src/studio/tools/authoring/policy-operation-test-tab.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+
 ### Work Completed
 
 - Extended the canonical authoring validation ledger with per-section current-valid markers; advancing a section revision clears its marker. Added focused shared-state coverage for validity and invalidation.
@@ -346,14 +353,36 @@ Ready for Architect Review (Attempt 1).
 - Kept candidate assembly in the parent editor and preserved the loaded immutable name and operation/version binding. Save uses `updateToolDraft` with the selected revision ID, current CAS editVersion, exact candidate, and structured audit reason; successful results are identity-checked and the returned definition/editVersion restore the editor state.
 - Preserved local edits on CAS conflict and exercised the real `ToolAuthoringScreen` unknown-outcome lock/recovery state after a thrown mutation. Existing open/no-write, fixed-binding, no-create/no-publish assertions remain covered.
 - Left External HTTP and Shopify Admin behavior unchanged; their existing provider UI regressions pass.
+- Reused the accepted Shopify Admin transient-generation pattern in Policy Test:
+  arguments/shop identity changes advance a monotonic generation, submissions
+  include it in their identity, and both success and failure completions must
+  still match the captured generation.
+- Added a deferred C098 action regression that changes arguments and shop from
+  A to B and back to A. The obsolete result is ignored, the common Test
+  checkpoint remains STALE and Save remains disabled until a fresh explicit
+  Test passes.
 
 ### Validation Results
+
+Attempt 1 validation:
 
 - Focused regression packet: 8 files passed, 174 tests passed (`new-tool-authoring-state`, persisted Shopify Admin/Policy UI, External HTTP UI, Policy live-Test service/action/authoring action, and shared authoring validation/server-action suites).
 - Targeted ESLint over all six changed implementation/test files: passed without warnings.
 - `git diff --check`: passed.
 - `prisma generate --schema database/prisma/schema.prisma`: passed; generated output remains under ignored `node_modules` and no schema/submodule pointer changed.
 - `tsc --noEmit --pretty false`: package-wide check remains non-green with 38 diagnostics in unrelated existing source/tests after Prisma Client generation; no diagnostic targets any C099-changed file. The C099 TypeScript diagnostics are clear; the repository-wide check is not claimed as passing.
+
+Attempt 2 validation:
+
+- Focused C099 regression packet: 8 files passed, 175 tests passed, including
+  the deferred Policy Test arguments/shop A-to-B-to-A regression.
+- Targeted ESLint for `policy-operation-test-tab.tsx` and
+  `shopify-admin-tools-ui.test.tsx`: passed.
+- Changed-file diagnostics: no errors in either changed file.
+- `npx tsc --noEmit --pretty false`: passed with exit code 0 on the synchronized
+  Attempt 2 baseline; the 38 package-wide diagnostics reported during Attempt 1
+  were not reproduced.
+- `git diff --check`: passed.
 
 ### Deviations
 
@@ -365,7 +394,8 @@ The existing C098 authenticated Test action and canonical `updateToolDraft` life
 
 ### Unresolved Issues
 
-The package-wide TypeScript check retains 38 diagnostics outside the six changed files, primarily unrelated Commerce source and tests. They are recorded for Architect review and were not changed as out-of-scope work.
+None. Attempt 1's package-wide TypeScript run reported 38 diagnostics outside
+its changed files; Attempt 2's synchronized package-wide run exited 0.
 
 ### Architectural Concerns
 
@@ -378,7 +408,23 @@ None identified. The implementation reuses the common persisted authoring ledger
 - Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-099`, `task/ARCH-021-COMMERCE-099`; prepared parent head `144643a3a8dad3390f2b93664f29687867bd4deb`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-099`, `task/ARCH-021-COMMERCE-099`; prepared implementation head `6c9326b5ee8ca2ee817b29009c86cc26a1e009f1`.
 - Recursive `database` submodule is ready at `e9fb60221f1532205650154dfff2aadb6270b14c`.
-- Implementation commit: `d7bd1990694e5b2a4a6c8c3c3f7b9b734aaceff6` (`feat(ARCH-021-COMMERCE-099): integrate persisted policy draft lifecycle`), pushed to `origin/task/ARCH-021-COMMERCE-099` and verified equal to the remote head. Initial parent completion-report commit `0e766f50cbc246548a89f0773e3e846b2036162f` was pushed to `origin/task/ARCH-021-COMMERCE-099`; this final report correction is also being published to that mirrored ref. No main merge, unrelated task, submodule pointer, or Architect Review section is changed.
+- Attempt 1 implementation commit `d7bd1990694e5b2a4a6c8c3c3f7b9b734aaceff6` (`feat(ARCH-021-COMMERCE-099): integrate persisted policy draft lifecycle`) and parent completion-report commit `0e766f50cbc246548a89f0773e3e846b2036162f` were pushed to their respective mirrored task branches. No main merge, unrelated task, submodule pointer, or Architect Review section was changed.
+
+Attempt 2 preparation and publication evidence:
+
+- Launcher returned `prepared_execution: true`, `execution_state: claimed`,
+  dependency gate passed for C097/C098, Attempt 2, and claim commit
+  `6733968b2a01707e6329301ea158d49f99fd6325` pushed.
+- Prepared parent head: `325b94d1cfed1ff2f11d19a76755c71dc69bdb75`;
+  implementation head: `7bb439ee95cfa8d9737993d264e58d590f5ff2e3`.
+- Parent and implementation task branches incorporated current `origin/main`;
+  neither remote task branch required a fast-forward. Recursive submodule sync
+  and update passed; `database` is at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- Attempt 2 implementation commit `46f715a` (`fix(ARCH-021-COMMERCE-099): guard
+  policy test reversion races`) is pushed to the mirrored implementation task
+  branch. Only the two listed C099 implementation/test files changed.
+- No main merge, unrelated task, submodule pointer, or Architect Review section
+  is changed.
 
 ### Submission Evidence
 
