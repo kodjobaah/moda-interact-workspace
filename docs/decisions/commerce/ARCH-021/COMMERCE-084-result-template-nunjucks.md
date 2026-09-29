@@ -943,13 +943,13 @@ None identified by the bounded R11 audit. No Shared contract or database migrati
 
 #### Corrections
 
-- Equality and inequality now accept only compatible scalar operands, numeric integer/number pairs, or scalar/null checks. Object/object, array/array, object/null and array/null comparisons produce `invalid_template_expression`; scalar optional-null checks remain valid.
+- Equality and inequality now accept only compatible scalar operands, numeric integer/number pairs, or scalar/null checks. Object/object equality and inequality, array/array equality and inequality, object/null equality and inequality, and array/null equality and inequality comparisons produce `invalid_template_expression`; scalar optional-null checks remain valid.
 - Plain `else` bodies now count the enclosing `if` in combined control depth. An `elif` represented as an `If` continuation remains at the same chain depth. Added regressions for repeated `elif`, four accepted levels, a fifth level through `else`, and a fifth mixed if/for level through `else`.
 - Reconciled every Work Item, Acceptance Criterion and Validation checkbox against the recorded implementation and evidence. The complete Architect Review history is preserved unchanged.
 
 #### Attempt 3 Files and Validation
 
-- Commerce implementation commit: `421c02dd692664bb435abdcc7a25b5856a29cc62`, pushed to `origin/task/ARCH-021-COMMERCE-084`; it changes only `src/commerce/tool-authoring/nunjucks-template.ts` and `tests/nunjucks-template.test.ts`.
+- Commerce implementation commit: `c6007280e482601462575e73eb9c1fa4a82dd14f`, pushed to `origin/task/ARCH-021-COMMERCE-084`; it changes only `src/commerce/tool-authoring/nunjucks-template.ts` and `tests/nunjucks-template.test.ts`.
 - Focused 10-file packet: 125 tests passed. Required contract/authoring/execution and External/Shopify live-Test packet: 4 files, 56 tests passed. Parser regression suite: 7 tests passed. Targeted ESLint and Commerce/database `git diff --check` passed.
 - Repository `tsc --noEmit --pretty false` remains nonzero with 266 errors, matching the Attempt 2 baseline count; no diagnostics reference either changed file. Full Commerce suite and environment-dependent QuickJS/C20/MCP checks were not rerun; prior documented blockers remain.
 
@@ -957,7 +957,7 @@ None identified by the bounded R11 audit. No Shared contract or database migrati
 
 - Launcher-resolved parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-084`; Commerce implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-084`; nested database worktree: Commerce `database/`.
 - At attempt start the parent task branch was `a311e8feb5521d834722bcf4529fb393e67f8e2a`; the launcher reported task branches already current with `origin/main`, no fast-forward required. Commerce started at `5efd2d1eaad7941d4e8230d29eeacbfdfd7f5905`. The launcher verified recursive submodule initialization at database commit `4da313921d9521c23058722188e2802f7fbf7779`.
-- Commerce Attempt 3 commit and remote task-branch tip match at `421c02dd692664bb435abdcc7a25b5856a29cc62`. Database local and remote task-branch tips match at `4da313921d9521c23058722188e2802f7fbf7779`. Commerce and database worktrees were clean after publication. Parent task report is now committed and pushed on its mirrored task branch; local and remote parent tips were verified equal.
+- Commerce Attempt 3 commit and remote task-branch tip match at `c6007280e482601462575e73eb9c1fa4a82dd14f`. Database local and remote task-branch tips match at `4da313921d9521c23058722188e2802f7fbf7779`. Commerce and database worktrees were clean after publication. Parent task report is now committed and pushed on its mirrored task branch; local and remote parent tips were verified equal.
 
 ## Architect Review
 
