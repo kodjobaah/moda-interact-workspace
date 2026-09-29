@@ -1061,9 +1061,9 @@ Implementation repository:
 
 Parent workspace:
 - task file: `docs/decisions/commerce/ARCH-021/COMMERCE-087-make-generated-nunjucks-optional-safe.md`
-- commit: recorded after this task-file commit
+- commit: `072447753bd85d7fd7fa91c7c93d5e69c036444c` (completion report)
 - remote branch: `origin/task/ARCH-021-COMMERCE-087`
-- pushed: pending
+- pushed: yes
 - submodule gitlink staged: no
 
 Merged to implementation main: no
