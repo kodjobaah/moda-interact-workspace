@@ -376,7 +376,7 @@ None identified. The implementation reuses the common persisted authoring ledger
 - Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-099`, `task/ARCH-021-COMMERCE-099`; prepared parent head `144643a3a8dad3390f2b93664f29687867bd4deb`.
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-099`, `task/ARCH-021-COMMERCE-099`; prepared implementation head `6c9326b5ee8ca2ee817b29009c86cc26a1e009f1`.
 - Recursive `database` submodule is ready at `e9fb60221f1532205650154dfff2aadb6270b14c`.
-- Implementation commit: `d7bd1990694e5b2a4a6c8c3c3f7b9b734aaceff6` (`feat(ARCH-021-COMMERCE-099): integrate persisted policy draft lifecycle`), pushed to `origin/task/ARCH-021-COMMERCE-099` and verified equal to the remote head. Parent completion-report commit: pending publication. No main merge, unrelated task, submodule pointer, or Architect Review section is changed.
+- Implementation commit: `d7bd1990694e5b2a4a6c8c3c3f7b9b734aaceff6` (`feat(ARCH-021-COMMERCE-099): integrate persisted policy draft lifecycle`), pushed to `origin/task/ARCH-021-COMMERCE-099` and verified equal to the remote head. Initial parent completion-report commit `0e766f50cbc246548a89f0773e3e846b2036162f` was pushed to `origin/task/ARCH-021-COMMERCE-099`; this final report correction is also being published to that mirrored ref. No main merge, unrelated task, submodule pointer, or Architect Review section is changed.
 
 ### Submission Evidence
 
