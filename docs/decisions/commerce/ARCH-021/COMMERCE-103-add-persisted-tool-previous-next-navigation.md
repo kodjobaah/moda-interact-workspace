@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
-executor: copilot
-claimed_at: 2026-09-29T21:59:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-095
@@ -562,35 +562,49 @@ Do not derive navigation permission from candidate validity. If an implementatio
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+`moda-interact-commerce/src/studio/tools/authoring/tool-authoring-navigation.ts`
+`moda-interact-commerce/src/studio/tools/authoring/tool-authoring-step-navigation.tsx`
+`moda-interact-commerce/src/studio/tools/authoring/tool-authoring-tabs.tsx`
+`moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+`moda-interact-commerce/src/studio/tools/policy-operation-editor.tsx`
+`moda-interact-commerce/tests/external-tools-ui.test.tsx`
+`moda-interact-commerce/tests/shopify-admin-tools-ui.test.tsx`
 
 ### Work Completed
 
-None
+- Derived persisted tabs from the COMMERCE-095 canonical six-step order and introduced provider-neutral step type/helper aliases without changing new-Tool progression.
+- Set the persisted tablist accessible name to `Tool authoring steps`; all six tabs remain directly enabled.
+- Added one shared, readiness-independent Previous/Next footer to persisted External HTTP, Shopify Admin GraphQL and Policy Operation shells, using their existing section state/setter paths.
+- Added regressions for forward/backward boundaries, invalid/stale navigation, transient edit retention, zero action calls, Policy descriptor-read stability, and Shopify Explore section restore. Preserved the existing Review save gate and new-Tool progressive behavior.
 
 ### Validation Results
 
-None
+- `./node_modules/.bin/vitest run tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx --reporter=dot` — passed, 3 files and 163 tests.
+- Targeted ESLint over all changed implementation and test files — passed.
+- `git diff --check` — passed.
+- VS Code diagnostics for all changed files — no errors.
+- `npm run typecheck` — passed. The task worktree initially lacked the lockfile-pinned Vite package; the exact installed Vite 6.4.3 package was temporarily linked from the canonical Commerce checkout inside ignored `node_modules` and the link was removed after the check. No project manifest was changed.
+- Initial `pnpm exec vitest` did not reach tests because pnpm rejected ignored dependency build scripts (`ERR_PNPM_IGNORED_BUILDS`). The local Vitest binary was used after generating the task worktree's Prisma client; bootstrap-generated untracked pnpm files were removed.
 
 ### Deviations
 
-None
+The required Vitest suites were run via the installed local binary because `pnpm exec` attempted dependency installation and stopped at the ignored-build-script policy. Typecheck used the lockfile-pinned Vite package from the already-installed canonical environment without changing project files.
 
 ### Assumptions
 
-None
+Persisted tabs are canonical six-step IDs; the existing new-Tool names remain compatibility aliases for the same literals/helpers.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None identified.
 
 ## Architect Review
 
