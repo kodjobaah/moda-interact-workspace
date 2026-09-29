@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 9
 executor: null
 claimed_at: null
@@ -263,76 +263,63 @@ The project-wide typecheck and production build now pass with the narrowly autho
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 correctly resolved every diagnostic in C094's original 12-file boundary and demonstrated that the earlier missing-Prisma-model diagnosis was caused by stale installed dependencies rather than the current ARCH-021 schema/client.
+Attempt 3 is accepted.
 
-The remaining production-build blocker is now bounded to 19 TypeScript diagnostics in exactly three Commerce-owned files outside the original task boundary:
+C094 now satisfies its complete production-build gate. Attempts 1 and 2 resolved the original C093-era diagnostic set and identified the final 19 project-wide diagnostics. Attempt 3 used the architect-approved three-file scope expansion, with no further scope growth.
 
-```text
-src/commerce/execution/renderer.ts          2
-tests/add-capability-screen.test.tsx       16
-tests/feature-authoring.test.ts             1
-```
+The synchronized baseline already contained the renderer union-narrowing correction, so no renderer edit was required in Attempt 3. The remaining two test-only corrections are appropriately narrow:
 
-These errors belong naturally to C094's existing bounded outcome—restore a clean repository typecheck and production build before C086 resumes. Creating a second build-unblocker task would artificially split one repository-owned validation gate. The C094 implementation boundary is therefore expanded narrowly for Attempt 3.
+- `tests/add-capability-screen.test.tsx` now uses a runtime-checked `HTMLButtonElement` helper so the existing disabled-state assertions remain semantically identical while being type-correct;
+- `tests/feature-authoring.test.ts` now returns the complete selected Feature shape required by the current persistence contract.
 
-#### A2-R1 — resolve the current 19 diagnostics in the three newly authorized files
+No TypeScript suppressions, compiler-option changes, Prisma/schema changes, dependency-manifest changes, C086 changes, or unrelated runtime behavior changes were introduced.
 
-Authorized files:
+The validation gate is now fully green:
 
-```text
-src/commerce/execution/renderer.ts
-tests/add-capability-screen.test.tsx
-tests/feature-authoring.test.ts
-```
+- global `npx tsc --noEmit --pretty false` completes with zero diagnostics;
+- targeted ESLint passes;
+- the focused packet passes 61/61;
+- `git diff --check` passes;
+- the normal `npm run build` completes successfully end to end, including code-runtime packaging/smoke, Prisma generation, TypeScript validation, static page generation and trace finalization.
 
-Correction requirements:
+The Nunjucks critical-dependency message emitted during compilation is a non-fatal build warning; the production build exits successfully.
 
-- In `renderer.ts`, correct execution-union narrowing so POLICY_OPERATION-only fields (`operation`, `operationVersion`) are accessed only after proving the policy execution variant. Preserve renderer behavior and existing template/result contracts.
-- In `tests/add-capability-screen.test.tsx`, make button disabled-state assertions type-correct without weakening assertions or using unsafe casts/suppressions. Prefer Testing Library/Jest-DOM semantics or an appropriate element type.
-- In `tests/feature-authoring.test.ts`, update the fake `featureModel.findUnique` result so it satisfies the current selected Feature shape used by the production persistence path. Preserve the test's intended behavior.
-- Do not change Prisma schema, generated model definitions, TypeScript compiler options, lint rules, dependency manifests/lockfiles, C086 files, or unrelated runtime behavior.
-- Do not add `@ts-ignore`, `@ts-nocheck`, blanket suppressions, or unsafe `any` escapes merely to silence the compiler.
-
-After the corrections:
-
-1. run focused tests covering the three corrected sites plus the existing C094 focused packet as appropriate;
-2. run targeted ESLint over all C094-changed files;
-3. run `npx tsc --noEmit --pretty false` and require zero diagnostics;
-4. run `git diff --check`;
-5. run the normal `npm run build` and require exit code zero;
-6. reconcile the Completion Report;
-7. return C094 to `review`, clear the claim, and STOP.
-
-Do not start C086 Attempt 2 or its production-start smoke. C086 remains blocked until C094 is architect-accepted Complete.
+C086 Attempt 2 and its production-start HTTP smoke were not started, preserving the task boundary.
 
 ### Reviewed Files
 
 - `src/commerce/execution/renderer.ts`
 - `tests/add-capability-screen.test.tsx`
 - `tests/feature-authoring.test.ts`
-- C094 task Completion Report and Attempt-2 validation evidence
+- original C094 diagnostic-bearing source/test files listed in the task
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-- Original C094 diagnostic set: resolved.
-- Focused C094 tests: 48/48 passed.
-- Targeted ESLint: zero errors, one documented unused-variable warning.
-- Prisma generation: passed.
-- Code-runtime packaging and packaged smoke during `npm run build`: passed.
-- Next.js production compilation: passed before TypeScript validation.
-- Current global TypeScript blocker: 19 diagnostics in the three newly authorized files.
-- Current production build blocker: the same 19 TypeScript diagnostics.
+- Attempt 3 focused packet: 61/61 passed.
+- Global `npx tsc --noEmit --pretty false`: passed with zero diagnostics.
+- Targeted ESLint across C094 changed files: passed.
 - `git diff --check`: passed.
+- `npm run build`: passed end to end.
+- Prisma generation: passed.
+- Code-runtime packaging/smoke within production build: passed.
+- Nunjucks critical-dependency warning: non-fatal; build completed successfully.
+- C086 Attempt 2 / production-start smoke: not started, as required.
 
 ### Architecture Conformance
 
-C094 remains the correct repository-owned production-build gate. The three-file scope expansion is a bounded type-safety correction and does not change ARCH-021 runtime ownership or Feature/Capability architecture.
+Conforms.
+
+C094 remains a bounded Commerce-repository build/type-safety correction. The final fixes preserve runtime semantics and restore the required project-wide typecheck and production-build prerequisites without altering ARCH-021 ownership, schema, Feature/Capability architecture or C086 behavior.
 
 ### Follow-up
 
-Return the same task through `/moda-task` for Attempt 3. Execute A2-R1 only, satisfy the global typecheck and production-build criteria, return to `review`, clear the claim, and STOP.
+ARCH-021-COMMERCE-094 is Complete.
+
+ARCH-021-COMMERCE-086 is promoted from Blocked to Ready. C086 may now be reclaimed for Attempt 2 and owns its clean-build confirmation plus production-start HTTP smoke for the packaged Result Template guide.
+
+Do not treat C094 acceptance itself as execution of C086.
