@@ -21,6 +21,7 @@ depends_on:
   - ARCH-021-COMMERCE-082
 enables:
   - ARCH-021-COMMERCE-085
+  - ARCH-021-COMMERCE-087
 created: 2026-09-28
 updated: 2026-09-29
 ---
@@ -841,6 +842,7 @@ No new database or cross-repository contract is introduced unless R11 proves the
 ## Enables
 
 - ARCH-021-COMMERCE-085
+- ARCH-021-COMMERCE-087
 
 ## Acceptance Criteria
 

@@ -1087,9 +1087,11 @@ Implementation tasks:
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
-| ARCH-021-COMMERCE-085 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
+| ARCH-021-COMMERCE-087 | moda_commerce | Ready | ARCH-021-COMMERCE-084 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1455,9 +1457,11 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
-| ARCH-021-COMMERCE-085 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
+| ARCH-021-COMMERCE-087 | moda_commerce | Ready | ARCH-021-COMMERCE-084 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -2680,3 +2684,14 @@ COMMERCE-085 owns the subsequent CodeMirror authoring migration and deterministi
 The constrained Result Template runtime refinement is architect-accepted. Commerce now persists and executes one bounded `nunjucks.v1` grammar with Nunjucks AST parsing plus Moda-owned schema/type semantics, explicit loader isolation, deterministic bounded schema-to-template generation and one canonical publication/Test/production renderer. Scalar comparison/null semantics and combined `if`/`for` nesting are fully bounded and regression-covered.
 
 The executable refinement frontier is now COMMERCE-085, which replaces the legacy Text/Items React authoring surface with the generated CodeMirror Nunjucks editor while preserving already-accepted C079/C081 lifecycle/Test behavior. COMMERCE-083 remains Pending until C085 is Complete.
+
+
+### COMMERCE-085 Attempt 2 accepted and optional-result correction — 2026-09-29
+
+The Nunjucks Result Template authoring migration is architect-accepted. C085 preserves one canonical `responseTemplate`, session-only GENERATED/USER_MODIFIED metadata, C084-owned validation/generation, C079 persisted-DRAFT lifecycle and C081 External Test semantics.
+
+The user-guide packaging/link task COMMERCE-086 is Ready.
+
+Manual live Test subsequently proved a separate runtime/generator invariant gap: a generated template can directly interpolate a property that the canonical Result schema permits to be omitted, while the strict renderer rejects undefined interpolation. COMMERCE-087 owns that correction at the C084 generator/template-context boundary. It must make every generated template safe for every schema-valid optional omission without weakening required-field validation, mutating provider results or reopening C085 UI semantics.
+
+COMMERCE-083 remains Pending on COMMERCE-087. SYSTEM-TEST-002 remains terminally gated behind COMMERCE-083.
