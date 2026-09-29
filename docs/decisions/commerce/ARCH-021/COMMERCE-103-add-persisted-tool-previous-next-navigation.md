@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: complete
 priority: 74
 executor: null
 claimed_at: null
@@ -683,165 +683,100 @@ Blocked on the missing `vite` dependency in the canonical prepared environment. 
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-COMMERCE-103 Attempt 2 completes the requested checklist reconciliation and launcher/worktree evidence, and the implementation remains **accepted in substance**. No source/test correction is requested.
+COMMERCE-103 is **Accepted / Complete** with its implementation unchanged from the already-reviewed navigation submission.
 
-Attempt 2 now correctly records:
+Attempts 1 and 2 established the implementation and executable regression evidence. Attempt 3 correctly isolated the remaining validation issue to the prepared environment rather than changing C103 source: the canonical worktree initially could not resolve `vite` during project typecheck and returned Blocked without borrowing dependencies from another checkout.
 
-- all Work Items checked;
-- all Acceptance Criteria checked;
-- all task Validation checklist items checked;
-- canonical parent and implementation worktree paths;
-- parent `origin/main incorporated: yes`;
-- implementation `origin/main incorporated: already-current`;
-- synchronized parent/implementation HEADs;
-- recursive submodule sync/update/status;
-- the initialized database submodule commit;
-- Attempt 2 executor, claim timestamp and claim commit.
-
-The 163-test focused packet, targeted ESLint, changed-file diagnostics and `git diff --check` also passed again.
-
-One validation item is still not acceptable as final evidence.
-
-The previous Architect Review explicitly required:
-
-```text
-Do not rely on a temporary cross-checkout Vite symlink as the final
-Attempt 2 typecheck proof.
-
-Run typecheck against the canonical prepared task environment.
-
-If the required lockfile-pinned dependency is unavailable there,
-report the environment/dependency gap instead of modifying manifests
-or borrowing runtime dependencies from another checkout.
-```
-
-Attempt 2 nevertheless records:
-
-```text
-npm run typecheck — passed;
-the lockfile-pinned Vite package was temporarily linked into ignored
-node_modules from another checkout, then removed.
-```
-
-That is the exact validation mechanism the correction contract prohibited. It does not invalidate the C103 implementation, but it means the mandatory project-typecheck evidence is still unresolved.
-
-#### Attempt 3 correction contract — typecheck evidence only
-
-Attempt 3 is **validation/report-only**.
-
-Do not modify C103 implementation source or tests unless the canonical typecheck itself exposes a genuine C103-owned defect.
-
-Run the normal:
-
-```text
-/moda-task ARCH-021-COMMERCE-103
-```
-
-preparation path so the next authorized claim becomes Attempt 3.
-
-From the launcher-prepared canonical C103 implementation worktree:
-
-1. use the dependency/toolchain state supplied by that worktree and the repository's normal preparation/bootstrap rules;
-2. do **not** copy, symlink, mount or otherwise borrow `vite`, `node_modules`, or another runtime dependency from the canonical/shared Commerce checkout, another task worktree or another repository checkout;
-3. do **not** change `package.json`, any lockfile or dependency version merely to make this validation pass;
-4. run exactly:
+The developer has now rerun the required validation from the C103 worktree after the dependency/environment correction:
 
 ```text
 npm run typecheck
+
+> moda-interact-commerce@0.1.0 typecheck
+> next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
 ```
 
-5. if it passes in the canonical prepared environment, record the exact command/result and return C103 to `review`;
-6. if it fails because the prepared task environment does not contain a dependency required by the lockfile/package graph, do not manufacture a dependency link. Record the exact missing-module/dependency error and return the task `blocked` so the environment/dependency gap can be resolved separately;
-7. if it fails with a C103-owned TypeScript diagnostic, correct only that bounded defect, run the focused validation required by the changed source, and return to `review`;
-8. preserve Attempt 1 and Attempt 2 Completion Report/evidence verbatim.
+The command returned successfully with zero TypeScript diagnostics.
 
-Because no source change is currently required, Attempt 3 does **not** need to rerun the already-passed 163-test packet or targeted ESLint merely to repeat accepted evidence. If typecheck forces a source correction, then rerun validation appropriate to the changed file(s).
-
-Always run:
+The final repository-integrity checks also passed:
 
 ```text
 git diff --check
+git status --short
 ```
 
-before handoff.
+with no output from either command. The C103 worktree is therefore clean and the canonical typecheck blocker is no longer present.
 
-#### Attempt 3 Completion Report evidence
+No C103 implementation or test change was required to obtain the final passing typecheck.
 
-Append a distinct Attempt 3 reconciliation section recording:
+The previously reviewed C103 implementation remains conforming:
+
+- persisted External HTTP, Shopify Admin GraphQL and Policy Operation DRAFTs use the canonical six-step order;
+- all persisted tabs remain directly clickable;
+- `Previous` / `Next` are pure one-step section traversal and are not gated by validation, Test freshness or Save readiness;
+- the shared `ToolAuthoringStepNavigation` presentation is reused;
+- navigation retains the existing parent-owned active-section state;
+- Shopify Explore continues to round-trip through the existing `editor.section` source of truth;
+- navigation performs zero lifecycle, validation or live-Test action calls;
+- transient authoring state survives navigation;
+- new-Tool COMMERCE-095 progressive unlocking remains unchanged.
+
+The accepted regression packet remains:
 
 ```text
-launcher-prepared parent worktree / branch / synchronized HEAD
-launcher-prepared implementation worktree / branch / synchronized HEAD
-origin/main incorporation result for both
-recursive submodule status
-Attempt 3 executor / claimed_at / claim commit
-
-npm run typecheck
-  exact exit result
-  zero cross-checkout dependency links/copies used
-
-git diff --check
+3 focused UI files
+163 tests passed
+targeted ESLint passed
+changed-file diagnostics clean
+git diff --check passed
 ```
 
-If `npm run typecheck` passes, explicitly state:
-
-```text
-No Vite/node_modules dependency was symlinked or copied from another checkout
-for Attempt 3 validation.
-```
-
-Do not erase the Attempt 2 note explaining the earlier temporary Vite link; that is historical evidence and must remain preserved.
+and the final project typecheck is now also clean without any C103 source correction.
 
 ### Reviewed Files
 
 - `docs/decisions/commerce/ARCH-021/COMMERCE-103-add-persisted-tool-previous-next-navigation.md`
-- Attempt 2 launcher/worktree evidence
-- Attempt 2 validation reconciliation
-- the already-reviewed C103 implementation/test files from Attempt 1
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-navigation.ts`
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-step-navigation.tsx`
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+- `moda-interact-commerce/src/studio/tools/policy-operation-editor.tsx`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/shopify-admin-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
+- Attempt 1, Attempt 2 and Attempt 3 Completion Report / launcher evidence
 
 ### Validation Reviewed
 
-Attempt 2 evidence accepted:
+Accepted cumulative evidence:
 
-- focused UI packet: **3 files / 163 tests passed**;
+- focused C103 UI packet: **3 files / 163 tests passed**;
 - targeted ESLint: passed;
 - changed-file diagnostics: clean;
-- `git diff --check`: passed;
-- launcher/worktree/start-of-attempt evidence: now complete and conforming.
+- final `npm run typecheck`: **passed with zero diagnostics**;
+- final `git diff --check`: passed;
+- final `git status --short`: clean;
+- launcher/worktree/start-of-attempt evidence from Attempt 2/3: preserved.
 
-Still unresolved:
-
-- `npm run typecheck` was reported passing only after temporarily linking Vite from another checkout, contrary to the explicit Attempt 2 Architect Review contract.
-
-No implementation regression has been identified.
+The final typecheck/diff/status commands were supplied directly from the developer's C103 worktree after the prior environment blocker was corrected.
 
 ### Architecture Conformance
 
-Implementation: **Conforms**.
+Accepted.
 
-Task execution/worktree protocol: **Conforms** after Attempt 2 reconciliation.
-
-Final validation evidence: **Changes Requested** only for canonical-environment `npm run typecheck`.
+C103 implements persisted-DRAFT sequential navigation without importing new-Tool progressive gating or changing persistence/Test/validation semantics.
 
 ### Follow-up
 
-Return the SAME `ARCH-021-COMMERCE-103` task through `/moda-task` for Attempt 3.
+Set `ARCH-021-COMMERCE-103` to **Complete**.
 
-Task state for rework:
+Its dependency edge into `ARCH-021-SYSTEM-TEST-002` is now satisfied.
 
-```text
-status: ready
-executor: null
-claimed_at: null
-attempt: 2
-```
-
-The next authorized launcher claim increments to Attempt 3.
-
-No source change is requested unless the canonical typecheck exposes a real C103-owned diagnostic.
-
-ARCH-021-SYSTEM-TEST-002 remains dependency-gated until C103 is architect-accepted Complete.
+SYSTEM-TEST-002 remains **Pending** because `ARCH-021-COMMERCE-102` is still not architect-accepted Complete. Do not start SYSTEM-TEST-002 until C102 is Complete.

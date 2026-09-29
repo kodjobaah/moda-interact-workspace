@@ -1307,11 +1307,15 @@ Manual validation of an existing Shopify Admin DRAFT exposed the navigation pari
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-103](COMMERCE-103-add-persisted-tool-previous-next-navigation.md) | Add side-effect-free Previous/Next traversal to all persisted DRAFT Tool authoring kinds | Ready | COMMERCE-095, COMMERCE-099 |
+| [COMMERCE-103](COMMERCE-103-add-persisted-tool-previous-next-navigation.md) | Add side-effect-free Previous/Next traversal to all persisted DRAFT Tool authoring kinds | Complete | COMMERCE-095, COMMERCE-099 |
 
 COMMERCE-103 reuses the C095 canonical six-step order/presentation but does **not** import progressive unlocking into persisted DRAFTs. All persisted tabs remain directly clickable; `Previous`/`Next` are pure section navigation and never validate, Test, save or publish. COMMERCE-103 is independent of COMMERCE-102.
 
-`ARCH-021-SYSTEM-TEST-002` remains **Pending** until both COMMERCE-102 and COMMERCE-103 are architect-accepted Complete.
+### COMMERCE-103 accepted — 2026-09-30
+
+COMMERCE-103 is **Complete / Accepted**. The persisted External HTTP, Shopify Admin and Policy Operation traversal implementation and its 163-test regression packet are accepted, and the final canonical `npm run typecheck` now passes with zero diagnostics.
+
+`ARCH-021-SYSTEM-TEST-002` remains **Pending** only because COMMERCE-102 is not yet Complete.
 
 ## Manual-validation follow-up — Add Capability direct phase readiness — 2026-09-29
 

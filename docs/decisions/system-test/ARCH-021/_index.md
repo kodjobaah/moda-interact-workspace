@@ -58,7 +58,7 @@ are architect-accepted Complete.
 |---|---|---|---|
 | [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify, including persisted traversal parity | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095, COMMERCE-102, COMMERCE-103 |
 
-SYSTEM-TEST-002 is terminal validation. At the original C095 checkpoint every then-listed Commerce dependency was architect-accepted Complete and the task became Ready. Later manual-validation corrections C102/C103 re-gate it to Pending. No Commerce implementation task depends on it.
+SYSTEM-TEST-002 is terminal validation. At the original C095 checkpoint every then-listed Commerce dependency was architect-accepted Complete and the task became Ready. Later manual-validation corrections C102/C103 re-gated it. COMMERCE-103 is now Complete; SYSTEM-TEST-002 remains Pending only on COMMERCE-102. No Commerce implementation task depends on it.
 
 ### SYSTEM-TEST-002 re-gated for progressive new-Tool navigation — 2026-09-29
 
@@ -88,7 +88,9 @@ Manual validation exposed the COMMERCE-102 selected-shop execution-target and To
 
 ### SYSTEM-TEST-002 re-gated for persisted Tool traversal — 2026-09-29
 
-Manual validation of an existing Tool then exposed COMMERCE-103: persisted External HTTP, Shopify Admin and Policy Operation DRAFTs need the same six-step sequential `Previous`/`Next` navigation while retaining permanently unlocked direct tabs. SYSTEM-TEST-002 is therefore **Pending** on both C102 and C103 and returns to Ready only after both are architect-accepted Complete. It remains terminal validation; no Commerce implementation task depends on it.
+Manual validation of an existing Tool then exposed COMMERCE-103: persisted External HTTP, Shopify Admin and Policy Operation DRAFTs need the same six-step sequential `Previous`/`Next` navigation while retaining permanently unlocked direct tabs.
+
+COMMERCE-103 is now architect-accepted Complete. Its dependency is satisfied; SYSTEM-TEST-002 remains **Pending** on C102 and returns to Ready after C102 is architect-accepted Complete. It remains terminal validation; no Commerce implementation task depends on it.
 
 ### SYSTEM-TEST-003 re-gated for Add Capability direct phase readiness — 2026-09-29
 
