@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 9
-executor: copilot
-claimed_at: 2026-09-29T19:24:37Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-093
@@ -142,12 +142,12 @@ Do not start C086 Attempt 2. `moda_architect` must accept C093 and C094 and expl
 
 - [x] Run TypeScript diagnostics and reconcile the current errors with the 12-file baseline recorded by C093.
 - [x] Correct the locally resolvable type errors in the enumerated files, preserving runtime behavior.
-- [ ] Attempt 3: resolve the 19 current diagnostics in the three newly authorized blocker files, preserving runtime/test semantics.
+- [x] Attempt 3: resolve the 19 current diagnostics in the three newly authorized blocker files, preserving runtime/test semantics.
 - [x] Add or adjust focused tests only when needed to substantiate changed behavior or type-safe fixtures.
 - [x] Run targeted ESLint for changed files.
-- [ ] Run `npx tsc --noEmit --pretty false` and verify there are no remaining project diagnostics.
+- [x] Run `npx tsc --noEmit --pretty false` and verify there are no remaining project diagnostics.
 - [x] Run `git diff --check`.
-- [ ] Run the normal `npm run build` and require success.
+- [x] Run the normal `npm run build` and require success.
 - [x] Complete the report with changed files, validations, and any remaining out-of-scope blocker.
 
 ## Dependencies
@@ -163,20 +163,20 @@ Do not start C086 Attempt 2. `moda_architect` must accept C093 and C094 and expl
 - [x] The listed TypeScript diagnostics are resolved without suppressing type checking or adding blanket ignores.
 - [x] Runtime behavior remains unchanged except for necessary type-safe corrections.
 - [x] Changes remain limited to the listed files and directly required focused tests.
-- [ ] Attempt 3 changes remain limited to the original C094 scope plus `src/commerce/execution/renderer.ts`, `tests/add-capability-screen.test.tsx`, and `tests/feature-authoring.test.ts`.
+- [x] Attempt 3 changes remain limited to the original C094 scope plus `src/commerce/execution/renderer.ts`, `tests/add-capability-screen.test.tsx`, and `tests/feature-authoring.test.ts`.
 - [x] Targeted lint passes for changed files.
-- [ ] `npx tsc --noEmit --pretty false` passes with no diagnostics.
+- [x] `npx tsc --noEmit --pretty false` passes with no diagnostics.
 - [x] `git diff --check` passes.
-- [ ] Normal `npm run build` succeeds.
+- [x] Normal `npm run build` succeeds.
 - [x] No C086 Attempt 2 or production-start smoke is performed by this task.
 
 ## Validation
 
 - [x] Inspect actual TypeScript diagnostics after C093 is accepted.
 - [x] Targeted ESLint for changed files.
-- [ ] `npx tsc --noEmit --pretty false`.
+- [x] `npx tsc --noEmit --pretty false`.
 - [x] `git diff --check`.
-- [ ] `npm run build`.
+- [x] `npm run build`.
 
 ## Stop Condition
 
@@ -186,7 +186,7 @@ After all Work Items, Acceptance Criteria, and Validation items pass, set this t
 
 ### Status
 
-Blocked on Attempt 2; not submitted for Architect Review because the required project typecheck and production build remain blocked by TypeScript errors in files outside C094's implementation-file boundary.
+Ready for Architect Review after Attempt 3. The full project typecheck and normal production build pass.
 
 ### Files Changed
 
@@ -203,12 +203,16 @@ Implementation files:
 - `tests/selected-shop-context.test.ts`
 - `tests/shopify-admin-live-test.test.ts`
 - `tests/tool-result-contract.test.ts`
+- `tests/add-capability-screen.test.tsx`
+- `tests/feature-authoring.test.ts`
 
 ### Work Completed
 
 Corrected type narrowing in GraphQL AST construction and result-schema rendering; aligned fixture types with the Commerce result/template contracts; corrected nullable result assertions and prompt-result test narrowing; updated selected-shop tests to use the current server-action-backed API. No runtime contract was intentionally changed.
 
 Attempt 2 first found stale generated dependencies in the reused implementation worktree: `package.json` and `package-lock.json` pin Shared 1.0.0, but `node_modules` contained 0.14.2. `npm ci` restored the locked package and `npm run prisma:generate` regenerated Prisma Client from the pinned schema. With that corrected state, all diagnostics in C094's 12-file baseline are gone, but project-wide checking still reports 19 errors in three out-of-scope files: `src/commerce/execution/renderer.ts` (2 errors reading `operation` and `operationVersion` from an `EXTERNAL_HTTP` definition), `tests/add-capability-screen.test.tsx` (16 errors reading `disabled` from `HTMLElement`), and `tests/feature-authoring.test.ts` (1 incomplete `featureModel.findUnique` mock result). These are outside the task's allowed implementation files. No out-of-scope source, dependency declaration/lockfile, compiler configuration, database schema, or submodule pointer was changed.
+
+Attempt 3 used the Architect's expanded three-file boundary. The synchronized current baseline already had the renderer's policy-operation narrowing correction, so that file produced no current diagnostic and required no Attempt 3 edit. In `tests/add-capability-screen.test.tsx`, a runtime-checked `HTMLButtonElement` helper makes the existing disabled-state assertions type-safe without weakening them. In `tests/feature-authoring.test.ts`, the mocked Feature now returns the complete selected Feature shape. No runtime behavior changed.
 
 Prepared execution evidence:
 
@@ -218,6 +222,7 @@ Prepared execution evidence:
 - Shared workspace and implementation checkouts were not switched or edited; no other task worktree was reused.
 - The prepared launcher synchronized both task branches and initialized recursive submodules; the `database` submodule remained at `e9fb60221f1532205650154dfff2aadb6270b14c`.
 - Attempt 2 claim: executor `copilot`, claim commit `042e8121d23d93f7e70559247b679e1e6d644124`, pushed. Implementation task commit from Attempt 1 is `b6e9ac0e9223a90cdcb3d3eb037c909b37afc44b`; current `main` incorporation is merge commit `d04cf146a9c801f1f3a265bc553ae5fd2cb209bc`.
+- Attempt 3 claim: executor `copilot`, claim commit `cb20e427974bf606b251e0585348a5173c2224ca`, pushed. Prepared parent head after synchronization: `8101bebff4dd8d79e45383a102da23d5fefe4854`; implementation baseline after synchronization: `a36731f4503ac011aedbca9d043380257c52c271`.
 
 ### Validation Results
 
@@ -225,31 +230,34 @@ Passed:
 
 - `npx eslint scripts/validate-shopify-admin-local.ts src/studio/discovery/admin-query-builder.ts src/studio/tools/authoring/result-template-tab.tsx tests/admin-query-execution.test.ts tests/agent-configuration-effective.test.ts tests/agent-configuration-prompts-postgres.test.ts tests/local-external-mcp-diagnostic.test.ts tests/result-template-tab.test.tsx tests/selected-shop-context.test.ts tests/shopify-admin-live-test.test.ts tests/tool-result-contract.test.ts`
 - Attempt 2 targeted ESLint: zero errors, one warning (`capabilityDraft` unused in `tests/local-external-mcp-diagnostic.test.ts`).
+- Attempt 3 targeted ESLint across the original C094 files and all three newly authorized files: passed with no diagnostics.
 - Focused Vitest suites: 48 tests passed across `tests/admin-query-execution.test.ts`, `tests/agent-configuration-effective.test.ts`, `tests/result-template-tab.test.tsx`, `tests/selected-shop-context.test.ts`, `tests/tool-result-contract.test.ts`, and `tests/shopify-admin-live-test.test.ts`.
+- Attempt 3 focused Vitest packet across those six suites plus `tests/add-capability-screen.test.tsx` and `tests/feature-authoring.test.ts`: 61/61 passed.
 - `git diff --check`
 - `npm run prisma:generate` completed using the task-pinned database submodule.
 - Attempt 2 `npm ci` restored the lockfile-pinned `@modainteract/moda-interact-shared@1.0.0`; generated dependency files were not added to the source diff.
+- Attempt 3 `npx tsc --noEmit --pretty false`: passed with zero diagnostics after the production build refreshed stale Next.js route types.
+- Attempt 3 `npm run build`: passed end to end, including code-runtime packaging/smoke, Prisma generation, TypeScript validation, static page generation and build trace finalization. Next.js emitted the existing Nunjucks critical-dependency warning during compilation.
 
 Blocked:
 
-- Attempt 2 `npx tsc --noEmit --pretty false`: 19 errors in three files, all outside this task's allowed implementation set: `src/commerce/execution/renderer.ts` (2), `tests/add-capability-screen.test.tsx` (16), and `tests/feature-authoring.test.ts` (1). No diagnostics remained in C094's 12-file baseline.
-- Attempt 2 `npm run build`: code-runtime packaging and packaged smoke passed; Prisma Client generation passed; Next.js production compilation passed with a Nunjucks critical-dependency warning; the build then failed during TypeScript validation on the same 19 errors. Exit code was nonzero.
+- None in Attempt 3. The temporary `.next/types` references to deleted capability pages disappeared when `npm run build` regenerated Next.js artifacts; final standalone `tsc` passed.
 
 ### Deviations
 
-Required project-wide typecheck and normal production build could not pass without editing the three out-of-scope diagnostic files or expanding this task's implementation boundary. The task remains `blocked`, not `review`; Attempt 2 did not start C086 or its production-start smoke.
+The Architect expanded the implementation boundary for Attempt 3 to the three previously failing files. The synchronized renderer fix plus two focused test typing corrections resolved the remaining diagnostics. C086 Attempt 2 and its production-start smoke were not started.
 
 ### Assumptions
 
-The dependency lockfile and generated Prisma Client are authoritative for this attempt. Remaining errors must be fixed by their owning task(s), or the Architect must explicitly expand C094's allowed file set before implementation continues.
+The dependency lockfile and generated Prisma Client are authoritative. The Next.js build refreshes stale route type artifacts before final standalone TypeScript validation.
 
 ### Unresolved Issues
 
-`moda_architect` must coordinate ownership of the three remaining diagnostic files or explicitly re-scope C094 before the global typecheck/build criteria can be met. The previous Attempt 1 diagnosis of missing ARCH-021 Prisma models was not reproduced after correcting the stale installed Shared package; it is superseded by Attempt 2's current compiler output.
+None. The Attempt 1 missing-Prisma diagnosis was superseded after correcting the stale installed Shared package; the Attempt 2 three-file blocker was resolved under the Architect-approved Attempt 3 scope.
 
 ### Architectural Concerns
 
-The original C093-era diagnostics in C094's allowed files are resolved, but the production build remains blocked by 19 project-wide type errors outside the task boundary. C086 Attempt 2 and its production-start HTTP smoke were not started.
+The project-wide typecheck and production build now pass with the narrowly authorized Attempt 3 corrections. C086 Attempt 2 and its production-start HTTP smoke were not started.
 
 ## Architect Review
 
