@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 95
-executor: copilot
-claimed_at: 2026-09-29T17:59:46Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-003
@@ -118,16 +118,16 @@ Capability maxSearchResults/maxRecommendations
 
 ## Work Items
 
-- [ ] Update Shared package dependency to the SHARED-002 version.
-- [ ] Consume DATABASE-003 Prisma schema/gitlink as required.
-- [ ] Update MCP manifest parsing to the new schema.
-- [ ] Remove per-Capability prompt retrieval.
-- [ ] Pass Feature behaviour through the new runner input/manifest contract once per Feature.
-- [ ] Support zero selected Capabilities/Tools.
-- [ ] Preserve exact Tool grant/descriptor authorization checks.
-- [ ] Update grant persistence/reconciliation for the new contract.
-- [ ] Replace legacy host/grant fixtures and assertions.
-- [ ] Add reused-Tool, multiple-capabilities-one-Feature and zero-capability regressions.
+- [x] Update Shared package dependency to the SHARED-002 version.
+- [x] Consume DATABASE-003 Prisma schema/gitlink as required.
+- [x] Update MCP manifest parsing to the new schema.
+- [x] Remove per-Capability prompt retrieval.
+- [x] Pass Feature behaviour through the new runner input/manifest contract once per Feature.
+- [x] Support zero selected Capabilities/Tools.
+- [x] Preserve exact Tool grant/descriptor authorization checks.
+- [x] Update grant persistence/reconciliation for the new contract.
+- [x] Replace legacy host/grant fixtures and assertions.
+- [x] Add reused-Tool, multiple-capabilities-one-Feature and zero-capability regressions.
 
 ## Interfaces / Contracts
 
@@ -151,22 +151,22 @@ DATABASE-003 Prisma schema where required
 
 ## Acceptance Criteria
 
-- [ ] Background performs zero per-Capability prompt-name fetches.
-- [ ] Feature behaviour is applied once per Feature through the Shared runner contract.
-- [ ] A valid zero-Capability/zero-Tool manifest can proceed without a BASE-capability error.
-- [ ] Tool execution remains restricted to exact currently granted Tool descriptors/revisions.
-- [ ] Reused Tools preserve all Capability-key provenance without duplicate executable entries.
-- [ ] Grant persistence/replay conforms to the new Shared schema.
-- [ ] No Background runtime dependency on the removed Capability concepts remains.
+- [x] Background performs zero per-Capability prompt-name fetches.
+- [x] Feature behaviour is applied once per Feature through the Shared runner contract.
+- [x] A valid zero-Capability/zero-Tool manifest can proceed without a BASE-capability error.
+- [x] Tool execution remains restricted to exact currently granted Tool descriptors/revisions.
+- [x] Reused Tools preserve all Capability-key provenance without duplicate executable entries.
+- [x] Grant persistence/replay conforms to the new Shared schema.
+- [x] No Background runtime dependency on the removed Capability concepts remains.
 
 ## Validation
 
-- [ ] focused Commerce host tests
-- [ ] focused grant tests
-- [ ] affected integration tests
-- [ ] `npm run build`
-- [ ] repository-supported lint/typecheck evidence where declared
-- [ ] `git diff --check`
+- [x] focused Commerce host tests
+- [x] focused grant tests (covered through host grant persistence/replay and exact Tool authorization cases)
+- [x] affected integration tests
+- [x] `npm run build`
+- [x] repository-supported lint/typecheck evidence where declared
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -180,35 +180,52 @@ Do not use this task to implement the later platform/shop Agent Configuration ru
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+Implementation: `package.json`, `package-lock.json`, `src/commerce/host.ts`, `src/commerce/mcp-client.ts`, and `tests/integration/commerce/host.test.ts`. Parent task record updated for review; the database submodule pointer was not changed.
 
 ### Work Completed
 
-None
+Pinned `@modainteract/moda-interact-shared` to 1.0.0 and consumed its direct Feature/Capability/Tool manifest. Removed the MCP prompt method and per-Capability prompt fetch loop; the Shared runner now receives the manifest's `featureBehaviours` and applies each once. Updated host parsing and MCP fixture handling for singular `toolDescriptor`, strengthened list and execution authorization to exact Tool identity/revision/name/version and grant provenance, and covered empty selected keys/tools, sibling Capabilities sharing one Feature, reused Tool deduplication, and absence of `prompts/get`.
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-BACKGROUND-002`, `task/ARCH-021-BACKGROUND-002`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-BACKGROUND-002`, `task/ARCH-021-BACKGROUND-002`.
+- Shared workspace and implementation checkouts were not switched or mutated for task implementation; no other task worktree was reused.
+- Start-of-attempt synchronization: parent remote task branch fast-forward `not-needed`; parent `origin/main` incorporation `already-current`; implementation remote task branch fast-forward `not-needed`; implementation `origin/main` incorporation `already-current`.
+- Recursive submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` recorded at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- Launcher claim: attempt 1, executor `copilot`, claim commit `fc4d1fd0efff7ca0a1f9cd3fd62747f2e9a579bd`, pushed successfully.
 
 ### Validation Results
 
-None
+On `task/ARCH-021-BACKGROUND-002`:
+- Focused host suite: 41/41 passed.
+- Affected Commerce integration and pipeline suites (`host.test.ts`, `commerce.agent.integration.test.ts`, `commerce.agent.pipeline.test.ts`): 43/43 passed.
+- `npm run build`: passed, including Prisma Client generation and TypeScript compilation.
+- `npm run prisma:validate`: passed against the pinned DATABASE-003 schema.
+- Exact installed/locked Shared version: `@modainteract/moda-interact-shared@1.0.0`.
+- Removed-concept audit across `src/` and `tests/` (`selectionBinding`, `RECOVERY_POLICY`, `conversation_core`, `promptName`, Capability revision identities/limits, and `toolDescriptors`): no matches.
+- No lint script is declared in this repository's `package.json`; TypeScript validation is provided by the passing build.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+No database submodule update was needed: the prepared checkout already contained the DATABASE-003 schema at the accepted recorded commit. The repository does not declare a lint script, so none was invented or run.
 
 ### Assumptions
 
-None
+Shared 1.0.0's runner is authoritative for applying `manifest.featureBehaviours`; Background passes the manifest directly and does not reconstruct prompt messages or identities.
 
 ### Unresolved Issues
 
-None
+None within this task's scope.
 
 ### Architectural Concerns
 
-None
+None identified. No Commerce Studio or Shared implementation was changed; platform/shop Agent Configuration runtime work remains out of scope.
 
 ## Architect Review
 
