@@ -1151,7 +1151,7 @@ All SYSTEM-TEST-002 implementation dependencies are now Complete, so terminal
 | [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Complete | DATABASE-003, SHARED-002, COMMERCE-088 |
 | [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Complete | COMMERCE-088 |
 | [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Complete | COMMERCE-088, COMMERCE-090 |
-| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
+| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Ready | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
 
 
 ### COMMERCE-088 Attempt 2 accepted — 2026-09-29
@@ -1180,6 +1180,12 @@ The C091 dependency of COMMERCE-092 is satisfied. COMMERCE-092 remains Pending u
 COMMERCE-089 is **Complete / Accepted, Attempt 1**. Release creation now consumes direct Capability identities, deterministically pins each Capability's exact published Tool revision and snapshots Feature Behaviour once per represented Feature. Runtime manifest production reads immutable release rows, supports zero eligible Capabilities and preserves deterministic reused-Tool provenance without restoring Capability revisions, bindings or per-Capability configuration.
 
 The required disposable C20 proof passed 2/2 on the final post-merge implementation branch. The remaining repository typecheck/process-global test failures contain no C089-owned diagnostics or release/runtime regressions. ARCH-021-BACKGROUND-002 is now **Ready**; COMMERCE-092 remains Pending until BACKGROUND-002 is Complete.
+
+### BACKGROUND-002 Attempt 1 accepted — 2026-09-29
+
+BACKGROUND-002 is **Complete / Accepted, Attempt 1**. The Background Commerce host now consumes the published Shared 1.0.0 direct Feature/Capability/Tool manifest, removes MCP Capability-prompt retrieval, accepts valid zero-Capability grants and retains exact Tool/grant provenance authorization.
+
+COMMERCE-089, COMMERCE-091 and BACKGROUND-002 are all Complete, so COMMERCE-092 is now **Ready** as the final Phase 5 subtractive cleanup task.
 
 
 ### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
