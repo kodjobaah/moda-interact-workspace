@@ -341,6 +341,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
 | [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Blocked | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
+| [COMMERCE-095](COMMERCE-095-add-progressive-new-tool-tab-navigation.md) | UI: progressive Previous/Next and monotonic first-unlock traversal for new Tool authoring | Complete | COMMERCE-078, COMMERCE-083 |
 
 Initial executable frontier for this workstream:
 
@@ -414,7 +415,7 @@ COMMERCE-077    COMMERCE-080    COMMERCE-082
 Then:
 
 ```text
-077 -> 078 -> 079 -> 081 -> 083 -> SYSTEM-TEST-002
+077 -> 078 -> 079 -> 081 -> 083 -> 095 -> SYSTEM-TEST-002
                   ^             ^
 080 ---------------+             |
 082 -----------------------------+
@@ -431,7 +432,7 @@ Key invariants:
 - `responseTemplate` remains the runtime representation but moves to a dedicated Result Template authoring surface;
 - Agent Contract becomes the call-side model contract only;
 - Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
-- global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
+- progressive new-Tool traversal is owned by COMMERCE-095 after the six individual authoring surfaces are complete; persisted-DRAFT traversal remains unchanged.
 
 
 
@@ -1114,14 +1115,42 @@ COMMERCE-083 is **Complete / Accepted, Attempt 2**. Attempt 1's missing-C082 int
 
 The authoritative C083 task file preserves the full Attempt 1 blocker, Attempt 2 Completion Report, validation evidence and Accepted Architect Review. SYSTEM-TEST-002 remains the terminal integrated Tool-authoring validation task.
 
+### COMMERCE-095 Attempt 1 changes requested — 2026-09-29
+
+C095 is **Ready** for Attempt 2. The six-step progressive-navigation implementation
+is accepted in substance, but the provider-reset confirmation can be bypassed by
+navigating to an already-enabled step before the confirmation is resolved, and
+the pre-provider instruction still describes the old unlock model. Attempt 2 is
+bounded to those corrections, focused regressions and durable launcher/worktree
+evidence reconciliation.
+
+SYSTEM-TEST-002 is terminally gated behind C095 as well as C079/C081/C083 and
+remains Pending.
+
+### COMMERCE-095 Attempt 2 accepted — 2026-09-29
+
+C095 is **Complete / Accepted, Attempt 2**. Provider-reset confirmation now freezes
+new-Tool traversal at Tool Definition until Cancel or successful replacement;
+Cancel restores the existing unlock frontier, successful replacement resets the
+frontier, and the fresh-session guidance describes progressive Next-based
+unlocking. The required launcher/worktree/synchronization/submodule evidence is
+recorded in the Completion Report.
+
+The architect also repaired accidental Attempt-2 corruption of the architect-owned
+R1/R2 Requirements block while reconciling this acceptance. No runtime rework was
+required for that record repair.
+
+All SYSTEM-TEST-002 implementation dependencies are now Complete, so terminal
+`ARCH-021-SYSTEM-TEST-002` is **Ready**.
+
 ## Phase 5 — Feature Capability authoring simplification — 2026-09-29
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-088](COMMERCE-088-implement-direct-feature-capability-authoring.md) | Backend: direct Feature reads/Behaviour prompt and atomic Feature + Tool Capability creation | Complete | DATABASE-003 |
 | [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Pending | DATABASE-003, SHARED-002, COMMERCE-088 |
-| [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Ready | COMMERCE-088 |
-| [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Pending | COMMERCE-088, COMMERCE-090 |
+| [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Complete | COMMERCE-088 |
+| [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Complete | COMMERCE-088, COMMERCE-090 |
 | [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
 
 
@@ -1132,6 +1161,20 @@ COMMERCE-088 is **Complete / Accepted, Attempt 2**. The direct Feature-domain ba
 COMMERCE-090 is now **Ready** because its sole dependency, COMMERCE-088, is Complete. COMMERCE-089 remains **Pending** until SHARED-002 is Complete.
 
 The two implementation branches after COMMERCE-088 are intentionally parallel: COMMERCE-089 owns release/runtime composition while COMMERCE-090/091 own the user-facing Feature authoring flow. COMMERCE-092 is the subtractive gate and must not execute until both replacement paths and Background consumption are accepted.
+
+
+### COMMERCE-090 Attempt 3 accepted — 2026-09-29
+
+COMMERCE-090 is **Complete / Accepted, Attempt 3**. The dedicated Feature configuration surface now has CAS-safe shared Behaviour editing across in-flight local edits and concurrent canonical refreshes, and unresolved admitted saves are non-discardable during navigation. The two Attempt-3 corrections are covered by focused regressions in the 13/13 Feature route/screen/shell packet.
+
+COMMERCE-091 is now **Ready** because both of its dependencies, COMMERCE-088 and COMMERCE-090, are Complete. COMMERCE-092 remains Pending until all of its replacement-path and Background dependencies are Complete.
+
+### COMMERCE-091 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-091 is **Complete / Accepted, Attempt 2**. The Feature-scoped local-first `Capability -> Tool -> Review` flow preserves unlocked phases through later upstream invalidation using one monotonic session frontier, while current candidate readiness independently controls the final Create action. The accepted exactly-one-create, candidate-preservation and uncertain-outcome reconciliation boundaries remain intact.
+
+The C091 dependency of COMMERCE-092 is satisfied. COMMERCE-092 remains Pending until COMMERCE-089 and BACKGROUND-002 are also Complete.
+
 
 
 ### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
