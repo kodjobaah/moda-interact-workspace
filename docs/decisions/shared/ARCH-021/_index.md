@@ -17,6 +17,6 @@ Coordinator:
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [SHARED-001](SHARED-001-simplify-feature-capability-contracts.md) | Remove Capability binding/config/revision semantics and define direct Feature/Capability/Tool manifest + runner contract | Complete | ARCH-020-SHARED-001 |
-| [SHARED-002](SHARED-002-publish-simplified-feature-capability-contracts.md) | Publish the accepted simplified Shared Commerce contract | Ready | SHARED-001 |
+| [SHARED-002](SHARED-002-publish-simplified-feature-capability-contracts.md) | Publish the accepted simplified Shared Commerce contract | Complete | SHARED-001 |
 
-SHARED-001 is architect-accepted Complete. SHARED-002 is Ready as a publication-only gate and must not rerun implementation validation or modify consumer repositories.
+SHARED-001 and SHARED-002 are architect-accepted Complete. The simplified Feature/Capability/Tool contract is published as `@modainteract/moda-interact-shared@1.0.0`. Commerce and Background consumer migrations remain separate and must consume that published version.
