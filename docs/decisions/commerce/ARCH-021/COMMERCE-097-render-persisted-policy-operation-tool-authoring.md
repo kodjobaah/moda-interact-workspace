@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 80
 executor: null
 claimed_at: null
@@ -343,24 +343,51 @@ Ready for architect review (Attempt 1).
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not accepted. The persisted Policy Operation editor is otherwise well bounded: the fixed operation/version binding is read-only, descriptor-backed Request/Response surfaces are local-only, no New Tool provider option was added, no durable mutation is introduced, and the focused mapping/unavailable-descriptor regressions match the task intent.
+
+One correctness defect remains in the Result Template contract adaptation:
+
+**A1-R1 — Policy Operation Result Template authoring validates the wrong runtime path shape.**
+
+`PolicyOperationAuthoringDescriptor.resultSchema` describes the successful `CommerceToolResult.data` shape directly. The production Policy Operation renderer also validates and renders that direct shape: a result field such as `products` is available to templates as `result.products`. Existing accepted Policy Operation definitions in the repository use this direct contract.
+
+C097 currently projects the descriptor and then wraps it with `externalOutputSchema(...)`, so Studio exposes/validates Policy Operation bindings under `result.values.*`. The new focused test explicitly locks in that wrapper (`{{ result.values.result }}`). That shape is correct for the existing External HTTP / Shopify processed-result envelope, but it is not the Policy Operation runtime contract. A template can therefore be reported valid by Studio in C097 and then fail runtime template validation/rendering when COMMERCE-098/099 sends the same definition through `DefinitionExecutor`.
+
+Correction contract for Attempt 2:
+
+1. Make Policy Operation Result Template authoring use the same direct result path semantics as production Policy Operation rendering: descriptor field `foo` must be authored/validated as `result.foo`, not `result.values.foo`. Do not change External HTTP or Shopify Admin envelope semantics.
+2. Keep the bounded structural projection if needed to adapt the richer descriptor JSON Schema into the existing `CommerceResultSchema`, but do not add the External/Shopify `values` envelope around the projected Policy Operation schema. Prefer sharing/reusing a canonical Policy-result projection with the renderer if practical so Studio and runtime cannot drift; at minimum, the two must produce path-equivalent contracts for every currently registered Policy Operation.
+3. Replace the wrapper-specific regression with a runtime-consistency regression. For a registered Policy Operation descriptor, a template accepted by `validatePolicyOperationResponseTemplate` must also be accepted by the production Policy Operation template/runtime validator for the same definition, and generated/inserted bindings must use `result.<descriptor-field>`. Include at least one current registered operation and retain the all-registered-descriptors compatibility coverage.
+4. Preserve the exact descriptor schema read-only in Response/Review; this correction affects only the bounded template-authoring projection/path model.
+5. Do not start COMMERCE-099.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/policy-operation-editor.tsx`
+- `src/studio/tools/authoring/result-template-contract-adapter.ts`
+- `src/studio/tools/authoring/result-template-tab.tsx` (existing consumer contract inspected)
+- `src/commerce/execution/renderer.ts` (production Policy Operation template semantics inspected)
+- `src/commerce/execution/policy-operation-authoring.ts` (descriptor source inspected)
+- `src/commerce/tool-definition/publication.ts` (External/Shopify `values` envelope inspected)
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/policy-operation-result-template.test.ts`
+- `src/commerce/integration/backend/c20-test-fixture.ts` and `tests/recommendation-contract.test.ts` (existing direct `result.*` Policy templates inspected)
 
 ### Validation Reviewed
 
-None
+The submitted Completion Report records 45 passing tests across five focused suites, targeted ESLint passing, changed-file diagnostics clean, and `git diff --check` passing. The package-wide typecheck remains non-green with 164 diagnostics in unchanged files; no C097 changed file is reported in that diagnostic set, so the existing repository-wide baseline is not itself a rejection reason.
+
+The supplied review archive contains neither Git metadata nor installed `node_modules`, so the reported remote commit equality and commands could not be independently rerun in this review environment. Source, focused regressions, task evidence, and the production renderer/template contracts were inspected directly.
 
 ### Architecture Conformance
 
-Pending
+Changes required. R1-R5, R7 and R8 are substantially conformant, but R6 is not yet satisfied because the canonical Result Template authoring UI is being fed a Policy Operation result contract with an External/Shopify-only `values` envelope that does not exist at Policy Operation runtime. This also prevents a trustworthy handoff to COMMERCE-099's live-Test/save integration.
 
 ### Follow-up
 
-None
+Return `ARCH-021-COMMERCE-097` to the same `moda_commerce` execution path for Attempt 2. Preserve `attempt: 1`; the next authorized claim increments it to 2. `ARCH-021-COMMERCE-099` remains Pending until both C097 and C098 are Complete.
