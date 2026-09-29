@@ -1,7 +1,7 @@
 ---
 id: ARCH-023
 title: Merchant knowledge, store profiles and CommerceAgent instructions
-status: proposed
+status: agreed
 coordinator: moda_architect
 created: 2026-09-28
 updated: 2026-09-29
@@ -11,9 +11,11 @@ updated: 2026-09-29
 
 ## Status
 
-Proposed for review. This Patch 1 document defines the architecture and exact target
-contracts only. It does not create implementation task files, task branches, claims,
-worktrees or repository changes outside `docs/architecture/`.
+Agreed — the architecture and repository task decomposition are materialised and implementation
+is underway. The first database task, `ARCH-023-DATABASE-001`, completed Attempt 1 but is
+**Ready for Attempt 2 / Changes Requested** because its task-owned exact static validators
+do not yet reject representative contract-breaking schema/DDL mutations. No downstream
+ARCH-023 task is promoted until that database task is architect-accepted Complete.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3182,17 +3184,42 @@ Existing Shop/Subscription/Prompt/Capability data must not be destroyed.
 
 ## Decisions / Tasks
 
-No implementation tasks are created by Patch 1.
+The agreed implementation decomposition is materialised under the domain indexes in:
 
-After this architecture is reviewed and amended/Agreed, Patch 2 will define only the
-Database and Shared tasks against the exact Data Model and Contracts above. Later
-patches will separately define Admin/Shopify, Background/Commerce and final
-infrastructure/system-test work.
+```text
+docs/decisions/database/ARCH-023/
+docs/decisions/shared/ARCH-023/
+docs/decisions/admin/ARCH-023/
+docs/decisions/shopify/ARCH-023/
+docs/decisions/background/ARCH-023/
+docs/decisions/commerce/ARCH-023/
+docs/decisions/gateway/ARCH-023/
+docs/decisions/system-test/ARCH-023/
+```
+
+The current database decomposition is one consolidated prerequisite. The earlier split
+DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
+
+Current execution frontier after DATABASE-001 Attempt 1 review:
+
+```text
+ARCH-023-DATABASE-001   Ready — Attempt 1 Changes Requested
+
+ARCH-023-SHARED-001     Pending on DATABASE-001
+ARCH-023-ADMIN-002      Pending on DATABASE-001
+all other ARCH-023 implementation tasks remain gated by their declared dependencies
+```
+
+When DATABASE-001 becomes architect-accepted `Complete`, dependency reconciliation must
+promote exactly the then-satisfied tasks; from the current graph the first two are
+`ARCH-023-SHARED-001` and `ARCH-023-ADMIN-002`.
+
+No implementation task may depend on a terminal system-test task.
 
 ## Open Questions
 
-None are required to review Patch 1's target behaviour. Implementation details may be
-amended during Patch 1 review before task files are created.
+None at the current implementation frontier. Further implementation detail may be refined
+through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
