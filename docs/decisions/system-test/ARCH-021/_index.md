@@ -78,6 +78,6 @@ leave it Ready while manually exercising the completed Tool-authoring flow.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Pending | DATABASE-003, SHARED-002, COMMERCE-088..092, BACKGROUND-002 |
+| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Ready | DATABASE-003, SHARED-002, COMMERCE-088..092, BACKGROUND-002 |
 
-SYSTEM-TEST-003 is terminal validation. No implementation/publication task depends on it, and the developer may leave it Pending/Ready while manually exercising the completed Feature flow.
+SYSTEM-TEST-003 is terminal validation and is now Ready because all declared implementation/publication dependencies are Complete. No implementation/publication task depends on it, and the developer may leave it Ready while manually exercising the completed Feature flow.
