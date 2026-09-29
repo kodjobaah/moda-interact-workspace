@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 94
-executor: copilot
-claimed_at: 2026-09-29T16:50:42Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-088
@@ -202,11 +202,11 @@ No new cross-repository contract.
 
 ## Validation
 
-- [x] Focused Add Capability, Feature configuration and Studio shell tests: 5 files, 19 tests passed.
+- [x] Focused Add Capability, Feature configuration and Studio shell tests: 5 files, 20 tests passed on Attempt 2.
 - [x] Explicit zero-mutation-before-final-Create regression.
 - [x] Final-create success, committed-operation reconciliation (without duplicate mutation), conflict/correction and unavailable/error regression coverage.
-- [x] Targeted ESLint passed for all four changed files.
-- [x] Changed-file diagnostics report no errors. `npm run typecheck` was also run and reports 271 TypeScript errors in 27 other files; none of the four task files appear in its diagnostics.
+- [x] Targeted ESLint passed for all four changed files on Attempt 2.
+- [x] Changed-file diagnostics report no errors on Attempt 2. Attempt 1's `npm run typecheck` reported 271 TypeScript errors in 27 other files; none of the four task files appeared in its diagnostics.
 - [x] `git diff --check` passed.
 
 ## Stop Condition
@@ -221,7 +221,13 @@ Prefer a small dedicated state machine/model over reusing Tool authoring state s
 
 ### Status
 
-Ready for architect review (Attempt 1).
+Ready for architect review (Attempt 2).
+
+### Attempt 1 History (preserved)
+
+- Implementation commit: `bdf7fd3` (`task(ARCH-021-COMMERCE-091): add local-first capability flow`); parent report submission commit: `4823d720`.
+- Attempt 1 validation: 5 focused test files / 19 tests passed; targeted ESLint, changed-file diagnostics and `git diff --check` passed. Repository-wide typecheck reported 271 errors in 27 unrelated files.
+- Architect Review requested changes only for live-predicate phase locking and missing `origin/main` incorporation evidence in the initial report. No local-first, mutation-safety or Tool eligibility correction was requested.
 
 ### Files Changed
 
@@ -236,13 +242,16 @@ Ready for architect review (Attempt 1).
 - Added the local-only Capability -> Tool -> Review flow. Review derives the shared Feature behaviour-prompt relationship and all candidate details; one final action submits one `createFeatureCapability` call.
 - Preserved the candidate after validation/conflict/unavailable outcomes. Pending or unknown outcomes lock edits/navigation and prevent duplicate submissions; committed outcomes reconcile to the Feature without retrying the mutation.
 - Added route and UI tests for Tool filtering, zero pre-create mutation, exactly-one create, cancellation, committed-operation reconciliation, conflict correction, and candidate retention after errors.
+- Attempt 2 added a monotonic `enabledThrough` phase frontier. Previously unlocked phases stay navigable while upstream candidate fields change; current candidate readiness independently gates Create.
+- Review remains visible if the previously selected Tool is no longer eligible, displays that no eligible Tool is selected, and disables Create until current inputs are valid again.
+- Added a regression covering first-unlock readiness, persistent direct navigation, Previous/Next after invalidation, unavailable selected Tool data, disabled/enabled Create readiness and zero mutations from all navigation actions.
 
 ### Validation Results
 
-- `npm exec -- vitest run tests/add-capability-screen.test.tsx tests/add-capability-route.test.tsx tests/feature-configuration-screen.test.tsx tests/feature-configuration-page.test.tsx tests/studio-shell.test.tsx`: 5 files, 19 tests passed.
+- `npm exec -- vitest run tests/add-capability-screen.test.tsx tests/add-capability-route.test.tsx tests/feature-configuration-screen.test.tsx tests/feature-configuration-page.test.tsx tests/studio-shell.test.tsx`: 5 files, 20 tests passed on Attempt 2.
 - `npm exec -- eslint 'app/features/[id]/capabilities/new/page.tsx' src/studio/features/add-capability/add-capability-screen.tsx tests/add-capability-screen.test.tsx tests/add-capability-route.test.tsx`: passed.
-- Changed-file diagnostics: no errors in the four task files.
-- `npm run typecheck`: failed with 271 errors in 27 files elsewhere in the Commerce repository; no diagnostic references any task file. These unrelated diagnostics were not changed as part of this task.
+- Changed-file diagnostics: no errors in the four task files on Attempt 2.
+- Attempt 1 `npm run typecheck`: 271 errors in 27 files elsewhere in the Commerce repository; no diagnostic referenced a task file. No repository-wide typecheck was rerun for Attempt 2 because the review explicitly scoped its validation to the focused packet, targeted ESLint, changed-file diagnostics and diff check.
 - `git diff --check`: passed.
 
 ### Deviations
@@ -275,16 +284,46 @@ Physical worktree isolation:
 - shared implementation checkout switched/mutated for task work: no
 - another task worktree reused: no
 
-Start-of-attempt synchronization:
+Attempt 1 start-of-attempt synchronization (historical; preserved):
 - parent remote task branch fast-forwarded: not needed; parent task branch was already at `origin/task/ARCH-021-COMMERCE-091`
 - parent `origin/main` incorporated: no; the existing parent task branch does not contain current `origin/main`
 - implementation remote task branch fast-forwarded: not needed; no remote implementation task branch existed
 - implementation `origin/main` incorporated: already current at implementation branch creation
 
-Review submission:
+Attempt 1 review submission (historical; preserved):
 - implementation commit: `bdf7fd3` (`task(ARCH-021-COMMERCE-091): add local-first capability flow`)
 - implementation commit pushed to `origin/task/ARCH-021-COMMERCE-091`: yes
-- parent task report is committed and pushed on `task/ARCH-021-COMMERCE-091` as this review submission.
+- parent report commit: `4823d720`; pushed to `origin/task/ARCH-021-COMMERCE-091`.
+
+Attempt 2 launcher synchronization evidence:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-091`
+- parent branch: `task/ARCH-021-COMMERCE-091`
+- parent remote task-branch fast-forward: `not-needed`
+- parent `origin/main` incorporated: `yes`
+- parent synchronized HEAD: `d8f2f8b91b5ddc81b4b1ee79df7d18ef399ec214`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-091`
+- implementation branch: `task/ARCH-021-COMMERCE-091`
+- implementation remote task-branch fast-forward: `not-needed`
+- implementation `origin/main` incorporated: `yes`
+- implementation synchronized HEAD: `95e5a162dd26fec6cc3473b36da6b523761a501a`
+- recursive submodule preparation: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; status `ready`; `database` initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+
+Attempt 2 review submission:
+- implementation commit: `4c49548` (`task(ARCH-021-COMMERCE-091): preserve unlocked authoring phases`), pushed to `origin/task/ARCH-021-COMMERCE-091`.
+- parent report commit ID: pending commit/push verification.
+
+### Attempt 2 Architect Review Dispositions
+
+- A — Implemented in `src/studio/features/add-capability/add-capability-screen.tsx`: added the session-local monotonic `enabledThrough` frontier and phase-index helpers. Verified by the focused navigation-frontier test and changed-file diagnostics.
+- B — Implemented in `src/studio/features/add-capability/add-capability-screen.tsx`: first Tool/Review unlocks still require current metadata/Tool readiness; already unlocked destinations bypass predecessor readiness. Verified by the focused navigation-frontier test.
+- C — Implemented in `src/studio/features/add-capability/add-capability-screen.tsx`: phase-tab disabled state is exactly the frontier plus pending/unknown locks; direct navigation changes only phase. Verified by the focused navigation-frontier test's enabled-state and zero-mutation assertions.
+- D — Implemented in `src/studio/features/add-capability/add-capability-screen.tsx`: Previous returns to the immediately preceding phase without reducing the frontier; Next uses readiness only for first unlock. Verified by the focused navigation-frontier test.
+- E — Implemented in `src/studio/features/add-capability/add-capability-screen.tsx`: Review remains renderable after unlock if the selected Tool becomes unavailable, while Create uses current `canReview` and the existing create guard. Verified by the focused regression's unavailable-Tool rerender and Create disabled/re-enabled assertions.
+- F — Implemented/preserved in `src/studio/features/add-capability/add-capability-screen.tsx`: pending/unknown blocker, protected candidate fields and duplicate-submission guard remain; existing unknown-outcome reconciliation regression passes in the five-suite packet.
+- G — Preserved in `src/studio/features/add-capability/add-capability-screen.tsx` and `tests/add-capability-screen.test.tsx`: one final mutation, local-only pre-create state, candidate retention, Tool identity-only selection and reconciliation remain intact. Verified by the five-suite 20-test packet.
+- H — Implemented in `tests/add-capability-screen.test.tsx`: deterministic regression covers initial lock state, both first unlocks, invalidation, direct phase navigation, Previous/Next, stale Tool eligibility, Create gating, zero navigation mutations and continued reconciliation-lock coverage. Five focused suites passed, 20 tests total.
+- I — Implemented through the canonical launcher before claim; no manual synchronization bypass. Launcher packet records both dedicated paths/branches, both `origin/main` incorporation results as `yes`, synchronized HEADs and recursive submodule readiness/commit above. No additional synchronization edits were required.
 
 ## Architect Review
 
