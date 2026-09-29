@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 76
-executor: copilot
-claimed_at: 2026-09-29T15:09:27Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-078
@@ -588,19 +588,19 @@ Reuse an already-existing genuinely generic primitive only if it requires no beh
 
 ## Work Items
 
-- [ ] Add the pure canonical new-Tool step order/helpers.
-- [ ] Add `navigation.enabledThrough` to `NewToolAuthoringState` with `tool-definition` initial state.
-- [ ] Render all six new-Tool tabs from session start and disable only steps beyond the frontier.
-- [ ] Make enabled tab clicks depend only on the frontier, not current validation freshness.
-- [ ] Add the shared Previous/Next presentation component.
-- [ ] Implement exact Case A / Case B Next behaviour from R7.
-- [ ] Wire the exact R8 first-unlock predicates for both providers without adding validation calls.
-- [ ] Expose the exact current External `requestState.valid` + `requestValidated` checkpoint upward through one callback; do not duplicate validation.
-- [ ] Reset the frontier only on a confirmed successful provider-kind replacement.
-- [ ] Preserve frontier + active step through new-Tool Explore Shopify sessionStorage handoff, restoring the frontier into `NewToolAuthoringState` in `ToolAuthoringScreen`.
-- [ ] Keep Review Save/Cancel readiness/persistence semantics unchanged.
-- [ ] Prove persisted-DRAFT tabs/navigation are unchanged.
-- [ ] Add the full deterministic regression matrix below.
+- [x] Add the pure canonical new-Tool step order/helpers.
+- [x] Add `navigation.enabledThrough` to `NewToolAuthoringState` with `tool-definition` initial state.
+- [x] Render all six new-Tool tabs from session start and disable only steps beyond the frontier.
+- [x] Make enabled tab clicks depend only on the frontier, not current validation freshness.
+- [x] Add the shared Previous/Next presentation component.
+- [x] Implement exact Case A / Case B Next behaviour from R7.
+- [x] Wire the exact R8 first-unlock predicates for both providers without adding validation calls.
+- [x] Expose the exact current External `requestState.valid` + `requestValidated` checkpoint upward through one callback; do not duplicate validation.
+- [x] Reset the frontier only on a confirmed successful provider-kind replacement.
+- [x] Preserve frontier + active step through new-Tool Explore Shopify sessionStorage handoff, restoring the frontier into `NewToolAuthoringState` in `ToolAuthoringScreen`.
+- [x] Keep Review Save/Cancel readiness/persistence semantics unchanged.
+- [x] Prove persisted-DRAFT tabs/navigation are unchanged.
+- [x] Add the full deterministic regression matrix below.
 
 ## Interfaces / Contracts
 
@@ -646,37 +646,37 @@ COMMERCE-088..092 are now occupied by the independent Feature/Capability simplif
 
 ## Acceptance Criteria
 
-- [ ] New Tool creation always shows exactly six tabs in canonical order with a provider-neutral tablist label.
-- [ ] A fresh session enables only Tool Definition; the other five tabs are visible and disabled.
-- [ ] A disabled future tab cannot be selected.
-- [ ] First-time forward unlock happens one step at a time through `Next` only.
-- [ ] `Next` never invokes validation itself.
-- [ ] Tool Definition first unlock uses exactly the R8 Tool Definition predicate.
-- [ ] External and Shopify Request first unlocks use their existing current validation signals exactly as specified in R8.
-- [ ] External and Shopify Response first unlocks use their existing current validity/freshness signals exactly as specified in R8.
-- [ ] Result Template first unlock requires current canonical template validation.
-- [ ] Review first unlock requires `isCurrentTestPassed(authoringState)`.
-- [ ] Once a step is enabled, direct tab click remains allowed even after upstream/current authoring becomes dirty, invalid or stale.
-- [ ] Once a next step is already enabled, `Next` navigates to it without revalidating the current step.
-- [ ] `Previous` always navigates to the immediate previous step without validation or frontier mutation.
-- [ ] Review remains clickable after it has been enabled even when later edits stale Test; the existing Save gate remains disabled until current readiness is restored.
-- [ ] Initial provider selection does not automatically unlock Request.
-- [ ] Cancelled provider change preserves active step and frontier exactly.
-- [ ] Confirmed provider replacement resets active step/frontier to Tool Definition only.
-- [ ] New-Tool Explore Shopify round trip restores active step and enabled frontier without unlocking later steps.
-- [ ] Navigation performs zero durable Tool writes.
-- [ ] Persisted-DRAFT tabs remain fully clickable and receive no Previous/Next footer.
-- [ ] Feature/Capability authoring (COMMERCE-088..092) is untouched and has no dependency on this Tool-navigation state.
+- [x] New Tool creation always shows exactly six tabs in canonical order with a provider-neutral tablist label.
+- [x] A fresh session enables only Tool Definition; the other five tabs are visible and disabled.
+- [x] A disabled future tab cannot be selected.
+- [x] First-time forward unlock happens one step at a time through `Next` only.
+- [x] `Next` never invokes validation itself.
+- [x] Tool Definition first unlock uses exactly the R8 Tool Definition predicate.
+- [x] External and Shopify Request first unlocks use their existing current validation signals exactly as specified in R8.
+- [x] External and Shopify Response first unlocks use their existing current validity/freshness signals exactly as specified in R8.
+- [x] Result Template first unlock requires current canonical template validation.
+- [x] Review first unlock requires `isCurrentTestPassed(authoringState)`.
+- [x] Once a step is enabled, direct tab click remains allowed even after upstream/current authoring becomes dirty, invalid or stale.
+- [x] Once a next step is already enabled, `Next` navigates to it without revalidating the current step.
+- [x] `Previous` always navigates to the immediate previous step without validation or frontier mutation.
+- [x] Review remains clickable after it has been enabled even when later edits stale Test; the existing Save gate remains disabled until current readiness is restored.
+- [x] Initial provider selection does not automatically unlock Request.
+- [x] Cancelled provider change preserves active step and frontier exactly.
+- [x] Confirmed provider replacement resets active step/frontier to Tool Definition only.
+- [x] New-Tool Explore Shopify round trip restores active step and enabled frontier without unlocking later steps.
+- [x] Navigation performs zero durable Tool writes.
+- [x] Persisted-DRAFT tabs remain fully clickable and receive no Previous/Next footer.
+- [x] Feature/Capability authoring (COMMERCE-088..092) is untouched and has no dependency on this Tool-navigation state.
 
 ## Validation
 
 Run the focused current repository commands declared by the task/repository. At minimum:
 
-- [ ] `npx vitest run tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx`
-- [ ] authoring-session focused tests covering `editor.enabledThrough` round trip/backwards-compatible absence
-- [ ] targeted ESLint for every changed source/test file
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `pnpm exec vitest run tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-session.test.ts tests/new-tool-authoring-state.test.ts --reporter=dot` — 5 files passed, 181 tests passed.
+- [x] Authoring-session focused tests cover `editor.enabledThrough` round trip and backwards-compatible absence.
+- [x] Targeted ESLint for every changed source/test file — passed with no warnings.
+- [x] Repository typecheck run and reconciled: 146 existing errors across 17 untouched files; no diagnostics in changed C095 files.
+- [x] `git diff --check` — passed.
 
 Required executable regressions:
 
@@ -723,35 +723,42 @@ Keep those two concerns separate.
 
 ### Status
 
-Not Started
+Ready for Review.
 
 ### Files Changed
 
-None
+Implementation commit `96ffdeca8f1e1cc420df9d2c1878fc459f82b530` changes 13 files in `moda-interact-commerce`: 8 source files and 5 focused test files. The commit is pushed to `origin/task/ARCH-021-COMMERCE-095`.
 
 ### Work Completed
 
-None
+- Added the canonical six-step navigation helpers, monotonic session-local frontier, shared Previous/Next footer, progressive tabs, and exact first-unlock predicates using existing provider validation/Test signals.
+- Exposed External Request structural-validity/current-validation state without adding another validator; persisted the optional frontier in v1 Explore sessions and restored active step/frontier compatibly.
+- Preserved persisted-DRAFT navigation, provider confirmation semantics, and independent Review/Save readiness; no durable schema or non-Commerce repository changes.
+- Extended UI/state/session regressions for disabled steps, successful/failed/stale checkpoints, backwards/monotonic navigation, provider reset, Explore restore, zero writes, and persisted editor behavior.
 
 ### Validation Results
 
-None
+- `pnpm exec vitest run tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-session.test.ts tests/new-tool-authoring-state.test.ts --reporter=dot` — 5 files passed, 181 tests passed.
+- Targeted ESLint across all 13 changed source/test paths — passed with no warnings.
+- `git diff --check` — passed before implementation commit.
+- `pnpm run typecheck` — fails with 146 TypeScript errors in 17 unchanged files; none of the diagnostics reference C095-changed files.
+- Prisma Client was generated locally in the isolated worktree to enable the UI regression suites; no Prisma schema or gitlink was changed.
 
 ### Deviations
 
-None
+No implementation scope deviations. The persisted editor retains its pre-existing tablist accessible name; only new-Tool creation uses the provider-neutral label.
 
 ### Assumptions
 
-None
+The v1 authoring-session contract remains unchanged; `editor.enabledThrough` is optional and older sessions fall back to their valid active section.
 
 ### Unresolved Issues
 
-None
+The repository-wide typecheck remains blocked by the 146 diagnostics in 17 untouched files noted above; focused C095 tests and lint are clean.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
