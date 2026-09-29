@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 73
-executor: copilot
-claimed_at: 2026-09-29T21:37:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-083
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-021-SYSTEM-TEST-002
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 # Harden Tool authoring execution context and single-flight actions
 
@@ -270,15 +270,15 @@ No browser-side gate may be treated as an authorization, credential or durable d
 
 ## Work Items
 
-- [ ] Make `shopSelection.selectedShop` the only Tool-authoring shop context after server resolution.
-- [ ] Propagate the non-secret selected `ShopExecutionContext` to Shopify Admin Test.
-- [ ] Render target shop/offline-session status and disable Run Test when the target is not executable.
-- [ ] Add a synchronous gate to the common Tool mutation/reconciliation boundary.
-- [ ] Add/preserve candidate-keyed single-flight guards for all active async Tool-authoring actions in R4.
-- [ ] Make Explore Shopify a one-shot local-session/navigation hand-off.
-- [ ] Prevent duplicate Shopify Admin metadata loads for the same provider selection/reset.
-- [ ] Add same-tick repeated-activation regressions and selected-shop execution-context regressions.
-- [ ] Record the complete Tool-authoring button classification/gate inventory in the Completion Report.
+- [x] Make `shopSelection.selectedShop` the only Tool-authoring shop context after server resolution.
+- [x] Propagate the non-secret selected `ShopExecutionContext` to Shopify Admin Test.
+- [x] Render target shop/offline-session status and disable Run Test when the target is not executable.
+- [x] Add a synchronous gate to the common Tool mutation/reconciliation boundary.
+- [x] Add/preserve candidate-keyed single-flight guards for all active async Tool-authoring actions in R4.
+- [x] Make Explore Shopify a one-shot local-session/navigation hand-off.
+- [x] Prevent duplicate Shopify Admin metadata loads for the same provider selection/reset.
+- [x] Add same-tick repeated-activation regressions and selected-shop execution-context regressions.
+- [x] Record the complete Tool-authoring button classification/gate inventory in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -305,32 +305,32 @@ Produces no new cross-repository contract.
 
 ## Acceptance Criteria
 
-- [ ] An invalid/stale URL `shopId` cannot reach Tool authoring after `resolveStudioShopSelection` resolves no selected shop.
-- [ ] Shopify Admin Test visibly identifies the selected shop domain when one exists.
-- [ ] With no selected shop, Run Test is disabled and C082 is not called.
-- [ ] With a selected shop whose offline session is unavailable, Run Test is disabled and C082 is not called.
-- [ ] With a selected shop whose offline session is available, existing Test prerequisites and C082 execution continue to work without exposing credentials.
-- [ ] Changing shop context stales/clears the previous Shopify Test result exactly as the existing freshness contract requires.
-- [ ] Two or more same-tick activations of one Tool lifecycle write dispatch exactly one mutation and allocate exactly one operation ID.
-- [ ] An unknown mutation outcome remains locked to its original operation ID; repeated reconciliation activation dispatches one reconciliation call and never replays the mutation.
-- [ ] Every active consequential async action listed in R4 has a synchronous re-entry guard; same-identity repeated activation dispatches exactly once.
-- [ ] Explore Shopify repeated same-tick activation creates one authoring-session hand-off/navigation.
-- [ ] Shopify Admin provider selection/reset repeated activation issues one metadata request for the admitted selection.
-- [ ] Stale async completions cannot overwrite current candidate state.
-- [ ] Local repeatable controls remain responsive and are not globally debounced.
-- [ ] Completion Report contains the full rendered Tool-authoring button classification and guard/test mapping.
+- [x] An invalid/stale URL `shopId` cannot reach Tool authoring after `resolveStudioShopSelection` resolves no selected shop.
+- [x] Shopify Admin Test visibly identifies the selected shop domain when one exists.
+- [x] With no selected shop, Run Test is disabled and C082 is not called.
+- [x] With a selected shop whose offline session is unavailable, Run Test is disabled and C082 is not called.
+- [x] With a selected shop whose offline session is available, existing Test prerequisites and C082 execution continue to work without exposing credentials.
+- [x] Changing shop context stales/clears the previous Shopify Test result exactly as the existing freshness contract requires.
+- [x] Two or more same-tick activations of one Tool lifecycle write dispatch exactly one mutation and allocate exactly one operation ID.
+- [x] An unknown mutation outcome remains locked to its original operation ID; repeated reconciliation activation dispatches one reconciliation call and never replays the mutation.
+- [x] Every active consequential async action listed in R4 has a synchronous re-entry guard; same-identity repeated activation dispatches exactly once.
+- [x] Explore Shopify repeated same-tick activation creates one authoring-session hand-off/navigation.
+- [x] Shopify Admin provider selection/reset repeated activation issues one metadata request for the admitted selection.
+- [x] Stale async completions cannot overwrite current candidate state.
+- [x] Local repeatable controls remain responsive and are not globally debounced.
+- [x] Completion Report contains the full rendered Tool-authoring button classification and guard/test mapping.
 
 ## Validation
 
-- [ ] Focused selected-shop route/composition tests prove validated `selectedShop` authority, including invalid/stale URL input.
-- [ ] Focused Shopify Admin Tool UI tests cover no shop, no offline session, visible target domain, executable target and shop-change staleness.
-- [ ] Same-tick `fireEvent` regression for common Tool lifecycle mutation admission proves one invocation/one operation ID.
-- [ ] Same-tick reconciliation regression proves one check of the original operation and zero mutation replay.
-- [ ] Same-tick regressions cover each active R4 action directly or through a shared gate unit test plus explicit integration wiring assertions for every action owner.
-- [ ] Existing Shopify Admin and External live-Test stale-result/concurrency suites remain passing.
-- [ ] Targeted ESLint for changed files.
-- [ ] Targeted TypeScript diagnostics for changed files, plus the package-declared task-relevant typecheck when available under the repository baseline.
-- [ ] `git diff --check`.
+- [x] Focused selected-shop route/composition tests prove validated `selectedShop` authority, including invalid/stale URL input.
+- [x] Focused Shopify Admin Tool UI tests cover no shop, no offline session, visible target domain, executable target and shop-change staleness.
+- [x] Same-tick `fireEvent` regression for common Tool lifecycle mutation admission proves one invocation/one operation ID.
+- [x] Same-tick reconciliation regression proves one check of the original operation and zero mutation replay.
+- [x] Same-tick regressions cover each active R4 action directly or through a shared gate unit test plus explicit integration wiring assertions for every action owner.
+- [x] Existing Shopify Admin and External live-Test stale-result/concurrency suites remain passing.
+- [x] Targeted ESLint for changed files.
+- [x] Targeted TypeScript diagnostics for changed files, plus the package-declared task-relevant typecheck when available under the repository baseline.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -348,35 +348,96 @@ For a mutation with an unknown outcome, do not clear the admitted operation mere
 
 ### Status
 
-Not Started
+Complete; ready for architecture review. Attempt remains 1. This report is now ready for publication.
 
 ### Files Changed
 
-None
+Commerce implementation:
+
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/external-http/request-tab.tsx`
+- `src/studio/external-http/response-tab.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/authoring/review-tab.tsx`
+- `src/studio/tools/authoring/shopify-admin-test-tab.tsx`
+- `src/studio/tools/authoring/tool-definition-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/shopify-admin-editor.tsx`
+- `src/studio/tools/shopify-admin-response-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+
+Focused tests:
+
+- `tests/external-tools-ui.test.tsx`
+- `tests/feature-configuration-page.test.tsx`
+- `tests/result-template-tab.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/selected-shop-route.test.tsx`
+- `tests/selected-shop-navigation.test.tsx`
 
 ### Work Completed
 
-None
+Validated `shopSelection.selectedShop` is now the sole selected-shop context passed through the Tools route. Shopify Admin Test displays the selected domain and session availability, disables execution without an executable selected shop, and continues sending only `{ definition, arguments, shopId }` to the server action. Server-side authorization/session resolution and C083 freshness remain authoritative.
+
+Added synchronous admission and stale-completion protection at the active action owners. Lifecycle writes acquire the common mutation gate before allocating an operation ID; unknown outcomes retain the operation lock and reconciliation has its own in-flight gate. Candidate-keyed validation/preview/derivation and test-run gates preserve current identity/generation checks. Provider selection deduplicates metadata loads; Explore Shopify admits one local-session/navigation hand-off. Existing progressive navigation, CAS, idempotency and zero-write Test behavior are preserved.
+
+Corrected External Request Validate and Preview completion freshness by synchronizing authoritative current-action-key refs in layout effects and checking those refs for parse, action-result, and thrown-error completion paths. Added deferred A/B tests that complete B before A for both actions; retained same-tick admission tests.
+
+Provider reset now has a separate synchronous admitted-reset lock and pending presentation state. While Shopify metadata is unresolved, traversal, provider selection, repeated Reset and Cancel remain locked. Success installs the replacement and closes confirmation; known failure clears busy state but keeps confirmation available for Retry or Cancel. A deferred-success test checks the in-flight behavior and a known-failure test checks recovery. Initial provider selection generation/supersession behavior remains unchanged.
+
+#### R7 Button Audit
+
+Classification applies to rendered buttons in the active Tool-authoring composition. Repeated controls are grouped by owner and behavior; local edits/navigation are not artificially locked.
+
+| Classification | Rendered action(s) | Synchronous admission and focused regression coverage |
+| --- | --- | --- |
+| `CONSEQUENTIAL_ASYNC` | New Tool Save; persisted Save draft, Publish, Create draft and Edit as new draft | Common `ToolAuthoringScreen.mutate` ref gate is acquired before operation-ID creation and dispatch. `tests/tool-authoring-screen.test.tsx`: exact returned identities after confirmed creation; lost final create reconciliation without mutation replay. Persisted writes in `tests/shopify-admin-tools-ui.test.tsx` and `tests/external-tools-ui.test.tsx`. |
+| `CONSEQUENTIAL_ASYNC` | Check original operation | `reconciliationInFlight` ref gate; keeps the original operation ID and never replays the write. `tests/tool-authoring-screen.test.tsx`: `reconciles a lost final create without replaying the mutation` repeats the check in one tick and asserts one reconcile call. |
+| `CONSEQUENTIAL_ASYNC` | Shopify Admin Request Validate | Canonical candidate key plus monotonic generation and `validationInFlight` set; obsolete completions are ignored. `tests/shopify-admin-tools-ui.test.tsx`: `does not accept an old Shopify Request validation after A-to-B-to-A` also double-activates the initial identity in the same tick. |
+| `CONSEQUENTIAL_ASYNC` | Shopify Admin Response Derive result contract | Canonical action key plus monotonic identity and `derivationsInFlight` set. `tests/shopify-admin-tools-ui.test.tsx`: `does not apply an old Shopify Response derivation after A-to-B-to-A` also verifies same-tick duplicate admission. |
+| `CONSEQUENTIAL_ASYNC` | Shopify Admin Run Test and Policy Operation Run Test | Candidate/shop/arguments identity, synchronous `activeRuns` set, sequence and latest-identity checks. Coverage: Shopify shop-and-arguments A-to-B-to-A test double-activates its first run; the `runPolicyOperationTest` helper double-activates Run Test in one tick, alongside Policy Test transient-arguments/shop A-to-B-to-A coverage in `tests/shopify-admin-tools-ui.test.tsx`; C083 zero-write, target and staleness cases are in the same file. Policy lifecycle remains owned by COMMERCE-099/100. |
+| `CONSEQUENTIAL_ASYNC` | External Request Validate request and Preview request | Separate canonical-identity `validationInFlight` and `previewInFlight` sets. `tests/external-tools-ui.test.tsx`: same-tick Validate/Preview tests plus `keeps the newer External Request validation when an older validation completes last` and the equivalent Preview regression verify stale A-after-B completions. |
+| `CONSEQUENTIAL_ASYNC` | External Response Validate response | Validation-generation keyed `responseValidationsInFlight` set; completion applies only while its generation is current. `tests/external-tools-ui.test.tsx`: `ignores late Response validation results after the authored path changes` double-activates the current action in one tick; `validates only Response fields and invalidates stale validation after an edit` covers contract behavior. |
+| `CONSEQUENTIAL_ASYNC` | External Response Generate from live response | Context/generation-keyed `automaticRunsInFlight` set; stale observations cannot apply candidates. `tests/external-tools-ui.test.tsx`: `does not apply an old live-response generation after Request context A-to-B-to-A` also double-activates the first generation. |
+| `CONSEQUENTIAL_ASYNC` | External Run live test | Candidate identity and synchronous `activeRuns` set, with sequence/latest-identity checks. `tests/external-tools-ui.test.tsx`: `prevents duplicate submissions and discards an older out-of-order result`. |
+| `CONSEQUENTIAL_ASYNC` | Result Template Validate Result Template | Candidate key and synchronous `validationInFlight` set. `tests/result-template-tab.test.tsx`: `coalesces same-tick Result Template validation dispatches`. |
+| `CONSEQUENTIAL_ASYNC` | Persisted Shopify Admin and External Review Validate | Candidate-keyed `reviewValidationInFlight` sets and current-action-key checks; pending state is presentation only. Coverage: Shopify Review A-to-B-to-A test double-activates the first candidate in the same tick; External Review A-to-B-to-A test does likewise in `tests/shopify-admin-tools-ui.test.tsx` and `tests/external-tools-ui.test.tsx`. |
+| `CONSEQUENTIAL_ASYNC` | Initial/new/reset Shopify Admin provider selection when metadata is required | `providerSelectionsInFlight` keyed by requested provider, plus provider generation checks. `tests/tool-authoring-screen.test.tsx`: `admits only one same-tick Shopify provider metadata load`, Shopify-to-External stale-completion, deferred provider-reset lock, and known-failure recovery tests. The persisted Shopify Admin metadata read runs once per editor mount and is not a rendered-button action. |
+| `ONE_SHOT_HANDOFF` | Explore Shopify (new and persisted authoring) | `exploreHandoffInFlight` is acquired before session ID creation, browser-local persistence and navigation; it clears only on synchronous failure. The new-session round-trip regression in `tests/tool-authoring-screen.test.tsx` double-activates Explore in one tick and asserts one history hand-off; persisted identity coverage is in `tests/shopify-admin-tools-ui.test.tsx`. |
+| `LOCAL_REPEATABLE` | Tool library Create Tool; Return to Tools; Back/discard navigation and confirmation; Review Cancel / Cancel unsaved changes; provider-reset Cancel | Local session, navigation or dialog state only; no provider/server dispatch. |
+| `LOCAL_REPEATABLE` | Tool authoring tabs; Previous/Next; ordinary field edits and mode selection; local request/result mapping Add/Remove; visual field/filter Add/Remove; insertion and local response/result-template helpers | Synchronous local state transformations. Intentionally no debounce or async admission lock. |
+| `LOCAL_REPEATABLE` | Policy Operation Validate Tool Definition and Validate Request | Synchronous local validation; no provider or server-action dispatch. |
+
+`src/studio/tools/authoring/agent-contract-tab.tsx` is a legacy, unmounted component: no imports or mount sites exist in the active composition, and the persisted-tab regression asserts that Agent Contract is absent. It is excluded from this rendered-button audit.
 
 ### Validation Results
 
-None
+Passed the final focused packet after all corrections and direct same-tick coverage: 7 files, 195 tests. The Shopify Admin and Policy Test owner suite passed at 41 tests after the final Policy Test duplicate-activation assertion.
+
+Targeted ESLint across all 18 changed implementation and test files passed without warnings or errors. `npm run typecheck` passed (`next typegen && tsc --noEmit`) after regenerating the local Prisma Client with `npx prisma generate --schema database/prisma/schema.prisma`; no schema or migration changes were made. Changed-file diagnostics reported no TypeScript issues in all 18 changed files, and `git diff --check` passed.
+
+#### Broader Suite Baseline Comparison
+
+The seven `tests/studio-workspace.test.tsx` failures reproduce before C102 changes. Ran the suite in a detached clean worktree at pre-C102 commit `8fb5ebdffb2491803a3918bfb98aa5a51ce56c3a` (created with `git worktree add --detach /tmp/ARCH-021-COMMERCE-102-baseline 8fb5ebdffb2491803a3918bfb98aa5a51ce56c3a`, installed that checkout's lockfile dependencies with `npm ci`, then ran `npm run test -- --run tests/studio-workspace.test.tsx`): **7 failed, 5 passed (12)**. The C102-modified worktree run produced the same **7 failed, 5 passed (12)** and the same observed failures: both Shopify Admin draft workflow assertions look for `Save draft` and fail at test lines 191 and 225. This is baseline evidence, not an inference that the suite is unrelated based only on the task-focused packet. The detached baseline worktree is temporary and will be removed after evidence capture.
 
 ### Deviations
 
-None
+The package-manager `pnpm test` invocation was blocked before running tests by pnpm's ignored-build-script approval gate. The same focused tests were run successfully with the repository's npm script. The failed pnpm setup generated untracked `pnpm-lock.yaml` and `pnpm-workspace.yaml` files in the implementation worktree; only those command-generated files were removed. No existing user changes were reverted. A separate detached baseline worktree and npm dependency installation were used only for the required pre-C102 failure comparison.
 
 ### Assumptions
 
-None
+`ShopExecutionContext` is the sole browser-safe execution context; its shop ID is submitted as the existing C082 action input, while domain/session-availability are display-only and no credentials cross the browser boundary. Policy Operation lifecycle changes remain outside this task's scope.
 
 ### Unresolved Issues
 
-None
+The 7 `tests/studio-workspace.test.tsx` failures remain, but exact pre-C102 baseline evidence above demonstrates they reproduce without C102 changes. No C102-specific validation, lint or typecheck failures remain.
 
 ### Architectural Concerns
 
-None
+None. Client-side admission remains a UX/concurrency guard only; durable idempotency, CAS, authorization, offline-session lookup and reconciliation remain server-authoritative.
 
 ## Architect Review
 
