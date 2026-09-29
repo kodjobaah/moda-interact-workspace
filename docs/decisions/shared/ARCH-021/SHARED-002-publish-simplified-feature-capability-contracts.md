@@ -80,11 +80,11 @@ Record the exact package version and registry evidence consumed by later tasks.
 
 ## Work Items
 
-- [ ] Verify ARCH-021-SHARED-001 is Complete/Accepted.
-- [ ] Apply the approved next package version/release metadata.
-- [ ] Run the approved publication command.
+- [x] Verify ARCH-021-SHARED-001 is Complete/Accepted.
+- [x] Apply the approved next package version/release metadata.
+- [x] Run the approved publication command.
 - [ ] Verify the exact published package version is available.
-- [ ] Record publication evidence and confirm no unauthorised source changes.
+- [x] Record publication evidence and confirm no unauthorised source changes.
 
 ## Interfaces / Contracts
 
@@ -105,19 +105,19 @@ containing the accepted simplified Feature capability contracts from ARCH-021-SH
 
 ## Acceptance Criteria
 
-- [ ] SHARED-001 was Complete/Accepted before publication.
-- [ ] The intended package version was published successfully.
+- [x] SHARED-001 was Complete/Accepted before publication.
+- [x] The intended package version was published successfully.
 - [ ] The exact version is visible at the target registry.
-- [ ] No implementation source changed beyond authorised release metadata.
-- [ ] The published version is recorded for consumers.
+- [x] No implementation source changed beyond authorised release metadata.
+- [x] The published version is recorded for consumers.
 
 ## Validation
 
-- [ ] prerequisite SHARED-001 acceptance confirmed
-- [ ] approved version/release identifier applied
-- [ ] publication command succeeded
+- [x] prerequisite SHARED-001 acceptance confirmed
+- [x] approved version/release identifier applied
+- [x] publication command succeeded
 - [ ] exact expected package version visible at target registry
-- [ ] no unauthorised implementation source changes
+- [x] no unauthorised implementation source changes
 
 ## Stop Condition
 
@@ -131,31 +131,37 @@ Do not rerun SHARED-001 implementation validation in this publication task.
 
 ### Status
 
-Not Started
+In Progress; npm accepted publication of version 1.0.0, but registry visibility is still pending.
 
 ### Files Changed
 
-None
+- `moda-interact-shared/package.json` and `package-lock.json`: release metadata only; implementation commit `abd1c65` is pushed to `task/ARCH-021-SHARED-002`.
+- This task file: publication progress/evidence.
 
 ### Work Completed
 
-None
+- Confirmed `ARCH-021-SHARED-001` is Complete and Architect Review is Accepted. The accepted source commits are present in the prepared Shared task branch.
+- Followed the Shared README SemVer policy for this breaking public API change and set package/lockfile version to `1.0.0`.
+- `npm publish --access public --registry=https://registry.npmjs.org/` completed successfully. npm reported the tarball as `modainteract-moda-interact-shared-1.0.0.tgz`, 150.9 kB, SHA-1 `47a0ff85f6eed1b2c44f31407f291f5fbcf3f4f6`.
+- No implementation source files changed.
 
 ### Validation Results
 
-None
+- Package and lockfile version consistency assertion passed; `git diff --check` passed; initial diff scope was only `package.json` and `package-lock.json`.
+- The publish `prepack` build completed successfully and npm accepted the public publish.
+- Public registry exact-version lookup returned HTTP 404 at 2026-09-29 14:05 UTC while npm reported the package was still being processed. Registry visibility and `latest` confirmation remain pending; do not consume until verified.
 
 ### Deviations
 
-None
+- The first publish attempt stopped before publication because `tsup` was absent. `npm ci --no-audit --no-fund` installed the exact lockfile dependencies; the subsequent publish and prepack build succeeded.
 
 ### Assumptions
 
-None
+- The package README's release policy defines breaking public API compatibility changes as major releases; the next unused major version was `1.0.0`.
 
 ### Unresolved Issues
 
-None
+- Confirm the exact `1.0.0` version, tarball integrity, and `latest` dist-tag at the public npm registry after publication processing completes.
 
 ### Architectural Concerns
 
