@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 94
-executor: copilot
-claimed_at: 2026-09-29T15:44:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-088
@@ -154,17 +154,17 @@ Tool bindings
 
 ## Work Items
 
-- [ ] Add local authoring state for Capability metadata + one Tool identity.
-- [ ] Build Capability phase.
-- [ ] Build Tool selection phase from existing usable Tools.
-- [ ] Build derived read-only Review phase.
-- [ ] Add Previous/Next and enabled-phase direct navigation semantics.
-- [ ] Add Cancel/Back with zero persistence.
-- [ ] Wire final Create to exactly one COMMERCE-088 mutation.
-- [ ] Refresh/navigate to the parent Feature after success.
-- [ ] Preserve the local candidate across recoverable final-create failures.
-- [ ] Add mutation-spy regressions proving no create call before final Create.
-- [ ] Add final Create success/replay/conflict/error regressions.
+- [x] Add local authoring state for Capability metadata + one Tool identity.
+- [x] Build Capability phase.
+- [x] Build Tool selection phase from existing usable Tools.
+- [x] Build derived read-only Review phase.
+- [x] Add Previous/Next and enabled-phase direct navigation semantics.
+- [x] Add Cancel/Back with zero persistence.
+- [x] Wire final Create to exactly one COMMERCE-088 mutation.
+- [x] Refresh/navigate to the parent Feature after success.
+- [x] Preserve the local candidate across recoverable final-create failures.
+- [x] Add mutation-spy regressions proving no create call before final Create.
+- [x] Add final Create success/replay-recovery/conflict/error regressions.
 
 ## Interfaces / Contracts
 
@@ -189,25 +189,25 @@ No new cross-repository contract.
 
 ## Acceptance Criteria
 
-- [ ] The visible sequence is exactly Capability -> Tool -> Review.
-- [ ] The author never selects a Capability type/binding, Tool revision, search limit or recommendation limit.
-- [ ] Only enabled Tools with at least one PUBLISHED revision are selectable.
-- [ ] No durable Capability exists before the final Create mutation succeeds.
-- [ ] Cancel/Back before Create causes zero Capability mutation calls.
-- [ ] Review is derived and read-only.
-- [ ] Final Create performs one `createFeatureCapability` call with the full candidate.
-- [ ] Success returns to the Feature and shows the new Capability with its assigned Tool.
-- [ ] Recoverable failures preserve the local candidate without duplicate rows.
-- [ ] Enabled phases remain directly clickable; the UI does not unnecessarily lock previously enabled navigation.
+- [x] The visible sequence is exactly Capability -> Tool -> Review.
+- [x] The author never selects a Capability type/binding, Tool revision, search limit or recommendation limit.
+- [x] Only enabled Tools with at least one PUBLISHED revision are selectable.
+- [x] No durable Capability exists before the final Create mutation succeeds.
+- [x] Cancel/Back before Create causes zero Capability mutation calls.
+- [x] Review is derived and read-only.
+- [x] Final Create performs one `createFeatureCapability` call with the full candidate.
+- [x] Success returns to the Feature and shows the new Capability with its assigned Tool.
+- [x] Recoverable failures preserve the local candidate without duplicate rows.
+- [x] Enabled phases remain directly clickable; the UI does not unnecessarily lock previously enabled navigation.
 
 ## Validation
 
-- [ ] focused Add Capability component/flow tests
-- [ ] explicit zero-mutation-before-final-Create regression
-- [ ] final-create replay/conflict/error regression coverage
-- [ ] targeted ESLint
-- [ ] changed-file TypeScript diagnostics / repository typecheck evidence per baseline policy
-- [ ] `git diff --check`
+- [x] Focused Add Capability, Feature configuration and Studio shell tests: 5 files, 19 tests passed.
+- [x] Explicit zero-mutation-before-final-Create regression.
+- [x] Final-create success, committed-operation reconciliation (without duplicate mutation), conflict/correction and unavailable/error regression coverage.
+- [x] Targeted ESLint passed for all four changed files.
+- [x] Changed-file diagnostics report no errors. `npm run typecheck` was also run and reports 271 TypeScript errors in 27 other files; none of the four task files appear in its diagnostics.
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -221,35 +221,70 @@ Prefer a small dedicated state machine/model over reusing Tool authoring state s
 
 ### Status
 
-Not Started
+Ready for architect review (Attempt 1).
 
 ### Files Changed
 
-None
+- `app/features/[id]/capabilities/new/page.tsx`
+- `src/studio/features/add-capability/add-capability-screen.tsx`
+- `tests/add-capability-route.test.tsx`
+- `tests/add-capability-screen.test.tsx`
 
 ### Work Completed
 
-None
+- Added an authenticated, force-dynamic Feature-scoped route that loads the Feature and filters the Tool library to enabled Tools with at least one PUBLISHED revision; only Tool identity/display data reaches the client.
+- Added the local-only Capability -> Tool -> Review flow. Review derives the shared Feature behaviour-prompt relationship and all candidate details; one final action submits one `createFeatureCapability` call.
+- Preserved the candidate after validation/conflict/unavailable outcomes. Pending or unknown outcomes lock edits/navigation and prevent duplicate submissions; committed outcomes reconcile to the Feature without retrying the mutation.
+- Added route and UI tests for Tool filtering, zero pre-create mutation, exactly-one create, cancellation, committed-operation reconciliation, conflict correction, and candidate retention after errors.
 
 ### Validation Results
 
-None
+- `npm exec -- vitest run tests/add-capability-screen.test.tsx tests/add-capability-route.test.tsx tests/feature-configuration-screen.test.tsx tests/feature-configuration-page.test.tsx tests/studio-shell.test.tsx`: 5 files, 19 tests passed.
+- `npm exec -- eslint 'app/features/[id]/capabilities/new/page.tsx' src/studio/features/add-capability/add-capability-screen.tsx tests/add-capability-screen.test.tsx tests/add-capability-route.test.tsx`: passed.
+- Changed-file diagnostics: no errors in the four task files.
+- `npm run typecheck`: failed with 271 errors in 27 files elsewhere in the Commerce repository; no diagnostic references any task file. These unrelated diagnostics were not changed as part of this task.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+- Added a locked navigation state while a create is pending or its outcome is unknown, retaining the original candidate/operation ID until reconciliation. Confirmed success explicitly bypasses that blocker to return to the Feature.
 
 ### Assumptions
 
-None
+- Returning through the existing Studio router to the force-dynamic Feature page reloads its server-provided Capability/Tool association after the mutation.
 
 ### Unresolved Issues
 
-None
+- The repository-wide typecheck remains red on 271 diagnostics across 27 files outside this task's changed files; ownership and resolution are outside COMMERCE-091.
 
 ### Architectural Concerns
 
 None
+
+### Git / VCS
+
+Task branch: `task/ARCH-021-COMMERCE-091`
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-091`
+- parent branch: `task/ARCH-021-COMMERCE-091`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-091`
+- implementation branch: `task/ARCH-021-COMMERCE-091`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+- parent remote task branch fast-forwarded: not needed; parent task branch was already at `origin/task/ARCH-021-COMMERCE-091`
+- parent `origin/main` incorporated: no; the existing parent task branch does not contain current `origin/main`
+- implementation remote task branch fast-forwarded: not needed; no remote implementation task branch existed
+- implementation `origin/main` incorporated: already current at implementation branch creation
+
+Review submission:
+- implementation commit: `bdf7fd3` (`task(ARCH-021-COMMERCE-091): add local-first capability flow`)
+- implementation commit pushed to `origin/task/ARCH-021-COMMERCE-091`: yes
+- parent task report is committed and pushed on `task/ARCH-021-COMMERCE-091` as this review submission.
 
 ## Architect Review
 
