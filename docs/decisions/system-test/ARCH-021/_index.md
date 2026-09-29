@@ -56,9 +56,9 @@ are architect-accepted Complete.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095, COMMERCE-102 |
+| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify, including persisted traversal parity | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095, COMMERCE-102, COMMERCE-103 |
 
-SYSTEM-TEST-002 is terminal validation. Every listed Commerce dependency is now architect-accepted Complete, so it is Ready. No Commerce implementation task depends on it.
+SYSTEM-TEST-002 is terminal validation. At the original C095 checkpoint every then-listed Commerce dependency was architect-accepted Complete and the task became Ready. Later manual-validation corrections C102/C103 re-gate it to Pending. No Commerce implementation task depends on it.
 
 ### SYSTEM-TEST-002 re-gated for progressive new-Tool navigation — 2026-09-29
 
@@ -84,4 +84,8 @@ SYSTEM-TEST-003 is terminal validation and is now Ready because all declared imp
 
 ### SYSTEM-TEST-002 re-gated for Tool execution safety — 2026-09-29
 
-Manual validation exposed the COMMERCE-102 selected-shop execution-target and Tool-authoring single-flight correction. SYSTEM-TEST-002 is therefore **Pending** on C102 and will return to Ready only after C102 is architect-accepted Complete. It remains terminal validation; no Commerce implementation task depends on it.
+Manual validation exposed the COMMERCE-102 selected-shop execution-target and Tool-authoring single-flight correction. SYSTEM-TEST-002 became **Pending** on C102.
+
+### SYSTEM-TEST-002 re-gated for persisted Tool traversal — 2026-09-29
+
+Manual validation of an existing Tool then exposed COMMERCE-103: persisted External HTTP, Shopify Admin and Policy Operation DRAFTs need the same six-step sequential `Previous`/`Next` navigation while retaining permanently unlocked direct tabs. SYSTEM-TEST-002 is therefore **Pending** on both C102 and C103 and returns to Ready only after both are architect-accepted Complete. It remains terminal validation; no Commerce implementation task depends on it.

@@ -20,6 +20,7 @@ depends_on:
   - ARCH-021-COMMERCE-083
   - ARCH-021-COMMERCE-095
   - ARCH-021-COMMERCE-102
+  - ARCH-021-COMMERCE-103
 enables: []
 created: 2026-09-28
 updated: 2026-09-29
@@ -43,7 +44,7 @@ Coordinator:
 
 ## Objective
 
-Validate the integrated Commerce Studio Tool authoring flow for both External HTTP and Shopify Admin: Tool library launcher -> Tool Definition -> Request -> Response -> Result Template -> Test rendered agent output -> Review -> Save/Cancel, including persisted-DRAFT parity and zero-write Test/Cancel boundaries.
+Validate the integrated Commerce Studio new-Tool authoring flow for External HTTP and Shopify Admin from Tool library launcher -> Tool Definition -> Request -> Response -> Result Template -> Test rendered agent output -> Review -> Save/Cancel, plus persisted-DRAFT six-step traversal parity across External HTTP, Shopify Admin and Policy Operation Tools, including zero-write Test/Cancel/navigation boundaries.
 
 ## Context
 
@@ -80,6 +81,14 @@ Review
 ```
 
 Prove no Agent Contract tab exists; input schema is edited under Request; template is edited under Result Template; Review shows Agent Contract read-only and Result Template separately.
+
+For persisted DRAFT authoring of External HTTP, Shopify Admin and Policy Operation Tools, prove all six tabs remain directly clickable and the sequential footer follows exactly:
+
+```text
+Tool Definition -> Request -> Response -> Result Template -> Test -> Review
+```
+
+with `Previous` absent only on Tool Definition and `Next` absent only on Review. Prove Previous/Next navigate one step without validation, provider execution or Tool lifecycle mutation, including when the current candidate is invalid/stale.
 
 ### R3 — External complete Test
 
@@ -134,11 +143,12 @@ For an unknown lifecycle mutation outcome, prove reconciliation checks the origi
 - [ ] Add rapid repeated-activation scenario proving one Shopify Test dispatch.
 - [ ] Add new Tool Save/Cancel persistence scenario, including rapid repeated Save admission.
 - [ ] Add persisted DRAFT CAS Save/Cancel scenario.
+- [ ] Add persisted DRAFT Previous/Next parity scenario for External HTTP, Shopify Admin and Policy Operation, including invalid/stale zero-side-effect traversal.
 - [ ] Add provider-switch destructive-reset confirmation scenario.
 
 ## Interfaces / Contracts
 
-Consumes only architect-accepted outputs of COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095 and COMMERCE-102 and their transitive prerequisites.
+Consumes only architect-accepted outputs of COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095, COMMERCE-102 and COMMERCE-103 and their transitive prerequisites.
 
 ## Dependencies
 
@@ -147,6 +157,7 @@ Consumes only architect-accepted outputs of COMMERCE-079, COMMERCE-081, COMMERCE
 - ARCH-021-COMMERCE-083
 - ARCH-021-COMMERCE-095
 - ARCH-021-COMMERCE-102
+- ARCH-021-COMMERCE-103
 
 ## Enables
 
@@ -154,7 +165,9 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] Exact six-step UI is proven for both provider kinds.
+- [ ] Exact six-step UI is proven for both new-Tool provider kinds.
+- [ ] Persisted External HTTP, Shopify Admin and Policy Operation DRAFTs expose the same six-step order with direct-click tabs plus exact Previous/Next one-step traversal.
+- [ ] Persisted Previous/Next remains usable for invalid/stale candidates and causes zero validation, provider execution and Tool lifecycle mutation.
 - [ ] No Agent Contract authoring tab exists.
 - [ ] Agent Contract shown in Review is derived/read-only.
 - [ ] External Test displays exact server-rendered agent text and stales on template changes.

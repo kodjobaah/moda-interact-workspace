@@ -1300,3 +1300,15 @@ Manual Shopify Admin Test validation exposed two bounded interaction-safety defe
 COMMERCE-102 is an independent manual-validation correction. It does not reopen C082/C083/C095 and it does not depend on the Policy Operation C096..100 chain. C082 remains the server-authoritative Shopify Admin execution boundary; C102 fixes the browser execution-target presentation/admission contract and same-tick action re-entry.
 
 `ARCH-021-SYSTEM-TEST-002` is re-gated **Pending** on COMMERCE-102 so terminal Tool-authoring validation runs only after the selected-shop and single-flight corrections are architect-accepted.
+
+## Manual-validation follow-up — persisted Tool sequential traversal — 2026-09-29
+
+Manual validation of an existing Shopify Admin DRAFT exposed the navigation parity gap deliberately left out of COMMERCE-095: persisted External HTTP, Shopify Admin and Policy Operation editors show all six canonical tabs but do not render the shared `Previous`/`Next` footer.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-103](COMMERCE-103-add-persisted-tool-previous-next-navigation.md) | Add side-effect-free Previous/Next traversal to all persisted DRAFT Tool authoring kinds | Ready | COMMERCE-095, COMMERCE-099 |
+
+COMMERCE-103 reuses the C095 canonical six-step order/presentation but does **not** import progressive unlocking into persisted DRAFTs. All persisted tabs remain directly clickable; `Previous`/`Next` are pure section navigation and never validate, Test, save or publish. COMMERCE-103 is independent of COMMERCE-102.
+
+`ARCH-021-SYSTEM-TEST-002` remains **Pending** until both COMMERCE-102 and COMMERCE-103 are architect-accepted Complete.
