@@ -339,7 +339,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
-| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Blocked | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
+| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Ready | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
 | [COMMERCE-095](COMMERCE-095-add-progressive-new-tool-tab-navigation.md) | UI: progressive Previous/Next and monotonic first-unlock traversal for new Tool authoring | Complete | COMMERCE-078, COMMERCE-083 |
 
@@ -1194,6 +1194,13 @@ COMMERCE-092 is **Complete / Accepted, Attempt 1**. Architect review traced the 
 The disposable C20 DB/Redis rehearsal remains explicitly unexecuted because disposable targets were not configured. Terminal SYSTEM-TEST-003 is now Ready and owns the end-to-end validation of the completed simplified architecture.
 
 
+
+
+### COMMERCE-094 Attempt 3 accepted — 2026-09-29
+
+COMMERCE-094 is **Complete / Accepted, Attempt 3**. The full repository TypeScript check now passes with zero diagnostics and the normal production build completes successfully. The final architect-approved scope expansion required only two test typing corrections because the renderer narrowing fix was already present in the synchronized baseline. No runtime/schema/dependency/C086 behavior was changed.
+
+COMMERCE-086 is therefore promoted from **Blocked** to **Ready** for Attempt 2. It owns its own clean-build confirmation and production-start HTTP smoke.
 
 ### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
 
