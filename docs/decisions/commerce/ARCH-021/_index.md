@@ -339,7 +339,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Ready | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
-| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Blocked | COMMERCE-084, COMMERCE-085, COMMERCE-093 |
+| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Blocked | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
 
 Initial executable frontier for this workstream:
@@ -1124,6 +1124,15 @@ The two implementation branches after COMMERCE-088 are intentionally parallel: C
 
 C086 is **Blocked** after a clean production build reached Next compilation and failed only on three over-deep imports in the untouched Studio code-response validation route. C086's manual packaging/link implementation remains within scope and its passed Attempt 1 evidence is preserved.
 
-COMMERCE-093 is **Ready** and owns the minimum three-import correction plus normal Commerce production-build verification. C086 now explicitly depends on C093.
+COMMERCE-093 is **Complete / Accepted, Attempt 1**. Its three route imports resolve correctly and the build advances beyond that blocker. The remaining repository TypeScript/build gate is owned by separately materialised COMMERCE-094. C086 remains Blocked and depends on both C093 and C094.
 
 After C093 is architect-accepted Complete, C086 will be returned to Ready for Attempt 2 to rerun the clean production build and bounded `npm run start` manual HTTP smoke. No already-passed C086 implementation work should be repeated absent a relevant intervening change.
+
+
+### COMMERCE-093 Attempt 1 accepted / C094 build gate — 2026-09-29
+
+COMMERCE-093 is **Complete / Accepted, Attempt 1**. The route correction is exactly three import-depth edits, all corrected imports resolve within Commerce, route behavior is unchanged, and the production build advances beyond the original route-import failure.
+
+The newly exposed 23 TypeScript diagnostics across 12 unrelated files are outside C093 scope and are owned by COMMERCE-094, which the developer reports is materialised on its own task branch at parent commit `58f65e5b`.
+
+C086 remains **Blocked** and now explicitly depends on both C093 and C094. C094 must be promoted to Ready on its canonical task branch now that C093 is Complete. C086 must not resume until C094 is architect-accepted Complete.

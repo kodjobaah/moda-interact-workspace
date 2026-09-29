@@ -1120,7 +1120,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
-| ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093 |
+| ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Ready | ARCH-020-SHARED-001 |
@@ -1131,7 +1131,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-091 | moda_commerce | Pending | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
 | ARCH-021-BACKGROUND-002 | moda_background | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Pending | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
-| ARCH-021-COMMERCE-093 | moda_commerce | Ready | - |
+| ARCH-021-COMMERCE-093 | moda_commerce | Complete | - |
 | ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
@@ -1532,7 +1532,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
-| ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093 |
+| ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Ready | ARCH-020-SHARED-001 |
@@ -2799,6 +2799,15 @@ The executable refinement frontier is now COMMERCE-083. SYSTEM-TEST-002 remains 
 
 C086's manual packaging/link implementation is complete through its focused validation, but the task is Blocked before terminal production validation. Its clean build reaches Next compilation and fails on three over-deep imports in `app/api/studio/code-response/validate/route.ts`; the referenced Commerce modules exist and the route is outside C086 scope.
 
-COMMERCE-093 is materialised Ready to make only that route-import correction and verify the normal Commerce production build. C086 explicitly depends on C093.
+COMMERCE-093 is Complete / Accepted. Its route-import correction is proven; the build now fails only on unrelated TypeScript diagnostics assigned to COMMERCE-094. C086 explicitly depends on C093 and C094 and remains Blocked.
 
 After C093 is Complete, C086 returns to Ready for Attempt 2 and reruns only the unresolved terminal gate: clean production build plus bounded production-start HTTP smoke proving `/manuals/result-template-guide.html` is served with HTTP 200 and the expected HTML title.
+
+
+### COMMERCE-093 Attempt 1 accepted / C094 build gate — 2026-09-29
+
+The code-response validation route-import correction is architect-accepted. The three imports now resolve inside Commerce with no route-behavior change, and the normal build advances beyond the original module-resolution blocker.
+
+The next production-build blocker is repository-wide TypeScript checking: 23 diagnostics across 12 unrelated files. That bounded correction/build gate is owned by COMMERCE-094, materialised separately by the developer and dependent on C093.
+
+C086 remains Blocked on C094. After C094 is Complete, C086 returns to Ready for Attempt 2 and reruns only the unresolved terminal validation: clean production build plus bounded production-start HTTP smoke for the packaged Result Template guide.

@@ -18,6 +18,7 @@ depends_on:
   - ARCH-021-COMMERCE-084
   - ARCH-021-COMMERCE-085
   - ARCH-021-COMMERCE-093
+  - ARCH-021-COMMERCE-094
 enables: []
 created: 2026-09-28
 updated: 2026-09-29
@@ -484,6 +485,7 @@ No database or cross-repository runtime contract is introduced.
 - ARCH-021-COMMERCE-084
 - ARCH-021-COMMERCE-085
 - ARCH-021-COMMERCE-093
+- ARCH-021-COMMERCE-094
 
 ## Enables
 
@@ -724,16 +726,16 @@ The route path calculation independently confirms that five, not six, parent tra
 
 C086 implementation conforms within its declared scope.
 
-The task is blocked only because the production build cannot complete until the unrelated Commerce route-import defect is corrected.
+The route-import defect is now corrected by accepted C093. C086 remains blocked because the production build still cannot complete until the unrelated TypeScript diagnostics/build gate owned by C094 is corrected.
 
 ### Follow-up
 
-1. Execute and architect-review `ARCH-021-COMMERCE-093`.
-2. C093 must correct only the three code-response route imports and prove the normal Commerce production build succeeds.
-3. After C093 is Complete, return this same C086 task to `ready` through the authorized Changes Requested path:
+1. C093 is Complete / Accepted and remains in `depends_on`.
+2. Execute and architect-review `ARCH-021-COMMERCE-094`, which owns the unrelated TypeScript diagnostics and repository production-build gate.
+3. After C094 is Complete, return this same C086 task to `ready` through the authorized Changes Requested path:
    - preserve `attempt: 1`;
    - preserve all Attempt 1 Completion Report evidence;
-   - keep C093 in `depends_on`;
+   - keep both C093 and C094 in `depends_on`;
    - clear execution claim;
    - make the next claim Attempt 2.
 4. C086 Attempt 2 must rerun from a clean generated-manual state:
