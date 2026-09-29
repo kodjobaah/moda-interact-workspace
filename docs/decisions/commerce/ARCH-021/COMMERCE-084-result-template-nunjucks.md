@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 75
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-063
   - ARCH-021-COMMERCE-078
@@ -22,7 +22,7 @@ depends_on:
 enables:
   - ARCH-021-COMMERCE-085
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # Replace Result Template runtime with constrained Nunjucks v1
@@ -114,8 +114,8 @@ Update Commerce-owned fixtures/tests that still construct the obsolete `text` / 
 
 - The CodeMirror Result Template editor and authoring UX; COMMERCE-085.
 - Request, Response or Test-tab presentation changes.
-- Persisted-DRAFT parity/navigation; COMMERCE-079 consumes COMMERCE-085.
-- External/Shopify Test UI integration; COMMERCE-081/083 consume COMMERCE-085.
+- Persisted-DRAFT lifecycle/CAS/navigation semantics remain owned by the already-complete COMMERCE-079; COMMERCE-085 must preserve them while replacing the Result Template editor.
+- External live-Test presentation/gating remains owned by the already-complete COMMERCE-081 and must be preserved by COMMERCE-085; Shopify Admin Test UI integration remains COMMERCE-083 and is dependency-gated by COMMERCE-085.
 - Arbitrary JavaScript in templates.
 - Full Nunjucks language support.
 - HTML/WYSIWYG rendering.
@@ -166,52 +166,314 @@ Nunjucks must be imported only by Commerce server/domain runtime code. COMMERCE-
 
 ### R3 — supported `nunjucks.v1` grammar is intentionally bounded
 
-The canonical validator must accept only these semantic constructs:
+The canonical validator MUST first parse the source using the installed Nunjucks parser/AST. Nunjucks parse success is necessary but is **not sufficient**. Moda must then traverse that AST through its own explicit allowlist and schema-aware semantic validator.
 
-```text
-1. Literal text.
-2. Scalar interpolation:
-     {{ result.path.to.scalar }}
-3. Loop-local scalar interpolation:
-     {{ item.path.to.scalar }}
-   where `item` is the alias introduced by an enclosing supported `for`.
-4. Scalar-array item interpolation:
-     {{ item }}
-   when the enclosing loop iterates an array of scalar values.
-5. Bounded loops:
-     {% for item in result.path.to.array %}
-       ...
-     {% else %}
-       ...
-     {% endfor %}
-6. Nested loops over an array reachable from the current root/loop alias.
+Do not use a hand-written delimiter/path scanner as the sole syntax parser. The canonical validator must never accept source that the installed Nunjucks parser rejects.
+
+The canonical validator MUST accept only the following semantic constructs.
+
+#### 1. Literal text
+
+Any bounded literal output text is allowed.
+
+#### 2. Path interpolation
+
+```nunjucks
+{{ result.path.to.scalar }}
 ```
 
-A loop alias may be any safe identifier accepted by the existing Commerce safe-name rules except reserved names. It must not be `result`, `constructor`, `prototype` or `__proto__`, and it must not shadow an already-active loop alias.
+and, inside a supported loop:
 
-The following are **not supported in `nunjucks.v1`** and must produce deterministic validation issues:
+```nunjucks
+{{ item.path.to.scalar }}
+```
+
+For scalar-array loops:
+
+```nunjucks
+{{ item }}
+```
+
+A root scalar result may be interpolated as:
+
+```nunjucks
+{{ result }}
+```
+
+only when the canonical root `CommerceResultSchema` is scalar.
+
+Supported numeric arithmetic expressions from section 8 may also be interpolated.
+
+All referenced paths MUST resolve against the current `ToolResultContract` / canonical `CommerceResultSchema` and active loop scope.
+
+#### 3. Bounded `for` loops
+
+```nunjucks
+{% for item in result.path.to.array %}
+  ...
+{% else %}
+  ...
+{% endfor %}
+```
+
+A root array may be consumed as:
+
+```nunjucks
+{% for item in result %}
+```
+
+only when the canonical root result schema is an array.
+
+Nested supported loops are allowed when the collection path resolves to an array reachable from `result` or an active loop alias.
+
+Loop aliases follow the existing Commerce safe-name rules and MUST NOT:
 
 ```text
-if / elif
+equal result
+equal constructor
+equal prototype
+equal __proto__
+shadow an already-active loop alias
+```
+
+The accepted alias must also be syntactically valid for the installed Nunjucks parser; do not admit a Commerce-safe identifier that Nunjucks parses as a keyword or non-identifier.
+
+#### 4. Conditional control flow
+
+Support:
+
+```nunjucks
+{% if expression %}
+  ...
+{% elif expression %}
+  ...
+{% else %}
+  ...
+{% endif %}
+```
+
+`elif` MAY occur zero or more times.
+
+`else` is optional.
+
+Nested supported `if` and `for` blocks are permitted within the existing template nesting limit.
+
+#### 5. Primitive literals
+
+Expressions MAY contain:
+
+```text
+string literals
+numeric literals
+true
+false
+null
+```
+
+Do not support array or object literals in `nunjucks.v1`.
+
+#### 6. Comparisons
+
+Support exactly:
+
+```text
+==
+!=
+<
+<=
+>
+>=
+```
+
+Comparison operands may be:
+
+```text
+valid result/loop-alias paths
+primitive literals
+supported arithmetic expressions
+```
+
+Equality/inequality must reject incompatible operand types rather than relying on coercion. Integer and number operands are numeric-compatible.
+
+Ordering comparisons `< <= > >=` MUST operate only on compatible scalar types. Numeric/integer pairs are compatible; string/string ordering is permitted; boolean and null ordering is not.
+
+Invalid type combinations MUST produce a deterministic validation issue rather than relying on Nunjucks/JavaScript coercion.
+
+#### 7. Boolean expressions
+
+Support exactly:
+
+```text
+and
+or
+not
+```
+
+Parentheses MAY be used for grouping:
+
+```nunjucks
+{% if item.available and (item.price < 50 or item.onSale) %}
+```
+
+Operator precedence MUST follow:
+
+```text
+parentheses
+arithmetic
+comparisons
+not
+and
+or
+```
+
+`and`, `or` and `not` operands must be statically boolean-valued. A boolean result path or comparison expression is boolean-valued.
+
+An `if` / `elif` condition must be statically boolean-valued.
+
+Do not allow function calls or expressions with side effects.
+
+#### 8. Numeric arithmetic
+
+Support exactly:
+
+```text
++
+-
+*
+/
+%
+```
+
+and unary numeric negation:
+
+```text
+-value
+```
+
+Arithmetic operands MUST resolve to numeric values (`integer` / `number`) or numeric literals.
+
+Do not use `+` for implicit string concatenation.
+
+Example:
+
+```nunjucks
+{{ result.values.subtotal * 1.2 }}
+```
+
+Invalid arithmetic operand types MUST fail canonical template validation.
+
+Division or modulo by zero MUST result in a deterministic render failure. It MUST NOT emit `Infinity`, `NaN` or engine-dependent output. At the `CommerceToolResult` boundary this failure continues to map to the existing safe `INVALID_INPUT` + `responseTemplate.unavailable` semantics; do not introduce a new cross-repository Tool-result error enum solely for template arithmetic.
+
+#### 9. Path access
+
+Supported path syntax remains property-only:
+
+```text
+identifier(.identifier)*
+```
+
+Examples:
+
+```text
+result.values.total
+item.name
+product.variant.price
+```
+
+Continue to prohibit:
+
+```text
+bracket access
+numeric indexing
+computed properties
+prototype-related names
+```
+
+Every path must be statically resolvable against the `CommerceResultSchema` and active loop scope.
+
+#### 10. Type-aware semantic validation
+
+Parsing successfully with Nunjucks is NOT sufficient.
+
+Moda's canonical validator MUST validate expression semantics against the Response/result contract.
+
+Examples:
+
+If:
+
+```text
+item.name     -> string
+item.price    -> number
+item.inStock  -> boolean
+```
+
+then these are valid:
+
+```nunjucks
+{{ item.price * 1.2 }}
+
+{% if item.price <= 50 %}
+
+{% if item.inStock and item.price < 50 %}
+
+{% if item.name == "Widget" %}
+```
+
+This MUST fail validation:
+
+```nunjucks
+{{ item.name * 10 }}
+```
+
+because multiplication requires numeric operands.
+
+This MUST also fail:
+
+```nunjucks
+{% if item.unknownField %}
+```
+
+because the path does not exist in the Response contract.
+
+Use one stable validation issue code for a syntactically-supported expression whose operand/result types are invalid:
+
+```text
+invalid_template_expression
+```
+
+The following remain **unsupported in `nunjucks.v1`** and MUST produce deterministic validation issues:
+
+```text
 set
 macro / call
 include / import / from / extends / block
-filters (`|`)
+filters (|)
 function calls
-arithmetic
-comparisons
-boolean expressions
-array/object literals
+method calls
+assignments
+array literals
+object literals
 bracket/index access
 computed property access
-comments/raw blocks if they require bypassing normal validation
 Nunjucks globals such as range/cycler/joiner
-`loop.*`
+loop.*
+arbitrary registered globals/functions
+dynamic template loading
 ```
 
-Do not silently accept an unsupported Nunjucks construct because the upstream Nunjucks engine happens to understand it.
+Comments MAY be supported only when they are parsed by the canonical Nunjucks parser and ignored by Moda's semantic validator:
 
-### R4 — result paths are contract-validated, not just syntactically valid
+```nunjucks
+{# comment #}
+```
+
+It is also acceptable for C084 to keep comments unsupported and reject them deterministically.
+
+`raw` blocks remain prohibited because they bypass normal template interpretation.
+
+Do not silently accept any unsupported Nunjucks construct merely because the upstream Nunjucks engine understands it.
+
+### R4 — paths and expression types are contract-validated, not just syntactically valid
 
 Validation receives:
 
@@ -224,37 +486,18 @@ validateResponseTemplateAuthoring(
 
 Preserve this canonical authoring boundary rather than creating a second UI-only validator.
 
-For each supported expression:
+For every supported path/expression, infer the expression type from the canonical `CommerceResultSchema` plus active loop scope.
 
-```text
-{{ result.x.y }}
-```
+Path rules:
 
-`x.y` must resolve to a scalar in the supplied canonical output schema.
-
-For:
-
-```text
-{% for item in result.values.items %}
-```
-
-`values.items` must resolve to an array in the supplied canonical output schema.
-
-Inside that loop:
-
-```text
-{{ item.name }}
-```
-
-must resolve to a scalar under the array item schema.
-
-If the array item itself is scalar, `{{ item }}` is valid and `{{ item.foo }}` is invalid.
-
-If the array item is an object, `{{ item }}` is invalid and scalar descendants are valid.
-
-Arrays may only be consumed by a supported `for`; they may not be interpolated directly.
-
-Objects may not be interpolated directly.
+- `result.x.y` resolves from the root output schema.
+- an active loop alias resolves from that loop collection's item schema.
+- a zero-segment `result` interpolation is valid only for a root scalar schema.
+- a zero-segment `result` loop source is valid only for a root array schema.
+- if the loop item itself is scalar, `{{ item }}` is valid and `{{ item.foo }}` is invalid.
+- if the loop item is an object, `{{ item }}` is invalid and scalar descendants / array descendants used by supported expressions are validated recursively.
+- arrays may only be consumed as supported `for` collection sources; arrays are not direct scalar interpolation values.
+- objects may not be interpolated directly.
 
 Unsafe path segments remain forbidden:
 
@@ -264,6 +507,26 @@ prototype
 constructor
 ```
 
+Expression type rules:
+
+```text
+string
+integer
+number
+boolean
+null literal
+```
+
+`integer` and `number` form the numeric type class.
+
+Arithmetic produces numeric output and accepts only numeric operands.
+
+Comparisons produce boolean output. `==` / `!=` require compatible scalar operands (numeric integer/number compatibility is allowed; comparison with `null` is allowed only as a null check). Ordering comparisons require numeric/numeric or string/string operands.
+
+Boolean `and` / `or` / `not` and `if` / `elif` conditions require boolean-valued expressions.
+
+Do not rely on JavaScript/Nunjucks implicit coercion to make an invalid type combination execute.
+
 ### R5 — deterministic complexity bounds
 
 Reject a template as `template_too_complex` before rendering if any limit is exceeded:
@@ -271,7 +534,7 @@ Reject a template as `template_too_complex` before rendering if any limit is exc
 ```text
 source UTF-8 bytes     > 8192
 parsed template nodes  > 256
-nested for depth       > 4
+nested control-flow depth > 4   # combined supported if/for nesting
 total for blocks       > 16
 ```
 
@@ -289,6 +552,7 @@ unsafe_template_path
 invalid_result_path
 invalid_collection_path
 invalid_loop_alias
+invalid_template_expression
 template_too_complex
 template_generation_too_large
 ```
@@ -317,6 +581,10 @@ no application-provided callable functions
 no application-provided custom filters
 synchronous rendering only
 ```
+
+Construct the Environment with an **explicit empty loader list** (or an equivalently proven no-loader configuration). Do not pass `null` / `undefined` for loaders, because Nunjucks interprets an absent loader as permission to install its default loader.
+
+Add a regression that inspects the configured Environment and proves that no loader is installed.
 
 Static validation is mandatory even though the Nunjucks environment is restricted.
 
@@ -350,13 +618,17 @@ For `result.status === ERROR`, return the existing Tool result with:
 renderedText = responseTemplate.unavailable
 ```
 
-If Nunjucks rendering throws, violates the template grammar unexpectedly or produces output longer than 4096 characters, return the same safe failure semantics used by the current renderer with:
+If Nunjucks rendering throws, violates the template grammar unexpectedly, encounters division/modulo by zero, or produces output longer than 4096 characters, return the same safe failure semantics used by the current renderer with:
 
 ```text
+status       = ERROR
+code         = INVALID_INPUT
 renderedText = responseTemplate.unavailable
 ```
 
-Do not allow a renderer exception to escape into provider execution or MCP execution.
+The low-level Commerce renderer must classify division/modulo-by-zero with a stable bounded internal template-render failure code/message before it is mapped to the existing Tool-result failure. Do not leak an upstream Nunjucks/JavaScript error string.
+
+Do not allow a renderer exception to escape into provider execution or MCP execution, and do not emit `Infinity` or `NaN`.
 
 COMMERCE-080 External Test and COMMERCE-082 Shopify Admin Test must continue to receive agent-facing text exclusively through `renderDefinitionResult`; do not add provider-specific rendering.
 
@@ -455,7 +727,11 @@ Items:
 
 Property order above is lexical and therefore deterministic.
 
-If deterministic generation would exceed the canonical 8192-byte source bound, fail explicitly with `template_generation_too_large`. Do not truncate generated source.
+If deterministic generation would exceed any canonical generated-template bound (source bytes, AST node count, loop count or supported control-flow nesting), fail explicitly with `template_generation_too_large`. Do not truncate generated source and do not return a generated template that the canonical validator would reject.
+
+The generator MUST validate its own emitted template through the canonical `validateResponseTemplateAuthoring` boundary before returning it.
+
+Root scalar generation must produce a validator-accepted interpolation of `result`; root array generation must produce a validator-accepted loop over `result`.
 
 ### R9 — publication validates the same grammar
 
@@ -486,6 +762,14 @@ else if (template.kind === "items") ...
 
 as compatibility code.
 
+Migrate C084-owned non-UI fixtures that still produce a final legacy template shape, including:
+
+```text
+database/scripts/fixtures/arch020-commerce-capability-cases.mjs
+```
+
+C085-owned React/editor/state files and their UI regressions may remain on the old draft shape until COMMERCE-085; do not edit them merely to make the whole repository suite green in C084.
+
 Because this capability is pre-production, existing local development Tool revisions using the old grammar may become invalid and must be recreated/re-authored. Record that behaviour in the Completion Report. Do not add a database migration solely for development fixtures.
 
 ### R11 — source-of-truth/ownership audit
@@ -503,19 +787,21 @@ If a real non-Commerce runtime consumer is found, STOP before changing the gramm
 
 ## Work Items
 
-- [ ] Perform the bounded Result Template ownership/source audit from R11.
-- [ ] Add direct Nunjucks runtime dependency and lockfile update.
-- [ ] Replace `ResponseTemplateSchema` with the exact `nunjucks.v1` shape.
-- [ ] Implement the bounded supported-language parser/static validator and stable issue codes.
-- [ ] Validate interpolation and loop paths against the canonical `CommerceResultSchema`.
-- [ ] Enforce source/node/loop/depth bounds.
-- [ ] Add JSON-only/null-prototype render-context sanitization.
-- [ ] Replace `renderDefinitionResult` text/items branches with the one Nunjucks renderer.
-- [ ] Add the deterministic provider-neutral default-template generator.
-- [ ] Make publication and current live-Test preflight consume the same canonical validator/renderer.
-- [ ] Remove obsolete text/items syntax/runtime branches.
-- [ ] Convert Commerce-owned fixtures/tests to `nunjucks.v1`.
-- [ ] Add bounded security, generation, validation and rendering regressions.
+- [x] Perform the bounded Result Template ownership/source audit from R11.
+- [x] Add direct Nunjucks runtime dependency and lockfile update.
+- [x] Replace `ResponseTemplateSchema` with the exact `nunjucks.v1` shape.
+- [x] Replace the hand-written delimiter scanner as the canonical syntax authority with installed-Nunjucks parse/AST validation plus Moda's explicit AST allowlist and stable issue codes.
+- [x] Validate interpolation, loop and conditional paths against the canonical `CommerceResultSchema`.
+- [x] Implement bounded `if`/`elif`/`else`, primitive literals, comparisons, boolean operators, parentheses, numeric arithmetic and unary negation with static expression type inference.
+- [x] Add deterministic division/modulo-by-zero render protection without changing the shared Tool-result error contract.
+- [x] Enforce source/node/loop/combined-control-depth bounds.
+- [x] Add JSON-only/null-prototype render-context sanitization.
+- [x] Replace `renderDefinitionResult` text/items branches with the one Nunjucks renderer.
+- [x] Add the deterministic provider-neutral default-template generator and prove every generated template passes the canonical validator, including root-scalar/root-array and parallel-loop complexity cases.
+- [x] Make publication and current live-Test preflight consume the same canonical validator/renderer.
+- [x] Remove obsolete text/items syntax/runtime branches.
+- [x] Convert C084-owned Commerce fixtures/tests to `nunjucks.v1`, including `database/scripts/fixtures/arch020-commerce-capability-cases.mjs`; leave C085-owned editor/state fixtures for C085.
+- [x] Add bounded security, generation, validation and rendering regressions.
 
 ## Interfaces / Contracts
 
@@ -558,33 +844,45 @@ No new database or cross-repository contract is introduced unless R11 proves the
 
 ## Acceptance Criteria
 
-- [ ] Final Commerce Tool definitions accept only `kind: "nunjucks"`, `runtimeVersion: "nunjucks.v1"` Result Templates.
-- [ ] Legacy final `text` and `items` templates are rejected; no compatibility runtime branch remains.
-- [ ] Supported scalar interpolation and bounded `for`/`else` loops render correctly for scalar, object, object-list, scalar-list and nested-list result schemas.
-- [ ] Unsupported Nunjucks constructs are rejected deterministically before render/provider I/O.
-- [ ] Every interpolated scalar path and every loop collection path is proven against the current canonical result contract.
-- [ ] No template can access prototype paths, functions, globals, loaders, environment variables, credentials or application service objects.
-- [ ] Renderer output remains bounded to 4096 characters and renderer failures fall back without escaping exceptions.
-- [ ] The deterministic generator produces the exact expected source for the documented `values.items[]` example.
-- [ ] Generator output is provider-neutral and stable for identical canonical schemas.
-- [ ] External and Shopify live-Test backends continue to use the production renderer and remain zero-write.
-- [ ] Publication rejects invalid/incompatible Nunjucks source through the canonical validation boundary.
-- [ ] No database migration or non-Commerce implementation change is introduced.
+- [x] Final Commerce Tool definitions accept only `kind: "nunjucks"`, `runtimeVersion: "nunjucks.v1"` Result Templates.
+- [x] Legacy final `text` and `items` templates are rejected; no compatibility runtime branch remains.
+- [x] Supported scalar interpolation, bounded `for`/`else`, bounded `if`/`elif`/`else`, primitive literals, comparisons, boolean expressions, parentheses and numeric arithmetic render correctly for their valid schema types.
+- [x] Root scalar `{{ result }}` and root-array `{% for item in result %}` are accepted only for matching root schema kinds.
+- [x] Unsupported Nunjucks constructs are rejected deterministically before render/provider I/O.
+- [x] The canonical validator never accepts source rejected by the installed Nunjucks parser, and Nunjucks parse success alone never bypasses Moda's AST/type allowlist.
+- [x] Invalid arithmetic/comparison/boolean operand types fail with deterministic `invalid_template_expression` issues rather than implicit coercion.
+- [x] Division/modulo by zero falls back deterministically to `responseTemplate.unavailable` with existing `INVALID_INPUT` Tool semantics and never emits `Infinity`/`NaN`.
+- [x] Every interpolated scalar path and every loop collection path is proven against the current canonical result contract.
+- [x] No template can access prototype paths, functions, globals, loaders, environment variables, credentials or application service objects; the configured Nunjucks Environment has no loader instance.
+- [x] Renderer output remains bounded to 4096 characters and renderer failures fall back without escaping exceptions.
+- [x] The deterministic generator produces the exact expected source for the documented `values.items[]` example.
+- [x] Generator output is provider-neutral and stable for identical canonical schemas.
+- [x] Generator output always passes canonical validation; complexity overflow fails as `template_generation_too_large` rather than returning an invalid template.
+- [x] External and Shopify live-Test backends continue to use the production renderer and remain zero-write.
+- [x] Publication rejects invalid/incompatible Nunjucks source through the canonical validation boundary.
+- [x] No database migration or non-Commerce implementation change is introduced.
+- [x] C084-owned non-UI fixtures no longer construct a final `text` / `items` template; C085-owned editor/state migration remains deferred.
+- [x] The durable Completion Report records the actual implementation commit, validation results, known C085-owned suite failures and clean dedicated worktree/branch evidence before the task returns to review.
 
 ## Validation
 
-- [ ] `npx vitest run tests/arch021-commerce-tool-contract.test.ts tests/result-template-authoring.test.ts tests/definition-execution.test.ts`
-- [ ] `npx vitest run tests/external-http-live-test.test.ts tests/shopify-admin-live-test.test.ts`
-- [ ] focused generator fixtures for scalar/object/object-list/scalar-list/nested-list schemas
-- [ ] focused rejection tests for each unsupported construct listed in R3
-- [ ] focused rejection tests for unsafe/unknown paths and non-array loop sources
-- [ ] focused complexity-bound tests for source bytes, AST nodes, loop count and nesting depth
-- [ ] focused renderer tests for Error fallback, empty list `else`, optional missing values and 4096-character output bound
-- [ ] focused proof that invalid template preflight causes zero provider I/O in External and Shopify Test
-- [ ] bounded source audit proving no non-Commerce runtime consumer was silently changed
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `npx vitest run tests/arch021-commerce-tool-contract.test.ts tests/result-template-authoring.test.ts tests/definition-execution.test.ts`
+- [x] `npx vitest run tests/external-http-live-test.test.ts tests/shopify-admin-live-test.test.ts`
+- [x] focused generator fixtures for scalar/object/object-list/scalar-list/nested-list schemas
+- [x] focused acceptance tests for `if` / repeated `elif` / optional `else`, nested if+for, literals, comparisons, boolean expressions, precedence/parentheses, arithmetic and unary negation
+- [x] focused type-matrix rejection tests for string/number/boolean/null misuse and no-coercion behavior
+- [x] focused rejection tests for each unsupported construct listed in R3, including calls/method calls/filters/set/macros/import/include/inheritance/bracket/computed access/globals/`loop.*`/raw
+- [x] focused rejection tests for unsafe/unknown paths and non-array loop sources
+- [x] focused complexity-bound tests for source bytes, AST nodes, loop count and combined if/for nesting depth
+- [x] focused renderer tests for Error fallback, empty list `else`, condition branches, optional missing values, division/modulo by zero and 4096-character output bound
+- [x] regression proving the Nunjucks Environment has an explicit empty loader set
+- [x] generator regressions for root scalar, root array, >16 parallel arrays / >256 generated nodes and self-validation
+- [x] focused proof that invalid template preflight causes zero provider I/O in External and Shopify Test
+- [x] bounded source audit proving no non-Commerce runtime consumer was silently changed
+- [x] source audit proving no C084-owned non-UI fixture still creates legacy final `text` / `items` templates except intentional rejection fixtures
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -600,58 +898,161 @@ The default generator is an authoring convenience, not a second runtime grammar.
 
 ### Status
 
-Not Started
+Attempt 3 corrections implemented; submitted for architect review. Execution metadata is reconciled to `status: review`, `executor: null` and `claimed_at: null`.
 
 ### Files Changed
 
-None
+Commerce implementation commits `161b34d`, `bdc1502` and `5efd2d1` on `task/ARCH-021-COMMERCE-084` contain the AST validator, restricted renderer, generator corrections and focused regressions, and pin database fixture commit `4da3139`. The fixture migration is independently committed and pushed on the matching database task branch. No Shared or C085-owned UI/state file was modified.
 
 ### Work Completed
 
-None
+- **Review item 1, amended grammar:** Nunjucks parser/AST is the syntax authority; Commerce applies an explicit AST allowlist, schema-aware expression typing, bounded `for`/`if` control flow, supported literals/operators, and deterministic rejection for unsupported constructs and implicit coercion.
+- **Review item 2, loader isolation:** Renderer uses an explicit empty loader list; a regression verifies there are zero loaders, while loading tags remain rejected.
+- **Review item 3, generator consistency:** Root scalar/array templates are supported. Every generated template passes `validateResponseTemplateAuthoring`; source, AST-node, loop-count and nesting overflow maps to `template_generation_too_large`.
+- **Review item 4, fixture migration:** Migrated `database/scripts/fixtures/arch020-commerce-capability-cases.mjs` to `nunjucks.v1`; Commerce pins database commit `4da3139`.
+- **Review item 5, durable handoff:** This report and `status: review` are committed and pushed on the parent task branch. The `## Architect Review` section is intentionally unchanged.
+- Division/modulo by zero and non-finite arithmetic receive stable internal codes and bounded messages before mapping to existing `INVALID_INPUT`/unavailable semantics. No `Infinity`/`NaN` output is emitted.
+- Preserved the pre-production breaking replacement and canonical publication/Test/production boundary. The bounded R11 ownership audit found no non-Commerce deployable runtime consumer; old local revisions must be re-authored.
 
 ### Validation Results
 
-None
+- Attempt 2 focused packet: 10 files, 124 tests passed, covering parser, authoring, generator, renderer, definition execution, External publication/live Test, Shopify Admin authoring validation, Commerce lifecycle and Studio integration.
+- Focused renderer suite after conditional branches and stable arithmetic classification: 5 tests passed. Focused generator suite after canonical-boundary self-validation: 5 tests passed.
+- Targeted ESLint on changed TypeScript files passed. `git diff --check` passed for Commerce and the nested database repository. `node --check database/scripts/fixtures/arch020-commerce-capability-cases.mjs` passed.
+- Attempt 2 `npx tsc --noEmit --pretty false` remains nonzero with 266 repository-wide diagnostics; none reference changed C084 parser, renderer, generator or focused test files.
+- Attempt 1 full-suite baseline was 35 failed files, 91 passed and 2 skipped (184 failed tests, 952 passed, 6 skipped, 51 uncaught errors), primarily from C085-owned legacy editor/state assumptions. Full suite was not rerun in Attempt 2.
+- Attempt 1 QuickJS preview checks reported worker `MODULE_NOT_FOUND`; disposable C20/MCP suites require PostgreSQL/Redis configuration. Those environment-dependent suites were not rerun in Attempt 2.
 
 ### Deviations
 
-None
+Whole-package typecheck remains non-green at the documented 266-diagnostic baseline. Full Commerce Vitest and environment-dependent QuickJS/C20/MCP checks were not rerun. C085-owned UI/state files remain untouched.
 
 ### Assumptions
 
-None
+COMMERCE-085 will migrate the editor/state draft assumptions to the strict persisted Nunjucks v1 contract before full UI integration is expected to pass.
 
 ### Unresolved Issues
 
-None
+Workspace-wide TypeScript/UI validation still depends on C085 editor/state migration and existing generated-Prisma/baseline fixes. QuickJS preview validation needs its packaged runtime artifact; disposable C20/MCP suites need task-owned PostgreSQL/Redis configuration.
 
 ### Architectural Concerns
 
-None
+None identified by the bounded R11 audit. No Shared contract or database migration was introduced.
+
+### Attempt 3 Addendum
+
+#### Corrections
+
+- Equality and inequality now accept only compatible scalar operands, numeric integer/number pairs, or scalar/null checks. Object/object equality and inequality, array/array equality and inequality, object/null equality and inequality, and array/null equality and inequality comparisons produce `invalid_template_expression`; scalar optional-null checks remain valid.
+- Plain `else` bodies now count the enclosing `if` in combined control depth. An `elif` represented as an `If` continuation remains at the same chain depth. Added regressions for repeated `elif`, four accepted levels, a fifth level through `else`, and a fifth mixed if/for level through `else`.
+- Reconciled every Work Item, Acceptance Criterion and Validation checkbox against the recorded implementation and evidence. The complete Architect Review history is preserved unchanged.
+
+#### Attempt 3 Files and Validation
+
+- Commerce implementation commit: `c6007280e482601462575e73eb9c1fa4a82dd14f`, pushed to `origin/task/ARCH-021-COMMERCE-084`; it changes only `src/commerce/tool-authoring/nunjucks-template.ts` and `tests/nunjucks-template.test.ts`.
+- Focused 10-file packet: 125 tests passed. Required contract/authoring/execution and External/Shopify live-Test packet: 4 files, 56 tests passed. Parser regression suite: 7 tests passed. Targeted ESLint and Commerce/database `git diff --check` passed.
+- Repository `tsc --noEmit --pretty false` remains nonzero with 266 errors, matching the Attempt 2 baseline count; no diagnostics reference either changed file. Full Commerce suite and environment-dependent QuickJS/C20/MCP checks were not rerun; prior documented blockers remain.
+
+#### Attempt 3 Execution Evidence
+
+- Launcher-resolved parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-084`; Commerce implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-084`; nested database worktree: Commerce `database/`.
+- At attempt start the parent task branch was `a311e8feb5521d834722bcf4529fb393e67f8e2a`; the launcher reported task branches already current with `origin/main`, no fast-forward required. Commerce started at `5efd2d1eaad7941d4e8230d29eeacbfdfd7f5905`. The launcher verified recursive submodule initialization at database commit `4da313921d9521c23058722188e2802f7fbf7779`.
+- Commerce Attempt 3 commit and remote task-branch tip match at `c6007280e482601462575e73eb9c1fa4a82dd14f`. Database local and remote task-branch tips match at `4da313921d9521c23058722188e2802f7fbf7779`. Commerce and database worktrees were clean after publication. Parent task report is now committed and pushed on its mirrored task branch; local and remote parent tips were verified equal.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 3 is accepted.
+
+The two remaining Attempt 2 validator defects are corrected exactly as requested.
+
+1. **Equality / inequality is now scalar-only**
+   - `==` / `!=` accepts compatible scalar operands only.
+   - `integer` / `number` numeric compatibility remains allowed.
+   - scalar/null and null/null checks remain allowed.
+   - object/object, array/array, object/null and array/null equality/inequality now produce `invalid_template_expression`.
+   - scalar optional-null checks such as `{% if result.values.optionalName == null %}` remain valid.
+
+2. **Plain `else` bodies now preserve the enclosing control depth**
+   - the body of a normal `else` branch is validated at `controlDepth + 1`;
+   - an `elif` represented by Nunjucks as an `If` continuation remains at the same logical if-chain depth;
+   - four combined nested controls remain accepted;
+   - a fifth nested `if` or mixed `if`/`for` level reached through `else` deterministically produces `template_too_complex`.
+
+Attempt 3 also reconciles the durable execution-owned task record:
+
+- task metadata is `status: review`, `attempt: 3`, `executor: null`, `claimed_at: null` before this acceptance;
+- every completed Work Item and Acceptance Criterion is checked;
+- every required Validation item executed for C084 is checked;
+- known unavailable/broader environment limitations remain documented in the Completion Report rather than being silently treated as passing;
+- parent, Commerce and database worktree/branch synchronization, pushed commit tips, submodule/database evidence and clean-worktree evidence are recorded durably.
+
+The complete C084 runtime now conforms to the amended architecture:
+
+- final Result Templates use only `kind: "nunjucks"` / `runtimeVersion: "nunjucks.v1"`;
+- the installed Nunjucks parser/AST is the syntax authority and Moda applies an explicit bounded AST/type allowlist;
+- the supported v1 grammar includes literal text, property-only path interpolation, bounded `for`/`else`, bounded `if`/`elif`/optional `else`, primitive literals, compatible comparisons, boolean `and/or/not`, parentheses, numeric arithmetic and unary negation;
+- unsupported tags, calls, filters, globals, bracket/computed access, prototype paths and dynamic loading are rejected deterministically;
+- expression semantics are schema-aware and do not rely on implicit JavaScript/Nunjucks coercion;
+- combined supported `if`/`for` nesting remains bounded to four;
+- the renderer uses an explicit empty loader list, no application globals/callables/custom filters, JSON-only/null-prototype context and bounded synchronous output;
+- division/modulo-by-zero and non-finite arithmetic map to stable bounded internal failures and the existing safe `INVALID_INPUT` / unavailable Tool-result semantics without emitting `Infinity` or `NaN`;
+- deterministic generation covers root scalar, root array, objects and bounded arrays, and every generated template self-validates through the canonical authoring validator;
+- publication, non-durable External/Shopify Test and production rendering consume the same canonical grammar/renderer boundary;
+- the C084-owned ARCH-020 fixture is migrated to `nunjucks.v1`;
+- no legacy `text` / `items` final runtime branch or compatibility adapter remains; and
+- the bounded ownership audit found no non-Commerce deployable runtime consumer requiring a Shared contract migration.
+
+C085-owned React/editor/state migration remains intentionally out of C084 scope. Existing local development revisions using the removed Text/Items grammar must be re-authored as already documented for this pre-production breaking rollout.
 
 ### Reviewed Files
 
-None
+- `src/commerce/tool-authoring/nunjucks-template.ts`
+- `tests/nunjucks-template.test.ts`
+- `src/commerce/tool-authoring/result-template-contract.ts`
+- `src/commerce/tool-authoring/result-template-generator.ts`
+- `src/commerce/execution/renderer.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-definition/publication.ts`
+- `src/commerce/tool-definition/result-schema.ts`
+- `database/scripts/fixtures/arch020-commerce-capability-cases.mjs`
+- C084 Completion Report — Attempts 2 and 3
+- C085 downstream task boundary
 
 ### Validation Reviewed
 
-None
+Attempt 3 submitted evidence:
+
+- focused 10-file packet: **125 tests passed**;
+- required contract/authoring/execution + External/Shopify live-Test packet: **56 tests passed**;
+- focused parser regression suite: **7 tests passed**;
+- targeted ESLint: passed;
+- Commerce/database `git diff --check`: passed;
+- repository TypeScript remains non-green at the same **266-diagnostic** baseline recorded in Attempt 2, with no diagnostics in either Attempt 3 changed file.
+
+Attempt 2 evidence retained by the task report also covers the expanded grammar, no-loader renderer, generator self-validation, arithmetic safety, fixture migration and publication/Test/production compatibility.
+
+The submitted snapshot does not contain installed `node_modules`, so the review environment could not independently rerun Vitest/ESLint. The implementation and focused regressions were inspected directly.
+
+The full Commerce suite and environment-dependent QuickJS/C20/MCP checks were not rerun in Attempt 3. Their previously recorded C085/environment limitations remain non-blocking for this bounded C084 acceptance.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C084 now establishes one Commerce-owned constrained `nunjucks.v1` persisted/runtime contract with one canonical AST/type validator, deterministic schema-derived generator and one secure renderer shared by authoring validation, publication, live Test and production execution.
 
 ### Follow-up
 
-None
+C084 is Complete / Accepted — Attempt 3.
+
+COMMERCE-085 becomes Ready because C078 and C084 are Complete.
+
+COMMERCE-083 remains Pending on COMMERCE-085 so Shopify Admin Test UI integration consumes the final Nunjucks authoring surface rather than the removed Text/Items editor.
+
+Do not reintroduce a second client-side grammar or legacy Text/Items runtime compatibility path in C085.

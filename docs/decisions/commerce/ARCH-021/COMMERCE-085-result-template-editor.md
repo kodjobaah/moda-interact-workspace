@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 76
 executor: null
 claimed_at: null
@@ -18,11 +18,9 @@ depends_on:
   - ARCH-021-COMMERCE-078
   - ARCH-021-COMMERCE-084
 enables:
-  - ARCH-021-COMMERCE-079
-  - ARCH-021-COMMERCE-081
   - ARCH-021-COMMERCE-083
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # Build generated CodeMirror Result Template authoring
@@ -82,6 +80,10 @@ canonical responseTemplate
 ```
 
 The editor is an authoring aid only. It does not own template grammar, canonical validation or runtime rendering.
+
+COMMERCE-079 and COMMERCE-081 are already architect-accepted Complete. C085 must preserve their persisted-DRAFT and External Test behavior while replacing the Result Template authoring surface; they are not downstream tasks to be re-executed.
+
+COMMERCE-083 has not started and is dependency-gated on C085 so Shopify Admin Test UI integration consumes the final Nunjucks editor contract rather than the obsolete Text/Items surface.
 
 ## Scope
 

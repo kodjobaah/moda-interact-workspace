@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 75
 executor: null
 claimed_at: null
@@ -19,6 +19,7 @@ depends_on:
   - ARCH-021-COMMERCE-079
   - ARCH-021-COMMERCE-081
   - ARCH-021-COMMERCE-082
+  - ARCH-021-COMMERCE-085
 enables:
   - ARCH-021-SYSTEM-TEST-002
 created: 2026-09-28
@@ -522,6 +523,7 @@ No new database, Shared, queue or cross-repository contract is introduced.
 - ARCH-021-COMMERCE-079
 - ARCH-021-COMMERCE-081
 - ARCH-021-COMMERCE-082
+- ARCH-021-COMMERCE-085
 
 ## Enables
 
