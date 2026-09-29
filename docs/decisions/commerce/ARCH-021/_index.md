@@ -336,12 +336,12 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
 | [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-080 |
 | [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Complete | COMMERCE-060, 062, 063, 070 |
-| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Blocked | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
+| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
 | [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Ready | COMMERCE-084, COMMERCE-085 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
-| [COMMERCE-088](COMMERCE-088-add-progressive-new-tool-tab-navigation.md) | UI/navigation: progressive Previous/Next traversal for new External + Shopify Tool authoring without re-locking enabled tabs | Pending | COMMERCE-078, COMMERCE-083 |
+| [COMMERCE-088](COMMERCE-088-add-progressive-new-tool-tab-navigation.md) | UI/navigation: progressive Previous/Next traversal for new External + Shopify Tool authoring without re-locking enabled tabs | Ready | COMMERCE-078, COMMERCE-083 |
 
 Initial executable frontier for this workstream:
 
@@ -1121,3 +1121,10 @@ Unblock only after the accepted C082 implementation (`c4876fa` or a later integr
 COMMERCE-088 is defined for the shared **new Tool** authoring surface used by both External HTTP and Shopify Admin. It adds one session-scoped unlock frontier plus Previous/Next controls. Validation/Test readiness gates first-time forward unlock only; once a tab has been enabled, direct tab clicks and Previous/Next navigation may revisit it without re-checking predecessor validity. Persisted-DRAFT navigation is unchanged.
 
 COMMERCE-088 remains Pending until COMMERCE-083 is architect-accepted Complete. SYSTEM-TEST-002 remains terminally gated on COMMERCE-088 after that implementation.
+
+
+### COMMERCE-083 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-083 is **Complete / Accepted, Attempt 2**. The accepted C082 Shopify Admin live-Test backend is now consumed through one reusable new/persisted Shopify Test surface. C083 drives the existing C078/C079 common Test checkpoint with C081-style monotonic transient stale-result protection, shows exact server-rendered Result Template output first, and requires a current Shopify Test PASS before new Create or persisted Save. Test remains zero-write and separate from publication proof.
+
+COMMERCE-088 is **Ready**. SYSTEM-TEST-002 remains **Pending** because it depends on C088 as well as C083.

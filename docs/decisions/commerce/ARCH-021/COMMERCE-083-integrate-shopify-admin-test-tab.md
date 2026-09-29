@@ -9,9 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 75
-executor: copilot
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-078
@@ -573,50 +574,76 @@ Implemented and validated. Returned to `moda_architect` for review.
 
 ### Review Status
 
-Blocked
+Accepted
 
 ### Review Notes
 
-Attempt 1 correctly followed the integration precondition and stopped without implementation.
+Attempt 2 is accepted.
 
-The parent architecture records COMMERCE-082 as Complete/Accepted, but the prepared C083 `moda-interact-commerce` worktree does not contain the accepted C082 Shopify Admin live-Test service, Server Action, input/result/stage contract or equivalent integrated capability. The production `AdminQueryExecutionPort` alone is not a substitute.
+Attempt 1 correctly blocked when the prepared implementation worktree did not physically contain the accepted COMMERCE-082 Shopify Admin live-Test capability. Before Attempt 2, the accepted C082 integration was brought into the Commerce base and verified at base commit `f090ccf`. C083 then consumed that implementation without recreating or substituting for C082.
 
-C083 MUST NOT recreate C082.
+The refined C083 integration contract is satisfied:
 
-Unblock condition:
+- exactly one reusable `ShopifyAdminTestTab` serves new Shopify Admin Tools and persisted Shopify Admin DRAFTs;
+- C082 remains the sole Shopify Admin live-Test backend / Server Action authority;
+- the exact assembled current Shopify definition, parsed Test arguments and selected `shopId` are submitted;
+- browser input contains no Shopify domain, access token, offline-session credential or Authorization header;
+- Test is locally gated on current Tool Definition, Request, Response and Result Template readiness plus selected shop and bounded JSON-object arguments;
+- the accepted C078/C079 common Test checkpoint is reused rather than replaced by Shopify-specific authoritative state;
+- provider-local transient state uses a monotonic generation / run sequence so argument or shop A -> B -> A reversion cannot resurrect an old in-flight or displayed result;
+- only a current C082 result with all required stages passed and server `renderedText` present may satisfy the common PASS checkpoint;
+- current backend/stage failure produces FAILED; authored/Test-context mutation makes late completion stale;
+- server-returned `renderedText` is displayed first under `Result shown to agent`; React does not render Nunjucks;
+- safe bounded C082 stages/issues/normalized result remain secondary;
+- new Shopify Create requires the existing C078 gates plus a current PASS;
+- persisted Shopify Save requires the existing C079 gates plus a current PASS, including the direct form-submit handler;
+- Test-argument/shop changes remain transient and do not change persisted-DRAFT dirtiness;
+- running Test performs no Tool, ToolRevision, audit, operation-receipt or publication-proof write;
+- successful authoring Test remains separate from the existing publication `LIVE_TEST_REQUIRED` proof; and
+- accepted External C081 behavior remains intact.
 
-1. integrate the already-accepted C082 implementation into the Commerce implementation base used by new task worktrees — accepted handoff implementation commit `c4876fa` or a later commit containing the same reviewed capability;
-2. verify the C082 domain service, ADMIN-authorized Server Action, result/stage types and required CommerceBackend exposure are physically present;
-3. return this same C083 task from `blocked` to `ready`;
-4. the next normal claim becomes Attempt 2.
-
-The implementation worktree for Attempt 1 made no source changes, which is correct.
-
-This review also refines C083 to the bounded UI/session integration scope above. The previous duplicated restatement of C078/C079/C081 contracts is superseded by references to those accepted owners.
+The UI's 16 KiB Test-argument limit is intentionally stricter than C083's original 64 KiB ceiling because the accepted C082 backend contract itself enforces 16 KiB. Matching the server authority is the correct integration behavior and does not require a C082 contract change.
 
 ### Reviewed Files
 
-- `docs/decisions/commerce/ARCH-021/COMMERCE-083-integrate-shopify-admin-test-tab.md`
-- accepted COMMERCE-082 task record / Completion Report
-- prepared C083 Commerce source tree capability search evidence
-- Commerce domain index
-- parent ARCH-021 execution plan
+- `src/studio/tools/authoring/shopify-admin-test-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/shopify-admin-live-test-server-actions.ts`
+- `src/commerce/tool-authoring/shopify-admin-live-test.ts`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/shopify-admin-live-test-action.test.ts`
+- C083 Completion Report — Attempts 1 and 2
+- COMMERCE-088 dependency/task record
+- ARCH-021 SYSTEM-TEST-002 dependency record
 
 ### Validation Reviewed
 
-- Attempt 1 launcher dependency gate: passed.
-- Prepared implementation worktree capability check: C082 live-Test service/action absent.
-- Bounded file/symbol searches: no equivalent accepted C082 staged live-Test implementation found.
-- No application tests/lint/typecheck were required after the R1/precondition failure because implementation correctly stopped.
+Attempt 2 submitted evidence:
+
+- required C083 packet: **3 files, 62 tests passed**;
+- targeted ESLint for the six changed implementation/test files: passed;
+- changed-file TypeScript diagnostics: clean;
+- `git diff --check`: passed;
+- implementation commit `d15d2ab` pushed to `origin/task/ARCH-021-COMMERCE-083`;
+- parent report commit `a39a6736` pushed;
+- parent and implementation worktrees reported clean and synchronized.
+
+The earlier package-wide TypeScript run was non-green across unrelated files. No changed-file diagnostics remain, so that broader state is not a C083 blocker.
+
+Direct source/test inspection confirms the common checkpoint, transient-generation stale-result protection, exact action payload, current-PASS persistence gates, submit-handler guard, zero-write Test behavior and External preservation.
 
 ### Architecture Conformance
 
-Blocked by integration drift, not by a C083 implementation defect.
+Conforms.
 
-The task correctly refused to duplicate C082. The refined scope conforms once the accepted C082 implementation is physically integrated.
+C083 is now the intended thin Studio integration layer over accepted C082 execution. It does not duplicate provider execution, rendering, Test contracts, authoring checkpoint semantics or persistence behavior.
 
 ### Follow-up
 
-`moda_architect` / developer integration step: integrate the accepted C082 implementation into the Commerce base, then return C083 to Ready for Attempt 2.
+C083 is Complete / Accepted — Attempt 2.
 
-SYSTEM-TEST-002 remains Pending.
+COMMERCE-088 becomes Ready because C078 and C083 are Complete.
+
+ARCH-021-SYSTEM-TEST-002 remains Pending because it also depends on COMMERCE-088. Do not start the system-test task until C088 is architect-accepted Complete.

@@ -1087,12 +1087,12 @@ Implementation tasks:
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Blocked | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
-| ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-COMMERCE-088 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1458,12 +1458,12 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Blocked | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
-| ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-COMMERCE-088 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 
 Later runtime phases are intentionally not decomposed yet. Expected later owners still include:
 
@@ -2720,3 +2720,10 @@ COMMERCE-088 owns progressive Previous/Next traversal for **new Tool creation on
 The unlock frontier is browser/session state only and is monotonic within one provider path. A confirmed destructive provider-kind change resets the frontier to Tool Definition; cancelling the provider change leaves navigation state untouched. Persisted-DRAFT tab traversal is explicitly outside COMMERCE-088.
 
 COMMERCE-088 depends on the accepted C078 authoring-session model and on C083 so both provider Test integrations expose the final current-Test checkpoint required for the first Test -> Review unlock. SYSTEM-TEST-002 remains terminal and now includes COMMERCE-088 as an implementation dependency.
+
+
+### COMMERCE-083 Attempt 2 accepted — 2026-09-29
+
+Shopify Admin live-Test Studio integration is architect-accepted. C083 remains a thin integration over C082: one reusable Test surface drives the shared authoring checkpoint, uses monotonic transient identity for arguments/shop staleness, displays server-rendered agent output first, and adds current-Test PASS to Shopify Create/Save eligibility without introducing durable Test state or publication proof.
+
+The executable refinement frontier is now COMMERCE-088. SYSTEM-TEST-002 remains terminally Pending until C088 is Complete.
