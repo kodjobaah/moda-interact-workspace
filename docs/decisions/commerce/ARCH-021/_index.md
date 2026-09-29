@@ -1319,8 +1319,14 @@ Manual validation of the accepted COMMERCE-091 Add Capability flow exposed a fir
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-104](COMMERCE-104-make-add-capability-phases-directly-navigable-when-ready.md) | Make Tool/Review directly clickable as soon as their current first-entry prerequisites are satisfied while preserving the monotonic unlock frontier | Ready | COMMERCE-091 |
+| [COMMERCE-104](COMMERCE-104-make-add-capability-phases-directly-navigable-when-ready.md) | Make Tool/Review directly clickable as soon as their current first-entry prerequisites are satisfied while preserving the monotonic unlock frontier | Complete | COMMERCE-091 |
 
 COMMERCE-104 is a bounded browser-navigation correction. Before first entry, Tool follows live `validCapability` and Review follows live `canReview`; direct entry monotonically advances the same `enabledThrough` frontier already accepted in C091. After first unlock, later invalidation never re-locks the phase, while `Create capability` remains gated by the current `canReview`. Navigation remains local-only and performs zero Capability mutation/reconciliation calls.
 
-`ARCH-021-SYSTEM-TEST-003` is re-gated **Pending** on COMMERCE-104 so terminal Feature/Capability validation runs only after this direct-phase correction is architect-accepted.
+`ARCH-021-SYSTEM-TEST-003` was re-gated on COMMERCE-104 so terminal Feature/Capability validation would run only after this direct-phase correction was architect-accepted.
+
+### COMMERCE-104 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-104 is **Complete / Accepted, Attempt 1**. Tool and Review now become directly clickable from current first-entry readiness, direct click and Next share the same admission path, historical unlock remains monotonic, and final Create stays gated by the current candidate. Navigation remains browser-local and zero-write.
+
+All SYSTEM-TEST-003 dependencies are now Complete, so SYSTEM-TEST-003 is **Ready** for terminal validation.

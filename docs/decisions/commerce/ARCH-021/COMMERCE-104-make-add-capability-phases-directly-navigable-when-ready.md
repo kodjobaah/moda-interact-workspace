@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 75
 executor: null
 claimed_at: null
@@ -539,24 +539,84 @@ None.
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+COMMERCE-104 Attempt 1 is **Accepted / Complete**.
+
+The implementation satisfies the bounded first-entry navigation correction without reopening the accepted COMMERCE-091 local-first Capability architecture.
+
+The reviewed source now separates:
+
+```text
+historically unlocked phase access
+        OR
+current first-entry readiness
+```
+
+through one shared availability path:
+
+```text
+Capability -> always available
+Tool       -> unlocked OR current validCapability
+Review     -> unlocked OR current canReview
+```
+
+and preserves the accepted monotonic `enabledThrough` frontier.
+
+The correction conforms in all required cases:
+
+- Tool becomes directly clickable as soon as current Capability metadata is valid, without requiring Capability `Next`;
+- before Tool has ever been entered, invalidating Capability metadata revokes that live first-entry availability, and restoring validity makes Tool available again;
+- a direct first Tool entry advances `enabledThrough` monotonically;
+- Review becomes directly clickable as soon as current Capability metadata is valid and the currently selected Tool remains eligible, without requiring Tool `Next`;
+- before first Review entry, current readiness is live and may be revoked when the selected Tool is no longer eligible;
+- after Tool or Review has been unlocked, later upstream invalidation does not re-lock that phase;
+- direct phase clicks and `Next` use the same `isPhaseAvailable(...)` + `goTo(...)` admission path rather than two different first-entry rules;
+- `Previous` does not lower the unlock frontier;
+- pending / unknown-outcome state remains an independent global navigation lock;
+- final `Create capability` admission remains authoritative on the **current** `canReview` value even when Review is historically unlocked;
+- direct phase clicks, Previous and Next remain browser-local and do not call `createFeatureCapability` or `reconcileFeatureOperation`;
+- Tool eligibility derivation, exactly-one-create semantics, operation identity and reconciliation behaviour are unchanged.
+
+The focused regression exercises the required sequence, including live readiness revocation before first entry, direct Tool and Review entry, historical access after later invalidation, eligible-Tool loss/recovery, current Create gating, Previous/Next traversal and zero navigation-triggered mutations.
+
+The task remained within its two-file implementation/test scope.
 
 ### Reviewed Files
 
-None
+- `docs/decisions/commerce/ARCH-021/COMMERCE-104-make-add-capability-phases-directly-navigable-when-ready.md`
+- `moda-interact-commerce/src/studio/features/add-capability/add-capability-screen.tsx`
+- `moda-interact-commerce/tests/add-capability-screen.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/decisions/system-test/ARCH-021/SYSTEM-TEST-003-validate-feature-capability-authoring.md`
 
 ### Validation Reviewed
 
-None
+Attempt 1 submitted evidence:
+
+- focused Add Capability packet: **2 files / 7 tests passed**;
+- targeted ESLint for the two C104 changed files: passed;
+- project `npm run typecheck`: passed;
+- changed-file diagnostics: clean;
+- `git diff --check`: passed.
+
+The Completion Report records launcher-prepared dedicated parent and implementation worktrees, current `origin/main` incorporation, recursive submodule preparation and the implementation database submodule pin.
+
+The submitted review archive does not contain installed `node_modules`, so the executable commands were not independently rerun in this review environment. The implementation and focused regression source were inspected directly and no C104-owned defect was identified.
 
 ### Architecture Conformance
 
-Pending
+Accepted.
+
+C104 conforms to the Phase 5 local-first Feature/Capability authoring design. Current readiness controls **first entry**, historical unlock controls later navigation, and final mutation admission remains independent and current-candidate authoritative.
 
 ### Follow-up
 
-None
+Set `ARCH-021-COMMERCE-104` to **Complete**.
+
+All declared dependencies of `ARCH-021-SYSTEM-TEST-003` are now architect-accepted Complete, so promote SYSTEM-TEST-003 from `pending` to **`ready`** as terminal Feature/Capability validation.
+
+Do not execute SYSTEM-TEST-003 automatically. The developer may leave it Ready while manually validating the completed implementation.

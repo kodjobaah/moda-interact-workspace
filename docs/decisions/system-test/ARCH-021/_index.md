@@ -78,9 +78,9 @@ leave it Ready while manually exercising the completed Tool-authoring flow.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, direct ready-phase navigation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Pending | DATABASE-003, SHARED-002, COMMERCE-088..092, COMMERCE-104, BACKGROUND-002 |
+| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, direct ready-phase navigation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Ready | DATABASE-003, SHARED-002, COMMERCE-088..092, COMMERCE-104, BACKGROUND-002 |
 
-SYSTEM-TEST-003 is terminal validation. Manual validation has introduced COMMERCE-104 as a required Feature-authoring correction, so SYSTEM-TEST-003 is **Pending** until C104 is architect-accepted Complete. No implementation/publication task depends on it.
+SYSTEM-TEST-003 is terminal validation. COMMERCE-104 is now architect-accepted Complete and every declared implementation dependency is Complete, so SYSTEM-TEST-003 is **Ready**. No implementation/publication task depends on it; the developer may leave it Ready while manually validating the completed implementation.
 
 ### SYSTEM-TEST-002 re-gated for Tool execution safety — 2026-09-29
 
@@ -92,4 +92,6 @@ Manual validation of an existing Tool then exposed COMMERCE-103: persisted Exter
 
 ### SYSTEM-TEST-003 re-gated for Add Capability direct phase readiness — 2026-09-29
 
-Manual validation exposed COMMERCE-104: Tool and Review must become directly clickable as soon as their current first-entry predicates are satisfied, without requiring `Next`, while the existing monotonic unlock frontier and current-candidate Create gate remain intact. SYSTEM-TEST-003 therefore depends on C104 and remains **Pending** until C104 is architect-accepted Complete.
+Manual validation exposed COMMERCE-104: Tool and Review must become directly clickable as soon as their current first-entry predicates are satisfied, without requiring `Next`, while the existing monotonic unlock frontier and current-candidate Create gate remain intact.
+
+COMMERCE-104 Attempt 1 is now architect-accepted Complete. Every SYSTEM-TEST-003 dependency is Complete, so terminal Feature/Capability validation is **Ready**.
