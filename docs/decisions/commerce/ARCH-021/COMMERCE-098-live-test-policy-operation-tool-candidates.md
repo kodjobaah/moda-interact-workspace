@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-29T17:35:53Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-096
@@ -205,12 +205,12 @@ Use existing canonical result/error codes; do not invent Policy-specific busines
 
 ## Work Items
 
-- [ ] Add the non-durable Policy Operation candidate-Test domain boundary.
-- [ ] Add the ADMIN-authorized Studio Server Action using the selected-shop authorization pattern.
-- [ ] Route execution exclusively through `DefinitionExecutor` and C096 registrations.
-- [ ] Return canonical rendered result/diagnostics without lifecycle writes.
-- [ ] Add deterministic success/failure/security/no-write tests.
-- [ ] Record exact validation evidence in the Completion Report.
+- [x] Add the non-durable Policy Operation candidate-Test domain boundary.
+- [x] Add the ADMIN-authorized Studio Server Action using the selected-shop authorization pattern.
+- [x] Route execution exclusively through `DefinitionExecutor` and C096 registrations.
+- [x] Return canonical rendered result/diagnostics without lifecycle writes.
+- [x] Add deterministic success/failure/security/no-write tests.
+- [x] Record exact validation evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -233,24 +233,24 @@ Produces the Commerce-local live-Test action consumed by COMMERCE-099.
 
 ## Acceptance Criteria
 
-- [ ] A valid Policy Operation candidate can be live-tested without persisting it.
-- [ ] Candidate execution goes through `DefinitionExecutor`; the Server Action never calls an adapter directly.
-- [ ] The exact registered operation/version is required; there is no fallback or Tool-name inference.
-- [ ] Browser input cannot supply trusted shop credentials, grant authority or operation secrets.
-- [ ] Invalid mapped input is rejected through the canonical runtime contract before adapter execution.
-- [ ] Successful output is validated and rendered through the canonical runtime path.
-- [ ] Test creates no Tool revision/publication/release/grant state.
-- [ ] Focused failure cases are deterministic and bounded.
-- [ ] Existing runtime Policy Operation tests show no regression.
+- [x] A valid Policy Operation candidate can be live-tested without persisting it.
+- [x] Candidate execution goes through `DefinitionExecutor`; the Server Action never calls an adapter directly.
+- [x] The exact registered operation/version is required; there is no fallback or Tool-name inference.
+- [x] Browser input cannot supply trusted shop credentials, grant authority or operation secrets.
+- [x] Invalid mapped input is rejected through the canonical runtime contract before adapter execution.
+- [x] Successful output is validated and rendered through the canonical runtime path.
+- [x] Test creates no Tool revision/publication/release/grant state.
+- [x] Focused failure cases are deterministic and bounded.
+- [x] Existing runtime Policy Operation tests show no regression.
 
 ## Validation
 
-- [ ] Focused Policy Operation live-Test domain tests.
-- [ ] Focused Studio Server Action authorization/security tests.
-- [ ] Explicit no-durable-write assertion.
-- [ ] Targeted TypeScript diagnostics for changed files.
-- [ ] Targeted ESLint for changed files.
-- [ ] `git diff --check`.
+- [x] Focused Policy Operation live-Test domain tests.
+- [x] Focused Studio Server Action authorization/security tests.
+- [x] Explicit no-durable-write assertion.
+- [x] Targeted TypeScript diagnostics for changed files.
+- [x] Targeted ESLint for changed files.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -264,35 +264,61 @@ Follow the accepted External/Shopify live-Test architecture for authorization, c
 
 ### Status
 
-Not Started
+Ready for Architect Review.
 
 ### Files Changed
 
-None
+Implementation changes are in `moda-interact-commerce` on `task/ARCH-021-COMMERCE-098`:
+
+- `src/commerce/tool-authoring/policy-operation-live-test.ts`
+- `src/studio/tools/policy-operation-live-test-server-actions.ts`
+- `tests/policy-operation-live-test.test.ts`
+- `tests/policy-operation-live-test-action.test.ts`
 
 ### Work Completed
 
-None
+- Added a bounded Policy Operation candidate-Test domain service. It strictly parses the request, validates JSON-object arguments against the existing 16 KiB live-Test bound, parses the canonical Commerce Tool definition, requires `POLICY_OPERATION` and an exact current C096 registry entry, then resolves and verifies the selected shop server-side.
+- The service constructs a per-run trusted test `AuthorizedToolCall` using only the resolved shop ID/domain, server environment and fresh synthetic test identities; the browser cannot provide shop domain, credentials, grant/release IDs, or execution context. It applies the existing policy provider-call budget and a maximum 10-second deadline.
+- Candidate execution is delegated only to `backend.execution` (`DefinitionExecutor`), which retains canonical argument mapping, policy input/output validation, adapter dispatch, result validation, and Result Template rendering. Timeout aborts the call and asks the same executor to return its canonical expired-call result. The Studio service does not invoke adapters or implement result rendering.
+- Returned data contains only bounded stage diagnostics and the canonical status/code/retryable outcome with at most 4 KiB of rendered text. It omits structured provider data, credentials, and trusted context.
+- Added an ADMIN-authorized Server Action following the Shopify Admin live-Test selected-shop pattern. It supplies the production execution port and registry and resolves the requested shop through `createCommerceStudioServices`; the action has no publication/lifecycle dependency.
+- Tests cover invalid definitions, non-policy provider mismatch, unavailable registration, strict request shape, non-JSON and oversized arguments, invalid mapped input before adapter dispatch, successful canonical rendering, adapter business errors, aborted/deadline behavior, selected-shop denial and identity binding, output bounds, ADMIN authorization, and absence of publication writes.
 
 ### Validation Results
 
-None
+- `./node_modules/.bin/vitest run tests/policy-operation-live-test.test.ts tests/policy-operation-live-test-action.test.ts tests/definition-execution.test.ts tests/recommendation-contract.test.ts --reporter=dot` — 4 files passed, 27 tests passed.
+- Broader adjacent check including C098, DefinitionExecutor/recommendation, Shopify Admin live-Test and External HTTP live-Test suites — 7 of 8 files passed (53 tests passed); 4 tests failed in the existing `tests/shopify-admin-live-test.test.ts` domain suite, where candidate validation failed before shop/provider stages. No Shopify Admin source/test was changed by C098.
+- `./node_modules/.bin/eslint` on all four changed files — passed without warnings.
+- VS Code/Pylance diagnostics on all four changed files — no errors.
+- `git diff --check` — passed.
+- `npm run typecheck` initially exposed the expected missing generated Prisma Client after `npm ci` skipped package install scripts, plus unrelated repository diagnostics. Generated the local Client with `./node_modules/.bin/prisma generate --schema database/prisma/schema.prisma`, then reran the declared typecheck; it completed with no diagnostics. No schema or submodule pointer changed.
+- `npm ci` used the committed lockfile in the dedicated implementation worktree. npm reported existing peer/deprecation/audit warnings and did not run unapproved install scripts; generated dependency state remains ignored/untracked.
 
 ### Deviations
 
-None
+The canonical Commerce definition schema fixes currently supported policy operation versions to `1.0.0`; unsupported versions are therefore rejected during definition validation before registry lookup. A known operation/version absent from the active registry returns `INCOMPATIBLE_VERSION`; there is no version fallback.
 
 ### Assumptions
 
-None
+The existing 16 KiB Shopify Admin live-Test request bound is the stricter common Studio authoring Test argument limit. A resolved selected shop must retain the requested `shopId` exactly; synthetic per-run identifiers are internal preview context only and are never returned or persisted.
 
 ### Unresolved Issues
 
-None
+The adjacent existing Shopify Admin live-Test domain suite had four candidate-validation/shop/provider-stage failures in the broader regression run. This task does not modify that flow; the required Policy Operation runtime and C098 suites pass. Recorded for Architect review rather than changing out-of-scope Shopify Admin code.
 
 ### Architectural Concerns
 
-None
+Policy adapters require a complete `AuthorizedToolCall`. The service creates only a bounded server-side preview context with synthetic turn/grant/release/tool identities; it never accepts those values from the browser or persists them. Runtime production authorization remains owned by the MCP authorization path and is not replaced by this Test boundary.
+
+### Prepared Execution Evidence
+
+- Launcher returned `prepared_execution: true`, `execution_state: claimed`, dependency gate passed (`ARCH-021-COMMERCE-096` complete), and recursive submodules ready.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-098`, `task/ARCH-021-COMMERCE-098`; prepared head `e61872ff5a853d4195b09cb7844a4ed155f298a3`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-098`, `task/ARCH-021-COMMERCE-098`; prepared head `071cfd7be180211df660ba158c0879d80c6ed27f`.
+- Attempt 1 claim committed and pushed as `391cba10625731ec267dc1a0e1df179f9b9b08e2` by `copilot` at `2026-09-29T17:35:53Z`.
+- Both task worktrees were created at their canonical launcher paths. The implementation branch began at the prepared launcher head; when preparing this completion, its Commerce `origin/main` had advanced five commits beyond that base and no remote Commerce C098 task ref was locally advertised. The implementation commit is being published explicitly to `refs/heads/task/ARCH-021-COMMERCE-098`, not to `main`. Recursive `database` submodule initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- Implementation and parent report will be committed/pushed on their mirrored C098 task branches. No main merge, other task, submodule pointer or Architect Review section is changed.
 
 ## Architect Review
 
