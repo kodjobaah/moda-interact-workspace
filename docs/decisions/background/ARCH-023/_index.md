@@ -1,18 +1,77 @@
 # ARCH-023 background tasks
 
-Architecture: [`ARCH-023`](../../../architecture/ARCH-023-merchant-knowledge-store-aware-commerce-agent.md).
+Architecture: [`ARCH-023`](../../../architecture/ARCH-023-merchant-knowledge.md).
 
-Assigned agent: `moda_background`. Repository: `moda-interact-background`. Coordinator: `moda_architect`.
+Assigned agent: `moda_background`.
 
-These are portable task definitions from the 2026-09-27 review patch; individual task YAML is authoritative. No task branch/worktree is materialised by this patch.
+Repository: `moda-interact-background`.
+
+Coordinator: `moda_architect`.
+
+The current Background decomposition follows runtime/security boundaries rather than file count:
+
+```text
+ARCH-023-DATABASE-001 + ARCH-023-SHARED-002
+                 |
+                 v
+          BACKGROUND-001
+      worker/entitlement/repair
+          /           \
+         v             v
+BACKGROUND-002     BACKGROUND-003
+WEB_PAGE           R2 + CSV/XLSX
+acquisition        acquisition/cleanup
+         \             /
+          \           /
+           v         v
+          BACKGROUND-004
+      normalize/chunk/embed/
+       promote + final entrypoint
+                 |
+                 v
+          BACKGROUND-005
+       entitlement reconciliation
+                 |
+                 v
+        planned GATEWAY-001
+```
+
+Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-translate-admin-commerce-configuration.md) | Translate Admin Commerce configuration | Pending | DATABASE-002, SHARED-004 |
-| [BACKGROUND-002](BACKGROUND-002-reconcile-commerce-shop-profile.md) | Reconcile Commerce shop profile | Pending | DATABASE-002, SHARED-004 |
-| [BACKGROUND-003](BACKGROUND-003-process-merchant-knowledge-sources.md) | Process Merchant Knowledge sources | Pending | DATABASE-001, DATABASE-003, SHARED-004 |
-| [BACKGROUND-004](BACKGROUND-004-reconcile-merchant-knowledge-processing.md) | Reconcile Merchant Knowledge processing | Pending | BACKGROUND-003, SHARED-004 |
+| [BACKGROUND-001](BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md) | Dedicated worker foundation, current entitlement and durable PENDING reconciliation | Pending | DATABASE-001, SHARED-002 |
+| [BACKGROUND-002](BACKGROUND-002-acquire-merchant-knowledge-web-pages.md) | SSRF-safe WEB_PAGE acquisition and extraction | Pending | BACKGROUND-001 |
+| [BACKGROUND-003](BACKGROUND-003-acquire-merchant-knowledge-uploads.md) | Private R2 CSV/XLSX acquisition/extraction and safe asset cleanup | Pending | BACKGROUND-001 |
+| [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Pending | BACKGROUND-002, BACKGROUND-003 |
+| [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Pending | BACKGROUND-004 |
 
 ## Execution frontier
 
-Ready: None.
+Initially no Background task is executable.
+
+When DATABASE-001 and SHARED-002 are Complete/architect-accepted:
+
+```text
+BACKGROUND-001 -> Ready
+```
+
+After BACKGROUND-001:
+
+```text
+BACKGROUND-002 and BACKGROUND-003 -> Ready in parallel
+```
+
+After both are Complete:
+
+```text
+BACKGROUND-004 -> Ready
+```
+
+After BACKGROUND-004:
+
+```text
+BACKGROUND-005 -> Ready
+```
+
+Gateway deployment must not begin before BACKGROUND-005 is Complete/architect-accepted.
