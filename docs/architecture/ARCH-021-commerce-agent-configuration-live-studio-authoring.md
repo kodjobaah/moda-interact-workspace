@@ -1135,9 +1135,9 @@ Implementation tasks:
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
-| ARCH-021-COMMERCE-103 | moda_commerce | Ready | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
-| ARCH-021-COMMERCE-104 | moda_commerce | Ready | ARCH-021-COMMERCE-091 |
-| ARCH-021-COMMERCE-105 | moda_commerce | Ready | ARCH-021-COMMERCE-092 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
+| ARCH-021-COMMERCE-105 | moda_commerce | Complete | ARCH-021-COMMERCE-092 |
 | ARCH-021-COMMERCE-106 | moda_commerce | Pending | ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-105 |
 | ARCH-021-COMMERCE-107 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
 | ARCH-021-COMMERCE-108 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
@@ -1154,7 +1154,7 @@ Implementation tasks:
 | ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-COMMERCE-093 | moda_commerce | Complete | - |
-| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
 
 
 Current Phase 5 frontier after COMMERCE-088 acceptance:
@@ -1644,8 +1644,8 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
-| ARCH-021-COMMERCE-103 | moda_commerce | Ready | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
-| ARCH-021-COMMERCE-104 | moda_commerce | Ready | ARCH-021-COMMERCE-091 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1655,7 +1655,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
 | ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
-| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
 
 Phase 5 Feature Capability simplification is decomposed through DATABASE-003, SHARED-001/002, COMMERCE-088..092, the manual-validation correction COMMERCE-104, BACKGROUND-002 and terminal SYSTEM-TEST-003.
 
@@ -3110,10 +3110,16 @@ existing async mutation/provider/validation action
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
-| ARCH-021-COMMERCE-103 | moda_commerce | Ready | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-102, ARCH-021-COMMERCE-103 |
 
-COMMERCE-102 and COMMERCE-103 are independent implementation corrections. SYSTEM-TEST-002 is re-gated behind both and remains terminal validation; no Commerce implementation task depends on the system-test task.
+COMMERCE-102 and COMMERCE-103 are independent implementation corrections.
+
+### COMMERCE-103 accepted — 2026-09-30
+
+COMMERCE-103 is **Complete / Accepted**. Persisted External HTTP, Shopify Admin and Policy Operation DRAFTs now share the canonical six-step Previous/Next traversal while keeping every persisted tab directly clickable and preserving validation/Test/Save independence. The final canonical project typecheck passes with zero diagnostics and the task worktree is clean.
+
+C103's SYSTEM-TEST-002 dependency is satisfied. SYSTEM-TEST-002 remains **Pending** on COMMERCE-102 and remains terminal validation; no Commerce implementation task depends on the system-test task.
 
 ### Add Capability direct-phase navigation correction — 2026-09-29
 
@@ -3135,14 +3141,13 @@ Direct phase click and `Next` must share that same admission path. First direct 
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-104 | moda_commerce | Ready | ARCH-021-COMMERCE-091 |
-| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
 
 COMMERCE-104 is independent of COMMERCE-102/103. SYSTEM-TEST-003 is re-gated behind C104 and remains terminal Feature/Capability validation; no Commerce implementation task depends on the system-test task.
 
 ### Phase 6 Feature-composed selected-shop Test Conversations refinement — 2026-09-29
 
-Manual validation of the current `/preview` surface showed that the page is still
 organised around the older Tool/Release/fixture Preview model. The agreed product
 behaviour is now explicit: the author selects a shop and a set of Features; every direct
 Capability under each selected Feature is part of the test composition. The browser does
@@ -3195,3 +3200,9 @@ SYSTEM-TEST-004 (terminal integrated validation)
 COMMERCE-105 is the initial Phase-6 executable frontier. COMMERCE-107 and COMMERCE-108
 may execute in parallel only after COMMERCE-106 is architect-accepted Complete. The
 system-test task is terminal and gates no implementation task.
+COMMERCE-104 is independent of COMMERCE-102/103.
+
+### COMMERCE-104 Attempt 1 accepted — 2026-09-29
+
+
+Every declared dependency of SYSTEM-TEST-003 is now Complete. SYSTEM-TEST-003 is therefore **Ready** as terminal Feature/Capability validation. No Commerce implementation task depends on the system-test task, and terminal validation is not started automatically.

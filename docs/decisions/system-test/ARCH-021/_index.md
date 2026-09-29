@@ -58,7 +58,7 @@ are architect-accepted Complete.
 |---|---|---|---|
 | [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify, including persisted traversal parity | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095, COMMERCE-102, COMMERCE-103 |
 
-SYSTEM-TEST-002 is terminal validation. At the original C095 checkpoint every then-listed Commerce dependency was architect-accepted Complete and the task became Ready. Later manual-validation corrections C102/C103 re-gate it to Pending. No Commerce implementation task depends on it.
+SYSTEM-TEST-002 is terminal validation. At the original C095 checkpoint every then-listed Commerce dependency was architect-accepted Complete and the task became Ready. Later manual-validation corrections C102/C103 re-gated it. COMMERCE-103 is now Complete; SYSTEM-TEST-002 remains Pending only on COMMERCE-102. No Commerce implementation task depends on it.
 
 ### SYSTEM-TEST-002 re-gated for progressive new-Tool navigation — 2026-09-29
 
@@ -78,9 +78,9 @@ leave it Ready while manually exercising the completed Tool-authoring flow.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, direct ready-phase navigation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Pending | DATABASE-003, SHARED-002, COMMERCE-088..092, COMMERCE-104, BACKGROUND-002 |
+| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, direct ready-phase navigation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Ready | DATABASE-003, SHARED-002, COMMERCE-088..092, COMMERCE-104, BACKGROUND-002 |
 
-SYSTEM-TEST-003 is terminal validation. Manual validation has introduced COMMERCE-104 as a required Feature-authoring correction, so SYSTEM-TEST-003 is **Pending** until C104 is architect-accepted Complete. No implementation/publication task depends on it.
+SYSTEM-TEST-003 is terminal validation. COMMERCE-104 is now architect-accepted Complete and every declared implementation dependency is Complete, so SYSTEM-TEST-003 is **Ready**. No implementation/publication task depends on it; the developer may leave it Ready while manually validating the completed implementation.
 
 ### SYSTEM-TEST-002 re-gated for Tool execution safety — 2026-09-29
 
@@ -88,7 +88,9 @@ Manual validation exposed the COMMERCE-102 selected-shop execution-target and To
 
 ### SYSTEM-TEST-002 re-gated for persisted Tool traversal — 2026-09-29
 
-Manual validation of an existing Tool then exposed COMMERCE-103: persisted External HTTP, Shopify Admin and Policy Operation DRAFTs need the same six-step sequential `Previous`/`Next` navigation while retaining permanently unlocked direct tabs. SYSTEM-TEST-002 is therefore **Pending** on both C102 and C103 and returns to Ready only after both are architect-accepted Complete. It remains terminal validation; no Commerce implementation task depends on it.
+Manual validation of an existing Tool then exposed COMMERCE-103: persisted External HTTP, Shopify Admin and Policy Operation DRAFTs need the same six-step sequential `Previous`/`Next` navigation while retaining permanently unlocked direct tabs.
+
+COMMERCE-103 is now architect-accepted Complete. Its dependency is satisfied; SYSTEM-TEST-002 remains **Pending** on C102 and returns to Ready after C102 is architect-accepted Complete. It remains terminal validation; no Commerce implementation task depends on it.
 
 ### SYSTEM-TEST-003 re-gated for Add Capability direct phase readiness — 2026-09-29
 
@@ -101,3 +103,6 @@ Manual validation exposed COMMERCE-104: Tool and Review must become directly cli
 | [SYSTEM-TEST-004](SYSTEM-TEST-004-validate-feature-composed-selected-shop-test-conversations.md) | Validate all-Capabilities-per-Feature composition, selected-shop effective Model/Prompt freeze, real Tool execution, multi-turn state and removal of redundant human Preview controls | Pending | COMMERCE-105..109, GATEWAY-002 |
 
 SYSTEM-TEST-004 is terminal architecture validation. It becomes Ready only after all Phase-6 implementation and Gateway dependencies are architect-accepted Complete. No implementation/publication/Gateway task depends on it.
+Manual validation exposed COMMERCE-104: Tool and Review must become directly clickable as soon as their current first-entry predicates are satisfied, without requiring `Next`, while the existing monotonic unlock frontier and current-candidate Create gate remain intact.
+
+COMMERCE-104 Attempt 1 is now architect-accepted Complete. Every SYSTEM-TEST-003 dependency is Complete, so terminal Feature/Capability validation is **Ready**.

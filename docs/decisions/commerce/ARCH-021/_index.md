@@ -1307,11 +1307,15 @@ Manual validation of an existing Shopify Admin DRAFT exposed the navigation pari
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-103](COMMERCE-103-add-persisted-tool-previous-next-navigation.md) | Add side-effect-free Previous/Next traversal to all persisted DRAFT Tool authoring kinds | Ready | COMMERCE-095, COMMERCE-099 |
+| [COMMERCE-103](COMMERCE-103-add-persisted-tool-previous-next-navigation.md) | Add side-effect-free Previous/Next traversal to all persisted DRAFT Tool authoring kinds | Complete | COMMERCE-095, COMMERCE-099 |
 
 COMMERCE-103 reuses the C095 canonical six-step order/presentation but does **not** import progressive unlocking into persisted DRAFTs. All persisted tabs remain directly clickable; `Previous`/`Next` are pure section navigation and never validate, Test, save or publish. COMMERCE-103 is independent of COMMERCE-102.
 
-`ARCH-021-SYSTEM-TEST-002` remains **Pending** until both COMMERCE-102 and COMMERCE-103 are architect-accepted Complete.
+### COMMERCE-103 accepted — 2026-09-30
+
+COMMERCE-103 is **Complete / Accepted**. The persisted External HTTP, Shopify Admin and Policy Operation traversal implementation and its 163-test regression packet are accepted, and the final canonical `npm run typecheck` now passes with zero diagnostics.
+
+`ARCH-021-SYSTEM-TEST-002` remains **Pending** only because COMMERCE-102 is not yet Complete.
 
 ## Manual-validation follow-up — Add Capability direct phase readiness — 2026-09-29
 
@@ -1319,7 +1323,7 @@ Manual validation of the accepted COMMERCE-091 Add Capability flow exposed a fir
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-104](COMMERCE-104-make-add-capability-phases-directly-navigable-when-ready.md) | Make Tool/Review directly clickable as soon as their current first-entry prerequisites are satisfied while preserving the monotonic unlock frontier | Ready | COMMERCE-091 |
+| [COMMERCE-104](COMMERCE-104-make-add-capability-phases-directly-navigable-when-ready.md) | Make Tool/Review directly clickable as soon as their current first-entry prerequisites are satisfied while preserving the monotonic unlock frontier | Complete | COMMERCE-091 |
 
 COMMERCE-104 is a bounded browser-navigation correction. Before first entry, Tool follows live `validCapability` and Review follows live `canReview`; direct entry monotonically advances the same `enabledThrough` frontier already accepted in C091. After first unlock, later invalidation never re-locks the phase, while `Create capability` remains gated by the current `canReview`. Navigation remains local-only and performs zero Capability mutation/reconciliation calls.
 
@@ -1363,3 +1367,10 @@ SYSTEM-TEST-004
 ```
 
 COMMERCE-105 is **Ready** because COMMERCE-092 is architect-accepted Complete. The remaining Phase-6 Commerce tasks stay Pending until their declared dependencies are Complete. C107/C108 are intentionally parallel after C106. C109 is the explicit cleanup/subtractive gate requested during manual validation; obsolete UI is deleted rather than hidden behind a mode flag.
+`ARCH-021-SYSTEM-TEST-003` was re-gated on COMMERCE-104 so terminal Feature/Capability validation would run only after this direct-phase correction was architect-accepted.
+
+### COMMERCE-104 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-104 is **Complete / Accepted, Attempt 1**. Tool and Review now become directly clickable from current first-entry readiness, direct click and Next share the same admission path, historical unlock remains monotonic, and final Create stays gated by the current candidate. Navigation remains browser-local and zero-write.
+
+All SYSTEM-TEST-003 dependencies are now Complete, so SYSTEM-TEST-003 is **Ready** for terminal validation.
