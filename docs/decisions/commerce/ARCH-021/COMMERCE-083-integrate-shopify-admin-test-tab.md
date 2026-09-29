@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 75
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-29T09:22:23Z
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-078
   - ARCH-021-COMMERCE-079
@@ -24,7 +24,7 @@ depends_on:
 enables:
   - ARCH-021-SYSTEM-TEST-002
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # Integrate Shopify Admin Test and show the populated Result Template
