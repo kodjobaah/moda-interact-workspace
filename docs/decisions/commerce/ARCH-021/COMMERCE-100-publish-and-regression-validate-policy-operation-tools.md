@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
 executor: copilot
 claimed_at: 2026-09-29T21:14:56Z
@@ -177,13 +177,13 @@ Do not add a database migration or schema table/column unless an actual accepted
 
 ## Work Items
 
-- [ ] Integrate exact registry-availability validation into the normal Policy Operation publication path where not already provided by the canonical executable-registry gate.
-- [ ] Ensure published Policy Operation revisions reopen truthfully/read-only in Studio.
-- [ ] Add the complete generic DRAFT -> Test -> Save -> Publish -> reopen regression.
-- [ ] Add explicit unregistered-operation publication failure regression.
-- [ ] Run External HTTP, Shopify Admin and New Tool regression packets covering shared editor/lifecycle code.
-- [ ] Verify no database migration/schema change and no ARCH-023-specific UI branch was introduced.
-- [ ] Record exact files/commands/results in the Completion Report.
+- [x] Confirm exact registry-availability validation is provided by the normal Policy Operation publication path through the canonical executable-registry gate.
+- [x] Ensure published Policy Operation revisions reopen truthfully/read-only in Studio.
+- [x] Add the complete generic DRAFT -> Test -> Save -> Publish -> reopen regression.
+- [x] Add explicit unregistered-operation publication failure regression.
+- [x] Run External HTTP, Shopify Admin and New Tool regression packets covering shared editor/lifecycle code.
+- [x] Verify no database migration/schema change and no ARCH-023-specific UI branch was introduced.
+- [x] Record exact files/commands/results in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -203,28 +203,28 @@ ARCH-023 may declare this task as a prerequisite when its Commerce bootstrap/Stu
 
 ## Acceptance Criteria
 
-- [ ] A valid registered Policy Operation DRAFT can pass the normal Tool publication lifecycle.
-- [ ] Publication fails closed when the exact operation/version is no longer registered.
-- [ ] Policy Operation publication does not bypass existing authoring proof, authorization, CAS/hash/version or audit rules.
-- [ ] Published Policy Operation revision is immutable and reopens in the correct provider UI with exact operation/version.
-- [ ] Complete generic Policy Operation lifecycle regression passes using an already-registered non-ARCH-023 operation.
-- [ ] New Tool creation still does not offer `POLICY_OPERATION`.
-- [ ] External HTTP and Shopify Admin focused regression suites show no changed-file/provider regression.
-- [ ] No database schema/migration is added.
-- [ ] No `merchantKnowledge.lookup` / `merchant_knowledge_lookup` special case is added to generic Studio code/tests.
-- [ ] The resulting generic capability requires no further Studio execution-kind change when ARCH-023 later registers its operation and Tool.
+- [x] A valid registered Policy Operation DRAFT can pass the normal Tool publication lifecycle.
+- [x] Publication fails closed when the exact operation/version is no longer registered.
+- [x] Policy Operation publication does not bypass existing authoring proof, authorization, CAS/hash/version or audit rules.
+- [x] Published Policy Operation revision is immutable and reopens in the correct provider UI with exact operation/version.
+- [x] Complete generic Policy Operation lifecycle regression passes using an already-registered non-ARCH-023 operation.
+- [x] New Tool creation still does not offer `POLICY_OPERATION`.
+- [x] External HTTP and Shopify Admin focused regression suites show no changed-file/provider regression.
+- [x] No database schema/migration is added.
+- [x] No `merchantKnowledge.lookup` / `merchant_knowledge_lookup` special case is added to generic Studio code/tests.
+- [x] The resulting generic capability requires no further Studio execution-kind change when ARCH-023 later registers its operation and Tool.
 
 ## Validation
 
-- [ ] Focused Policy Operation publication/reopen tests.
-- [ ] Complete Policy Operation DRAFT -> Test -> Save -> Publish -> reopen regression.
-- [ ] Focused unregistered-operation publication failure test.
-- [ ] Existing External HTTP authoring/live-Test regression packet.
-- [ ] Existing Shopify Admin authoring/live-Test regression packet.
-- [ ] New Tool flow regression proving available Tool types are unchanged.
-- [ ] Targeted TypeScript diagnostics for changed files.
-- [ ] Targeted ESLint for changed files.
-- [ ] `git diff --check`.
+- [x] Focused Policy Operation publication/reopen tests.
+- [x] Complete Policy Operation DRAFT -> Test -> Save -> Publish -> reopen regression.
+- [x] Focused unregistered-operation publication failure test.
+- [x] Existing External HTTP authoring/live-Test regression packet.
+- [x] Existing Shopify Admin authoring/live-Test regression packet.
+- [x] New Tool flow regression proving available Tool types are unchanged.
+- [x] Targeted TypeScript diagnostics for changed files (VS Code/Pylance: no diagnostics).
+- [x] Targeted ESLint for changed files (zero warnings/errors).
+- [x] `git diff --check`.
 - [ ] Repository production build/typecheck only when required by the current task/baseline contract; classify pre-existing diagnostics explicitly and require zero changed-file diagnostics.
 
 ## Stop Condition
@@ -239,23 +239,36 @@ Keep this task generic. The architectural boundary is: developers register Moda-
 
 ### Status
 
-Not Started
+Implementation complete; ready for Architect Review.
 
 ### Files Changed
 
-None
+- `src/studio/tools/policy-operation-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/commerce-lifecycle.test.ts`
 
 ### Work Completed
 
-None
+- Added SUPER_ADMIN Policy Operation publication controls that use the canonical `publishToolRevision` action and require a clean saved draft, current section validation, a passing current Test, and a bounded publication reason.
+- Published Policy Operation revisions reopen in a read-only sectioned view showing the exact operation/version binding, saved definition, mappings, registered result schema when available, and response template.
+- Added end-to-end generic `shopify.searchProducts@1.0.0` UI coverage for Test, CAS Save, post-save retest, canonical Publish, and published read-only reopen; confirmed ADMIN has no publish action and New Tool excludes Policy Operation.
+- Added lifecycle coverage using `createExecutableRegistry({ policies: [] })` to prove a missing exact registration fails closed without changing the DRAFT revision, audit history, or operation record.
+- Existing canonical lifecycle already performs the executable-registry availability check before publication mutation; no lifecycle bypass or schema change was required.
 
 ### Validation Results
 
-None
+- `./node_modules/.bin/vitest run tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx tests/commerce-lifecycle.test.ts tests/definition-execution.test.ts tests/policy-operation-registry.test.ts tests/external-publication.test.ts tests/tool-authoring-validation.test.ts` — 8 files passed, 232 tests passed.
+- `./node_modules/.bin/vitest run tests/tool-authoring-screen.test.tsx` after adding the exact selector-options assertion — 1 file passed, 32 tests passed.
+- `./node_modules/.bin/eslint src/studio/tools/policy-operation-editor.tsx src/studio/tools/tool-editor.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/commerce-lifecycle.test.ts` — clean.
+- VS Code/Pylance diagnostics for all changed source and test files — no errors.
+- `git diff --check` — passed.
+- Explicit scans found no Merchant Knowledge identifier in `src/studio/tools/new-tool-editor.tsx`; no database schema or migration file was changed.
 
 ### Deviations
 
-None
+No scope deviations. Initial package-manager bootstrap was blocked by pnpm's ignored-build-script policy; Prisma Client was generated explicitly with `./node_modules/.bin/prisma generate --schema database/prisma/schema.prisma`, after which the test suites ran successfully. No dependency approval or schema change was made.
 
 ### Assumptions
 
