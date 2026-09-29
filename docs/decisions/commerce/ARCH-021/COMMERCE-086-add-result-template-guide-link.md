@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 86
 executor: null
 claimed_at: null
@@ -667,9 +667,131 @@ project TypeScript blockers were fixed by their owning tasks, not by C086.
 
 ### Review Status
 
-Blocked
+Accepted
 
 ### Review Notes
+
+Attempt 2 is accepted.
+
+C086 now satisfies the complete packaging, authoring-link and production-serving contract.
+
+Attempt 1 had already established the implementation itself:
+
+- `manuals/result-template-guide.html` is the single canonical source;
+- generated `public/manuals/` is ignored build output;
+- `scripts/package-manuals.mjs` owns one explicit deterministic manifest and removes stale generated manuals before copying;
+- packaging fails closed on missing/non-regular/escaping/duplicate inputs;
+- `scripts/manuals-packaged-smoke.mjs` validates source/package byte equality plus the exact title and visible heading without repairing output;
+- `predev` executes manual package -> manual smoke -> code-runtime package;
+- `build` executes manual package -> manual smoke -> code-runtime package -> code-runtime smoke -> Prisma generation -> Next production build;
+- the Result Template authoring surface exposes exactly one normal anchor to `/manuals/result-template-guide.html` with `_blank` and `noopener noreferrer`;
+- rendering/opening the guide link does not participate in authoring validation, dirty state, Test state or persistence;
+- the canonical guide remains self-contained and its examples were checked against accepted C084 grammar;
+- the focused packaging/UI/C084 packet passed 43 tests, with targeted ESLint and `git diff --check` clean.
+
+Attempt 1 could not prove the terminal production lifecycle because unrelated Commerce build defects were encountered. Those defects were correctly separated into C093 and C094 rather than being fixed inside C086.
+
+Both dependencies are now architect-accepted Complete.
+
+Attempt 2 performed no implementation-source change and proves the remaining R11/R12 lifecycle from a clean generated-manual state:
+
+```text
+public/manuals absent
+        |
+        v
+npm run build
+        |
+        +-- manuals:package
+        +-- manuals:smoke
+        +-- code-runtime:package
+        +-- code-runtime:smoke
+        +-- prisma:generate
+        +-- Next TypeScript/build/static generation
+        |
+        v
+public/manuals/result-template-guide.html exists
+        |
+        v
+npm run start
+        |
+        v
+GET /manuals/result-template-guide.html
+        |
+        +-- HTTP 200
+        +-- Content-Type: text/html; charset=UTF-8
+        +-- exact <title>Result Template Guide | Moda Commerce Studio</title>
+```
+
+The production server was terminated after the bounded assertion.
+
+The initial Attempt 2 build failure caused by stale installed Shared 0.14.2 is not a C086 defect: the committed package/lock state requires Shared 1.0.0, and `npm ci` restored the declared locked dependency set without changing package manifests or lockfile. The subsequent clean normal build and production-start smoke passed.
+
+The existing Nunjucks critical-dependency build warning is non-fatal and did not prevent production output.
+
+C086 therefore requires no further correction.
+
+### Reviewed Files
+
+- `manuals/result-template-guide.html`
+- `.gitignore`
+- `package.json`
+- `scripts/package-manuals.mjs`
+- `scripts/manuals-packaged-smoke.mjs`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `tests/manual-packaging.test.ts`
+- `tests/result-template-tab.test.tsx`
+- C086 Completion Report — Attempts 1 and 2
+- accepted C093/C094 dependency records
+
+### Validation Reviewed
+
+Attempt 1 preserved evidence:
+
+- `npm run predev`: passed;
+- clean manual package/smoke: passed;
+- focused six-file packet: **43 tests passed**;
+- targeted ESLint: passed;
+- `git diff --check`: passed;
+- no C086-introduced changed-file TypeScript diagnostics.
+
+Attempt 2 terminal evidence:
+
+- dependency gate passed with C084, C085, C093 and C094 Complete;
+- confirmed `public/manuals/` absent before the build;
+- normal `npm run build`: **passed end to end**;
+- generated manual exists after build and `npm run manuals:smoke` passes;
+- source and packaged bytes match;
+- generated manual remains ignored by Git;
+- bounded `npm run start` smoke:
+  - `GET /manuals/result-template-guide.html` -> **HTTP 200**;
+  - `Content-Type: text/html; charset=UTF-8`;
+  - exact required `<title>` present;
+  - spawned production server terminated after assertion;
+- no implementation source changed in Attempt 2;
+- parent task report commit `e1981b36` reported pushed and worktrees clean/aligned.
+
+### Architecture Conformance
+
+Conforms.
+
+The manual is application-owned source packaged deterministically by the normal Commerce build, exposed as a static built asset, and linked from Result Template authoring without coupling documentation to authoring/runtime state. No deployment-side copy step, external documentation dependency, runtime renderer change or persistence change is introduced.
+
+### Follow-up
+
+C086 is Complete / Accepted — Attempt 2.
+
+C086 has no dependent implementation task to promote.
+
+The historical Attempt 1 architect review is preserved below for audit continuity.
+
+### Historical Attempt 1 Architect Review
+
+
+#### Historical Review Status
+
+Blocked
+
+#### Historical Review Notes
 
 Attempt 1 is architect-reviewed as **Blocked by an out-of-scope Commerce build defect**, not by a C086 implementation defect.
 
@@ -714,7 +836,7 @@ C086 now explicitly depends on C093.
 
 Do not modify the already-valid C086 manual packaging/link implementation while blocked.
 
-### Reviewed Files
+#### Historical Reviewed Files
 
 - `docs/decisions/commerce/ARCH-021/COMMERCE-086-add-result-template-guide-link.md`
 - `moda-interact-commerce/package.json`
@@ -726,7 +848,7 @@ Do not modify the already-valid C086 manual packaging/link implementation while 
 - `moda-interact-commerce/app/api/studio/code-response/validate/route.ts`
 - C086 Completion Report — Attempt 1
 
-### Validation Reviewed
+#### Historical Validation Reviewed
 
 Submitted Attempt 1 evidence:
 
@@ -741,13 +863,13 @@ Submitted Attempt 1 evidence:
 
 The route path calculation independently confirms that five, not six, parent traversals are required to reach the Commerce repository root from the route directory.
 
-### Architecture Conformance
+#### Historical Architecture Conformance
 
 C086 implementation conforms within its declared scope.
 
 The route-import defect is now corrected by accepted C093. C086 remains blocked because the production build still cannot complete until the unrelated TypeScript diagnostics/build gate owned by C094 is corrected.
 
-### Follow-up
+#### Historical Follow-up
 
 1. C093 is Complete / Accepted and remains in `depends_on`.
 2. Execute and architect-review `ARCH-021-COMMERCE-094`, which owns the unrelated TypeScript diagnostics and repository production-build gate.

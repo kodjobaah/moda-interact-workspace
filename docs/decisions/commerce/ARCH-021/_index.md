@@ -339,7 +339,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
-| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Ready | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
+| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Complete | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
 | [COMMERCE-095](COMMERCE-095-add-progressive-new-tool-tab-navigation.md) | UI: progressive Previous/Next and monotonic first-unlock traversal for new Tool authoring | Complete | COMMERCE-078, COMMERCE-083 |
 
@@ -1265,3 +1265,10 @@ COMMERCE-099 remains **Pending** because COMMERCE-097 is still Ready. No depende
 COMMERCE-097 is **Complete / Accepted, Attempt 2**. Policy Operation Result Template authoring now shares the production Policy result-schema projection and exposes descriptor fields directly as `result.<field>`; External HTTP and Shopify Admin retain their existing `result.values.*` envelopes. Response/Review continue to show the exact descriptor schema read-only, and C097 remains local-only.
 
 Because COMMERCE-098 is already Complete, both dependencies of COMMERCE-099 are now satisfied. COMMERCE-099 is **Ready**; COMMERCE-100 remains Pending on C099.
+
+
+### COMMERCE-086 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-086 is **Complete / Accepted, Attempt 2**. The Result Template guide has one canonical Commerce-owned source, is deterministically packaged into `public/manuals/` by the normal build, and is linked from Result Template authoring without authoring-state mutation.
+
+After accepted C093/C094 removed the unrelated production-build blockers, C086's clean `npm run build` completed and the normal `npm run start` application served `/manuals/result-template-guide.html` with HTTP 200, HTML content type and the exact required title. No manual deployment copy step or Attempt 2 source change was required.
