@@ -603,7 +603,8 @@ Implementation repository: `moda-interact-commerce`
 Parent workspace:
 - Canonical task file: `docs/decisions/commerce/ARCH-021/COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md`
 - Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-087`
-- Parent branch: `task/ARCH-021-COMMERCE-087` (report commit and push pending)
+- Parent branch: `task/ARCH-021-COMMERCE-087` (pushed: yes)
+- Completion report commit: `db0bbab8`
 - Parent submodule gitlink staged: no
 
 Merged to implementation main: no
