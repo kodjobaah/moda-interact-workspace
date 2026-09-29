@@ -1123,8 +1123,8 @@ Implementation tasks:
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
-| ARCH-021-SHARED-001 | moda_shared | Ready | ARCH-020-SHARED-001 |
-| ARCH-021-SHARED-002 | moda_shared | Pending | ARCH-021-SHARED-001 |
+| ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
+| ARCH-021-SHARED-002 | moda_shared | Ready | ARCH-021-SHARED-001 |
 | ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-DATABASE-003 |
 | ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-090 | moda_commerce | Pending | ARCH-021-COMMERCE-088 |
@@ -1535,8 +1535,8 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
-| ARCH-021-SHARED-001 | moda_shared | Ready | ARCH-020-SHARED-001 |
-| ARCH-021-SHARED-002 | moda_shared | Pending | ARCH-021-SHARED-001 |
+| ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
+| ARCH-021-SHARED-002 | moda_shared | Ready | ARCH-021-SHARED-001 |
 | ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-DATABASE-003 |
 | ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-090 | moda_commerce | Pending | ARCH-021-COMMERCE-088 |

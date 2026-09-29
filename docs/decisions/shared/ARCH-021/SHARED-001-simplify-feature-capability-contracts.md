@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 88
 executor: null
 claimed_at: null
@@ -304,24 +304,36 @@ The existing ARCH-021-SHARED-002 publication gate and downstream Commerce/Backgr
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Accepted after direct review of implementation commit `ab28522460f9b62403ca2b56e6009ca9fa9e473d` and the documentation-only correction commit `c70584ade2e684f6c498ec765cc61897870ec030`. The implementation removes the selection-binding union, mandatory `conversation_core`, per-Capability prompt/configuration/revision fields and multi-Tool bindings; it defines ordinary Feature Capabilities with one exact Tool descriptor, permits empty selections, preserves deterministic Tool provenance and applies Feature behaviour once per represented Feature.
+
+The only review defect was stale Shared documentation describing removed APIs. The correction commit changes only `README.md` and `src/commerce/README.md`; the removed names are no longer documented. No runtime source changed after the validated implementation commit.
 
 ### Reviewed Files
 
-None
+- `src/commerce/schemas.ts`
+- `src/commerce/selection.ts`
+- `src/commerce/definitions.ts`
+- `src/commerce/external.ts`
+- `src/commerce/fixtures.ts`
+- `src/commerce/contracts.test.ts`
+- `src/commerce/runner/index.ts`
+- `src/commerce/runner/runner.test.ts`
+- `scripts/validate-commerce-entrypoints.mjs`
+- `README.md`
+- `src/commerce/README.md`
 
 ### Validation Reviewed
 
-None
+Reviewed the recorded passing implementation validation: focused Commerce contract tests 14/14, runner tests 17/17, `npm test` 165 passed / 1 skipped for missing `TEST_REDIS_URL`, `npm run typecheck`, `npm run build`, `npm run validate:commerce-entrypoints`, and `npm ci`. The final correction was documentation-only, so the implementation validation was not required to be rerun. GitHub comparison confirms `c70584a` is exactly one commit ahead of `ab28522` and changes only the two README files.
 
 ### Architecture Conformance
 
-Pending
+Conforms to the agreed breaking pre-production Feature -> Capability -> Tool contract. Shared no longer models BASE/FEATURE/RECOVERY_POLICY bindings, Capability-owned prompts/configuration, Capability revision identity, `maxSearchResults` or `maxRecommendations`. The runner consumes Feature behaviour from the manifest once per Feature and exact Tool authorization/provenance remains pinned. Consumer migration and package publication remain correctly separated.
 
 ### Follow-up
 
-None
+ARCH-021-SHARED-002 is now Ready as the publication-only gate. Commerce and Background consumer changes remain gated on the published Shared version. Commerce must adopt the renamed generic processor limit `maxResults` in its owning consumer task; no compatibility alias should be introduced.
