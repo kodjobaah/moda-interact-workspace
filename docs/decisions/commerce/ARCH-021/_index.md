@@ -1193,3 +1193,35 @@ COMMERCE-093 is **Complete / Accepted, Attempt 1**. The route correction is exac
 The newly exposed 23 TypeScript diagnostics across 12 unrelated files are outside C093 scope and are owned by COMMERCE-094, which the developer reports is materialised on its own task branch at parent commit `58f65e5b`.
 
 C086 remains **Blocked** and now explicitly depends on both C093 and C094. C094 must be promoted to Ready on its canonical task branch now that C093 is Complete. C086 must not resume until C094 is architect-accepted Complete.
+
+
+## Policy Operation Studio authoring — generic persisted Tool support
+
+This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execution kind and adds generic Studio support for already-persisted Policy Operation Tools. It does not add Policy Operation to New Tool creation and does not implement ARCH-023 Merchant Knowledge.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-096](COMMERCE-096-expose-policy-operation-authoring-descriptors.md) | Canonical policy registration owns runtime validators + browser-safe authoring descriptor | Complete | COMMERCE-095 |
+| [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Ready | COMMERCE-096 |
+| [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Ready | COMMERCE-096 |
+| [COMMERCE-099](COMMERCE-099-round-trip-save-policy-operation-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Pending | COMMERCE-097, COMMERCE-098 |
+| [COMMERCE-100](COMMERCE-100-publish-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Pending | COMMERCE-099 |
+
+```text
+                    C096 Complete
+                    /           \
+                   v             v
+             C097 Ready      C098 Ready
+                   \             /
+                    v           v
+                     C099 Pending
+                           |
+                           v
+                     C100 Pending
+```
+
+### COMMERCE-096 Attempt 1 accepted — 2026-09-29
+
+C096 is **Complete / Accepted, Attempt 1**. The same server-side policy registry now owns exact operation/version runtime validation/adapters and a cloned browser-safe authoring descriptor. The descriptor uses a Commerce-local JSON-schema representation generated from the canonical runtime validators so nested inputs, nullable outputs and accepted collection bounds are not lost.
+
+COMMERCE-097 and COMMERCE-098 are **Ready** and may execute independently. C099 remains Pending on both.
