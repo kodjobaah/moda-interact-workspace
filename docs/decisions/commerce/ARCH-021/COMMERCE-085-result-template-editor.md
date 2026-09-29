@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 76
-executor: copilot
-claimed_at: 2026-09-29T01:25:24Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-078
@@ -605,7 +605,7 @@ If generalising `src/studio/code-response/code-editor.tsx`, preserve its existin
 
 ### Attempt 2 Status
 
-Architect-requested implementation corrections are complete. The six-file C085 validation packet passes, including both previously blocked External and Shopify Admin UI integration suites. Prisma Client was generated with the repository-declared `npm run prisma:generate` setup. Task metadata remains `in_progress` until the Attempt 2 commits are pushed and the task workflow reconciles it to `review`.
+Architect-requested implementation corrections are complete. The six-file C085 validation packet passes, including both previously blocked External and Shopify Admin UI integration suites. Prisma Client was generated with the repository-declared `npm run prisma:generate` setup. Task metadata is reconciled to `status: review`, `executor: null` and `claimed_at: null` for Architect Review.
 
 ### Attempt 2 Files Changed
 
@@ -639,7 +639,7 @@ None known. Awaiting Architect Review.
 
 ### Attempt 2 VCS and Worktree
 
-Implementation commit `fab594d` (`fix(ARCH-021-COMMERCE-085): address architect review`) is pushed on the dedicated implementation `task/ARCH-021-COMMERCE-085` branch. The parent task report is being committed and pushed separately on its matching branch. No main merge or submodule gitlink change is included.
+Implementation commit `fab594d` (`fix(ARCH-021-COMMERCE-085): address architect review`) is pushed on the dedicated implementation `task/ARCH-021-COMMERCE-085` branch. Parent report commit `ce90c300` records Attempt 2 validation and is pushed on the matching task branch; this final report commit reconciles task metadata to `review`. No main merge or submodule gitlink change is included.
 
 ### Attempt 1 Status (Historical)
 
