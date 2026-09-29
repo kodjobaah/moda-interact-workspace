@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 88
 executor: copilot
 claimed_at: 2026-09-29T11:57:28Z
@@ -318,15 +318,28 @@ Ready for Architect Review
 
 ### Work Completed
 
-Added `CommerceFeatureConfiguration` as a permanent one-row-per-Feature CAS record. Capabilities now have immutable required Feature and Tool identities and no selection-binding or revisioned authoring model. Release members pin the exact published Tool revision, with composite foreign keys enforcing Capability/Feature/Tool and Tool/Revision identity. Added a single immutable Feature prompt snapshot per represented release Feature. Tool status now uses `CommerceToolRevisionStatus`; obsolete capability audit actions and special BASE/RECOVERY_POLICY guards were removed. The migration clears only pre-production Capability/release/pointer/grant composition and obsolete composition audits, preserving Tool and ToolRevision history and unrelated data. Implementation commit `b648b86` is pushed to `task/ARCH-021-DATABASE-003`.
+Attempt 1 implemented the Feature/Capability/release schema simplification. Attempt 2 replaced the surviving ARCH-020 grant trigger with `arch021_conversation_grant_guard`, retaining conversation/recovery/shop/inbound-version checks while deriving the canonical grant directly from immutable `CommerceReleaseCapability` rows and their exact published Tool revisions. Reused Tools are grouped into one granted Tool with sorted provenance from all selected Capability keys. The grant bounds now accept empty selected Capability and granted Tool arrays. The migration also removes the obsolete `arch020_bindings` and `arch020_audit` functions. The focused rehearsal now proves empty and direct grants succeed, missing/extra/mismatched authority is rejected, and active commerce constraints/triggers/functions contain no references to removed Capability concepts or mandatory `conversation_core`.
+Attempt 2 implementation commit `0dbb3f5` is pushed to `task/ARCH-021-DATABASE-003`.
+
+### Attempt 2 Correction Checklist
+
+- [x] Replace the legacy grant guard with direct release-member Tool authority and preserve ownership/inbound-version checks.
+- [x] Allow valid zero-Capability/zero-Tool grants.
+- [x] Remove the obsolete `arch020_bindings` helper and stale audit function.
+- [x] Add PostgreSQL grant success/rejection cases and live catalog checks for legacy dependencies.
+- [x] Record prepared worktree, synchronization and recursive submodule evidence below.
 
 ### Validation Results
 
-`npm run prisma:validate` passed. `npm run prisma:generate` passed. `npm run test:arch021-feature-capability-schema` passed. `npm run test:arch021-feature-capability-migration` structural checks passed. Fresh PostgreSQL rehearsal passed on isolated local PostgreSQL 15 database `arch021_feature_capability_test_fresh`. Seeded-upgrade PostgreSQL rehearsal passed on isolated local PostgreSQL 15 database `arch021_feature_capability_test_upgrade`; 18 protected data tables were byte-for-byte unchanged, including Feature, billing plans/subscriptions, Merchant pricing, Tools/revisions, connection revisions/credentials, model/prompt/template configuration, Shop, CheckoutRecovery and Conversation. Ten database behavior checks passed for CAS, immutability, one shared Feature snapshot, exact Tool identity, and published Tool revision requirements. `npm run erd:puml` passed. `git diff --check` passed.
+`npm run prisma:validate`, `npm run prisma:generate`, `npm run test:arch021-feature-capability-schema`, `npm run test:arch021-feature-capability-migration` structural checks, and `git diff --check` passed in Attempt 2. Fresh and seeded-upgrade PostgreSQL 15 rehearsals both passed on isolated local databases `arch021_feature_capability_test_fresh` and `arch021_feature_capability_test_upgrade`. The upgrade preserved all 18 protected data tables byte-for-byte. The rehearsals passed the existing CAS/immutability/release checks plus zero-selection grant success, direct exact-revision grant success with shared-Tool Capability provenance, missing/extra/mismatched authority rejection, and live catalog checks for removed grant dependencies. Attempt 1 also passed `npm run erd:puml`.
+
+### Attempt 2 Preparation Evidence
+
+The required launcher resolved canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace` and prepared dedicated task worktrees on `task/ARCH-021-DATABASE-003`. Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-DATABASE-003` was reused; remote task-branch fast-forward was `not-needed`, `origin/main` was incorporated (`yes`), and synchronized HEAD was `b992bb61c354f2e7c0c56fd51c88a2a4fba9a817`. Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-DATABASE-003` was reused; remote task-branch fast-forward was `not-needed`, `origin/main` was already current, and HEAD was `b648b86d24a2076b9af2afbf3f1bd8188a52c424`. Recursive submodule sync and update/init both passed; submodule status was `ready`, recursive was true, and there were no submodule entries. The launcher durably claimed Attempt 2 for executor `copilot` and committed/pushed claim `41e4913dbdb7417a7cb5328407c1ad5b4fdd420b`.
 
 ### Deviations
 
-No scope deviation. PostgreSQL upgrade rehearsal required an explicit deletion of legacy Capability rows because existing BASE rows have no Feature and arbitrary revision bindings cannot be losslessly converted; this is the task's approved pre-production recreate strategy.
+No scope deviation. PostgreSQL upgrade rehearsal required an explicit deletion of legacy Capability rows because existing BASE rows have no Feature and arbitrary revision bindings cannot be losslessly converted; this is the task's approved pre-production recreate strategy. The Attempt 2 corrections directly address the Architect Review findings within the task's database ownership boundary.
 
 ### Assumptions
 
