@@ -18,9 +18,10 @@ depends_on:
   - ARCH-021-COMMERCE-079
   - ARCH-021-COMMERCE-081
   - ARCH-021-COMMERCE-083
+  - ARCH-021-COMMERCE-095
 enables: []
 created: 2026-09-28
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # Validate Tool Definition through rendered-Test and Review flow

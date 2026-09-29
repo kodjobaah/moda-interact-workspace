@@ -1092,7 +1092,7 @@ Manual architecture review of Tool result/prompt authoring establishes the follo
 7. A non-persisted source-neutral `ToolResultContract` is compiled from the canonical output/result schema and supplies exact scalar/collection bindings for template authoring. React does not infer provider-specific result paths independently.
 8. `responseTemplate` remains the persisted/runtime representation but receives its own Result Template authoring surface. Agent Contract retains definition version, Agent description and Agent input schema only.
 9. Result Template supports only the existing bounded `text` / `items` runtime grammar in this refinement; no conditional language, arbitrary JavaScript or rich-text dependency is introduced.
-10. General tab traversal/gating, global Next/Back behavior and cross-tab validation checkpoint coordination remain explicitly deferred until all individual tabs are implemented.
+10. Progressive Previous/Next traversal for **new Tool creation only** is owned by COMMERCE-095 after the individual Tool surfaces are implemented. Its unlock frontier is browser/session-local and monotonic; persisted-DRAFT traversal remains unchanged.
 
 Implementation tasks:
 
@@ -1122,6 +1122,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-095 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1468,7 +1469,7 @@ The architectural ownership rules are:
 Implementation graph:
 
 ```text
-COMMERCE-077 -> COMMERCE-078 -> COMMERCE-079 -> COMMERCE-081 -> COMMERCE-083 -> SYSTEM-TEST-002
+COMMERCE-077 -> COMMERCE-078 -> COMMERCE-079 -> COMMERCE-081 -> COMMERCE-083 -> COMMERCE-095 -> SYSTEM-TEST-002
                                              ^              ^
 COMMERCE-080 --------------------------------+              |
 COMMERCE-082 -----------------------------------------------+
@@ -1543,6 +1544,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
+| ARCH-021-COMMERCE-095 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1564,7 +1566,7 @@ Phase 5 Feature Capability simplification is now decomposed through DATABASE-003
 
 No implementation task may depend on a system-test task.
 
-Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending on COMMERCE-079, COMMERCE-081 and COMMERCE-083. It becomes Ready only after those Commerce tasks are architect-accepted Complete.
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending on COMMERCE-079, COMMERCE-081, COMMERCE-083 and COMMERCE-095. It becomes Ready only after those Commerce tasks are architect-accepted Complete.
 ### COMMERCE-082 Attempt 1 accepted — 2026-09-28
 
 - Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
@@ -1572,6 +1574,14 @@ Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending o
 - Candidate schema, mapped arguments, compiler-derived result contract and Result Template compatibility are checked before provider I/O. Successful execution returns only the five bounded stage outcomes, canonical normalized `values` and canonical rendered text; one provider request is budgeted and `LIVE_TEST_REQUIRED` remains unchanged.
 - Accepted submitted validation: 96/96 focused tests across eight files, targeted ESLint and `git diff --check`; repository TypeScript remains red only on 30 unrelated diagnostics with no C082 changed-file diagnostics.
 - C082's COMMERCE-083 UI follow-up is materialised and Ready after C078 Attempt 4 acceptance; both dependencies are Complete.
+
+### COMMERCE-095 Attempt 1 changes requested — 2026-09-29
+
+The progressive new-Tool traversal refinement is now represented explicitly in
+ARCH-021 and terminal SYSTEM-TEST-002 is re-gated behind C095. Attempt 1 is
+accepted in substance but remains Ready for correction because an unresolved
+provider-reset confirmation does not freeze navigation at Tool Definition and
+the pre-provider guidance still describes the superseded unlock model.
 
 ## Open Questions
 

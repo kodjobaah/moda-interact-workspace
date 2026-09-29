@@ -56,9 +56,16 @@ are architect-accepted Complete.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083 |
+| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095 |
 
 SYSTEM-TEST-002 is terminal validation and must remain Pending until every listed Commerce dependency is architect-accepted Complete. No Commerce implementation task depends on it.
+
+### SYSTEM-TEST-002 re-gated for progressive new-Tool navigation — 2026-09-29
+
+COMMERCE-095 now owns the final progressive Previous/Next and monotonic unlock
+behaviour exercised by this integrated Tool-authoring scenario. SYSTEM-TEST-002
+therefore also depends on COMMERCE-095 and remains Pending until C095 is
+architect-accepted Complete.
 
 ## Phase 5 — Feature Capability simplification validation — 2026-09-29
 
