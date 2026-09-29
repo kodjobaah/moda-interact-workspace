@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 75
 executor: null
 claimed_at: null
@@ -963,201 +963,96 @@ None identified by the bounded R11 audit. No Shared contract or database migrati
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 is not accepted.
+Attempt 3 is accepted.
 
-The five Attempt 1 correction areas are substantially implemented correctly:
+The two remaining Attempt 2 validator defects are corrected exactly as requested.
 
-- the installed Nunjucks parser/AST is now the syntax authority and Moda applies its own bounded AST/type allowlist;
-- bounded `if`/`elif`/`else`, primitive literals, comparisons, boolean expressions, parentheses, arithmetic and unary negation are present;
-- the renderer uses an explicit empty loader list and the focused regression proves zero loaders;
-- root scalar/root array generation is supported and every generated template is self-validated through the canonical authoring validator;
-- division/modulo-by-zero and non-finite arithmetic map safely to the existing `INVALID_INPUT` / unavailable Tool-result semantics;
-- the C084-owned ARCH-020 fixture is migrated to `nunjucks.v1`; and
-- the Completion Report is now durably present in the submitted snapshot.
+1. **Equality / inequality is now scalar-only**
+   - `==` / `!=` accepts compatible scalar operands only.
+   - `integer` / `number` numeric compatibility remains allowed.
+   - scalar/null and null/null checks remain allowed.
+   - object/object, array/array, object/null and array/null equality/inequality now produce `invalid_template_expression`.
+   - scalar optional-null checks such as `{% if result.values.optionalName == null %}` remain valid.
 
-Two task-scoped semantic defects remain in the canonical validator, followed by one durable task-record correction.
+2. **Plain `else` bodies now preserve the enclosing control depth**
+   - the body of a normal `else` branch is validated at `controlDepth + 1`;
+   - an `elif` represented by Nunjucks as an `If` continuation remains at the same logical if-chain depth;
+   - four combined nested controls remain accepted;
+   - a fifth nested `if` or mixed `if`/`for` level reached through `else` deterministically produces `template_too_complex`.
 
-#### 1. Equality/inequality currently accepts non-scalar object/array operands
+Attempt 3 also reconciles the durable execution-owned task record:
 
-R4 requires:
+- task metadata is `status: review`, `attempt: 3`, `executor: null`, `claimed_at: null` before this acceptance;
+- every completed Work Item and Acceptance Criterion is checked;
+- every required Validation item executed for C084 is checked;
+- known unavailable/broader environment limitations remain documented in the Completion Report rather than being silently treated as passing;
+- parent, Commerce and database worktree/branch synchronization, pushed commit tips, submodule/database evidence and clean-worktree evidence are recorded durably.
 
-```text
-== / != require compatible scalar operands
-comparison with null is allowed only as a scalar null check
-```
+The complete C084 runtime now conforms to the amended architecture:
 
-`compatibleComparison(...)` currently implements equality as:
+- final Result Templates use only `kind: "nunjucks"` / `runtimeVersion: "nunjucks.v1"`;
+- the installed Nunjucks parser/AST is the syntax authority and Moda applies an explicit bounded AST/type allowlist;
+- the supported v1 grammar includes literal text, property-only path interpolation, bounded `for`/`else`, bounded `if`/`elif`/optional `else`, primitive literals, compatible comparisons, boolean `and/or/not`, parentheses, numeric arithmetic and unary negation;
+- unsupported tags, calls, filters, globals, bracket/computed access, prototype paths and dynamic loading are rejected deterministically;
+- expression semantics are schema-aware and do not rely on implicit JavaScript/Nunjucks coercion;
+- combined supported `if`/`for` nesting remains bounded to four;
+- the renderer uses an explicit empty loader list, no application globals/callables/custom filters, JSON-only/null-prototype context and bounded synchronous output;
+- division/modulo-by-zero and non-finite arithmetic map to stable bounded internal failures and the existing safe `INVALID_INPUT` / unavailable Tool-result semantics without emitting `Infinity` or `NaN`;
+- deterministic generation covers root scalar, root array, objects and bounded arrays, and every generated template self-validates through the canonical authoring validator;
+- publication, non-durable External/Shopify Test and production rendering consume the same canonical grammar/renderer boundary;
+- the C084-owned ARCH-020 fixture is migrated to `nunjucks.v1`;
+- no legacy `text` / `items` final runtime branch or compatibility adapter remains; and
+- the bounded ownership audit found no non-Commerce deployable runtime consumer requiring a Shared contract migration.
 
-```ts
-return (
-  left === right ||
-  left === "null" ||
-  right === "null" ||
-  numericTypes.has(left) && numericTypes.has(right)
-);
-```
-
-Because `ExpressionType` also contains `array` and `object`, this accepts unsupported expressions such as:
-
-```nunjucks
-{% if result.values.items == result.values.items %}
-{% if result.values.product == result.values.product %}
-{% if result.values.items != null %}
-{% if result.values.product == null %}
-```
-
-Those are not compatible scalar comparisons and must fail canonical validation with:
-
-```text
-invalid_template_expression
-```
-
-Attempt 3 must restrict `==` / `!=` to:
-
-- same compatible scalar type;
-- numeric `integer` / `number` compatibility; and
-- scalar-vs-`null` (or `null`-vs-`null`) null checks.
-
-Arrays and objects must never be comparison operands in `nunjucks.v1`, including comparisons to `null`.
-
-Add focused regressions for object/object, array/array, object/null and array/null equality/inequality rejection while preserving scalar null checks such as:
-
-```nunjucks
-{% if result.values.optionalName == null %}
-```
-
-#### 2. Nested control-flow depth is under-counted inside a plain `if ... else` branch
-
-R5 bounds the **combined supported if/for nesting depth** to 4.
-
-`validateIf(...)` currently validates its normal body at:
-
-```ts
-controlDepth + 1
-```
-
-but calls:
-
-```ts
-validateBranch(node.else_, controlDepth)
-```
-
-for the else side.
-
-`validateBranch(...)` then passes that unchanged depth into a plain else `NodeList`. As a result, controls nested inside a normal `else` body do not count the enclosing `if`.
-
-A shape equivalent to:
-
-```nunjucks
-{% if result.values.active %}
-{% else %}
-  {% if result.values.hidden %}
-    {% if result.values.active %}
-      {% if result.values.hidden %}
-        {% if result.values.active %}
-          too deep
-        {% endif %}
-      {% endif %}
-    {% endif %}
-  {% endif %}
-{% endif %}
-```
-
-can therefore be under-counted relative to the canonical depth-4 limit.
-
-Attempt 3 must distinguish:
-
-- an `elif` represented by Nunjucks as an `If` in `else_`, which remains at the same logical if-chain depth; from
-- a plain `else` body, whose nested controls must be validated at `controlDepth + 1`.
-
-Add focused regressions proving:
-
-- repeated `elif` clauses do not artificially increase nesting depth;
-- a control nested inside an `else` counts the enclosing `if`; and
-- a fifth combined if/for level reached through an else branch deterministically produces `template_too_complex`.
-
-Do not change the canonical depth limit.
-
-#### 3. Reconcile the durable execution-owned task record before resubmission
-
-The submitted task is `status: review`, but the authoritative task record still contains:
-
-```text
-executor: copilot
-claimed_at: <non-null>
-```
-
-and every Work Item, Acceptance Criterion and Validation checkbox remains unchecked even though the Completion Report says the work was performed.
-
-Under the repository-task protocol those fields/checklists are implementing-agent-owned execution state and must be reconciled before review.
-
-Attempt 3 must:
-
-- claim the task normally, incrementing `attempt` from 2 to 3;
-- check every Work Item actually completed;
-- check every Acceptance Criterion actually satisfied;
-- check every required Validation item actually executed;
-- leave any genuinely unavailable validation unchecked and explain it in the Completion Report;
-- record the launcher-resolved parent/Commerce/database physical worktree paths, start-of-attempt synchronization evidence, relevant recursive submodule/database evidence, pushed commit tips and clean-worktree evidence in the Completion Report;
-- return with `status: review`, `executor: null`, `claimed_at: null`; and
-- preserve the full Attempt 1/2 Architect Review history.
-
-The user handoff states that the branches are pushed and clean; the durable Completion Report must contain the corresponding evidence rather than relying on chat history.
-
-No C085 UI/state implementation is requested.
+C085-owned React/editor/state migration remains intentionally out of C084 scope. Existing local development revisions using the removed Text/Items grammar must be re-authored as already documented for this pre-production breaking rollout.
 
 ### Reviewed Files
 
 - `src/commerce/tool-authoring/nunjucks-template.ts`
+- `tests/nunjucks-template.test.ts`
 - `src/commerce/tool-authoring/result-template-contract.ts`
 - `src/commerce/tool-authoring/result-template-generator.ts`
 - `src/commerce/execution/renderer.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/commerce/tool-definition/publication.ts`
 - `src/commerce/tool-definition/result-schema.ts`
-- `tests/nunjucks-template.test.ts`
-- `tests/result-template-authoring.test.ts`
-- `tests/result-template-generator.test.ts`
-- `tests/result-template-renderer.test.ts`
 - `database/scripts/fixtures/arch020-commerce-capability-cases.mjs`
-- C084 Completion Report — Attempt 2
+- C084 Completion Report — Attempts 2 and 3
+- C085 downstream task boundary
 
 ### Validation Reviewed
 
-Submitted Attempt 2 evidence:
+Attempt 3 submitted evidence:
 
-- focused packet: 10 files, 124 tests passed;
-- contract/authoring/execution/live-Test subset: 67 tests passed;
+- focused 10-file packet: **125 tests passed**;
+- required contract/authoring/execution + External/Shopify live-Test packet: **56 tests passed**;
+- focused parser regression suite: **7 tests passed**;
 - targeted ESLint: passed;
-- changed-file diagnostics: clean;
 - Commerce/database `git diff --check`: passed;
-- migrated fixture `node --check`: passed;
-- repository-wide TypeScript remains non-green with 266 unrelated diagnostics, none in changed C084 files;
-- full suite and environment-dependent QuickJS/C20/MCP checks were not rerun and remain documented limitations.
+- repository TypeScript remains non-green at the same **266-diagnostic** baseline recorded in Attempt 2, with no diagnostics in either Attempt 3 changed file.
 
-These broader baseline/environment limitations are not the reason for this review outcome.
+Attempt 2 evidence retained by the task report also covers the expanded grammar, no-loader renderer, generator self-validation, arithmetic safety, fixture migration and publication/Test/production compatibility.
 
-Source inspection confirms the Attempt 1 no-loader, generator self-validation/root handling, fixture migration and expanded AST/type-aware grammar corrections. Acceptance is blocked only by the two validator semantics above and the unreconciled durable task execution record.
+The submitted snapshot does not contain installed `node_modules`, so the review environment could not independently rerun Vitest/ESLint. The implementation and focused regressions were inspected directly.
+
+The full Commerce suite and environment-dependent QuickJS/C20/MCP checks were not rerun in Attempt 3. Their previously recorded C085/environment limitations remain non-blocking for this bounded C084 acceptance.
 
 ### Architecture Conformance
 
-Partial.
+Conforms.
 
-The canonical one-runtime/one-renderer architecture, restricted Nunjucks environment, JSON-only context, publication/Test/production convergence, expanded bounded expression grammar, provider-neutral generator and pre-production breaking migration now conform.
-
-The remaining deviations are:
-1. non-scalar equality/null comparisons are accepted contrary to R4;
-2. plain `if ... else` control depth is under-counted contrary to R5; and
-3. the task has not completed the required durable execution-state/checklist/worktree reconciliation.
+C084 now establishes one Commerce-owned constrained `nunjucks.v1` persisted/runtime contract with one canonical AST/type validator, deterministic schema-derived generator and one secure renderer shared by authoring validation, publication, live Test and production execution.
 
 ### Follow-up
 
-Return the same task as Attempt 3.
+C084 is Complete / Accepted — Attempt 3.
 
-Correct only the comparison-type and else-depth semantics above, add the focused regressions, reconcile the execution-owned task record/evidence, rerun the focused validator packet plus required changed-file checks, and STOP.
+COMMERCE-085 becomes Ready because C078 and C084 are Complete.
 
-Do not implement COMMERCE-085 in C084.
+COMMERCE-083 remains Pending on COMMERCE-085 so Shopify Admin Test UI integration consumes the final Nunjucks authoring surface rather than the removed Text/Items editor.
 
-COMMERCE-085 remains Pending on C084, and COMMERCE-083 remains Pending on C085.
+Do not reintroduce a second client-side grammar or legacy Text/Items runtime compatibility path in C085.
