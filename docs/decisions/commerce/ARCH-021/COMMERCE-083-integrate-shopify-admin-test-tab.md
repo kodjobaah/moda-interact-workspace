@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: automatic
 status: blocked
 priority: 75
-executor: copilot
-claimed_at: 2026-09-29T09:22:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-078
@@ -45,173 +45,139 @@ Coordinator:
 
 ## Objective
 
-Integrate the already-implemented COMMERCE-082 Shopify Admin live-Test backend into the canonical new/persisted authoring-session Test-freshness model, replace the Shopify Test placeholder with one reusable Test surface, show the server-rendered populated Result Template as the primary result, and require a current successful Shopify Test before Create/Save may persist the current Shopify candidate.
+Integrate the already-accepted COMMERCE-082 Shopify Admin live-Test backend into the existing new-Tool and persisted-DRAFT authoring flow, display the server-rendered populated Result Template as the primary Test result, and require a current successful Shopify Test before Shopify Create/Save may persist the current candidate.
+
+This is a UI/session integration task. It does not own Shopify Admin Test backend execution.
 
 ## Context
 
-COMMERCE-082 is Complete and supplies the canonical non-durable Shopify Admin live-Test backend. It validates the complete candidate, resolves the selected shop server-side, reuses the production Admin execution port/result normalization, validates the current Result Template, and returns server-rendered agent text without creating publication proof or durable Tool state.
+The required foundations are already accepted:
 
-COMMERCE-078 owns the central authored-section validation ledger and common Test freshness model. COMMERCE-079 applies the same model to persisted DRAFTs. COMMERCE-081 establishes the provider-aware Save/Test integration pattern for External HTTP. This task applies the same accepted pattern to Shopify Admin; it must preserve External behaviour and must not introduce a second Test-readiness authority.
+```text
+COMMERCE-078
+  common new-Tool validation/Test checkpoint
 
-The current uploaded snapshot's parent task record marks COMMERCE-082 Complete/Accepted, but the uploaded `moda-interact-commerce` checkout does not contain the C082 implementation files named in that Completion Report. This is an integration-state discrepancy, not permission to recreate C082. See R1.
+COMMERCE-079
+  persisted-DRAFT authoring/CAS/dirty-state model
+
+COMMERCE-081
+  accepted provider-aware Test integration/stale-result/Save-gating pattern
+
+COMMERCE-082
+  accepted non-durable Shopify Admin live-Test backend + Server Action
+
+COMMERCE-085 / COMMERCE-087
+  final Nunjucks authoring/runtime and optional-result safety
+```
+
+C083 should apply the already-accepted External Test integration pattern to Shopify Admin without creating another execution service, Test-readiness authority, renderer or persistence mechanism.
+
+### Current blocker
+
+Attempt 1 verified that the prepared C083 implementation worktree does **not** physically contain the accepted C082 Shopify Admin live-Test implementation.
+
+Present:
+
+```text
+production AdminQueryExecutionPort
+production Admin query execution
+```
+
+Missing:
+
+```text
+Shopify Admin live-Test domain service
+ADMIN-authorized Shopify Admin live-Test Server Action
+C082 live-Test input/result/stage contract
+CommerceBackend exposure required by that accepted Test service
+```
+
+C083 MUST NOT recreate those capabilities.
+
+The accepted C082 implementation (previously reviewed from implementation commit `c4876fa`, or a later integrated commit containing the same accepted capability) must first be integrated into the Commerce implementation base used by C083.
+
+After that integration is present, `moda_architect` returns this same task from `blocked` to `ready`; the next execution claim becomes Attempt 2.
 
 ## Scope
 
-Primary implementation areas:
+After the blocker is resolved, C083 may change only the Shopify Admin authoring integration surfaces needed to consume C082:
 
 ```text
 src/studio/tools/new-tool-editor.tsx
 src/studio/tools/tool-editor.tsx
-src/studio/tools/authoring/shopify-admin-test-tab.tsx      # one new reusable component
-src/studio/tools/shopify-admin-live-test-server-actions.ts  # consume C082 implementation
-src/studio/tools/<C078 authoring-session module>           # consume; do not create competing store
+src/studio/tools/authoring/shopify-admin-test-tab.tsx
+existing C082 Shopify Admin live-Test Server Action import/call site
+focused Shopify authoring/Test regressions
 ```
 
-Focused tests:
-
-```text
-tests/shopify-admin-tools-ui.test.tsx
-tests/tool-authoring-screen.test.tsx
-tests/shopify-admin-live-test-action.test.ts
-```
-
-## Out of Scope
-
-- Reimplementing or changing COMMERCE-082 backend execution semantics.
-- Creating a second Shopify live-Test Server Action, GraphQL transport or result contract.
-- Changing C078 validation/Test state semantics or creating a competing Test store.
-- Changing C079 persisted CAS/persistence-dirty semantics.
-- External Test UI or External Save gate; COMMERCE-081 owns them.
-- Publication proof or `LIVE_TEST_REQUIRED` publication-gate changes.
-- Automatic persistence after Test.
-- GraphQL Request authoring or Response/result-contract derivation changes.
-- Rendering/interpolating Result Template tokens in React.
-
-## Requirements
-
-### R1 — verify the accepted C082 implementation is physically present; do not recreate it
-
-Before making any source change, verify that the implementation repository available to this task contains the accepted COMMERCE-082 capabilities from its Completion Report, including semantic equivalents of:
-
-```text
-src/commerce/tool-authoring/shopify-admin-live-test.ts
-src/studio/tools/shopify-admin-live-test-server-actions.ts
-Shopify Admin live-Test input/result types
-ADMIN-authorized Test Server Action
-CommerceBackend Admin execution-port exposure
-```
-
-If the parent task metadata says COMMERCE-082 is Complete but those accepted capabilities are not present in the implementation branch/worktree used for C083:
-
-```text
-DO NOT implement them again.
-DO NOT copy C082 from its task document.
-DO NOT create a substitute action/transport.
-```
-
-Instead:
-
-```text
-set C083 status to blocked
-record the missing integrated C082 implementation as the blocker
-return control to moda_architect
-STOP
-```
-
-The developer must integrate/update the implementation repository to the accepted C082 commit before C083 continues.
-
-### R2 — consume the canonical C078/C079 Test state and the provider-aware C081 Save pattern
-
-Use the accepted C078/C079 authoring-session Test checkpoint with these semantics:
-
-```ts
-type AuthoringTestStatus =
-  | "NOT_RUN"
-  | "RUNNING"
-  | "PASSED"
-  | "FAILED"
-  | "STALE";
-
-type AuthoringTestSnapshot = {
-  toolDefinitionRevision: number;
-  requestRevision: number;
-  responseRevision: number;
-  resultTemplateRevision: number;
-};
-
-type AuthoringTestState = {
-  status: AuthoringTestStatus;
-  testedSnapshot: AuthoringTestSnapshot | null;
-};
-```
-
-Consume the actual accepted exports/operations equivalent to:
-
-```text
-currentAuthoringSnapshot(session)
-isCurrentTestPassed(session)
-mark Test RUNNING for submitted snapshot
-mark Test PASSED for submitted snapshot
-mark Test FAILED for submitted snapshot
-mark Test STALE / clear testedSnapshot
-```
-
-Do not create a Shopify-specific authoritative `testPassed`, `dirty`, `validated` or Test snapshot store.
-
-Provider-specific display result/diagnostics may be local to `ShopifyAdminTestTab`, but Review/Save readiness must use only the common authoring Test checkpoint.
-
-If those common capabilities are missing despite dependencies being Complete, STOP and report a dependency defect instead of duplicating them.
-
-### R3 — one reusable `ShopifyAdminTestTab` for new and persisted authoring
-
-Create exactly one reusable component:
-
-```text
-ShopifyAdminTestTab
-```
-
-(or mechanically equivalent single shared component) and use it for both:
+Use one reusable `ShopifyAdminTestTab` (or mechanically equivalent shared component) for:
 
 ```text
 new Shopify Admin Tool
 persisted Shopify Admin DRAFT
 ```
 
-Do not implement two provider-Test components with separate freshness/run/result logic.
+## Out of Scope
 
-The parent editor supplies the assembled candidate, common Test/session operations, selected shop, Test arguments and disabled/locked state. The component owns only provider-specific transient Test input/result presentation.
+- Reimplementing, copying or substituting for COMMERCE-082.
+- Creating another Shopify Admin Test Server Action, GraphQL transport or result contract.
+- Changing C082 backend execution semantics.
+- Creating another authoritative Test/pass/freshness store.
+- Changing C078/C079 revision/Test semantics.
+- Changing C079 CAS/persistence-dirty behavior.
+- Changing C081 External Test behavior.
+- Changing C084/C085/C087 Result Template grammar/editor/rendering semantics.
+- Publication-proof or `LIVE_TEST_REQUIRED` changes.
+- Automatic persistence after Test.
+- Request/Response authoring redesign.
+- React-side Result Template rendering.
+- Database or cross-repository changes.
 
-### R4 — Test consumes the exact current assembled candidate
+## Requirements
 
-Immediately before running Test, obtain the same complete definition that Review/Create/Save would persist.
+### R1 — integration precondition
 
-The Shopify definition must contain exactly the current values for:
+Before source changes, verify the prepared implementation worktree physically contains the accepted C082 capabilities.
+
+If they are absent:
 
 ```text
-Tool Definition:
-  name
-  definitionVersion
-  description
-
-Request:
-  inputSchema
-  execution.apiVersion
-  execution.schemaHash
-  execution.document
-  execution.operationName
-  execution.variables
-
-Response:
-  execution.resultPath
-  execution.resultSchema / compiler-derived current result contract fields
-
-Result Template:
-  responseTemplate
+status = blocked
+record exact missing capability
+make no implementation changes
+return to moda_architect
+STOP
 ```
 
-Do not construct a second partial candidate inside `ShopifyAdminTestTab` from stale duplicated buffers when the authoring session already exposes the current assembled definition.
+Do not reconstruct C082 from task documentation.
 
-Pass to the accepted C082 Server Action exactly:
+### R2 — reuse the existing common Test checkpoint
+
+Use the accepted C078/C079 operations equivalent to:
+
+```text
+currentAuthoringSnapshot(...)
+startAuthoringTest(...)
+completeAuthoringTest(...)
+isCurrentTestPassed(...)
+```
+
+Do not create Shopify-specific authoritative:
+
+```text
+testPassed
+validated
+dirty
+testedSnapshot
+```
+
+Provider-specific safe display state may remain local to `ShopifyAdminTestTab`.
+
+### R3 — submit the exact current Shopify candidate
+
+Immediately before Test, use the same assembled definition that Review/Create/Save would persist.
+
+Send to the existing C082 action only:
 
 ```ts
 {
@@ -221,302 +187,183 @@ Pass to the accepted C082 Server Action exactly:
 }
 ```
 
-The browser must never supply:
+The browser must never provide:
 
 ```text
-shop domain
-Shopify access token
+Shopify domain
+access token
 offline-session credential
 Authorization header
 ```
 
-### R5 — exact local prerequisites before provider Test
+### R4 — prerequisites and Test lifecycle
 
-Do not invoke the C082 Server Action unless all four authored sections are current VALID according to the common validation ledger:
+Do not call C082 unless all four authored sections are current VALID:
 
 ```text
-Tool Definition  current VALID
-Request          current VALID
-Response         current VALID
-Result Template  current VALID
+Tool Definition
+Request
+Response
+Result Template
 ```
 
 Also require:
 
 ```text
-complete assembled Shopify definition parses through the canonical Tool definition boundary
-selected shopId is a non-empty string
-Test arguments are valid JSON
-Test arguments are a JSON object
-Test arguments serialized input is <= 64 KiB
+selected shop
+valid JSON-object Test arguments
+arguments payload <= 64 KiB
+complete Shopify definition parses canonically
 ```
 
-Do **not** automatically run missing validations from Test.
-
-Show exactly these owning-step messages for authored prerequisites:
+On Test start:
 
 ```text
-Tool Definition invalid/stale -> "Return to Tool Definition and validate the current values."
-Request invalid/stale         -> "Return to Request and validate the current values."
-Response invalid/stale        -> "Return to Response and validate the current values."
-Result Template invalid/stale -> "Return to Result Template and validate the current values."
-shopId absent                 -> "Select a Studio shop before running Test."
+capture currentAuthoringSnapshot
+capture provider-local transient generation / run identity
+mark common Test RUNNING
+call C082 exactly once
 ```
 
-Invalid Test arguments remain on Test with the bounded local JSON error.
-
-No message may refer the user to Agent Contract.
-
-### R6 — exact common Test lifecycle and stale-response protection
-
-Immediately before the C082 backend call:
-
-1. Obtain the exact assembled current Shopify definition.
-2. Capture:
-
-```ts
-const submittedSnapshot = currentAuthoringSnapshot(session);
-```
-
-3. Capture one provider-local run identity from exactly:
+A result may mark the common Test `PASSED` only when:
 
 ```text
-submittedSnapshot
-Test arguments text
-selected shopId
+C082 result.kind == ok
+candidateValidation == passed
+shopResolution == passed
+providerRequest == passed
+resultValidation == passed
+resultRendering == passed
+renderedText is present
+submitted snapshot is still current
+provider-local transient generation is still current
 ```
 
-4. Mark the common session Test state `RUNNING` for `submittedSnapshot`.
-5. Invoke the accepted C082 live-Test Server Action exactly once.
+A current backend/stage failure marks `FAILED`.
 
-The Test is PASSED only when all of the following are true:
+Any authored-section, Test-arguments or selected-shop change during the run makes that completion stale.
+
+Use the same monotonic transient-generation principle accepted in C081 so:
 
 ```text
-Server Action result.kind === "ok"
-candidateValidation.status === "passed"
-shopResolution.status === "passed"
-providerRequest.status === "passed"
-resultValidation.status === "passed"
-resultRendering.status === "passed"
-renderedText is a string
+arguments A -> B -> A
+shop A -> B -> A
 ```
 
-If the submitted authoring snapshot and provider-local run identity still match current state, set:
+cannot resurrect an old in-flight or displayed result.
+
+Test-argument/shop changes are transient and must not make a persisted DRAFT persistence-dirty.
+
+### R5 — presentation
+
+On success, display first:
 
 ```text
-common Test status = PASSED
-common testedSnapshot = submittedSnapshot
+Result shown to agent
+<exact C082 renderedText>
 ```
 
-If the Server Action returns an error or any required C082 stage is not `passed`, and the submitted identity is still current, set:
+React must not parse or rerender Nunjucks.
+
+Safe secondary diagnostics may show only the bounded C082 stages/normalized values:
 
 ```text
-common Test status = FAILED
-common testedSnapshot = submittedSnapshot
-```
-
-If any authored section, Test arguments or selected shop changes while the request is in flight, the response is stale and must not modify readiness for the current candidate:
-
-```text
-common Test status = STALE
-common testedSnapshot = null
-ignore/discard the late result for current-candidate readiness
-```
-
-Use a monotonically increasing run sequence or equivalent existing deterministic stale-response mechanism. Run N must never overwrite run N+1.
-
-### R7 — deterministic Shopify Test staleness
-
-C078/C079 own staleness caused by authored-section edits. Do not duplicate those revision rules in `ShopifyAdminTestTab`.
-
-Shopify Test must additionally mark the common Test STALE and clear its displayed provider result whenever either changes:
-
-```text
-Test arguments text
-selected shopId
-```
-
-Tab navigation alone must not stale the Test.
-
-Use the common stale state exactly:
-
-```text
-status = STALE
-testedSnapshot = null
-```
-
-Test arguments/shop are transient Test context only. Changing them must not mark a persisted DRAFT persistence-dirty.
-
-### R8 — primary output is the exact server-rendered agent result
-
-On a successful Test, render this section before normalized values or stage diagnostics:
-
-```tsx
-<section aria-label="Result shown to agent">
-  <h4>Result shown to agent</h4>
-  <pre>{renderedText}</pre>
-</section>
-```
-
-The displayed text must equal the C082 server-returned `renderedText` exactly. React must not parse, interpolate or rerender the authored Result Template.
-
-After the primary result, display only safe secondary diagnostics returned by C082:
-
-```text
-candidateValidation stage
-shopResolution stage
-providerRequest stage
-resultValidation stage
-resultRendering stage
+candidateValidation
+shopResolution
+providerRequest
+resultValidation
+resultRendering
 processedResult / normalized values
 ```
 
-Do not expose raw access tokens, Authorization headers, offline-session records, unbounded GraphQL responses or credential material.
+Do not expose credentials or unbounded provider payloads.
 
-### R9 — Shopify Create/Save requires a current PASSED Test
-
-Preserve the External provider gate already implemented by COMMERCE-081.
+### R6 — Shopify Create/Save gate
 
 For a new Shopify Tool:
 
-```ts
-canCreateShopify =
-  existingC078NewToolSaveEligibility &&
-  isCurrentTestPassed(session);
+```text
+existing C078 Create eligibility
+AND isCurrentTestPassed(session)
 ```
 
 For a persisted Shopify DRAFT:
 
-```ts
-canSaveShopifyDraft =
-  existingC079PersistedSaveEligibility &&
-  isCurrentTestPassed(session);
-```
-
-Do not replace the existing C078/C079 eligibility predicates. Add the current Test requirement.
-
-The exact Test consequences are:
-
 ```text
-NOT_RUN -> Create/Save disabled
-RUNNING -> Create/Save disabled
-FAILED  -> Create/Save disabled
-STALE   -> Create/Save disabled
-PASSED for an older snapshot -> Create/Save disabled
-PASSED for current snapshot -> Test requirement satisfied
+existing C079 Save eligibility
+AND isCurrentTestPassed(session)
 ```
 
-Review remains accessible in every state. Do not enforce sequential Next/Previous wizard navigation.
+Preserve the C081 External Test gate unchanged.
 
-After this task, both supported provider kinds must therefore require a current successful Test before persistence:
+Review remains navigable when Test is NOT_RUN/RUNNING/FAILED/STALE.
 
-```text
-EXTERNAL_HTTP         -> C081 current Test gate
-SHOPIFY_ADMIN_GRAPHQL -> C083 current Test gate
-```
+### R7 — Test is non-durable
 
-### R10 — Test remains non-durable and separate from publication proof
-
-Running Shopify Test, changing Test arguments/shop, displaying diagnostics, marking Test PASSED/FAILED/STALE or navigating Test/Review performs zero:
+Running Test, changing Test arguments/shop, viewing results or changing Test state performs zero:
 
 ```text
 createToolWithInitialDraft
 updateToolDraft
-Tool/ToolRevision write
+Tool / ToolRevision write
 audit write
-operation-receipt write
+operation receipt
 publication-proof write
 ```
 
-A successful authoring Test does not satisfy or alter the existing publication `LIVE_TEST_REQUIRED` gate. Exact-saved-revision publication proof remains separately owned.
+A successful authoring Test does not satisfy `LIVE_TEST_REQUIRED` publication proof.
 
-For persisted DRAFTs, Test-only state changes must not set persistence-dirty.
+### R8 — preserve existing authoring flows
 
-### R11 — preserve existing authoring flows
-
-The Shopify Test integration must not regress:
+Do not regress:
 
 ```text
-Request -> Explore Shopify -> Use in tool -> Request round-trip
-Request validation/mapping state
-Response resultPath/result-contract derivation
-Result Template validation
-read-only derived Agent Contract in Review
-new Tool single atomic Create/Save boundary
-persisted one-CAS Save boundary
+Explore Shopify round-trip
+Request validation/mapping
+Response derivation
+Nunjucks Result Template validation
+Review derived Agent Contract
+new Tool atomic Create
+persisted one-CAS Save
 Cancel semantics
+External Test behavior
 ```
-
-Do not auto-save after Explore, Response derivation, template validation or Test.
-
-
-### R7 — drive the C078 common Test checkpoint for new Tools
-
-For the new-Tool Shopify Admin flow, C083 MUST consume the C078 common Test freshness model rather than create a second canonical pass/freshness checkpoint.
-
-On Test start capture the exact C078 `currentAuthoringSnapshot(session)` and transition the common session Test state to `RUNNING`.
-
-On C082 success complete the checkpoint with `PASSED`; on C082 failure complete it with `FAILED`.
-
-If any Tool Definition, Request, Response or Result Template revision changed while C082 was running, the completion must become:
-
-```text
-status = STALE
-testedSnapshot = null
-```
-
-and the provider result must not mark the current candidate passed.
-
-The reusable Shopify Admin Test component may retain bounded provider-specific result/stage diagnostics separately. Those payloads must not be copied into the C078 common `test` state.
-
-Use `isCurrentTestPassed(session)` for new-Tool current-pass decisions. Persisted-DRAFT Test freshness remains governed by the persisted authoring state model introduced by C079; do not force the new-Tool session object into persisted DRAFTs.
 
 ## Work Items
 
-- [ ] Verify accepted C082 source capability is physically present; block instead of recreating it if integration is missing.
-- [ ] Add exactly one reusable `ShopifyAdminTestTab` for new and persisted Shopify authoring.
-- [ ] Consume C078/C079 common Test state; do not create a Shopify-specific authoritative Test store.
-- [ ] Pass the exact assembled current Shopify definition + arguments + shopId to the accepted C082 action.
-- [ ] Gate Test execution on current VALID Tool Definition, Request, Response and Result Template.
-- [ ] Capture the current authoring snapshot and provider-local run identity before each backend invocation.
-- [ ] Drive common RUNNING/PASSED/FAILED/STALE transitions exactly as specified.
-- [ ] Stale Test on Test-argument or selected-shop changes without changing persisted-draft dirtiness.
-- [ ] Preserve concurrent-run/stale-response protection.
-- [ ] Render `Result shown to agent` first from C082 `renderedText`.
-- [ ] Keep only safe C082 stages/normalized values as secondary diagnostics.
-- [ ] Add current Test PASSED to new Shopify Create eligibility.
-- [ ] Add current Test PASSED to persisted Shopify Save eligibility without changing C079 persistence/CAS rules.
-- [ ] Preserve the External current-Test Save gate from C081 unchanged.
-- [ ] Prove Test remains non-durable and does not satisfy publication proof.
-- [ ] Add all required new/persisted Shopify regressions.
+- [ ] Verify accepted C082 implementation is physically present before source work.
+- [ ] Add one reusable Shopify Admin Test surface for new and persisted authoring.
+- [ ] Reuse the C078/C079 common Test checkpoint and C081 transient-generation pattern.
+- [ ] Submit the exact current assembled Shopify candidate to C082.
+- [ ] Gate Test on current authored-section validity, shop and Test-argument validity.
+- [ ] Display exact server `renderedText` first and bounded safe diagnostics second.
+- [ ] Require current Shopify Test PASS for new Create.
+- [ ] Require current Shopify Test PASS for persisted Save without changing C079 CAS/dirty semantics.
+- [ ] Preserve External C081 behavior.
+- [ ] Prove Test is zero-write and does not create publication proof.
+- [ ] Add focused new/persisted/stale/concurrency regressions.
 
 ## Interfaces / Contracts
 
-Consumes:
+Consumes only accepted existing boundaries:
 
 ```text
-ARCH-021-COMMERCE-078
-  authored-section validation ledger
-  common AuthoringTestState / snapshot semantics
-  new-Tool assembled candidate and Save eligibility
+C078/C079
+  common authoring Test checkpoint
+  assembled current candidate
+  Create/Save eligibility
 
-ARCH-021-COMMERCE-079
-  persisted authoring-session parity
-  persisted assembled candidate
-  persistence-dirty/CAS Save eligibility
+C081
+  monotonic provider-local transient generation pattern
+  preserved External gate
 
-ARCH-021-COMMERCE-081
-  provider-aware current-Test Save-gating pattern
-  preserved External provider behaviour
-
-ARCH-021-COMMERCE-082
-  accepted Shopify Admin live-Test domain service
-  accepted ADMIN-authorized Server Action
-  ShopifyAdmin live-Test input/result contract
-  server-produced renderedText
+C082
+  Shopify Admin live-Test Server Action
+  input/result/stage contract
+  server renderedText
 ```
 
-No new database, Shared, queue or cross-repository contract is introduced.
+No new persistent, database, queue, Shared or cross-repository contract.
 
 ## Dependencies
 
@@ -533,62 +380,98 @@ No new database, Shared, queue or cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] The task blocks rather than recreating C082 if the accepted C082 implementation is not physically present in its implementation worktree.
-- [ ] Exactly one reusable Shopify Admin Test component serves new and persisted Shopify authoring.
-- [ ] No second authoritative Shopify Test/dirty/validated state exists outside the common authoring session.
-- [ ] Test cannot invoke C082 while any authored section is not current VALID.
-- [ ] Test sends the exact current assembled Shopify definition, arguments and server-resolved-shop identifier input; browser supplies no domain/token.
-- [ ] Test start captures the current section-revision snapshot and marks common Test RUNNING.
-- [ ] Only a response with every C082 stage passed and server `renderedText` present may mark current Test PASSED.
-- [ ] Backend/action failure marks the matching current Test FAILED.
-- [ ] Authoring/Test-context changes during an in-flight call prevent the late response from changing current readiness.
-- [ ] Authored section edits stale Test through C078/C079; argument/shop changes additionally stale Test locally/common-state without setting persistence-dirty.
-- [ ] Successful Test displays exact server `renderedText` first under `Result shown to agent`.
-- [ ] Safe normalized result/stages remain secondary and credential-safe.
-- [ ] New Shopify Create requires all existing C078 gates plus a current PASSED Test.
-- [ ] Persisted Shopify Save requires all existing C079 gates plus a current PASSED Test.
-- [ ] Existing External Save/Test gating from C081 is unchanged.
-- [ ] Review is navigable while Test is NOT_RUN/RUNNING/FAILED/STALE.
-- [ ] Test performs zero Tool/draft/audit/receipt/publication-proof mutation and does not satisfy `LIVE_TEST_REQUIRED` publication proof.
-- [ ] Existing Explore/Request/Response/Result Template/Review/Cancel/CAS behaviour remains intact.
+- [ ] C083 blocks rather than recreates C082 if the accepted backend/action is absent.
+- [ ] Exactly one reusable Shopify Admin Test surface serves new and persisted authoring.
+- [ ] No second authoritative Shopify Test/pass/freshness state exists.
+- [ ] C082 receives the exact current assembled definition, arguments and selected-shop ID.
+- [ ] Browser supplies no Shopify domain/token/credential.
+- [ ] Test cannot call C082 while any authored section is stale/invalid.
+- [ ] Test start drives the existing common RUNNING checkpoint.
+- [ ] Only a fully passed current C082 result can mark Test PASSED.
+- [ ] Current backend/stage failure marks FAILED.
+- [ ] Authored-section/Test-context mutation makes late responses stale.
+- [ ] Argument/shop A -> B -> A cannot resurrect an old result.
+- [ ] `Result shown to agent` displays exact server `renderedText` first.
+- [ ] New Shopify Create requires current PASS.
+- [ ] Persisted Shopify Save requires current PASS and preserves C079 CAS/dirty semantics.
+- [ ] External C081 Test/Save behavior is unchanged.
+- [ ] Test performs no durable or publication-proof write.
+- [ ] Existing Explore/Request/Response/Result Template/Review/Cancel behavior remains intact.
 
 ## Validation
 
-- [ ] `npx vitest run tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/shopify-admin-live-test-action.test.ts`
-- [ ] New Tool: all four sections current VALID + Shopify Test NOT_RUN -> Create disabled.
-- [ ] New Tool: current successful Shopify Test -> Create enabled when all other C078 gates pass.
-- [ ] New Tool: edit Request after PASS -> common Test STALE -> Create disabled.
-- [ ] New Tool: edit Result Template after PASS -> common Test STALE -> Create disabled.
-- [ ] New Tool: change selected shop or Test arguments after PASS -> common Test STALE -> Create disabled.
-- [ ] Persisted DRAFT: C079 persistence-dirty/current-valid + Test NOT_RUN -> Save disabled.
-- [ ] Persisted DRAFT: same state + current PASS -> Save enabled.
-- [ ] Persisted DRAFT: changing only Test arguments/shop does not set persistence-dirty but stales Test/Save eligibility.
-- [ ] Start run at snapshot N, edit Response before completion, resolve old successful response -> Test remains STALE and Create/Save remains disabled.
-- [ ] Start run N, then run N+1; late N response cannot overwrite N+1 result/checkpoint.
-- [ ] Backend `kind: ok` with any failed C082 stage -> common Test FAILED, never PASSED.
-- [ ] Missing selected shop performs zero C082 action call and shows the exact local message.
-- [ ] Invalid/stale prerequisite messages point only to Tool Definition, Request, Response or Result Template.
-- [ ] Successful output renders `Result shown to agent` before diagnostics and equals server `renderedText` exactly.
-- [ ] Browser Test input contains no shop domain/access token/credential fields.
-- [ ] Focused zero-write assertion proves Test invokes no create/save/publication mutation.
-- [ ] Existing External C081 Save/Test regressions remain green.
-- [ ] Targeted ESLint for changed files.
-- [ ] Changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation.
-- [ ] `git diff --check`.
+After C082 is physically integrated, run:
+
+```text
+npx vitest run   tests/shopify-admin-tools-ui.test.tsx   tests/tool-authoring-screen.test.tsx   tests/shopify-admin-live-test-action.test.ts
+```
+
+Add/retain focused regressions for:
+
+```text
+new Tool NOT_RUN -> Create disabled
+new Tool current PASS -> Create enabled when other gates pass
+persisted DRAFT NOT_RUN -> Save disabled
+persisted DRAFT current PASS -> Save enabled when other gates pass
+authored edit after PASS -> STALE
+Test arguments/shop change -> STALE without persistence-dirty
+arguments A -> B -> A stale-result protection
+shop A -> B -> A stale-result protection
+run N cannot overwrite run N+1
+failed C082 stage -> FAILED, never PASSED
+missing shop -> zero action call
+successful renderedText shown first
+browser request contains no credential/domain fields
+zero create/save/publication mutation during Test
+existing External C081 regressions remain green
+```
+
+Also run:
+
+```text
+targeted ESLint for changed files
+changed-file TypeScript diagnostics
+git diff --check
+```
 
 ## Stop Condition
 
-After every defined Work Item, Acceptance Criterion and required Validation item is complete, set the task to `review`, complete the Completion Report and STOP. Do not begin system-test or adjacent work.
+While C082 is absent, remain Blocked and STOP.
+
+After the blocker is resolved and the defined implementation/validation is complete:
+
+```text
+finish Completion Report
+set status review
+clear execution claim
+return to moda_architect
+STOP
+```
+
+Do not begin SYSTEM-TEST-002.
 
 ## Implementation Notes
 
-Do not infer Shopify rendering or result-envelope semantics in React. C082 is the sole server authority for provider execution, normalized result and rendered agent output.
+C082 is the sole Shopify Admin Test execution authority.
 
-The C083 dependency on C081 is an intentional coordination dependency: both tasks affect provider-aware authoring/Test Save gating in shared new/persisted editors. C083 must build on the accepted External gate rather than editing the same shared decision concurrently.
+C083 is intentionally an integration task:
 
-The C083 dependency on C079 is also intentional: persisted Shopify Test integration must target the accepted persisted authoring-session/persistence-dirty model rather than inventing temporary persisted-state semantics.
+```text
+existing authoring candidate
+        +
+existing common Test checkpoint
+        +
+existing C082 backend
+        ->
+Shopify Test UI
+        ->
+current PASS gate for Create/Save
+```
+
+Keep provider execution and Result Template rendering on the server.
 
 ## Completion Report
+
 
 ### Status
 
@@ -644,24 +527,50 @@ Proceeding by recreating C082 inside C083 would violate R1 and risk duplicating 
 
 ### Review Status
 
-Pending
+Blocked
 
 ### Review Notes
 
-None
+Attempt 1 correctly followed the integration precondition and stopped without implementation.
+
+The parent architecture records COMMERCE-082 as Complete/Accepted, but the prepared C083 `moda-interact-commerce` worktree does not contain the accepted C082 Shopify Admin live-Test service, Server Action, input/result/stage contract or equivalent integrated capability. The production `AdminQueryExecutionPort` alone is not a substitute.
+
+C083 MUST NOT recreate C082.
+
+Unblock condition:
+
+1. integrate the already-accepted C082 implementation into the Commerce implementation base used by new task worktrees — accepted handoff implementation commit `c4876fa` or a later commit containing the same reviewed capability;
+2. verify the C082 domain service, ADMIN-authorized Server Action, result/stage types and required CommerceBackend exposure are physically present;
+3. return this same C083 task from `blocked` to `ready`;
+4. the next normal claim becomes Attempt 2.
+
+The implementation worktree for Attempt 1 made no source changes, which is correct.
+
+This review also refines C083 to the bounded UI/session integration scope above. The previous duplicated restatement of C078/C079/C081 contracts is superseded by references to those accepted owners.
 
 ### Reviewed Files
 
-None
+- `docs/decisions/commerce/ARCH-021/COMMERCE-083-integrate-shopify-admin-test-tab.md`
+- accepted COMMERCE-082 task record / Completion Report
+- prepared C083 Commerce source tree capability search evidence
+- Commerce domain index
+- parent ARCH-021 execution plan
 
 ### Validation Reviewed
 
-None
+- Attempt 1 launcher dependency gate: passed.
+- Prepared implementation worktree capability check: C082 live-Test service/action absent.
+- Bounded file/symbol searches: no equivalent accepted C082 staged live-Test implementation found.
+- No application tests/lint/typecheck were required after the R1/precondition failure because implementation correctly stopped.
 
 ### Architecture Conformance
 
-Pending
+Blocked by integration drift, not by a C083 implementation defect.
+
+The task correctly refused to duplicate C082. The refined scope conforms once the accepted C082 implementation is physically integrated.
 
 ### Follow-up
 
-None
+`moda_architect` / developer integration step: integrate the accepted C082 implementation into the Commerce base, then return C083 to Ready for Attempt 2.
+
+SYSTEM-TEST-002 remains Pending.

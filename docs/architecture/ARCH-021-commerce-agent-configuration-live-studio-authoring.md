@@ -1087,7 +1087,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Blocked | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
@@ -1457,7 +1457,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Blocked | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Ready | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085 |
@@ -2702,3 +2702,12 @@ COMMERCE-083 remains Pending on COMMERCE-087. SYSTEM-TEST-002 remains terminally
 The optional-result runtime correction is architect-accepted. Commerce keeps the C084 `nunjucks.v1` grammar unchanged and makes schema-permitted omissions safe through a non-mutating template-only normalized context plus deterministic effective-optional generator guards. The strict renderer remains strict, required omissions still fail canonical Result validation, and External live Test / Shopify Admin execution / production rendering share the same correction.
 
 The executable refinement frontier is now COMMERCE-083. SYSTEM-TEST-002 remains terminally gated until C083 is Complete.
+
+
+### COMMERCE-083 integration blocker / refined scope — 2026-09-29
+
+C083 is Blocked by implementation-integration drift: the accepted C082 Shopify Admin live-Test capability is recorded Complete in architecture state but is absent from the prepared Commerce implementation base used by C083. C083 must not recreate that backend.
+
+After the accepted C082 implementation (`c4876fa` or a later integrated equivalent) is physically present, C083 resumes as a narrow Studio integration task: one reusable Shopify Test surface consumes C082, drives the existing C078/C079 common Test checkpoint with the C081 stale-result pattern, displays server-rendered Result Template output, and gates Shopify Create/Save on a current PASS.
+
+SYSTEM-TEST-002 remains Pending until C083 is Complete.

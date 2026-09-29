@@ -336,7 +336,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
 | [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-080 |
 | [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Complete | COMMERCE-060, 062, 063, 070 |
-| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Ready | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
+| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Blocked | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
 | [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Ready | COMMERCE-084, COMMERCE-085 |
@@ -1106,3 +1106,12 @@ Manual live-Test validation separately exposed a C084 generator/runtime mismatch
 COMMERCE-087 is **Complete / Accepted, Attempt 2**. Generated Nunjucks templates now remain within the accepted C084 grammar while schema-permitted omissions are normalized only in a pure template-safe render context. Optional/effectively-optional scalar output uses the existing `!= null` guard, optional arrays normalize to empty collections for deterministic fallback, nested optional objects are schema-shaped safely, present values are preserved, required omissions remain invalid, and provider results are not mutated.
 
 C078, C079, C081, C082, C085 and C087 are Complete, so COMMERCE-083 is **Ready**. SYSTEM-TEST-002 remains Pending until C083 is Complete.
+
+
+### COMMERCE-083 Attempt 1 blocked / scope refined — 2026-09-29
+
+C083 is **Blocked** because the prepared Commerce implementation worktree does not physically contain the already-accepted C082 Shopify Admin live-Test service/action contract. C083 correctly made no source change and must not recreate C082.
+
+The C083 task has been reduced to one bounded integration outcome: consume the existing C082 backend from one reusable Shopify Test surface, drive the accepted C078/C079 Test checkpoint using the C081 transient-generation pattern, show server-rendered `renderedText`, and require a current PASS for Shopify Create/Save.
+
+Unblock only after the accepted C082 implementation (`c4876fa` or a later integrated equivalent) is present in the Commerce base used by task worktrees. SYSTEM-TEST-002 remains Pending.
