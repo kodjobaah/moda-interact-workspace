@@ -423,24 +423,24 @@ Deleting an external architect/download handoff copy must have no effect on the 
 
 ## Work Items
 
-- [ ] Confirm COMMERCE-084 is Complete/Accepted and record the accepted grammar used by the guide.
-- [ ] Confirm COMMERCE-085 is Complete/Accepted and locate the final Result Template editor/header component.
-- [ ] Compare every manual example with the accepted C084 grammar; block on mismatch rather than publishing incorrect help.
-- [ ] Treat `manuals/result-template-guide.html` as the canonical source; do not keep a committed `public/manuals` copy.
-- [ ] Add `/public/manuals/` to `.gitignore`.
-- [ ] Implement the explicit one-entry `scripts/package-manuals.mjs` manifest and exact deterministic packaging algorithm.
-- [ ] Implement `scripts/manuals-packaged-smoke.mjs` as validation-only byte/title/heading verification.
-- [ ] Add `manuals:package` and `manuals:smoke` npm scripts using Node built-ins only.
-- [ ] Integrate manual packaging/smoke into `predev` in the required order.
-- [ ] Integrate manual packaging/smoke into `build` in the required order before existing code-runtime packaging, Prisma generation and `next build`.
-- [ ] Add regression proving stale generated manual files are removed.
-- [ ] Add regression proving a missing canonical source fails packaging rather than serving an old generated file.
-- [ ] Add exactly one `Open Result Template guide` link to the Result Template header/introductory area.
-- [ ] Add focused UI assertions for link text/href/target/rel and zero authoring-state mutation.
-- [ ] Run a clean manual-package smoke.
+- [x] Confirm COMMERCE-084 is Complete/Accepted and record the accepted grammar used by the guide.
+- [x] Confirm COMMERCE-085 is Complete/Accepted and locate the final Result Template editor/header component.
+- [x] Compare every manual example with the accepted C084 grammar; block on mismatch rather than publishing incorrect help.
+- [x] Treat `manuals/result-template-guide.html` as the canonical source; do not keep a committed `public/manuals` copy.
+- [x] Add `/public/manuals/` to `.gitignore`.
+- [x] Implement the explicit one-entry `scripts/package-manuals.mjs` manifest and exact deterministic packaging algorithm.
+- [x] Implement `scripts/manuals-packaged-smoke.mjs` as validation-only byte/title/heading verification.
+- [x] Add `manuals:package` and `manuals:smoke` npm scripts using Node built-ins only.
+- [x] Integrate manual packaging/smoke into `predev` in the required order.
+- [x] Integrate manual packaging/smoke into `build` in the required order before existing code-runtime packaging, Prisma generation and `next build`.
+- [x] Add regression proving stale generated manual files are removed.
+- [x] Add regression proving a missing canonical source fails packaging rather than serving an old generated file.
+- [x] Add exactly one `Open Result Template guide` link to the Result Template header/introductory area.
+- [x] Add focused UI assertions for link text/href/target/rel and zero authoring-state mutation.
+- [x] Run a clean manual-package smoke.
 - [ ] Run the normal production build from a state with no `public/manuals` directory.
 - [ ] Start the built application and prove the exact manual URL returns the packaged HTML with HTTP 200.
-- [ ] Complete the Completion Report and STOP.
+- [ ] Complete the Completion Report and STOP after the production gate is resolved.
 
 ## Interfaces / Contracts
 
@@ -489,45 +489,45 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] `manuals/result-template-guide.html` is the only committed canonical manual copy.
-- [ ] `/public/manuals/` is ignored as generated output.
-- [ ] `scripts/package-manuals.mjs` uses an explicit one-entry manifest and accepts no arbitrary copy paths.
-- [ ] Packaging resolves repository paths independently of the caller's current working directory.
-- [ ] Packaging removes stale `public/manuals` content before copying manifest entries.
-- [ ] Missing/invalid source, duplicate destination or path escape causes a non-zero packaging failure.
-- [ ] Packaged manual bytes equal canonical source bytes.
-- [ ] `manuals:package` and `manuals:smoke` exist with the exact responsibilities defined above.
-- [ ] `predev` packages/smokes manuals before existing code-runtime packaging.
-- [ ] `build` packages/smokes manuals before code-runtime packaging/smoke, Prisma generation and `next build --webpack`.
+- [x] `manuals/result-template-guide.html` is the only committed canonical manual copy.
+- [x] `/public/manuals/` is ignored as generated output.
+- [x] `scripts/package-manuals.mjs` uses an explicit one-entry manifest and accepts no arbitrary copy paths.
+- [x] Packaging resolves repository paths independently of the caller's current working directory.
+- [x] Packaging removes stale `public/manuals` content before copying manifest entries.
+- [x] Missing/invalid source, duplicate destination or path escape causes a non-zero packaging failure.
+- [x] Packaged manual bytes equal canonical source bytes.
+- [x] `manuals:package` and `manuals:smoke` exist with the exact responsibilities defined above.
+- [x] `predev` packages/smokes manuals before existing code-runtime packaging.
+- [x] `build` packages/smokes manuals before code-runtime packaging/smoke, Prisma generation and `next build --webpack`.
 - [ ] The production build succeeds from a clean state where `public/manuals/` does not exist.
 - [ ] The built application's normal `npm run start` serves `/manuals/result-template-guide.html` with HTTP 200 and HTML content.
 - [ ] The served document contains the exact expected title.
-- [ ] No post-build/manual/deployment copy step is needed.
-- [ ] The manual remains self-contained and written for non-developers.
-- [ ] Every documented grammar example matches architect-accepted C084.
-- [ ] Result Template displays exactly one contextual `Open Result Template guide` link.
-- [ ] Link href is exactly `/manuals/result-template-guide.html`, target is `_blank`, and rel includes `noopener noreferrer`.
-- [ ] Link availability is independent of validation/Test/dirty state.
-- [ ] Opening/rendering the guide causes zero Tool/ToolRevision/audit/persistence mutation.
-- [ ] Existing Result Template editor, validation, generation and Test behaviour are unchanged.
+- [ ] No post-build/manual/deployment copy step is needed (production build/start lifecycle not yet proven).
+- [x] The manual remains self-contained and written for non-developers.
+- [x] Every documented grammar example matches architect-accepted C084.
+- [x] Result Template displays exactly one contextual `Open Result Template guide` link.
+- [x] Link href is exactly `/manuals/result-template-guide.html`, target is `_blank`, and rel includes `noopener noreferrer`.
+- [x] Link availability is independent of validation/Test/dirty state.
+- [x] Opening/rendering the guide causes zero Tool/ToolRevision/audit/persistence mutation.
+- [x] Existing Result Template editor, validation, generation and Test behaviour are unchanged.
 
 ## Validation
 
-- [ ] `test -f manuals/result-template-guide.html`
-- [ ] `grep -F '<title>Result Template Guide | Moda Commerce Studio</title>' manuals/result-template-guide.html`
-- [ ] verify the canonical source contains no `<script`, remote `<link`, remote `<img`, or `<iframe` resources
-- [ ] `rm -rf public/manuals && npm run manuals:package && npm run manuals:smoke`
-- [ ] run focused manual-packaging regressions including stale-file removal and missing-source failure
-- [ ] run the accepted C085 Result Template UI test with link assertions
-- [ ] focused UI assertion: accessible link name equals `Open Result Template guide`
-- [ ] focused UI assertion: href/target/rel equal the required contract
-- [ ] focused UI assertion: link remains present for stale/invalid template states
-- [ ] focused UI assertion: rendering/clicking the anchor causes no authoring-state or Server Action mutation
-- [ ] targeted ESLint for changed JS/React/test files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
+- [x] `test -f manuals/result-template-guide.html`
+- [x] `grep -F '<title>Result Template Guide | Moda Commerce Studio</title>' manuals/result-template-guide.html`
+- [x] verify the canonical source contains no `<script`, remote `<link`, remote `<img`, or `<iframe` resources
+- [x] `rm -rf public/manuals && npm run manuals:package && npm run manuals:smoke`
+- [x] run focused manual-packaging regressions including stale-file removal and missing-source failure
+- [x] run the accepted C085 Result Template UI test with link assertions
+- [x] focused UI assertion: accessible link name equals `Open Result Template guide`
+- [x] focused UI assertion: href/target/rel equal the required contract
+- [x] focused UI assertion: link remains present for stale/invalid template states
+- [x] focused UI assertion: rendering/clicking the anchor causes no authoring-state or Server Action mutation
+- [x] targeted ESLint for changed JS/React/test files
+- [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
 - [ ] run `npm run build` with `public/manuals/` absent at start and record success
 - [ ] run bounded production-start HTTP smoke for `/manuals/result-template-guide.html`
-- [ ] `git diff --check`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -549,35 +549,96 @@ The current Next.js production start topology serves files from `public/`. This 
 
 ### Status
 
-Not Started
+Attempt 1 is blocked at the production-build gate and remains `in_progress`.
+Manual packaging, the authoring link and focused regressions are complete, but
+R11/R12 cannot be proven until the separate Commerce route-import task
+ARCH-021-COMMERCE-093 is materialized, accepted and completed. Per
+`moda_architect`, C086 must not expand scope or move to `review` on this attempt.
 
 ### Files Changed
 
-None
+Implementation commit `c26c0ec` on `task/ARCH-021-COMMERCE-086`:
+
+- `.gitignore`
+- `package.json`
+- `scripts/package-manuals.mjs`
+- `scripts/manuals-packaged-smoke.mjs`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `tests/manual-packaging.test.ts`
+- `tests/result-template-tab.test.tsx`
+
+The canonical source `manuals/result-template-guide.html` was unchanged; no
+generated `public/manuals/` file is committed.
 
 ### Work Completed
 
-None
+Confirmed C084 and C085 are complete. The guide examples were checked against
+C084's accepted scalar interpolation; bounded and nested `for` loops with
+`else`; `if`/`elif`/`else`; comparisons; boolean operators and grouping;
+numeric arithmetic; and primitive literals. No grammar mismatch was found.
+
+Added the explicit one-entry Node-built-in packager and read-only smoke script,
+integrated both into `predev` and `build`, and ignored generated
+`/public/manuals/`. Added packaging regressions for stale cleanup, missing
+source, invalid paths/duplicate destinations, non-regular sources and
+read-only smoke. Added one persistent Result Template intro link and assertions
+for URL/target/rel, invalid/stale visibility and zero authoring-state mutation.
 
 ### Validation Results
 
-None
+ - `npm run predev`: passed; manual package/smoke preceded existing code-runtime
+   packaging.
+ - Clean `npm run manuals:package && npm run manuals:smoke`: passed; generated
+   output is ignored by Git.
+ - Focused packaging, C085 UI and C084 authoring/generator/renderer/optionality
+   regressions: 6 files, 43 tests passed.
+ - Targeted ESLint and `git diff --check`: passed.
+ - Changed-file TypeScript output has no C086-introduced diagnostics. The only
+   remaining diagnostics in the touched UI file are the pre-existing C085
+   `CommerceResultSchema.properties`/`required` errors in `ResultTreeNode`; the
+   same lines exist at the C086 starting commit.
+ - Canonical guide resource scan found no script, iframe, image, external
+   stylesheet or remote URL reference.
+ - Clean `npm run build` passed manual packaging/smoke, code-runtime
+   packaging/smoke and Prisma generation, then failed during Next compilation
+   on three imports in the untouched
+   `app/api/studio/code-response/validate/route.ts`:
+   `../../../../../../lib/preview/http`,
+   `../../../../../../lib/preview/runtime`, and
+   `../../../../../../src/commerce/preview/types`. The referenced modules
+   exist in the Commerce repository; the route's six parent traversals resolve
+   outside the repository (one level too far).
+ - R11/R12 production build and `npm run start` HTTP smoke remain unverified;
+   no HTTP 200/title assertion is claimed.
 
 ### Deviations
 
-None
+The production lifecycle cannot pass because of the unrelated route-import
+defect. The route was not changed: it is outside C086 scope and
+`moda_architect` directed that the correction be a separate task.
 
 ### Assumptions
 
-None
+None.
 
 ### Unresolved Issues
 
-None
+ARCH-021-COMMERCE-093 is the architect-directed task to correct the three
+preview-validation route imports and verify the Commerce production build. Its
+definition is not yet materialized, so it is not yet added to C086's
+`depends_on` list.
+
+After C093 is accepted and complete, `moda_architect` directed that C086 be
+returned through the authorized Changes Requested path: add C093 as a
+dependency, clear `executor` and `claimed_at`, preserve `attempt: 1`, and set
+C086 to `ready`. The next authorized claim will be Attempt 2. Attempt 1's
+evidence and implementation commit must be preserved.
 
 ### Architectural Concerns
 
-None
+The existing preview-validation route import-depth defect blocks the normal
+Commerce build independently of C086. Correcting it here would cross the
+declared task scope; the architect chose a separate Commerce-owned task.
 
 ## Architect Review
 
