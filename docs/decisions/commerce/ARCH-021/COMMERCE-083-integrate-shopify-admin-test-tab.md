@@ -9,10 +9,9 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 75
 executor: copilot
-claimed_at: 2026-09-29T09:47:17Z
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-078
@@ -72,9 +71,9 @@ COMMERCE-085 / COMMERCE-087
 
 C083 should apply the already-accepted External Test integration pattern to Shopify Admin without creating another execution service, Test-readiness authority, renderer or persistence mechanism.
 
-### Current blocker
+### Attempt 1 blocker (resolved before Attempt 2)
 
-Attempt 1 verified that the prepared C083 implementation worktree does **not** physically contain the accepted C082 Shopify Admin live-Test implementation.
+Attempt 1 verified that its prepared C083 implementation worktree did **not** physically contain the accepted C082 Shopify Admin live-Test implementation. Before Attempt 2, the accepted C082 integration was merged into the Commerce base at `f090ccf` and verified in the prepared Attempt 2 implementation worktree.
 
 Present:
 
@@ -92,15 +91,13 @@ C082 live-Test input/result/stage contract
 CommerceBackend exposure required by that accepted Test service
 ```
 
-C083 MUST NOT recreate those capabilities.
+C083 MUST NOT recreate those capabilities. Attempt 2 consumed the accepted C082 service and action without duplicating them.
 
-The accepted C082 implementation (previously reviewed from implementation commit `c4876fa`, or a later integrated commit containing the same accepted capability) must first be integrated into the Commerce implementation base used by C083.
-
-After that integration is present, `moda_architect` returns this same task from `blocked` to `ready`; the next execution claim becomes Attempt 2.
+The Attempt 1 blocker is resolved; the task completed its bounded UI/session integration in Attempt 2.
 
 ## Scope
 
-After the blocker is resolved, C083 may change only the Shopify Admin authoring integration surfaces needed to consume C082:
+With C082 integrated, C083 changes only the Shopify Admin authoring integration surfaces needed to consume C082:
 
 ```text
 src/studio/tools/new-tool-editor.tsx
@@ -331,17 +328,17 @@ External Test behavior
 
 ## Work Items
 
-- [ ] Verify accepted C082 implementation is physically present before source work.
-- [ ] Add one reusable Shopify Admin Test surface for new and persisted authoring.
-- [ ] Reuse the C078/C079 common Test checkpoint and C081 transient-generation pattern.
-- [ ] Submit the exact current assembled Shopify candidate to C082.
-- [ ] Gate Test on current authored-section validity, shop and Test-argument validity.
-- [ ] Display exact server `renderedText` first and bounded safe diagnostics second.
-- [ ] Require current Shopify Test PASS for new Create.
-- [ ] Require current Shopify Test PASS for persisted Save without changing C079 CAS/dirty semantics.
-- [ ] Preserve External C081 behavior.
-- [ ] Prove Test is zero-write and does not create publication proof.
-- [ ] Add focused new/persisted/stale/concurrency regressions.
+- [x] Verify accepted C082 implementation is physically present before source work.
+- [x] Add one reusable Shopify Admin Test surface for new and persisted authoring.
+- [x] Reuse the C078/C079 common Test checkpoint and C081 transient-generation pattern.
+- [x] Submit the exact current assembled Shopify candidate to C082.
+- [x] Gate Test on current authored-section validity, shop and Test-argument validity.
+- [x] Display exact server `renderedText` first and bounded safe diagnostics second.
+- [x] Require current Shopify Test PASS for new Create.
+- [x] Require current Shopify Test PASS for persisted Save without changing C079 CAS/dirty semantics.
+- [x] Preserve External C081 behavior.
+- [x] Prove Test is zero-write and does not create publication proof.
+- [x] Add focused new/persisted/stale/concurrency regressions.
 
 ## Interfaces / Contracts
 
@@ -380,23 +377,23 @@ No new persistent, database, queue, Shared or cross-repository contract.
 
 ## Acceptance Criteria
 
-- [ ] C083 blocks rather than recreates C082 if the accepted backend/action is absent.
-- [ ] Exactly one reusable Shopify Admin Test surface serves new and persisted authoring.
-- [ ] No second authoritative Shopify Test/pass/freshness state exists.
-- [ ] C082 receives the exact current assembled definition, arguments and selected-shop ID.
-- [ ] Browser supplies no Shopify domain/token/credential.
-- [ ] Test cannot call C082 while any authored section is stale/invalid.
-- [ ] Test start drives the existing common RUNNING checkpoint.
-- [ ] Only a fully passed current C082 result can mark Test PASSED.
-- [ ] Current backend/stage failure marks FAILED.
-- [ ] Authored-section/Test-context mutation makes late responses stale.
-- [ ] Argument/shop A -> B -> A cannot resurrect an old result.
-- [ ] `Result shown to agent` displays exact server `renderedText` first.
-- [ ] New Shopify Create requires current PASS.
-- [ ] Persisted Shopify Save requires current PASS and preserves C079 CAS/dirty semantics.
-- [ ] External C081 Test/Save behavior is unchanged.
-- [ ] Test performs no durable or publication-proof write.
-- [ ] Existing Explore/Request/Response/Result Template/Review/Cancel behavior remains intact.
+- [x] C083 blocks rather than recreates C082 if the accepted backend/action is absent.
+- [x] Exactly one reusable Shopify Admin Test surface serves new and persisted authoring.
+- [x] No second authoritative Shopify Test/pass/freshness state exists.
+- [x] C082 receives the exact current assembled definition, arguments and selected-shop ID.
+- [x] Browser supplies no Shopify domain/token/credential.
+- [x] Test cannot call C082 while any authored section is stale/invalid.
+- [x] Test start drives the existing common RUNNING checkpoint.
+- [x] Only a fully passed current C082 result can mark Test PASSED.
+- [x] Current backend/stage failure marks FAILED.
+- [x] Authored-section/Test-context mutation makes late responses stale.
+- [x] Argument/shop A -> B -> A cannot resurrect an old result.
+- [x] `Result shown to agent` displays exact server `renderedText` first.
+- [x] New Shopify Create requires current PASS.
+- [x] Persisted Shopify Save requires current PASS and preserves C079 CAS/dirty semantics.
+- [x] External C081 Test/Save behavior is unchanged.
+- [x] Test performs no durable or publication-proof write.
+- [x] Existing Explore/Request/Response/Result Template/Review/Cancel behavior remains intact.
 
 ## Validation
 
@@ -522,6 +519,55 @@ Proceeding by recreating C082 inside C083 would violate R1 and risk duplicating 
 - Parent submodule gitlink staged: no.
 - Merged to implementation main: no.
 - Merged to workspace main: no.
+
+### Attempt 2 Completion Report
+
+#### Status
+
+Implemented and validated. Returned to `moda_architect` for review.
+
+#### Files Changed
+
+- `src/studio/tools/authoring/shopify-admin-test-tab.tsx` — shared transient Admin Test UI for new and persisted authoring.
+- `src/studio/tools/new-tool-editor.tsx` — integrated Test and current-PASS Create gate.
+- `src/studio/tools/tool-editor.tsx` — integrated Test, current-PASS Save UI and submit guard, while preserving the External branch.
+- `tests/shopify-admin-tools-ui.test.tsx`, `tests/tool-authoring-screen.test.tsx`, `tests/shopify-admin-live-test-action.test.ts` — focused UI/action and lifecycle regressions.
+
+#### Work Completed
+
+- Verified the accepted C082 live-Test domain service, ADMIN-authorized Server Action, stage/result contract, and Commerce backend exposure were present in the Attempt 2 base (`f090ccf`). No C082 execution capability was recreated.
+- Added one shared `ShopifyAdminTestTab` using the common C078/C079 checkpoint and provider-local monotonic generation/sequence checks. It submits the assembled definition, parsed object arguments, and selected shop ID only; the UI enforces the accepted backend's 16 KiB argument limit.
+- Gated Test on valid current authoring sections, shop selection, and valid arguments. The server-provided `renderedText` is shown first; only bounded stages/issues and normalized result are secondary.
+- Gated new Create and persisted Save on current Test PASS, including the persisted form submit handler, without changing C079 compare-and-swap or dirty-state semantics. Successful Test remains transient and performs no Tool, revision, audit, receipt, or publication-proof write.
+- Preserved External C081 behavior. A changed-file typecheck review exposed accidental Admin Review references in the External branch; those were restored to the committed C081 behavior, then both authoring UI suites and the complete task packet were rerun successfully.
+- Added regressions for NOT_RUN Create/Save gating, direct persisted form-submit blocking, current-pass behavior, exact no-credential payload shape, zero-write behavior, failed C082 stages, missing shop, stale arguments, combined shop/argument A-to-B-to-A transitions, and old-run completion after a newer run.
+
+#### Validation Results
+
+- Required packet: `npx vitest run tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-screen.test.tsx tests/shopify-admin-live-test-action.test.ts` — 3 files, 62 tests passed.
+- Targeted ESLint on all six changed files — 0 errors, 0 warnings.
+- Changed-file TypeScript diagnostics — no diagnostics in the six changed files.
+- `git diff --check` — passed.
+- Package-wide `npx tsc --noEmit` is not a clean project gate: its earlier run reported diagnostics in other files. No changed-file diagnostics remained after the External branch restoration.
+
+#### Deviations and Assumptions
+
+- The accepted C082 backend caps arguments at 16 KiB, tighter than the task's 64 KiB ceiling; the UI matches the backend limit to avoid requests that the action must reject.
+- No database, Shared, queue, publication-proof, or cross-repository contract was changed.
+
+#### Unresolved Issues
+
+- None within C083 scope. `ARCH-021-SYSTEM-TEST-002` remains pending and was not started.
+
+#### Git / VCS
+
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-083`
+- Implementation branch: `task/ARCH-021-COMMERCE-083`
+- Implementation commit: `d15d2ab` (`feat(commerce): integrate Shopify Admin authoring test`), pushed to `origin/task/ARCH-021-COMMERCE-083`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-083`
+- Parent branch: `task/ARCH-021-COMMERCE-083`; this report is the only parent-worktree change for Attempt 2.
+- Parent submodule gitlink staged: no. Merged to implementation main: no. Merged to workspace main: no.
+- Task status set to `review`; execution claim cleared; handed back to `moda_architect`.
 
 ## Architect Review
 
