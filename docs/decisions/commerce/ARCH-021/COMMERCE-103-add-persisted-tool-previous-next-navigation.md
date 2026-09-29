@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 74
 executor: null
 claimed_at: null
@@ -610,24 +610,163 @@ None identified.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+COMMERCE-103 Attempt 1 is **accepted in implementation substance**. No product/source correction is requested at this stage.
+
+The inspected implementation conforms to the persisted-DRAFT navigation contract:
+
+- `EXTERNAL_HTTP`, `SHOPIFY_ADMIN_GRAPHQL` and `POLICY_OPERATION` reuse the canonical six-step order;
+- persisted tabs remain directly clickable and do not gain a progressive unlock frontier;
+- `Previous` / `Next` use the shared `ToolAuthoringStepNavigation` presentation and the canonical previous/next helpers;
+- External and Shopify Admin update the existing parent-owned `externalSection`;
+- Policy Operation uses the existing parent-supplied `section` / `setSection`;
+- sequential navigation is independent of validation, Test freshness, Save readiness, `pending` and `locked`, matching direct persisted tab behaviour required by this task;
+- the persisted tablist label is provider-neutral (`Tool authoring steps`);
+- navigation does not create another authoring-session navigation field;
+- the existing Shopify Explore `editor.section` restore/handoff remains the section source of truth;
+- the Policy descriptor is not re-requested merely because Previous/Next changes the active section;
+- the inspected regressions cover External, Shopify Admin and Policy Operation traversal, transient edits, zero lifecycle/Test/validation side effects, boundaries and Explore restoration;
+- new-Tool progressive navigation remains on the existing COMMERCE-095 path.
+
+The implementation therefore does **not** need code churn merely for this review.
+
+Attempt 1 cannot be accepted Complete yet because the durable task record is not protocol-complete:
+
+1. Every Work Item remains unchecked even though the Completion Report says the work was implemented.
+2. Every Acceptance Criterion remains unchecked.
+3. Every Validation checklist item remains unchecked.
+4. The Completion Report does not record the mandatory launcher-resolved physical-isolation/start-of-attempt synchronization evidence for the dedicated parent and implementation worktrees, including recursive submodule preparation.
+
+The architect protocol requires this evidence for every repository task. A clean pushed branch and passing tests do not substitute for the prepared-worktree evidence.
+
+#### Attempt 2 correction contract — evidence/report reconciliation only
+
+Do **not** redesign or refactor the C103 implementation.
+
+Run the normal:
+
+```text
+/moda-task ARCH-021-COMMERCE-103
+```
+
+preparation path for Attempt 2.
+
+The launcher must establish/reuse the canonical dedicated parent and implementation worktrees, incorporate current `origin/main` as required, initialize/verify recursive submodules and claim Attempt 2.
+
+If the already-pushed implementation commit is valid, check out/use that implementation in the canonical C103 implementation worktree. Do not manufacture source churn solely to create another implementation commit.
+
+From the launcher-prepared canonical implementation worktree:
+
+1. rerun the required C103 focused validation;
+2. reconcile every completed Work Item to `[x]`;
+3. reconcile every satisfied Acceptance Criterion to `[x]`;
+4. reconcile every completed Validation item to `[x]`;
+5. preserve the exact Attempt 1 implementation and Completion Report history;
+6. add Attempt 2 preparation/validation evidence to the Completion Report;
+7. return the same task to `review`;
+8. STOP — do not start SYSTEM-TEST-002, COMMERCE-102 or another follow-on task.
+
+The Attempt 2 Completion Report MUST record the exact launcher packet facts, not inferred values:
+
+```text
+canonical workspace_root
+
+parent_worktree_path
+parent task branch
+parent remote task-branch synchronization result
+parent origin/main incorporation result
+parent synchronized HEAD
+
+implementation_worktree_path
+implementation task branch
+implementation remote task-branch synchronization result
+implementation origin/main incorporation result
+implementation synchronized HEAD
+
+recursive submodule sync/update result
+recursive submodule status
+database (or other implementation submodule) recorded commit, where applicable
+
+claim executor
+claimed_at
+Attempt 2 claim commit
+```
+
+If the launcher reports that execution cannot be prepared in the canonical isolated worktrees, return the task Blocked rather than validating from a shared/default checkout.
+
+#### Validation reconciliation
+
+The task-required focused suites are:
+
+```text
+tests/external-tools-ui.test.tsx
+tests/shopify-admin-tools-ui.test.tsx
+tests/tool-authoring-screen.test.tsx
+```
+
+Attempt 1 reports 163 tests passed and the reviewed test source is consistent with the required C103 regression matrix.
+
+For Attempt 2:
+
+- rerun the same focused three-suite packet from the canonical implementation worktree;
+- rerun targeted ESLint for every C103-changed source/test file;
+- rerun `npm run typecheck`;
+- rerun `git diff --check`.
+
+The Attempt 1 `pnpm exec vitest` deviation is documented. If the repository's prepared dependency environment still makes `pnpm exec` stop before executing tests because of the same ignored-build policy, using the already-installed lockfile-pinned local Vitest binary for the exact same files is acceptable **only if** the Completion Report records the command and confirms no project manifest/lockfile change and no dependency installation is smuggled into task scope.
+
+Do not rely on a temporary cross-checkout Vite symlink as the final Attempt 2 typecheck proof. Run typecheck against the canonical prepared task environment. If the required lockfile-pinned dependency is unavailable there, report the environment/dependency gap instead of modifying manifests or borrowing runtime dependencies from another checkout.
 
 ### Reviewed Files
 
-None
+- `docs/decisions/commerce/ARCH-021/COMMERCE-103-add-persisted-tool-previous-next-navigation.md`
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-navigation.ts`
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-step-navigation.tsx`
+- `moda-interact-commerce/src/studio/tools/authoring/tool-authoring-tabs.tsx`
+- `moda-interact-commerce/src/studio/tools/tool-editor.tsx`
+- `moda-interact-commerce/src/studio/tools/policy-operation-editor.tsx`
+- `moda-interact-commerce/tests/external-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/shopify-admin-tools-ui.test.tsx`
+- `moda-interact-commerce/tests/tool-authoring-screen.test.tsx`
 
 ### Validation Reviewed
 
-None
+Attempt 1 submitted evidence:
+
+- focused UI packet: **3 files / 163 tests passed**;
+- targeted ESLint: passed;
+- changed-file diagnostics: clean;
+- `npm run typecheck`: reported passed, with the dependency-environment deviation documented above;
+- `git diff --check`: passed.
+
+The submitted archive does not contain installed `node_modules`, so these commands were not independently rerun in this review environment.
+
+The implementation/test source was inspected directly and no C103 behavioural defect was identified.
 
 ### Architecture Conformance
 
-Pending.
+Implementation: **Conforms**.
+
+Task execution/report protocol: **Changes Requested** pending checklist reconciliation and mandatory launcher/worktree/start-of-attempt evidence.
 
 ### Follow-up
 
-None.
+Return the SAME `ARCH-021-COMMERCE-103` task through `/moda-task` for Attempt 2.
+
+Task state for rework:
+
+```text
+status: ready
+executor: null
+claimed_at: null
+attempt: 1
+```
+
+The next authorized launcher claim increments to Attempt 2.
+
+No implementation source change is required unless the canonical rerun exposes a real defect.
+
+ARCH-021-SYSTEM-TEST-002 remains dependency-gated until C103 is architect-accepted Complete.
