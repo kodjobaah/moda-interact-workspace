@@ -1124,7 +1124,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
-| ARCH-021-COMMERCE-103 | moda_commerce | Ready | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
@@ -1591,7 +1591,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
-| ARCH-021-COMMERCE-103 | moda_commerce | Ready | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
@@ -3061,10 +3061,16 @@ existing async mutation/provider/validation action
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
-| ARCH-021-COMMERCE-103 | moda_commerce | Ready | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-102, ARCH-021-COMMERCE-103 |
 
-COMMERCE-102 and COMMERCE-103 are independent implementation corrections. SYSTEM-TEST-002 is re-gated behind both and remains terminal validation; no Commerce implementation task depends on the system-test task.
+COMMERCE-102 and COMMERCE-103 are independent implementation corrections.
+
+### COMMERCE-103 accepted — 2026-09-30
+
+COMMERCE-103 is **Complete / Accepted**. Persisted External HTTP, Shopify Admin and Policy Operation DRAFTs now share the canonical six-step Previous/Next traversal while keeping every persisted tab directly clickable and preserving validation/Test/Save independence. The final canonical project typecheck passes with zero diagnostics and the task worktree is clean.
+
+C103's SYSTEM-TEST-002 dependency is satisfied. SYSTEM-TEST-002 remains **Pending** on COMMERCE-102 and remains terminal validation; no Commerce implementation task depends on the system-test task.
 
 ### Add Capability direct-phase navigation correction — 2026-09-29
 
