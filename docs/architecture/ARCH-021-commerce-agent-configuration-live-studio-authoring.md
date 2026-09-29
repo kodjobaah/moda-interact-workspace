@@ -2868,3 +2868,43 @@ The code-response validation route-import correction is architect-accepted. The 
 The next production-build blocker is repository-wide TypeScript checking: 23 diagnostics across 12 unrelated files. That bounded correction/build gate is owned by COMMERCE-094, materialised separately by the developer and dependent on C093.
 
 C086 remains Blocked on C094. After C094 is Complete, C086 returns to Ready for Attempt 2 and reruns only the unresolved terminal validation: clean production build plus bounded production-start HTTP smoke for the packaged Result Template guide.
+
+
+### Generic Policy Operation Studio authoring follow-up — 2026-09-29
+
+ARCH-021 extends the accepted Tool-authoring architecture to existing persisted `POLICY_OPERATION` Tools without introducing a new function runtime or allowing Studio to author executable source.
+
+The generic flow is:
+
+```text
+registered Moda-owned Policy Operation
+        |
+        v
+C096 canonical registration
+  adapter + input/output validators
+  + Commerce-local browser-safe authoring descriptor
+        |
+        +----------------------+
+        |                      |
+        v                      v
+C097 persisted editor     C098 non-durable live Test
+        |                      |
+        +----------+-----------+
+                   v
+              C099 CAS Save
+                   |
+                   v
+              C100 Publish/reopen
+```
+
+The C096 descriptor schemas are Commerce-local JSON-compatible schemas generated from the same canonical Zod runtime validators. They deliberately are not forced into Shared `SubsetSchema` / current `CommerceResultSchema`, because existing accepted policy contracts include nested proposal structures, nullable values and collection bounds above the current Result Template schema limits. C097 consumes this descriptor rather than maintaining a second Studio operation catalogue.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-096 | moda_commerce | Complete | ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-097 | moda_commerce | Ready | ARCH-021-COMMERCE-096 |
+| ARCH-021-COMMERCE-098 | moda_commerce | Ready | ARCH-021-COMMERCE-096 |
+| ARCH-021-COMMERCE-099 | moda_commerce | Pending | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
+| ARCH-021-COMMERCE-100 | moda_commerce | Pending | ARCH-021-COMMERCE-099 |
+
+C096 Attempt 1 is architect-accepted. C097/C098 are the executable frontier and may run in parallel. This follow-up remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge using the same Policy Operation mechanism without a Merchant Knowledge special case in ARCH-021.

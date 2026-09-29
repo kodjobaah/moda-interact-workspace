@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
 executor: null
 claimed_at: null
@@ -98,13 +98,25 @@ Do not create a second function/execution abstraction. A policy operation remain
 Extend the canonical policy-operation registration so each `(operation, operationVersion)` registration owns all of the following:
 
 ```ts
+type PolicyOperationJsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | PolicyOperationJsonValue[]
+  | { [key: string]: PolicyOperationJsonValue };
+
+type PolicyOperationAuthoringSchema = {
+  [keyword: string]: PolicyOperationJsonValue;
+};
+
 type PolicyOperationAuthoringDescriptor = {
   operation: PolicyOperation;
   operationVersion: PolicyOperationVersion;
   displayName: string;
   description: string;
-  argumentsSchema: SubsetSchema;
-  resultSchema: CommerceResultSchema;
+  argumentsSchema: PolicyOperationAuthoringSchema;
+  resultSchema: PolicyOperationAuthoringSchema;
 };
 
 type PolicyOperationRegistration = {
@@ -117,11 +129,18 @@ type PolicyOperationRegistration = {
 };
 ```
 
-Mechanically equivalent names are allowed only where required by repository-local naming, but there must be one registration object per operation/version containing the adapter, runtime validators and authoring descriptor.
+The authoring schemas are Commerce-local, JSON-compatible schema values derived from the same canonical Zod validators held by the registration. They are intentionally **not** the Shared `SubsetSchema` or the current `CommerceResultSchema`:
+
+- the accepted `discounts.evaluate` input contains nested proposal/operation structures that `SubsetSchema` cannot represent faithfully; and
+- accepted policy outputs contain nullable values and collection bounds such as 50, 100 and 128 that the current `CommerceResultSchema` cannot represent without loss.
+
+Do not publish a lossy Studio descriptor merely to force these contracts into those narrower types.
+
+Mechanically equivalent names are allowed only where required by repository-local naming, but there must be one resolved registration object per operation/version containing the adapter, runtime validators and authoring descriptor.
 
 `argumentsSchema` describes the object accepted **after** Tool argument mapping. `resultSchema` describes the successful `CommerceToolResult.data` shape available to Result Template authoring.
 
-Do not maintain a second Studio-only operation metadata list.
+Do not maintain a second Studio-only operation metadata list. C097 must consume this Commerce-local descriptor contract rather than re-deriving operation schemas independently.
 
 ### R3 — registry resolution is canonical for runtime and authoring
 
@@ -342,24 +361,87 @@ The task's original literal `SubsetSchema` / `CommerceResultSchema` field types 
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 is accepted.
+
+C096 establishes the required single server-owned Policy Operation registration/descriptor boundary without introducing a new execution kind or Studio-authored executable runtime.
+
+The implementation conforms in the important runtime and authoring boundaries:
+
+- `POLICY_OPERATION` remains the existing canonical Tool execution kind;
+- all six accepted operation/version pairs are represented by the canonical Commerce policy contract catalogue and assembled into runtime registrations containing adapter, input validator, output validator and authoring descriptor;
+- production registration construction deterministically rejects missing, duplicate and unregistered adapter identities;
+- `DefinitionExecutor` resolves the policy registration once and uses that registration's input validator, adapter and output validator;
+- executor-local `POLICY_SCHEMAS` ownership is removed;
+- executable-availability checks use the same registry identity;
+- `CommerceBackend` exposes the same active policy registry instance used by runtime execution;
+- `describe()` returns a cloned/deeply frozen JSON-compatible descriptor and never exposes adapter references, Zod objects, tenant context, credentials or environment state;
+- the Studio descriptor action validates the persisted operation/version identity, requires the existing ADMIN Studio authorization boundary, reads only the server-side registry, returns `UNAVAILABLE` for invalid/unregistered identities and performs no durable write;
+- descriptor availability does not grant execution; normal Tool publication/grant/runtime authorization remains authoritative.
+
+The task's originally specified `SubsetSchema` / `CommerceResultSchema` descriptor fields were too narrow for the already-accepted operation contracts. The architect accepts the Commerce-local JSON-schema descriptor used by this implementation because it is generated from the same runtime Zod validators and preserves contracts that would otherwise be misstated:
+
+- nested `discounts.evaluate` proposal/operation structures;
+- nullable output values; and
+- accepted collection bounds including basket lines 100, unknown fields 128 and discount offers 50.
+
+The task definition is reconciled by this acceptance overlay to make that accurate Commerce-local contract authoritative. No Shared contract change is required because the descriptor is consumed only inside Commerce Studio/Commerce runtime.
+
+The additional backend-integration run reported 6 passes and 2 failures. Both failing tests assert that process-global production backend initialization must throw when production dependencies are absent. That assumption is environment-sensitive: in this prepared worktree the ambient production configuration was sufficient for `getCommerceBackend()` to initialize. The failures are not in changed C096 behavior and do not demonstrate a policy-registry/Admin/External regression. The required focused C096 packet passed.
+
+The implementation branch's configured Git upstream still points at `origin/main`, but the Completion Report explicitly verifies the local task-branch ref equals the pushed `origin/task/ARCH-021-COMMERCE-096` ref. This is a local tracking configuration discrepancy, not missing task publication or a source defect.
 
 ### Reviewed Files
 
-None
+- `src/commerce/execution/ports.ts`
+- `src/commerce/execution/policy-operation-authoring.ts`
+- `src/commerce/execution/index.ts`
+- `src/commerce/execution/executor.ts`
+- `src/commerce/execution/renderer.ts`
+- `src/commerce/integration/backend/executors.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `src/studio/tools/policy-operation-authoring-server-actions.ts`
+- `tests/policy-operation-registry.test.ts`
+- `tests/policy-operation-authoring-server-actions.test.ts`
+- `tests/definition-execution.test.ts`
+- `tests/recommendation-contract.test.ts`
+- `tests/backend-integration.test.ts`
+- C096 Completion Report
 
 ### Validation Reviewed
 
-None
+Submitted required C096 evidence:
+
+- focused six-file packet: **54/54 tests passed**;
+- packet includes policy registry, descriptor Server Action, DefinitionExecutor, recommendation contract, Shopify Admin compiler and External HTTP executor coverage;
+- targeted ESLint across all 13 changed source/test files: passed;
+- changed-file TypeScript/Pylance diagnostics: clean;
+- `git diff --check`: passed.
+
+Additional backend-integration packet:
+
+- **6 passed / 2 failed**;
+- the two failures are the environment-sensitive `getCommerceBackend()`-must-throw assertions described above;
+- production policy registration/backend composition assertions in that suite passed.
+
+Prisma Client generation was used only to load the integration suite; no schema/submodule pointer changed.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C096 makes policy operations self-describing through one Commerce-owned registration/registry source, preserves exact runtime validation/business behavior, exposes only bounded browser-safe metadata, and keeps descriptor reads separate from execution authority.
 
 ### Follow-up
 
-None
+C096 is Complete / Accepted — Attempt 1.
+
+COMMERCE-097 and COMMERCE-098 become Ready and may execute independently.
+
+COMMERCE-099 remains Pending until both C097 and C098 are Complete.
+
+COMMERCE-100 remains Pending on C099.
