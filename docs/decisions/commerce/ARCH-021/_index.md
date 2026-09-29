@@ -339,7 +339,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Ready | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
-| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Ready | COMMERCE-084, COMMERCE-085 |
+| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Blocked | COMMERCE-084, COMMERCE-085, COMMERCE-093 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
 
 Initial executable frontier for this workstream:
@@ -1118,3 +1118,12 @@ C078, C079, C081, C082, C085 and C087 are Complete, so COMMERCE-083 is **Ready**
 | [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
 
 The two implementation branches after COMMERCE-088 are intentionally parallel: COMMERCE-089 owns release/runtime composition while COMMERCE-090/091 own the user-facing Feature authoring flow. COMMERCE-092 is the subtractive gate and must not execute until both replacement paths and Background consumption are accepted.
+
+
+### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
+
+C086 is **Blocked** after a clean production build reached Next compilation and failed only on three over-deep imports in the untouched Studio code-response validation route. C086's manual packaging/link implementation remains within scope and its passed Attempt 1 evidence is preserved.
+
+COMMERCE-093 is **Ready** and owns the minimum three-import correction plus normal Commerce production-build verification. C086 now explicitly depends on C093.
+
+After C093 is architect-accepted Complete, C086 will be returned to Ready for Attempt 2 to rerun the clean production build and bounded `npm run start` manual HTTP smoke. No already-passed C086 implementation work should be repeated absent a relevant intervening change.
