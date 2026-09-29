@@ -2966,9 +2966,9 @@ The C096 descriptor schemas are Commerce-local JSON-compatible schemas generated
 | ARCH-021-COMMERCE-097 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
 | ARCH-021-COMMERCE-098 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
 | ARCH-021-COMMERCE-099 | moda_commerce | Complete | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
-| ARCH-021-COMMERCE-100 | moda_commerce | Ready | ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-100 | moda_commerce | Complete | ARCH-021-COMMERCE-099 |
 
-C096, C097, C098 and C099 are architect-accepted Complete. C100 is now the executable frontier. This follow-up remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge using the same Policy Operation mechanism without a Merchant Knowledge special case in ARCH-021.
+C096, C097, C098, C099 and C100 are architect-accepted Complete. The generic Policy Operation Studio follow-up has no remaining executable ARCH-021 task. This capability remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge through its own materialised tasks without a Merchant Knowledge special case in ARCH-021.
 
 
 ### COMMERCE-098 Attempt 1 accepted — 2026-09-29
@@ -2992,6 +2992,14 @@ The persisted Policy Operation session/Test/CAS-save integration is architect-ac
 Attempt 2 closes the transient Test race with the accepted monotonic provider-local generation pattern. Arguments/shop A -> B -> A reversion cannot make an obsolete in-flight result current again; Save remains disabled until a fresh current Test passes.
 
 C099 is Complete and C100 is **Ready** for publication/reopen/regression validation.
+
+### COMMERCE-100 Attempt 1 accepted — 2026-09-29
+
+The generic Policy Operation publication/reopen boundary is architect-accepted. Policy Operation DRAFTs use the canonical Tool publication lifecycle with current saved-state, validation, Test, authorization and reason gates; exact registry unavailability fails closed before mutation; and published revisions reopen read-only with their exact operation/version and definition.
+
+New Tool creation remains limited to its accepted execution kinds, and no schema/migration or ARCH-023-specific branch was added.
+
+C096-C100 are now all Complete. This bounded generic Policy Operation Studio follow-up has no remaining executable ARCH-021 task.
 
 
 ### COMMERCE-086 Attempt 2 accepted — 2026-09-29

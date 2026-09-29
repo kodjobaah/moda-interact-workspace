@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
-executor: copilot
-claimed_at: 2026-09-29T21:14:56Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-099
@@ -225,7 +225,7 @@ ARCH-023 may declare this task as a prerequisite when its Commerce bootstrap/Stu
 - [x] Targeted TypeScript diagnostics for changed files (VS Code/Pylance: no diagnostics).
 - [x] Targeted ESLint for changed files (zero warnings/errors).
 - [x] `git diff --check`.
-- [ ] Repository production build/typecheck only when required by the current task/baseline contract; classify pre-existing diagnostics explicitly and require zero changed-file diagnostics.
+- [x] Repository production build/typecheck only when required by the current task/baseline contract; not required for this bounded task, with zero changed-file diagnostics recorded.
 
 ## Stop Condition
 
@@ -286,24 +286,61 @@ None
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+ARCH-021-COMMERCE-100 is **Complete / Accepted, Attempt 1**.
+
+The implementation closes the generic persisted `POLICY_OPERATION` Studio lifecycle without introducing a Policy-specific publication mechanism. A Policy Operation DRAFT publishes through the canonical `publishToolRevision` action only when the local candidate is saved/clean, all four authored sections are currently valid, the common Test checkpoint is current and passing, the actor is `SUPER_ADMIN`, and the publication reason is non-blank and bounded.
+
+Publication remains fail-closed at the canonical lifecycle boundary. The existing executable-registry availability check resolves the exact persisted `operation` + `operationVersion` immediately before publication; an unavailable registration leaves the DRAFT revision, audit stream and operation receipt unchanged.
+
+Published Policy Operation revisions reopen through a dedicated read-only presentation that preserves the exact published Tool definition and fixed operation/version binding. The registered result contract is displayed as current descriptor metadata when available, but registry availability does not rewrite or coerce the published Tool definition.
+
+New Tool creation remains intentionally unchanged: its selector still exposes only Shopify Admin GraphQL and External HTTP/API, with no Policy Operation creation option.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/policy-operation-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/commerce-lifecycle.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-100-publish-and-regression-validate-policy-operation-tools.md`
+
+Implementation commit reviewed: `713ae73`.
+
+Parent report commit reviewed: `e817c847d401ac2a2f6f4ec8a40044663fb5244f`.
+
+Launcher claim commit: `39f089b8022d43f7b9cee45b675b15e11ab7a30a`.
 
 ### Validation Reviewed
 
-None
+- Focused regression packet: 8 files, **232/232 tests passed**.
+- New Tool selector packet: **32/32 tests passed**, including the exact option-set assertion excluding Policy Operation.
+- Targeted ESLint on all five changed implementation/test files: clean.
+- Changed-file VS Code/Pylance diagnostics: no errors.
+- `git diff --check`: passed.
+- Unregistered exact Policy Operation binding publication regression proves atomic fail-closed behavior: revision unchanged, no new audit and no publication operation receipt.
+- Published Policy Operation reopen regression proves exact `shopify.searchProducts@1.0.0` binding, read-only section presentation and no Save/Publish controls on the published revision.
+- Explicit changed-file scan contains no Merchant Knowledge-specific conditional or identifier.
+- No Prisma schema or migration file is part of the C100 implementation delta.
+- Production build/package-wide typecheck was not required by this bounded task's validation contract; zero changed-file diagnostics are recorded.
+- Parent task branch was synchronized from current workspace `main` at task start, and the submitted parent branch is two task commits ahead of `main` (launcher claim + completion report) with no unrelated task-file delta.
 
 ### Architecture Conformance
 
-Pending
+Accepted.
+
+C100 preserves the ARCH-021 ownership boundary: developers register Moda-owned executable Policy Operations; persisted Tool revisions bind immutably to one exact operation/version; Studio authors/tests/saves/publishes around that binding; and the normal Tool lifecycle remains authoritative for publication, immutability, authorization and audit.
+
+No Policy-specific persistence/release table, direct status mutation, executable-code authoring surface, schema migration or ARCH-023 special case is introduced.
+
+The resulting generic capability is sufficient for future ARCH-023 consumption: once ARCH-023 separately registers an operation/version and bootstraps an existing Policy Operation Tool identity/revision, no further generic Studio execution-kind work is required to open, test, save, publish or inspect later revisions.
 
 ### Follow-up
 
-None
+No ARCH-021 task is newly unblocked by C100 because `enables: []`.
+
+The generic Policy Operation Studio follow-up C096-C100 is now fully Complete. Do not start ARCH-023 from this task; any ARCH-023 bootstrap/registration work must follow its own materialised dependency graph.

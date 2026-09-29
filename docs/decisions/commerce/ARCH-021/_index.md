@@ -1230,7 +1230,7 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 | [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Complete | COMMERCE-096 |
 | [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Complete | COMMERCE-096 |
 | [COMMERCE-099](COMMERCE-099-round-trip-and-save-policy-operation-tool-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Complete | COMMERCE-097, COMMERCE-098 |
-| [COMMERCE-100](COMMERCE-100-publish-and-regression-validate-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Ready | COMMERCE-099 |
+| [COMMERCE-100](COMMERCE-100-publish-and-regression-validate-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Complete | COMMERCE-099 |
 
 ```text
                     C096 Complete
@@ -1242,7 +1242,7 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
                     C099 Complete
                            |
                            v
-                      C100 Ready
+                    C100 Complete
 ```
 
 ### COMMERCE-096 Attempt 1 accepted — 2026-09-29
@@ -1273,6 +1273,14 @@ COMMERCE-099 is **Complete / Accepted, Attempt 2**. Persisted Policy Operation D
 Attempt 2 adds the same monotonic transient-generation protection already accepted for Shopify Admin Test, so Test arguments/shop A -> B -> A reversion cannot resurrect an obsolete in-flight result or re-enable Save. The focused packet passes 175/175 tests and the synchronized package-wide TypeScript check exits 0.
 
 COMMERCE-100 is now **Ready** as the final generic Policy Operation publication/reopen/regression-validation task.
+
+### COMMERCE-100 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-100 is **Complete / Accepted, Attempt 1**. Registered Policy Operation DRAFTs now complete the normal Studio lifecycle through saved/current-validation/current-Test/SUPER_ADMIN/reason-gated canonical publication. Exact registry unavailability fails atomically before publication mutation, and published revisions reopen read-only with the exact fixed operation/version and saved definition.
+
+The New Tool selector remains unchanged and does not expose Policy Operation creation. No schema/migration, Merchant Knowledge special case or ARCH-023 implementation was introduced.
+
+The generic Policy Operation Studio follow-up C096-C100 is now fully Complete; there is no remaining executable task in this bounded ARCH-021 follow-up.
 
 
 ### COMMERCE-086 Attempt 2 accepted — 2026-09-29
