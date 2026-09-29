@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -167,7 +167,6 @@ Add a focused regression or bounded validation proving all three corrected impor
 
 Do not use a brittle test that merely duplicates the exact relative string without checking actual resolution.
 
-### R4 — normal Commerce production build succeeds
 ### R4 — production build ownership
 
 Production build validation and unrelated TypeScript diagnostics are owned by ARCH-021-COMMERCE-094. C093 must record its observed build result as evidence that the corrected route imports are no longer the blocker, but C093 acceptance does not require the repository build to pass.
@@ -195,7 +194,6 @@ C086 will rerun its own production manual/start smoke after C093 is accepted Com
 - [x] Run targeted ESLint for changed files.
 - [x] Run changed-file TypeScript diagnostics.
 - [x] Run `git diff --check`.
-- [ ] Run the normal repository `npm run build` successfully (attempted; blocked by unrelated project type errors).
 - [x] Run the normal repository `npm run build` and record that the route import failure is gone; unrelated TypeScript diagnostics are transferred to C094.
 - [x] Record build evidence and any unrelated blocker in the Completion Report.
 
@@ -229,7 +227,6 @@ None.
 - [x] Focused route/import validation passes.
 - [x] Changed-file lint/TypeScript diagnostics are clean.
 - [x] `git diff --check` passes.
-- [ ] Normal `npm run build` succeeds.
 - [x] The build no longer fails to resolve these three route imports; remaining production type-check/build gate is owned by C094.
 
 ## Validation
@@ -238,7 +235,6 @@ None.
 - [x] targeted ESLint for changed files
 - [x] changed-file TypeScript diagnostics
 - [x] `git diff --check`
-- [ ] `npm run build` (blocked by unrelated project type errors; see Completion Report)
 - [x] `npm run build` confirms the route imports resolve; unrelated TypeScript errors are transferred to C094 (see Completion Report).
 
 ## Stop Condition
@@ -254,7 +250,7 @@ Prefer the minimum three-line import-depth correction.
 
 Do not use this task as an opportunity to convert the repository to path aliases or reorganize preview routes.
 
-The production build is required because this defect was discovered specifically at the Next compilation stage and a source-only check is insufficient proof that the blocker is removed.
+The production build is used only as integration evidence that the route-import blocker is gone. Repository-wide production-build success is owned by C094 after the build advanced to unrelated TypeScript diagnostics.
 
 ## Completion Report
 
@@ -332,24 +328,70 @@ the report-only C093 Attempt 2 and separate C094 work.
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 is accepted.
+
+C093's bounded objective is satisfied:
+
+- the three code-response validation route imports now use the correct repository-local depth;
+- all three specifiers resolve to existing Commerce-local modules;
+- the route diff changes only those three import paths;
+- POST/authentication/input-schema/service/signal/cache/error/runtime/dynamic behavior is unchanged;
+- targeted module resolution, ESLint, changed-file TypeScript diagnostics and `git diff --check` pass; and
+- the normal Commerce build advances past the original route-import failure.
+
+The subsequent build failure is a separate repository-wide TypeScript gate: 23 diagnostics across 12 files outside C093's permitted source scope. C093 correctly did not modify those files.
+
+Architecturally, the production-build-success criterion is therefore transferred to COMMERCE-094. C093 requires only proof that its import-resolution blocker is removed and that the build proceeds beyond that blocker. The stale duplicate "build must succeed" Work Item/Acceptance/Validation entries have been removed by this acceptance reconciliation.
+
+No report-only Attempt 2 is required. The Attempt 1 Completion Report already contains the exact source diff, route-resolution evidence, build progression evidence, changed-file diagnostics and unrelated blocker list. Reclaiming the same task solely to restate that evidence would add no implementation or validation information.
+
+The user reports that COMMERCE-094 has been materialised on its own task branch at parent commit `58f65e5b`, depends on C093, and owns the listed TypeScript diagnostics plus the production-build gate. That C094 task file is not physically present in this submitted C093 snapshot, so this acceptance does not fabricate or overwrite a second C094 definition.
 
 ### Reviewed Files
 
-None
+- `app/api/studio/code-response/validate/route.ts`
+- `lib/preview/http.ts`
+- `lib/preview/runtime.ts`
+- `src/commerce/preview/types.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-093-fix-code-response-route-imports.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-086-add-result-template-guide-link.md`
+- C093 Completion Report — Attempt 1
 
 ### Validation Reviewed
 
-None
+Submitted evidence:
+
+- focused TypeScript module resolution: passed;
+- corrected targets resolve inside `moda-interact-commerce`;
+- targeted ESLint: passed;
+- `git diff --check`: passed;
+- no changed-file TypeScript diagnostic for the route;
+- normal `npm run build` proceeds beyond route import resolution and then fails at TypeScript checking with 23 diagnostics across 12 out-of-scope files.
+
+Direct snapshot inspection independently confirms the corrected five-level import paths resolve to:
+
+```text
+lib/preview/http.ts
+lib/preview/runtime.ts
+src/commerce/preview/types.ts
+```
+
+inside the Commerce repository.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C093 makes only the narrow import-resolution correction and leaves the newly exposed repository-wide TypeScript/build gate to C094.
 
 ### Follow-up
 
-None
+C093 is Complete / Accepted — Attempt 1.
+
+C094 is now dependency-eligible and should be promoted from Pending to Ready on its own canonical task branch.
+
+C086 remains Blocked and now depends on both C093 and C094. After C094 is architect-accepted Complete, return C086 through the authorised Changes Requested path to Ready with `attempt: 1` preserved; the next claim becomes C086 Attempt 2 for the clean build + production-start manual HTTP smoke.
