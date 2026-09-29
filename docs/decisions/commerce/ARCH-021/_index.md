@@ -1128,3 +1128,14 @@ COMMERCE-088 remains Pending until COMMERCE-083 is architect-accepted Complete. 
 COMMERCE-083 is **Complete / Accepted, Attempt 2**. The accepted C082 Shopify Admin live-Test backend is now consumed through one reusable new/persisted Shopify Test surface. C083 drives the existing C078/C079 common Test checkpoint with C081-style monotonic transient stale-result protection, shows exact server-rendered Result Template output first, and requires a current Shopify Test PASS before new Create or persisted Save. Test remains zero-write and separate from publication proof.
 
 COMMERCE-088 is **Ready**. SYSTEM-TEST-002 remains **Pending** because it depends on C088 as well as C083.
+## Phase 5 — Feature Capability authoring simplification — 2026-09-29
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-088](COMMERCE-088-implement-direct-feature-capability-authoring.md) | Backend: direct Feature reads/Behaviour prompt and atomic Feature + Tool Capability creation | Pending | DATABASE-003 |
+| [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Pending | DATABASE-003, SHARED-002, COMMERCE-088 |
+| [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Pending | COMMERCE-088 |
+| [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Pending | COMMERCE-088, COMMERCE-090 |
+| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
+
+The two implementation branches after COMMERCE-088 are intentionally parallel: COMMERCE-089 owns release/runtime composition while COMMERCE-090/091 own the user-facing Feature authoring flow. COMMERCE-092 is the subtractive gate and must not execute until both replacement paths and Background consumption are accepted.

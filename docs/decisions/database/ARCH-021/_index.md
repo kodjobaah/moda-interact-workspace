@@ -49,3 +49,11 @@ COMMERCE-007 and COMMERCE-008 are now independently Ready because their durable 
 DATABASE-002 Attempt 2 is architect-accepted Complete. The executable fresh and seeded-upgrade PostgreSQL rehearsals prove the simplified schema, exact Phase-2 backfills, migration-local immutability-trigger handling, final prompt/merchant guards, restored audit immutability and removal of the five obsolete persistence tables.
 
 The Database checkpoint has no remaining executable task. `ARCH-021-COMMERCE-025`, `ARCH-021-COMMERCE-026` and `ARCH-021-COMMERCE-027` are now Ready.
+
+## Phase 5 — Feature Capability persistence simplification — 2026-09-29
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [DATABASE-003](DATABASE-003-simplify-feature-capability-persistence.md) | Replace Capability revisions/bindings with direct Feature + Tool Capabilities and immutable release snapshots | Ready | DATABASE-002 |
+
+DATABASE-003 is a pre-production breaking migration. It preserves Admin Features, Tools, billing data and Agent Configuration while deliberately recreating obsolete development-only Capability/release/grant composition instead of translating the old multi-binding revision model.

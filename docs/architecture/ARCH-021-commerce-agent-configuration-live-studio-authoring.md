@@ -4,7 +4,7 @@ title: CommerceAgent configuration and live Studio authoring
 status: agreed
 coordinator: moda_architect
 created: 2026-09-23
-updated: 2026-09-28
+updated: 2026-09-29
 ---
 
 # ARCH-021: CommerceAgent configuration and live Studio authoring
@@ -37,10 +37,11 @@ The current implementation has two ownership rules that do not match that produc
    `COMMERCE_PREVIEW_MODEL`. Studio testing therefore does not establish which model
    the shop's production CommerceAgent will use.
 
-The target product instead requires one effective CommerceAgent prompt and one
-effective CommerceAgent model for a shop. Features determine capabilities, tools and
-feature configuration; they do not select a model or contribute separate behavioural
-prompts.
+The target product instead requires one effective global CommerceAgent prompt and one
+effective CommerceAgent model for a shop. Features do not select a model and do not
+create another Agent Configuration prompt lineage. A Feature may, however, own one
+feature-scoped Behaviour prompt that is applied once to all selected Capabilities under
+that Feature. Individual Capabilities do not own prompts.
 
 ## Goals
 
@@ -61,8 +62,10 @@ prompts.
   configurable behavioural prompt.
 - Freeze the resolved model and prompt revision when a production conversation grant
   or Studio preview conversation begins, without making model/prompt release-owned.
-- Keep feature/capability ownership focused on feature settings and exact tool
-  bindings.
+- Keep Capability ownership focused on one existing Admin Feature and one Tool
+  identity, while allowing one shared Commerce Behaviour prompt at the Feature level.
+- Keep exact Tool revision selection and Feature Behaviour snapshotting at the immutable
+  release boundary rather than in Capability authoring.
 - Establish contracts that can later permit merchants to author their own
   shop-specific prompts without giving them control over platform defaults.
 - Establish the configuration foundation required by later ARCH-021 phases for live
@@ -172,22 +175,42 @@ immutable Shared runner/platform invariants
 Platform/shop prompt authors cannot remove the runner's invariant safety, contract,
 authorisation or evidence requirements.
 
-### D4 — features/capabilities do not own prompts or models
+### D4 — Capabilities do not own prompts or models; Features may own one shared Behaviour prompt
 
-A feature/capability revision owns only feature-specific material such as:
+The platform/shop Agent Configuration remains the only owner of the effective global
+CommerceAgent model and global configurable prompt lineage. Capabilities do not own a
+model, a prompt lineage or a prompt revision.
 
-- feature configuration;
-- exact tool-revision bindings;
-- immutable revision/publication identity.
+For Feature composition, one separate Feature-scoped `Behaviour prompt` may be stored
+by Commerce for an existing Admin-owned `billing.Feature`. This text is operational
+guidance for that Feature and applies once to all selected Capabilities under the
+Feature. It is not a second Agent Configuration prompt lineage and does not select a
+model.
 
-It must not own:
+The direct authoring model is:
 
-- model selection;
+```text
+billing.Feature
+    |
+    +-- Commerce Feature Behaviour prompt   # one current value
+    |
+    +-- CommerceCapability                  # one Feature + one Tool identity
+```
+
+Capability authoring therefore does **not** own:
+
 - behavioural prompt text;
-- another feature-specific model instruction block.
+- model selection;
+- `selectionBinding` / BASE / RECOVERY_POLICY type discrimination;
+- `maxSearchResults` / `maxRecommendations`;
+- multiple Tool bindings;
+- Capability draft/revision/publication state.
 
-`CommerceCapabilityRevision.promptTemplate` and capability-level `promptName` are
-legacy ARCH-020 concepts to be removed by later implementation phases.
+Release creation snapshots the current Feature Behaviour text once per represented
+Feature and pins the exact published Tool revision for every included Capability.
+`CommerceCapabilityRevision.promptTemplate`, Capability `promptName`, Capability
+configuration and Capability `toolBindings[]` are legacy ARCH-020 concepts to be
+removed by the 2026-09-29 Phase-5 refinement.
 
 ### D5 — releases do not own prompts or models
 
@@ -574,13 +597,20 @@ The Commerce Studio/agent configuration is still under active development and no
 production customer compatibility requirement has been established for the
 capability-level prompt contract.
 
-Later tasks may therefore remove `CommerceCapabilityRevision.promptTemplate` and
-capability `promptName` directly rather than carrying permanent compatibility
-adapters. Implementation sequencing must nevertheless keep each intermediate branch
-buildable and testable.
+The 2026-09-29 Phase-5 refinement therefore removes the complete ARCH-020 Capability
+draft/revision/binding model rather than carrying permanent compatibility adapters.
+`selectionBinding`, BASE/RECOVERY_POLICY special cases, per-Capability prompt/configuration,
+multi-Tool bindings, `maxSearchResults` and `maxRecommendations` are not migrated into
+replacement Capability concepts. Implementation sequencing must nevertheless keep each
+intermediate branch buildable and testable.
 
-Existing fixture infrastructure remains test-only infrastructure and is not removed
-merely because the human-facing preview becomes live.
+Existing Capability/release/grant rows created only for development/fixture use may be
+recreated during the breaking database migration instead of heuristically converting
+arbitrary legacy multi-Tool Capability revisions. Tools, Admin Features, billing data,
+Agent Configuration and unrelated durable application state remain preserved.
+
+Fixture infrastructure may be rewritten to the new direct Feature/Capability/Tool model
+but deterministic test coverage remains required.
 
 ## Phase Plan
 
@@ -1312,9 +1342,40 @@ Current checkpoint implementation frontier: none. COMMERCE-032, COMMERCE-033, CO
 
 Execute real read-only Shopify/external calls for the selected shop.
 
-### Phase 5 — feature/tool agent composition
+### Phase 5 — Feature Capability authoring and composition
 
-Compose feature configuration and exact tool revisions without feature-owned prompts.
+Configure existing Admin-owned Features through one shared Feature Behaviour prompt and
+direct Capabilities, where each Capability belongs to exactly one Feature and names one
+existing Tool identity. New-Capability authoring is local-first and persists nothing until
+the final Create action. Release creation snapshots Feature Behaviour once per represented
+Feature and pins the exact published Tool revision; Capability drafts/revisions,
+`selectionBinding`, per-Capability limits and multi-Tool bindings are removed.
+
+### Feature Capability authoring simplification refinement — 2026-09-29
+
+The current ARCH-020 Capability implementation is intentionally replaced rather than
+wrapped. The agreed invariants are:
+
+1. Admin owns `billing.Feature`; Commerce Studio never creates a Feature.
+2. Commerce stores at most one current Feature `Behaviour prompt`, shared by every
+   Capability under that Feature.
+3. `CommerceCapability` directly stores required `featureId` + required `toolId`; one
+   Tool may be reused by several Capabilities.
+4. A Capability is created only by the final `Capability -> Tool -> Review -> Create`
+   action; all earlier authoring state is browser-local.
+5. Capability authoring selects a Tool identity, never a Tool revision.
+6. Release creation pins the exact published Tool revision and snapshots Feature
+   Behaviour once per represented Feature.
+7. `CommerceCapabilityRevision`, `selectionBinding`, BASE/RECOVERY_POLICY special cases,
+   `conversation_core` as a mandatory base Capability, per-Capability prompt/configuration,
+   `toolBindings[]`, `maxSearchResults` and `maxRecommendations` are removed.
+8. Billing/subscription data is not an authoring dependency. Runtime Feature eligibility
+   remains a separate concern and may continue to use Feature facts without reintroducing
+   a Capability-type discriminator.
+9. Shared/Background contracts accept zero selected Capabilities/Tools and apply Feature
+   Behaviour once per represented Feature.
+10. The final cleanup task deletes temporary compatibility paths; completion is not merely
+    a new UI over the old Capability lifecycle.
 
 ### Phase 6 — production-equivalent multi-turn Studio preview
 
@@ -1501,6 +1562,15 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-29 — Feature Capability authoring simplified around Feature -> Capability -> Tool
+
+- Admin-owned Features remain the authoring root; Commerce Studio configures them but does not create them.
+- One Feature Behaviour prompt is shared across sibling Capabilities.
+- Capability authoring becomes local-first and atomic with one Tool identity selected only at final Create.
+- Release creation becomes the exact Tool-revision and Feature-Behaviour snapshot boundary.
+- `CommerceCapabilityRevision`, `selectionBinding`, BASE/RECOVERY_POLICY, per-Capability prompt/configuration, multi-Tool bindings and Capability `maxSearchResults`/`maxRecommendations` are removed.
+- DATABASE-003, SHARED-001/002, COMMERCE-088..092, BACKGROUND-002 and SYSTEM-TEST-003 are defined for the breaking pre-production cutover.
 
 ### 2026-09-28 — Tool creation flow refined around Tool Definition and rendered Test
 

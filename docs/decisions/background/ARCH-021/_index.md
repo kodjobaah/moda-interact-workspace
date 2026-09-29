@@ -25,3 +25,11 @@ The context-only private-MCP client change is accepted in substance, but BACKGRO
 ### BACKGROUND-001 Attempt 2 accepted — 2026-09-24
 
 BACKGROUND-001 is **Complete / Accepted, Attempt 2**. Background now sends only the validated bounded `X-Moda-Commerce-Context` over the private Commerce MCP link, with no task-owned RSA/JWT signing, MCP `Authorization` header, service token, API key or shared secret. Attempt 2 restored the required host fixture to 40/40 and exposed fixture exceptions deterministically without changing production error semantics. `ARCH-021-GATEWAY-001` is promoted to **Ready**.
+
+## Phase 5 — simplified Feature Capability runtime consumption — 2026-09-29
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [BACKGROUND-002](BACKGROUND-002-consume-feature-capability-manifest.md) | Consume direct Feature/Capability/Tool manifests and apply Feature Behaviour once per Feature | Pending | DATABASE-003, SHARED-002, COMMERCE-089 |
+
+BACKGROUND-002 removes per-Capability prompt-name fetches and the mandatory BASE/`conversation_core` assumption while preserving exact Tool grant authorization.
