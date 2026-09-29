@@ -1127,8 +1127,8 @@ Implementation tasks:
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
 | ARCH-021-COMMERCE-088 | moda_commerce | Complete | ARCH-021-DATABASE-003 |
 | ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
-| ARCH-021-COMMERCE-090 | moda_commerce | Ready | ARCH-021-COMMERCE-088 |
-| ARCH-021-COMMERCE-091 | moda_commerce | Pending | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
+| ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-091 | moda_commerce | Ready | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
 | ARCH-021-BACKGROUND-002 | moda_background | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Pending | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-COMMERCE-093 | moda_commerce | Complete | - |
@@ -1142,6 +1142,14 @@ COMMERCE-090
 ```
 
 COMMERCE-088 Attempt 2 is architect-accepted Complete. COMMERCE-090 is Ready because C088 is its only dependency. COMMERCE-089 remains Pending on SHARED-002, so the release/runtime branch is not yet executable. COMMERCE-091 remains Pending on COMMERCE-090.
+
+Current Phase 5 Feature-UI frontier after COMMERCE-090 acceptance:
+
+```text
+COMMERCE-091
+```
+
+COMMERCE-090 Attempt 3 is architect-accepted Complete. COMMERCE-091 is Ready because COMMERCE-088 and COMMERCE-090 are Complete. COMMERCE-092 remains dependency-gated.
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1548,8 +1556,8 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
 | ARCH-021-COMMERCE-088 | moda_commerce | Complete | ARCH-021-DATABASE-003 |
 | ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
-| ARCH-021-COMMERCE-090 | moda_commerce | Ready | ARCH-021-COMMERCE-088 |
-| ARCH-021-COMMERCE-091 | moda_commerce | Pending | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
+| ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-091 | moda_commerce | Ready | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
 | ARCH-021-BACKGROUND-002 | moda_background | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Pending | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |

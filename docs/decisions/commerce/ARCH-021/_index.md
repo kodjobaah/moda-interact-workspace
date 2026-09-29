@@ -1120,8 +1120,8 @@ The authoritative C083 task file preserves the full Attempt 1 blocker, Attempt 2
 |---|---|---|---|
 | [COMMERCE-088](COMMERCE-088-implement-direct-feature-capability-authoring.md) | Backend: direct Feature reads/Behaviour prompt and atomic Feature + Tool Capability creation | Complete | DATABASE-003 |
 | [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Pending | DATABASE-003, SHARED-002, COMMERCE-088 |
-| [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Ready | COMMERCE-088 |
-| [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Pending | COMMERCE-088, COMMERCE-090 |
+| [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Complete | COMMERCE-088 |
+| [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Ready | COMMERCE-088, COMMERCE-090 |
 | [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
 
 
@@ -1132,6 +1132,13 @@ COMMERCE-088 is **Complete / Accepted, Attempt 2**. The direct Feature-domain ba
 COMMERCE-090 is now **Ready** because its sole dependency, COMMERCE-088, is Complete. COMMERCE-089 remains **Pending** until SHARED-002 is Complete.
 
 The two implementation branches after COMMERCE-088 are intentionally parallel: COMMERCE-089 owns release/runtime composition while COMMERCE-090/091 own the user-facing Feature authoring flow. COMMERCE-092 is the subtractive gate and must not execute until both replacement paths and Background consumption are accepted.
+
+
+### COMMERCE-090 Attempt 3 accepted — 2026-09-29
+
+COMMERCE-090 is **Complete / Accepted, Attempt 3**. The dedicated Feature configuration surface now has CAS-safe shared Behaviour editing across in-flight local edits and concurrent canonical refreshes, and unresolved admitted saves are non-discardable during navigation. The two Attempt-3 corrections are covered by focused regressions in the 13/13 Feature route/screen/shell packet.
+
+COMMERCE-091 is now **Ready** because both of its dependencies, COMMERCE-088 and COMMERCE-090, are Complete. COMMERCE-092 remains Pending until all of its replacement-path and Background dependencies are Complete.
 
 
 ### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29

@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 93
 executor: null
 claimed_at: null
@@ -292,50 +292,45 @@ Attempt 2 launcher evidence:
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 2 resolves all three Attempt-1 findings: post-submit local edits are no longer overwritten merely because the admitted save completes; stale-CAS remains gated through further edits until explicit refresh; and Feature routes now pass an explicit unavailable release model so an omitted shell read is not rendered as `No active release`. The focused regressions cover those three corrections.
+Attempt 3 closes both remaining Attempt-2 findings and C090 is accepted.
 
-Two corrections remain inside C090's Behaviour-save/navigation scope:
+**A2-R1 is resolved.** `FeatureDetail.save()` now adopts the successful mutation's `editVersion` immediately, but it only replaces the local prompt and advances again to the post-save refresh `editVersion` when `promptRevision` still matches the admitted revision. When newer local text exists, the local text remains paired with the mutation-returned CAS version rather than an unrelated later canonical version. The focused regression covers mutation version 5, a concurrent refresh at version 6 and a subsequent retry that still submits `expectedEditVersion: 5`, forcing stale-CAS rather than silently overwriting the concurrent change.
 
-**A2-R1 — do not advance CAS to a newer canonical version while preserving local text based on an older version.** After a successful mutation, `FeatureDetail.save()` first adopts the mutation result's `editVersion`, which is safe. It then always adopts `refreshed.value.editVersion`, even when `promptRevision` proves newer local edits exist and the refreshed prompt is deliberately *not* adopted. If another actor updates the Feature between this client's successful mutation and its refresh, the refresh can return a later canonical version. The current code then pairs local text derived from the older version with that later `editVersion`; the next Save can therefore pass CAS and overwrite the concurrent canonical change without surfacing a stale conflict. Never pair preserved local text with a canonical version it was not based on. A minimal acceptable correction is to keep the successful mutation's returned `editVersion` while newer local edits exist; if the post-save refresh reveals a different version, either retain the older expected version so the next Save naturally CAS-conflicts, or explicitly enter the stale/conflict gate while preserving the local text. Add a regression: mutation commits version 5 -> user edits while the save is unresolved -> refresh returns version 6 with different canonical prompt -> the UI preserves the user's text but must not permit a retry using `expectedEditVersion: 6` without an explicit reconciliation/rebase path.
+**A2-R2 is resolved.** The navigation blocker now classifies `pending` as locked (`locked || pending`). An admitted unresolved save therefore exposes only the pending-operation path and no discard action. The focused regression also proves that after the save resolves, ordinary dirty navigation returns to the normal discard-confirmation path.
 
-**A2-R2 — an admitted pending save must not be discardable navigation state.** Attempt 2 adds `pending` to `blocked`, but the blocker still passes `locked` rather than `locked || pending`. During an unresolved save, Studio therefore presents the ordinary `Discard unsaved changes` path. Choosing it can navigate away while the already-admitted mutation continues and may commit, so the UI cannot truthfully describe that action as discarding the operation. Treat an unresolved admitted save as locked/unconfirmed navigation state (or provide equivalent non-discardable semantics). Add a focused regression with an unresolved save promise: navigation away must show the pending-operation/locked path and must not expose `Discard unsaved changes`; once the operation is resolved and ordinary unsaved edits remain, normal dirty-discard semantics may resume.
-
-The repository-wide 271 TypeScript diagnostics and the neighboring generic `StudioWorkspace` failures remain recorded but are not C090 rejection reasons because they are outside the inspected C090 changed-file set.
+The Attempt-3 implementation delta is limited to `feature-configuration-screen.tsx` and its focused regression tests. No unrelated runtime behavior was added. The recorded repository-wide TypeScript diagnostics remain outside the C090 changed-file set and are not a rejection reason for this task.
 
 ### Reviewed Files
 
-- `components/production-studio-page.tsx`
-- `components/studio-shell.tsx`
-- `components/studio-composer-context.tsx`
 - `src/studio/features/feature-configuration-screen.tsx`
-- `src/studio/features/contracts.ts`
-- `src/studio/features/services.ts`
-- `src/studio/features/persistence.ts`
-- `tests/feature-configuration-page.test.tsx`
 - `tests/feature-configuration-screen.test.tsx`
+- `components/studio-composer-context.tsx` for navigation-blocker semantics
+- `components/production-studio-page.tsx`
+- `tests/feature-configuration-page.test.tsx`
 - `tests/studio-shell.test.tsx`
-- prior Attempt-1 C090 archive for a bounded Attempt-2 diff comparison
 - `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 - `docs/decisions/commerce/ARCH-021/COMMERCE-088-implement-direct-feature-capability-authoring.md`
+- Attempt-2 and Attempt-3 supplied C090 archives for bounded diff comparison
 
 ### Validation Reviewed
 
-- Attempt-2 focused packet reported: 11/11 tests across `feature-configuration-page`, `feature-configuration-screen` and `studio-shell`.
-- Targeted ESLint reported clean.
+- Attempt-3 focused packet reported: 13/13 tests across `feature-configuration-page`, `feature-configuration-screen` and `studio-shell`.
+- The new A2-R1 regression explicitly verifies the retained mutation CAS version across a concurrent post-save refresh.
+- The new A2-R2 regression explicitly verifies non-discardable navigation while the save is unresolved and restoration of ordinary dirty-discard semantics after completion.
+- Targeted ESLint reported clean for the Attempt-3 changed files.
 - Changed-file diagnostics reported clean.
 - `git diff --check` reported clean.
 - Repository typecheck remains red with 271 diagnostics across 27 files outside the C090 changed-file set.
-- The current and prior supplied C090 archives were compared directly; the Attempt-2 runtime delta is bounded to the review corrections in `feature-configuration-screen.tsx` and `production-studio-page.tsx`, with the corresponding focused test updates.
-- The supplied archive does not contain Git metadata or installed `node_modules`, so pushed commit/remote cleanliness and the submitted Vitest/ESLint commands could not be independently rerun from this review artifact; those items were reviewed from the durable Completion Report and source/test evidence.
+- The supplied archive does not contain Git metadata or installed `node_modules`, so pushed-ref cleanliness and the submitted Vitest/ESLint commands could not be independently rerun from the review artifact; source/test evidence and the durable Completion Report were inspected directly.
 
 ### Architecture Conformance
 
-Partially conformant. Attempt 2 satisfactorily closes A1-R1, A1-R2 and A1-R3. R1, R2, R4, R5 and the dedicated ownership direction of R6 remain conformant. R3 is still not fully acceptable because the post-save refresh can advance CAS past the version on which preserved local text is based, creating a silent concurrent-overwrite path. The new pending-navigation blocker also needs non-discardable semantics while an admitted save is unresolved.
+Conformant. C090 now satisfies R1-R6 and the full Behaviour-save contract. Feature identity remains read-only, Capability-to-Tool associations are human-readable, exactly one shared Behaviour prompt is CAS-safe, Add Capability remains navigation-only, removed concepts are absent from the Feature UX, and Feature-detail ownership is kept outside the generic workspace. The two concurrency/navigation defects identified during review are closed without broadening scope.
 
 ### Follow-up
 
-Return **ARCH-021-COMMERCE-090** to `ready` for Attempt 3 with A2-R1 and A2-R2 above as the complete correction contract. Preserve `attempt: 2`; the next authorized claim increments it exactly once. `ARCH-021-COMMERCE-091` remains Pending and must not start until C090 is architect-accepted Complete.
+`ARCH-021-COMMERCE-090` is **Complete / Accepted, Attempt 3**. Because `ARCH-021-COMMERCE-088` and C090 are both Complete, `ARCH-021-COMMERCE-091` is now **Ready**. C091 may be claimed through the normal `/moda-task` preparation path. `ARCH-021-COMMERCE-092` remains dependency-gated and must not start early.
