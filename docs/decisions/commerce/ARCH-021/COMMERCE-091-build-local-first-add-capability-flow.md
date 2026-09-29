@@ -311,7 +311,7 @@ Attempt 2 launcher synchronization evidence:
 
 Attempt 2 review submission:
 - implementation commit: `4c49548` (`task(ARCH-021-COMMERCE-091): preserve unlocked authoring phases`), pushed to `origin/task/ARCH-021-COMMERCE-091`.
-- parent report commit ID: pending commit/push verification.
+- parent report submission commit: `906ddc03` (`task(ARCH-021-COMMERCE-091): resubmit attempt 2 for review`), pushed to `origin/task/ARCH-021-COMMERCE-091`; this VCS-evidence line is its follow-up report amendment.
 
 ### Attempt 2 Architect Review Dispositions
 
