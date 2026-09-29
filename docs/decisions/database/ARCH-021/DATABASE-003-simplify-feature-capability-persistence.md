@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 88
 executor: copilot
 claimed_at: 2026-09-29T11:07:26Z
@@ -235,18 +235,18 @@ The migration rehearsal must prove this preservation boundary on a seeded upgrad
 
 ## Work Items
 
-- [ ] Add the one-row-per-Feature Commerce behaviour configuration model.
-- [ ] Replace Capability persistence with required Feature + Tool FKs.
-- [ ] Remove `selectionBinding` and its enum/guards/indexes.
-- [ ] Remove `CommerceCapabilityRevision` and all revision-owned prompt/configuration/binding persistence.
-- [ ] Rename/separate Tool revision status from the removed Capability revision enum without changing Tool semantics.
-- [ ] Replace release membership with direct Capability + exact Tool revision pinning.
-- [ ] Add immutable per-release Feature behaviour snapshots.
-- [ ] Remove Capability-level `maxSearchResults` / `maxRecommendations` persistence.
-- [ ] Reconcile Commerce audit enum/FKs with the new lifecycle.
-- [ ] Implement the explicit pre-production recreate strategy for obsolete Capability/release/grant rows.
-- [ ] Add focused schema validation.
-- [ ] Add fresh and seeded-upgrade PostgreSQL migration rehearsals.
+- [x] Add the one-row-per-Feature Commerce behaviour configuration model.
+- [x] Replace Capability persistence with required Feature + Tool FKs.
+- [x] Remove `selectionBinding` and its enum/guards/indexes.
+- [x] Remove `CommerceCapabilityRevision` and all revision-owned prompt/configuration/binding persistence.
+- [x] Rename/separate Tool revision status from the removed Capability revision enum without changing Tool semantics.
+- [x] Replace release membership with direct Capability + exact Tool revision pinning.
+- [x] Add immutable per-release Feature behaviour snapshots.
+- [x] Remove Capability-level `maxSearchResults` / `maxRecommendations` persistence.
+- [x] Reconcile Commerce audit enum/FKs with the new lifecycle.
+- [x] Implement the explicit pre-production recreate strategy for obsolete Capability/release/grant rows.
+- [x] Add focused schema validation.
+- [x] Add fresh and seeded-upgrade PostgreSQL migration rehearsals.
 
 ## Interfaces / Contracts
 
@@ -276,25 +276,25 @@ Exact Prisma-generated names may follow the canonical schema names selected abov
 
 ## Acceptance Criteria
 
-- [ ] Every persisted Commerce Capability has exactly one non-null Feature and exactly one non-null Tool.
-- [ ] No `CommerceCapabilitySelectionBinding` type or `selectionBinding` column remains.
-- [ ] No `CommerceCapabilityRevision` table/model remains.
-- [ ] No Capability persistence stores prompt text, arbitrary configuration, Tool-binding arrays, `maxSearchResults` or `maxRecommendations`.
-- [ ] Tool revision DRAFT/PUBLISHED status remains intact under a correctly owned enum.
-- [ ] A release pins one exact published Tool revision per member Capability.
-- [ ] A release stores Feature behaviour prompt text once per represented Feature.
-- [ ] Release Feature/member rows cannot be mutated after creation.
-- [ ] Existing obsolete Capability/release/grant development state is deliberately recreated, not heuristically converted.
-- [ ] The seeded upgrade preserves Tools, Features and all unrelated billing/agent-configuration data proved by the migration validator.
-- [ ] Prisma validation and focused fresh/upgrade rehearsals pass.
+- [x] Every persisted Commerce Capability has exactly one non-null Feature and exactly one non-null Tool.
+- [x] No `CommerceCapabilitySelectionBinding` type or `selectionBinding` column remains.
+- [x] No `CommerceCapabilityRevision` table/model remains.
+- [x] No Capability persistence stores prompt text, arbitrary configuration, Tool-binding arrays, `maxSearchResults` or `maxRecommendations`.
+- [x] Tool revision DRAFT/PUBLISHED status remains intact under a correctly owned enum.
+- [x] A release pins one exact published Tool revision per member Capability.
+- [x] A release stores Feature behaviour prompt text once per represented Feature.
+- [x] Release Feature/member rows cannot be mutated after creation.
+- [x] Existing obsolete Capability/release/grant development state is deliberately recreated, not heuristically converted.
+- [x] The seeded upgrade preserves Tools, Features and all unrelated billing/agent-configuration data proved by the migration validator.
+- [x] Prisma validation and focused fresh/upgrade rehearsals pass.
 
 ## Validation
 
-- [ ] `npm run prisma:validate`
-- [ ] `npm run prisma:generate`
-- [ ] focused ARCH-021 feature-capability schema validator added by this task
-- [ ] focused fresh PostgreSQL migration rehearsal added by this task
-- [ ] focused seeded-upgrade PostgreSQL migration rehearsal proving the preservation boundary
+- [x] `npm run prisma:validate`
+- [x] `npm run prisma:generate`
+- [x] focused ARCH-021 feature-capability schema validator added by this task
+- [x] focused fresh PostgreSQL migration rehearsal added by this task
+- [x] focused seeded-upgrade PostgreSQL migration rehearsal proving the preservation boundary
 
 ## Stop Condition
 
@@ -310,35 +310,35 @@ Do not modify billing Feature semantics merely because Commerce now requires a F
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+`moda-interact-database/prisma/schema.prisma`, `moda-interact-database/prisma/migrations/20260929120000_arch021_feature_capability_simplification/migration.sql`, `moda-interact-database/scripts/validate-arch021-feature-capability-schema.mjs`, `moda-interact-database/scripts/validate-arch021-feature-capability-migration.mjs`, `moda-interact-database/package.json`, `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Work Completed
 
-None
+Added `CommerceFeatureConfiguration` as a permanent one-row-per-Feature CAS record. Capabilities now have immutable required Feature and Tool identities and no selection-binding or revisioned authoring model. Release members pin the exact published Tool revision, with composite foreign keys enforcing Capability/Feature/Tool and Tool/Revision identity. Added a single immutable Feature prompt snapshot per represented release Feature. Tool status now uses `CommerceToolRevisionStatus`; obsolete capability audit actions and special BASE/RECOVERY_POLICY guards were removed. The migration clears only pre-production Capability/release/pointer/grant composition and obsolete composition audits, preserving Tool and ToolRevision history and unrelated data. Implementation commit `b648b86` is pushed to `task/ARCH-021-DATABASE-003`.
 
 ### Validation Results
 
-None
+`npm run prisma:validate` passed. `npm run prisma:generate` passed. `npm run test:arch021-feature-capability-schema` passed. `npm run test:arch021-feature-capability-migration` structural checks passed. Fresh PostgreSQL rehearsal passed on isolated local PostgreSQL 15 database `arch021_feature_capability_test_fresh`. Seeded-upgrade PostgreSQL rehearsal passed on isolated local PostgreSQL 15 database `arch021_feature_capability_test_upgrade`; 18 protected data tables were byte-for-byte unchanged, including Feature, billing plans/subscriptions, Merchant pricing, Tools/revisions, connection revisions/credentials, model/prompt/template configuration, Shop, CheckoutRecovery and Conversation. Ten database behavior checks passed for CAS, immutability, one shared Feature snapshot, exact Tool identity, and published Tool revision requirements. `npm run erd:puml` passed. `git diff --check` passed.
 
 ### Deviations
 
-None
+No scope deviation. PostgreSQL upgrade rehearsal required an explicit deletion of legacy Capability rows because existing BASE rows have no Feature and arbitrary revision bindings cannot be losslessly converted; this is the task's approved pre-production recreate strategy.
 
 ### Assumptions
 
-None
+The obsolete ARCH-020 Capability/release/pointer/grant composition is development-only and may be recreated as specified. The standard local Docker PostgreSQL 15 container and uniquely named test databases were disposable task-owned resources.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
