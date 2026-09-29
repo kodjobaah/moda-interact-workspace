@@ -259,7 +259,7 @@ Ready for review
 - Added authenticated atomic `createFeatureCapability` with Feature, enabled Tool, published Tool revision, and unique key validation; writes one direct Feature/Tool Capability plus audit receipt in one narrow transaction and returns the created result without a publication snapshot.
 - Added exact-result operation reconciliation for Feature behaviour and Capability creation. Kept existing generic Capability lifecycle APIs available for their current consumers; the new Feature APIs do not call them.
 - Added coverage for direct reads, initial and concurrent CAS, authorization, missing/disabled/unpublished identities, duplicate keys, same-Tool reuse, exact replay, conflicting replay, and reconciliation.
-- Implementation commit: `47b1c4a` (`Implement direct Feature capability authoring backend`).
+- Implementation commits: `47b1c4a` (`Implement direct Feature capability authoring backend`) and `be6a71e` (`Avoid redundant revision read in Capability result`).
 
 ### Validation Results
 
