@@ -1324,3 +1324,42 @@ Manual validation of the accepted COMMERCE-091 Add Capability flow exposed a fir
 COMMERCE-104 is a bounded browser-navigation correction. Before first entry, Tool follows live `validCapability` and Review follows live `canReview`; direct entry monotonically advances the same `enabledThrough` frontier already accepted in C091. After first unlock, later invalidation never re-locks the phase, while `Create capability` remains gated by the current `canReview`. Navigation remains local-only and performs zero Capability mutation/reconciliation calls.
 
 `ARCH-021-SYSTEM-TEST-003` is re-gated **Pending** on COMMERCE-104 so terminal Feature/Capability validation runs only after this direct-phase correction is architect-accepted.
+
+## Phase 6 — Feature-composed selected-shop Test Conversations — 2026-09-29
+
+Product decision: Test Conversations is Feature-composed. Selecting a Feature means **all direct Capabilities under that Feature**; there is no per-Capability exclusion. The browser submits Feature IDs and selected shop ID only. Commerce resolves Capabilities/Tool revisions and effective Agent Configuration server-side and freezes them when the conversation starts.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-105](COMMERCE-105-resolve-feature-composed-preview-selections.md) | Resolve ordered selected Features to every direct Capability, exact current published Tool revisions and one Feature Behaviour entry per Feature | Ready | COMMERCE-092 |
+| [COMMERCE-106](COMMERCE-106-freeze-selected-shop-agent-configuration-in-preview.md) | Require the selected shop and freeze its effective Model/Prompt into the Preview conversation | Pending | COMMERCE-010, COMMERCE-105 |
+| [COMMERCE-107](COMMERCE-107-build-feature-composed-test-conversations-ui.md) | Replace Release/fixture composition controls with selected-shop multi-Feature Test Conversations UI | Pending | COMMERCE-105, COMMERCE-106 |
+| [COMMERCE-108](COMMERCE-108-execute-feature-preview-tools-against-selected-shop.md) | Execute frozen Feature Tools through the production DefinitionExecutor against the selected shop | Pending | COMMERCE-105, COMMERCE-106 |
+| [COMMERCE-109](COMMERCE-109-remove-redundant-human-facing-preview-functionality.md) | Delete obsolete Tool/Release/Fixture human Preview paths while retaining fixture seams with concrete internal/test consumers | Pending | COMMERCE-107, COMMERCE-108 |
+
+Execution graph:
+
+```text
+COMMERCE-105
+     |
+     v
+COMMERCE-106
+     |
+     +----------+
+     |          |
+     v          v
+COMMERCE-107  COMMERCE-108
+     |          |
+     +----+-----+
+          |
+          v
+COMMERCE-109
+          |
+          v
+GATEWAY-002
+          |
+          v
+SYSTEM-TEST-004
+```
+
+COMMERCE-105 is **Ready** because COMMERCE-092 is architect-accepted Complete. The remaining Phase-6 Commerce tasks stay Pending until their declared dependencies are Complete. C107/C108 are intentionally parallel after C106. C109 is the explicit cleanup/subtractive gate requested during manual validation; obsolete UI is deleted rather than hidden behind a mode flag.

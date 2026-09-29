@@ -93,3 +93,11 @@ Manual validation of an existing Tool then exposed COMMERCE-103: persisted Exter
 ### SYSTEM-TEST-003 re-gated for Add Capability direct phase readiness — 2026-09-29
 
 Manual validation exposed COMMERCE-104: Tool and Review must become directly clickable as soon as their current first-entry predicates are satisfied, without requiring `Next`, while the existing monotonic unlock frontier and current-candidate Create gate remain intact. SYSTEM-TEST-003 therefore depends on C104 and remains **Pending** until C104 is architect-accepted Complete.
+
+## Phase 6 — Feature-composed selected-shop Test Conversations validation — 2026-09-29
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [SYSTEM-TEST-004](SYSTEM-TEST-004-validate-feature-composed-selected-shop-test-conversations.md) | Validate all-Capabilities-per-Feature composition, selected-shop effective Model/Prompt freeze, real Tool execution, multi-turn state and removal of redundant human Preview controls | Pending | COMMERCE-105..109, GATEWAY-002 |
+
+SYSTEM-TEST-004 is terminal architecture validation. It becomes Ready only after all Phase-6 implementation and Gateway dependencies are architect-accepted Complete. No implementation/publication/Gateway task depends on it.

@@ -551,13 +551,24 @@ Starting a Studio conversation preview requires a selected shop. The preview res
 that shop's effective model and prompt at start and shows their source/identity to the
 user.
 
-The preview then freezes those values together with the selected features/tools.
-Subsequent turns use the same model, prompt and conversation history. A reset/new
-preview is required to test newly-published prompt/model changes.
+The human author selects **Features**. Selecting one Feature means **all direct current
+Capabilities under that Feature**; Test Conversations has no per-Capability exclusion
+control. The browser sends only the selected Feature IDs. Commerce resolves the exact
+Capabilities, each Capability's current published Tool revision and the Feature Behaviour
+server-side. Authoring composition is explicit and is not silently filtered by shop plan,
+subscription, Feature preference, active Release membership or runtime entitlement.
 
-Later live-preview phases will replace normal human-facing fixture execution with
-real read-only Shopify/external tool execution. Synthetic fixtures remain valid for
-deterministic automated tests.
+The preview then freezes the selected shop, effective model/prompt, selected Feature
+order, Feature Behaviour, Capability members and exact Tool revisions/definitions.
+Subsequent turns use the same frozen composition/configuration and retained conversation
+history. A reset/new preview is required to test newly-published model/prompt, Feature,
+Capability or Tool changes.
+
+Phase 6 replaces normal human-facing fixture execution with real selected-shop Tool
+execution through the existing production DefinitionExecutor. Synthetic fixtures and
+Tool-test routes remain valid only where deterministic automated tests or an accepted
+internal producer such as External Code Response still consume them; they are not an
+alternate human Test Conversations mode.
 
 ## Consistency and Transactions
 
@@ -1126,6 +1137,13 @@ Implementation tasks:
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
 | ARCH-021-COMMERCE-103 | moda_commerce | Ready | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-COMMERCE-104 | moda_commerce | Ready | ARCH-021-COMMERCE-091 |
+| ARCH-021-COMMERCE-105 | moda_commerce | Ready | ARCH-021-COMMERCE-092 |
+| ARCH-021-COMMERCE-106 | moda_commerce | Pending | ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-105 |
+| ARCH-021-COMMERCE-107 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
+| ARCH-021-COMMERCE-108 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
+| ARCH-021-COMMERCE-109 | moda_commerce | Pending | ARCH-021-COMMERCE-107, ARCH-021-COMMERCE-108 |
+| ARCH-021-GATEWAY-002 | moda_gateway | Pending | ARCH-021-COMMERCE-106, ARCH-021-COMMERCE-109 |
+| ARCH-021-SYSTEM-TEST-004 | moda_system_test | Pending | ARCH-021-COMMERCE-105..109, ARCH-021-GATEWAY-002 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1447,6 +1465,41 @@ wrapped. The agreed invariants are:
 Use the selected shop's frozen effective model/prompt plus real tools and retained
 preview conversation history.
 
+The Phase-6 authoring contract is:
+
+```text
+validated selected shop
+        +
+ordered selected Feature IDs
+        |
+        v
+server resolves every direct Capability under every selected Feature
+        |
+        v
+server pins each Capability's current published Tool revision
+        +
+Feature Behaviour once per selected Feature
+        +
+effective Model + published Prompt for the selected shop
+        |
+        v
+frozen Preview conversation
+        |
+        v
+production DefinitionExecutor against the selected shop
+```
+
+There is no per-Capability checkbox. A selected Feature contributes all of its direct
+Capabilities. Features/Capabilities are not removed from this explicit authoring
+composition because of production plan/preference/Release eligibility; an unavailable
+Tool revision fails the composition closed rather than being omitted.
+
+The supported human `/preview` surface is Test Conversations only. The old generic Tool
+test, Release/DRAFT source choice, Fixture scenario, Model-mode and Release-composer
+Preview handoff are removed after the replacement path is complete. Deterministic
+fixture/tool-test infrastructure may remain only for concrete automated/internal
+consumers.
+
 ### Phase 7 — Background parity
 
 Make production grants pin the effective model/prompt and make Background execute the
@@ -1604,13 +1657,9 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
 
-Phase 5 Feature Capability simplification is now decomposed through DATABASE-003, SHARED-001/002, COMMERCE-088..092, the manual-validation correction COMMERCE-104, BACKGROUND-002 and terminal SYSTEM-TEST-003. Later Phase 6+ work remains intentionally undecomposed where it is not required by this cutover. Expected later owners still include:
+Phase 5 Feature Capability simplification is decomposed through DATABASE-003, SHARED-001/002, COMMERCE-088..092, the manual-validation correction COMMERCE-104, BACKGROUND-002 and terminal SYSTEM-TEST-003.
 
-- `moda_database` for conversation/preview frozen global model/prompt fields;
-- `moda_shared` for later Agent Configuration grant/runner additions not already covered by SHARED-001;
-- `moda_commerce` for production-equivalent preview and later MCP resolution work;
-- `moda_background` for the later pinned global model/prompt consumption cutover;
-- `moda_system_test` only after the required implementation dependencies are Complete.
+Phase 6 is now decomposed through COMMERCE-105..109, GATEWAY-002 and terminal SYSTEM-TEST-004. No Database or Shared migration is required for Studio Preview: the current direct Feature/Capability/Tool model, existing shared manifest/runner and Redis Preview snapshot are sufficient. Gateway work is required because effective Model selection can choose OPENAI or GROQ dynamically while provider credentials remain server-only environment secrets. Background parity remains later Phase 7 work.
 
 No implementation task may depend on a system-test task.
 
@@ -3090,3 +3139,59 @@ Direct phase click and `Next` must share that same admission path. First direct 
 | ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
 
 COMMERCE-104 is independent of COMMERCE-102/103. SYSTEM-TEST-003 is re-gated behind C104 and remains terminal Feature/Capability validation; no Commerce implementation task depends on the system-test task.
+
+### Phase 6 Feature-composed selected-shop Test Conversations refinement — 2026-09-29
+
+Manual validation of the current `/preview` surface showed that the page is still
+organised around the older Tool/Release/fixture Preview model. The agreed product
+behaviour is now explicit: the author selects a shop and a set of Features; every direct
+Capability under each selected Feature is part of the test composition. The browser does
+not select Capability IDs, Tool revisions, Model/provider, Prompt revision or credentials.
+
+Server composition freezes the exact Feature order, Feature Behaviour, Capabilities and
+current published Tool revisions. Conversation creation independently freezes the
+selected shop's effective Model and published Prompt. Real Tool calls use the same
+production DefinitionExecutor against that selected shop. A running conversation never
+floats to later Feature/Tool/model/prompt changes.
+
+The redundant human-facing Preview paths are removed only after the replacement UI and
+real execution path are both accepted. Deterministic fixture/tool-test backend seams are
+retained only when a concrete automated/internal consumer (including External Code
+Response where applicable) still uses them.
+
+```text
+COMMERCE-105 (Feature composition) [Ready]
+        |
+        v
+COMMERCE-106 (shop + effective model/prompt freeze)
+        |
+        +---------------------+
+        |                     |
+        v                     v
+COMMERCE-107 (Feature UI)  COMMERCE-108 (real Tool execution)
+        |                     |
+        +----------+----------+
+                   |
+                   v
+COMMERCE-109 (remove redundant human Preview paths)
+                   |
+                   v
+GATEWAY-002 (provider credential wiring / old env removal)
+                   |
+                   v
+SYSTEM-TEST-004 (terminal integrated validation)
+```
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-105 | moda_commerce | Ready | ARCH-021-COMMERCE-092 |
+| ARCH-021-COMMERCE-106 | moda_commerce | Pending | ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-105 |
+| ARCH-021-COMMERCE-107 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
+| ARCH-021-COMMERCE-108 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
+| ARCH-021-COMMERCE-109 | moda_commerce | Pending | ARCH-021-COMMERCE-107, ARCH-021-COMMERCE-108 |
+| ARCH-021-GATEWAY-002 | moda_gateway | Pending | ARCH-021-COMMERCE-106, ARCH-021-COMMERCE-109 |
+| ARCH-021-SYSTEM-TEST-004 | moda_system_test | Pending | ARCH-021-COMMERCE-105..109, ARCH-021-GATEWAY-002 |
+
+COMMERCE-105 is the initial Phase-6 executable frontier. COMMERCE-107 and COMMERCE-108
+may execute in parallel only after COMMERCE-106 is architect-accepted Complete. The
+system-test task is terminal and gates no implementation task.

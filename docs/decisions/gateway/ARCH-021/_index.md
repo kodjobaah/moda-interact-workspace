@@ -29,3 +29,11 @@ Attempt 3 completed the report-only reconciliation after the context-only privat
 The private Commerce MCP topology remains unchanged: `COMMERCE_MCP_URL` is the messaging worker's Render-managed private service input, public `/api/mcp` remains denied, and no application-layer MCP credential replaces the removed RSA/JWT assertion keys.
 
 `ARCH-021-SYSTEM-TEST-001` remains Pending until all of its checkpoint implementation dependencies are Complete.
+
+## Phase 6 — selected-model Preview provider wiring — 2026-09-29
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [GATEWAY-002](GATEWAY-002-wire-commerce-preview-model-provider-credentials.md) | Wire Commerce-owned OpenAI/Groq Preview credentials and remove obsolete fixed Preview provider/model/API-key Blueprint configuration | Pending | COMMERCE-106, COMMERCE-109 |
+
+GATEWAY-002 runs only after Commerce has adopted the new selected-model runtime contract and removed its old fixed Preview configuration dependency. It preserves the current `COMMERCE_PREVIEW_ENABLED` policy and does not enable production Preview.
