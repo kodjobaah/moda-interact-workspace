@@ -10,18 +10,20 @@ implementation.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [DATABASE-001](DATABASE-001-persist-merchant-knowledge-schema.md) | Persist the complete Merchant Knowledge, Store Profile and generic plan-feature schema | Ready — Attempt 1 Changes Requested | - |
+| [DATABASE-001](DATABASE-001-persist-merchant-knowledge-schema.md) | Persist the complete Merchant Knowledge, Store Profile and generic plan-feature schema | Complete — Accepted Attempt 2 | - |
 | [DATABASE-002](DATABASE-002-persist-localised-store-category-prompt-configuration.md) | Historical split Store Category/prompt persistence | Superseded by DATABASE-001 | - |
 | [DATABASE-003](DATABASE-003-persist-merchant-knowledge-pgvector.md) | Historical split Merchant Knowledge/pgvector persistence | Superseded by DATABASE-001 | - |
 
 ## Execution frontier
 
-`ARCH-023-DATABASE-001` is **Ready for Attempt 2** under its latest Architect Review.
+`ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**.
 
-No downstream task is executable from this database prerequisite until DATABASE-001 is
-architect-accepted `Complete`. On acceptance, the first newly eligible tasks are:
+The database prerequisite is satisfied. Dependency reconciliation has promoted the two
+direct dependants whose complete dependency sets are now satisfied:
 
 ```text
-ARCH-023-SHARED-001
-ARCH-023-ADMIN-002
+ARCH-023-SHARED-001  Ready
+ARCH-023-ADMIN-002   Ready
 ```
+
+No additional ARCH-023 task becomes Ready from DATABASE-001 acceptance alone.

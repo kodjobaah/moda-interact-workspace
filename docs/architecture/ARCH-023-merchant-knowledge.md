@@ -12,10 +12,10 @@ updated: 2026-09-29
 ## Status
 
 Agreed — the architecture and repository task decomposition are materialised and implementation
-is underway. The first database task, `ARCH-023-DATABASE-001`, completed Attempt 1 but is
-**Ready for Attempt 2 / Changes Requested** because its task-owned exact static validators
-do not yet reject representative contract-breaking schema/DDL mutations. No downstream
-ARCH-023 task is promoted until that database task is architect-accepted Complete.
+is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**. Its additive
+persistence boundary is now architect-accepted, and dependency reconciliation has promoted
+`ARCH-023-SHARED-001` and `ARCH-023-ADMIN-002` to Ready. All other ARCH-023 tasks remain
+gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3200,19 +3200,19 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after DATABASE-001 Attempt 1 review:
+Current execution frontier after DATABASE-001 Attempt 2 acceptance:
 
 ```text
-ARCH-023-DATABASE-001   Ready — Attempt 1 Changes Requested
+ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
 
-ARCH-023-SHARED-001     Pending on DATABASE-001
-ARCH-023-ADMIN-002      Pending on DATABASE-001
+ARCH-023-SHARED-001     Ready
+ARCH-023-ADMIN-002      Ready
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
-When DATABASE-001 becomes architect-accepted `Complete`, dependency reconciliation must
-promote exactly the then-satisfied tasks; from the current graph the first two are
-`ARCH-023-SHARED-001` and `ARCH-023-ADMIN-002`.
+SHARED-001 and ADMIN-002 are independent at this frontier and may execute in parallel.
+Their execution still requires the normal task claim/preparation path; architect acceptance
+does not start either task implicitly.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3222,6 +3222,15 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-29 — DATABASE-001 Attempt 2 accepted
+
+- Accepted `ARCH-023-DATABASE-001` after the strengthened exact schema/migration validators
+  rejected all five Attempt 1 contract-breaking mutation probes while the production schema
+  and migration remained unchanged.
+- Marked DATABASE-001 Complete and promoted exactly `ARCH-023-SHARED-001` and
+  `ARCH-023-ADMIN-002` to Ready from the current dependency graph.
+- No downstream implementation was started by the architect review.
 
 ### 2026-09-28 — Patch 1 proposed architecture
 

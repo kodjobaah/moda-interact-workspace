@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -1289,9 +1289,139 @@ None identified. The Architect Review section below remains untouched.
 
 ### Review Status
 
-Changes Requested
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-09-29
+
+Reviewed implementation `13d6faa24bc9ad66d3f9c1ff18b2fde8d4c8f300` and parent
+report `d958abe724ad8d5cab6d76d1d6ac297c4b4ccbf7` against the complete Attempt 1
+Changes Requested contract and the original DATABASE-001 acceptance criteria.
+
+Attempt 2 is accepted.
+
+The production Prisma schema and fixed ARCH-023 migration are byte-for-byte unchanged
+from the Attempt 1 submission. That is the required outcome because Attempt 1's database
+design was already architecturally conformant; the correction contract was limited to
+closing false-negative gaps in the task-owned exact validators and proving those gaps
+with deterministic mutation regressions.
+
+The strengthened Prisma validator now checks the exact ARCH-023 field declarations,
+nullability/default/database annotations, relation names and actions, reverse relations,
+enum sets, unique keys and indexes for the added Merchant Knowledge/Store Profile
+boundary. It also retains the negative guards against a `MerchantKnowledgePurpose` enum,
+Merchant Knowledge entitlement/required-plan coupling and ANN indexes.
+
+The strengthened migration validator factors the exact DDL contract into
+`scripts/fixtures/arch023-merchant-knowledge-migration-contract.mjs` and verifies the
+required created-table set, exact columns/types/nullability/defaults, enum values, named
+primary/unique/foreign-key constraints and delete/update actions, exact index set,
+CHECK expressions, one-ACTIVE partial unique index, seed-only insert targets and the
+additive/no-trigger/no-ANN boundaries.
+
+The new mutation regression suite covers all five Attempt 1 review probes. Independent
+review execution confirmed that the submitted validators reject:
+
+```text
+MerchantKnowledgeDataFormat.acceptedContentTypes: Json -> String
+CommerceStoreCategoryTaxonomyMapping.weight: Int -> BigInt
+CommerceShopProfile.shop: onDelete Cascade -> Restrict
+MerchantKnowledgeDataFormat.canonicalExtension: VARCHAR(16) -> TEXT
+MerchantKnowledgeUploadedAsset.dataFormat FK: ON DELETE RESTRICT -> CASCADE
+```
+
+Each probe fails for the intended contract mismatch. The exact migration-contract helper
+also passes against the unchanged production migration.
+
+The Completion Report records the required dedicated parent and implementation task
+worktrees, matching `task/ARCH-023-DATABASE-001` branches, Attempt 2 start synchronization,
+recursive submodule materialisation, fresh claim/push flow and clean handoff. The review
+archive intentionally omits Git metadata, so the architect cannot independently query the
+reported final branch heads from the archive; the explicit handoff supplies implementation
+commit `13d6faa24bc9ad66d3f9c1ff18b2fde8d4c8f300`, parent report commit
+`d958abe724ad8d5cab6d76d1d6ac297c4b4ccbf7`, remote parity and clean-worktree evidence.
+This matches the established cross-environment review protocol and does not block
+acceptance.
+
+The reported `npm ci` audit findings and lifecycle-script approval warnings remain outside
+DATABASE-001 scope: this task did not change dependency versions and no evidence indicates
+they are regressions introduced by ARCH-023.
+
+### Reviewed Files
+
+Implementation repository:
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql`
+- `scripts/validate-arch023-merchant-knowledge-schema.mjs`
+- `scripts/validate-arch023-merchant-knowledge-migration.mjs`
+- `scripts/fixtures/arch023-merchant-knowledge-migration-contract.mjs`
+- `scripts/test-arch023-merchant-knowledge-validator-mutations.mjs`
+- `scripts/fixtures/arch023-merchant-knowledge-cases.mjs`
+- `package.json`
+
+Parent workspace:
+
+- `docs/decisions/database/ARCH-023/DATABASE-001-persist-merchant-knowledge-schema.md`
+- `docs/decisions/database/ARCH-023/_index.md`
+- `docs/decisions/shared/ARCH-023/SHARED-001-implement-arch023-shared-contracts.md`
+- `docs/decisions/shared/ARCH-023/_index.md`
+- `docs/decisions/admin/ARCH-023/ADMIN-002-manage-store-categories-default-templates.md`
+- `docs/decisions/admin/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
+### Validation Reviewed
+
+- Confirmed `prisma/schema.prisma` and the production ARCH-023 migration are unchanged
+  from the Attempt 1 archive.
+- Re-ran `node scripts/validate-arch023-merchant-knowledge-schema.mjs` against the
+  submitted schema: passed.
+- Independently executed all three schema mutation probes: each was rejected for the
+  intended exact-contract assertion.
+- Independently executed the extracted migration exact-contract helper against the
+  submitted migration: passed.
+- Independently executed both migration mutation probes against that exact-contract
+  helper: each was rejected for the intended type/FK-contract assertion.
+- Re-ran `node --check` for both validators, the migration-contract helper, mutation
+  suite and direct-SQL fixture: passed.
+- Inspected the recorded Attempt 2 Prisma validation, full mutation suite, fresh and
+  upgrade PostgreSQL 15.19 + pgvector rehearsals, preservation snapshots, catalogue
+  counts, direct-SQL positive/negative cases and `git diff --check`: all recorded passed.
+- The review archive does not contain installed `node_modules` or the disposable
+  PostgreSQL targets, so the full migration validator/rehearsals were not independently
+  re-executed in the review container; their implementation and recorded evidence were
+  inspected instead.
+
+### Architecture Conformance
+
+Conforms. DATABASE-001 remains one additive ARCH-023 persistence boundary. Merchant
+Knowledge Purpose/Data Format identity remains table-backed, `merchant_knowledge` remains
+an ordinary application/domain Feature rather than a database-required feature, R2 bytes
+remain outside PostgreSQL, source revisions own normalized-content lifecycle, chunks own
+pgvector embeddings, and no ANN index or Merchant Knowledge-specific trigger/entitlement
+table was introduced.
+
+Attempt 2 changes are limited to validation/test infrastructure plus its package script;
+they do not alter production schema semantics or cross-repository contracts.
+
+### Follow-up
+
+`ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**.
+
+Dependency reconciliation makes exactly these currently satisfied dependants Ready:
+
+```text
+ARCH-023-SHARED-001
+ARCH-023-ADMIN-002
+```
+
+All other ARCH-023 tasks remain Pending/Superseded according to their declared
+dependencies. No downstream implementation is started implicitly by this review.
+
+#### Historical Attempt 1 — Changes Requested — 2026-09-29
+
+##### Review Notes
 
 Attempt 1 is correct in its core database design and implementation shape, but the task-owned
 "exact" static validators do not yet enforce the exact contract required by R19/R20.
@@ -1327,7 +1457,7 @@ The reported `npm ci` audit/lifecycle warnings are not an ARCH-023 acceptance bl
 submitted evidence; they were reported as pre-existing/non-task conditions and no dependency
 change is part of this task.
 
-### Reviewed Files
+##### Reviewed Files
 
 Implementation repository:
 
@@ -1344,7 +1474,7 @@ Parent workspace:
 - `docs/decisions/database/ARCH-023/_index.md`
 - `docs/architecture/ARCH-023-merchant-knowledge.md`
 
-### Validation Reviewed
+##### Validation Reviewed
 
 - Inspected the recorded Prisma validation, fresh PostgreSQL rehearsal, upgrade-preservation
   rehearsal, catalogue-count checks, direct-SQL valid/invalid cases and `git diff --check`
@@ -1360,7 +1490,7 @@ Parent workspace:
   whether R19/R20 reject contract-breaking schema/DDL changes. Both validators produced the
   false negatives described above.
 
-### Architecture Conformance
+##### Architecture Conformance
 
 The production schema/migration is architecturally conformant by inspection with the
 ARCH-023 database boundary and remains additive. The task is returned for correction only
@@ -1369,7 +1499,7 @@ migration redesign is requested unless the strengthened validators reveal an act
 
 No downstream ARCH-023 task is promoted while DATABASE-001 remains non-Complete.
 
-### Follow-up
+##### Follow-up
 
 Attempt 2 must make the following bounded corrections in the same task:
 
