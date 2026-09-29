@@ -63,10 +63,6 @@ The missing capability must solve several separate concerns without conflating t
   special or required.
 - Represent plan limits as generic plan-feature configuration rather than hard-coded
   Free/Starter checks.
-- Let each pricing plan select its allowed Merchant Knowledge Purpose/Data Format
-  combinations from the active `MerchantKnowledgePurposeDataFormat` catalogue. Plan source
-  selection is data-driven; application code MUST NOT contain plan-name branches such as
-  "Free cannot use PRICING/XLSX" or "Growth enables spreadsheets".
 - Limit Merchant Knowledge by **configured knowledge sources**: one
   `MerchantKnowledgeSource` consumes one plan source slot whether it is backed by a
   webpage, CSV upload or XLSX upload.
@@ -499,57 +495,28 @@ combinations. The keys above remain architecture-defined in v1 because parser ro
 localization and the C5 Tool contract depend on them. Admin does not invent arbitrary
 new Purpose/Data Format keys at runtime.
 
-The Merchant Knowledge feature configuration is:
+The Merchant Knowledge feature configuration remains exactly:
 
 ```json
 {
   "schemaVersion": 1,
   "maxKnowledgeSources": 5,
-  "maxContentUnitsPerSource": 1500,
-  "allowedSourceTypes": [
-    {
-      "purposeKey": "COMPANY_INFORMATION",
-      "dataFormatKey": "WEB_PAGE"
-    },
-    {
-      "purposeKey": "PRODUCT_INFORMATION",
-      "dataFormatKey": "WEB_PAGE"
-    },
-    {
-      "purposeKey": "PRICING",
-      "dataFormatKey": "CSV"
-    }
-  ]
+  "maxContentUnitsPerSource": 1500
 }
 ```
 
-The values above are illustrative plan data, not Free/Starter/Growth defaults.
+The field names and semantics are architectural; actual Free/Starter/Growth/private-plan
+values are plan data.
 
-`allowedSourceTypes` is a plan-owned subset of the currently active
-`MerchantKnowledgePurposeDataFormat` catalogue. Admin plan authoring MUST populate the
-selection from those database rows and validate every selected pair against the active
-catalogue. Application code MUST NOT derive the selection from plan display names, plan
-handles or hard-coded Free/Starter/Growth branches.
-
-The configuration stores stable Purpose/Data Format **keys**, not database ids, so the
-materialised configuration is portable and remains meaningful across catalogue reads.
-The database catalogue remains authoritative for whether a Purpose/Data Format pair
-exists and is active; C2 validates the JSON structure, while plan-authoring/materialisation
-code validates the selected pairs against the catalogue.
-
-For runtime entitlement, sources are first filtered to those whose `(purposeKey,
-dataFormatKey)` appears in `allowedSourceTypes`. `maxKnowledgeSources` then limits the
-first N of those currently allowed sources ordered by `(position ASC, id ASC)`.
-Persisted sources whose type is no longer allowed are retained as dormant configuration
-and do **not** consume one of the current plan's active source slots.
+`maxKnowledgeSources` limits the first N sources ordered by `(position ASC, id ASC)`.
+Excess persisted sources remain stored but are not processed/retrieved while outside the
+current allowance.
 
 `maxContentUnitsPerSource` independently limits the normalized content contributed by
 each currently entitled source, regardless of whether that content came from a webpage,
 CSV or XLSX file.
 
 There is no per-purpose quota, no per-format multiplier and no per-language multiplier.
-A plan either allows a Purpose/Data Format pair or it does not; quantitative entitlement
-continues to use `maxKnowledgeSources` and `maxContentUnitsPerSource`.
 
 Merchant-facing Purpose/Data Format labels use existing Shopify localization files keyed
 by the stable values:
@@ -1006,16 +973,10 @@ Existing recovery-specific settings
 
 When adding/editing a source:
 
-- the Shopify server resolves the current materialised Merchant Knowledge C2
-  configuration from the active/trialing subscription's current `BillingPlanFeature`;
-- the Purpose selector is built from active `MerchantKnowledgePurposeDataFormat` rows
-  that also appear in the plan's `allowedSourceTypes`; purposes with no currently
-  entitled Data Format are not offered;
-- the Data Format selector is filtered by the intersection of active
-  `MerchantKnowledgePurposeDataFormat` rows for the chosen Purpose and the plan's
-  `allowedSourceTypes`;
-- the UI MUST NOT contain plan-name-specific branches for Purpose/Data Format
-  availability;
+- the Purpose selector uses C3 architecture-defined Purpose keys with localized UI
+  labels;
+- the Data Format selector is filtered by active
+  `MerchantKnowledgePurposeDataFormat` rows for the chosen Purpose;
 - the Language selector contains the D5 supported language set;
 - Language defaults from `ShopSettings.defaultLanguageTag` through C1;
 - `WEB_PAGE` renders a URL field;
@@ -1259,23 +1220,21 @@ During a CommerceAgent turn:
 6. the model may supply only semantic query text and optional Knowledge Purposes;
 7. `shopId` is supplied exclusively from the trusted conversation/grant context;
 8. Commerce loads the current `BillingPlanFeature.configuration`, validates C2 and
-   filters the shop's persisted sources to those whose `(purposeKey, dataFormatKey)`
-   appears in the current plan's `allowedSourceTypes`;
-9. Commerce selects only the first `maxKnowledgeSources` of those currently allowed
-   sources ordered by `(position ASC, id ASC)`;
-10. if `purposes` was supplied, Commerce further filters the entitled sources by
-   `MerchantKnowledgePurpose.key`; source language does not exclude an otherwise-entitled
-   source;
-11. Commerce embeds the query using the current D17 embedding environment;
-12. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
+   selects only the first `maxKnowledgeSources` sources ordered by
+   `(position ASC, id ASC)`;
+9. if `purposes` was supplied, Commerce filters the entitled sources by
+   `MerchantKnowledgePurpose.key`; source Data Format and source language do not exclude
+   an otherwise-entitled source unless the optional Purpose filter does so;
+10. Commerce embeds the query using the current D17 embedding environment;
+11. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
     chunks with matching embedding provenance;
-13. the policy operation returns the exact C5 envelope with
+12. the policy operation returns the exact C5 envelope with
     `trust = "UNTRUSTED_REFERENCE"` and at most 5 matches, each retaining its source
     `languageTag`;
-14. Commerce presents those matches only as Tool-result/context data under the global
+13. Commerce presents those matches only as Tool-result/context data under the global
     D7 runtime-data authority rule. Match content is never promoted into any instruction
     layer or into `hostInstructions`;
-15. Merchant Knowledge content may contribute facts to the answer, but it is never
+14. Merchant Knowledge content may contribute facts to the answer, but it is never
     accepted as customer intent, authorization, approval, capability authority or a
     reason by itself to invoke another Tool. In particular, instruction-like match
     content MUST NOT cause the model to emit a side-effecting Tool call.
@@ -1318,39 +1277,23 @@ Knowledge result: "Returns are accepted within 30 days."
 may allow the agent to answer a policy question. It does not make a hypothetical
 `refundOrder` tool executable unless a separately eligible capability grants that tool.
 
-### D21 — current plan limits and source-type entitlements are enforced at authoring, ingestion and lookup boundaries
+### D21 — current plan limits are enforced at authoring, ingestion and lookup boundaries
 
 For Feature key `merchant_knowledge`, C2 is enforced as follows:
 
-| Boundary | `allowedSourceTypes` | `maxKnowledgeSources` | `maxContentUnitsPerSource` |
-|---|---|---|---|
-| Admin plan authoring | select only from active Purpose/Data Format catalogue rows; no plan-name branches | validate positive/bounded value | validate positive/bounded value |
-| BillingPlan materialisation | validate selected keys against the active catalogue and copy unchanged | validate/copy configuration unchanged | validate/copy configuration unchanged |
-| Shopify UI | offer only currently plan-entitled Purpose/Data Format pairs | display `configured / max` for currently allowed sources | display source usage / max |
-| Shopify server action | reject create/upload/finalize when the pair is not currently allowed | reject creation that would exceed the allowance after filtering to currently allowed sources | no content decision before fetch |
-| Background processing | re-check the source pair against the current materialised BillingPlan entitlement before processing | re-check source position within the ordered currently allowed set | normalize/truncate before chunking/embedding |
-| Commerce lookup | exclude sources whose pair is not currently allowed | search only the first N currently allowed sources | consume ACTIVE indexed content |
-| Background reconciliation | leave disallowed sources dormant and do not enqueue/process them until entitlement returns | retain excess allowed sources but do not enqueue/process them | automatically reprocess oversized ACTIVE entitled sources after a decrease |
+| Boundary | `maxKnowledgeSources` | `maxContentUnitsPerSource` |
+|---|---|---|
+| Admin plan authoring | validate positive/bounded value | validate positive/bounded value |
+| BillingPlan materialisation | validate/copy configuration unchanged | validate/copy configuration unchanged |
+| Shopify UI | display `configured / max` | display source usage / max |
+| Shopify server action | reject creation that would exceed source allowance | no content decision before fetch |
+| Background processing | re-check source position against current allowance | normalize/truncate before chunking/embedding |
+| Commerce lookup | search only currently entitled source positions | consume ACTIVE indexed content |
+| Background reconciliation | retain excess sources but do not enqueue/process them | automatically reprocess oversized ACTIVE entitled sources after a decrease |
 
-Plan source-type entitlement is always read from the shop's **current materialised
-BillingPlanFeature.configuration**. A future/pending next-cycle plan MUST NOT affect
-Merchant Knowledge authoring, ingestion or retrieval before that BillingPlan becomes the
-shop's current active/trialing subscription plan.
-
-Source-type downgrades are non-destructive. If a previously configured source's
-Purpose/Data Format pair is removed from `allowedSourceTypes`, its source row, revision
-history, ACTIVE normalized content/chunks and uploaded asset (if any) are retained, but
-the source becomes dormant: it is excluded from new processing and Commerce lookup and
-does not consume one of the current plan's active `maxKnowledgeSources` slots.
-
-If a later plan again allows that pair, the retained source becomes eligible again. An
-existing ACTIVE revision may be used immediately when its embedding provenance is still
-current; no automatic refetch/re-upload is required solely because entitlement returned.
-
-Source-count downgrades are also non-destructive. After source-type filtering, allowed
-sources beyond the current `maxKnowledgeSources` remain persisted, including their
-revision history, but are excluded from new processing and Commerce lookup while outside
-the current allowance.
+Source-count downgrades are non-destructive. Sources beyond the current
+`maxKnowledgeSources` remain persisted, including their revision history, but are
+excluded from new processing and Commerce lookup while outside the current allowance.
 
 When `maxContentUnitsPerSource` decreases, Background reconciliation identifies ACTIVE,
 currently entitled sources whose ACTIVE revision has
@@ -1476,10 +1419,9 @@ The server creates `MerchantKnowledgeUploadedAsset(status=PENDING_UPLOAD)` befor
 the upload. A PENDING upload intent does **not** consume a plan source slot.
 
 The signed upload URL expires no later than 10 minutes after issuance. The finalization
-action re-checks the shop's current materialised `allowedSourceTypes`, global
-Purpose/Data Format compatibility and the active source-slot limit, verifies that the
-expected object exists in R2, stores the client-declared SHA-256/size/content type and
-transitions the asset to `AVAILABLE`.
+action re-checks shop entitlement, Purpose/Data Format compatibility and the source-slot
+limit, verifies that the expected object exists in R2, stores the client-declared
+SHA-256/size/content type and transitions the asset to `AVAILABLE`.
 
 The client-declared hash is not trusted as proof of contents. Background recomputes
 SHA-256 while downloading the object. Processing fails if the recomputed hash differs
@@ -1597,11 +1539,10 @@ shape based on a Feature key. No Merchant Knowledge-specific entitlement table, 
 constraint, trigger or required-feature constraint is introduced.
 
 For Feature key `merchant_knowledge`, application/domain code validates the JSON with C2
-before the pricing plan can be made available. It also validates every configured
-`allowedSourceTypes` pair against the active `MerchantKnowledgePurposeDataFormat`
-catalogue. The plan-authoring domain policy adds or retains the ordinary
-`MerchantPricingPlanFeature` mapping for `merchant_knowledge` by default on every plan.
-This default-inclusion rule is enforced in code, not in the database schema.
+before the pricing plan can be made available. The plan-authoring domain policy also adds
+or retains the ordinary `MerchantPricingPlanFeature` mapping for `merchant_knowledge` by
+default on every plan. This default-inclusion rule is enforced in code, not in the
+database schema.
 
 `BillingPlan` materialisation copies the generic plan-feature mappings and their
 `configuration` JSON without semantic transformation and without a
@@ -1611,8 +1552,7 @@ materialised `BillingPlanFeature.configuration`, not the mutable pricing-catalog
 ARCH-023 is pre-production and there are no existing plans requiring compatibility
 backfill.
 
-No Merchant Knowledge limit or Purpose/Data Format entitlement is read from plan display
-names, plan handles or hard-coded plan kinds.
+No Merchant Knowledge limit is read from plan display names or hard-coded plan kinds.
 
 ### Existing table changes — Store Category default template
 
@@ -2152,28 +2092,15 @@ Consumers: `moda-interact-admin`, `moda-interact`, `moda-interact-background`,
 ```ts
 export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION = 1 as const;
 
-export const MerchantKnowledgeAllowedSourceTypeSchema = z.object({
-  purposeKey: z.string().trim().min(1).max(64),
-  dataFormatKey: z.string().trim().min(1).max(32),
-}).strict();
-
 export const MerchantKnowledgeFeatureConfigurationSchema = z.object({
   schemaVersion: z.literal(1),
   maxKnowledgeSources: z.number().int().min(1).max(100),
   maxContentUnitsPerSource: z.number().int().min(1).max(25000),
-  allowedSourceTypes: z.array(MerchantKnowledgeAllowedSourceTypeSchema).max(100),
 }).strict();
 ```
 
-`allowedSourceTypes` MUST contain no duplicate `(purposeKey, dataFormatKey)` pair.
-
-C2 validates the cross-application JSON structure only. The actual selectable pairs are
-not hard-coded into C2: Admin plan authoring resolves them from active
-`MerchantKnowledgePurposeDataFormat` database rows, and BillingPlan materialisation
-re-validates the selected keys against that catalogue before copying the configuration.
-
 The values are plan configuration. ARCH-023 does not assign specific Free/Starter/Growth
-values or encode plan-name-to-source-type rules.
+values.
 
 No downstream consumer may redefine this shape locally.
 
@@ -2496,13 +2423,9 @@ Recovery Settings -> Merchant Knowledge
     v
 resolve current BillingPlanFeature.configuration (C2)
     |
-    +--> load current C2 allowedSourceTypes
+    +--> choose Purpose
     |
-    +--> intersect allowedSourceTypes with active Purpose/DataFormat join rows
-    |
-    +--> choose Purpose from currently plan-entitled pairs
-    |
-    +--> choose Data Format from currently plan-entitled formats for that Purpose
+    +--> load active Data Formats allowed by Purpose/DataFormat join
     |
     +--> WEB_PAGE:
     |      enter URL
@@ -2518,9 +2441,8 @@ resolve current BillingPlanFeature.configuration (C2)
     |
     v
 source/revision transaction:
-  re-check the current plan allows the selected Purpose/Data Format pair
-  re-check maxKnowledgeSources across currently allowed sources when creating a new source
-  validate the globally supported Purpose/Data Format pair
+  re-check maxKnowledgeSources when creating a new source
+  validate supported Purpose/Data Format pair
   create/update source as applicable
   increment currentGeneration
   insert PENDING source revision with URL or uploadedAssetId
@@ -2549,9 +2471,8 @@ runtime-validate Shared payload
 load source + Purpose + Data Format + revision + shop + current BillingPlan entitlement
     |
     +--> stale generation -> skip without promotion
-    +--> source Purpose/Data Format not in current allowedSourceTypes -> leave dormant
-    +--> source position outside maxKnowledgeSources within currently allowed sources -> do not process
-    +--> globally unsupported/inactive Purpose/Data Format pair -> fail closed
+    +--> source position outside maxKnowledgeSources -> do not process
+    +--> unsupported/inactive Purpose/Data Format pair -> fail closed
     |
     v
 claim PENDING -> PROCESSING
@@ -2640,17 +2561,15 @@ normal capability selection
 
 Creating a new source must atomically:
 
-1. resolve/validate the current materialised C2 BillingPlan configuration;
-2. validate that the requested Purpose/Data Format pair appears in
-   `allowedSourceTypes`;
+1. resolve/validate the current C2 BillingPlan configuration;
+2. lock the shop's source-ordering scope sufficiently to prevent two concurrent creates
+   from both exceeding `maxKnowledgeSources`;
 3. validate the active Purpose/Data Format composite mapping;
-4. lock the shop's source-ordering scope sufficiently to prevent two concurrent creates
-   from both exceeding `maxKnowledgeSources` across currently allowed sources;
-5. allocate a unique zero-based `position`;
-6. insert the `MerchantKnowledgeSource`;
-7. set `currentGeneration = 1`;
-8. insert exactly one CREATE PENDING revision with the correct locator; and
-9. commit before BullMQ publication.
+4. allocate a unique zero-based `position`;
+5. insert the `MerchantKnowledgeSource`;
+6. set `currentGeneration = 1`;
+7. insert exactly one CREATE PENDING revision with the correct locator; and
+8. commit before BullMQ publication.
 
 For uploads, the referenced `MerchantKnowledgeUploadedAsset` must already be AVAILABLE.
 Creating/finalizing the upload intent itself does not allocate a source slot.
@@ -2771,18 +2690,9 @@ restores the pending selection.
 
 ### Plan entitlement decrease
 
-If `allowedSourceTypes` removes a previously permitted Purpose/Data Format pair, no source,
-revision or R2 asset is deleted. Sources of that type become dormant immediately under the
-current materialised BillingPlan: Shopify does not offer that pair for new configuration,
-Background does not start new processing for it, and Commerce excludes it from retrieval.
-Dormant sources do not consume the current plan's `maxKnowledgeSources` allowance. If a
-later current BillingPlan permits the pair again, retained eligible ACTIVE content becomes
-usable again without requiring a new upload solely because entitlement returned.
-
-If `maxKnowledgeSources` decreases, no source rows are deleted. After filtering to
-currently allowed source types, Commerce immediately excludes allowed sources beyond the
-current ordered allowance, and Background does not start new processing for those sources
-while they remain outside the allowance.
+If `maxKnowledgeSources` decreases, no source rows are deleted. Commerce immediately
+excludes sources beyond the current ordered allowance, and Background does not start new
+processing for those sources while they remain outside the allowance.
 
 If `maxContentUnitsPerSource` decreases, Background reconciliation creates a bounded
 `ENTITLEMENT_CHANGE` replacement for each currently entitled ACTIVE source whose
@@ -2802,7 +2712,6 @@ Expected vector-query shape is tenant-selective:
 
 ```text
 shopId
-+ current allowedSourceTypes
 + current maxKnowledgeSources ordered-source allowance
 + optional purpose
 + ACTIVE revision
@@ -2978,10 +2887,7 @@ Merchant Knowledge behaviour.
 
 Owns Admin UI/actions for canonical-English Platform Instructions, canonical-English
 Shop Instructions, Store Categories, canonical-English default templates and generic
-plan-feature Merchant Knowledge limits/source-type entitlements. It validates C2 when
-authoring plans, loads selectable Purpose/Data Format pairs from the active database
-catalogue and persists the selected subset into `allowedSourceTypes` without plan-name
-branches.
+plan-feature Merchant Knowledge limits. It validates C2 when authoring plans.
 
 The initial Merchant Knowledge Purpose/Data Format rows and supported combinations are
 architecture seed data rather than arbitrary Admin-created taxonomy in v1.
@@ -2995,19 +2901,19 @@ locale catalogues.
 Owns the merchant-facing onboarding category section, Recovery Settings Store Profile
 and Merchant Knowledge sections, Store Category/Purpose/Data Format localization through
 existing `app/i18n/locales/<locale>.json` catalogues, source CRUD/refresh/reprocess
-actions, server-side current-plan `allowedSourceTypes` and `maxKnowledgeSources`
-enforcement, Purpose/Data Format compatibility selection, source-language
-defaulting/selection, private-R2 signed upload issuance and upload finalization, and C4
-processing-job publication. Merchant Knowledge has no merchant enable/disable preference.
+actions, server-side `maxKnowledgeSources` enforcement, Purpose/Data Format compatibility
+selection, source-language defaulting/selection, private-R2 signed upload issuance and
+upload finalization, and C4 processing-job publication. Merchant Knowledge has no
+merchant enable/disable preference.
 
 ### `moda-interact-background` / `moda_background`
 
 Owns C4 consumption/production for reconciliation, URL fetching/security, private-R2
-reads, current-plan `allowedSourceTypes` re-checks, upload hash/format/safety validation,
-CSV/XLSX deterministic extraction, normalization, `maxContentUnitsPerSource` enforcement,
-deterministic chunking, multilingual document embeddings, vector writes, revision state
-transitions, ENTITLEMENT_CHANGE reconciliation and cleanup/reconciliation of
-expired/unreferenced Merchant Knowledge upload objects.
+reads, upload hash/format/safety validation, CSV/XLSX deterministic extraction,
+normalization, `maxContentUnitsPerSource` enforcement, deterministic chunking,
+multilingual document embeddings, vector writes, revision state transitions,
+ENTITLEMENT_CHANGE reconciliation and cleanup/reconciliation of expired/unreferenced
+Merchant Knowledge upload objects.
 
 ARCH-023 adds no Background category/template translation worker.
 
@@ -3040,9 +2946,8 @@ valid Studio-authored revisions/releases during bootstrap, subsequent Studio
 revision/binding/publication/release evolution, additive canonical-English
 platform/shop/capability instruction composition, enforcement that runtime
 Tool/provider/retrieval output remains context data and never instruction or
-`hostInstructions`, query embedding, current `allowedSourceTypes` plus
-`maxKnowledgeSources` lookup enforcement and exact pgvector retrieval across all
-currently entitled source languages and Data Formats.
+`hostInstructions`, query embedding, current `maxKnowledgeSources` lookup enforcement
+and exact pgvector retrieval across all entitled source languages and Data Formats.
 
 ### `moda-interact-gateway` / `moda_gateway`
 
@@ -3087,29 +2992,18 @@ Merchant Knowledge format/storage acceptance must additionally verify:
 
 1. the D2 Purpose/Data Format seed rows and supported combinations exactly match the
    Shared C3 keys;
-2. Admin derives plan-selectable source types from active
-   `MerchantKnowledgePurposeDataFormat` rows and no Free/Starter/Growth-specific source
-   availability branch is required;
-3. two plans may select different `allowedSourceTypes` from the same catalogue and the
-   current materialised BillingPlan alone determines merchant authoring/processing/lookup
-   entitlement;
-4. `PRODUCT_INFORMATION` and `PRICING` globally support `WEB_PAGE`, `CSV` and `XLSX`,
-   while a plan may allow any validated subset of those globally supported pairs;
-5. globally unsupported or currently plan-disallowed Purpose/Data Format pairs fail
-   before processing;
-6. a source that becomes disallowed after a plan change remains persisted/dormant,
-   does not consume an active source slot and is excluded from lookup; re-entitlement
-   makes retained ACTIVE content usable again when provenance remains current;
-7. a CSV pricing upload and XLSX pricing upload are stored privately in R2, processed by
-   Background and retrievable through C5 when the current plan allows those pairs;
-8. R2 object keys/signed URLs are absent from Tool output/model context;
-9. replacing a file creates a new immutable asset while REPROCESS and
+2. `PRODUCT_INFORMATION` and `PRICING` accept `WEB_PAGE`, `CSV` and `XLSX`;
+3. unsupported Purpose/Data Format pairs fail before processing;
+4. a CSV pricing upload and XLSX pricing upload are stored privately in R2, processed by
+   Background and retrievable through C5;
+5. R2 object keys/signed URLs are absent from Tool output/model context;
+6. replacing a file creates a new immutable asset while REPROCESS and
    ENTITLEMENT_CHANGE reuse the existing asset;
-10. SHA-256 mismatch, oversized upload/decompressed workbook, unsupported workbook format
-    and missing/invalid R2 objects fail without replacing a prior ACTIVE revision;
-11. spreadsheet cells containing instruction-like text remain runtime data under D7/D22
-    and do not cause a side-effecting Tool call; and
-12. Purpose/Data Format labels exist in all 20 Shopify localization catalogues.
+7. SHA-256 mismatch, oversized upload/decompressed workbook, unsupported workbook format
+   and missing/invalid R2 objects fail without replacing a prior ACTIVE revision;
+8. spreadsheet cells containing instruction-like text remain runtime data under D7/D22
+   and do not cause a side-effecting Tool call; and
+9. Purpose/Data Format labels exist in all 20 Shopify localization catalogues.
 
 Bootstrap acceptance must verify a clean Commerce state converges to one usable Merchant
 Knowledge publication without manual Studio actions, replay is idempotent/recoverable,
@@ -3212,15 +3106,8 @@ amended during Patch 1 review before task files are created.
 - Kept `merchant_knowledge` as an ordinary Feature (`ALWAYS_ENABLED`,
   `systemRequired=false`); application/domain plan policy includes it by default on every
   merchant pricing plan, with no database-level required-feature invariant.
-- Defined generic feature configuration as `maxKnowledgeSources`,
-  `maxContentUnitsPerSource` and plan-selected `allowedSourceTypes`.
-- Made Merchant Knowledge Purpose/Data Format plan entitlement data-driven: Admin selects
-  from active `MerchantKnowledgePurposeDataFormat` rows, the selected stable-key pairs are
-  materialised into `BillingPlanFeature.configuration`, and no plan-name-specific
-  Free/Starter/Growth source availability branches are permitted.
-- Made source-type downgrades non-destructive: disallowed sources become dormant without
-  consuming active source slots and can become usable again if a later current plan
-  re-entitles their Purpose/Data Format pair.
+- Defined generic feature configuration as `maxKnowledgeSources` plus
+  `maxContentUnitsPerSource`.
 - Made source language merchant-selectable metadata defaulted from shop settings, not a
   runtime retrieval filter.
 - Required multilingual embedding retrieval across source/query languages and defined a

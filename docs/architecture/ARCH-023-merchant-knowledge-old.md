@@ -4,7 +4,7 @@ title: Merchant knowledge, store profiles and CommerceAgent instructions
 status: proposed
 coordinator: moda_architect
 created: 2026-09-28
-updated: 2026-09-29
+updated: 2026-09-28
 ---
 
 # ARCH-023: Merchant knowledge, store profiles and CommerceAgent instructions
@@ -31,14 +31,12 @@ the agent.
 The missing capability must solve several separate concerns without conflating them:
 
 1. **Commercial entitlement** — a pricing plan must limit how many Merchant Knowledge
-   sources a shop may configure and how much normalized content each source may
-   contribute, independently of whether the source is a webpage or uploaded file.
+   URLs a shop may configure and how much normalized content each URL may contribute.
 2. **Merchant configuration** — the merchant needs to create ordered knowledge sources,
-   select a supported Purpose/Data Format pair, select source language and refresh,
-   reprocess or replace the underlying source from the existing Shopify application UI.
-3. **Asynchronous ingestion** — webpage fetching, private-file retrieval, SSRF/file
-   validation, extraction, content limiting, chunking and embedding must not occur in
-   the browser or synchronous request lifecycle.
+   classify each source by purpose, select its source language and trigger refreshes
+   from the existing Shopify application UI.
+3. **Asynchronous ingestion** — page fetching, SSRF protection, extraction, content
+   limiting, chunking and embedding must not occur in the browser or request lifecycle.
 4. **Semantic retrieval** — the CommerceAgent needs bounded, tenant-scoped retrieval of
    relevant passages during a conversation, including cross-language retrieval.
 5. **Instruction safety** — merchant/customer/web/tool content is untrusted data and
@@ -63,35 +61,16 @@ The missing capability must solve several separate concerns without conflating t
   special or required.
 - Represent plan limits as generic plan-feature configuration rather than hard-coded
   Free/Starter checks.
-- Let each pricing plan select its allowed Merchant Knowledge Purpose/Data Format
-  combinations from the active `MerchantKnowledgePurposeDataFormat` catalogue. Plan source
-  selection is data-driven; application code MUST NOT contain plan-name branches such as
-  "Free cannot use PRICING/XLSX" or "Growth enables spreadsheets".
-- Limit Merchant Knowledge by **configured knowledge sources**: one
-  `MerchantKnowledgeSource` consumes one plan source slot whether it is backed by a
-  webpage, CSV upload or XLSX upload.
-- Replace the database `MerchantKnowledgePurpose` enum with architecture-seeded
-  `MerchantKnowledgePurpose`, `MerchantKnowledgeDataFormat` and
-  `MerchantKnowledgePurposeDataFormat` tables so supported Purpose/Data Format
-  combinations are data-driven rather than hard-coded plan/UI branches.
-- Seed the initial Purpose keys `COMPANY_INFORMATION`, `CUSTOMER_SUPPORT`, `POLICIES`,
-  `FAQ`, `PRODUCT_INFORMATION`, `SHIPPING_AND_DELIVERY` and `PRICING`.
-- Seed the initial Data Format keys `WEB_PAGE`, `CSV` and `XLSX`, with spreadsheet
-  uploads initially enabled for `PRODUCT_INFORMATION` and `PRICING`.
+- Limit Merchant Knowledge by **configured URL sources**: one source row / one URL
+  consumes one plan source slot.
 - Allow multiple sources to use the same Knowledge Purpose, for example multiple
-  `PRODUCT_INFORMATION` pages or pricing spreadsheets on a higher plan.
+  `PRODUCT_INFORMATION` pages on a higher plan.
 - Store one supported Moda `languageTag` on every source. The Shopify UI defaults the
   selector from `ShopSettings.defaultLanguageTag`, but the merchant may choose another
   supported language for that URL.
 - Use deterministic language-neutral **content units**, not word counts.
 - Enforce `maxKnowledgeSources` independently from `maxContentUnitsPerSource`.
-- Store extracted/normalized source text durably in PostgreSQL.
-- Reuse the existing Cloudflare R2 account for immutable original Merchant Knowledge
-  uploads. R2 stores original uploaded bytes; PostgreSQL remains authoritative for
-  tenant ownership, source/asset metadata, processing state, normalized content and
-  embeddings.
-- Support private CSV and XLSX uploads in the initial release; uploaded object keys are
-  server-generated and are never exposed to the model.
+- Store extracted source text durably in PostgreSQL.
 - Store semantic chunk embeddings in PostgreSQL using pgvector.
 - Use one multilingual embedding model for document chunks and lookup queries so
   semantically equivalent queries may retrieve relevant content across source languages.
@@ -99,19 +78,9 @@ The missing capability must solve several separate concerns without conflating t
   Merchant Knowledge source of truth or vector index in v1.
 - Process Merchant Knowledge asynchronously in `moda-interact-background` and write the
   resulting durable state directly to PostgreSQL.
-- Deterministically bootstrap one complete initial working Merchant Knowledge Commerce
-  publication in Commerce application/bootstrap code: the fixed `merchant_knowledge`
-  capability identity, fixed `merchant_knowledge_lookup` Tool identity, canonical initial
-  Tool revision, canonical initial capability revision, Tool-to-capability binding,
-  publication of both revisions and membership in an active Commerce release.
-- Back the bootstrap Tool revision with the Commerce-internal policy operation
-  `merchantKnowledge.lookup` and the exact C5 contract.
-- Make the bootstrap idempotent and convergent: a clean or partially-provisioned
-  environment is completed to one usable initial publication, while an already-usable
-  later Studio-authored publication is preserved and never reset to the seed revision.
-- Use Commerce Studio for **subsequent** versioned evolution of those fixed identities:
-  later Tool/capability revisions, capability-local prompt/configuration changes,
-  Tool-to-capability revision binding, publication and release evolution.
+- Deterministically system-provision exactly one global, FEATURE-bound `merchant_knowledge` Commerce capability identity in Commerce application/bootstrap code; it is not created through Commerce Studio.
+- Deterministically system-provision exactly one `merchant_knowledge_lookup` Commerce Tool identity, backed by the Commerce-internal policy operation `merchantKnowledge.lookup`.
+- Use Commerce Studio only for the versioned behaviour of those fixed identities: Tool revision authoring/publication, capability-local prompt/configuration authoring, Tool-to-capability revision binding, capability revision publication and release membership.
 - Ensure merchant configuration creates **knowledge data**, never new Commerce
   capabilities/releases.
 - Add initial Store Category selection to the **existing Shopify onboarding page**.
@@ -159,8 +128,7 @@ ARCH-023 does not introduce:
 - a new public or private Commerce ingestion HTTP endpoint;
 - one Commerce capability per merchant URL;
 - a Redis vector index;
-- a new database or a new object-storage provider; ARCH-023 reuses the existing
-  Cloudflare R2 account for uploaded Merchant Knowledge files;
+- a new database or object-storage service;
 - a headless browser/JavaScript-rendering crawler;
 - arbitrary merchant-authored prompt instructions attached to URLs;
 - automatic scheduled webpage refreshes;
@@ -176,13 +144,7 @@ ARCH-023 does not introduce:
   action should occur;
 - background jobs whose purpose is to create merchant-specific Commerce capabilities;
 - a second Shopify onboarding wizard or a separate Merchant Knowledge settings page;
-- a merchant-facing enable/disable toggle for Merchant Knowledge;
-- `.xls`, `.xlsm`, `.ods`, PDF or DOCX ingestion in the initial release;
-- execution of spreadsheet macros, formulas, external workbook links, embedded objects
-  or other active content; and
-- arbitrary Admin-created Purpose/Data Format keys in v1. The initial keys are
-  architecture-defined/seeded; extending them requires the corresponding parser,
-  localization and Tool-contract change.
+- a merchant-facing enable/disable toggle for Merchant Knowledge.
 
 ## Current Architecture
 
@@ -265,19 +227,8 @@ which template edit seeded it.
 
 Moda already uses BullMQ and reconciliation patterns for durable work that is persisted
 before queue publication. ARCH-023 reuses that pattern. PostgreSQL remains the durable
-source of truth for Merchant Knowledge metadata/lifecycle and BullMQ delivery is treated
-as at-least-once/retryable rather than exactly-once.
-
-### Existing Cloudflare R2 availability
-
-The deployment already has a Cloudflare R2 account available. ARCH-023 reuses R2 for
-immutable original Merchant Knowledge file bytes; it does not introduce a second
-object-storage provider.
-
-R2 is **not** the Merchant Knowledge database or vector store. PostgreSQL remains
-authoritative for shop ownership, Purpose/Data Format selection, upload metadata,
-revision lifecycle, normalized extracted content, plan entitlement and pgvector
-embeddings.
+source of truth and BullMQ delivery is treated as at-least-once/retryable rather than
+exactly-once.
 
 ### pgvector availability
 
@@ -328,12 +279,7 @@ validation keyed by the stable Feature key, not a database invariant.
 `ALWAYS_ENABLED` activation mode, the normal generic feature resolver does not require
 a `ShopFeaturePreference` row for it. `systemRequired` remains `false`.
 
-ARCH-023 Commerce bootstrap owns the complete **initial working publication**, not only
-the fixed identities. The bootstrap MUST use the existing Commerce lifecycle/storage
-boundaries for every create/publish/release transition; it MUST NOT insert lifecycle
-rows directly with SQL or bypass publication validation.
-
-The fixed Commerce capability identity has exactly these values:
+ARCH-023 system-provisions the Commerce capability identity with exactly these values:
 
 ```text
 CommerceCapability.key              = merchant_knowledge
@@ -344,11 +290,9 @@ CommerceCapability.featureId        = Feature.id where Feature.key = merchant_kn
 CommerceCapability.enabled          = true
 ```
 
-The capability-identity step is idempotent by `CommerceCapability.key`. It reuses a
-matching existing identity and fails with a configuration conflict rather than silently
-changing an existing row whose selection binding or Feature binding differs.
+The provisioning operation is idempotent by `CommerceCapability.key`. It MUST use the existing Commerce lifecycle/storage boundary rather than direct SQL, MUST reject a conflicting existing row whose selection binding or Feature binding differs, and MUST NOT create a capability revision or release membership.
 
-The fixed Commerce Tool identity has exactly these values:
+ARCH-023 also system-provisions the Commerce Tool identity with exactly these values:
 
 ```text
 CommerceTool.name        = merchant_knowledge_lookup
@@ -357,11 +301,9 @@ CommerceTool.description = Search the current shop's configured Merchant Knowled
 CommerceTool.enabled     = true
 ```
 
-The Tool-identity step is idempotent by `CommerceTool.name`. It reuses a matching
-existing identity and fails with a configuration conflict rather than silently replacing
-an incompatible existing identity.
+The Tool-identity provisioning operation is idempotent by `CommerceTool.name`. It MUST reject a conflicting existing Tool identity and MUST NOT create or publish a Tool revision.
 
-The Tool is backed internally by:
+The Tool is backed internally by the Commerce policy operation:
 
 ```text
 merchantKnowledge.lookup
@@ -371,61 +313,15 @@ merchantKnowledge.lookup
 `merchantKnowledge.lookup` is an internal Commerce execution identifier and is never
 emitted by MCP `tools/list`.
 
-When no usable published Merchant Knowledge configuration already exists, bootstrap:
+Commerce Studio does not create either fixed identity. After provisioning, Studio may:
 
-1. creates/publishes the canonical initial `merchant_knowledge_lookup` Tool revision
-   using `POLICY_OPERATION`, `merchantKnowledge.lookup`, operation version `1.0.0` and
-   the exact C5 contract;
-2. creates/publishes the canonical initial `merchant_knowledge` capability revision with
-   canonical-English Merchant Knowledge instructions and a binding to that published
-   Tool revision; and
-3. ensures a normal published/active Commerce release contains that published capability
-   revision.
+1. create/edit/publish Tool revisions under `merchant_knowledge_lookup`;
+2. create/edit/publish capability revisions under `merchant_knowledge`;
+3. author the capability-local prompt/configuration;
+4. bind a published `merchant_knowledge_lookup` Tool revision into the capability revision; and
+5. include the published capability revision in Commerce releases.
 
-Release handling MUST use the existing release lifecycle. If no release exists,
-bootstrap creates/publishes the required initial release. If a published release is
-immutable, bootstrap creates/publishes the normal successor release rather than mutating
-the immutable release in place.
-
-Bootstrap is complete only when the runtime resolver can reach:
-
-```text
-active release
-    -> published merchant_knowledge capability revision
-        -> published merchant_knowledge_lookup Tool revision
-            -> POLICY_OPERATION merchantKnowledge.lookup@1.0.0
-```
-
-A **usable Merchant Knowledge publication** exists when the fixed identities are valid,
-the active release contains a published `merchant_knowledge` revision, that revision
-binds a published `merchant_knowledge_lookup` revision, and the bound Tool satisfies C5.
-
-Bootstrap behaviour is:
-
-```text
-clean environment
-    -> create/publish the complete canonical initial chain
-
-partial canonical bootstrap
-    -> complete missing lifecycle steps without duplicating valid completed steps
-
-usable later Studio-authored Merchant Knowledge publication exists
-    -> leave it unchanged
-
-incompatible/conflicting fixed identity or published configuration
-    -> report configuration conflict; do not silently rewrite it
-```
-
-Once a usable publication exists, Commerce Studio owns subsequent versioned evolution:
-later Tool/capability revisions, capability-local instruction/configuration edits,
-Tool bindings, publication and release evolution.
-
-A subsequent application restart MUST NOT reactivate the canonical seed revision,
-replace a valid later Studio-authored revision, or roll the active release back merely
-because its revision identifiers differ from the seed.
-
-Commerce Studio MUST NOT create, rename, rebind or delete the architecture-defined
-`merchant_knowledge` capability identity or `merchant_knowledge_lookup` Tool identity.
+The Merchant Knowledge capability is runtime-usable only after a published capability revision containing the intended published Tool revision is a member of the active release.
 
 Merchant actions create/update/delete `MerchantKnowledgeSource` rows and their revisions
 only. They do not create Commerce capability/tool identities, revisions or releases.
@@ -444,124 +340,47 @@ Knowledge may inform an otherwise-authorised capability. Knowledge must never:
 - change tenant identity;
 - override platform/shop/capability instructions.
 
-### D2 — plan limits apply to configured knowledge sources
+### D2 — plan limits apply to configured URL sources
 
-One `MerchantKnowledgeSource` is one plan-counted source slot regardless of whether the
-source is remote or uploaded.
+One configured URL is one plan-counted `MerchantKnowledgeSource`.
 
-Example:
-
-```text
-position 0  Company website         COMPANY_INFORMATION   WEB_PAGE
-position 1  Help centre             CUSTOMER_SUPPORT      WEB_PAGE
-position 2  Product catalogue       PRODUCT_INFORMATION   XLSX
-position 3  Retail price list       PRICING               CSV
-position 4  Wholesale price list    PRICING               XLSX
-```
-
-Purpose is classification; Data Format determines the ingestion path. There is no
-uniqueness constraint on purpose. A merchant may have multiple sources with the same
-purpose or format when the current plan permits enough source slots.
-
-Purpose/Data Format compatibility is represented by a database join table rather than
-hard-coded UI conditionals. The initial architecture-defined seed set is:
+A plan may therefore allow, for example:
 
 ```text
-PURPOSE KEYS
-COMPANY_INFORMATION
-CUSTOMER_SUPPORT
-POLICIES
-FAQ
-PRODUCT_INFORMATION
-SHIPPING_AND_DELIVERY
-PRICING
-
-DATA FORMAT KEYS
-WEB_PAGE   input kind REMOTE_URL
-CSV        input kind UPLOAD
-XLSX       input kind UPLOAD
+position 0  /about              COMPANY_INFORMATION
+position 1  /support            CUSTOMER_SUPPORT
+position 2  /returns            POLICIES
+position 3  /products/shoes     PRODUCT_INFORMATION
+position 4  /products/jackets   PRODUCT_INFORMATION
 ```
 
-Initial allowed combinations are exactly:
+Knowledge Purpose is classification only. There is no uniqueness constraint on purpose;
+a higher plan may allow multiple sources with the same purpose.
 
-```text
-COMPANY_INFORMATION    -> WEB_PAGE
-CUSTOMER_SUPPORT       -> WEB_PAGE
-POLICIES               -> WEB_PAGE
-FAQ                    -> WEB_PAGE
-PRODUCT_INFORMATION    -> WEB_PAGE, CSV, XLSX
-SHIPPING_AND_DELIVERY  -> WEB_PAGE
-PRICING                 -> WEB_PAGE, CSV, XLSX
-```
-
-The database tables are used for identity, ordering, active state and supported
-combinations. The keys above remain architecture-defined in v1 because parser routing,
-localization and the C5 Tool contract depend on them. Admin does not invent arbitrary
-new Purpose/Data Format keys at runtime.
-
-The Merchant Knowledge feature configuration is:
+The Merchant Knowledge feature configuration is exactly:
 
 ```json
 {
   "schemaVersion": 1,
   "maxKnowledgeSources": 5,
-  "maxContentUnitsPerSource": 1500,
-  "allowedSourceTypes": [
-    {
-      "purposeKey": "COMPANY_INFORMATION",
-      "dataFormatKey": "WEB_PAGE"
-    },
-    {
-      "purposeKey": "PRODUCT_INFORMATION",
-      "dataFormatKey": "WEB_PAGE"
-    },
-    {
-      "purposeKey": "PRICING",
-      "dataFormatKey": "CSV"
-    }
-  ]
+  "maxContentUnitsPerSource": 1500
 }
 ```
 
-The values above are illustrative plan data, not Free/Starter/Growth defaults.
+The field names and semantics are architectural; the actual values configured for Free,
+Starter, Growth or private plans are plan data and are not hard-coded in application
+logic.
 
-`allowedSourceTypes` is a plan-owned subset of the currently active
-`MerchantKnowledgePurposeDataFormat` catalogue. Admin plan authoring MUST populate the
-selection from those database rows and validate every selected pair against the active
-catalogue. Application code MUST NOT derive the selection from plan display names, plan
-handles or hard-coded Free/Starter/Growth branches.
+`maxKnowledgeSources` limits the number of source positions currently entitled for the
+shop. `maxContentUnitsPerSource` limits normalized content independently for each
+entitled source.
 
-The configuration stores stable Purpose/Data Format **keys**, not database ids, so the
-materialised configuration is portable and remains meaningful across catalogue reads.
-The database catalogue remains authoritative for whether a Purpose/Data Format pair
-exists and is active; C2 validates the JSON structure, while plan-authoring/materialisation
-code validates the selected pairs against the catalogue.
+For example, if the current BillingPlan configuration allows three sources, sources are
+ordered by `(position ASC, id ASC)` and only the first three are currently entitled.
+Excess persisted sources are retained but are not processed/retrieved while outside the
+current allowance.
 
-For runtime entitlement, sources are first filtered to those whose `(purposeKey,
-dataFormatKey)` appears in `allowedSourceTypes`. `maxKnowledgeSources` then limits the
-first N of those currently allowed sources ordered by `(position ASC, id ASC)`.
-Persisted sources whose type is no longer allowed are retained as dormant configuration
-and do **not** consume one of the current plan's active source slots.
-
-`maxContentUnitsPerSource` independently limits the normalized content contributed by
-each currently entitled source, regardless of whether that content came from a webpage,
-CSV or XLSX file.
-
-There is no per-purpose quota, no per-format multiplier and no per-language multiplier.
-A plan either allows a Purpose/Data Format pair or it does not; quantitative entitlement
-continues to use `maxKnowledgeSources` and `maxContentUnitsPerSource`.
-
-Merchant-facing Purpose/Data Format labels use existing Shopify localization files keyed
-by the stable values:
-
-```text
-merchantKnowledge.purposes.<PURPOSE_KEY>.label
-merchantKnowledge.dataFormats.<DATA_FORMAT_KEY>.label
-```
-
-All 20 supported locale catalogues must contain these initial keys before ARCH-023
-integrated acceptance.
-
+There is no per-purpose quota and no per-language multiplier.
 
 ### D3 — content units are deterministic and language-neutral
 
@@ -593,9 +412,8 @@ Unicode code points before chunking and records `truncated = true`. It does not 
 otherwise-valid page solely because it is longer than the current plan allowance.
 
 A decrease in `maxContentUnitsPerSource` is reconciled automatically under D21. An
-increase does not automatically reprocess existing content. For `WEB_PAGE`, the merchant
-may press Refresh; for `CSV`/`XLSX`, the merchant may press Reprocess to use the same
-immutable R2 asset under the higher allowance.
+increase does not automatically refetch existing content; the merchant may press
+Refresh to ingest additional content under the higher allowance.
 
 ### D4 — shop configuration language, source language and customer language are independent
 
@@ -606,7 +424,7 @@ SHOP CONFIGURATION LANGUAGE
     ShopSettings.defaultLanguageTag
     -> selects the existing Shopify UI localization catalogue
     -> localizes Store Category labels/descriptions
-    -> supplies the default value when the merchant adds a knowledge source
+    -> supplies the default value when the merchant adds a knowledge URL
     -> does NOT translate model instructions
 
 SOURCE LANGUAGE
@@ -986,161 +804,85 @@ Store Profile
 
 Merchant Knowledge
     plan allowance: configured / maxKnowledgeSources
-    ordered knowledge sources
+    ordered URL sources
     each source:
         name
+        URL
         purpose
-        data format
         language
-        locator:
-            URL for WEB_PAGE
-            original filename for CSV/XLSX
         status
         content-unit usage / maxContentUnitsPerSource
-        last processed timestamp
-        WEB_PAGE: Refresh / Edit / Delete
-        CSV/XLSX: Reprocess / Replace file / Edit / Delete
+        last refreshed timestamp
+        Refresh / Edit / Delete actions
 
 Existing recovery-specific settings
 ```
 
 When adding/editing a source:
 
-- the Shopify server resolves the current materialised Merchant Knowledge C2
-  configuration from the active/trialing subscription's current `BillingPlanFeature`;
-- the Purpose selector is built from active `MerchantKnowledgePurposeDataFormat` rows
-  that also appear in the plan's `allowedSourceTypes`; purposes with no currently
-  entitled Data Format are not offered;
-- the Data Format selector is filtered by the intersection of active
-  `MerchantKnowledgePurposeDataFormat` rows for the chosen Purpose and the plan's
-  `allowedSourceTypes`;
-- the UI MUST NOT contain plan-name-specific branches for Purpose/Data Format
-  availability;
+- the Purpose selector uses C3 stable purpose values with localized UI labels;
 - the Language selector contains the D5 supported language set;
 - Language defaults from `ShopSettings.defaultLanguageTag` through C1;
-- `WEB_PAGE` renders a URL field;
-- `CSV`/`XLSX` renders a file picker and private-R2 upload flow; and
-- the merchant may change Purpose/language before saving. Data Format is immutable after
-  a source is first created in v1; changing format requires creating a replacement source.
+- the merchant may change that default before saving.
 
 No separate Merchant Knowledge settings navigation is introduced in v1.
 
-### D14 — ingestion is Background-owned; uploaded originals live in private R2
+### D14 — ingestion is Background-owned and writes PostgreSQL directly
 
-Both remote and uploaded sources share the same durable source/revision/chunk lifecycle.
+The ingestion path is:
 
 ```text
-WEB_PAGE
 Shopify application
-    persist Source + Revision(PENDING, requestedUrl)
+    persist Source/Revision(PENDING)
         |
         v
 BullMQ merchant-knowledge job
         |
         v
-Background
-    secure HTTPS fetch
-    extract visible text
-        |
-        v
-common normalize / entitlement-limit / chunk / embed / pgvector / promote
-
-CSV / XLSX
-Shopify application
-    create private R2 upload intent
-        |
-        v
-browser PUT -> signed opaque R2 object key
-        |
-        v
-server finalizes immutable UploadedAsset metadata
-    persist Source + Revision(PENDING, uploadedAssetId)
-        |
-        v
-BullMQ merchant-knowledge job
-        |
-        v
-Background
-    authenticated private R2 GET
-    validate hash/format/safety bounds
-    deterministic spreadsheet extraction
-        |
-        v
-common normalize / entitlement-limit / chunk / embed / pgvector / promote
+moda-interact-background worker
+    validate current generation + current BillingPlan entitlement
+    fetch public URL safely
+    extract/normalize/truncate to maxContentUnitsPerSource
+    chunk
+    create multilingual embeddings
+    persist chunks/pgvector
+    promote revision ACTIVE
 ```
 
 There is no Background -> Commerce ingestion HTTP call.
 
-R2 stores **original uploaded bytes only**. PostgreSQL remains authoritative for shop
-ownership, source Purpose/Data Format, uploaded-asset metadata, revision status,
-normalized content, chunks and pgvector embeddings.
+Background already has access to the shared PostgreSQL database and is the owner of
+asynchronous business workflows. A network hop to Commerce would add failure and
+authentication boundaries without adding authority or persistence ownership.
 
-R2 objects are private. Neither the model nor C5 receives an R2 object key or signed
-read URL.
-
-Background already owns asynchronous business workflows. Web fetch/file extraction,
-content limiting, embeddings and revision promotion therefore remain Background-owned.
-
-
-### D15 — locator replacement, refresh/reprocess and entitlement changes are revisioned
+### D15 — refresh, URL replacement and entitlement reprocessing are revisioned
 
 Each `MerchantKnowledgeSource` has a monotonically increasing `currentGeneration`.
 
-Allowed revision reasons by Data Format are:
+Creating a source, changing its URL or pressing Refresh creates a new PENDING revision
+with the new generation. The existing ACTIVE revision remains active while the new
+revision is PENDING/PROCESSING.
 
-```text
-WEB_PAGE
-    CREATE
-    URL_CHANGE
-    REFRESH
-    ENTITLEMENT_CHANGE
-
-CSV / XLSX
-    CREATE
-    FILE_REPLACE
-    REPROCESS
-    ENTITLEMENT_CHANGE
-```
-
-`CREATE` establishes generation 1.
-
-For `WEB_PAGE`, URL replacement creates `URL_CHANGE`; manual Refresh creates `REFRESH`
-using the current URL.
-
-For `CSV`/`XLSX`, replacing the merchant file creates a **new immutable R2 asset** and a
-`FILE_REPLACE` revision. Manual Reprocess creates `REPROCESS` and references the same
-existing immutable asset; the merchant does not need to upload the file again.
-
-A plan content-limit downgrade creates `ENTITLEMENT_CHANGE`. It reuses the current
-locator:
-
-```text
-WEB_PAGE  -> current ACTIVE revision.requestedUrl
-CSV/XLSX  -> current ACTIVE revision.uploadedAssetId
-```
-
-The existing ACTIVE revision remains active while the new revision is
-PENDING/PROCESSING.
+A content-limit downgrade may also create a new PENDING revision with reason
+`ENTITLEMENT_CHANGE` using the same currently requested/resolved URL.
 
 On success, one database transaction:
 
 1. re-checks `revision.generation == source.currentGeneration`;
 2. changes the old ACTIVE revision to `SUPERSEDED`;
 3. changes the new revision to `ACTIVE`;
-4. deletes semantic chunks belonging to the superseded revision; and
-5. leaves the superseded revision's normalized content/metadata and immutable uploaded
-   asset reference for audit/reprocessing history.
+4. deletes semantic chunks belonging to the superseded revision;
+5. leaves the superseded revision's normalized content/metadata for audit/history.
 
 On failure, the new revision becomes `FAILED`; the previous ACTIVE revision and chunks
 remain unchanged.
 
-A worker must not promote a revision if its generation no longer equals
-`source.currentGeneration`.
+A worker must not promote a revision if its `generation` is no longer equal to its
+source's `currentGeneration`.
 
+### D16 — public HTTPS sources are allowed subject to SSRF policy
 
-### D16 — `WEB_PAGE` sources are public HTTPS URLs subject to SSRF policy
-
-A `WEB_PAGE` source may live on the Shopify storefront, a corporate domain or a third-
+A knowledge source may live on the Shopify storefront, a corporate domain or a third-
 party public help/documentation host.
 
 The fetcher must enforce all of the following:
@@ -1258,24 +1000,20 @@ During a CommerceAgent turn:
    `merchantKnowledge.lookup` policy operation;
 6. the model may supply only semantic query text and optional Knowledge Purposes;
 7. `shopId` is supplied exclusively from the trusted conversation/grant context;
-8. Commerce loads the current `BillingPlanFeature.configuration`, validates C2 and
-   filters the shop's persisted sources to those whose `(purposeKey, dataFormatKey)`
-   appears in the current plan's `allowedSourceTypes`;
-9. Commerce selects only the first `maxKnowledgeSources` of those currently allowed
-   sources ordered by `(position ASC, id ASC)`;
-10. if `purposes` was supplied, Commerce further filters the entitled sources by
-   `MerchantKnowledgePurpose.key`; source language does not exclude an otherwise-entitled
-   source;
-11. Commerce embeds the query using the current D17 embedding environment;
-12. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
+8. Commerce loads the current `BillingPlanFeature.configuration`, validates C2 and selects
+   only the first `maxKnowledgeSources` sources ordered by `(position ASC, id ASC)`;
+9. if `purposes` was supplied, Commerce filters the entitled sources to those purposes;
+   no source-language filter is applied;
+10. Commerce embeds the query using the current D17 embedding environment;
+11. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
     chunks with matching embedding provenance;
-13. the policy operation returns the exact C5 envelope with
+12. the policy operation returns the exact C5 envelope with
     `trust = "UNTRUSTED_REFERENCE"` and at most 5 matches, each retaining its source
     `languageTag`;
-14. Commerce presents those matches only as Tool-result/context data under the global
+13. Commerce presents those matches only as Tool-result/context data under the global
     D7 runtime-data authority rule. Match content is never promoted into any instruction
     layer or into `hostInstructions`;
-15. Merchant Knowledge content may contribute facts to the answer, but it is never
+14. Merchant Knowledge content may contribute facts to the answer, but it is never
     accepted as customer intent, authorization, approval, capability authority or a
     reason by itself to invoke another Tool. In particular, instruction-like match
     content MUST NOT cause the model to emit a side-effecting Tool call.
@@ -1318,39 +1056,23 @@ Knowledge result: "Returns are accepted within 30 days."
 may allow the agent to answer a policy question. It does not make a hypothetical
 `refundOrder` tool executable unless a separately eligible capability grants that tool.
 
-### D21 — current plan limits and source-type entitlements are enforced at authoring, ingestion and lookup boundaries
+### D21 — current plan limits are enforced at authoring, ingestion and lookup boundaries
 
 For Feature key `merchant_knowledge`, C2 is enforced as follows:
 
-| Boundary | `allowedSourceTypes` | `maxKnowledgeSources` | `maxContentUnitsPerSource` |
-|---|---|---|---|
-| Admin plan authoring | select only from active Purpose/Data Format catalogue rows; no plan-name branches | validate positive/bounded value | validate positive/bounded value |
-| BillingPlan materialisation | validate selected keys against the active catalogue and copy unchanged | validate/copy configuration unchanged | validate/copy configuration unchanged |
-| Shopify UI | offer only currently plan-entitled Purpose/Data Format pairs | display `configured / max` for currently allowed sources | display source usage / max |
-| Shopify server action | reject create/upload/finalize when the pair is not currently allowed | reject creation that would exceed the allowance after filtering to currently allowed sources | no content decision before fetch |
-| Background processing | re-check the source pair against the current materialised BillingPlan entitlement before processing | re-check source position within the ordered currently allowed set | normalize/truncate before chunking/embedding |
-| Commerce lookup | exclude sources whose pair is not currently allowed | search only the first N currently allowed sources | consume ACTIVE indexed content |
-| Background reconciliation | leave disallowed sources dormant and do not enqueue/process them until entitlement returns | retain excess allowed sources but do not enqueue/process them | automatically reprocess oversized ACTIVE entitled sources after a decrease |
+| Boundary | `maxKnowledgeSources` | `maxContentUnitsPerSource` |
+|---|---|---|
+| Admin plan authoring | validate positive/bounded value | validate positive/bounded value |
+| BillingPlan materialisation | validate/copy configuration unchanged | validate/copy configuration unchanged |
+| Shopify UI | display `configured / max` | display source usage / max |
+| Shopify server action | reject creation that would exceed source allowance | no content decision before fetch |
+| Background processing | re-check source position against current allowance | normalize/truncate before chunking/embedding |
+| Commerce lookup | search only currently entitled source positions | consume ACTIVE indexed content |
+| Background reconciliation | retain excess sources but do not enqueue/process them | automatically reprocess oversized ACTIVE entitled sources after a decrease |
 
-Plan source-type entitlement is always read from the shop's **current materialised
-BillingPlanFeature.configuration**. A future/pending next-cycle plan MUST NOT affect
-Merchant Knowledge authoring, ingestion or retrieval before that BillingPlan becomes the
-shop's current active/trialing subscription plan.
-
-Source-type downgrades are non-destructive. If a previously configured source's
-Purpose/Data Format pair is removed from `allowedSourceTypes`, its source row, revision
-history, ACTIVE normalized content/chunks and uploaded asset (if any) are retained, but
-the source becomes dormant: it is excluded from new processing and Commerce lookup and
-does not consume one of the current plan's active `maxKnowledgeSources` slots.
-
-If a later plan again allows that pair, the retained source becomes eligible again. An
-existing ACTIVE revision may be used immediately when its embedding provenance is still
-current; no automatic refetch/re-upload is required solely because entitlement returned.
-
-Source-count downgrades are also non-destructive. After source-type filtering, allowed
-sources beyond the current `maxKnowledgeSources` remain persisted, including their
-revision history, but are excluded from new processing and Commerce lookup while outside
-the current allowance.
+Source-count downgrades are non-destructive. Sources beyond the current
+`maxKnowledgeSources` remain persisted, including their revision history, but are
+excluded from new processing and Commerce lookup while outside the current allowance.
 
 When `maxContentUnitsPerSource` decreases, Background reconciliation identifies ACTIVE,
 currently entitled sources whose ACTIVE revision has
@@ -1361,8 +1083,7 @@ currently entitled sources whose ACTIVE revision has
    generation;
 3. increments `currentGeneration` by exactly one;
 4. inserts a new PENDING revision with reason `ENTITLEMENT_CHANGE`;
-5. copies the ACTIVE revision's current locator unchanged:
-   `requestedUrl` for `WEB_PAGE`, `uploadedAssetId` for `CSV`/`XLSX`;
+5. uses the ACTIVE revision's `requestedUrl` as the new revision's `requestedUrl`;
 6. commits;
 7. publishes C4 using the normal deterministic job-id contract.
 
@@ -1370,9 +1091,9 @@ The prior ACTIVE revision remains available until the bounded replacement succee
 Once the replacement becomes ACTIVE, D15 supersedes the predecessor and deletes its
 semantic chunks.
 
-A plan increase in `maxContentUnitsPerSource` does **not** automatically reprocess
-existing sources. The merchant may Refresh a `WEB_PAGE` source or Reprocess an uploaded
-`CSV`/`XLSX` source to use the higher allowance.
+A plan increase in `maxContentUnitsPerSource` does **not** automatically refetch existing
+sources. The merchant may press Refresh to ingest additional content using the higher
+allowance.
 
 ### D22 — runtime data has factual authority only; it never creates instruction or action authority
 
@@ -1452,126 +1173,6 @@ immutable for that turn and MUST NOT be generated from or modified by Tool resul
 external HTTP responses, Merchant Knowledge, catalogue/provider output or retrieved
 documents.
 
-### D23 — uploaded knowledge files use immutable private Cloudflare R2 assets
-
-ARCH-023 reuses the platform's existing Cloudflare R2 account.
-
-The R2 bucket used for Merchant Knowledge is private:
-
-- no public object listing;
-- no public object-read URLs;
-- the merchant/browser never receives R2 service credentials;
-- object keys are generated by Moda server code, never supplied by the merchant;
-- the browser receives only a short-lived signed PUT scoped to one generated object key;
-- Background reads the object using server-side R2 credentials;
-- the model, MCP Tool result and logs never receive the R2 object key or signed URL.
-
-The canonical object-key shape is:
-
-```text
-merchant-knowledge/<shopId>/<assetId>/source.<canonical-extension>
-```
-
-The server creates `MerchantKnowledgeUploadedAsset(status=PENDING_UPLOAD)` before signing
-the upload. A PENDING upload intent does **not** consume a plan source slot.
-
-The signed upload URL expires no later than 10 minutes after issuance. The finalization
-action re-checks the shop's current materialised `allowedSourceTypes`, global
-Purpose/Data Format compatibility and the active source-slot limit, verifies that the
-expected object exists in R2, stores the client-declared SHA-256/size/content type and
-transitions the asset to `AVAILABLE`.
-
-The client-declared hash is not trusted as proof of contents. Background recomputes
-SHA-256 while downloading the object. Processing fails if the recomputed hash differs
-from the persisted asset hash.
-
-An AVAILABLE asset is immutable from the application perspective. File replacement
-always allocates a **new** asset id/object key. `ENTITLEMENT_CHANGE` and `REPROCESS`
-revisions reuse the same immutable asset.
-
-Expired PENDING upload intents and unreferenced R2 objects are cleanup/reconciliation
-concerns owned by Background/Gateway wiring; cleanup MUST be tenant-scoped and MUST NOT
-delete an asset referenced by any revision.
-
-Platform safety limits for upload bytes and XLSX decompressed bytes are distinct from the
-commercial `maxContentUnitsPerSource` limit. The Shopify upload issuer and Background
-validator must use the same deployment-configured positive limits:
-
-```text
-MERCHANT_KNOWLEDGE_MAX_UPLOAD_BYTES
-MERCHANT_KNOWLEDGE_MAX_XLSX_UNCOMPRESSED_BYTES
-```
-
-These are platform safety settings, not plan entitlements and not model-visible values.
-
-### D24 — initial spreadsheet extraction is deterministic and non-executable
-
-Initial upload formats are exactly `CSV` and `XLSX`.
-
-CSV rules:
-
-1. file extension `.csv`;
-2. bytes must decode as UTF-8, optionally with UTF-8 BOM;
-3. comma-delimited records with standard CSV quote escaping;
-4. first non-empty record is the header row;
-5. empty records are ignored;
-6. blank header cells are deterministically named `Column <1-based-index>`.
-
-XLSX rules:
-
-1. file extension `.xlsx`;
-2. workbook must parse as OOXML XLSX within
-   `MERCHANT_KNOWLEDGE_MAX_XLSX_UNCOMPRESSED_BYTES`;
-3. `.xls`, `.xlsm`, `.ods` and macro-enabled workbooks are rejected;
-4. only visible worksheets are processed, in workbook order;
-5. first non-empty row of each visible worksheet is its header row;
-6. empty rows are ignored;
-7. blank header cells are deterministically named `Column <1-based-index>`;
-8. formulas are **never executed**. A cached scalar value may be used; a formula cell
-   without a cached scalar value contributes no value;
-9. external links, external data connections, embedded/OLE objects, macros and workbook
-   actions are never fetched or executed.
-
-Each non-empty data row is converted to canonical text before D3 normalization.
-
-For CSV:
-
-```text
-<Header 1>: <value>
-<Header 2>: <value>
-...
-```
-
-For XLSX:
-
-```text
-Worksheet: <worksheet name>
-<Header 1>: <value>
-<Header 2>: <value>
-...
-```
-
-Rows are separated by exactly two LF characters before D3 normalization.
-
-Scalar conversion is deterministic:
-
-```text
-string   -> cell text
-number   -> invariant decimal representation
-boolean  -> true | false
-date     -> ISO-8601 date/datetime when the parser exposes a typed date
-blank    -> omitted field
-formula  -> cached scalar only; formula expression is never included/executed
-```
-
-Background may stop extracting once it has enough normalized code points to prove the
-source exceeds `maxContentUnitsPerSource`; it then applies the normal D3 deterministic
-truncation rule.
-
-Spreadsheet text remains Level-6 runtime data under D7/D22. A cell containing a command,
-role declaration, claimed customer approval or Tool-use instruction has zero instruction
-or action authority.
-
 ## Exact Target Data Model
 
 The following is the Patch 1 target schema contract. Patch 2 tasks must reproduce these
@@ -1597,11 +1198,10 @@ shape based on a Feature key. No Merchant Knowledge-specific entitlement table, 
 constraint, trigger or required-feature constraint is introduced.
 
 For Feature key `merchant_knowledge`, application/domain code validates the JSON with C2
-before the pricing plan can be made available. It also validates every configured
-`allowedSourceTypes` pair against the active `MerchantKnowledgePurposeDataFormat`
-catalogue. The plan-authoring domain policy adds or retains the ordinary
-`MerchantPricingPlanFeature` mapping for `merchant_knowledge` by default on every plan.
-This default-inclusion rule is enforced in code, not in the database schema.
+before the pricing plan can be made available. The plan-authoring domain policy also adds
+or retains the ordinary `MerchantPricingPlanFeature` mapping for `merchant_knowledge` by
+default on every plan. This default-inclusion rule is enforced in code, not in the
+database schema.
 
 `BillingPlan` materialisation copies the generic plan-feature mappings and their
 `configuration` JSON without semantic transformation and without a
@@ -1611,8 +1211,7 @@ materialised `BillingPlanFeature.configuration`, not the mutable pricing-catalog
 ARCH-023 is pre-production and there are no existing plans requiring compatibility
 backfill.
 
-No Merchant Knowledge limit or Purpose/Data Format entitlement is read from plan display
-names, plan handles or hard-coded plan kinds.
+No Merchant Knowledge limit is read from plan display names or hard-coded plan kinds.
 
 ### Existing table changes — Store Category default template
 
@@ -1642,7 +1241,6 @@ following names so every relation in this document is deterministic:
 ```text
 Shop.commerceShopProfile
 Shop.merchantKnowledgeSources
-Shop.merchantKnowledgeUploadedAssets
 
 CommercePromptTemplateCategory.defaultTemplate
 CommercePromptTemplateCategory.taxonomyMappings
@@ -1763,111 +1361,20 @@ Invariant checks must enforce:
   the exact canonical-English template snapshot selected at that time; and
 - `activeCategoryActivatedAt` is non-null iff `activeCategoryId` is non-null.
 
-### New enum — Merchant Knowledge input kind
+### New enum — Merchant Knowledge purpose
 
 ```prisma
-enum MerchantKnowledgeInputKind {
-  REMOTE_URL
-  UPLOAD
+enum MerchantKnowledgePurpose {
+  COMPANY_INFORMATION
+  CUSTOMER_SUPPORT
+  POLICIES
+  FAQ
+  PRODUCT_INFORMATION
+  SHIPPING_AND_DELIVERY
 
   @@schema("commerce")
 }
 ```
-
-### New table — `MerchantKnowledgePurpose`
-
-Purpose is table-backed rather than a Prisma enum so supported Data Formats can be
-related declaratively.
-
-```prisma
-model MerchantKnowledgePurpose {
-  id           String   @id @default(cuid()) @db.Text
-  key          String   @unique @db.VarChar(64)
-  displayName  String   @db.VarChar(160)
-  active       Boolean  @default(true)
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime @default(now()) @updatedAt @db.Timestamptz(3)
-
-  dataFormats MerchantKnowledgePurposeDataFormat[]
-  sources     MerchantKnowledgeSource[]
-
-  @@index([active, displayOrder, key])
-  @@schema("commerce")
-}
-```
-
-### New table — `MerchantKnowledgeDataFormat`
-
-```prisma
-model MerchantKnowledgeDataFormat {
-  id                   String                     @id @default(cuid()) @db.Text
-  key                  String                     @unique @db.VarChar(32)
-  displayName          String                     @db.VarChar(160)
-  inputKind            MerchantKnowledgeInputKind
-  canonicalExtension   String?                    @db.VarChar(16)
-  acceptedContentTypes Json                       @db.JsonB
-  active               Boolean                    @default(true)
-  displayOrder         Int                        @default(0)
-  createdAt            DateTime                   @default(now()) @db.Timestamptz(3)
-  updatedAt            DateTime                   @default(now()) @updatedAt @db.Timestamptz(3)
-
-  purposes       MerchantKnowledgePurposeDataFormat[]
-  sources        MerchantKnowledgeSource[]
-  uploadedAssets MerchantKnowledgeUploadedAsset[]
-
-  @@index([active, displayOrder, key])
-  @@schema("commerce")
-}
-```
-
-`acceptedContentTypes` is canonical product metadata used for UI/server validation, not
-a trust boundary. Background MUST validate/parse the actual bytes independently.
-
-Initial rows are exactly:
-
-```text
-WEB_PAGE
-    displayName: Web page
-    inputKind: REMOTE_URL
-    canonicalExtension: null
-    acceptedContentTypes: ["text/html", "text/plain"]
-
-CSV
-    displayName: CSV spreadsheet
-    inputKind: UPLOAD
-    canonicalExtension: .csv
-    acceptedContentTypes: ["text/csv", "application/csv"]
-
-XLSX
-    displayName: Excel spreadsheet (.xlsx)
-    inputKind: UPLOAD
-    canonicalExtension: .xlsx
-    acceptedContentTypes:
-      ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
-```
-
-### New table — `MerchantKnowledgePurposeDataFormat`
-
-```prisma
-model MerchantKnowledgePurposeDataFormat {
-  purposeId    String   @db.Text
-  dataFormatId String   @db.Text
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
-
-  purpose    MerchantKnowledgePurpose    @relation(fields: [purposeId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  dataFormat MerchantKnowledgeDataFormat @relation(fields: [dataFormatId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  sources    MerchantKnowledgeSource[]
-
-  @@id([purposeId, dataFormatId])
-  @@index([dataFormatId, purposeId])
-  @@schema("commerce")
-}
-```
-
-The exact initial Purpose rows and combinations are the D2 seed contract. Source rows
-reference this composite key, so the database prevents unsupported Purpose/Data Format
-pairs without hard-coding individual keys in a CHECK constraint.
 
 ### New enum — Merchant Knowledge revision reason
 
@@ -1875,9 +1382,7 @@ pairs without hard-coding individual keys in a CHECK constraint.
 enum MerchantKnowledgeRevisionReason {
   CREATE
   URL_CHANGE
-  FILE_REPLACE
   REFRESH
-  REPROCESS
   ENTITLEMENT_CHANGE
 
   @@schema("commerce")
@@ -1898,142 +1403,79 @@ enum MerchantKnowledgeRevisionStatus {
 }
 ```
 
-### New enum — Merchant Knowledge uploaded-asset status
-
-```prisma
-enum MerchantKnowledgeUploadedAssetStatus {
-  PENDING_UPLOAD
-  AVAILABLE
-  FAILED
-  DELETED
-
-  @@schema("commerce")
-}
-```
-
-### New table — `MerchantKnowledgeUploadedAsset`
-
-```prisma
-model MerchantKnowledgeUploadedAsset {
-  id               String                               @id @default(cuid()) @db.Text
-  shopId           String                               @db.Text
-  dataFormatId     String                               @db.Text
-  status           MerchantKnowledgeUploadedAssetStatus @default(PENDING_UPLOAD)
-  objectKey        String                               @unique @db.Text
-  originalFileName String                               @db.VarChar(255)
-  contentType      String?                              @db.VarChar(128)
-  sizeBytes        BigInt?
-  sha256           String?                              @db.VarChar(64)
-  uploadExpiresAt  DateTime                             @db.Timestamptz(3)
-  availableAt      DateTime?                            @db.Timestamptz(3)
-  failureCode      String?                              @db.VarChar(128)
-  createdAt        DateTime                             @default(now()) @db.Timestamptz(3)
-  updatedAt        DateTime                             @default(now()) @updatedAt @db.Timestamptz(3)
-
-  shop       Shop                        @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  dataFormat MerchantKnowledgeDataFormat @relation(fields: [dataFormatId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  revisions  MerchantKnowledgeSourceRevision[]
-
-  @@index([shopId, status, createdAt])
-  @@index([dataFormatId, status])
-  @@schema("commerce")
-}
-```
-
-Invariants:
-
-- `objectKey` is server-generated exactly under the D23 prefix and is never merchant
-  input;
-- only `CSV`/`XLSX` (`inputKind=UPLOAD`) may own uploaded assets;
-- `AVAILABLE` requires non-null `contentType`, positive `sizeBytes`, lowercase 64-hex
-  `sha256` and non-null `availableAt`;
-- a revision may reference only an AVAILABLE asset owned by the same shop as the source;
-- `DELETED` is a lifecycle tombstone; an object referenced by any revision cannot be
-  physically deleted from R2.
-
 ### New table — `MerchantKnowledgeSource`
 
-One source is one plan-counted Merchant Knowledge slot, independent of locator type.
+One source is one configured URL slot and therefore one plan-counted Merchant Knowledge
+unit.
 
 ```prisma
 model MerchantKnowledgeSource {
-  id                String   @id @default(cuid()) @db.Text
-  shopId            String   @db.Text
-  purposeId         String   @db.Text
-  dataFormatId      String   @db.Text
-  name              String   @db.VarChar(160)
-  languageTag       String   @db.VarChar(16)
+  id                String                   @id @default(cuid()) @db.Text
+  shopId            String                   @db.Text
+  name              String                   @db.VarChar(160)
+  purpose           MerchantKnowledgePurpose
+  languageTag       String                   @db.VarChar(16)
   position          Int
-  currentGeneration Int      @default(0)
-  createdAt         DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt         DateTime @default(now()) @updatedAt @db.Timestamptz(3)
+  currentGeneration Int                      @default(0)
+  createdAt         DateTime                 @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime                 @default(now()) @updatedAt @db.Timestamptz(3)
 
-  shop              Shop                               @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  purpose           MerchantKnowledgePurpose           @relation(fields: [purposeId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  dataFormat        MerchantKnowledgeDataFormat        @relation(fields: [dataFormatId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  purposeDataFormat MerchantKnowledgePurposeDataFormat @relation(fields: [purposeId, dataFormatId], references: [purposeId, dataFormatId], onDelete: Restrict, onUpdate: Restrict)
-  revisions         MerchantKnowledgeSourceRevision[]
+  shop      Shop                              @relation(fields: [shopId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  revisions MerchantKnowledgeSourceRevision[]
 
   @@unique([shopId, position])
-  @@index([shopId, purposeId, position])
-  @@index([shopId, dataFormatId, position])
+  @@index([shopId, purpose, position])
   @@index([shopId, languageTag])
   @@schema("commerce")
 }
 ```
 
-`position` is zero-based/non-negative. Runtime entitlement orders by
+`position` is zero-based and non-negative. Runtime entitlement orders sources by
 `position ASC, id ASC` and takes the first `maxKnowledgeSources`.
 
-`languageTag` must be exactly one C1/D5 supported locale. It is metadata and is not a
-vector-retrieval exclusion filter.
+`languageTag` must be exactly one C1/D5 supported locale. It is source metadata and is
+not a vector-retrieval exclusion filter.
 
-`purposeId`/`dataFormatId` are immutable after source creation in v1. The composite FK
-to `MerchantKnowledgePurposeDataFormat` enforces a supported pair.
-
-`currentGeneration` increments by exactly one whenever
-CREATE/URL_CHANGE/FILE_REPLACE/REFRESH/REPROCESS/ENTITLEMENT_CHANGE creates a new
-revision.
+`currentGeneration` is non-negative and increments by exactly one whenever
+CREATE/URL_CHANGE/REFRESH/ENTITLEMENT_CHANGE creates a new revision for this source.
 
 ### New table — `MerchantKnowledgeSourceRevision`
 
 ```prisma
 model MerchantKnowledgeSourceRevision {
-  id                  String                          @id @default(cuid()) @db.Text
-  sourceId            String                          @db.Text
-  uploadedAssetId     String?                         @db.Text
+  id                  String                           @id @default(cuid()) @db.Text
+  sourceId            String                           @db.Text
   generation          Int
   reason              MerchantKnowledgeRevisionReason
-  requestedUrl        String?                         @db.VarChar(2048)
-  resolvedUrl         String?                         @db.VarChar(2048)
-  status              MerchantKnowledgeRevisionStatus @default(PENDING)
-  contentType         String?                         @db.VarChar(128)
+  requestedUrl        String                           @db.VarChar(2048)
+  resolvedUrl         String?                          @db.VarChar(2048)
+  status              MerchantKnowledgeRevisionStatus  @default(PENDING)
+  contentType         String?                          @db.VarChar(128)
   httpStatus          Int?
-  normalizedContent   String?                         @db.Text
+  normalizedContent   String?                          @db.Text
   contentUnits        Int?
-  contentHash         String?                         @db.VarChar(64)
-  truncated           Boolean                         @default(false)
-  failureCode         String?                         @db.VarChar(128)
-  requestedAt         DateTime                        @default(now()) @db.Timestamptz(3)
-  processingStartedAt DateTime?                       @db.Timestamptz(3)
-  fetchedAt           DateTime?                       @db.Timestamptz(3)
-  completedAt         DateTime?                       @db.Timestamptz(3)
-  createdAt           DateTime                        @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime                        @default(now()) @updatedAt @db.Timestamptz(3)
+  contentHash         String?                          @db.VarChar(64)
+  truncated           Boolean                          @default(false)
+  failureCode         String?                          @db.VarChar(128)
+  requestedAt         DateTime                         @default(now()) @db.Timestamptz(3)
+  processingStartedAt DateTime?                        @db.Timestamptz(3)
+  fetchedAt           DateTime?                        @db.Timestamptz(3)
+  completedAt         DateTime?                        @db.Timestamptz(3)
+  createdAt           DateTime                         @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime                         @default(now()) @updatedAt @db.Timestamptz(3)
 
-  source        MerchantKnowledgeSource         @relation(fields: [sourceId], references: [id], onDelete: Cascade, onUpdate: Restrict)
-  uploadedAsset MerchantKnowledgeUploadedAsset? @relation(fields: [uploadedAssetId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  chunks        MerchantKnowledgeChunk[]
+  source MerchantKnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  chunks MerchantKnowledgeChunk[]
 
   @@unique([sourceId, generation])
   @@index([sourceId, status, generation])
-  @@index([uploadedAssetId])
   @@index([status, requestedAt])
   @@schema("commerce")
 }
 ```
 
-The migration must add:
+The migration must add a PostgreSQL partial unique index enforcing at most one ACTIVE
+revision per source:
 
 ```sql
 CREATE UNIQUE INDEX "MerchantKnowledgeSourceRevision_one_active_per_source"
@@ -2041,36 +1483,13 @@ ON "commerce"."MerchantKnowledgeSourceRevision" ("sourceId")
 WHERE "status" = 'ACTIVE';
 ```
 
-and locator checks equivalent to:
+`generation` is positive. `contentUnits` and `contentHash` are required for
+ACTIVE/SUPERSEDED revisions. `contentHash` is lowercase SHA-256 of exact UTF-8
+normalized/truncated content.
 
-```text
-exactly one of requestedUrl / uploadedAssetId is non-null
-resolvedUrl may be non-null only when requestedUrl is non-null
-generation > 0
-```
-
-Application/worker validation additionally requires:
-
-```text
-source.dataFormat.inputKind = REMOTE_URL
-    -> requestedUrl != null
-    -> uploadedAssetId = null
-    -> allowed reasons CREATE / URL_CHANGE / REFRESH / ENTITLEMENT_CHANGE
-
-source.dataFormat.inputKind = UPLOAD
-    -> requestedUrl = null
-    -> uploadedAssetId != null
-    -> asset.shopId == source.shopId
-    -> asset.dataFormatId == source.dataFormatId
-    -> asset.status == AVAILABLE
-    -> allowed reasons CREATE / FILE_REPLACE / REPROCESS / ENTITLEMENT_CHANGE
-```
-
-`contentUnits` and `contentHash` are required for ACTIVE/SUPERSEDED revisions.
-`contentHash` is lowercase SHA-256 of exact UTF-8 normalized/truncated content.
-
-`ENTITLEMENT_CHANGE`, `REFRESH` and `REPROCESS` reuse the current locator. `FILE_REPLACE`
-always references a newly-created immutable uploaded asset.
+For `ENTITLEMENT_CHANGE`, `requestedUrl` is copied from the currently ACTIVE revision.
+The worker still performs a new fetch; the reason records why the new generation was
+created.
 
 ### New table — `MerchantKnowledgeChunk`
 
@@ -2152,64 +1571,36 @@ Consumers: `moda-interact-admin`, `moda-interact`, `moda-interact-background`,
 ```ts
 export const MERCHANT_KNOWLEDGE_FEATURE_CONFIGURATION_SCHEMA_VERSION = 1 as const;
 
-export const MerchantKnowledgeAllowedSourceTypeSchema = z.object({
-  purposeKey: z.string().trim().min(1).max(64),
-  dataFormatKey: z.string().trim().min(1).max(32),
-}).strict();
-
 export const MerchantKnowledgeFeatureConfigurationSchema = z.object({
   schemaVersion: z.literal(1),
   maxKnowledgeSources: z.number().int().min(1).max(100),
   maxContentUnitsPerSource: z.number().int().min(1).max(25000),
-  allowedSourceTypes: z.array(MerchantKnowledgeAllowedSourceTypeSchema).max(100),
 }).strict();
 ```
 
-`allowedSourceTypes` MUST contain no duplicate `(purposeKey, dataFormatKey)` pair.
-
-C2 validates the cross-application JSON structure only. The actual selectable pairs are
-not hard-coded into C2: Admin plan authoring resolves them from active
-`MerchantKnowledgePurposeDataFormat` database rows, and BillingPlan materialisation
-re-validates the selected keys against that catalogue before copying the configuration.
-
 The values are plan configuration. ARCH-023 does not assign specific Free/Starter/Growth
-values or encode plan-name-to-source-type rules.
+values.
 
 No downstream consumer may redefine this shape locally.
 
-### C3 — Merchant Knowledge Purpose/Data Format keys
+### C3 — Merchant Knowledge purpose
 
 Owner: `moda-interact-shared`
 
 Consumers: Shopify, Background, Commerce.
 
 ```ts
-export const MERCHANT_KNOWLEDGE_PURPOSE_KEYS = [
+export const MERCHANT_KNOWLEDGE_PURPOSES = [
   "COMPANY_INFORMATION",
   "CUSTOMER_SUPPORT",
   "POLICIES",
   "FAQ",
   "PRODUCT_INFORMATION",
   "SHIPPING_AND_DELIVERY",
-  "PRICING",
-] as const;
-
-export const MERCHANT_KNOWLEDGE_DATA_FORMAT_KEYS = [
-  "WEB_PAGE",
-  "CSV",
-  "XLSX",
 ] as const;
 ```
 
-Shared exports the corresponding Zod enums and TypeScript
-`MerchantKnowledgePurposeKey` / `MerchantKnowledgeDataFormatKey` types.
-
-These constants MUST exactly match the D2 architecture-seeded database keys. The
-database join table remains authoritative for which Purpose/Data Format pairs are
-currently active/allowed.
-
-No downstream consumer may invent local aliases for these keys.
-
+The Shared Zod enum and TypeScript type must exactly match the database enum names.
 
 ### C4 — Merchant Knowledge processing queue
 
@@ -2217,8 +1608,7 @@ Owner: `moda-interact-shared`
 
 Producers:
 
-- `moda-interact` for CREATE / URL_CHANGE / FILE_REPLACE / REFRESH / REPROCESS
-  requests;
+- `moda-interact` for CREATE / URL_CHANGE / REFRESH requests;
 - `moda-interact-background` reconciliation for durable PENDING recovery and
   ENTITLEMENT_CHANGE requests.
 
@@ -2247,10 +1637,7 @@ merchant-knowledge-process-
 
 encoded as lowercase hexadecimal after the prefix.
 
-There is no Shared `create-capability` or `create-tool` Merchant Knowledge job.
-`moda-interact-commerce` bootstrap establishes the complete canonical initial working
-publication defined by D1. Commerce Studio owns subsequent revision/binding/publication
-and release evolution after that baseline exists.
+There is no Shared `create-capability` or `create-tool` Merchant Knowledge job. The fixed `merchant_knowledge` capability identity and `merchant_knowledge_lookup` Tool identity are deterministically provisioned inside `moda-interact-commerce`; Studio owns only their revision authoring/binding/publication and release membership.
 
 Background-only scheduling/reconciliation state that does not cross an application
 boundary remains Background-owned.
@@ -2276,16 +1663,12 @@ The published ToolDefinition must use `name = "merchant_knowledge_lookup"`. Its
 `POLICY_OPERATION` execution must use `operation = "merchantKnowledge.lookup"` and
 `operationVersion = "1.0.0"`.
 
-The D1 canonical bootstrap Tool revision MUST use this exact contract. Later
-Studio-authored revisions of the fixed Tool remain subject to the same contract unless
-ARCH-023 is explicitly amended.
-
 Agent input:
 
 ```ts
 {
   query: string;              // trimmed, 1..1000 Unicode code points
-  purposes?: MerchantKnowledgePurposeKey[]; // unique, max 7
+  purposes?: MerchantKnowledgePurpose[]; // unique, max 6
 }
 ```
 
@@ -2303,7 +1686,7 @@ The exact MCP input schema is:
     "purposes": {
       "type": "array",
       "uniqueItems": true,
-      "maxItems": 7,
+      "maxItems": 6,
       "items": {
         "type": "string",
         "enum": [
@@ -2312,8 +1695,7 @@ The exact MCP input schema is:
           "POLICIES",
           "FAQ",
           "PRODUCT_INFORMATION",
-          "SHIPPING_AND_DELIVERY",
-          "PRICING"
+          "SHIPPING_AND_DELIVERY"
         ]
       }
     }
@@ -2352,11 +1734,9 @@ The policy operation returns exactly this envelope:
   matches: Array<{
     sourceId: string;
     sourceRevisionId: string;
-    sourceName: string;
-    purpose: MerchantKnowledgePurposeKey;
-    dataFormat: MerchantKnowledgeDataFormatKey;
+    purpose: MerchantKnowledgePurpose;
     languageTag: ModaSupportedLanguageTag;
-    sourceUrl?: string; // present only for WEB_PAGE
+    sourceUrl: string;
     chunkOrdinal: number;
     content: string;
   }>;
@@ -2364,9 +1744,8 @@ The policy operation returns exactly this envelope:
 ```
 
 `trust` is a fixed server-produced literal. The agent cannot supply or override it.
-`languageTag` and `dataFormat` describe the returned source. Neither is an authorization
-signal. `sourceUrl` is returned only for `WEB_PAGE`; R2 object keys, uploaded asset ids
-and signed URLs are never returned to the model.
+`languageTag` describes the returned source. It is not an authorization signal and is
+not used to exclude otherwise-entitled sources before vector ranking.
 
 The Commerce runner/MCP result handling MUST preserve this object as Tool-result/context
 data. It MUST NOT concatenate `matches[].content` into the immutable kernel, Platform
@@ -2488,7 +1867,7 @@ publish exact pending DRAFT
 promote pending category to active and clear pending state
 ```
 
-### Flow D — create/change/reprocess Merchant Knowledge
+### Flow D — create or refresh Merchant Knowledge
 
 ```text
 Recovery Settings -> Merchant Knowledge
@@ -2496,46 +1875,29 @@ Recovery Settings -> Merchant Knowledge
     v
 resolve current BillingPlanFeature.configuration (C2)
     |
-    +--> load current C2 allowedSourceTypes
+    +--> CREATE:
+    |      count/order existing sources
+    |      reject if new source would exceed maxKnowledgeSources
+    |      default language selector from ShopSettings.defaultLanguageTag
+    |      merchant confirms/changes purpose + language + URL
     |
-    +--> intersect allowedSourceTypes with active Purpose/DataFormat join rows
-    |
-    +--> choose Purpose from currently plan-entitled pairs
-    |
-    +--> choose Data Format from currently plan-entitled formats for that Purpose
-    |
-    +--> WEB_PAGE:
-    |      enter URL
-    |      CREATE / URL_CHANGE / REFRESH
-    |
-    +--> CSV / XLSX:
-           choose file
-           create PENDING_UPLOAD asset + server-generated R2 key
-           receive <=10-minute signed PUT
-           browser uploads directly to private R2
-           finalize upload -> AVAILABLE asset
-           CREATE / FILE_REPLACE / REPROCESS
+    +--> URL_CHANGE / REFRESH:
+           existing source slot retained
     |
     v
-source/revision transaction:
-  re-check the current plan allows the selected Purpose/Data Format pair
-  re-check maxKnowledgeSources across currently allowed sources when creating a new source
-  validate the globally supported Purpose/Data Format pair
+transaction:
   create/update source as applicable
-  increment currentGeneration
-  insert PENDING source revision with URL or uploadedAssetId
+  increment source.currentGeneration
+  insert PENDING source revision
     |
     v
 best-effort BullMQ process-source-revision enqueue
     |
     +--> success: normal Background processing
     |
-    +--> failure: durable PENDING revision remains
-                   and reconciliation re-enqueues later
+    +--> failure: durable PENDING state remains
+                  and reconciliation re-enqueues later
 ```
-
-An abandoned PENDING_UPLOAD asset does not consume `maxKnowledgeSources`.
-
 
 ### Flow E — Background source processing and entitlement reconciliation
 
@@ -2546,32 +1908,22 @@ process-source-revision job
 runtime-validate Shared payload
     |
     v
-load source + Purpose + Data Format + revision + shop + current BillingPlan entitlement
+load source/revision/shop/current BillingPlan entitlement
     |
     +--> stale generation -> skip without promotion
-    +--> source Purpose/Data Format not in current allowedSourceTypes -> leave dormant
-    +--> source position outside maxKnowledgeSources within currently allowed sources -> do not process
-    +--> globally unsupported/inactive Purpose/Data Format pair -> fail closed
+    +--> source position outside maxKnowledgeSources -> do not process
     |
     v
 claim PENDING -> PROCESSING
     |
-    +--> WEB_PAGE:
-    |      secure public HTTPS fetch (D16)
-    |      visible text extraction
-    |
-    +--> CSV / XLSX:
-           private R2 GET
-           verify shop ownership + asset AVAILABLE
-           enforce upload/decompressed safety bounds
-           recompute SHA-256 and require asset hash match
-           deterministic D24 spreadsheet extraction
+    v
+secure public HTTPS fetch
     |
     v
-D3 normalize/truncate to maxContentUnitsPerSource
+extract + D3 normalize/truncate to maxContentUnitsPerSource
     |
     v
-D17 deterministic chunk
+D17 chunk
     |
     v
 embed each chunk with platform multilingual embedding configuration
@@ -2588,11 +1940,8 @@ transaction:
 
 Background reconciliation also compares currently entitled ACTIVE revisions with the
 current `maxContentUnitsPerSource`. If an ACTIVE revision exceeds a newly-lower limit,
-reconciliation creates an `ENTITLEMENT_CHANGE` PENDING revision using the same current
-URL or uploaded asset and enqueues it through C4.
-
-It does not automatically reprocess on allowance increases.
-
+reconciliation creates an `ENTITLEMENT_CHANGE` PENDING revision and enqueues it through
+the same C4 contract. It does not automatically reprocess on allowance increases.
 
 ### Flow F — conversation lookup
 
@@ -2640,37 +1989,27 @@ normal capability selection
 
 Creating a new source must atomically:
 
-1. resolve/validate the current materialised C2 BillingPlan configuration;
-2. validate that the requested Purpose/Data Format pair appears in
-   `allowedSourceTypes`;
-3. validate the active Purpose/Data Format composite mapping;
-4. lock the shop's source-ordering scope sufficiently to prevent two concurrent creates
-   from both exceeding `maxKnowledgeSources` across currently allowed sources;
-5. allocate a unique zero-based `position`;
-6. insert the `MerchantKnowledgeSource`;
-7. set `currentGeneration = 1`;
-8. insert exactly one CREATE PENDING revision with the correct locator; and
-9. commit before BullMQ publication.
+1. resolve/validate the current C2 BillingPlan configuration;
+2. lock the shop's source ordering scope sufficiently to prevent two concurrent creates
+   from both exceeding `maxKnowledgeSources`;
+3. allocate a unique zero-based `position`;
+4. insert the `MerchantKnowledgeSource`;
+5. set `currentGeneration = 1`;
+6. insert exactly one CREATE PENDING revision with generation `1`;
+7. commit before BullMQ publication.
 
-For uploads, the referenced `MerchantKnowledgeUploadedAsset` must already be AVAILABLE.
-Creating/finalizing the upload intent itself does not allocate a source slot.
+Changing a source URL or pressing Refresh must atomically:
 
-Changing a WEB_PAGE URL or pressing Refresh must atomically lock the source, increment
-`currentGeneration`, insert one URL_CHANGE/REFRESH revision and commit before queue
-publication.
-
-Replacing an uploaded file requires a new AVAILABLE immutable asset. The source
-transaction then increments `currentGeneration` and inserts one FILE_REPLACE revision.
-
-Reprocess reuses the same current uploaded asset, increments `currentGeneration` and
-inserts one REPROCESS revision.
+1. lock/load the source row;
+2. increment `currentGeneration` by exactly one;
+3. insert exactly one URL_CHANGE or REFRESH PENDING revision with the same generation;
+4. commit before BullMQ publication.
 
 ENTITLEMENT_CHANGE revisions are created by Background reconciliation under D21 using
-the same generation invariant and current locator.
+the same source-generation invariant.
 
 Queue publication is outside the transaction. Reconciliation recovers committed PENDING
 work that did not reach BullMQ.
-
 
 ### Knowledge processing promotion transaction
 
@@ -2700,24 +2039,12 @@ idempotent by durable source-revision identity. No design assumes exactly-once d
 - Merchant Knowledge sources are ordered by `(position ASC, id ASC)`.
 - Source generations are strictly increasing per source.
 - Only the latest source generation may become ACTIVE.
-- Purpose, Data Format and source language do not alter plan slot consumption: every
-  source consumes exactly one slot.
+- Source language does not alter source ordering or plan slot consumption.
 - Category suggestion ties are resolved by `(displayOrder ASC, category.id ASC)`.
 - Conversation messages retain the existing conversation-ordering architecture; ARCH-023
   does not introduce global serialization.
 
 ## Failure Handling
-
-### Merchant Knowledge bootstrap conflict or interruption
-
-The D1 bootstrap is restartable. If execution stops after only part of the canonical
-initial chain is created, the next run reuses valid completed lifecycle objects and
-completes the missing publication/release steps.
-
-Bootstrap MUST NOT silently overwrite an incompatible fixed identity, mutate an immutable
-published revision/release or reactivate an older seed revision over a valid later
-Studio-authored publication. It reports a bounded configuration conflict and leaves
-existing published state unchanged.
 
 ### URL fetch/extraction failure
 
@@ -2742,18 +2069,6 @@ only chunks matching all current provenance fields.
 The committed PENDING revision remains durable. Background reconciliation discovers and
 re-enqueues it using the deterministic C4 job id.
 
-### Uploaded-file / R2 failure
-
-If a signed upload expires or finalization cannot verify the expected R2 object, the
-upload is failed and no source revision is created.
-
-If Background cannot read the private object, the recomputed SHA-256 differs, the format
-does not match the declared Data Format, XLSX decompression exceeds the configured safety
-limit or deterministic parsing fails, the new revision becomes `FAILED`. Any previous
-ACTIVE revision remains active.
-
-A failed replacement never changes the existing ACTIVE revision.
-
 ### Store Category localization catalogue mismatch
 
 Store Category localization is source-controlled rather than asynchronously translated.
@@ -2771,18 +2086,9 @@ restores the pending selection.
 
 ### Plan entitlement decrease
 
-If `allowedSourceTypes` removes a previously permitted Purpose/Data Format pair, no source,
-revision or R2 asset is deleted. Sources of that type become dormant immediately under the
-current materialised BillingPlan: Shopify does not offer that pair for new configuration,
-Background does not start new processing for it, and Commerce excludes it from retrieval.
-Dormant sources do not consume the current plan's `maxKnowledgeSources` allowance. If a
-later current BillingPlan permits the pair again, retained eligible ACTIVE content becomes
-usable again without requiring a new upload solely because entitlement returned.
-
-If `maxKnowledgeSources` decreases, no source rows are deleted. After filtering to
-currently allowed source types, Commerce immediately excludes allowed sources beyond the
-current ordered allowance, and Background does not start new processing for those sources
-while they remain outside the allowance.
+If `maxKnowledgeSources` decreases, no source rows are deleted. Commerce immediately
+excludes sources beyond the current ordered allowance, and Background does not start new
+processing for those sources while they remain outside the allowance.
 
 If `maxContentUnitsPerSource` decreases, Background reconciliation creates a bounded
 `ENTITLEMENT_CHANGE` replacement for each currently entitled ACTIVE source whose
@@ -2802,7 +2108,6 @@ Expected vector-query shape is tenant-selective:
 
 ```text
 shopId
-+ current allowedSourceTypes
 + current maxKnowledgeSources ordered-source allowance
 + optional purpose
 + ACTIVE revision
@@ -2825,9 +2130,9 @@ positions.
 
 ### Trust model
 
-Trust is determined by origin, never language or file format. Customer text, fetched
-merchant pages and extracted CSV/XLSX cell content remain runtime data in English,
-French, Arabic, Chinese, mixed-language content or any other form.
+Trust is determined by origin, never language. Customer text and fetched merchant page
+text remain untrusted in English, French, Arabic, Chinese, mixed-language content or any
+other form.
 
 Prompt-injection phrase detection is not a security boundary. The platform relies on:
 
@@ -2836,9 +2141,7 @@ Prompt-injection phrase detection is not a security boundary. The platform relie
 - capability/tool validation;
 - clear untrusted-reference instructions;
 - SSRF-safe ingestion;
-- bounded Tool output;
-- private R2 object storage with server-generated keys;
-- independent Background byte/hash/format validation for uploads; and
+- bounded tool output;
 - database tenant filtering.
 
 ### Indirect prompt injection / runtime-data authority
@@ -2939,9 +2242,6 @@ they already answer generic queue/HTTP/database questions. New semantic logs/met
 justified for domain outcomes not inferable from framework telemetry, including:
 
 - knowledge revision requested/activated/failed/stale;
-- upload intent created/finalized/expired/failed;
-- R2 asset hash/format/ownership validation failure;
-- spreadsheet extraction failure;
 - content truncation;
 - reconciliation recovery;
 - embedding provenance mismatch;
@@ -2962,9 +2262,8 @@ pgvector extension/schema support.
 
 ### `moda-interact-shared` / `moda_shared`
 
-Owns cross-application runtime contracts C1-C4, including the architecture-defined
-Purpose/Data Format key types, and deterministic job-id/helpers required by both
-producers and consumers.
+Owns cross-application runtime contracts C1-C4 and deterministic job-id/helpers required
+by both producers and consumers.
 
 The existing Shared Commerce runner also owns the code-owned Level-1
 `PLATFORM_INSTRUCTIONS` kernel. ARCH-023 extends that existing global kernel with the
@@ -2978,13 +2277,7 @@ Merchant Knowledge behaviour.
 
 Owns Admin UI/actions for canonical-English Platform Instructions, canonical-English
 Shop Instructions, Store Categories, canonical-English default templates and generic
-plan-feature Merchant Knowledge limits/source-type entitlements. It validates C2 when
-authoring plans, loads selectable Purpose/Data Format pairs from the active database
-catalogue and persists the selected subset into `allowedSourceTypes` without plan-name
-branches.
-
-The initial Merchant Knowledge Purpose/Data Format rows and supported combinations are
-architecture seed data rather than arbitrary Admin-created taxonomy in v1.
+plan-feature Merchant Knowledge limits. It validates C2 when authoring plans.
 
 Admin does not own runtime category/template translation records. Merchant-facing Store
 Category localization ships through the Shopify application's existing source-controlled
@@ -2993,21 +2286,17 @@ locale catalogues.
 ### `moda-interact` / `moda_app`
 
 Owns the merchant-facing onboarding category section, Recovery Settings Store Profile
-and Merchant Knowledge sections, Store Category/Purpose/Data Format localization through
-existing `app/i18n/locales/<locale>.json` catalogues, source CRUD/refresh/reprocess
-actions, server-side current-plan `allowedSourceTypes` and `maxKnowledgeSources`
-enforcement, Purpose/Data Format compatibility selection, source-language
-defaulting/selection, private-R2 signed upload issuance and upload finalization, and C4
+and Merchant Knowledge sections, Store Category localization through existing
+`app/i18n/locales/<locale>.json` catalogues, source CRUD/refresh actions, server-side
+`maxKnowledgeSources` enforcement, source-language defaulting/selection and C4
 processing-job publication. Merchant Knowledge has no merchant enable/disable preference.
 
 ### `moda-interact-background` / `moda_background`
 
-Owns C4 consumption/production for reconciliation, URL fetching/security, private-R2
-reads, current-plan `allowedSourceTypes` re-checks, upload hash/format/safety validation,
-CSV/XLSX deterministic extraction, normalization, `maxContentUnitsPerSource` enforcement,
-deterministic chunking, multilingual document embeddings, vector writes, revision state
-transitions, ENTITLEMENT_CHANGE reconciliation and cleanup/reconciliation of
-expired/unreferenced Merchant Knowledge upload objects.
+Owns C4 consumption and production for reconciliation, URL fetching/security, extraction,
+normalization, `maxContentUnitsPerSource` enforcement, deterministic chunking,
+multilingual document embeddings, vector writes, revision state transitions and
+ENTITLEMENT_CHANGE reconciliation.
 
 ARCH-023 adds no Background category/template translation worker.
 
@@ -3023,37 +2312,26 @@ src/entrypoints/merchant-knowledge.ts
 `merchant-knowledge.worker.ts` is the only ARCH-023 worker that processes merchant
 knowledge source revisions. It does not create Commerce capabilities.
 
-There is no Background worker whose purpose is to add Commerce capabilities or Tools.
-The complete initial working Merchant Knowledge publication is established idempotently
-by Commerce application/bootstrap code under D1. Background does not participate in
-capability/Tool publication or release membership.
+There is no Background worker whose purpose is to add Commerce capabilities or Tools. The fixed `merchant_knowledge` capability identity and `merchant_knowledge_lookup` Tool identity are provisioned idempotently by Commerce application/bootstrap code. Commerce Studio then authors/publishes their revisions, associates the published Tool revision with the capability revision, and adds the published capability revision to a release before Merchant Knowledge can be used.
 
 ### `moda-interact-commerce` / `moda_commerce`
 
-Owns deterministic, idempotent D1 bootstrap of the complete canonical initial working
-Merchant Knowledge publication through existing Commerce lifecycle/storage boundaries:
-fixed capability/Tool identities, canonical initial Tool revision, canonical initial
-capability revision, Tool binding, publication and active-release membership.
-
-It also owns registration/execution of `merchantKnowledge.lookup`, preservation of later
-valid Studio-authored revisions/releases during bootstrap, subsequent Studio
-revision/binding/publication/release evolution, additive canonical-English
-platform/shop/capability instruction composition, enforcement that runtime
-Tool/provider/retrieval output remains context data and never instruction or
-`hostInstructions`, query embedding, current `allowedSourceTypes` plus
-`maxKnowledgeSources` lookup enforcement and exact pgvector retrieval across all
-currently entitled source languages and Data Formats.
+Owns deterministic, idempotent provisioning of the fixed `merchant_knowledge`
+`CommerceCapability` identity and fixed `merchant_knowledge_lookup` `CommerceTool`
+identity through the existing Commerce lifecycle/storage boundary;
+registration/execution of the internal `merchantKnowledge.lookup` policy operation;
+Studio revision authoring/binding/publication and release membership for those
+identities; additive canonical-English platform/shop/capability instruction composition;
+enforcement that runtime Tool/provider/retrieval output remains context data and never
+instruction or `hostInstructions`; query embedding; current `maxKnowledgeSources` lookup
+enforcement;
+and exact pgvector retrieval across all entitled source languages.
 
 ### `moda-interact-gateway` / `moda_gateway`
 
-Owns deployment wiring required to reuse the existing Cloudflare R2 account for
-Merchant Knowledge, including the private bucket, least-privilege Shopify-app upload-sign
-permission, Background read/delete permission, upload-safety environment settings and
-server-only R2 credentials.
-
-It also owns any dedicated Background worker deployment and embedding environment/secret
-wiring not already present. No new public/private HTTP service is required by the
-architecture itself.
+Only required if deployment topology must add a dedicated Background worker process or
+wire embedding environment/secrets to deployables that do not already receive them. No
+new public/private HTTP service is required by the architecture itself.
 
 ### `moda-interact-system-test` / `moda_system_test`
 
@@ -3083,73 +2361,21 @@ ARCH-023 acceptance must also verify that every merchant-selectable Store Catego
 `slug` has `displayName` and `description` keys in all 20 Shopify locale catalogues and
 that seeding a French-configured shop still produces canonical-English Shop Instructions.
 
-Merchant Knowledge format/storage acceptance must additionally verify:
-
-1. the D2 Purpose/Data Format seed rows and supported combinations exactly match the
-   Shared C3 keys;
-2. Admin derives plan-selectable source types from active
-   `MerchantKnowledgePurposeDataFormat` rows and no Free/Starter/Growth-specific source
-   availability branch is required;
-3. two plans may select different `allowedSourceTypes` from the same catalogue and the
-   current materialised BillingPlan alone determines merchant authoring/processing/lookup
-   entitlement;
-4. `PRODUCT_INFORMATION` and `PRICING` globally support `WEB_PAGE`, `CSV` and `XLSX`,
-   while a plan may allow any validated subset of those globally supported pairs;
-5. globally unsupported or currently plan-disallowed Purpose/Data Format pairs fail
-   before processing;
-6. a source that becomes disallowed after a plan change remains persisted/dormant,
-   does not consume an active source slot and is excluded from lookup; re-entitlement
-   makes retained ACTIVE content usable again when provenance remains current;
-7. a CSV pricing upload and XLSX pricing upload are stored privately in R2, processed by
-   Background and retrievable through C5 when the current plan allows those pairs;
-8. R2 object keys/signed URLs are absent from Tool output/model context;
-9. replacing a file creates a new immutable asset while REPROCESS and
-   ENTITLEMENT_CHANGE reuse the existing asset;
-10. SHA-256 mismatch, oversized upload/decompressed workbook, unsupported workbook format
-    and missing/invalid R2 objects fail without replacing a prior ACTIVE revision;
-11. spreadsheet cells containing instruction-like text remain runtime data under D7/D22
-    and do not cause a side-effecting Tool call; and
-12. Purpose/Data Format labels exist in all 20 Shopify localization catalogues.
-
-Bootstrap acceptance must verify a clean Commerce state converges to one usable Merchant
-Knowledge publication without manual Studio actions, replay is idempotent/recoverable,
-later valid Studio-authored publications survive restart/bootstrap and fixed-identity
-conflicts fail rather than being silently overwritten.
-
 ## Infrastructure Assessment
 
-No new database, Redis cluster, object-storage provider or web service is required.
+No new database, Redis cluster or web service is required.
 
-ARCH-023 reuses:
+Potential infrastructure work is limited to:
 
-- PostgreSQL + pgvector for durable source metadata, processing state, normalized content
-  and embeddings;
-- Redis/BullMQ for queue/reconciliation; and
-- the existing Cloudflare R2 account for immutable original CSV/XLSX uploads.
+- ensure the deployed PostgreSQL database has pgvector available/enabled;
+- ensure the Background process performing ingestion and Commerce runtime performing
+  lookup receive the same embedding provider/model/dimensions/index-version settings;
+- ensure both receive the appropriate server-only embedding credential;
+- create a dedicated Merchant Knowledge worker deployment only if the current Background
+  worker topology does not provide an appropriate independently scalable entrypoint.
 
-R2 deployment requirements are:
-
-- private Merchant Knowledge bucket/prefix;
-- no public read/list access;
-- server-side credentials only;
-- Moda Shopify server may generate short-lived signed PUTs for generated object keys;
-- Background may GET and cleanup/delete objects under the Merchant Knowledge prefix;
-- `MERCHANT_KNOWLEDGE_MAX_UPLOAD_BYTES` is configured consistently where upload
-  issuance/finalization and Background processing require it;
-- `MERCHANT_KNOWLEDGE_MAX_XLSX_UNCOMPRESSED_BYTES` is configured for Background XLSX
-  validation.
-
-Embedding requirements remain:
-
-- deployed PostgreSQL has pgvector available/enabled;
-- Background ingestion and Commerce lookup receive the same embedding
-  provider/model/dimensions/index-version settings; and
-- both receive the appropriate server-only embedding credential.
-
-The exact existing R2 credential/bucket environment names and deployment bindings are
-deferred until Patch 5 inspection of current Gateway/R2 wiring. Patch 1 fixes the
-security/ownership semantics above rather than inventing a second storage service.
-
+The exact Gateway requirement is deferred until Patch 5 inspection of current deployed
+worker/environment wiring. No Gateway task is created in Patch 1.
 
 ## Rollout / Migration
 
@@ -3164,9 +2390,9 @@ is:
 database schema + shared cross-app contracts
         |
         +--> Admin configuration authoring
-        +--> Shopify onboarding/settings + locale-catalogue + R2 upload producer
-        +--> Background URL/R2 ingestion + spreadsheet extraction/reconciliation
-        +--> Commerce bootstrap + lookup/capability runtime
+        +--> Shopify onboarding/settings + locale-catalogue presentation
+        +--> Background Merchant Knowledge ingestion/reconciliation
+        +--> Commerce lookup/capability runtime
         |
         v
 infrastructure wiring if required
@@ -3200,27 +2426,13 @@ amended during Patch 1 review before task files are created.
 
 - Created ARCH-023 as a separate initiative from ARCH-021/ARCH-022.
 - Chose PostgreSQL + pgvector rather than Redis vectors for v1.
-- Made one configured knowledge source one plan-counted `MerchantKnowledgeSource`,
-  independent of whether its locator is a webpage or uploaded file.
-- Replaced the Merchant Knowledge Purpose enum with seeded Purpose/Data Format tables and
-  a composite compatibility mapping. Added `PRICING` plus initial `WEB_PAGE`, `CSV` and
-  `XLSX` support; spreadsheet uploads are initially supported for Product Information
-  and Pricing.
-- Reused the existing private Cloudflare R2 account for immutable original CSV/XLSX
-  uploads; PostgreSQL remains authoritative for ownership, lifecycle, normalized content
-  and embeddings.
+- Made one configured URL one plan-counted `MerchantKnowledgeSource`; removed the
+  logical-entry/localized-source hierarchy.
 - Kept `merchant_knowledge` as an ordinary Feature (`ALWAYS_ENABLED`,
   `systemRequired=false`); application/domain plan policy includes it by default on every
   merchant pricing plan, with no database-level required-feature invariant.
-- Defined generic feature configuration as `maxKnowledgeSources`,
-  `maxContentUnitsPerSource` and plan-selected `allowedSourceTypes`.
-- Made Merchant Knowledge Purpose/Data Format plan entitlement data-driven: Admin selects
-  from active `MerchantKnowledgePurposeDataFormat` rows, the selected stable-key pairs are
-  materialised into `BillingPlanFeature.configuration`, and no plan-name-specific
-  Free/Starter/Growth source availability branches are permitted.
-- Made source-type downgrades non-destructive: disallowed sources become dormant without
-  consuming active source slots and can become usable again if a later current plan
-  re-entitles their Purpose/Data Format pair.
+- Defined generic feature configuration as `maxKnowledgeSources` plus
+  `maxContentUnitsPerSource`.
 - Made source language merchant-selectable metadata defaulted from shop settings, not a
   runtime retrieval filter.
 - Required multilingual embedding retrieval across source/query languages and defined a
@@ -3228,12 +2440,8 @@ amended during Patch 1 review before task files are created.
 - Added revisioned `ENTITLEMENT_CHANGE` reconciliation for content-limit decreases;
   source-count decreases remain non-destructive.
 - Made Background the ingestion owner with direct PostgreSQL writes.
-- Kept one architecture-defined `merchant_knowledge` capability and
-  `merchant_knowledge_lookup` Tool identity, and made Commerce bootstrap establish the
-  complete initial working publication automatically: identities, canonical initial
-  Tool/capability revisions, Tool binding, publication and active-release membership.
-  Bootstrap is convergent and never resets a valid later Studio-authored publication;
-  Studio owns subsequent versioned evolution.
+- Kept a single global Merchant Knowledge Commerce capability, but made its identity architecture-defined and system-provisioned rather than Studio-created.
+- Made the `merchant_knowledge_lookup` Tool identity architecture-defined and system-provisioned; Studio owns only Tool/capability revisions, Tool binding, publication and release membership.
 - Defined `merchant_knowledge_lookup` as the MCP-visible Tool name and `merchantKnowledge.lookup` as its Commerce-internal policy operation.
 - Defined MCP `tools/list` as the current conversation-grant tool surface, separate from
   capability prompts and `commerce://capabilities`.
