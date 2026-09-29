@@ -1203,7 +1203,7 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 |---|---|---|---|
 | [COMMERCE-096](COMMERCE-096-expose-policy-operation-authoring-descriptors.md) | Canonical policy registration owns runtime validators + browser-safe authoring descriptor | Complete | COMMERCE-095 |
 | [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Ready | COMMERCE-096 |
-| [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Ready | COMMERCE-096 |
+| [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Complete | COMMERCE-096 |
 | [COMMERCE-099](COMMERCE-099-round-trip-save-policy-operation-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Pending | COMMERCE-097, COMMERCE-098 |
 | [COMMERCE-100](COMMERCE-100-publish-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Pending | COMMERCE-099 |
 
@@ -1225,3 +1225,12 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 C096 is **Complete / Accepted, Attempt 1**. The same server-side policy registry now owns exact operation/version runtime validation/adapters and a cloned browser-safe authoring descriptor. The descriptor uses a Commerce-local JSON-schema representation generated from the canonical runtime validators so nested inputs, nullable outputs and accepted collection bounds are not lost.
 
 COMMERCE-097 and COMMERCE-098 are **Ready** and may execute independently. C099 remains Pending on both.
+
+
+### COMMERCE-098 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-098 is **Complete / Accepted, Attempt 1**. Policy Operation candidate Test is now an ADMIN-authorized, non-durable Studio boundary over the production `DefinitionExecutor` and C096 registry. Shop context and preview identities are server-created, exact operation/version resolution is required, and canonical mapped-input/output/result-rendering semantics remain executor-owned.
+
+Canonical business outcomes such as `NOT_FOUND` remain valid Test results when a policy operation requires production state that is intentionally absent from the synthetic preview context; C098 does not fabricate production recovery/grant identity.
+
+COMMERCE-099 remains **Pending** because COMMERCE-097 is still Ready. No dependent task is promoted by C098 alone.

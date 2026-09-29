@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
 executor: null
 claimed_at: null
@@ -324,24 +324,78 @@ Policy adapters require a complete `AuthorizedToolCall`. The service creates onl
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 is accepted.
+
+C098 implements the intended non-durable Policy Operation Studio Test boundary without introducing a second policy executor or bypassing the accepted C096 registry/runtime contract.
+
+The submitted implementation satisfies the architectural requirements:
+
+- the Server Action requires the existing Studio `ADMIN` role before backend/service access;
+- browser input is a strict candidate/arguments/shop-id object and cannot supply shop domain, access token, Authorization header, grant/release identities or policy credentials;
+- the requested Studio shop is resolved server-side through the existing Commerce Studio service and the returned shop identity must match the requested `shopId`;
+- candidate parsing uses the canonical `CommerceToolDefinitionSchema`;
+- only `POLICY_OPERATION` candidates are admitted;
+- the exact `(operation, operationVersion)` must resolve in the active C096 registry before execution;
+- there is no version fallback and no Tool-name inference;
+- Test arguments must be bounded JSON object data and use the accepted stricter 16 KiB Studio Test limit;
+- execution delegates through `DefinitionExecutionPort` / production `DefinitionExecutor`;
+- the C098 service does not map Tool arguments, invoke a policy adapter directly, validate adapter output independently or render Result Templates itself;
+- `DefinitionExecutor` therefore remains authoritative for argument mapping, registration input validation, adapter dispatch, registration output validation, canonical Commerce result semantics and Result Template rendering;
+- the preview call carries server-created synthetic Tool/grant/release/turn identities and `purpose: "preview"` only; those identities are neither browser-controlled nor persisted;
+- provider-call budget and a bounded 10-second Test deadline are applied;
+- timeout aborts the in-flight call and obtains the canonical `DEADLINE` result through the same executor; the expired second executor entry is rejected at the executor deadline boundary before another adapter dispatch;
+- returned output is bounded to safe stage diagnostics plus canonical `status` / `code` / `retryable` and at most 4 KiB of rendered text;
+- credentials, trusted runtime context, provider data and synthetic authorization identities are not returned; and
+- neither the domain service nor the Server Action writes Tool, ToolRevision, release, grant or publication-proof/lifecycle state.
+
+A Policy Operation that depends on an existing checkout-recovery row may legitimately return canonical `NOT_FOUND` in this Test boundary because C098 intentionally creates a fresh synthetic preview recovery identity. That is correct fail-closed behavior: Studio Test must not fabricate or borrow a production recovery/grant identity merely to manufacture a successful business result. COMMERCE-099 may present that canonical outcome, but must not reinterpret it as a C098 transport failure.
+
+The four failures in the broader adjacent Shopify Admin live-Test domain suite do not block C098. C098 changes only the Policy Operation live-Test service/action and their focused tests; it does not change the Shopify Admin live-Test implementation or fixtures. The required C098 packet plus DefinitionExecutor/recommendation coverage passed, and changed-file diagnostics/typecheck are clean.
 
 ### Reviewed Files
 
-None
+- `src/commerce/tool-authoring/policy-operation-live-test.ts`
+- `src/studio/tools/policy-operation-live-test-server-actions.ts`
+- `tests/policy-operation-live-test.test.ts`
+- `tests/policy-operation-live-test-action.test.ts`
+- `src/commerce/execution/executor.ts` — consumed canonical execution boundary
+- `src/commerce/execution/policy-operation-authoring.ts` — consumed C096 registration contract
+- C098 Completion Report
 
 ### Validation Reviewed
 
-None
+Submitted Attempt 1 evidence:
+
+- required focused packet: **4 files / 27 tests passed**;
+- focused packet includes C098 domain/action plus DefinitionExecutor and recommendation-contract coverage;
+- targeted ESLint on all four changed files: passed;
+- changed-file diagnostics: clean;
+- `git diff --check`: passed;
+- after local Prisma Client generation, repository-declared `npm run typecheck`: completed without diagnostics;
+- no Prisma schema or submodule pointer changed.
+
+Broader adjacent packet:
+
+- **53 tests passed**;
+- 4 failures occurred only in the existing Shopify Admin live-Test domain suite at its candidate-validation/shop/provider expectations;
+- no Shopify Admin source or test file is changed by C098, so those failures are recorded as adjacent baseline/integration drift rather than a C098 correction requirement.
+
+Workflow evidence records implementation commit `1cf1744` pushed to the Commerce C098 task ref and a clean synchronized parent/implementation handoff. The Completion Report text names an earlier parent report commit while the final user handoff names `1654680`; this reporting-ref difference does not alter the submitted source/task content or acceptance result.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C098 is a thin Studio Test boundary over the existing production `DefinitionExecutor` and C096 policy registry. Runtime validation/business behavior remains production-owned, Studio authorization/shop selection remains server-owned, and candidate Test remains non-durable and separate from publication authority.
 
 ### Follow-up
 
-None
+C098 is Complete / Accepted — Attempt 1.
+
+COMMERCE-099 remains Pending because it depends on both COMMERCE-097 and COMMERCE-098, and COMMERCE-097 is still Ready rather than Complete.
+
+Do not begin COMMERCE-099 until COMMERCE-097 is architect-accepted Complete.

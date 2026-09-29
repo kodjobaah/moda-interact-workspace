@@ -2912,8 +2912,17 @@ The C096 descriptor schemas are Commerce-local JSON-compatible schemas generated
 |---|---|---|---|
 | ARCH-021-COMMERCE-096 | moda_commerce | Complete | ARCH-021-COMMERCE-095 |
 | ARCH-021-COMMERCE-097 | moda_commerce | Ready | ARCH-021-COMMERCE-096 |
-| ARCH-021-COMMERCE-098 | moda_commerce | Ready | ARCH-021-COMMERCE-096 |
+| ARCH-021-COMMERCE-098 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
 | ARCH-021-COMMERCE-099 | moda_commerce | Pending | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
 | ARCH-021-COMMERCE-100 | moda_commerce | Pending | ARCH-021-COMMERCE-099 |
 
 C096 Attempt 1 is architect-accepted. C097/C098 are the executable frontier and may run in parallel. This follow-up remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge using the same Policy Operation mechanism without a Merchant Knowledge special case in ARCH-021.
+
+
+### COMMERCE-098 Attempt 1 accepted — 2026-09-29
+
+The generic Policy Operation live-Test backend is architect-accepted. Studio sends a bounded complete Policy Operation candidate to an ADMIN-authorized Server Action; the selected shop and all preview execution identity are created server-side; execution then delegates through the normal `DefinitionExecutor` / C096 registration path. Test remains non-durable and returns only bounded canonical outcome/rendering diagnostics.
+
+Synthetic preview recovery identity intentionally does not impersonate a production checkout-recovery/grant context. Policy operations that require such state may therefore produce their normal canonical `NOT_FOUND` result in Test.
+
+COMMERCE-099 remains Pending until COMMERCE-097 is also Complete.
