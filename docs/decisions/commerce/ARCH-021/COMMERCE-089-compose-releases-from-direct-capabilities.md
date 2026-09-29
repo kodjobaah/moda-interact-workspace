@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 92
 executor: null
 claimed_at: null
@@ -226,7 +226,54 @@ Ready for Architect Review
 
 ### Files Changed
 
-42 implementation files across Commerce publication, backend persistence and manifest production, MCP authorization/dispatch, Preview, Studio contracts/services/UI, tests and fixtures, package metadata, plus two focused C20 test corrections. Current main was merged with a normal merge before final validation.
+Exact implementation delta on the final synchronized Commerce task branch (`origin/main...1a325609cb08ba00324ace611121bc5b3104d272`):
+
+```text
+components/studio-workspace.tsx
+package-lock.json
+package.json
+src/commerce/external-response/index.ts
+src/commerce/integration/backend.ts
+src/commerce/integration/backend/c20-test-fixture.ts
+src/commerce/integration/backend/publication-storage.ts
+src/commerce/integration/preview/adapters.ts
+src/commerce/integration/studio/services.ts
+src/commerce/mcp/authorization.ts
+src/commerce/mcp/ports.ts
+src/commerce/mcp/service.ts
+src/commerce/preview/service.ts
+src/commerce/preview/types.ts
+src/commerce/publication/lifecycle.ts
+src/commerce/publication/ports.ts
+src/commerce/publication/validation.ts
+src/studio/contracts.ts
+src/studio/preview/preview-screen.tsx
+src/studio/testing/in-memory-studio-services.ts
+tests/backend-postgres-rehearsal.test.ts
+tests/c20-integration-fixture.test.ts
+tests/commerce-lifecycle.test.ts
+tests/definition-execution-mcp.test.ts
+tests/external-preview.test.ts
+tests/external-wiring.test.ts
+tests/fixtures/publication-store.ts
+tests/local-external-mcp-diagnostic.test.ts
+tests/mcp-authorization.test.ts
+tests/mcp-compatibility.test.ts
+tests/mcp-service.test.ts
+tests/preview-client.test.ts
+tests/preview-integration.test.ts
+tests/preview-redis-lua.test.ts
+tests/preview-routes.test.ts
+tests/preview-screen.test.tsx
+tests/preview-service.test.ts
+tests/preview-store.test.ts
+tests/studio-integration-c20.test.ts
+tests/studio-integration.test.ts
+tests/studio-services.test.ts
+tests/studio-workspace.test.tsx
+```
+
+The final implementation history includes primary implementation commit `7a32569`, focused C20 correction commit `802930a`, and final normal `origin/main` merge `1a325609cb08ba00324ace611121bc5b3104d272`.
 
 ### Work Completed
 
@@ -252,6 +299,18 @@ Two small post-merge test corrections were committed after the initial implement
 
 Repository-wide TypeScript and adjacent backend test failures are recorded as unrelated to this task because none are in the C089-owned/modified files or release composition behavior. The required direct C20 fixture proof passed on the final merged branch.
 
+Execution evidence was reconciled before Architect acceptance:
+
+- canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-089`;
+- canonical Commerce implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-089`;
+- durable launcher claim commit `8d6f35690f33a6ca1e973c048a279167110f22bd` records Attempt 1, executor `copilot`, claimed at `2026-09-29T14:29:05Z`;
+- final Commerce implementation HEAD and remote task ref matched at `1a325609cb08ba00324ace611121bc5b3104d272`;
+- final Commerce history contains the normal `origin/main` merge at `1a325609...`, after which the final validation packet was run;
+- recursive submodule status resolved database at `e9fb60221f1532205650154dfff2aadb6270b14c`;
+- after final parent synchronization with current `origin/main`, parent HEAD and remote task ref matched at pre-acceptance commit `b9f7ef9b0d02e93a115fa7b10189a9def4535cc0`.
+
+The implementation worktree contained unrelated untracked local artifacts (`.DS_Store` and a terminal capture file named `typescript`); neither is part of the committed C089 source delta or remote task branch.
+
 ### Unresolved Issues
 
 Repository-wide typecheck remains non-green (38 diagnostics in 12 files). Two process-global backend integration tests and two tests in the adjacent C20 Studio integration suite remain failing as detailed above; they were not expanded into this task's scope.
@@ -264,24 +323,46 @@ None identified. Background consumer changes and COMMERCE-092 legacy deletion we
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Accepted ARCH-021-COMMERCE-089 Attempt 1. The implementation replaces Capability-revision release composition with direct Capability membership, deterministically pins the exact published Tool revision at release creation, snapshots Feature behaviour once per represented Feature and builds runtime manifests from immutable release rows. The C20 and Preview corrections remove the remaining C089-path BASE/`conversation_core` assumptions without expanding into COMMERCE-092 cleanup.
+
+The original launcher terminal packet was not retained, but the required execution evidence is durably reconstructed from the launcher claim commit, canonical dedicated worktrees, remote-aligned final task refs, final normal `origin/main` merge and post-merge validation. No source-code rework or test rerun is required for this report-only reconciliation.
 
 ### Reviewed Files
 
-None
+The complete final implementation delta is recorded in the Completion Report. Architect review focused on:
+
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/publication/ports.ts`
+- `src/commerce/publication/validation.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/integration/backend/publication-storage.ts`
+- `src/commerce/integration/backend/c20-test-fixture.ts`
+- `src/commerce/integration/studio/services.ts`
+- `src/commerce/mcp/authorization.ts`
+- `src/commerce/mcp/service.ts`
+- `src/commerce/integration/preview/adapters.ts`
+- `tests/c20-integration-fixture.test.ts`
+- focused lifecycle/backend/MCP/Preview/Studio regression fixtures and package metadata.
 
 ### Validation Reviewed
 
-None
+- Required disposable C20 PostgreSQL/Redis proof: PASS, 2/2; task-owned resources cleaned up.
+- Focused post-merge matrix: 149 passed; two process-global backend expectation failures are outside C089 behavior.
+- Focused backend subset: 6 passed, 2 skipped for those same process-global cases.
+- Studio release, lifecycle, MCP, Preview, response-processing, Preview Screen and external Preview packets passed.
+- Targeted ESLint: 0 errors, 3 warnings; changed-file diagnostics contain no C089 errors.
+- Repository typecheck remains non-green with 38 diagnostics across 12 non-C089 files; no diagnostic is in the C089-owned/modified set.
+- Bounded C089 legacy-token audit and `git diff --check`: PASS.
+- Final validation occurred after the normal `origin/main` merge on the final implementation task branch.
 
 ### Architecture Conformance
 
-Pending
+Accepted. C089 conforms to DATABASE-003 and the published Shared 1.0.0 direct Feature/Capability/Tool contract. It does not restore Capability revision IDs, binding discriminators, per-Capability prompts/configuration or Capability-owned result limits. Feature eligibility remains a separate runtime concern expressed through `featureId`, release replay/immutability remains deterministic, and no Background implementation or final repository-wide legacy deletion was started.
 
 ### Follow-up
 
-None
+Mark ARCH-021-COMMERCE-089 Complete. ARCH-021-BACKGROUND-002 is now Ready because DATABASE-003, SHARED-002 and COMMERCE-089 are Complete. COMMERCE-092 remains Pending until BACKGROUND-002 is also Complete; its COMMERCE-089 and COMMERCE-091 dependencies are satisfied.

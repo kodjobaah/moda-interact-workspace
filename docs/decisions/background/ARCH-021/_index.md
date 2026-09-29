@@ -30,6 +30,8 @@ BACKGROUND-001 is **Complete / Accepted, Attempt 2**. Background now sends only 
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [BACKGROUND-002](BACKGROUND-002-consume-feature-capability-manifest.md) | Consume direct Feature/Capability/Tool manifests and apply Feature Behaviour once per Feature | Pending | DATABASE-003, SHARED-002, COMMERCE-089 |
+| [BACKGROUND-002](BACKGROUND-002-consume-feature-capability-manifest.md) | Consume direct Feature/Capability/Tool manifests and apply Feature Behaviour once per Feature | Ready | DATABASE-003, SHARED-002, COMMERCE-089 |
 
 BACKGROUND-002 removes per-Capability prompt-name fetches and the mandatory BASE/`conversation_core` assumption while preserving exact Tool grant authorization.
+
+BACKGROUND-002 is **Ready** after COMMERCE-089 Attempt 1 acceptance; DATABASE-003 and SHARED-002 are already Complete. It is the remaining Phase 5 runtime-consumer gate before COMMERCE-092 can become executable.

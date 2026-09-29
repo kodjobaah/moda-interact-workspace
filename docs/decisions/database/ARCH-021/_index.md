@@ -54,6 +54,8 @@ The Database checkpoint has no remaining executable task. `ARCH-021-COMMERCE-025
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [DATABASE-003](DATABASE-003-simplify-feature-capability-persistence.md) | Replace Capability revisions/bindings with direct Feature + Tool Capabilities and immutable release snapshots | Ready | DATABASE-002 |
+| [DATABASE-003](DATABASE-003-simplify-feature-capability-persistence.md) | Replace Capability revisions/bindings with direct Feature + Tool Capabilities and immutable release snapshots | Complete | DATABASE-002 |
 
 DATABASE-003 is a pre-production breaking migration. It preserves Admin Features, Tools, billing data and Agent Configuration while deliberately recreating obsolete development-only Capability/release/grant composition instead of translating the old multi-binding revision model.
+
+DATABASE-003 Attempt 2 is architect-accepted Complete. Its direct Feature/Capability/Tool schema and release-time Tool/Feature snapshot model are the durable prerequisite consumed by C088/C089 and BACKGROUND-002.
