@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-29T19:34:02Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables: []
@@ -1020,27 +1020,27 @@ Also prove the corresponding valid cases succeed.
 
 ## Work Items
 
-- [ ] Add the two generic plan-feature `configuration` JsonB columns without changing existing plan-feature keys/relations.
-- [ ] Add Store Category default-template persistence and explicitly name both Category/Template Prisma relations.
-- [ ] Add `sourceTemplateEditVersion` provenance.
-- [ ] Add `CommerceStoreCategoryTaxonomyMapping` and its positive-weight check.
-- [ ] Add `CommerceShopProfile`, exact reverse relations and local-field checks.
-- [ ] Add the four Merchant Knowledge enums.
-- [ ] Add Purpose, Data Format and compatibility models.
-- [ ] Seed the seven Purpose rows exactly.
-- [ ] Seed the three Data Format rows exactly.
-- [ ] Seed the eleven supported Purpose/Data Format pairs exactly.
-- [ ] Add uploaded-asset metadata persistence and AVAILABLE-state check.
-- [ ] Add Merchant Knowledge source persistence and composite compatibility FK.
-- [ ] Add source revision persistence, locator/content checks and one-ACTIVE partial unique index.
-- [ ] Enable pgvector and add Merchant Knowledge chunk persistence/checks.
-- [ ] Add required reverse relation fields to existing models.
-- [ ] Create the focused schema validator and package script.
-- [ ] Create the focused migration validator and package script.
-- [ ] Rehearse fresh migration.
-- [ ] Rehearse upgrade migration preserving modified-table data.
-- [ ] Exercise all required database-enforceable negative cases.
-- [ ] Record exact migration/validation evidence in the Completion Report.
+- [x] Add the two generic plan-feature `configuration` JsonB columns without changing existing plan-feature keys/relations.
+- [x] Add Store Category default-template persistence and explicitly name both Category/Template Prisma relations.
+- [x] Add `sourceTemplateEditVersion` provenance.
+- [x] Add `CommerceStoreCategoryTaxonomyMapping` and its positive-weight check.
+- [x] Add `CommerceShopProfile`, exact reverse relations and local-field checks.
+- [x] Add the four Merchant Knowledge enums.
+- [x] Add Purpose, Data Format and compatibility models.
+- [x] Seed the seven Purpose rows exactly.
+- [x] Seed the three Data Format rows exactly.
+- [x] Seed the eleven supported Purpose/Data Format pairs exactly.
+- [x] Add uploaded-asset metadata persistence and AVAILABLE-state check.
+- [x] Add Merchant Knowledge source persistence and composite compatibility FK.
+- [x] Add source revision persistence, locator/content checks and one-ACTIVE partial unique index.
+- [x] Enable pgvector and add Merchant Knowledge chunk persistence/checks.
+- [x] Add required reverse relation fields to existing models.
+- [x] Create the focused schema validator and package script.
+- [x] Create the focused migration validator and package script.
+- [x] Rehearse fresh migration.
+- [x] Rehearse upgrade migration preserving modified-table data.
+- [x] Exercise all required database-enforceable negative cases.
+- [x] Record exact migration/validation evidence in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -1134,37 +1134,37 @@ No downstream task may be started by the database agent.
 
 ## Acceptance Criteria
 
-- [ ] One additive migration owns the complete ARCH-023 database shape.
-- [ ] Existing `BillingPlanFeature` and `MerchantPricingPlanFeature` rows survive and receive `{}` configuration.
-- [ ] Store Category/default-template persistence is Prisma-valid with explicitly named dual Category/Template relations.
-- [ ] `CommerceShopProfile` has exactly one row per shop and the required active/pending local invariants.
-- [ ] There is no `MerchantKnowledgePurpose` enum.
-- [ ] Purpose/Data Format identity is table-backed and the composite compatibility pair is database-enforced.
-- [ ] Exactly seven Purpose keys, three Data Format keys and eleven compatibility pairs are seeded.
-- [ ] No plan entitlement is encoded in the Purpose/Data Format seed table.
-- [ ] Uploaded R2 bytes are not stored in PostgreSQL; only immutable asset metadata is persisted.
-- [ ] A source cannot reference a globally unsupported Purpose/Data Format pair.
-- [ ] A source revision has exactly one locator and at most one ACTIVE revision exists per source.
-- [ ] ACTIVE/SUPERSEDED revisions require bounded content metadata.
-- [ ] pgvector is enabled and chunk vector dimensions are database-checked against `embeddingDimensions`.
-- [ ] No ANN index is added.
-- [ ] No `merchant_knowledge` Feature/plan/capability/Tool/release row is seeded by this task.
-- [ ] No `merchant_knowledge`-specific database invariant is introduced.
-- [ ] Fresh migration rehearsal passes.
-- [ ] Upgrade rehearsal preserves all existing rows in tables modified by this task.
-- [ ] Required negative database cases fail for the intended constraint/index reason.
-- [ ] No unrelated schema or migration is changed.
+- [x] One additive migration owns the complete ARCH-023 database shape.
+- [x] Existing `BillingPlanFeature` and `MerchantPricingPlanFeature` rows survive and receive `{}` configuration.
+- [x] Store Category/default-template persistence is Prisma-valid with explicitly named dual Category/Template relations.
+- [x] `CommerceShopProfile` has exactly one row per shop and the required active/pending local invariants.
+- [x] There is no `MerchantKnowledgePurpose` enum.
+- [x] Purpose/Data Format identity is table-backed and the composite compatibility pair is database-enforced.
+- [x] Exactly seven Purpose keys, three Data Format keys and eleven compatibility pairs are seeded.
+- [x] No plan entitlement is encoded in the Purpose/Data Format seed table.
+- [x] Uploaded R2 bytes are not stored in PostgreSQL; only immutable asset metadata is persisted.
+- [x] A source cannot reference a globally unsupported Purpose/Data Format pair.
+- [x] A source revision has exactly one locator and at most one ACTIVE revision exists per source.
+- [x] ACTIVE/SUPERSEDED revisions require bounded content metadata.
+- [x] pgvector is enabled and chunk vector dimensions are database-checked against `embeddingDimensions`.
+- [x] No ANN index is added.
+- [x] No `merchant_knowledge` Feature/plan/capability/Tool/release row is seeded by this task.
+- [x] No `merchant_knowledge`-specific database invariant is introduced.
+- [x] Fresh migration rehearsal passes.
+- [x] Upgrade rehearsal preserves all existing rows in tables modified by this task.
+- [x] Required negative database cases fail for the intended constraint/index reason.
+- [x] No unrelated schema or migration is changed.
 
 ## Validation
 
-- [ ] `npx prisma format --schema prisma/schema.prisma`
-- [ ] `npx prisma validate --schema prisma/schema.prisma`
-- [ ] `npm run test:arch023-merchant-knowledge-schema`
-- [ ] `npm run test:arch023-merchant-knowledge-migration`
-- [ ] Fresh isolated PostgreSQL migration rehearsal passes.
-- [ ] Upgrade isolated PostgreSQL migration rehearsal passes with preservation assertions.
-- [ ] Required database-enforceable negative cases pass.
-- [ ] `git diff --check`
+- [x] `./node_modules/.bin/prisma format --schema prisma/schema.prisma` (passed before final validation).
+- [x] `./node_modules/.bin/prisma validate --schema prisma/schema.prisma` (passed).
+- [x] `npm run test:arch023-merchant-knowledge-schema` (passed).
+- [x] `npm run test:arch023-merchant-knowledge-migration` (static contract passed).
+- [x] Fresh isolated PostgreSQL 15.19 + pgvector migration rehearsal passed on `arch023_test_fresh`.
+- [x] Upgrade isolated PostgreSQL 15.19 + pgvector rehearsal passed on `arch023_test_upgrade`, preserving every predecessor table and seeded rows in all modified tables.
+- [x] Required valid and invalid direct-SQL cases passed, including vector dimension controls and exact catalogue counts.
+- [x] `git diff --check` passed.
 
 If the repository's current package scripts or migration harness differ from assumptions, inspect and use the repository-declared mechanism while preserving the exact behavioural validation above. Do not invent an unrelated test framework.
 
@@ -1213,35 +1213,66 @@ Do not "strengthen" the database by inventing cross-row triggers for rules expli
 
 ### Status
 
-Not Started
+Implementation complete; returned to `review` for `moda_architect` acceptance. Attempt 1; active claim cleared.
 
 ### Files Changed
 
-None.
+Implementation repository (`moda-interact-database`):
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql`
+- `scripts/validate-arch023-merchant-knowledge-schema.mjs`
+- `scripts/validate-arch023-merchant-knowledge-migration.mjs`
+- `scripts/fixtures/arch023-merchant-knowledge-cases.mjs`
+- `package.json`
+
+Parent workspace task record: this task file only. No parent submodule gitlink was staged.
 
 ### Work Completed
 
-None.
+- Added the complete additive ARCH-023 Prisma/PostgreSQL schema, exact keys, relations, checks, indexes, pgvector storage and key-based catalogue seeds in the fixed migration.
+- Added focused schema and migration contract validators and package scripts.
+- Added direct-SQL fixture coverage for required valid and invalid database writes, JSONB defaults/round-trip, catalogue counts and vector dimension enforcement.
+- Updated fixture setup to satisfy the existing ARCH-014 deferred pricing catalogue constraint and active revision foreign-key ordering.
 
 ### Validation Results
 
-None.
+- `./node_modules/.bin/prisma format --schema prisma/schema.prisma` — passed.
+- `./node_modules/.bin/prisma validate --schema prisma/schema.prisma` — passed.
+- `npm run test:arch023-merchant-knowledge-schema` — passed.
+- `npm run test:arch023-merchant-knowledge-migration` — passed.
+- `node --check` on both validators and the fixture — passed.
+- Fresh rehearsal: all 21 migrations applied to isolated `arch023_test_fresh`; 7 purposes, 3 formats and 11 pairs verified; all valid/invalid controls passed.
+- Upgrade rehearsal: 20 predecessor migrations applied, representative legacy rows seeded, then ARCH-023 applied; every predecessor table snapshot and modified-table row snapshot was preserved; all ARCH-023 checks passed.
+- `git diff --check` — passed.
+- Environment: PostgreSQL 15.19 with `pgvector/pg15`; Prisma CLI/Client 6.19.3; Node.js 24.21.0.
+- Published implementation commit: `1e12bb3507f507579e15a6782c9620956609801c` on `task/ARCH-023-DATABASE-001`.
+
+### Launcher and Worktree Evidence
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-DATABASE-001`, `task/ARCH-023-DATABASE-001`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-DATABASE-001`, `task/ARCH-023-DATABASE-001`.
+- Shared workspace and shared implementation checkouts switched or mutated for task work: no.
+- Another task worktree reused: no.
+- Start synchronization: launcher preparation passed; both new task branches were based on their respective `origin/main`, and the parent claim was pushed before implementation. No startup synchronization/preparation was repeated.
+- `git submodule sync --recursive` and `git submodule update --init --recursive`: passed during preparation. The database repository has no recursive submodule entries.
 
 ### Deviations
 
-None.
+The isolated rehearsal fixture inserts all required ARCH-014 pricing translations in one transaction because that predecessor schema uses deferred catalogue validation. No production schema/migration scope deviation.
 
 ### Assumptions
 
-None.
+Disposable rehearsal databases were task-owned local targets `arch023_test_fresh` and `arch023_test_upgrade` on `127.0.0.1:55432`; no shared database was used.
 
 ### Unresolved Issues
 
-None.
+`npm ci` reported 3 high-severity audit findings and lifecycle-script approval warnings. These were not introduced or changed by this task; Prisma Client was explicitly generated from the task schema for rehearsal.
 
 ### Architectural Concerns
 
-None.
+None identified. The Architect Review section below remains untouched.
 
 ## Architect Review
 
