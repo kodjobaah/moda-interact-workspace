@@ -1312,3 +1312,15 @@ Manual validation of an existing Shopify Admin DRAFT exposed the navigation pari
 COMMERCE-103 reuses the C095 canonical six-step order/presentation but does **not** import progressive unlocking into persisted DRAFTs. All persisted tabs remain directly clickable; `Previous`/`Next` are pure section navigation and never validate, Test, save or publish. COMMERCE-103 is independent of COMMERCE-102.
 
 `ARCH-021-SYSTEM-TEST-002` remains **Pending** until both COMMERCE-102 and COMMERCE-103 are architect-accepted Complete.
+
+## Manual-validation follow-up — Add Capability direct phase readiness — 2026-09-29
+
+Manual validation of the accepted COMMERCE-091 Add Capability flow exposed a first-entry navigation admission gap: `enabledThrough` is monotonic once a phase has been entered, but the visible Tool/Review phase buttons remain disabled until `Next` performs that first unlock even when the current local candidate already satisfies the destination readiness predicate.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-104](COMMERCE-104-make-add-capability-phases-directly-navigable-when-ready.md) | Make Tool/Review directly clickable as soon as their current first-entry prerequisites are satisfied while preserving the monotonic unlock frontier | Ready | COMMERCE-091 |
+
+COMMERCE-104 is a bounded browser-navigation correction. Before first entry, Tool follows live `validCapability` and Review follows live `canReview`; direct entry monotonically advances the same `enabledThrough` frontier already accepted in C091. After first unlock, later invalidation never re-locks the phase, while `Create capability` remains gated by the current `canReview`. Navigation remains local-only and performs zero Capability mutation/reconciliation calls.
+
+`ARCH-021-SYSTEM-TEST-003` is re-gated **Pending** on COMMERCE-104 so terminal Feature/Capability validation runs only after this direct-phase correction is architect-accepted.

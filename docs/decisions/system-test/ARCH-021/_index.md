@@ -78,9 +78,9 @@ leave it Ready while manually exercising the completed Tool-authoring flow.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Ready | DATABASE-003, SHARED-002, COMMERCE-088..092, BACKGROUND-002 |
+| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, direct ready-phase navigation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Pending | DATABASE-003, SHARED-002, COMMERCE-088..092, COMMERCE-104, BACKGROUND-002 |
 
-SYSTEM-TEST-003 is terminal validation and is now Ready because all declared implementation/publication dependencies are Complete. No implementation/publication task depends on it, and the developer may leave it Ready while manually exercising the completed Feature flow.
+SYSTEM-TEST-003 is terminal validation. Manual validation has introduced COMMERCE-104 as a required Feature-authoring correction, so SYSTEM-TEST-003 is **Pending** until C104 is architect-accepted Complete. No implementation/publication task depends on it.
 
 ### SYSTEM-TEST-002 re-gated for Tool execution safety — 2026-09-29
 
@@ -89,3 +89,7 @@ Manual validation exposed the COMMERCE-102 selected-shop execution-target and To
 ### SYSTEM-TEST-002 re-gated for persisted Tool traversal — 2026-09-29
 
 Manual validation of an existing Tool then exposed COMMERCE-103: persisted External HTTP, Shopify Admin and Policy Operation DRAFTs need the same six-step sequential `Previous`/`Next` navigation while retaining permanently unlocked direct tabs. SYSTEM-TEST-002 is therefore **Pending** on both C102 and C103 and returns to Ready only after both are architect-accepted Complete. It remains terminal validation; no Commerce implementation task depends on it.
+
+### SYSTEM-TEST-003 re-gated for Add Capability direct phase readiness — 2026-09-29
+
+Manual validation exposed COMMERCE-104: Tool and Review must become directly clickable as soon as their current first-entry predicates are satisfied, without requiring `Next`, while the existing monotonic unlock frontier and current-candidate Create gate remain intact. SYSTEM-TEST-003 therefore depends on C104 and remains **Pending** until C104 is architect-accepted Complete.

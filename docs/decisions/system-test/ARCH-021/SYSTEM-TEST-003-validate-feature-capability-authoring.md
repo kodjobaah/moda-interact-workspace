@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 120
 executor: null
 claimed_at: null
@@ -23,6 +23,7 @@ depends_on:
   - ARCH-021-COMMERCE-091
   - ARCH-021-BACKGROUND-002
   - ARCH-021-COMMERCE-092
+  - ARCH-021-COMMERCE-104
 enables: []
 created: 2026-09-29
 updated: 2026-09-29
@@ -69,7 +70,7 @@ Build/extend system-test fixtures and scenarios required to validate the integra
 
 Create or use an existing Admin-owned Feature fixture before entering Commerce Studio. Validate that the Commerce flow does not create or mutate Feature identity/billing metadata.
 
-### R2 — Capability authoring is local-first
+### R2 — Capability authoring is local-first and directly navigable when ready
 
 Exercise:
 
@@ -81,7 +82,11 @@ Feature
  -> Review
 ```
 
-Prove no Capability row exists after entering/editing/selecting/cancelling before final Create.
+Before pressing Capability `Next`, enter valid Capability metadata and prove the Tool phase button becomes directly usable. Enter Tool by direct phase click, select an eligible Tool, and prove Review becomes directly usable before pressing Tool `Next`. Directly enter Review.
+
+Then invalidate an upstream field after Tool/Review have been unlocked and prove those phases remain navigable while final `Create capability` becomes unavailable until the current candidate is valid again.
+
+Prove all phase/Previous/Next navigation remains browser-local and no Capability row exists after entering/editing/selecting/navigating/cancelling before final Create.
 
 Then complete final Create and prove exactly one Capability exists with the selected Feature and Tool.
 
@@ -120,6 +125,7 @@ This does not waive runtime Feature entitlement enforcement where separately app
 ## Work Items
 
 - [ ] Add deterministic Feature + published Tool fixture setup.
+- [ ] Validate direct ready-phase entry and monotonic post-unlock navigation without pre-Create persistence.
 - [ ] Validate cancel-before-Create produces zero durable Capability rows.
 - [ ] Validate final Create produces exactly one direct Feature/Tool Capability.
 - [ ] Validate two Capabilities share one Feature Behaviour prompt/runtime entry.
@@ -144,6 +150,7 @@ Validates the integrated outputs of all declared dependencies. System-test does 
 - ARCH-021-COMMERCE-091
 - ARCH-021-BACKGROUND-002
 - ARCH-021-COMMERCE-092
+- ARCH-021-COMMERCE-104
 
 ## Enables
 
@@ -152,6 +159,7 @@ None
 ## Acceptance Criteria
 
 - [ ] Existing Feature ownership remains with Admin/billing data.
+- [ ] Tool/Review become directly clickable from current readiness before Next, then stay navigable once unlocked while Create remains current-candidate gated.
 - [ ] Cancelling before final Create leaves zero new Capability rows.
 - [ ] Final Create stores one Feature + one Tool Capability with no revision shell.
 - [ ] One Feature Behaviour prompt applies once across sibling Capabilities.
