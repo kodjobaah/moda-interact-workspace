@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-COMMERCE-093
 architecture_id: ARCH-021
-title: Fix code-response validation route imports and restore Commerce production build
+title: Fix code-response validation route imports
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -9,19 +9,20 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: ready
 priority: 10
-executor: copilot
-claimed_at: 2026-09-29T11:28:16Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
   - ARCH-021-COMMERCE-086
+  - ARCH-021-COMMERCE-094
 created: 2026-09-29
 updated: 2026-09-29
 ---
 
-# Fix code-response validation route imports and restore Commerce production build
+# Fix code-response validation route imports
 
 ## Architecture
 
@@ -39,7 +40,7 @@ Coordinator:
 
 ## Objective
 
-Correct the three over-deep repository-local imports in the Studio code-response validation route and prove the normal Commerce production build succeeds, without changing preview-validation behavior or absorbing C086 manual-packaging work.
+Correct the three over-deep repository-local imports in the Studio code-response validation route and prove the corrected imports resolve within Commerce, without changing preview-validation behavior or absorbing C086 manual-packaging work.
 
 ## Context
 
@@ -75,7 +76,7 @@ six parent traversals resolve one directory above the Commerce repository. The r
 
 The referenced modules already exist. This task is therefore a narrow import-resolution/build correction.
 
-C086 is blocked on this task because its R11/R12 production-start HTTP smoke cannot run until the Commerce production build succeeds.
+C086 is blocked on this task because its R11/R12 production-start HTTP smoke cannot run until the Commerce production build succeeds. Architect review has assigned the unrelated TypeScript diagnostics discovered after correcting these imports to the separate task ARCH-021-COMMERCE-094. C093 owns only the route import correction and bounded import-resolution evidence.
 
 ## Scope
 
@@ -167,24 +168,10 @@ Add a focused regression or bounded validation proving all three corrected impor
 Do not use a brittle test that merely duplicates the exact relative string without checking actual resolution.
 
 ### R4 — normal Commerce production build succeeds
+### R4 — production build ownership
 
-From the prepared C093 Commerce worktree, run the repository-declared normal production build:
-
-```text
-npm run build
-```
-
-Record the complete outcome.
-
-Acceptance requires the build to pass.
-
-If the corrected imports compile but the build fails on a different pre-existing/unrelated defect:
-
-```text
-do not fix the new defect in C093
-record the exact blocker
-return C093 blocked to moda_architect
-```
+Production build validation and unrelated TypeScript diagnostics are owned by ARCH-021-COMMERCE-094. C093 must record its observed build result as evidence that the corrected route imports are no longer the blocker, but C093 acceptance does not require the repository build to pass.
+- [ ] Record the production-build result and confirm the corrected route imports are no longer unresolved; do not fix unrelated TypeScript diagnostics in C093.
 
 ### R5 — no C086 source changes
 
@@ -209,6 +196,7 @@ C086 will rerun its own production manual/start smoke after C093 is accepted Com
 - [x] Run changed-file TypeScript diagnostics.
 - [x] Run `git diff --check`.
 - [ ] Run the normal repository `npm run build` successfully (attempted; blocked by unrelated project type errors).
+- [x] Run the normal repository `npm run build` and record that the route import failure is gone; unrelated TypeScript diagnostics are transferred to C094.
 - [x] Record build evidence and any unrelated blocker in the Completion Report.
 
 ## Interfaces / Contracts
@@ -242,6 +230,7 @@ None.
 - [x] Changed-file lint/TypeScript diagnostics are clean.
 - [x] `git diff --check` passes.
 - [ ] Normal `npm run build` succeeds.
+- [x] The build no longer fails to resolve these three route imports; remaining production type-check/build gate is owned by C094.
 
 ## Validation
 
@@ -250,10 +239,12 @@ None.
 - [x] changed-file TypeScript diagnostics
 - [x] `git diff --check`
 - [ ] `npm run build` (blocked by unrelated project type errors; see Completion Report)
+- [x] `npm run build` confirms the route imports resolve; unrelated TypeScript errors are transferred to C094 (see Completion Report).
 
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report and STOP.
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report and STOP. For Attempt 2, make no source changes: confirm the Attempt 1 route fix and import-resolution evidence, record the build's unrelated C094-owned TypeScript blocker, and submit for review.
 
 Do not begin C086 Attempt 2. `moda_architect` must first accept C093 and explicitly return C086 to Ready.
 
@@ -269,11 +260,12 @@ The production build is required because this defect was discovered specifically
 
 ### Status
 
-Route imports are corrected, but this task remains `in_progress` and blocked
-from review: the required production build fails at TypeScript validation with
-23 diagnostics in 12 unrelated files. No diagnostic names the corrected route.
-Per R4 and the task scope, those files were not modified; returning the blocker
-to `moda_architect`.
+Attempt 1 corrected the three imports and proved they resolve within Commerce.
+The production build now fails only on unrelated TypeScript diagnostics, which
+the Architect assigned to ARCH-021-COMMERCE-094. The Architect returned C093
+to `ready` for Attempt 2, report-only: preserve the Attempt 1 implementation,
+confirm route resolution and the build blocker, then submit for review without
+source changes.
 
 ### Files Changed
 
@@ -324,16 +316,17 @@ None.
 
 ### Unresolved Issues
 
-`npm run build` cannot pass until the reported TypeScript diagnostics are
-resolved or otherwise dispositioned by `moda_architect`. C093 prohibits fixing
-those unrelated defects; architect direction is required before this task can
-meet R4 and enable C086.
+ARCH-021-COMMERCE-094 owns the 23 unrelated TypeScript diagnostics across the
+12 files listed above and the production build gate. C093 must be accepted
+before C094's dependency gate passes. C086 remains blocked until both C093 and
+C094 are complete and its production build/start/manual HTTP smoke is rerun.
 
 ### Architectural Concerns
 
 The build now advances past the targeted route-import failure but is blocked by
 unrelated repository type errors. Keep C093 scoped to the three route imports;
-do not absorb those additional fixes here.
+do not absorb those additional fixes here. The Architect explicitly directed
+the report-only C093 Attempt 2 and separate C094 work.
 
 ## Architect Review
 
