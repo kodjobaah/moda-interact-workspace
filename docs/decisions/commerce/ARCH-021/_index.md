@@ -1151,7 +1151,7 @@ All SYSTEM-TEST-002 implementation dependencies are now Complete, so terminal
 | [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Complete | DATABASE-003, SHARED-002, COMMERCE-088 |
 | [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Complete | COMMERCE-088 |
 | [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Complete | COMMERCE-088, COMMERCE-090 |
-| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
+| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Complete | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
 
 
 ### COMMERCE-088 Attempt 2 accepted — 2026-09-29
@@ -1181,6 +1181,19 @@ COMMERCE-089 is **Complete / Accepted, Attempt 1**. Release creation now consume
 
 The required disposable C20 proof passed 2/2 on the final post-merge implementation branch. The remaining repository typecheck/process-global test failures contain no C089-owned diagnostics or release/runtime regressions. ARCH-021-BACKGROUND-002 is now **Ready**; COMMERCE-092 remains Pending until BACKGROUND-002 is Complete.
 
+### BACKGROUND-002 Attempt 1 accepted — 2026-09-29
+
+BACKGROUND-002 is **Complete / Accepted, Attempt 1**. The Background Commerce host now consumes the published Shared 1.0.0 direct Feature/Capability/Tool manifest, removes MCP Capability-prompt retrieval, accepts valid zero-Capability grants and retains exact Tool/grant provenance authorization.
+
+COMMERCE-089, COMMERCE-091 and BACKGROUND-002 are all Complete, so COMMERCE-092 is now **Ready** as the final Phase 5 subtractive cleanup task.
+
+### COMMERCE-092 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-092 is **Complete / Accepted, Attempt 1**. Architect review traced the deleted standalone Capability revision/list/editor lifecycle against the current Feature-centric authoring, Tool publication, release composition, activation/rollback and MCP/runtime paths. Current Feature-owned Capability creation remains under `/features/[id]/capabilities/new`; releases still select direct Capabilities, snapshot Feature Behaviour and pin exact published Tool revisions. No supported caller remains for the removed Capability revision/draft/binding APIs.
+
+The disposable C20 DB/Redis rehearsal remains explicitly unexecuted because disposable targets were not configured. Terminal SYSTEM-TEST-003 is now Ready and owns the end-to-end validation of the completed simplified architecture.
+
+
 
 ### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
 
@@ -1207,19 +1220,19 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-096](COMMERCE-096-expose-policy-operation-authoring-descriptors.md) | Canonical policy registration owns runtime validators + browser-safe authoring descriptor | Complete | COMMERCE-095 |
-| [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Ready | COMMERCE-096 |
-| [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Ready | COMMERCE-096 |
-| [COMMERCE-099](COMMERCE-099-round-trip-save-policy-operation-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Pending | COMMERCE-097, COMMERCE-098 |
+| [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Complete | COMMERCE-096 |
+| [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Complete | COMMERCE-096 |
+| [COMMERCE-099](COMMERCE-099-round-trip-and-save-policy-operation-tool-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Ready | COMMERCE-097, COMMERCE-098 |
 | [COMMERCE-100](COMMERCE-100-publish-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Pending | COMMERCE-099 |
 
 ```text
                     C096 Complete
                     /           \
                    v             v
-             C097 Ready      C098 Ready
+          C097 Complete      C098 Complete
                    \             /
                     v           v
-                     C099 Pending
+                      C099 Ready
                            |
                            v
                      C100 Pending
@@ -1230,3 +1243,18 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 C096 is **Complete / Accepted, Attempt 1**. The same server-side policy registry now owns exact operation/version runtime validation/adapters and a cloned browser-safe authoring descriptor. The descriptor uses a Commerce-local JSON-schema representation generated from the canonical runtime validators so nested inputs, nullable outputs and accepted collection bounds are not lost.
 
 COMMERCE-097 and COMMERCE-098 are **Ready** and may execute independently. C099 remains Pending on both.
+
+
+### COMMERCE-098 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-098 is **Complete / Accepted, Attempt 1**. Policy Operation candidate Test is now an ADMIN-authorized, non-durable Studio boundary over the production `DefinitionExecutor` and C096 registry. Shop context and preview identities are server-created, exact operation/version resolution is required, and canonical mapped-input/output/result-rendering semantics remain executor-owned.
+
+Canonical business outcomes such as `NOT_FOUND` remain valid Test results when a policy operation requires production state that is intentionally absent from the synthetic preview context; C098 does not fabricate production recovery/grant identity.
+
+COMMERCE-099 remains **Pending** because COMMERCE-097 is still Ready. No dependent task is promoted by C098 alone.
+
+### COMMERCE-097 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-097 is **Complete / Accepted, Attempt 2**. Policy Operation Result Template authoring now shares the production Policy result-schema projection and exposes descriptor fields directly as `result.<field>`; External HTTP and Shopify Admin retain their existing `result.values.*` envelopes. Response/Review continue to show the exact descriptor schema read-only, and C097 remains local-only.
+
+Because COMMERCE-098 is already Complete, both dependencies of COMMERCE-099 are now satisfied. COMMERCE-099 is **Ready**; COMMERCE-100 remains Pending on C099.

@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 80
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-096
 enables:
@@ -231,14 +231,14 @@ No Tool draft/revision/database mutation is added by this task. COMMERCE-099 own
 
 ## Work Items
 
-- [ ] Add a persisted Policy Operation branch to the canonical Tool editor/navigation.
-- [ ] Render read-only operation/version/descriptor metadata in Request.
-- [ ] Implement descriptor-driven argument-mapping authoring using the existing mapping contract.
-- [ ] Render descriptor result shape read-only in Response.
-- [ ] Reuse the canonical Result Template authoring component with the descriptor result schema.
-- [ ] Make Review show the exact Policy Operation candidate state.
-- [ ] Add focused UI regressions for unavailable descriptor, invalid mapping and successful local editing.
-- [ ] Prove no durable write occurs merely by opening/editing locally.
+- [x] Add a persisted Policy Operation branch to the canonical Tool editor/navigation.
+- [x] Render read-only operation/version/descriptor metadata in Request.
+- [x] Implement descriptor-driven argument-mapping authoring using the existing mapping contract.
+- [x] Render descriptor result shape read-only in Response.
+- [x] Reuse the canonical Result Template authoring component with the descriptor result schema.
+- [x] Make Review show the exact Policy Operation candidate state.
+- [x] Add focused UI regressions for unavailable descriptor, invalid mapping and successful local editing.
+- [x] Prove no durable write occurs merely by opening/editing locally.
 
 ## Interfaces / Contracts
 
@@ -256,27 +256,27 @@ Persists no new contract in this task. Local candidate state must remain structu
 
 ## Acceptance Criteria
 
-- [ ] An existing valid `POLICY_OPERATION` Tool revision opens without unsupported-provider fallback.
-- [ ] Tool Definition identifies Policy Operation and does not allow Tool-type switching.
-- [ ] Request displays the exact persisted operation/version read-only and resolves descriptor metadata through C096.
-- [ ] Required operation arguments cannot be left unmapped; optional arguments may be unmapped.
-- [ ] Mappings use only existing `{input}` / `{literal}` structures and current top-level Tool input properties.
-- [ ] Response displays the descriptor-owned result schema read-only.
-- [ ] Result Template bindings are derived from the descriptor result schema using the existing Result Template component/validator.
-- [ ] Review displays the exact current Policy Operation candidate.
-- [ ] Opening/editing locally creates no Tool/ToolRevision write.
-- [ ] `POLICY_OPERATION` is NOT added to New Tool creation in this task.
-- [ ] No source code contains a `merchantKnowledge.lookup`/`merchant_knowledge_lookup` UI special case.
-- [ ] Existing External HTTP and Shopify Admin UI focused tests remain green or show only documented pre-existing baseline failures unrelated to changed files.
+- [x] An existing valid `POLICY_OPERATION` Tool revision opens without unsupported-provider fallback.
+- [x] Tool Definition identifies Policy Operation and does not allow Tool-type switching.
+- [x] Request displays the exact persisted operation/version read-only and resolves descriptor metadata through C096.
+- [x] Required operation arguments cannot be left unmapped; optional arguments may be unmapped.
+- [x] Mappings use only existing `{input}` / `{literal}` structures and current top-level Tool input properties.
+- [x] Response displays the descriptor-owned result schema read-only.
+- [x] Result Template bindings are derived from the descriptor result schema using the existing Result Template component/validator.
+- [x] Review displays the exact current Policy Operation candidate.
+- [x] Opening/editing locally creates no Tool/ToolRevision write.
+- [x] `POLICY_OPERATION` is NOT added to New Tool creation in this task.
+- [x] No source code contains a `merchantKnowledge.lookup`/`merchant_knowledge_lookup` UI special case.
+- [x] Existing External HTTP and Shopify Admin UI focused tests pass.
 
 ## Validation
 
-- [ ] Focused persisted Tool editor tests for `POLICY_OPERATION`.
-- [ ] Focused mapping-validation tests.
-- [ ] Focused Result Template contract-adapter/UI tests.
-- [ ] Targeted TypeScript diagnostics for changed files.
-- [ ] Targeted ESLint for changed files.
-- [ ] `git diff --check`.
+- [x] Focused persisted Tool editor tests for `POLICY_OPERATION`.
+- [x] Focused mapping-validation tests.
+- [x] Focused Result Template contract-adapter/UI tests.
+- [x] Targeted TypeScript diagnostics for changed files.
+- [x] Targeted ESLint for changed files.
+- [x] `git diff --check`.
 
 ## Stop Condition
 
@@ -290,58 +290,93 @@ Prefer a small reusable Policy Operation editor/component over adding another la
 
 ### Status
 
-Not Started
+Ready for architect review (Attempt 2).
 
 ### Files Changed
 
-None
+- `src/studio/tools/tool-editor.tsx`
+- `src/studio/tools/policy-operation-editor.tsx`
+- `src/studio/tools/authoring/result-template-contract-adapter.ts`
+- `src/commerce/execution/policy-result-schema.ts`
+- `src/commerce/execution/renderer.ts`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `tests/policy-operation-result-template.test.ts`
 
 ### Work Completed
 
-None
+- Added a persisted-only Policy Operation editor branch using the canonical tabs; kept operation and version fixed, descriptor-bound, and read-only. The New Tool provider selector, persistence, publish, and live Test flows were not extended.
+- Added descriptor-driven argument mapping with required/optional argument handling, current top-level input-property checks, optional-input `omitIfMissing`, bounded JSON literals, and canonical definition validation.
+- Kept the complete descriptor result schema read-only in Response and reused the existing Result Template tab. The adapter structurally projects supported descriptor JSON Schemas to the bounded template-authoring schema without mutating or replacing the registered descriptor.
+- Added provider-specific Review state, inactive Test placeholder, unavailable-descriptor handling, local-only editing, and regressions that assert no save/publish/Test action occurs.
+- Left Shopify Admin and External HTTP behavior and New Tool provider choices unchanged.
+- Attempt 2 addressed architect finding A1-R1: extracted the production Policy JSON-Schema projection into a shared Commerce helper used by both the renderer and Studio. Policy templates now compile/validate against direct `result.<field>` paths; only External HTTP and Shopify Admin retain the `result.values.*` envelope. Replaced the wrapper-specific test with parity coverage proving the Studio validator, generated `result.truncated` binding and production runtime validator agree for the same registered operation.
 
 ### Validation Results
 
-None
+- Passed: focused six-suite Vitest packet, 62 tests across `shopify-admin-tools-ui`, `policy-operation-result-template`, `policy-operation-authoring-server-actions`, `policy-operation-registry`, `tool-authoring-no-provider-io`, and production `definition-execution`.
+- Passed: targeted ESLint for all seven changed source/test files; `git diff --check`; Pylance diagnostics reported no errors in all seven changed files. The final package TypeScript run found no diagnostics in any changed file.
+- Package-wide `tsc --noEmit` remains non-green with 96 diagnostics across 25 files; zero target the seven task files. The repository-wide typecheck is not claimed as passing.
+- Confirmed no Merchant Knowledge operation special case in the new Policy editor or its adapter tests.
 
 ### Deviations
 
-None
+- Descriptor `resultSchema` is general JSON Schema and does not directly satisfy the narrower existing `CommerceResultSchema` template contract. The bounded projection is now shared with production Policy rendering and used for template binding/snippet/validation authoring only. Response and Review retain the exact unmodified descriptor schema as authoritative and read-only. All six currently registered operation descriptors remain covered by tests.
+- Package-wide TypeScript validation remains blocked by diagnostics outside this task's changed files; see Validation Results.
 
 ### Assumptions
 
-None
+- C096's authenticated descriptor read action is the authority for resolving the persisted operation/version and its registered argument/result schemas; the UI does not infer behavior from Tool identity or operation names.
+- COMMERCE-099 owns persistence and live Test integration, so local edits and the Test placeholder intentionally remain non-durable/inactive here.
 
 ### Unresolved Issues
 
-None
+- Repository-wide TypeScript diagnostics remain in unrelated files and were not repaired as unrelated scope.
 
 ### Architectural Concerns
 
-None
+- A1-R1 is addressed by sharing the same bounded Policy result-schema projection between Studio and the production renderer, preserving direct Policy result paths without changing External/Shopify envelopes.
+
+### Submission Evidence
+
+- Attempt 1 implementation commit: `9439a02aba8238d6c276882f9dc1612a710e0d59` (`task(ARCH-021-COMMERCE-097): add persisted policy operation authoring`). Attempt 2 implementation commit: `74442813480e2258bb0cec5a357d0f259b4baf7f` (`fix(ARCH-021-COMMERCE-097): align policy template paths with runtime`), pushed to `origin/task/ARCH-021-COMMERCE-097` and verified equal to the remote head.
+- Attempt 2 launcher claim commit: `47434898c7cb77a223179835742e0e3eeaf83c36`; prepared parent head `123d36e92d5c644320381cba18ed94613aa35f71` and implementation head `9426495a93851404f2ec4047a92571316fb38d81`.
+- Launcher reported `origin/main` incorporated in both reused worktrees and already current in the final parent synchronization. Recursive database submodule sync/update passed; `database` was initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 is accepted. A1-R1 is resolved: Policy Operation Result Template authoring now uses the same bounded JSON-Schema projection as the production Policy renderer, and Policy fields are exposed directly as `result.<field>` rather than through the External/Shopify `result.values.*` envelope. External HTTP and Shopify Admin authoring semantics remain unchanged.
+
+The correction is bounded and preserves the C097 ownership contract. The exact registered descriptor schema remains read-only in Response/Review; the shared projection is used only for bounded template binding/validation/runtime rendering. The focused parity regression proves a Studio-accepted direct Policy binding is also accepted by the production Policy template validator, rejects the obsolete `result.values.*` shape, and retains all-current-registered-descriptor compatibility coverage.
+
+No durable Tool/ToolRevision write, New Tool provider option, operation rebinding, live-Test integration or Merchant Knowledge special case was introduced by C097.
 
 ### Reviewed Files
 
-None
+- `src/commerce/execution/policy-result-schema.ts`
+- `src/commerce/execution/renderer.ts`
+- `src/studio/tools/authoring/result-template-contract-adapter.ts`
+- `src/studio/tools/policy-operation-editor.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/policy-operation-result-template.test.ts`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-097-render-persisted-policy-operation-tool-authoring.md`
 
 ### Validation Reviewed
 
-None
+The Completion Report records 62 passing tests across six focused suites, targeted ESLint passing, `git diff --check` passing, and no changed-file diagnostics. The package-wide typecheck remains non-green with 96 diagnostics across 25 unchanged files; none target the seven C097 files, so that existing repository-wide state does not block this bounded acceptance.
+
+The supplied review archive contains neither Git metadata nor installed `node_modules`, so the reported remote-head equality and validation commands could not be independently rerun in this review environment. The Attempt 1 -> Attempt 2 source/test delta, task evidence, shared projection, Studio adapter and production renderer contracts were inspected directly.
 
 ### Architecture Conformance
 
-Pending
+Conformant. R1-R5, R7 and R8 remain satisfied, and R6 is now satisfied because Policy Operation Result Template authoring and production rendering share the same direct-path projection. The fixed operation/version binding remains read-only, descriptor-owned result shape remains authoritative, and C097 remains local-only with persistence/Test correctly deferred to C099.
 
 ### Follow-up
 
-None
+`ARCH-021-COMMERCE-097` is Complete / Accepted on Attempt 2. `ARCH-021-COMMERCE-098` is already Complete, so every dependency of `ARCH-021-COMMERCE-099` is now satisfied; promote C099 to Ready. C100 remains Pending on C099.

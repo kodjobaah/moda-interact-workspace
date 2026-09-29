@@ -30,8 +30,10 @@ BACKGROUND-001 is **Complete / Accepted, Attempt 2**. Background now sends only 
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [BACKGROUND-002](BACKGROUND-002-consume-feature-capability-manifest.md) | Consume direct Feature/Capability/Tool manifests and apply Feature Behaviour once per Feature | Ready | DATABASE-003, SHARED-002, COMMERCE-089 |
+| [BACKGROUND-002](BACKGROUND-002-consume-feature-capability-manifest.md) | Consume direct Feature/Capability/Tool manifests and apply Feature Behaviour once per Feature | Complete | DATABASE-003, SHARED-002, COMMERCE-089 |
 
 BACKGROUND-002 removes per-Capability prompt-name fetches and the mandatory BASE/`conversation_core` assumption while preserving exact Tool grant authorization.
 
-BACKGROUND-002 is **Ready** after COMMERCE-089 Attempt 1 acceptance; DATABASE-003 and SHARED-002 are already Complete. It is the remaining Phase 5 runtime-consumer gate before COMMERCE-092 can become executable.
+BACKGROUND-002 is **Complete / Accepted, Attempt 1**. Background consumes the published direct Feature/Capability/Tool manifest, applies immutable Feature Behaviour through the Shared runner without MCP prompt fetches, accepts valid empty Capability/Tool grants and preserves exact retained-grant Tool authorization.
+
+All Phase 5 replacement-path dependencies for COMMERCE-092 are now Complete, so COMMERCE-092 is Ready as the final subtractive legacy-removal gate.

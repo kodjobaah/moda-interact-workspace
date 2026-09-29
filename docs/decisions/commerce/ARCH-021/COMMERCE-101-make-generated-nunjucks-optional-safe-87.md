@@ -1,5 +1,5 @@
 ---
-id: ARCH-021-COMMERCE-087
+id: ARCH-021-COMMERCE-101
 architecture_id: ARCH-021
 title: Make generated Nunjucks templates total over optional result fields
 task_kind: implementation

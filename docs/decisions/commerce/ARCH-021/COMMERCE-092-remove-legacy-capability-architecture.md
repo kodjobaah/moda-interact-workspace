@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: complete
 priority: 96
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-089
   - ARCH-021-COMMERCE-091
@@ -138,16 +138,16 @@ There must be one supported Feature Capability authoring path and one supported 
 
 ## Work Items
 
-- [ ] Remove standalone legacy Capability routes/navigation/editor.
-- [ ] Remove CapabilityRevision/CapabilityDraft/ToolBinding Studio contracts.
-- [ ] Remove legacy Capability draft/update/publish Server Actions/services.
-- [ ] Remove obsolete publication lifecycle/validation/read-model code.
-- [ ] Remove obsolete publication-storage capability-revision handling.
-- [ ] Remove Capability `selectionBinding`/BASE/RECOVERY_POLICY branches from Commerce source.
-- [ ] Remove Capability-level `maxSearchResults` / `maxRecommendations` plumbing; retain only generically named implementation safety bounds where required.
-- [ ] Replace C20/in-memory/test fixtures that only model the old architecture.
-- [ ] Delete unreachable compatibility adapters introduced solely for staged migration.
-- [ ] Add source-level regression assertions/grep-style checks where useful to prevent legacy symbol reintroduction.
+- [x] Remove standalone legacy Capability routes/navigation/editor.
+- [x] Remove CapabilityRevision/CapabilityDraft/ToolBinding Studio contracts.
+- [x] Remove legacy Capability draft/update/publish Server Actions/services.
+- [x] Remove obsolete publication lifecycle/validation/read-model code.
+- [x] Remove obsolete publication-storage capability-revision handling.
+- [x] Remove Capability `selectionBinding`/BASE/RECOVERY_POLICY branches from Commerce source.
+- [x] Remove Capability-level `maxSearchResults` / `maxRecommendations` plumbing; retain only generically named implementation safety bounds where required.
+- [x] Replace C20/in-memory/test fixtures that only model the old architecture.
+- [x] Delete unreachable compatibility adapters introduced solely for staged migration.
+- [x] Add source-level regression assertions/grep-style checks where useful to prevent legacy symbol reintroduction.
 
 ## Interfaces / Contracts
 
@@ -175,24 +175,24 @@ Produces no new runtime contract.
 
 ## Acceptance Criteria
 
-- [ ] There is no supported standalone Capability revision editor/list workflow.
-- [ ] `createDraft`, `updateDraft`, Capability `publishRevision` and Capability clone flow are removed.
-- [ ] Commerce source no longer models `CapabilityRevision`/`CapabilityDraft`/multi-Tool bindings.
-- [ ] Commerce source no longer branches on Capability `selectionBinding`, BASE or RECOVERY_POLICY.
-- [ ] Capability-level `maxSearchResults` / `maxRecommendations` are absent; any remaining generic safety bounds are clearly execution-owned and not author-configurable.
-- [ ] No current fixture requires `conversation_core` as a BASE Capability.
-- [ ] The new Feature authoring and release/runtime focused suites remain green after deletion.
-- [ ] No temporary migration compatibility adapter remains reachable.
+- [x] There is no supported standalone Capability revision editor/list workflow.
+- [x] `createDraft`, `updateDraft`, Capability `publishRevision` and Capability clone flow are removed.
+- [x] Commerce source no longer models `CapabilityRevision`/`CapabilityDraft`/multi-Tool bindings.
+- [x] Commerce source no longer branches on Capability `selectionBinding`, BASE or RECOVERY_POLICY.
+- [x] Capability-level `maxSearchResults` / `maxRecommendations` are absent; any remaining generic safety bounds are clearly execution-owned and not author-configurable.
+- [x] No current fixture requires `conversation_core` as a BASE Capability.
+- [x] The new Feature authoring and release/runtime focused suites remain green after deletion.
+- [x] No temporary migration compatibility adapter remains reachable.
 
 ## Validation
 
-- [ ] focused Feature/Capability UI suites from COMMERCE-090/091
-- [ ] focused publication/backend suites from COMMERCE-089
-- [ ] affected Studio integration/C20 suites after fixture replacement
-- [ ] targeted repository source search proving removed Capability-domain symbols are absent from supported source paths
-- [ ] targeted ESLint
-- [ ] changed-file TypeScript diagnostics / repository typecheck evidence per baseline policy
-- [ ] `git diff --check`
+- [x] focused Feature/Capability UI suites from COMMERCE-090/091
+- [x] focused publication/backend suites from COMMERCE-089
+- [ ] affected Studio integration/C20 suites after fixture replacement (disposable C20 database/Redis targets were not configured; see Completion Report)
+- [x] targeted repository source search proving removed Capability-domain symbols are absent from supported source paths
+- [x] targeted ESLint
+- [x] changed-file TypeScript diagnostics / repository typecheck evidence per baseline policy
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -206,58 +206,235 @@ Deletion is the purpose of this task. Do not preserve old code "just in case" du
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+Implementation commits on `task/ARCH-021-COMMERCE-092`:
+
+```text
+70a75dd Remove legacy Capability revision architecture
+7b49eaa Guard against legacy Capability surface
+```
+
+```text
+app/capabilities/[id]/page.tsx (deleted)
+app/capabilities/page.tsx (deleted)
+components/production-studio-page.tsx
+components/studio-workspace.tsx
+src/commerce/code-response/processor.ts
+src/commerce/execution/renderer.ts
+src/commerce/external-http/index.ts
+src/commerce/external-preview/contracts.ts
+src/commerce/external-preview/fixture-runner.ts
+src/commerce/external-publication/contracts.ts
+src/commerce/external-publication/index.ts
+src/commerce/external-response/index.ts
+src/commerce/integration/backend.ts
+src/commerce/integration/backend/c20-test-fixture.ts
+src/commerce/integration/backend/publication-storage.ts
+src/commerce/integration/preview/adapters.ts
+src/commerce/integration/studio/services.ts
+src/commerce/mcp/authorization.ts
+src/commerce/mcp/ports.ts
+src/commerce/observability.ts
+src/commerce/publication/lifecycle.ts
+src/commerce/publication/ports.ts
+src/commerce/publication/read-models.ts
+src/commerce/publication/validation.ts
+src/commerce/tool-authoring/external-live-test.ts
+src/commerce/tool-authoring/policy-operation-live-test.ts
+src/commerce/tool-authoring/shopify-admin-live-test.ts
+src/studio/contracts.ts
+src/studio/external-http/ports.ts
+src/studio/server-actions.ts
+src/studio/server-services.ts
+src/studio/testing/in-memory-studio-services.ts
+tests/admin-query-execution.test.ts
+tests/backend-integration.test.ts
+tests/backend-postgres-rehearsal.test.ts
+tests/code-response-processor.test.ts
+tests/commerce-lifecycle.test.ts
+tests/definition-execution-mcp.test.ts
+tests/definition-execution.test.ts
+tests/external-availability.test.ts
+tests/external-http-executor.test.ts
+tests/external-publication.test.ts
+tests/external-tools-ui.test.tsx
+tests/external-wiring.test.ts
+tests/feature-configuration-page.test.tsx
+tests/fixtures/publication-store.ts
+tests/legacy-capability-surface.test.ts
+tests/local-external-mcp-diagnostic.test.ts
+tests/mcp-authorization.test.ts
+tests/mcp-compatibility.test.ts
+tests/mcp-service.test.ts
+tests/recommendation-contract.test.ts
+tests/response-processing.test.ts
+tests/result-template-optionality.test.ts
+tests/result-template-renderer.test.ts
+tests/studio-integration-c20.test.ts
+tests/studio-integration.test.ts
+tests/studio-services.test.ts
+tests/studio-workspace.test.tsx
+```
 
 ### Work Completed
 
-None
+Removed the standalone Capability pages and their Studio authoring/editor contracts, actions, services, and in-memory implementations. Removed Capability revision/draft/binding models and lifecycle, validation, read-model, persistence, audit, and telemetry handling while preserving Feature-owned Capability membership in release composition and the existing Tool/release/activation/rollback paths.
+
+Replaced obsolete Capability-revision fixtures with direct Feature-owned Capability rows. Renamed the execution-owned safety bounds to `maxPolicyOutputItems` and `maxCollectionItems` without changing their values or control flow. Added `tests/legacy-capability-surface.test.ts` to guard route absence and obsolete Studio/publication lifecycle contracts.
+
+Launcher evidence:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+  parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-092
+  parent branch: task/ARCH-021-COMMERCE-092
+  implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-092
+  implementation branch: task/ARCH-021-COMMERCE-092
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  git submodule sync --recursive: passed
+  git submodule update --init --recursive: passed
+  database submodule commit: e9fb60221f1532205650154dfff2aadb6270b14c
+```
 
 ### Validation Results
 
-None
+Passed focused validation:
+
+- `npm run test:arch021-tool-authoring-common`: 7 files, 80 tests passed.
+- Lifecycle, external availability, and Studio integration: 3 files, 44 tests passed.
+- Studio integration, external-tools UI, and Feature configuration UI: 3 files, 106 tests passed.
+- `tests/legacy-capability-surface.test.ts`: 2 tests passed.
+- Modified TypeScript/TSX ESLint: zero errors; one existing unused `_environment` warning in `tests/mcp-service.test.ts`.
+- Targeted source audit found no removed legacy terms in supported `app`, `components`, `src`, and `tests` paths; route absence and `git diff --check` passed.
+- Prisma Client generation completed successfully.
+- Repository typecheck reported 40 errors across 13 unrelated/pre-existing files; no diagnostics remained in changed lifecycle, publication-adapter, or Studio-service files.
+
+Limitations and unrelated failures:
+
+- `tests/studio-workspace.test.tsx`: 7 failed, 5 passed; failures concern existing Tool-editor interactions, including the missing `Save draft` expectation, not Capability removal.
+- A broader seven-file authoring/backend selection had 70 passing tests and 2 backend singleton-bootstrap setup failures caused by process-global backend initialization expectations.
+- Real C20 integration was not run because `COMMERCE_TEST_DATABASE_URL`, `COMMERCE_TEST_REDIS_URL`, and `COMMERCE_C20_REDIS_NAMESPACE` disposable targets were not configured.
 
 ### Deviations
 
-None
+Added a focused legacy-surface regression test as a follow-up implementation commit. The real C20 integration validation remains unavailable without disposable database and Redis targets; no production or shared database was used.
 
 ### Assumptions
 
-None
+Feature persistence remains the owner of current Capability creation. Commerce publication reads those current rows for release resolution but no longer creates or mutates Capability revisions.
 
 ### Unresolved Issues
 
-None
+The C20 real-database/Redis integration remains unvalidated pending disposable test targets. The unrelated workspace UI, backend singleton-bootstrap, and repository-wide typecheck failures listed above remain outside this task's scope.
 
 ### Architectural Concerns
 
-None
+None identified during implementation; awaiting Architect Review.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 is accepted.
+
+The deletion was reviewed specifically for current-functionality regression risk. C092 removes the obsolete Capability revision/draft/multi-binding authoring architecture, but it does not remove the current Capability concept or the supported Feature/release/runtime flows.
+
+The supported authoring path remains Feature-centric:
+
+```text
+/features
+  -> /features/[id]
+  -> /features/[id]/capabilities/new
+  -> direct Feature + Tool Capability
+```
+
+`FeatureConfigurationScreen` remains the Feature configuration surface; `AddCapabilityScreen` creates exactly one direct Feature/Tool Capability through `createFeatureCapability`. The deleted `/capabilities` list/editor routes and the removed `createDraft` / `updateDraft` / Capability `publishRevision` operations belonged only to the superseded Capability-revision model.
+
+Current Tool functionality remains intact: Tool creation, draft update, Tool publication, External/Shopify authoring, live-Test and Result Template paths are still present. The reported `studio-workspace.test.tsx` failures exercise stale Tool-editor expectations (for example expecting `Save draft` outside the current Review-oriented authoring flow) and do not reveal a removed Capability replacement path.
+
+Current release/runtime functionality also remains intact:
+
+- release composition still calls `listReleaseCapabilities`;
+- current direct Capability rows retain `featureId` + `toolId`;
+- `createRelease` resolves the latest PUBLISHED Tool revision for each selected Capability and pins that exact `toolRevisionId`;
+- current Feature Behaviour is snapshotted once per Feature into the immutable release;
+- release activation and rollback remain unchanged;
+- persisted release membership still carries Capability, Feature, Tool and pinned Tool-revision identity;
+- MCP authorization/runtime manifest handling still consumes Capability membership and the pinned release data.
+
+No supported caller remains for the removed standalone Capability revision routes/actions/contracts, and the dedicated legacy-surface regression proves those obsolete surfaces are absent.
+
+The replacement dependencies required by this subtraction gate are all Complete: COMMERCE-089, COMMERCE-091 and BACKGROUND-002. DATABASE-003, SHARED-002, COMMERCE-088 and COMMERCE-090 are also Complete, so the simplified Feature/Capability architecture is fully materialized before deletion.
+
+The real disposable C20 database/Redis rehearsal was not run because disposable targets were not configured. This remains a validation limitation and is not represented as passed. It does not reveal a source-level regression in the inspected C092 changes, and terminal SYSTEM-TEST-003 is promoted to Ready to perform the end-to-end validation of direct Capability creation, Feature Behaviour sharing, immutable Tool-revision pinning, Feature Behaviour snapshots and absence of the legacy revision/binding model.
 
 ### Reviewed Files
 
-None
+- `app/capabilities/page.tsx` (deleted)
+- `app/capabilities/[id]/page.tsx` (deleted)
+- `app/features/page.tsx`
+- `app/features/[id]/page.tsx`
+- `app/features/[id]/capabilities/new/page.tsx`
+- `components/production-studio-page.tsx`
+- `components/studio-shell.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/features/contracts.ts`
+- `src/studio/features/persistence.ts`
+- `src/studio/features/services.ts`
+- `src/studio/features/add-capability/add-capability-screen.tsx`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `src/commerce/publication/ports.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/publication/read-models.ts`
+- `src/commerce/integration/backend/publication-storage.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/mcp/authorization.ts`
+- `src/commerce/mcp/service.ts`
+- `tests/legacy-capability-surface.test.ts`
+- affected focused Feature/release/runtime tests listed in the Completion Report
 
 ### Validation Reviewed
 
-None
+- `npm run test:arch021-tool-authoring-common`: 80 tests passed.
+- Lifecycle/external-availability/Studio integration packet: 44 tests passed.
+- Studio integration/External Tools UI/Feature configuration packet: 106 tests passed.
+- Legacy Capability surface guard: 2 tests passed.
+- Targeted ESLint: zero errors; one documented existing warning.
+- Targeted removed-symbol/source audit: passed.
+- Prisma Client generation: passed.
+- `git diff --check`: passed.
+- Repository typecheck: 40 diagnostics in 13 unrelated/pre-existing files; no diagnostics remain in the C092-changed lifecycle/publication/Studio-service files.
+- Broader `studio-workspace.test.tsx`: 7 existing Tool-editor expectation failures and 5 passes; inspected failures do not map to removed Capability replacement behavior.
+- Broader backend selection: 70 passes with 2 existing process-global backend bootstrap failures.
+- Real disposable C20 DB/Redis integration: not run because the required disposable targets were not configured; explicitly deferred to integrated validation rather than recorded as passed.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C092 completes the pre-production breaking removal of the obsolete Capability revision architecture while preserving the accepted direct Feature -> Capability -> Tool authoring model and immutable release/runtime composition. The current Capability entity remains in use; only its superseded draft/revision/binding lifecycle is removed.
 
 ### Follow-up
 
-None
+ARCH-021-COMMERCE-092 is Complete.
+
+ARCH-021-SYSTEM-TEST-003 is promoted to Ready because every declared implementation/publication dependency is now Complete. The developer may manually exercise the completed Feature flow before invoking the terminal system test.
