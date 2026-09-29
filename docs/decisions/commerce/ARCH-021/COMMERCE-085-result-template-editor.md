@@ -586,7 +586,7 @@ No database/cross-service contract is introduced.
 - [x] focused result-data-tree recursion/optionality regression
 - [x] focused completion/snippet insertion regression proving schema-derived paths, including scalar arrays
 - [x] focused proof that no Result Template edit/regeneration/validation writes Tool/ToolRevision state
-- [x] External and Shopify Result Template UI tests updated; execution blocked before collection by the missing generated Prisma Client
+- [x] External and Shopify Result Template UI integration suites collect and pass after approved Prisma Client generation (`tests/external-tools-ui.test.tsx`: 92/92; `tests/shopify-admin-tools-ui.test.tsx`: 25/25)
 - [x] targeted ESLint for changed files
 - [x] changed-file TypeScript diagnostics are clean; repository `tsc --noEmit` reports existing unrelated errors and missing generated Prisma types
 - [x] `git diff --check`
@@ -603,7 +603,45 @@ If generalising `src/studio/code-response/code-editor.tsx`, preserve its existin
 
 ## Completion Report
 
-### Status
+### Attempt 2 Status
+
+Architect-requested implementation corrections are complete. The six-file C085 validation packet passes, including both previously blocked External and Shopify Admin UI integration suites. Prisma Client was generated with the repository-declared `npm run prisma:generate` setup. Task metadata remains `in_progress` until the Attempt 2 commits are pushed and the task workflow reconciles it to `review`.
+
+### Attempt 2 Files Changed
+
+- `src/commerce/tool-authoring/result-template-generator.ts`
+- `src/studio/tools/authoring/result-template-editor.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `tests/result-template-tab.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+
+### Attempt 2 Work Completed
+
+Tagged controlled CodeMirror source synchronisation so prop-driven generation/regeneration does not emit user edits; real editor changes still mark the template USER_MODIFIED. Extracted `generateResultTemplateLoop` from the C084 generator path and use it for insertion snippets. Object-array properties now appear directly under the array node, and the actual CodeMirror textbox carries the accessible name `Result template source`.
+
+Migrated External and Shopify Admin UI fixtures/assertions to canonical Nunjucks templates. External workflows explicitly validate the current Response contract and regenerate the Result Template after schema changes. Incomplete-draft fixtures now retain their incomplete input schema while using a valid canonical template, avoiding definition fallback.
+
+### Attempt 2 Validation Results
+
+Passed: six-file focused packet (6 files, 182 tests); standalone External UI suite (92 tests); standalone Shopify Admin UI suite (25 tests); standalone Tool Authoring screen suite (29 tests); targeted ESLint for all changed TypeScript/TSX files; changed-file TypeScript diagnostics; `git diff --check`.
+
+Passed: `npm run prisma:generate` using the repository-declared workflow; Prisma Client v6.19.3 generated from `database/prisma/schema.prisma`. No schema migration was performed.
+
+### Attempt 2 Deviations
+
+None.
+
+### Attempt 2 Unresolved Issues
+
+None known. Awaiting Architect Review.
+
+### Attempt 2 VCS and Worktree
+
+Implementation commit `fab594d` (`fix(ARCH-021-COMMERCE-085): address architect review`) is pushed on the dedicated implementation `task/ARCH-021-COMMERCE-085` branch. The parent task report is being committed and pushed separately on its matching branch. No main merge or submodule gitlink change is included.
+
+### Attempt 1 Status (Historical)
 
 Attempt 1 implementation complete; ready for Architect Review. Task metadata is reconciled to `status: review`, `executor: null` and `claimed_at: null`.
 
