@@ -1124,7 +1124,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
-| ARCH-021-SHARED-002 | moda_shared | Ready | ARCH-021-SHARED-001 |
+| ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
 | ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-DATABASE-003 |
 | ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-090 | moda_commerce | Pending | ARCH-021-COMMERCE-088 |
@@ -1536,7 +1536,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
-| ARCH-021-SHARED-002 | moda_shared | Ready | ARCH-021-SHARED-001 |
+| ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
 | ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-DATABASE-003 |
 | ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-090 | moda_commerce | Pending | ARCH-021-COMMERCE-088 |
@@ -1581,6 +1581,13 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-29 — Simplified Shared Feature Capability contract published
+
+- Accepted SHARED-002 publication of `@modainteract/moda-interact-shared@1.0.0` from the architect-accepted SHARED-001 source.
+- Release commit `abd1c65` changes package version metadata only; Commerce and Background consumers remain separate follow-on tasks.
+- The published package is the canonical cross-service contract for the direct Feature/Capability/Tool manifest, zero-capability grants and once-per-Feature behaviour composition.
+- COMMERCE-089 remains gated by COMMERCE-088; BACKGROUND-002 remains gated by COMMERCE-089.
 
 ### 2026-09-29 — Feature Capability authoring simplified around Feature -> Capability -> Tool
 
