@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
-executor: copilot
-claimed_at: 2026-09-29T18:27:15Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-096
@@ -290,13 +290,15 @@ Prefer a small reusable Policy Operation editor/component over adding another la
 
 ### Status
 
-Ready for architect review (Attempt 1).
+Ready for architect review (Attempt 2).
 
 ### Files Changed
 
 - `src/studio/tools/tool-editor.tsx`
 - `src/studio/tools/policy-operation-editor.tsx`
 - `src/studio/tools/authoring/result-template-contract-adapter.ts`
+- `src/commerce/execution/policy-result-schema.ts`
+- `src/commerce/execution/renderer.ts`
 - `tests/shopify-admin-tools-ui.test.tsx`
 - `tests/policy-operation-result-template.test.ts`
 
@@ -307,18 +309,19 @@ Ready for architect review (Attempt 1).
 - Kept the complete descriptor result schema read-only in Response and reused the existing Result Template tab. The adapter structurally projects supported descriptor JSON Schemas to the bounded template-authoring schema without mutating or replacing the registered descriptor.
 - Added provider-specific Review state, inactive Test placeholder, unavailable-descriptor handling, local-only editing, and regressions that assert no save/publish/Test action occurs.
 - Left Shopify Admin and External HTTP behavior and New Tool provider choices unchanged.
+- Attempt 2 addressed architect finding A1-R1: extracted the production Policy JSON-Schema projection into a shared Commerce helper used by both the renderer and Studio. Policy templates now compile/validate against direct `result.<field>` paths; only External HTTP and Shopify Admin retain the `result.values.*` envelope. Replaced the wrapper-specific test with parity coverage proving the Studio validator, generated `result.truncated` binding and production runtime validator agree for the same registered operation.
 
 ### Validation Results
 
-- Passed: focused five-suite Vitest packet, 45 tests across `shopify-admin-tools-ui`, `policy-operation-result-template`, `policy-operation-authoring-server-actions`, `policy-operation-registry`, and `tool-authoring-no-provider-io`.
-- Passed: targeted ESLint for all five changed source/test files; `git diff --check`; Pylance diagnostics reported no errors in the five changed files.
-- Package-wide `tsc --noEmit` remains non-green with 164 diagnostics across 19 files; none target the five changed files. The repository-wide typecheck is not claimed as passing.
+- Passed: focused six-suite Vitest packet, 62 tests across `shopify-admin-tools-ui`, `policy-operation-result-template`, `policy-operation-authoring-server-actions`, `policy-operation-registry`, `tool-authoring-no-provider-io`, and production `definition-execution`.
+- Passed: targeted ESLint for all seven changed source/test files; `git diff --check`; Pylance diagnostics reported no errors in all seven changed files. The final package TypeScript run found no diagnostics in any changed file.
+- Package-wide `tsc --noEmit` remains non-green with 96 diagnostics across 25 files; zero target the seven task files. The repository-wide typecheck is not claimed as passing.
 - Confirmed no Merchant Knowledge operation special case in the new Policy editor or its adapter tests.
 
 ### Deviations
 
-- Descriptor `resultSchema` is general JSON Schema and does not directly satisfy the narrower existing `CommerceResultSchema` template contract. A bounded structural projection is used only by existing template binding/snippet/validation authoring. Nullable schemas are projected to their non-null shape; compatible object variants are merged with branch-only properties optional; unrepresentable/conflicting shapes fail closed. Response and Review retain the exact unmodified descriptor schema as authoritative and read-only. All six currently registered operation descriptors are covered by tests.
-- The package-wide TypeScript check is blocked by unrelated existing errors described under Validation Results; changed-file diagnostics are clean.
+- Descriptor `resultSchema` is general JSON Schema and does not directly satisfy the narrower existing `CommerceResultSchema` template contract. The bounded projection is now shared with production Policy rendering and used for template binding/snippet/validation authoring only. Response and Review retain the exact unmodified descriptor schema as authoritative and read-only. All six currently registered operation descriptors remain covered by tests.
+- Package-wide TypeScript validation remains blocked by diagnostics outside this task's changed files; see Validation Results.
 
 ### Assumptions
 
@@ -327,17 +330,17 @@ Ready for architect review (Attempt 1).
 
 ### Unresolved Issues
 
-- Repository-wide TypeScript diagnostics remain outside this task's changed files and were not repaired as unrelated scope.
+- Repository-wide TypeScript diagnostics remain in unrelated files and were not repaired as unrelated scope.
 
 ### Architectural Concerns
 
-- Architect review should confirm the bounded structural projection is an acceptable adaptation for the existing Result Template authoring contract; it is deliberately not treated as the operation's execution/result-validation schema.
+- A1-R1 is addressed by sharing the same bounded Policy result-schema projection between Studio and the production renderer, preserving direct Policy result paths without changing External/Shopify envelopes.
 
 ### Submission Evidence
 
-- Implementation commit: `9439a02aba8238d6c276882f9dc1612a710e0d59` (`task(ARCH-021-COMMERCE-097): add persisted policy operation authoring`), pushed to `origin/task/ARCH-021-COMMERCE-097` and verified equal to the remote head.
-- Launcher claim commit: `39257a3ff21363734ee67299d122fd747c9f102d`; prepared parent head `e61872ff5a853d4195b09cb7844a4ed155f298a3` and implementation head `071cfd7be180211df660ba158c0879d80c6ed27f`.
-- Launcher reported `origin/main` already current in both prepared worktrees. Recursive database submodule sync/update passed; `database` was initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- Attempt 1 implementation commit: `9439a02aba8238d6c276882f9dc1612a710e0d59` (`task(ARCH-021-COMMERCE-097): add persisted policy operation authoring`). Attempt 2 implementation commit: `74442813480e2258bb0cec5a357d0f259b4baf7f` (`fix(ARCH-021-COMMERCE-097): align policy template paths with runtime`), pushed to `origin/task/ARCH-021-COMMERCE-097` and verified equal to the remote head.
+- Attempt 2 launcher claim commit: `47434898c7cb77a223179835742e0e3eeaf83c36`; prepared parent head `123d36e92d5c644320381cba18ed94613aa35f71` and implementation head `9426495a93851404f2ec4047a92571316fb38d81`.
+- Launcher reported `origin/main` incorporated in both reused worktrees and already current in the final parent synchronization. Recursive database submodule sync/update passed; `database` was initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`.
 
 ## Architect Review
 
