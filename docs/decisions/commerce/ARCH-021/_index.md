@@ -341,6 +341,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
 | [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Blocked | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
+| [COMMERCE-095](COMMERCE-095-add-progressive-new-tool-tab-navigation.md) | UI: progressive Previous/Next and monotonic first-unlock traversal for new Tool authoring | Complete | COMMERCE-078, COMMERCE-083 |
 
 Initial executable frontier for this workstream:
 
@@ -414,7 +415,7 @@ COMMERCE-077    COMMERCE-080    COMMERCE-082
 Then:
 
 ```text
-077 -> 078 -> 079 -> 081 -> 083 -> SYSTEM-TEST-002
+077 -> 078 -> 079 -> 081 -> 083 -> 095 -> SYSTEM-TEST-002
                   ^             ^
 080 ---------------+             |
 082 -----------------------------+
@@ -431,7 +432,7 @@ Key invariants:
 - `responseTemplate` remains the runtime representation but moves to a dedicated Result Template authoring surface;
 - Agent Contract becomes the call-side model contract only;
 - Storefront Tool compatibility is removed only after Admin runtime and Admin Explore authoring replacements are in place;
-- global tab traversal, gating, Next/Back coordination and cross-tab checkpoint orchestration remain out of scope.
+- progressive new-Tool traversal is owned by COMMERCE-095 after the six individual authoring surfaces are complete; persisted-DRAFT traversal remains unchanged.
 
 
 
@@ -1113,6 +1114,34 @@ C078, C079, C081, C082, C085 and C087 are Complete, so COMMERCE-083 is **Ready**
 COMMERCE-083 is **Complete / Accepted, Attempt 2**. Attempt 1's missing-C082 integration blocker was resolved before Attempt 2. The final implementation consumes the accepted C082 Shopify Admin live-Test backend through one reusable new/persisted Test surface, reuses the common C078/C079 Test checkpoint with C081-style transient-generation protection, shows exact server-rendered Result Template output first, and requires a current Shopify Test PASS before new Create or persisted Save.
 
 The authoritative C083 task file preserves the full Attempt 1 blocker, Attempt 2 Completion Report, validation evidence and Accepted Architect Review. SYSTEM-TEST-002 remains the terminal integrated Tool-authoring validation task.
+
+### COMMERCE-095 Attempt 1 changes requested — 2026-09-29
+
+C095 is **Ready** for Attempt 2. The six-step progressive-navigation implementation
+is accepted in substance, but the provider-reset confirmation can be bypassed by
+navigating to an already-enabled step before the confirmation is resolved, and
+the pre-provider instruction still describes the old unlock model. Attempt 2 is
+bounded to those corrections, focused regressions and durable launcher/worktree
+evidence reconciliation.
+
+SYSTEM-TEST-002 is terminally gated behind C095 as well as C079/C081/C083 and
+remains Pending.
+
+### COMMERCE-095 Attempt 2 accepted — 2026-09-29
+
+C095 is **Complete / Accepted, Attempt 2**. Provider-reset confirmation now freezes
+new-Tool traversal at Tool Definition until Cancel or successful replacement;
+Cancel restores the existing unlock frontier, successful replacement resets the
+frontier, and the fresh-session guidance describes progressive Next-based
+unlocking. The required launcher/worktree/synchronization/submodule evidence is
+recorded in the Completion Report.
+
+The architect also repaired accidental Attempt-2 corruption of the architect-owned
+R1/R2 Requirements block while reconciling this acceptance. No runtime rework was
+required for that record repair.
+
+All SYSTEM-TEST-002 implementation dependencies are now Complete, so terminal
+`ARCH-021-SYSTEM-TEST-002` is **Ready**.
 
 ## Phase 5 — Feature Capability authoring simplification — 2026-09-29
 
