@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 75
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-091
 enables:
@@ -313,15 +313,15 @@ Only the Tool identities already supplied by the existing server path remain sel
 
 ## Work Items
 
-- [ ] Split historical unlock and current first-entry readiness into explicit predicates in `add-capability-screen.tsx`.
-- [ ] Make each phase button available from `historically unlocked OR currently ready for first entry`, then apply the existing pending/unknown global lock.
-- [ ] Update `goTo()` so a direct click on a currently ready first-entry destination monotonically advances `enabledThrough` and opens that phase.
-- [ ] Remove predecessor-phase-only checks from first-entry admission; readiness + historical frontier are the complete normal navigation contract.
-- [ ] Make both `Next` buttons use the same destination-availability/navigation path as phase buttons.
-- [ ] Preserve `Previous` behaviour without reducing `enabledThrough`.
-- [ ] Preserve current `canReview` Create gating and unknown-outcome safety.
-- [ ] Replace/extend the focused Add Capability navigation regression with the deterministic matrix in Validation below.
-- [ ] Prove all navigation actions perform zero create/reconciliation mutations.
+- [x] Split historical unlock and current first-entry readiness into explicit predicates in `add-capability-screen.tsx`.
+- [x] Make each phase button available from `historically unlocked OR currently ready for first entry`, then apply the existing pending/unknown global lock.
+- [x] Update `goTo()` so a direct click on a currently ready first-entry destination monotonically advances `enabledThrough` and opens that phase.
+- [x] Remove predecessor-phase-only checks from first-entry admission; readiness + historical frontier are the complete normal navigation contract.
+- [x] Make both `Next` buttons use the same destination-availability/navigation path as phase buttons.
+- [x] Preserve `Previous` behaviour without reducing `enabledThrough`.
+- [x] Preserve current `canReview` Create gating and unknown-outcome safety.
+- [x] Replace/extend the focused Add Capability navigation regression with the deterministic matrix in Validation below.
+- [x] Prove all navigation actions perform zero create/reconciliation mutations.
 
 ## Interfaces / Contracts
 
@@ -357,19 +357,19 @@ No new API, Server Action, database, shared-package or cross-repository contract
 
 ## Acceptance Criteria
 
-- [ ] Initial render has `Capability` enabled and `Tool` / `Review` unavailable.
-- [ ] Entering valid Capability metadata makes `Tool` directly clickable **before** pressing `Next`.
-- [ ] Invalidating Capability metadata before the first Tool entry makes Tool unavailable again; revalidating makes it available again.
-- [ ] Directly clicking a ready Tool phase enters Tool and permanently advances the local unlock frontier through Tool.
-- [ ] Selecting an eligible Tool while Capability metadata is valid makes `Review` directly clickable **before** pressing Tool `Next`.
-- [ ] A ready-but-never-entered Review follows current `canReview`; once Review is entered/unlocked it stays directly navigable after later candidate invalidation.
-- [ ] A Tool/Review phase that was previously unlocked stays clickable after upstream edits or selected-Tool eligibility loss.
-- [ ] `Create capability` stays disabled whenever the **current** `canReview` is false, even on an unlocked Review phase.
-- [ ] Direct phase clicks, Previous and Next cause zero `createFeatureCapability` and zero `reconcileFeatureOperation` calls.
-- [ ] Previous never lowers the unlock frontier.
-- [ ] Next and direct phase clicking share the same first-entry eligibility semantics; neither path can unlock a destination the other would reject for the same candidate state.
-- [ ] Pending and unknown-outcome locks remain effective.
-- [ ] Existing Tool eligibility and final exactly-one-create/reconciliation behaviour remain unchanged.
+- [x] Initial render has `Capability` enabled and `Tool` / `Review` unavailable.
+- [x] Entering valid Capability metadata makes `Tool` directly clickable **before** pressing `Next`.
+- [x] Invalidating Capability metadata before the first Tool entry makes Tool unavailable again; revalidating makes it available again.
+- [x] Directly clicking a ready Tool phase enters Tool and permanently advances the local unlock frontier through Tool.
+- [x] Selecting an eligible Tool while Capability metadata is valid makes `Review` directly clickable **before** pressing Tool `Next`.
+- [x] A ready-but-never-entered Review follows current `canReview`; once Review is entered/unlocked it stays directly navigable after later candidate invalidation.
+- [x] A Tool/Review phase that was previously unlocked stays clickable after upstream edits or selected-Tool eligibility loss.
+- [x] `Create capability` stays disabled whenever the **current** `canReview` is false, even on an unlocked Review phase.
+- [x] Direct phase clicks, Previous and Next cause zero `createFeatureCapability` and zero `reconcileFeatureOperation` calls.
+- [x] Previous never lowers the unlock frontier.
+- [x] Next and direct phase clicking share the same first-entry eligibility semantics; neither path can unlock a destination the other would reject for the same candidate state.
+- [x] Pending and unknown-outcome locks remain effective.
+- [x] Existing Tool eligibility and final exactly-one-create/reconciliation behaviour remain unchanged.
 
 ## Validation
 
@@ -484,58 +484,139 @@ Do not add a second independent condition such as `phase === 'Capability'` or `p
 
 ### Status
 
-Not Started
+Ready for Architect Review (Attempt 1)
 
 ### Files Changed
 
-None
+Implementation commit `2a85e0c` (`fix(ARCH-021-COMMERCE-104): allow ready phase direct entry`), pushed to `origin/task/ARCH-021-COMMERCE-104`.
+
+- `src/studio/features/add-capability/add-capability-screen.tsx`
+- `tests/add-capability-screen.test.tsx`
 
 ### Work Completed
 
-None
+Separated historical phase unlock from current first-entry readiness. Phase tabs and Next buttons use the same availability predicate, and `goTo()` is the single path that monotonically unlocks and enters ready destinations. Previous remains non-mutating and does not lower the frontier.
+
+Expanded the screen regression to cover initial locks, live readiness revocation/revalidation before first entry, direct Tool and Review entry, historical navigation after candidate invalidation and eligibility loss, current `canReview` Create gating, Previous/Next traversal, and zero create/reconciliation calls. Existing mutation outcome and reconciliation regressions remain in the focused suite.
 
 ### Validation Results
 
-None
+Passed:
+
+- Focused Add Capability screen and route packet: `npx vitest run tests/add-capability-screen.test.tsx tests/add-capability-route.test.tsx` — 2 files, 7 tests.
+- Targeted ESLint: `npx eslint src/studio/features/add-capability/add-capability-screen.tsx tests/add-capability-screen.test.tsx` — passed.
+- Project typecheck: `npm run typecheck` — passed (`next typegen` and `tsc --noEmit`). The local generated Prisma client was created from the checked-out canonical schema because `npm ci` did not run package scripts.
+- `git diff --check` — passed.
+- Changed-file diagnostics — no errors in either changed file.
 
 ### Deviations
 
-None
+No implementation scope deviation. The isolated worktree initially lacked dependencies, so its locked dependencies were installed and the Prisma client generated locally for validation; no tracked dependency, schema, or submodule changes were made. The first concurrent focused run timed out under contention; fixed-value form setup was made synchronous and the required serial focused packet passed.
 
 ### Assumptions
 
-None
+None.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None.
+
+### Execution and Publication Evidence
+
+- Launcher preparation: `prepared_execution: true`; Attempt 1 claimed as `copilot`; dependency gate passed (`ARCH-021-COMMERCE-091` complete). Claim commit `8bfd9e50f0f1d7d57c7eded9e1649dcbee87e061` was committed and pushed by the launcher.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-104`, branch `task/ARCH-021-COMMERCE-104`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-104`, branch `task/ARCH-021-COMMERCE-104`.
+- Both task branches already incorporated `origin/main`; remote task branches required no fast-forward. Recursive submodule sync and initialization passed; implementation `database` submodule is pinned at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- The canonical workspace checkout and shared implementation checkout were not switched or modified for task implementation; no other task worktree was reused. The implementation change contains only the two files listed above; no submodule gitlink, unrelated task, main branch, or Architect Review section was changed.
+- Implementation commit `2a85e0c` is pushed to the mirrored implementation task branch.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+COMMERCE-104 Attempt 1 is **Accepted / Complete**.
+
+The implementation satisfies the bounded first-entry navigation correction without reopening the accepted COMMERCE-091 local-first Capability architecture.
+
+The reviewed source now separates:
+
+```text
+historically unlocked phase access
+        OR
+current first-entry readiness
+```
+
+through one shared availability path:
+
+```text
+Capability -> always available
+Tool       -> unlocked OR current validCapability
+Review     -> unlocked OR current canReview
+```
+
+and preserves the accepted monotonic `enabledThrough` frontier.
+
+The correction conforms in all required cases:
+
+- Tool becomes directly clickable as soon as current Capability metadata is valid, without requiring Capability `Next`;
+- before Tool has ever been entered, invalidating Capability metadata revokes that live first-entry availability, and restoring validity makes Tool available again;
+- a direct first Tool entry advances `enabledThrough` monotonically;
+- Review becomes directly clickable as soon as current Capability metadata is valid and the currently selected Tool remains eligible, without requiring Tool `Next`;
+- before first Review entry, current readiness is live and may be revoked when the selected Tool is no longer eligible;
+- after Tool or Review has been unlocked, later upstream invalidation does not re-lock that phase;
+- direct phase clicks and `Next` use the same `isPhaseAvailable(...)` + `goTo(...)` admission path rather than two different first-entry rules;
+- `Previous` does not lower the unlock frontier;
+- pending / unknown-outcome state remains an independent global navigation lock;
+- final `Create capability` admission remains authoritative on the **current** `canReview` value even when Review is historically unlocked;
+- direct phase clicks, Previous and Next remain browser-local and do not call `createFeatureCapability` or `reconcileFeatureOperation`;
+- Tool eligibility derivation, exactly-one-create semantics, operation identity and reconciliation behaviour are unchanged.
+
+The focused regression exercises the required sequence, including live readiness revocation before first entry, direct Tool and Review entry, historical access after later invalidation, eligible-Tool loss/recovery, current Create gating, Previous/Next traversal and zero navigation-triggered mutations.
+
+The task remained within its two-file implementation/test scope.
 
 ### Reviewed Files
 
-None
+- `docs/decisions/commerce/ARCH-021/COMMERCE-104-make-add-capability-phases-directly-navigable-when-ready.md`
+- `moda-interact-commerce/src/studio/features/add-capability/add-capability-screen.tsx`
+- `moda-interact-commerce/tests/add-capability-screen.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/decisions/system-test/ARCH-021/SYSTEM-TEST-003-validate-feature-capability-authoring.md`
 
 ### Validation Reviewed
 
-None
+Attempt 1 submitted evidence:
+
+- focused Add Capability packet: **2 files / 7 tests passed**;
+- targeted ESLint for the two C104 changed files: passed;
+- project `npm run typecheck`: passed;
+- changed-file diagnostics: clean;
+- `git diff --check`: passed.
+
+The Completion Report records launcher-prepared dedicated parent and implementation worktrees, current `origin/main` incorporation, recursive submodule preparation and the implementation database submodule pin.
+
+The submitted review archive does not contain installed `node_modules`, so the executable commands were not independently rerun in this review environment. The implementation and focused regression source were inspected directly and no C104-owned defect was identified.
 
 ### Architecture Conformance
 
-Pending
+Accepted.
+
+C104 conforms to the Phase 5 local-first Feature/Capability authoring design. Current readiness controls **first entry**, historical unlock controls later navigation, and final mutation admission remains independent and current-candidate authoritative.
 
 ### Follow-up
 
-None
+Set `ARCH-021-COMMERCE-104` to **Complete**.
+
+All declared dependencies of `ARCH-021-SYSTEM-TEST-003` are now architect-accepted Complete, so promote SYSTEM-TEST-003 from `pending` to **`ready`** as terminal Feature/Capability validation.
+
+Do not execute SYSTEM-TEST-003 automatically. The developer may leave it Ready while manually validating the completed implementation.
