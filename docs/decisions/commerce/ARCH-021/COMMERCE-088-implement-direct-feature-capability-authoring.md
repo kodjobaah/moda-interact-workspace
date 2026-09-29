@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 90
 executor: copilot
 claimed_at: 2026-09-29T12:38:20Z
@@ -173,16 +173,16 @@ COMMERCE-092 owns complete deletion once all consumers have moved.
 
 ## Work Items
 
-- [ ] Consume DATABASE-003 schema through the Commerce database submodule.
-- [ ] Define the Feature-centric read contract with nested direct Capabilities/Tools.
-- [ ] Implement direct Feature reads without publication snapshots or billing/subscription eligibility reads.
-- [ ] Implement CAS Feature behaviour update/upsert with audit/replay semantics.
-- [ ] Implement atomic narrow `createFeatureCapability` persistence.
-- [ ] Validate Feature, enabled Tool, at least one published Tool revision and unique Capability key on final create.
-- [ ] Return the created Capability directly without rereading the whole publication aggregate.
-- [ ] Add exact replay/conflicting replay/ambiguous-result reconciliation tests.
-- [ ] Add focused authorization and concurrency tests.
-- [ ] Keep any temporary legacy Capability API clearly isolated for COMMERCE-092 removal.
+- [x] Consume DATABASE-003 schema through the Commerce database submodule.
+- [x] Define the Feature-centric read contract with nested direct Capabilities/Tools.
+- [x] Implement direct Feature reads without publication snapshots or billing/subscription eligibility reads.
+- [x] Implement CAS Feature behaviour update/upsert with audit/replay semantics.
+- [x] Implement atomic narrow `createFeatureCapability` persistence.
+- [x] Validate Feature, enabled Tool, at least one published Tool revision and unique Capability key on final create.
+- [x] Return the created Capability directly without rereading the whole publication aggregate.
+- [x] Add exact replay/conflicting replay/ambiguous-result reconciliation tests.
+- [x] Add focused authorization and concurrency tests.
+- [x] Keep any temporary legacy Capability API clearly isolated for COMMERCE-092 removal.
 
 ## Interfaces / Contracts
 
@@ -207,25 +207,25 @@ The final names may follow established Studio feature-domain naming, but semanti
 
 ## Acceptance Criteria
 
-- [ ] Feature reads show direct Capability -> Tool relationships and no revision state.
-- [ ] Feature authoring reads/writes do not consult subscription/billing-plan eligibility.
-- [ ] Feature behaviour uses one current CAS row, not drafts/revisions.
-- [ ] Capability creation performs exactly one durable create transaction after final submission.
-- [ ] No Capability row exists when a would-be authoring session is abandoned before final create.
-- [ ] One Capability stores one Tool identity; no Tool revision is selected by the authoring mutation.
-- [ ] Tool identity may be reused by multiple Capabilities.
-- [ ] Final server validation rejects missing Feature, missing/disabled Tool, Tool with no published revision and duplicate Capability key.
-- [ ] Exact replay returns the original result without duplicate rows/audits.
-- [ ] New contracts contain none of the removed Capability concepts listed in R7.
+- [x] Feature reads show direct Capability -> Tool relationships and no revision state.
+- [x] Feature authoring reads/writes do not consult subscription/billing-plan eligibility.
+- [x] Feature behaviour uses one current CAS row, not drafts/revisions.
+- [x] Capability creation performs exactly one durable create transaction after final submission.
+- [x] No Capability row exists when a would-be authoring session is abandoned before final create.
+- [x] One Capability stores one Tool identity; no Tool revision is selected by the authoring mutation.
+- [x] Tool identity may be reused by multiple Capabilities.
+- [x] Final server validation rejects missing Feature, missing/disabled Tool, Tool with no published revision and duplicate Capability key.
+- [x] Exact replay returns the original result without duplicate rows/audits.
+- [x] New contracts contain none of the removed Capability concepts listed in R7.
 
 ## Validation
 
-- [ ] focused Feature/Capability service tests
-- [ ] focused narrow persistence/replay tests
-- [ ] focused authorization tests
-- [ ] `npm run lint -- <changed files>` or repository-supported targeted ESLint equivalent
-- [ ] changed-file TypeScript diagnostics / `npm run typecheck` evidence according to repository baseline policy
-- [ ] `git diff --check`
+- [x] focused Feature/Capability service tests
+- [x] focused narrow persistence/replay tests
+- [x] focused authorization tests
+- [x] `npm run lint -- <changed files>` or repository-supported targeted ESLint equivalent
+- [x] changed-file TypeScript diagnostics / `npm run typecheck` evidence according to repository baseline policy
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -239,35 +239,53 @@ Model this after the successful narrow initial Tool creation boundary, not after
 
 ### Status
 
-Not Started
+Ready for review
 
 ### Files Changed
 
-None
+- `src/studio/features/contracts.ts`
+- `src/studio/features/persistence.ts`
+- `src/studio/features/services.ts`
+- `src/studio/features/reconciliation-server-actions.ts`
+- `src/studio/server-actions.ts`
+- `tests/feature-authoring.test.ts`
+- `tests/feature-operation-reconciliation.test.ts`
 
 ### Work Completed
 
-None
+- Consumed the prepared DATABASE-003 submodule at `e9fb60221f1532205650154dfff2aadb6270b14c`; no nested database schema changes were made.
+- Added direct list/get Feature reads with current behaviour prompt/editVersion and nested Capability-to-Tool identity/display data. The new read model does not expose Capability revision or publication state and does not query subscription/billing eligibility.
+- Added authenticated `updateFeatureBehaviour` using initial version 0 for an absent configuration, monotonic CAS updates, immutable audit receipts, exact replay, and stale/conflicting replay results.
+- Added authenticated atomic `createFeatureCapability` with Feature, enabled Tool, published Tool revision, and unique key validation; writes one direct Feature/Tool Capability plus audit receipt in one narrow transaction and returns the created result without a publication snapshot.
+- Added exact-result operation reconciliation for Feature behaviour and Capability creation. Kept existing generic Capability lifecycle APIs available for their current consumers; the new Feature APIs do not call them.
+- Added coverage for direct reads, initial and concurrent CAS, authorization, missing/disabled/unpublished identities, duplicate keys, same-Tool reuse, exact replay, conflicting replay, and reconciliation.
+- Implementation commit: `47b1c4a` (`Implement direct Feature capability authoring backend`).
 
 ### Validation Results
 
-None
+- `npx vitest run tests/feature-authoring.test.ts tests/feature-operation-reconciliation.test.ts tests/studio-integration.test.ts tests/tool-authoring-server-actions.test.ts`: passed, 31 tests across 4 files. The dedicated C088 pair also passed 12 tests.
+- Focused ESLint on all changed source and test files: passed with no warnings.
+- Pylance changed-file diagnostics: no errors in any changed file.
+- `git diff --check`: passed.
+- New Feature API retired-concept scan (`selectionBinding`, `CapabilityRevision`, per-Capability prompt/configuration, capability limits, `toolBindings`): no matches.
+- `npm run typecheck`: non-zero with 144 diagnostics in 15 files, all outside C088 changed files. The failures include legacy Commerce references incompatible with the accepted DATABASE-003 schema and unrelated existing tests. The workspace baseline document's historical 48-error count does not match this observed run; no baseline documentation was changed.
+- Live PostgreSQL rehearsal was not run because the repository rehearsal requires a developer-confirmed isolated `DATABASE_URL`; the available environment was not assumed disposable.
 
 ### Deviations
 
-None
+The existing generic `StudioServices` legacy Capability surface remains for current UI consumers, as allowed by R8; the new feature-domain contract and actions are isolated under `src/studio/features/` for COMMERCE-090/091 consumption.
 
 ### Assumptions
 
-None
+An absent `CommerceFeatureConfiguration` is treated as blank at version 0. Its first successful mutation creates that initial row and advances it to version 1 in the same transaction, consistent with the accepted schema's default version and no-delete lifecycle.
 
 ### Unresolved Issues
 
-None
+Repository-wide TypeScript validation remains blocked by 144 diagnostics outside this task's changed files; remediation is outside C088 scope.
 
 ### Architectural Concerns
 
-None
+No C088-specific architecture deviation identified. Production database behavior should still be exercised against an isolated PostgreSQL target during the owning integration validation.
 
 ## Architect Review
 
