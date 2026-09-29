@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 93
-executor: copilot
-claimed_at: 2026-09-29T15:15:07Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-088
@@ -185,7 +185,7 @@ Use the current Tool creation UX as a visual/interaction reference, not as a rea
 
 ### Status
 
-Attempt 2 corrections are ready for Architect Review. Claim metadata is cleared.
+Attempt 3 corrections are ready for Architect Review. Claim metadata is cleared.
 
 ### Files Changed
 
@@ -205,6 +205,8 @@ Attempt 2 corrections are ready for Architect Review. Claim metadata is cleared.
 - Attempt 2 A1-R1: captured the prompt edit revision at save admission; successful mutation/read results update canonical `editVersion` but replace/clear prompt state only if no newer edit occurred. Pending saves also hold the navigation blocker, and status distinguishes submitted text from newer unsaved edits.
 - Attempt 2 A1-R2: kept stale-CAS gating through further local edits and added a regression proving saving resumes only after explicit refresh, using the refreshed CAS version.
 - Attempt 2 A1-R3: Feature list and detail routes now pass an explicit unavailable release model to `StudioShell`; focused route assertions verify this without calling `getShell`, and shell coverage verifies this renders “Release status unavailable,” not “No active release.”
+- Attempt 3 A2-R1: only adopt the post-save refresh's `editVersion` when no newer local prompt edit occurred. Otherwise retain the successful mutation's CAS version, so a concurrent server update causes the next save to return stale-CAS rather than silently overwriting it. Added a regression for mutation version 5, a concurrent refresh at version 6, and retained local text.
+- Attempt 3 A2-R2: classify an unresolved save as locked navigation state. Added a regression proving the pending dialog has no discard action and ordinary dirty-discard navigation returns after the save completes.
 - Added Add capability navigation to the COMMERCE-091 route without invoking a creation action.
 - Removed Feature detail ownership and the obsolete Feature title from `StudioWorkspace`.
 - Attempt 1 implementation commit `7f7b075` (`feat(commerce): add Feature configuration surface`) and Attempt 2 correction commit `515c234` (`fix(commerce): address Feature surface review findings`) are pushed to `task/ARCH-021-COMMERCE-090`.
@@ -213,10 +215,13 @@ Attempt 2 corrections are ready for Architect Review. Claim metadata is cleared.
 
 - `npm exec -- vitest run tests/feature-configuration-page.test.tsx tests/feature-configuration-screen.test.tsx`: passed, 2 files / 8 tests.
 - Attempt 2 `npm exec -- vitest run tests/feature-configuration-page.test.tsx tests/feature-configuration-screen.test.tsx tests/studio-shell.test.tsx`: passed, 3 files / 11 tests, including A1-R1 in-flight edit retention, A1-R2 stale gate/refresh, and A1-R3 unavailable shell status.
+- Attempt 3 `npm exec -- vitest run tests/feature-configuration-page.test.tsx tests/feature-configuration-screen.test.tsx tests/studio-shell.test.tsx`: passed, 3 files / 13 tests, including both A2 regressions.
 - Targeted ESLint on all six changed files: passed with no warnings or errors.
 - Attempt 2 targeted ESLint on the route, Feature screen, shell, and regression test files: passed with no warnings or errors.
+- Attempt 3 targeted ESLint on both changed files: passed with no warnings or errors.
 - Pylance diagnostics on all six changed files: no errors found.
 - Attempt 2 Pylance diagnostics on all seven changed files: no errors found.
+- Attempt 3 Pylance diagnostics on both changed files: no errors found.
 - `git diff --check`: passed.
 - `npm run typecheck`: did not pass; 271 errors remain across 27 repository files. The changed Feature files are absent from the final compiler error summary; task-introduced diagnostics found in the initial run were corrected.
 - `npm exec -- vitest run tests/studio-workspace.test.tsx`: 7 passed, 6 failed in existing generic Studio/Tools editor workflows; the focused Feature route/screen suite passes independently.
@@ -274,6 +279,14 @@ Attempt 2 launcher evidence:
 - Recursive submodule sync and initialization passed; `database` is initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`, status `ready`.
 - The launcher claim is `a8d8873c4e5168a9c6538c00cb4263b11d1ace7a`. Attempt 2 implementation commit `515c234e8d9c3d8707e47d77e126394592583dee` is pushed to the mirrored task branch. No task branch was merged to `main`.
 - Task status is `review`, `executor: null`, and `claimed_at: null`. The Architect Review section above is unchanged.
+
+### Attempt 3 Changes-Requested Reconciliation
+
+- A2-R1 is addressed in `src/studio/features/feature-configuration-screen.tsx`; the regression in `tests/feature-configuration-screen.test.tsx` covers a mutation at editVersion 5 followed by a concurrent refresh at editVersion 6 while newer local text is retained. The retry submits expectedEditVersion 5 and receives stale-CAS, preserving the local prompt.
+- A2-R2 is addressed in `src/studio/features/feature-configuration-screen.tsx`; the navigation blocker treats pending saves as locked. The focused regression verifies an unresolved operation cannot be discarded and ordinary dirty-discard behavior resumes after completion.
+- Attempt 3 launcher claim commit: `95385be8498798c3ae7cf579ef13e1064b40520a`, pushed on the parent `task/ARCH-021-COMMERCE-090` branch. The launcher reused the canonical parent and implementation worktrees, synchronized both task branches, and verified the recursive `database` submodule at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+- Implementation correction commit `1ccf345` is pushed on `origin/task/ARCH-021-COMMERCE-090`. No task branch was merged into `main`, and no database gitlink was staged.
+- Parent status is `review`; `executor` and `claimed_at` are cleared. The existing Architect Review text remains unchanged.
 
 ## Architect Review
 
