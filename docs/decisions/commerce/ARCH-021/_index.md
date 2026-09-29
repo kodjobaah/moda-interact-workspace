@@ -339,9 +339,8 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
-| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Ready | COMMERCE-084, COMMERCE-085 |
+| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Blocked | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
-| [COMMERCE-088](COMMERCE-088-add-progressive-new-tool-tab-navigation.md) | UI/navigation: progressive Previous/Next traversal for new External + Shopify Tool authoring without re-locking enabled tabs | Ready | COMMERCE-078, COMMERCE-083 |
 
 Initial executable frontier for this workstream:
 
@@ -1108,26 +1107,13 @@ COMMERCE-087 is **Complete / Accepted, Attempt 2**. Generated Nunjucks templates
 
 C078, C079, C081, C082, C085 and C087 are Complete, so COMMERCE-083 is **Ready**. SYSTEM-TEST-002 remains Pending until C083 is Complete.
 
-### COMMERCE-083 Attempt 1 blocked / scope refined — 2026-09-29
-
-C083 is **Blocked** because the prepared Commerce implementation worktree does not physically contain the already-accepted C082 Shopify Admin live-Test service/action contract. C083 correctly made no source change and must not recreate C082.
-
-The C083 task has been reduced to one bounded integration outcome: consume the existing C082 backend from one reusable Shopify Test surface, drive the accepted C078/C079 Test checkpoint using the C081 transient-generation pattern, show server-rendered `renderedText`, and require a current PASS for Shopify Create/Save.
-
-Unblock only after the accepted C082 implementation (`c4876fa` or a later integrated equivalent) is present in the Commerce base used by task worktrees. SYSTEM-TEST-002 remains Pending.
-
-### Progressive new-Tool traversal task — 2026-09-29
-
-COMMERCE-088 is defined for the shared **new Tool** authoring surface used by both External HTTP and Shopify Admin. It adds one session-scoped unlock frontier plus Previous/Next controls. Validation/Test readiness gates first-time forward unlock only; once a tab has been enabled, direct tab clicks and Previous/Next navigation may revisit it without re-checking predecessor validity. Persisted-DRAFT navigation is unchanged.
-
-COMMERCE-088 remains Pending until COMMERCE-083 is architect-accepted Complete. SYSTEM-TEST-002 remains terminally gated on COMMERCE-088 after that implementation.
-
 
 ### COMMERCE-083 Attempt 2 accepted — 2026-09-29
 
-COMMERCE-083 is **Complete / Accepted, Attempt 2**. The accepted C082 Shopify Admin live-Test backend is now consumed through one reusable new/persisted Shopify Test surface. C083 drives the existing C078/C079 common Test checkpoint with C081-style monotonic transient stale-result protection, shows exact server-rendered Result Template output first, and requires a current Shopify Test PASS before new Create or persisted Save. Test remains zero-write and separate from publication proof.
+COMMERCE-083 is **Complete / Accepted, Attempt 2**. Attempt 1's missing-C082 integration blocker was resolved before Attempt 2. The final implementation consumes the accepted C082 Shopify Admin live-Test backend through one reusable new/persisted Test surface, reuses the common C078/C079 Test checkpoint with C081-style transient-generation protection, shows exact server-rendered Result Template output first, and requires a current Shopify Test PASS before new Create or persisted Save.
 
-COMMERCE-088 is **Ready**. SYSTEM-TEST-002 remains **Pending** because it depends on C088 as well as C083.
+The authoritative C083 task file preserves the full Attempt 1 blocker, Attempt 2 Completion Report, validation evidence and Accepted Architect Review. SYSTEM-TEST-002 remains the terminal integrated Tool-authoring validation task.
+
 ## Phase 5 — Feature Capability authoring simplification — 2026-09-29
 
 | Task | Description | Status | Dependencies |
@@ -1139,3 +1125,21 @@ COMMERCE-088 is **Ready**. SYSTEM-TEST-002 remains **Pending** because it depend
 | [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
 
 The two implementation branches after COMMERCE-088 are intentionally parallel: COMMERCE-089 owns release/runtime composition while COMMERCE-090/091 own the user-facing Feature authoring flow. COMMERCE-092 is the subtractive gate and must not execute until both replacement paths and Background consumption are accepted.
+
+
+### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
+
+C086 is **Blocked** after a clean production build reached Next compilation and failed only on three over-deep imports in the untouched Studio code-response validation route. C086's manual packaging/link implementation remains within scope and its passed Attempt 1 evidence is preserved.
+
+COMMERCE-093 is **Complete / Accepted, Attempt 1**. Its three route imports resolve correctly and the build advances beyond that blocker. The remaining repository TypeScript/build gate is owned by separately materialised COMMERCE-094. C086 remains Blocked and depends on both C093 and C094.
+
+After C093 is architect-accepted Complete, C086 will be returned to Ready for Attempt 2 to rerun the clean production build and bounded `npm run start` manual HTTP smoke. No already-passed C086 implementation work should be repeated absent a relevant intervening change.
+
+
+### COMMERCE-093 Attempt 1 accepted / C094 build gate — 2026-09-29
+
+COMMERCE-093 is **Complete / Accepted, Attempt 1**. The route correction is exactly three import-depth edits, all corrected imports resolve within Commerce, route behavior is unchanged, and the production build advances beyond the original route-import failure.
+
+The newly exposed 23 TypeScript diagnostics across 12 unrelated files are outside C093 scope and are owned by COMMERCE-094, which the developer reports is materialised on its own task branch at parent commit `58f65e5b`.
+
+C086 remains **Blocked** and now explicitly depends on both C093 and C094. C094 must be promoted to Ready on its canonical task branch now that C093 is Complete. C086 must not resume until C094 is architect-accepted Complete.

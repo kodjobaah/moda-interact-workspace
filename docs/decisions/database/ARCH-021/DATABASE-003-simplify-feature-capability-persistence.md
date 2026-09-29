@@ -9,11 +9,11 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 88
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-29T11:57:28Z
+attempt: 2
 depends_on:
   - ARCH-021-DATABASE-002
 enables:
@@ -235,18 +235,18 @@ The migration rehearsal must prove this preservation boundary on a seeded upgrad
 
 ## Work Items
 
-- [ ] Add the one-row-per-Feature Commerce behaviour configuration model.
-- [ ] Replace Capability persistence with required Feature + Tool FKs.
-- [ ] Remove `selectionBinding` and its enum/guards/indexes.
-- [ ] Remove `CommerceCapabilityRevision` and all revision-owned prompt/configuration/binding persistence.
-- [ ] Rename/separate Tool revision status from the removed Capability revision enum without changing Tool semantics.
-- [ ] Replace release membership with direct Capability + exact Tool revision pinning.
-- [ ] Add immutable per-release Feature behaviour snapshots.
-- [ ] Remove Capability-level `maxSearchResults` / `maxRecommendations` persistence.
-- [ ] Reconcile Commerce audit enum/FKs with the new lifecycle.
-- [ ] Implement the explicit pre-production recreate strategy for obsolete Capability/release/grant rows.
-- [ ] Add focused schema validation.
-- [ ] Add fresh and seeded-upgrade PostgreSQL migration rehearsals.
+- [x] Add the one-row-per-Feature Commerce behaviour configuration model.
+- [x] Replace Capability persistence with required Feature + Tool FKs.
+- [x] Remove `selectionBinding` and its enum/guards/indexes.
+- [x] Remove `CommerceCapabilityRevision` and all revision-owned prompt/configuration/binding persistence.
+- [x] Rename/separate Tool revision status from the removed Capability revision enum without changing Tool semantics.
+- [x] Replace release membership with direct Capability + exact Tool revision pinning.
+- [x] Add immutable per-release Feature behaviour snapshots.
+- [x] Remove Capability-level `maxSearchResults` / `maxRecommendations` persistence.
+- [x] Reconcile Commerce audit enum/FKs with the new lifecycle.
+- [x] Implement the explicit pre-production recreate strategy for obsolete Capability/release/grant rows.
+- [x] Add focused schema validation.
+- [x] Add fresh and seeded-upgrade PostgreSQL migration rehearsals.
 
 ## Interfaces / Contracts
 
@@ -276,25 +276,25 @@ Exact Prisma-generated names may follow the canonical schema names selected abov
 
 ## Acceptance Criteria
 
-- [ ] Every persisted Commerce Capability has exactly one non-null Feature and exactly one non-null Tool.
-- [ ] No `CommerceCapabilitySelectionBinding` type or `selectionBinding` column remains.
-- [ ] No `CommerceCapabilityRevision` table/model remains.
-- [ ] No Capability persistence stores prompt text, arbitrary configuration, Tool-binding arrays, `maxSearchResults` or `maxRecommendations`.
-- [ ] Tool revision DRAFT/PUBLISHED status remains intact under a correctly owned enum.
-- [ ] A release pins one exact published Tool revision per member Capability.
-- [ ] A release stores Feature behaviour prompt text once per represented Feature.
-- [ ] Release Feature/member rows cannot be mutated after creation.
-- [ ] Existing obsolete Capability/release/grant development state is deliberately recreated, not heuristically converted.
-- [ ] The seeded upgrade preserves Tools, Features and all unrelated billing/agent-configuration data proved by the migration validator.
-- [ ] Prisma validation and focused fresh/upgrade rehearsals pass.
+- [x] Every persisted Commerce Capability has exactly one non-null Feature and exactly one non-null Tool.
+- [x] No `CommerceCapabilitySelectionBinding` type or `selectionBinding` column remains.
+- [x] No `CommerceCapabilityRevision` table/model remains.
+- [x] No Capability persistence stores prompt text, arbitrary configuration, Tool-binding arrays, `maxSearchResults` or `maxRecommendations`.
+- [x] Tool revision DRAFT/PUBLISHED status remains intact under a correctly owned enum.
+- [x] A release pins one exact published Tool revision per member Capability.
+- [x] A release stores Feature behaviour prompt text once per represented Feature.
+- [x] Release Feature/member rows cannot be mutated after creation.
+- [x] Existing obsolete Capability/release/grant development state is deliberately recreated, not heuristically converted.
+- [x] The seeded upgrade preserves Tools, Features and all unrelated billing/agent-configuration data proved by the migration validator.
+- [x] Prisma validation and focused fresh/upgrade rehearsals pass.
 
 ## Validation
 
-- [ ] `npm run prisma:validate`
-- [ ] `npm run prisma:generate`
-- [ ] focused ARCH-021 feature-capability schema validator added by this task
-- [ ] focused fresh PostgreSQL migration rehearsal added by this task
-- [ ] focused seeded-upgrade PostgreSQL migration rehearsal proving the preservation boundary
+- [x] `npm run prisma:validate`
+- [x] `npm run prisma:generate`
+- [x] focused ARCH-021 feature-capability schema validator added by this task
+- [x] focused fresh PostgreSQL migration rehearsal added by this task
+- [x] focused seeded-upgrade PostgreSQL migration rehearsal proving the preservation boundary
 
 ## Stop Condition
 
@@ -310,58 +310,96 @@ Do not modify billing Feature semantics merely because Commerce now requires a F
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+`moda-interact-database/prisma/schema.prisma`, `moda-interact-database/prisma/migrations/20260929120000_arch021_feature_capability_simplification/migration.sql`, `moda-interact-database/scripts/validate-arch021-feature-capability-schema.mjs`, `moda-interact-database/scripts/validate-arch021-feature-capability-migration.mjs`, `moda-interact-database/package.json`, `moda-interact-database/docs/generated/prisma-erd.puml`
 
 ### Work Completed
 
-None
+Attempt 1 implemented the Feature/Capability/release schema simplification. Attempt 2 replaced the surviving ARCH-020 grant trigger with `arch021_conversation_grant_guard`, retaining conversation/recovery/shop/inbound-version checks while deriving the canonical grant directly from immutable `CommerceReleaseCapability` rows and their exact published Tool revisions. Reused Tools are grouped into one granted Tool with sorted provenance from all selected Capability keys. The grant bounds now accept empty selected Capability and granted Tool arrays. The migration also removes the obsolete `arch020_bindings` and `arch020_audit` functions. The focused rehearsal now proves empty and direct grants succeed, missing/extra/mismatched authority is rejected, and active commerce constraints/triggers/functions contain no references to removed Capability concepts or mandatory `conversation_core`.
+Attempt 2 implementation commit `0dbb3f5` is pushed to `task/ARCH-021-DATABASE-003`.
+
+### Attempt 2 Correction Checklist
+
+- [x] Replace the legacy grant guard with direct release-member Tool authority and preserve ownership/inbound-version checks.
+- [x] Allow valid zero-Capability/zero-Tool grants.
+- [x] Remove the obsolete `arch020_bindings` helper and stale audit function.
+- [x] Add PostgreSQL grant success/rejection cases and live catalog checks for legacy dependencies.
+- [x] Record prepared worktree, synchronization and recursive submodule evidence below.
 
 ### Validation Results
 
-None
+`npm run prisma:validate`, `npm run prisma:generate`, `npm run test:arch021-feature-capability-schema`, `npm run test:arch021-feature-capability-migration` structural checks, and `git diff --check` passed in Attempt 2. Fresh and seeded-upgrade PostgreSQL 15 rehearsals both passed on isolated local databases `arch021_feature_capability_test_fresh` and `arch021_feature_capability_test_upgrade`. The upgrade preserved all 18 protected data tables byte-for-byte. The rehearsals passed the existing CAS/immutability/release checks plus zero-selection grant success, direct exact-revision grant success with shared-Tool Capability provenance, missing/extra/mismatched authority rejection, and live catalog checks for removed grant dependencies. Attempt 1 also passed `npm run erd:puml`.
+
+### Attempt 2 Preparation Evidence
+
+The required launcher resolved canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace` and prepared dedicated task worktrees on `task/ARCH-021-DATABASE-003`. Parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-DATABASE-003` was reused; remote task-branch fast-forward was `not-needed`, `origin/main` was incorporated (`yes`), and synchronized HEAD was `b992bb61c354f2e7c0c56fd51c88a2a4fba9a817`. Implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-DATABASE-003` was reused; remote task-branch fast-forward was `not-needed`, `origin/main` was already current, and HEAD was `b648b86d24a2076b9af2afbf3f1bd8188a52c424`. Recursive submodule sync and update/init both passed; submodule status was `ready`, recursive was true, and there were no submodule entries. The launcher durably claimed Attempt 2 for executor `copilot` and committed/pushed claim `41e4913dbdb7417a7cb5328407c1ad5b4fdd420b`.
 
 ### Deviations
 
-None
+No scope deviation. PostgreSQL upgrade rehearsal required an explicit deletion of legacy Capability rows because existing BASE rows have no Feature and arbitrary revision bindings cannot be losslessly converted; this is the task's approved pre-production recreate strategy. The Attempt 2 corrections directly address the Architect Review findings within the task's database ownership boundary.
 
 ### Assumptions
 
-None
+The obsolete ARCH-020 Capability/release/pointer/grant composition is development-only and may be recreated as specified. The standard local Docker PostgreSQL 15 container and uniquely named test databases were disposable task-owned resources.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+The direct Feature/Tool Capability schema, one-row-per-Feature current behaviour configuration, exact Tool-revision release pinning, composite identity foreign keys, immutable release Feature snapshots and Tool-owned revision-status enum conform to the Phase 5 target. The submitted schema validator also passes on review.
+
+One blocking legacy database path remains and must be corrected in this same task:
+
+1. `arch020_grant_insert` is still installed on `commerce."CommerceConversationGrant"` and still executes `commerce.arch020_grant()`. That function still requires `conversation_core` and still joins the removed `CommerceCapabilityRevision` table and its `toolBindings`. After this migration a normal grant insert can therefore preserve the removed BASE requirement or fail against a table that no longer exists.
+2. The surviving `arch020_grant_bounds` constraint still validates `selectedCapabilityKeys` with `commerce.arch020_strings(..., 1, 32)`, so the database still rejects the architecture-approved zero-Capability/zero-Tool case.
+
+Attempt 2 correction contract:
+
+- Drop/replace the legacy grant insert trigger/function so grant integrity is expressed only in terms of the new direct release composition. Preserve the supported conversation/shop/inbound-version/release ownership checks, but derive the canonical granted Tool set directly from `CommerceReleaseCapability.toolId` + `toolRevisionId` for the selected Capability keys. Do not reference Capability revisions, `toolBindings`, `selectionBinding` or `conversation_core`. Reused Tools must remain one granted Tool with all selected Capability-key provenance.
+- Drop/recreate the grant bounds constraint so an empty `selectedCapabilityKeys` array and empty `grantedTools` array are valid when the rest of the grant is valid.
+- Remove `arch020_bindings` if no surviving supported database object uses it; do not retain a dead helper whose only purpose was Capability revision `toolBindings`.
+- Extend the focused PostgreSQL migration rehearsal to prove: (a) a zero-Capability/zero-Tool grant succeeds, (b) a direct Capability grant with the release-pinned Tool revision succeeds, (c) missing/extra/mismatched granted Tool authority is rejected, and (d) active post-migration constraints/triggers/function definitions contain no dependency on `CommerceCapabilityRevision`, `toolBindings`, `selectionBinding` or mandatory `conversation_core`.
+- Update the Completion Report with launcher-prepared physical-isolation/start-of-attempt synchronization evidence for the dedicated parent and implementation worktrees, including recursive submodule preparation evidence required by the task workflow. If the original prepared packet already proves this, record that evidence; no code churn is required solely for the evidence correction.
+
+No downstream task is unblocked until DATABASE-003 is accepted Complete.
 
 ### Reviewed Files
 
-None
+- `docs/decisions/database/ARCH-021/DATABASE-003-simplify-feature-capability-persistence.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260929120000_arch021_feature_capability_simplification/migration.sql`
+- `moda-interact-database/scripts/validate-arch021-feature-capability-schema.mjs`
+- `moda-interact-database/scripts/validate-arch021-feature-capability-migration.mjs`
+- `moda-interact-database/package.json`
+- predecessor ARCH-020 Commerce migration grant/constraint definitions required to determine which database objects survive the new migration
 
 ### Validation Reviewed
 
-None
+- Re-ran `node scripts/validate-arch021-feature-capability-schema.mjs`: passed.
+- Reviewed the submitted Prisma validate/generate, fresh migration, seeded-upgrade preservation and ERD evidence recorded in the Completion Report.
+- Independently inspected the migration chain and found that the submitted rehearsal does not perform a post-migration `CommerceConversationGrant` insert, so it does not detect the surviving legacy grant trigger/constraint described above.
+- The supplied review archive does not contain installed Node dependencies and this review environment has no Docker executable, so the PostgreSQL rehearsal was not independently rerun here.
 
 ### Architecture Conformance
 
-Pending
+Changes Requested. The new Capability/release persistence itself conforms, but the surviving grant trigger/constraint contradicts the Phase 5 invariants that `conversation_core` is not mandatory, Capability revisions/tool bindings are removed, and zero selected Capabilities/Tools are valid.
 
 ### Follow-up
 
-None
+Return `ARCH-021-DATABASE-003` through the normal `/moda-task` path for Attempt 2. This is correction work within the existing task scope; do not create a new task.
