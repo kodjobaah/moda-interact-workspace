@@ -1148,10 +1148,10 @@ All SYSTEM-TEST-002 implementation dependencies are now Complete, so terminal
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-088](COMMERCE-088-implement-direct-feature-capability-authoring.md) | Backend: direct Feature reads/Behaviour prompt and atomic Feature + Tool Capability creation | Complete | DATABASE-003 |
-| [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Pending | DATABASE-003, SHARED-002, COMMERCE-088 |
+| [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Complete | DATABASE-003, SHARED-002, COMMERCE-088 |
 | [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Complete | COMMERCE-088 |
 | [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Complete | COMMERCE-088, COMMERCE-090 |
-| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
+| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Ready | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
 
 
 ### COMMERCE-088 Attempt 2 accepted — 2026-09-29
@@ -1175,6 +1175,17 @@ COMMERCE-091 is **Complete / Accepted, Attempt 2**. The Feature-scoped local-fir
 
 The C091 dependency of COMMERCE-092 is satisfied. COMMERCE-092 remains Pending until COMMERCE-089 and BACKGROUND-002 are also Complete.
 
+### COMMERCE-089 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-089 is **Complete / Accepted, Attempt 1**. Release creation now consumes direct Capability identities, deterministically pins each Capability's exact published Tool revision and snapshots Feature Behaviour once per represented Feature. Runtime manifest production reads immutable release rows, supports zero eligible Capabilities and preserves deterministic reused-Tool provenance without restoring Capability revisions, bindings or per-Capability configuration.
+
+The required disposable C20 proof passed 2/2 on the final post-merge implementation branch. The remaining repository typecheck/process-global test failures contain no C089-owned diagnostics or release/runtime regressions. ARCH-021-BACKGROUND-002 is now **Ready**; COMMERCE-092 remains Pending until BACKGROUND-002 is Complete.
+
+### BACKGROUND-002 Attempt 1 accepted — 2026-09-29
+
+BACKGROUND-002 is **Complete / Accepted, Attempt 1**. The Background Commerce host now consumes the published Shared 1.0.0 direct Feature/Capability/Tool manifest, removes MCP Capability-prompt retrieval, accepts valid zero-Capability grants and retains exact Tool/grant provenance authorization.
+
+COMMERCE-089, COMMERCE-091 and BACKGROUND-002 are all Complete, so COMMERCE-092 is now **Ready** as the final Phase 5 subtractive cleanup task.
 
 
 ### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
@@ -1203,7 +1214,7 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 |---|---|---|---|
 | [COMMERCE-096](COMMERCE-096-expose-policy-operation-authoring-descriptors.md) | Canonical policy registration owns runtime validators + browser-safe authoring descriptor | Complete | COMMERCE-095 |
 | [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Ready | COMMERCE-096 |
-| [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Ready | COMMERCE-096 |
+| [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Complete | COMMERCE-096 |
 | [COMMERCE-099](COMMERCE-099-round-trip-save-policy-operation-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Pending | COMMERCE-097, COMMERCE-098 |
 | [COMMERCE-100](COMMERCE-100-publish-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Pending | COMMERCE-099 |
 
@@ -1225,3 +1236,12 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 C096 is **Complete / Accepted, Attempt 1**. The same server-side policy registry now owns exact operation/version runtime validation/adapters and a cloned browser-safe authoring descriptor. The descriptor uses a Commerce-local JSON-schema representation generated from the canonical runtime validators so nested inputs, nullable outputs and accepted collection bounds are not lost.
 
 COMMERCE-097 and COMMERCE-098 are **Ready** and may execute independently. C099 remains Pending on both.
+
+
+### COMMERCE-098 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-098 is **Complete / Accepted, Attempt 1**. Policy Operation candidate Test is now an ADMIN-authorized, non-durable Studio boundary over the production `DefinitionExecutor` and C096 registry. Shop context and preview identities are server-created, exact operation/version resolution is required, and canonical mapped-input/output/result-rendering semantics remain executor-owned.
+
+Canonical business outcomes such as `NOT_FOUND` remain valid Test results when a policy operation requires production state that is intentionally absent from the synthetic preview context; C098 does not fabricate production recovery/grant identity.
+
+COMMERCE-099 remains **Pending** because COMMERCE-097 is still Ready. No dependent task is promoted by C098 alone.

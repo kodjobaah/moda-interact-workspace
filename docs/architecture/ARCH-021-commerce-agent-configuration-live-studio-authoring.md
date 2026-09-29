@@ -1123,15 +1123,15 @@ Implementation tasks:
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
-| ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
+| ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
 | ARCH-021-COMMERCE-088 | moda_commerce | Complete | ARCH-021-DATABASE-003 |
-| ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-089 | moda_commerce | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
-| ARCH-021-BACKGROUND-002 | moda_background | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
-| ARCH-021-COMMERCE-092 | moda_commerce | Pending | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
+| ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
+| ARCH-021-COMMERCE-092 | moda_commerce | Ready | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-COMMERCE-093 | moda_commerce | Complete | - |
 | ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
 
@@ -1159,6 +1159,14 @@ COMMERCE-091 is **Complete / Accepted, Attempt 2**. The local-first `Capability 
 The accepted final-create boundary remains exactly one `createFeatureCapability` mutation with candidate preservation/reconciliation for recoverable or uncertain outcomes. Attempt 2 also corrects the earlier task-worktree synchronization evidence and preserves Attempt 1 history.
 
 C091's dependency into COMMERCE-092 is satisfied. COMMERCE-092 remains Pending on its other declared dependencies.
+
+Current Phase 5 frontier after BACKGROUND-002 acceptance:
+
+```text
+COMMERCE-092
+```
+
+BACKGROUND-002 Attempt 1 is architect-accepted Complete. COMMERCE-089, COMMERCE-091 and BACKGROUND-002 now satisfy every COMMERCE-092 dependency, so the final subtractive legacy-removal task is Ready. SYSTEM-TEST-003 remains Pending until COMMERCE-092 is Complete.
 
 
 Current independent execution frontier after COMMERCE-062 acceptance:
@@ -1562,15 +1570,15 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
-| ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
+| ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
 | ARCH-021-COMMERCE-088 | moda_commerce | Complete | ARCH-021-DATABASE-003 |
-| ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-089 | moda_commerce | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
-| ARCH-021-BACKGROUND-002 | moda_background | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
-| ARCH-021-COMMERCE-092 | moda_commerce | Pending | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
+| ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
+| ARCH-021-COMMERCE-092 | moda_commerce | Ready | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
 
 Phase 5 Feature Capability simplification is now decomposed through DATABASE-003, SHARED-001/002, COMMERCE-088..092, BACKGROUND-002 and terminal SYSTEM-TEST-003. Later Phase 6+ work remains intentionally undecomposed where it is not required by this cutover. Expected later owners still include:
@@ -1631,6 +1639,23 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-29 — BACKGROUND-002 direct manifest consumer accepted
+
+- BACKGROUND-002 Attempt 1 is Complete / Accepted.
+- Background now consumes `@modainteract/moda-interact-shared@1.0.0` direct Feature/Capability/Tool manifests without per-Capability MCP prompt fetches.
+- Feature Behaviour is consumed from the immutable manifest and applied once per represented Feature by the Shared runner.
+- Valid zero-Capability/zero-Tool grants are supported, while exact Tool identity/revision/name/version/Capability provenance authorization remains fail-closed.
+- COMMERCE-089, COMMERCE-091 and BACKGROUND-002 are Complete, so COMMERCE-092 is now Ready as the final Phase 5 legacy-removal gate.
+- SYSTEM-TEST-003 remains Pending until COMMERCE-092 is Complete.
+
+### 2026-09-29 — COMMERCE-089 direct release/runtime cutover accepted
+
+- COMMERCE-089 Attempt 1 is Complete / Accepted after final synchronization with current `origin/main` and post-merge validation.
+- Releases now pin exact published Tool revisions for direct Capability members and snapshot Feature Behaviour once per represented Feature; runtime manifests consume those immutable rows.
+- The required disposable C20 proof passed 2/2 and the bounded C089 paths contain no BASE/`conversation_core`, Capability-draft or multi-binding dependency.
+- DATABASE-003, SHARED-002, COMMERCE-088, COMMERCE-089, COMMERCE-090 and COMMERCE-091 are Complete.
+- BACKGROUND-002 is now Ready. COMMERCE-092 remains Pending until BACKGROUND-002 is Complete.
 
 ### 2026-09-29 — Simplified Shared Feature Capability contract published
 
@@ -2912,8 +2937,17 @@ The C096 descriptor schemas are Commerce-local JSON-compatible schemas generated
 |---|---|---|---|
 | ARCH-021-COMMERCE-096 | moda_commerce | Complete | ARCH-021-COMMERCE-095 |
 | ARCH-021-COMMERCE-097 | moda_commerce | Ready | ARCH-021-COMMERCE-096 |
-| ARCH-021-COMMERCE-098 | moda_commerce | Ready | ARCH-021-COMMERCE-096 |
+| ARCH-021-COMMERCE-098 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
 | ARCH-021-COMMERCE-099 | moda_commerce | Pending | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
 | ARCH-021-COMMERCE-100 | moda_commerce | Pending | ARCH-021-COMMERCE-099 |
 
 C096 Attempt 1 is architect-accepted. C097/C098 are the executable frontier and may run in parallel. This follow-up remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge using the same Policy Operation mechanism without a Merchant Knowledge special case in ARCH-021.
+
+
+### COMMERCE-098 Attempt 1 accepted — 2026-09-29
+
+The generic Policy Operation live-Test backend is architect-accepted. Studio sends a bounded complete Policy Operation candidate to an ADMIN-authorized Server Action; the selected shop and all preview execution identity are created server-side; execution then delegates through the normal `DefinitionExecutor` / C096 registration path. Test remains non-durable and returns only bounded canonical outcome/rendering diagnostics.
+
+Synthetic preview recovery identity intentionally does not impersonate a production checkout-recovery/grant context. Policy operations that require such state may therefore produce their normal canonical `NOT_FOUND` result in Test.
+
+COMMERCE-099 remains Pending until COMMERCE-097 is also Complete.
