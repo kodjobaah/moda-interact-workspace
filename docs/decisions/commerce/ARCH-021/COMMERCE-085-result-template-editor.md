@@ -9,16 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 76
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-078
   - ARCH-021-COMMERCE-084
 enables:
   - ARCH-021-COMMERCE-083
+  - ARCH-021-COMMERCE-086
 created: 2026-09-28
 updated: 2026-09-29
 ---
@@ -505,19 +506,19 @@ The Test tab continues to display the server-returned `renderedText` exactly; C0
 
 ## Work Items
 
-- [ ] Replace Text/Items/Collection authoring controls with one `nunjucks.v1` source + unavailable fallback surface.
-- [ ] Add a dedicated CodeMirror 6 `ResultTemplateEditor` without the JavaScript language extension.
-- [ ] Add session-only GENERATED/USER_MODIFIED metadata and canonical Response fingerprint handling.
-- [ ] Auto-generate the first new-Tool template from the first current VALID Response contract.
-- [ ] Auto-regenerate only while the template remains GENERATED.
-- [ ] Preserve USER_MODIFIED source byte-for-byte across Response changes.
-- [ ] Add confirmed `Regenerate from Response` semantics exactly as R10.
-- [ ] Render the recursive provider-neutral Available result data tree.
-- [ ] Add schema-derived interpolation/loop insertion or completion helpers.
-- [ ] Add bounded Nunjucks delimiter syntax presentation in CodeMirror.
-- [ ] Keep canonical validation server/domain-owned and wire results to C078 central validation state.
-- [ ] Ensure Review/persistence receive only the canonical `responseTemplate` object.
-- [ ] Add deterministic pristine/regeneration/manual-edit/stale-validation regressions.
+- [x] Replace Text/Items/Collection authoring controls with one `nunjucks.v1` source + unavailable fallback surface.
+- [x] Add a dedicated CodeMirror 6 `ResultTemplateEditor` without the JavaScript language extension.
+- [x] Add session-only GENERATED/USER_MODIFIED metadata and canonical Response fingerprint handling.
+- [x] Auto-generate the first new-Tool template from the first current VALID Response contract.
+- [x] Auto-regenerate only while the template remains GENERATED.
+- [x] Preserve USER_MODIFIED source byte-for-byte across Response changes.
+- [x] Add confirmed `Regenerate from Response` semantics exactly as R10.
+- [x] Render the recursive provider-neutral Available result data tree.
+- [x] Add schema-derived interpolation/loop insertion or completion helpers.
+- [x] Add bounded Nunjucks delimiter syntax presentation in CodeMirror.
+- [x] Keep canonical validation server/domain-owned and wire results to C078 central validation state.
+- [x] Ensure Review/persistence receive only the canonical `responseTemplate` object.
+- [x] Add deterministic pristine/regeneration/manual-edit/stale-validation regressions.
 
 ## Interfaces / Contracts
 
@@ -555,47 +556,46 @@ No database/cross-service contract is introduced.
 
 ## Enables
 
-- ARCH-021-COMMERCE-079
-- ARCH-021-COMMERCE-081
 - ARCH-021-COMMERCE-083
+- ARCH-021-COMMERCE-086
 
 ## Acceptance Criteria
 
-- [ ] Result Template no longer exposes Text/Items/Collection/Item-template/Empty-fallback controls.
-- [ ] Result Template uses the repository CodeMirror 6 stack and exposes one editable Nunjucks source.
-- [ ] A new Tool with a current VALID Response automatically receives the deterministic generated template without persistence.
-- [ ] The documented `values.items[]` Response opens with generated loop source over `result.values.items`, not `{{result.values.value}}` and not an empty Text template.
-- [ ] Generated source is marked GENERATED and still requires explicit Result Template validation.
-- [ ] Editing source or unavailable fallback switches to USER_MODIFIED and immediately stales validation/Test.
-- [ ] A later Response change automatically regenerates only GENERATED templates.
-- [ ] A later Response change never overwrites USER_MODIFIED source/fallback.
-- [ ] Cancelled Regenerate changes no authoring or validation/Test state.
-- [ ] Confirmed Regenerate replaces source deterministically and returns origin to GENERATED.
-- [ ] Available result data displays recursive object/array/scalar paths and optionality from the canonical schema.
-- [ ] Completion/insertion suggestions originate only from the canonical schema/generator helpers.
-- [ ] Canonical validation remains COMMERCE-084-owned; CodeMirror does not become a second validator.
-- [ ] React never renders/evaluates Nunjucks and never uses rendered source as HTML.
-- [ ] Authoring metadata remains session-only and is absent from the persisted Tool definition.
+- [x] Result Template no longer exposes Text/Items/Collection/Item-template/Empty-fallback controls.
+- [x] Result Template uses the repository CodeMirror 6 stack and exposes one editable Nunjucks source.
+- [x] A new Tool with a current VALID Response automatically receives the deterministic generated template without persistence.
+- [x] The documented `values.items[]` Response opens with generated loop source over `result.values.items`, not `{{result.values.value}}` and not an empty Text template.
+- [x] Generated source is marked GENERATED and still requires explicit Result Template validation.
+- [x] Editing source or unavailable fallback switches to USER_MODIFIED and immediately stales validation/Test.
+- [x] A later Response change automatically regenerates only GENERATED templates.
+- [x] A later Response change never overwrites USER_MODIFIED source/fallback.
+- [x] Cancelled Regenerate changes no authoring or validation/Test state.
+- [x] Confirmed Regenerate replaces source deterministically and returns origin to GENERATED.
+- [x] Available result data displays recursive object/array/scalar paths and optionality from the canonical schema.
+- [x] Completion/insertion suggestions originate only from the canonical schema/generator helpers.
+- [x] Canonical validation remains COMMERCE-084-owned; CodeMirror does not become a second validator.
+- [x] React never renders/evaluates Nunjucks and never uses rendered source as HTML.
+- [x] Authoring metadata remains session-only and is absent from the persisted Tool definition.
 
 ## Validation
 
-- [ ] `npx vitest run tests/result-template-tab.test.tsx tests/tool-authoring-screen.test.tsx`
-- [ ] focused new-Tool auto-generation regression for the exact `values.items[]` six-field example
-- [ ] focused GENERATED -> Response change -> automatic regeneration regression
-- [ ] focused USER_MODIFIED -> Response change -> preserve-byte-for-byte regression
-- [ ] focused Regenerate cancel/confirm regressions
-- [ ] focused validation-revision race regression: validation for source revision N cannot validate revision N+1
-- [ ] focused result-data-tree recursion/optionality regression
-- [ ] focused completion/snippet insertion regression proving schema-derived paths
-- [ ] focused proof that no Result Template edit/regeneration/validation writes Tool/ToolRevision state
-- [ ] existing External and Shopify Result Template integration UI tests updated for the one-source editor
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `vitest run tests/result-template-tab.test.tsx tests/tool-authoring-screen.test.tsx` (also included with New Tool state/session suites below)
+- [x] focused new-Tool auto-generation regression for the exact `values.items[]` six-field example
+- [x] focused GENERATED -> Response change -> automatic regeneration regression
+- [x] focused USER_MODIFIED -> Response change -> preserve-byte-for-byte regression
+- [x] focused Regenerate cancel/confirm regressions
+- [x] focused validation-revision race regression: validation for source revision N cannot validate revision N+1
+- [x] focused result-data-tree recursion/optionality regression
+- [x] focused completion/snippet insertion regression proving schema-derived paths, including scalar arrays
+- [x] focused proof that no Result Template edit/regeneration/validation writes Tool/ToolRevision state
+- [x] External and Shopify Result Template UI integration suites collect and pass after approved Prisma Client generation (`tests/external-tools-ui.test.tsx`: 92/92; `tests/shopify-admin-tools-ui.test.tsx`: 25/25)
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics are clean; repository `tsc --noEmit` reports existing unrelated errors and missing generated Prisma types
+- [x] `git diff --check`
 
 ## Stop Condition
 
-After every defined Work Item, Acceptance Criterion and required Validation item is complete, set the task to `review`, complete the Completion Report and STOP. Do not begin COMMERCE-079, COMMERCE-081, COMMERCE-083 or another follow-on task.
+After every defined Work Item, Acceptance Criterion and required Validation item is complete, set the task to `review`, complete the Completion Report and STOP. Do not begin COMMERCE-083 or another follow-on task.
 
 ## Implementation Notes
 
@@ -605,60 +605,198 @@ If generalising `src/studio/code-response/code-editor.tsx`, preserve its existin
 
 ## Completion Report
 
-### Status
+### Attempt 2 Status
 
-Not Started
+Architect-requested implementation corrections are complete. The six-file C085 validation packet passes, including both previously blocked External and Shopify Admin UI integration suites. Prisma Client was generated with the repository-declared `npm run prisma:generate` setup. Task metadata is reconciled to `status: review`, `executor: null` and `claimed_at: null` for Architect Review.
+
+### Attempt 2 Files Changed
+
+- `src/commerce/tool-authoring/result-template-generator.ts`
+- `src/studio/tools/authoring/result-template-editor.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `tests/result-template-tab.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+
+### Attempt 2 Work Completed
+
+Tagged controlled CodeMirror source synchronisation so prop-driven generation/regeneration does not emit user edits; real editor changes still mark the template USER_MODIFIED. Extracted `generateResultTemplateLoop` from the C084 generator path and use it for insertion snippets. Object-array properties now appear directly under the array node, and the actual CodeMirror textbox carries the accessible name `Result template source`.
+
+Migrated External and Shopify Admin UI fixtures/assertions to canonical Nunjucks templates. External workflows explicitly validate the current Response contract and regenerate the Result Template after schema changes. Incomplete-draft fixtures now retain their incomplete input schema while using a valid canonical template, avoiding definition fallback.
+
+### Attempt 2 Validation Results
+
+Passed: six-file focused packet (6 files, 182 tests); standalone External UI suite (92 tests); standalone Shopify Admin UI suite (25 tests); standalone Tool Authoring screen suite (29 tests); targeted ESLint for all changed TypeScript/TSX files; changed-file TypeScript diagnostics; `git diff --check`.
+
+Passed: `npm run prisma:generate` using the repository-declared workflow; Prisma Client v6.19.3 generated from `database/prisma/schema.prisma`. No schema migration was performed.
+
+### Attempt 2 Deviations
+
+None.
+
+### Attempt 2 Unresolved Issues
+
+None known. Awaiting Architect Review.
+
+### Attempt 2 VCS and Worktree
+
+Implementation commit `fab594d` (`fix(ARCH-021-COMMERCE-085): address architect review`) is pushed on the dedicated implementation `task/ARCH-021-COMMERCE-085` branch. Parent report commit `ce90c300` records Attempt 2 validation and is pushed on the matching task branch; this final report commit reconciles task metadata to `review`. No main merge or submodule gitlink change is included.
+
+### Attempt 1 Status (Historical)
+
+Attempt 1 implementation complete; ready for Architect Review. Task metadata is reconciled to `status: review`, `executor: null` and `claimed_at: null`.
 
 ### Files Changed
 
-None
+Implementation changes are in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-085` on `task/ARCH-021-COMMERCE-085`:
+
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/authoring/result-template-editor.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/new-tool-authoring-state.test.ts`
+- `tests/result-template-tab.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
-None
+Replaced the Text/Items Result Template form with a dedicated CodeMirror 6 Nunjucks editor, canonical schema tree and schema-derived root/loop insertions. Added deterministic generation tied to the current canonical Response fingerprint, session-only GENERATED/USER_MODIFIED metadata, preservation of user-authored source across Response changes, confirmed regeneration and stale-safe COMMERCE-084 validation wired through C078 state. New Tool, persisted External/Admin Tool and Explore Shopify browser-session flows consume the canonical response template without persisting authoring metadata or rendering Nunjucks in React.
+
+Updated New Tool/External integration fixtures and selectors for the single-source editor, and added focused coverage for the six-field `values.items[]` example, scalar arrays, source preservation, confirmation, validation races, optionality and canonical snippet insertion.
 
 ### Validation Results
 
-None
+Passed: `vitest run tests/result-template-tab.test.tsx tests/new-tool-authoring-state.test.ts tests/tool-authoring-session.test.ts tests/tool-authoring-screen.test.tsx` (4 files, 63 tests); targeted ESLint over all changed TypeScript/TSX files; changed-file editor diagnostics; `git diff --check`.
+
+Attempted `tests/external-tools-ui.test.tsx` and `tests/shopify-admin-tools-ui.test.tsx`; both stop before test collection because `.prisma/client/default` is absent. Prisma generation was not run because its package workflow includes submodule/build setup that was not approved for this attempt. The repository-wide `tsc --noEmit` remains nonzero with errors outside the changed C085 files and missing generated Prisma types; the changed-file diagnostic check is clean.
 
 ### Deviations
 
-None
+Prisma-backed External and Shopify UI suites could not execute in this worktree. Their tests were migrated, but they need a rerun after the generated Prisma Client is made available through the approved setup workflow.
 
 ### Assumptions
 
-None
+COMMERCE-084 remains the sole source of Nunjucks grammar, canonical validation and server rendering; COMMERCE-078 remains the owner of local revision/checkpoint and Test freshness behavior.
 
 ### Unresolved Issues
 
-None
+The External and Shopify Admin UI integration suites remain unexecuted due to the missing generated Prisma Client. Architect review is pending.
 
 ### Architectural Concerns
 
-None
+None identified during implementation; architect review remains pending.
+
+### VCS and Worktree
+
+- Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-085`, branch `task/ARCH-021-COMMERCE-085`, implementation commit `297123e` (`Implement generated Result Template authoring`), pushed.
+- Parent task report: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-085`, branch `task/ARCH-021-COMMERCE-085`.
+- The launcher prepared and claimed Attempt 1 in these dedicated task worktrees. The implementation baseline recorded in the handoff was `b78681d`; the initialized database submodule was at `4da3139`.
+- The shared coordinator checkout and shared implementation checkout were not switched or modified for task implementation. The coordinator checkout's unrelated existing changes were left untouched. No submodule gitlink change was staged.
+- The parent task report is committed and pushed separately on the matching task branch; Architect Review remains unchanged and pending.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 is accepted.
+
+All five Attempt 1 correction items are satisfied.
+
+1. **Controlled CodeMirror synchronization no longer becomes a user edit**
+   - parent-driven source synchronization is tagged with a CodeMirror transaction annotation;
+   - the update listener suppresses the public `onChange` callback only for that controlled synchronization;
+   - real editor mutations continue to emit `onChange`;
+   - automatic initial generation, Response-driven regeneration and confirmed regeneration remain `GENERATED` until an actual user edit occurs.
+
+2. **Collection insertion reuses the canonical C084 generator helper**
+   - C085 no longer owns a second React-side alias/loop generator;
+   - `generateResultTemplateLoop(...)` is extracted from the accepted C084 generator semantics;
+   - object-array and scalar-array insertion snippets are byte-for-byte the shared helper output and pass canonical C084 validation.
+
+3. **Object-array result data has the required provider-neutral tree shape**
+   - object item properties render directly beneath the array node;
+   - no synthetic object `item` node is inserted between `items[]` and its fields;
+   - scalar arrays still expose a scalar `item <type>` child where appropriate.
+
+4. **The actual CodeMirror editable surface is accessibly named**
+   - CodeMirror content attributes put `aria-label="Result template source"` on the editing surface itself;
+   - the focused regression locates the real editable textbox by role and accessible name.
+
+5. **The required External/Shopify integration validation now executes**
+   - Prisma Client was generated through the repository-declared `npm run prisma:generate` workflow without a schema migration;
+   - External UI integration collected and passed 92/92;
+   - Shopify Admin UI integration collected and passed 25/25;
+   - the focused six-file C085 packet passed 182/182;
+   - the standalone Tool Authoring screen suite passed 29/29;
+   - targeted ESLint, changed-file diagnostics and `git diff --check` passed.
+
+The canonical ownership boundaries remain intact:
+
+- C084 owns Nunjucks grammar, canonical validation, deterministic runtime generation and server rendering;
+- C085 owns only the CodeMirror/schema-derived authoring experience and browser-local GENERATED/USER_MODIFIED metadata;
+- C079 persisted-DRAFT lifecycle/CAS/Cancel semantics remain unchanged;
+- C081 External Test rendering/readiness semantics remain unchanged;
+- the parent candidate persists only canonical `responseTemplate`;
+- React does not execute Nunjucks or render template output.
+
+The user handoff identifies implementation commit `fab594d` and final parent task-report commit `160ebebe` as pushed/clean. The submitted task record itself records the Attempt 2 implementation evidence and is in `status: review`, `attempt: 2`, with executor/claim cleared before this acceptance.
+
+A separate runtime/generator issue was discovered through manual live Test after C084 acceptance: a generated template may interpolate a schema-optional field directly, while the renderer uses strict undefined handling. That can produce `RESULT_RENDERING_FAILED` for a runtime result that is valid under the Response contract. This is **not a C085 editor defect**. It is materialised separately as COMMERCE-087 and does not reopen C085.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/authoring/result-template-editor.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/commerce/tool-authoring/result-template-generator.ts`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/result-template-tab.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- C085 Completion Report — Attempts 1 and 2
 
 ### Validation Reviewed
 
-None
+Attempt 2 submitted evidence:
+
+- six-file focused packet: **182/182 passed**;
+- External UI: **92/92 passed**;
+- Shopify Admin UI: **25/25 passed**;
+- Tool Authoring screen: **29/29 passed**;
+- targeted ESLint: passed;
+- changed-file TypeScript diagnostics: clean;
+- `git diff --check`: passed;
+- `npm run prisma:generate`: passed using the repository-declared workflow; no migration was performed.
+
+The repository-wide TypeScript check remains non-green on unrelated existing diagnostics and is not a C085 blocker because changed-file diagnostics are clean.
+
+The submitted snapshot does not contain installed `node_modules`, so the review environment could not independently rerun Vitest/ESLint. The implementation and focused regressions were inspected directly.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C085 now provides one canonical CodeMirror `nunjucks.v1` authoring surface with deterministic C084 generation, schema-derived tree/insertion help, session-only origin/fingerprint metadata, stale-safe canonical validation and unchanged C078/C079/C081 persistence/Test ownership.
 
 ### Follow-up
 
-None
+C085 is Complete / Accepted — Attempt 2.
+
+COMMERCE-086 becomes Ready because C084 and C085 are Complete.
+
+COMMERCE-087 is materialised Ready to correct the separately discovered optional-field generated-template/runtime mismatch.
+
+COMMERCE-083 remains Pending until COMMERCE-087 is Complete so Shopify Admin Test integration is validated against generated templates that are safe for every schema-permitted optional-field omission.

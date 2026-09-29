@@ -336,9 +336,11 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-080](COMMERCE-080-render-external-live-test-result-template.md) | Backend: render complete External live-Test candidate through production Result Template | Complete | COMMERCE-054, COMMERCE-063 |
 | [COMMERCE-081](COMMERCE-081-show-rendered-template-in-external-test.md) | UI: show populated Result Template as primary External Test result | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-080 |
 | [COMMERCE-082](COMMERCE-082-execute-shopify-admin-candidate-live-test.md) | Backend: non-durable Shopify Admin candidate execution + production rendering | Complete | COMMERCE-060, 062, 063, 070 |
-| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Pending | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085 |
+| [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Pending | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
-| [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Ready | COMMERCE-078, COMMERCE-084 |
+| [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
+| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Ready | COMMERCE-084, COMMERCE-085 |
+| [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Ready | COMMERCE-084 |
 
 Initial executable frontier for this workstream:
 
@@ -1088,3 +1090,12 @@ C085 remains **Pending** on C084 and owns the legacy Text/Items editor/state mig
 COMMERCE-084 is **Complete / Accepted, Attempt 3**. The constrained `nunjucks.v1` runtime now uses the installed Nunjucks AST as syntax authority plus Moda's schema-aware allowlist/type checker, explicit no-loader rendering, bounded control flow/expression semantics, deterministic self-validating generation and one shared publication/Test/production render boundary. The final comparison matrix is scalar-only, and combined `if`/`for` depth is correctly enforced through plain `else` bodies without counting repeated `elif` as additional nesting.
 
 COMMERCE-085 is **Ready**. It owns the remaining Text/Items React/editor/state migration and generated CodeMirror authoring UX. COMMERCE-083 remains **Pending** on C085.
+
+
+### COMMERCE-085 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-085 is **Complete / Accepted, Attempt 2**. The canonical Nunjucks Result Template authoring surface now uses controlled CodeMirror synchronization that distinguishes programmatic generation from user edits, reuses C084 loop-generation semantics for insertions, renders the canonical schema tree without synthetic object-array nodes, labels the actual CodeMirror textbox accessibly, and preserves the accepted C079/C081 lifecycle/Test boundaries. External and Shopify Admin UI integration suites now execute and pass after approved Prisma Client generation.
+
+COMMERCE-086 is **Ready**.
+
+Manual live-Test validation separately exposed a C084 generator/runtime mismatch for schema-permitted omitted optional fields. That correction is materialised as COMMERCE-087 and is **Ready**. COMMERCE-083 remains **Pending** until COMMERCE-087 is Complete.
