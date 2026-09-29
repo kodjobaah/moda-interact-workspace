@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 76
 executor: null
 claimed_at: null
@@ -555,8 +555,6 @@ No database/cross-service contract is introduced.
 
 ## Enables
 
-- ARCH-021-COMMERCE-079
-- ARCH-021-COMMERCE-081
 - ARCH-021-COMMERCE-083
 
 ## Acceptance Criteria
@@ -595,7 +593,7 @@ No database/cross-service contract is introduced.
 
 ## Stop Condition
 
-After every defined Work Item, Acceptance Criterion and required Validation item is complete, set the task to `review`, complete the Completion Report and STOP. Do not begin COMMERCE-079, COMMERCE-081, COMMERCE-083 or another follow-on task.
+After every defined Work Item, Acceptance Criterion and required Validation item is complete, set the task to `review`, complete the Completion Report and STOP. Do not begin COMMERCE-083 or another follow-on task.
 
 ## Implementation Notes
 
@@ -665,24 +663,241 @@ None identified during implementation; architect review remains pending.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not accepted.
+
+The broad C085 direction is correct and several important boundaries are already satisfied:
+
+- the bespoke Text/Items/Collection form is replaced by one canonical `nunjucks.v1` source plus unavailable fallback;
+- CodeMirror 6 is used without the JavaScript language extension;
+- GENERATED / USER_MODIFIED origin and canonical result-contract fingerprint metadata are browser/session-only;
+- existing persisted Tools restore as USER_MODIFIED;
+- canonical Result Template validation remains COMMERCE-084-owned;
+- validation response identity is guarded so a late result for source revision N cannot validate revision N+1;
+- parent candidates persist only the canonical `responseTemplate`;
+- React does not render Nunjucks; and
+- new/persisted Tool integration is wired through the accepted C078/C079 state boundaries.
+
+Four implementation corrections and one validation-record correction remain.
+
+#### 1. Programmatic CodeMirror synchronisation is currently reported as a user edit
+
+`ResultTemplateEditor` synchronises a new controlled `source` prop with:
+
+```ts
+if (current !== source) {
+  view.dispatch({
+    changes: { from: 0, to: current.length, insert: source },
+  });
+}
+```
+
+The same editor also registers:
+
+```ts
+EditorView.updateListener.of((update) => {
+  if (update.docChanged) {
+    emitChange(update.state.doc.toString());
+  }
+})
+```
+
+CodeMirror does not distinguish that controlled-prop dispatch from keyboard/user editing. Therefore a programmatic automatic generation or confirmed regeneration changes the document, fires `onChange`, and `ResultTemplateTab.authorEdit(...)` immediately executes:
+
+```text
+origin = USER_MODIFIED
+validation = stale
+parent onChange(...)
+```
+
+That violates R6/R7/R8/R10. A generated template must remain `GENERATED` until the user actually edits source or unavailable fallback.
+
+This also breaks the core tracking rule: after the first automatic generation, a later valid Response change may no longer auto-regenerate because the session has been spuriously converted to USER_MODIFIED.
+
+Attempt 2 must make controlled prop synchronisation silent with respect to the public `onChange` callback. Use a transaction annotation/effect, a bounded synchronisation guard or another CodeMirror-native mechanism that distinguishes parent synchronisation from user-originated edits.
+
+Add integration regressions proving:
+
+```text
+A. automatic initial generation
+   -> editor receives generated source
+   -> no user-edit callback is emitted by prop synchronisation
+   -> origin remains GENERATED
+
+B. GENERATED template + valid Response A
+   -> automatic generation A
+   -> valid Response changes to B without any user edit
+   -> automatic generation B occurs
+   -> origin remains GENERATED
+
+C. confirmed Regenerate from Response
+   -> generated source is synchronised into CodeMirror
+   -> origin remains GENERATED after the editor update
+
+D. actual keyboard/source insertion edit
+   -> onChange fires
+   -> origin becomes USER_MODIFIED
+```
+
+Do not suppress real CodeMirror user edits.
+
+#### 2. COLLECTION insertion logic duplicates the C084 generator in React
+
+`result-template-tab.tsx` contains its own:
+
+```text
+aliases = ["item", "item2", "item3", "item4"]
+humanize(...)
+templateLines(...)
+```
+
+and recursively manufactures Nunjucks loop source.
+
+That is a second client-side template-generation implementation. R12 explicitly requires COLLECTION snippets to use the deterministic alias/field structure supplied by the COMMERCE-084 generator/helper rather than recreating the grammar in React.
+
+Attempt 2 must remove the duplicated React generation logic.
+
+If C084 does not yet export a sufficiently narrow snippet helper, extract/export a pure provider-neutral helper from the existing C084 generator implementation and have both default generation and C085 insertion consume the same underlying node/alias generation semantics. This is a non-semantic reuse extraction: do not change the accepted `nunjucks.v1` grammar or default-generator output.
+
+Add a regression proving the inserted COLLECTION / SCALAR ARRAY snippet is byte-for-byte the canonical helper output for the same schema/path and is accepted by `validateResponseTemplateAuthoring`.
+
+#### 3. The result-data tree adds a synthetic `item` node that R11 does not specify
+
+For an array, `ResultTreeNode` currently renders:
+
+```text
+items[]
+  item
+    department string
+    description string
+    ...
+```
+
+because it recursively renders the array item object with `name="item"`.
+
+R11's required provider-neutral representation for an object collection is:
+
+```text
+result
+└── values
+    └── items[]
+        ├── department string
+        ├── description string
+        ├── id integer
+        ├── image string
+        ├── name string
+        └── price string
+```
+
+The array node represents the item scope already. Object-item properties must appear directly beneath `items[]`; do not insert a synthetic object label that is not in the canonical result path.
+
+For scalar arrays it is reasonable to render a scalar `item <type>` child because there is no object-property path to display.
+
+Add a DOM-structure regression, not merely a text-presence assertion, proving the six-field example has the fields directly beneath `items[]`.
+
+#### 4. The accessible name is attached to the wrapper, not the actual CodeMirror editing surface
+
+R2 requires:
+
+```text
+aria-label = "Result template source"
+```
+
+The implementation currently puts that label on the outer host `<div>`, while CodeMirror creates the actual `contenteditable`/textbox descendant.
+
+The editable surface itself must expose the accessible name. Configure the CodeMirror content DOM (for example via CodeMirror content attributes or the equivalent supported API) so assistive technology sees:
+
+```text
+role/textbox + accessible name "Result template source"
+```
+
+The wrapper may keep presentation/data attributes, but it must not be the only labelled element.
+
+Add a regression that locates the actual editable CodeMirror textbox by role and accessible name.
+
+#### 5. The required External/Shopify integration validation was not executed and must not be recorded as passed
+
+The task Validation section currently checks:
+
+```text
+External and Shopify Result Template UI tests updated; execution blocked before collection by the missing generated Prisma Client
+```
+
+The Completion Report confirms that neither suite collected tests because `.prisma/client/default` is absent.
+
+Under the repository task protocol, required validation that did not execute must remain unchecked and be explained; "tests were updated" is not equivalent to the required integration suite passing.
+
+These suites are especially relevant to C085 because the task must preserve the already-accepted C079 persisted-DRAFT and C081 External Test integrations while replacing their Result Template UI.
+
+Attempt 2 must:
+
+- reconcile that Validation item back to unchecked before execution;
+- obtain the generated Prisma Client through the approved repository/setup path without modifying schema or performing an unrelated migration;
+- run the required External and Shopify Admin UI suites;
+- check the item only when the suites actually collect and pass;
+- if the approved environment still cannot provide the generated client, return the task `blocked` with the exact environment gap rather than representing the validation as complete.
+
+The repository-wide unrelated TypeScript baseline does not need to be fixed by C085. Continue to require clean changed-file diagnostics.
 
 ### Reviewed Files
 
-None
+- `src/studio/tools/authoring/result-template-editor.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `src/commerce/tool-authoring/result-template-generator.ts`
+- `tests/result-template-tab.test.tsx`
+- `tests/new-tool-authoring-state.test.ts`
+- `tests/tool-authoring-screen.test.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/shopify-admin-tools-ui.test.tsx`
+- C085 Completion Report
 
 ### Validation Reviewed
 
-None
+Submitted Attempt 1 evidence:
+
+- focused editor/state/session/screen packet: **63/63 tests passed**;
+- targeted ESLint: passed;
+- changed-file diagnostics: clean;
+- `git diff --check`: passed;
+- repository typecheck remains non-green on unrelated existing/generated-Prisma diagnostics;
+- External and Shopify Admin UI suites did **not** collect because `.prisma/client/default` was missing.
+
+The review archive contains no installed `node_modules`, so the submitted focused commands were inspected rather than independently rerun.
+
+Source inspection additionally established:
+
+- controlled CodeMirror prop synchronisation currently emits the same callback as a user edit;
+- COLLECTION insertion maintains a React-local copy of C084's alias/loop generation semantics;
+- object-array result-tree rendering introduces a synthetic `item` node; and
+- the actual CodeMirror editable surface is not the element carrying the required accessible name.
 
 ### Architecture Conformance
 
-Pending
+Partial.
+
+C085 conforms to the one canonical Nunjucks source/fallback model, C084 validation ownership, C078/C079 session metadata/persistence boundary and no-browser-rendering invariant.
+
+Acceptance is blocked by:
+1. programmatic source synchronisation being misclassified as a user modification;
+2. duplicated client-side collection-generation semantics instead of C084 helper reuse;
+3. incorrect object-array tree structure;
+4. incomplete CodeMirror accessibility naming; and
+5. required External/Shopify integration suites not having executed.
 
 ### Follow-up
 
-None
+Return the same task as Attempt 2.
+
+Correct only the four bounded implementation issues above, reconcile/run the missing integration validation through the approved setup path, rerun the focused C085 packet plus changed-file lint/diagnostics and `git diff --check`, and STOP.
+
+Do not change the accepted C084 grammar/runtime semantics, and do not reimplement C079/C081 lifecycle/Test behavior.
+
+COMMERCE-083 remains Pending on C085.
