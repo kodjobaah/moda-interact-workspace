@@ -1117,7 +1117,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
@@ -1529,7 +1529,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-080 | moda_commerce | Complete | ARCH-021-COMMERCE-054, ARCH-021-COMMERCE-063 |
 | ARCH-021-COMMERCE-081 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-080 |
 | ARCH-021-COMMERCE-082 | moda_commerce | Complete | ARCH-021-COMMERCE-060, ARCH-021-COMMERCE-062, ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-070 |
-| ARCH-021-COMMERCE-083 | moda_commerce | Ready | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
+| ARCH-021-COMMERCE-083 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-082, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-087 |
 | ARCH-021-COMMERCE-084 | moda_commerce | Complete | ARCH-021-COMMERCE-063, ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-080, ARCH-021-COMMERCE-082 |
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
@@ -2793,6 +2793,15 @@ COMMERCE-083 remains Pending on COMMERCE-087. SYSTEM-TEST-002 remains terminally
 The optional-result runtime correction is architect-accepted. Commerce keeps the C084 `nunjucks.v1` grammar unchanged and makes schema-permitted omissions safe through a non-mutating template-only normalized context plus deterministic effective-optional generator guards. The strict renderer remains strict, required omissions still fail canonical Result validation, and External live Test / Shopify Admin execution / production rendering share the same correction.
 
 The executable refinement frontier is now COMMERCE-083. SYSTEM-TEST-002 remains terminally gated until C083 is Complete.
+
+
+### COMMERCE-083 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-083 is **Complete / Accepted, Attempt 2**. Attempt 1 correctly blocked when the prepared Commerce implementation worktree did not physically contain the already-accepted COMMERCE-082 Shopify Admin live-Test capability. Before Attempt 2, that accepted backend was integrated into the Commerce base and verified; C083 then consumed it without recreating or substituting for C082.
+
+The accepted implementation provides one reusable Shopify Admin Test surface for new Tools and persisted Shopify Admin DRAFTs, reuses the C078/C079 common Test checkpoint with C081-style monotonic stale-result protection, displays the exact server-rendered Result Template output first, and requires a current Shopify Test PASS before Create/Save. Test remains non-durable and separate from publication proof.
+
+The complete Attempt 1/Attempt 2 execution, Completion Report, validation evidence and Architect Review remain preserved in the authoritative C083 task record. ARCH-021-SYSTEM-TEST-002 remains the terminal integrated Tool-authoring validation task.
 
 
 ### COMMERCE-086 production-build blocker / COMMERCE-093 — 2026-09-29
