@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 93
 executor: null
 claimed_at: null
@@ -257,24 +257,52 @@ Published task state:
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 is not accepted. The dedicated Feature surface is directionally conformant: Feature identity is read-only, Capability -> Tool associations are human-readable, the old immediate Capability mutation UI is removed, one shared Behaviour prompt is exposed, and `Add capability` performs navigation only. The focused route split also correctly avoids reintroducing billing/subscription eligibility into Feature authoring.
+
+Three corrections remain inside C090 scope:
+
+**A1-R1 — preserve edits made after a save has been admitted.** `FeatureDetail.save()` unconditionally applies the returned/refreshed canonical prompt and clears dirty state after a successful mutation. The textarea remains editable while `pending`, so text entered after the request starts can be silently overwritten when the earlier save resolves. Preserve the established Studio save invariant: either prevent editing for the complete admitted save interval or track a content/admission revision and only replace/clear local state when no newer edit exists. Add a focused regression that edits the Behaviour prompt while the save promise is unresolved and proves the newer text is not silently lost.
+
+**A1-R2 — stale CAS must remain gated until explicit refresh.** After a `STALE_CAS`, the UI correctly sets `conflict`, but the textarea `onChange` immediately calls `setConflict(false)`. A single subsequent edit therefore re-enables `Save behaviour` with the same stale `editVersion`, contradicting the displayed instruction and the Completion Report's claimed explicit-refresh contract. Editing may retain the user's local text, but it must not clear the stale-CAS gate. Add a regression: stale CAS -> edit again -> Save remains unavailable and Refresh remains required; after refresh, a new edit may save against the refreshed editVersion.
+
+**A1-R3 — do not report an unverified release state from the extracted Feature route.** `ProductionStudioPage` intentionally skips `getShell()` for Features, but then renders `StudioShell` with `shell === undefined`; `StudioShell` maps that to `No active release`. That is a false assertion whenever an active release exists. Keep Feature authoring independent of billing/shop selection and do not reintroduce a publication aggregate read merely for this task, but pass/render an explicit unavailable/not-loaded release state (or otherwise suppress the release claim) so the shell never turns an omitted read into `No active release`. Add a focused route/shell regression for this state.
+
+The recorded repository-wide TypeScript diagnostics and the six neighboring generic `StudioWorkspace` failures are not, by themselves, C090 rejection reasons because the inspected C090 diff does not modify those generic editor behaviours. They should remain recorded, and the correction attempt must still show no changed-file diagnostics plus the focused Feature packet, targeted ESLint and `git diff --check`.
 
 ### Reviewed Files
 
-None
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `components/studio-shell.tsx` (interaction with the new Feature route)
+- `components/studio-composer-context.tsx` (navigation-blocker semantics)
+- `src/studio/features/feature-configuration-screen.tsx`
+- `src/studio/features/contracts.ts`
+- `src/studio/features/services.ts`
+- `src/studio/features/reconciliation-server-actions.ts`
+- `tests/feature-configuration-page.test.tsx`
+- `tests/feature-configuration-screen.test.tsx`
+- `tests/studio-workspace.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-088-implement-direct-feature-capability-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Focused Feature packet reported: 8/8 tests across two files.
+- Targeted ESLint reported clean for the six changed files.
+- Changed-file diagnostics reported clean.
+- `git diff --check` reported clean.
+- Repository typecheck remains red with 271 diagnostics outside the C090 changed-file set.
+- Neighboring `StudioWorkspace` suite reported 7 passed / 6 failed in generic editor workflows; the inspected C090 diff removes legacy Feature ownership but does not alter those generic workflows.
+- The supplied archive does not preserve Git metadata, so pushed commit/remote-cleanliness claims were reviewed from the durable Completion Report rather than independently rerun from the archive.
 
 ### Architecture Conformance
 
-Pending
+Partially conformant. R1, R2, R4, R5 and the dedicated ownership direction of R6 are implemented. R3 is not yet acceptable because the save state machine can lose post-submit edits and the stale-CAS gate is not durable until refresh. The route extraction also introduces a false shell release-status presentation that must be corrected without adding billing/subscription coupling.
 
 ### Follow-up
 
-None
+Return **ARCH-021-COMMERCE-090** to `ready` for Attempt 2 with the three corrections above. Preserve `attempt: 1`; the next authorized claim increments it. `ARCH-021-COMMERCE-091` remains Pending and must not start until C090 is architect-accepted Complete.
