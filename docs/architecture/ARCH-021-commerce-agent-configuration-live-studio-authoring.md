@@ -1131,9 +1131,9 @@ Implementation tasks:
 | ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
 | ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
-| ARCH-021-COMMERCE-092 | moda_commerce | Ready | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
+| ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-COMMERCE-093 | moda_commerce | Complete | - |
-| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
 
 
 Current Phase 5 frontier after COMMERCE-088 acceptance:
@@ -1159,6 +1159,23 @@ COMMERCE-091 is **Complete / Accepted, Attempt 2**. The local-first `Capability 
 The accepted final-create boundary remains exactly one `createFeatureCapability` mutation with candidate preservation/reconciliation for recoverable or uncertain outcomes. Attempt 2 also corrects the earlier task-worktree synchronization evidence and preserves Attempt 1 history.
 
 C091's dependency into COMMERCE-092 is satisfied. COMMERCE-092 remains Pending on its other declared dependencies.
+
+
+Current Phase 5 state after COMMERCE-092 acceptance:
+
+```text
+DATABASE-003   Complete
+SHARED-002     Complete
+COMMERCE-088   Complete
+COMMERCE-089   Complete
+COMMERCE-090   Complete
+COMMERCE-091   Complete
+BACKGROUND-002 Complete
+COMMERCE-092   Complete
+SYSTEM-TEST-003 Ready
+```
+
+COMMERCE-092 removed only the superseded Capability draft/revision/multi-binding authoring architecture. The supported Feature-owned direct Capability model, Tool publication, release Tool-revision pinning, Feature Behaviour snapshots, activation/rollback and runtime Capability membership remain intact. SYSTEM-TEST-003 is the terminal integrated validation frontier.
 
 Current Phase 5 frontier after BACKGROUND-002 acceptance:
 
@@ -1578,8 +1595,8 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
 | ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
 | ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
-| ARCH-021-COMMERCE-092 | moda_commerce | Ready | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
-| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
+| ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
 
 Phase 5 Feature Capability simplification is now decomposed through DATABASE-003, SHARED-001/002, COMMERCE-088..092, BACKGROUND-002 and terminal SYSTEM-TEST-003. Later Phase 6+ work remains intentionally undecomposed where it is not required by this cutover. Expected later owners still include:
 

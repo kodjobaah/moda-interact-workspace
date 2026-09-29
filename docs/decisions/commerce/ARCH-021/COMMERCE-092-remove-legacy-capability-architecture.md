@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 96
 executor: null
 claimed_at: null
@@ -349,24 +349,92 @@ None identified during implementation; awaiting Architect Review.
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 1 is accepted.
+
+The deletion was reviewed specifically for current-functionality regression risk. C092 removes the obsolete Capability revision/draft/multi-binding authoring architecture, but it does not remove the current Capability concept or the supported Feature/release/runtime flows.
+
+The supported authoring path remains Feature-centric:
+
+```text
+/features
+  -> /features/[id]
+  -> /features/[id]/capabilities/new
+  -> direct Feature + Tool Capability
+```
+
+`FeatureConfigurationScreen` remains the Feature configuration surface; `AddCapabilityScreen` creates exactly one direct Feature/Tool Capability through `createFeatureCapability`. The deleted `/capabilities` list/editor routes and the removed `createDraft` / `updateDraft` / Capability `publishRevision` operations belonged only to the superseded Capability-revision model.
+
+Current Tool functionality remains intact: Tool creation, draft update, Tool publication, External/Shopify authoring, live-Test and Result Template paths are still present. The reported `studio-workspace.test.tsx` failures exercise stale Tool-editor expectations (for example expecting `Save draft` outside the current Review-oriented authoring flow) and do not reveal a removed Capability replacement path.
+
+Current release/runtime functionality also remains intact:
+
+- release composition still calls `listReleaseCapabilities`;
+- current direct Capability rows retain `featureId` + `toolId`;
+- `createRelease` resolves the latest PUBLISHED Tool revision for each selected Capability and pins that exact `toolRevisionId`;
+- current Feature Behaviour is snapshotted once per Feature into the immutable release;
+- release activation and rollback remain unchanged;
+- persisted release membership still carries Capability, Feature, Tool and pinned Tool-revision identity;
+- MCP authorization/runtime manifest handling still consumes Capability membership and the pinned release data.
+
+No supported caller remains for the removed standalone Capability revision routes/actions/contracts, and the dedicated legacy-surface regression proves those obsolete surfaces are absent.
+
+The replacement dependencies required by this subtraction gate are all Complete: COMMERCE-089, COMMERCE-091 and BACKGROUND-002. DATABASE-003, SHARED-002, COMMERCE-088 and COMMERCE-090 are also Complete, so the simplified Feature/Capability architecture is fully materialized before deletion.
+
+The real disposable C20 database/Redis rehearsal was not run because disposable targets were not configured. This remains a validation limitation and is not represented as passed. It does not reveal a source-level regression in the inspected C092 changes, and terminal SYSTEM-TEST-003 is promoted to Ready to perform the end-to-end validation of direct Capability creation, Feature Behaviour sharing, immutable Tool-revision pinning, Feature Behaviour snapshots and absence of the legacy revision/binding model.
 
 ### Reviewed Files
 
-None
+- `app/capabilities/page.tsx` (deleted)
+- `app/capabilities/[id]/page.tsx` (deleted)
+- `app/features/page.tsx`
+- `app/features/[id]/page.tsx`
+- `app/features/[id]/capabilities/new/page.tsx`
+- `components/production-studio-page.tsx`
+- `components/studio-shell.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/features/contracts.ts`
+- `src/studio/features/persistence.ts`
+- `src/studio/features/services.ts`
+- `src/studio/features/add-capability/add-capability-screen.tsx`
+- `src/studio/server-actions.ts`
+- `src/studio/server-services.ts`
+- `src/commerce/publication/ports.ts`
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/publication/read-models.ts`
+- `src/commerce/integration/backend/publication-storage.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/mcp/authorization.ts`
+- `src/commerce/mcp/service.ts`
+- `tests/legacy-capability-surface.test.ts`
+- affected focused Feature/release/runtime tests listed in the Completion Report
 
 ### Validation Reviewed
 
-None
+- `npm run test:arch021-tool-authoring-common`: 80 tests passed.
+- Lifecycle/external-availability/Studio integration packet: 44 tests passed.
+- Studio integration/External Tools UI/Feature configuration packet: 106 tests passed.
+- Legacy Capability surface guard: 2 tests passed.
+- Targeted ESLint: zero errors; one documented existing warning.
+- Targeted removed-symbol/source audit: passed.
+- Prisma Client generation: passed.
+- `git diff --check`: passed.
+- Repository typecheck: 40 diagnostics in 13 unrelated/pre-existing files; no diagnostics remain in the C092-changed lifecycle/publication/Studio-service files.
+- Broader `studio-workspace.test.tsx`: 7 existing Tool-editor expectation failures and 5 passes; inspected failures do not map to removed Capability replacement behavior.
+- Broader backend selection: 70 passes with 2 existing process-global backend bootstrap failures.
+- Real disposable C20 DB/Redis integration: not run because the required disposable targets were not configured; explicitly deferred to integrated validation rather than recorded as passed.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C092 completes the pre-production breaking removal of the obsolete Capability revision architecture while preserving the accepted direct Feature -> Capability -> Tool authoring model and immutable release/runtime composition. The current Capability entity remains in use; only its superseded draft/revision/binding lifecycle is removed.
 
 ### Follow-up
 
-None
+ARCH-021-COMMERCE-092 is Complete.
+
+ARCH-021-SYSTEM-TEST-003 is promoted to Ready because every declared implementation/publication dependency is now Complete. The developer may manually exercise the completed Feature flow before invoking the terminal system test.
