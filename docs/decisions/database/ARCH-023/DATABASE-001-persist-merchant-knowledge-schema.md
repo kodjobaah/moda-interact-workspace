@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-09-29T21:48:42Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -1037,8 +1037,9 @@ Also prove the corresponding valid cases succeed.
 - [x] Add source revision persistence, locator/content checks and one-ACTIVE partial unique index.
 - [x] Enable pgvector and add Merchant Knowledge chunk persistence/checks.
 - [x] Add required reverse relation fields to existing models.
-- [x] Create the focused schema validator and package script.
-- [x] Create the focused migration validator and package script.
+- [x] Create the focused schema validator and package script; verify exact field types, modifiers, relations, enum sets, reverse relations and indexes.
+- [x] Create the focused migration validator and package script; verify exact columns, enum values, foreign keys/actions, indexes/keys and CHECK semantics.
+- [x] Add mutation regression coverage proving representative invalid schema and migration contracts are rejected.
 - [x] Rehearse fresh migration.
 - [x] Rehearse upgrade migration preserving modified-table data.
 - [x] Exercise all required database-enforceable negative cases.
@@ -1159,12 +1160,13 @@ No downstream task may be started by the database agent.
 
 ## Validation
 
-- [x] `./node_modules/.bin/prisma format --schema prisma/schema.prisma` (passed before final validation).
+- [x] `./node_modules/.bin/prisma format --schema prisma/schema.prisma` (passed during Attempt 2 final validation).
 - [x] `./node_modules/.bin/prisma validate --schema prisma/schema.prisma` (passed).
-- [x] `npm run test:arch023-merchant-knowledge-schema` (passed).
-- [x] `npm run test:arch023-merchant-knowledge-migration` (static contract passed).
-- [x] Fresh isolated PostgreSQL 15.19 + pgvector migration rehearsal passed on `arch023_test_fresh`.
-- [x] Upgrade isolated PostgreSQL 15.19 + pgvector rehearsal passed on `arch023_test_upgrade`, preserving every predecessor table and seeded rows in all modified tables.
+- [x] `npm run test:arch023-merchant-knowledge-schema` (exact static contract passed).
+- [x] `npm run test:arch023-merchant-knowledge-migration` (exact static contract passed).
+- [x] `npm run test:arch023-merchant-knowledge-validator-mutations` (all five requested wrong-but-plausible mutations rejected for the expected contract mismatch).
+- [x] Fresh isolated PostgreSQL 15.19 + pgvector migration rehearsal passed on `arch023_test_fresh` for Attempt 2.
+- [x] Upgrade isolated PostgreSQL 15.19 + pgvector rehearsal passed on `arch023_test_upgrade` for Attempt 2, preserving every predecessor table and seeded rows in all modified tables.
 - [x] Required valid and invalid direct-SQL cases passed, including vector dimension controls and exact catalogue counts.
 - [x] `git diff --check` passed.
 
@@ -1215,7 +1217,7 @@ Do not "strengthen" the database by inventing cross-row triggers for rules expli
 
 ### Status
 
-Implementation complete; returned to `review` for `moda_architect` acceptance. Attempt 1; active claim cleared.
+Attempt 2 implementation complete; returned to `review` for `moda_architect` acceptance. Active claim cleared.
 
 ### Files Changed
 
@@ -1225,6 +1227,8 @@ Implementation repository (`moda-interact-database`):
 - `prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql`
 - `scripts/validate-arch023-merchant-knowledge-schema.mjs`
 - `scripts/validate-arch023-merchant-knowledge-migration.mjs`
+- `scripts/fixtures/arch023-merchant-knowledge-migration-contract.mjs`
+- `scripts/test-arch023-merchant-knowledge-validator-mutations.mjs`
 - `scripts/fixtures/arch023-merchant-knowledge-cases.mjs`
 - `package.json`
 
@@ -1234,21 +1238,26 @@ Parent workspace task record: this task file only. No parent submodule gitlink w
 
 - Added the complete additive ARCH-023 Prisma/PostgreSQL schema, exact keys, relations, checks, indexes, pgvector storage and key-based catalogue seeds in the fixed migration.
 - Added focused schema and migration contract validators and package scripts.
+- Strengthened both static validators to check exact declarations and closed contract sets, including field types/modifiers, relation signatures/actions, enum sets, FK targets/actions, indexes/keys and CHECK expressions.
+- Added deterministic mutation tests for all five review probes: acceptedContentTypes type, taxonomy weight type, shop relation delete action, canonicalExtension SQL type and uploaded-asset Data Format FK delete action.
 - Added direct-SQL fixture coverage for required valid and invalid database writes, JSONB defaults/round-trip, catalogue counts and vector dimension enforcement.
 - Updated fixture setup to satisfy the existing ARCH-014 deferred pricing catalogue constraint and active revision foreign-key ordering.
+- No production Prisma schema or migration changes were needed for the review corrections.
 
 ### Validation Results
 
 - `./node_modules/.bin/prisma format --schema prisma/schema.prisma` — passed.
 - `./node_modules/.bin/prisma validate --schema prisma/schema.prisma` — passed.
-- `npm run test:arch023-merchant-knowledge-schema` — passed.
-- `npm run test:arch023-merchant-knowledge-migration` — passed.
-- `node --check` on both validators and the fixture — passed.
-- Fresh rehearsal: all 21 migrations applied to isolated `arch023_test_fresh`; 7 purposes, 3 formats and 11 pairs verified; all valid/invalid controls passed.
-- Upgrade rehearsal: 20 predecessor migrations applied, representative legacy rows seeded, then ARCH-023 applied; every predecessor table snapshot and modified-table row snapshot was preserved; all ARCH-023 checks passed.
+- `npm run test:arch023-merchant-knowledge-schema` — exact schema contract passed.
+- `npm run test:arch023-merchant-knowledge-migration` — exact migration contract passed.
+- `npm run test:arch023-merchant-knowledge-validator-mutations` — passed; all five R19/R20 mutation probes failed with their expected contract-specific assertion.
+- `node --check` on both validators, the migration contract helper, mutation suite and direct-SQL fixture — passed.
+- Attempt 2 fresh rehearsal: all 21 migrations applied to isolated `arch023_test_fresh`; 7 purposes, 3 formats and 11 pairs verified; all valid/invalid controls passed.
+- Attempt 2 upgrade rehearsal: 20 predecessor migrations applied, representative legacy rows seeded, then ARCH-023 applied; every predecessor table snapshot and modified-table row snapshot was preserved; all ARCH-023 checks passed.
 - `git diff --check` — passed.
 - Environment: PostgreSQL 15.19 with `pgvector/pg15`; Prisma CLI/Client 6.19.3; Node.js 24.21.0.
-- Published implementation commit: `1e12bb3507f507579e15a6782c9620956609801c` on `task/ARCH-023-DATABASE-001`.
+- Attempt 1 implementation commit: `1e12bb3507f507579e15a6782c9620956609801c` on `task/ARCH-023-DATABASE-001`.
+- Attempt 2 validator correction commit: `13d6faa24bc9ad66d3f9c1ff18b2fde8d4c8f300` on `task/ARCH-023-DATABASE-001`.
 
 ### Launcher and Worktree Evidence
 
@@ -1257,7 +1266,7 @@ Parent workspace task record: this task file only. No parent submodule gitlink w
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-DATABASE-001`, `task/ARCH-023-DATABASE-001`.
 - Shared workspace and shared implementation checkouts switched or mutated for task work: no.
 - Another task worktree reused: no.
-- Start synchronization: launcher preparation passed; both new task branches were based on their respective `origin/main`, and the parent claim was pushed before implementation. No startup synchronization/preparation was repeated.
+- Attempt 2 start synchronization: parent and implementation task branches were reused from their matching task branches; parent incorporated current `origin/main`, and implementation was already current with `origin/main`. The launcher committed/pushed the Attempt 2 parent claim before implementation.
 - `git submodule sync --recursive` and `git submodule update --init --recursive`: passed during preparation. The database repository has no recursive submodule entries.
 
 ### Deviations
