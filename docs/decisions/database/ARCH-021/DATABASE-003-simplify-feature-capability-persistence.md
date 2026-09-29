@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 88
-executor: copilot
-claimed_at: 2026-09-29T11:07:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-002
@@ -344,24 +344,49 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+The direct Feature/Tool Capability schema, one-row-per-Feature current behaviour configuration, exact Tool-revision release pinning, composite identity foreign keys, immutable release Feature snapshots and Tool-owned revision-status enum conform to the Phase 5 target. The submitted schema validator also passes on review.
+
+One blocking legacy database path remains and must be corrected in this same task:
+
+1. `arch020_grant_insert` is still installed on `commerce."CommerceConversationGrant"` and still executes `commerce.arch020_grant()`. That function still requires `conversation_core` and still joins the removed `CommerceCapabilityRevision` table and its `toolBindings`. After this migration a normal grant insert can therefore preserve the removed BASE requirement or fail against a table that no longer exists.
+2. The surviving `arch020_grant_bounds` constraint still validates `selectedCapabilityKeys` with `commerce.arch020_strings(..., 1, 32)`, so the database still rejects the architecture-approved zero-Capability/zero-Tool case.
+
+Attempt 2 correction contract:
+
+- Drop/replace the legacy grant insert trigger/function so grant integrity is expressed only in terms of the new direct release composition. Preserve the supported conversation/shop/inbound-version/release ownership checks, but derive the canonical granted Tool set directly from `CommerceReleaseCapability.toolId` + `toolRevisionId` for the selected Capability keys. Do not reference Capability revisions, `toolBindings`, `selectionBinding` or `conversation_core`. Reused Tools must remain one granted Tool with all selected Capability-key provenance.
+- Drop/recreate the grant bounds constraint so an empty `selectedCapabilityKeys` array and empty `grantedTools` array are valid when the rest of the grant is valid.
+- Remove `arch020_bindings` if no surviving supported database object uses it; do not retain a dead helper whose only purpose was Capability revision `toolBindings`.
+- Extend the focused PostgreSQL migration rehearsal to prove: (a) a zero-Capability/zero-Tool grant succeeds, (b) a direct Capability grant with the release-pinned Tool revision succeeds, (c) missing/extra/mismatched granted Tool authority is rejected, and (d) active post-migration constraints/triggers/function definitions contain no dependency on `CommerceCapabilityRevision`, `toolBindings`, `selectionBinding` or mandatory `conversation_core`.
+- Update the Completion Report with launcher-prepared physical-isolation/start-of-attempt synchronization evidence for the dedicated parent and implementation worktrees, including recursive submodule preparation evidence required by the task workflow. If the original prepared packet already proves this, record that evidence; no code churn is required solely for the evidence correction.
+
+No downstream task is unblocked until DATABASE-003 is accepted Complete.
 
 ### Reviewed Files
 
-None
+- `docs/decisions/database/ARCH-021/DATABASE-003-simplify-feature-capability-persistence.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20260929120000_arch021_feature_capability_simplification/migration.sql`
+- `moda-interact-database/scripts/validate-arch021-feature-capability-schema.mjs`
+- `moda-interact-database/scripts/validate-arch021-feature-capability-migration.mjs`
+- `moda-interact-database/package.json`
+- predecessor ARCH-020 Commerce migration grant/constraint definitions required to determine which database objects survive the new migration
 
 ### Validation Reviewed
 
-None
+- Re-ran `node scripts/validate-arch021-feature-capability-schema.mjs`: passed.
+- Reviewed the submitted Prisma validate/generate, fresh migration, seeded-upgrade preservation and ERD evidence recorded in the Completion Report.
+- Independently inspected the migration chain and found that the submitted rehearsal does not perform a post-migration `CommerceConversationGrant` insert, so it does not detect the surviving legacy grant trigger/constraint described above.
+- The supplied review archive does not contain installed Node dependencies and this review environment has no Docker executable, so the PostgreSQL rehearsal was not independently rerun here.
 
 ### Architecture Conformance
 
-Pending
+Changes Requested. The new Capability/release persistence itself conforms, but the surviving grant trigger/constraint contradicts the Phase 5 invariants that `conversation_core` is not mandatory, Capability revisions/tool bindings are removed, and zero selected Capabilities/Tools are valid.
 
 ### Follow-up
 
-None
+Return `ARCH-021-DATABASE-003` through the normal `/moda-task` path for Attempt 2. This is correction work within the existing task scope; do not create a new task.
