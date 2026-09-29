@@ -1230,7 +1230,7 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 | [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Complete | COMMERCE-096 |
 | [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Complete | COMMERCE-096 |
 | [COMMERCE-099](COMMERCE-099-round-trip-and-save-policy-operation-tool-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Complete | COMMERCE-097, COMMERCE-098 |
-| [COMMERCE-100](COMMERCE-100-publish-and-regression-validate-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Ready | COMMERCE-099 |
+| [COMMERCE-100](COMMERCE-100-publish-and-regression-validate-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Complete | COMMERCE-099 |
 
 ```text
                     C096 Complete
@@ -1242,7 +1242,7 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
                     C099 Complete
                            |
                            v
-                      C100 Ready
+                    C100 Complete
 ```
 
 ### COMMERCE-096 Attempt 1 accepted — 2026-09-29
@@ -1274,6 +1274,14 @@ Attempt 2 adds the same monotonic transient-generation protection already accept
 
 COMMERCE-100 is now **Ready** as the final generic Policy Operation publication/reopen/regression-validation task.
 
+### COMMERCE-100 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-100 is **Complete / Accepted, Attempt 1**. Registered Policy Operation DRAFTs now complete the normal Studio lifecycle through saved/current-validation/current-Test/SUPER_ADMIN/reason-gated canonical publication. Exact registry unavailability fails atomically before publication mutation, and published revisions reopen read-only with the exact fixed operation/version and saved definition.
+
+The New Tool selector remains unchanged and does not expose Policy Operation creation. No schema/migration, Merchant Knowledge special case or ARCH-023 implementation was introduced.
+
+The generic Policy Operation Studio follow-up C096-C100 is now fully Complete; there is no remaining executable task in this bounded ARCH-021 follow-up.
+
 
 ### COMMERCE-086 Attempt 2 accepted — 2026-09-29
 
@@ -1292,3 +1300,77 @@ Manual Shopify Admin Test validation exposed two bounded interaction-safety defe
 COMMERCE-102 is an independent manual-validation correction. It does not reopen C082/C083/C095 and it does not depend on the Policy Operation C096..100 chain. C082 remains the server-authoritative Shopify Admin execution boundary; C102 fixes the browser execution-target presentation/admission contract and same-tick action re-entry.
 
 `ARCH-021-SYSTEM-TEST-002` is re-gated **Pending** on COMMERCE-102 so terminal Tool-authoring validation runs only after the selected-shop and single-flight corrections are architect-accepted.
+
+## Manual-validation follow-up — persisted Tool sequential traversal — 2026-09-29
+
+Manual validation of an existing Shopify Admin DRAFT exposed the navigation parity gap deliberately left out of COMMERCE-095: persisted External HTTP, Shopify Admin and Policy Operation editors show all six canonical tabs but do not render the shared `Previous`/`Next` footer.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-103](COMMERCE-103-add-persisted-tool-previous-next-navigation.md) | Add side-effect-free Previous/Next traversal to all persisted DRAFT Tool authoring kinds | Complete | COMMERCE-095, COMMERCE-099 |
+
+COMMERCE-103 reuses the C095 canonical six-step order/presentation but does **not** import progressive unlocking into persisted DRAFTs. All persisted tabs remain directly clickable; `Previous`/`Next` are pure section navigation and never validate, Test, save or publish. COMMERCE-103 is independent of COMMERCE-102.
+
+### COMMERCE-103 accepted — 2026-09-30
+
+COMMERCE-103 is **Complete / Accepted**. The persisted External HTTP, Shopify Admin and Policy Operation traversal implementation and its 163-test regression packet are accepted, and the final canonical `npm run typecheck` now passes with zero diagnostics.
+
+`ARCH-021-SYSTEM-TEST-002` remains **Pending** only because COMMERCE-102 is not yet Complete.
+
+## Manual-validation follow-up — Add Capability direct phase readiness — 2026-09-29
+
+Manual validation of the accepted COMMERCE-091 Add Capability flow exposed a first-entry navigation admission gap: `enabledThrough` is monotonic once a phase has been entered, but the visible Tool/Review phase buttons remain disabled until `Next` performs that first unlock even when the current local candidate already satisfies the destination readiness predicate.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-104](COMMERCE-104-make-add-capability-phases-directly-navigable-when-ready.md) | Make Tool/Review directly clickable as soon as their current first-entry prerequisites are satisfied while preserving the monotonic unlock frontier | Complete | COMMERCE-091 |
+
+COMMERCE-104 is a bounded browser-navigation correction. Before first entry, Tool follows live `validCapability` and Review follows live `canReview`; direct entry monotonically advances the same `enabledThrough` frontier already accepted in C091. After first unlock, later invalidation never re-locks the phase, while `Create capability` remains gated by the current `canReview`. Navigation remains local-only and performs zero Capability mutation/reconciliation calls.
+
+`ARCH-021-SYSTEM-TEST-003` is re-gated **Pending** on COMMERCE-104 so terminal Feature/Capability validation runs only after this direct-phase correction is architect-accepted.
+
+## Phase 6 — Feature-composed selected-shop Test Conversations — 2026-09-29
+
+Product decision: Test Conversations is Feature-composed. Selecting a Feature means **all direct Capabilities under that Feature**; there is no per-Capability exclusion. The browser submits Feature IDs and selected shop ID only. Commerce resolves Capabilities/Tool revisions and effective Agent Configuration server-side and freezes them when the conversation starts.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-105](COMMERCE-105-resolve-feature-composed-preview-selections.md) | Resolve ordered selected Features to every direct Capability, exact current published Tool revisions and one Feature Behaviour entry per Feature | Ready | COMMERCE-092 |
+| [COMMERCE-106](COMMERCE-106-freeze-selected-shop-agent-configuration-in-preview.md) | Require the selected shop and freeze its effective Model/Prompt into the Preview conversation | Pending | COMMERCE-010, COMMERCE-105 |
+| [COMMERCE-107](COMMERCE-107-build-feature-composed-test-conversations-ui.md) | Replace Release/fixture composition controls with selected-shop multi-Feature Test Conversations UI | Pending | COMMERCE-105, COMMERCE-106 |
+| [COMMERCE-108](COMMERCE-108-execute-feature-preview-tools-against-selected-shop.md) | Execute frozen Feature Tools through the production DefinitionExecutor against the selected shop | Pending | COMMERCE-105, COMMERCE-106 |
+| [COMMERCE-109](COMMERCE-109-remove-redundant-human-facing-preview-functionality.md) | Delete obsolete Tool/Release/Fixture human Preview paths while retaining fixture seams with concrete internal/test consumers | Pending | COMMERCE-107, COMMERCE-108 |
+
+Execution graph:
+
+```text
+COMMERCE-105
+     |
+     v
+COMMERCE-106
+     |
+     +----------+
+     |          |
+     v          v
+COMMERCE-107  COMMERCE-108
+     |          |
+     +----+-----+
+          |
+          v
+COMMERCE-109
+          |
+          v
+GATEWAY-002
+          |
+          v
+SYSTEM-TEST-004
+```
+
+COMMERCE-105 is **Ready** because COMMERCE-092 is architect-accepted Complete. The remaining Phase-6 Commerce tasks stay Pending until their declared dependencies are Complete. C107/C108 are intentionally parallel after C106. C109 is the explicit cleanup/subtractive gate requested during manual validation; obsolete UI is deleted rather than hidden behind a mode flag.
+`ARCH-021-SYSTEM-TEST-003` was re-gated on COMMERCE-104 so terminal Feature/Capability validation would run only after this direct-phase correction was architect-accepted.
+
+### COMMERCE-104 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-104 is **Complete / Accepted, Attempt 1**. Tool and Review now become directly clickable from current first-entry readiness, direct click and Next share the same admission path, historical unlock remains monotonic, and final Create stays gated by the current candidate. Navigation remains browser-local and zero-write.
+
+All SYSTEM-TEST-003 dependencies are now Complete, so SYSTEM-TEST-003 is **Ready** for terminal validation.

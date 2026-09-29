@@ -551,13 +551,24 @@ Starting a Studio conversation preview requires a selected shop. The preview res
 that shop's effective model and prompt at start and shows their source/identity to the
 user.
 
-The preview then freezes those values together with the selected features/tools.
-Subsequent turns use the same model, prompt and conversation history. A reset/new
-preview is required to test newly-published prompt/model changes.
+The human author selects **Features**. Selecting one Feature means **all direct current
+Capabilities under that Feature**; Test Conversations has no per-Capability exclusion
+control. The browser sends only the selected Feature IDs. Commerce resolves the exact
+Capabilities, each Capability's current published Tool revision and the Feature Behaviour
+server-side. Authoring composition is explicit and is not silently filtered by shop plan,
+subscription, Feature preference, active Release membership or runtime entitlement.
 
-Later live-preview phases will replace normal human-facing fixture execution with
-real read-only Shopify/external tool execution. Synthetic fixtures remain valid for
-deterministic automated tests.
+The preview then freezes the selected shop, effective model/prompt, selected Feature
+order, Feature Behaviour, Capability members and exact Tool revisions/definitions.
+Subsequent turns use the same frozen composition/configuration and retained conversation
+history. A reset/new preview is required to test newly-published model/prompt, Feature,
+Capability or Tool changes.
+
+Phase 6 replaces normal human-facing fixture execution with real selected-shop Tool
+execution through the existing production DefinitionExecutor. Synthetic fixtures and
+Tool-test routes remain valid only where deterministic automated tests or an accepted
+internal producer such as External Code Response still consume them; they are not an
+alternate human Test Conversations mode.
 
 ## Consistency and Transactions
 
@@ -1092,7 +1103,7 @@ Manual architecture review of Tool result/prompt authoring establishes the follo
 7. A non-persisted source-neutral `ToolResultContract` is compiled from the canonical output/result schema and supplies exact scalar/collection bindings for template authoring. React does not infer provider-specific result paths independently.
 8. `responseTemplate` remains the persisted/runtime representation but receives its own Result Template authoring surface. Agent Contract retains definition version, Agent description and Agent input schema only.
 9. Result Template supports only the existing bounded `text` / `items` runtime grammar in this refinement; no conditional language, arbitrary JavaScript or rich-text dependency is introduced.
-10. Progressive Previous/Next traversal for **new Tool creation only** is owned by COMMERCE-095 after the individual Tool surfaces are implemented. Its unlock frontier is browser/session-local and monotonic; persisted-DRAFT traversal remains unchanged.
+10. Progressive Previous/Next traversal for **new Tool creation only** is owned by COMMERCE-095 after the individual Tool surfaces are implemented. Its unlock frontier is browser/session-local and monotonic. Persisted-DRAFT sequential traversal is a separate manual-validation correction owned by COMMERCE-103; persisted tabs remain permanently unlocked and Previous/Next are pure section navigation.
 
 Implementation tasks:
 
@@ -1124,6 +1135,15 @@ Implementation tasks:
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
+| ARCH-021-COMMERCE-105 | moda_commerce | Complete | ARCH-021-COMMERCE-092 |
+| ARCH-021-COMMERCE-106 | moda_commerce | Pending | ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-105 |
+| ARCH-021-COMMERCE-107 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
+| ARCH-021-COMMERCE-108 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
+| ARCH-021-COMMERCE-109 | moda_commerce | Pending | ARCH-021-COMMERCE-107, ARCH-021-COMMERCE-108 |
+| ARCH-021-GATEWAY-002 | moda_gateway | Pending | ARCH-021-COMMERCE-106, ARCH-021-COMMERCE-109 |
+| ARCH-021-SYSTEM-TEST-004 | moda_system_test | Pending | ARCH-021-COMMERCE-105..109, ARCH-021-GATEWAY-002 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1134,7 +1154,7 @@ Implementation tasks:
 | ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-COMMERCE-093 | moda_commerce | Complete | - |
-| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
 
 
 Current Phase 5 frontier after COMMERCE-088 acceptance:
@@ -1445,6 +1465,41 @@ wrapped. The agreed invariants are:
 Use the selected shop's frozen effective model/prompt plus real tools and retained
 preview conversation history.
 
+The Phase-6 authoring contract is:
+
+```text
+validated selected shop
+        +
+ordered selected Feature IDs
+        |
+        v
+server resolves every direct Capability under every selected Feature
+        |
+        v
+server pins each Capability's current published Tool revision
+        +
+Feature Behaviour once per selected Feature
+        +
+effective Model + published Prompt for the selected shop
+        |
+        v
+frozen Preview conversation
+        |
+        v
+production DefinitionExecutor against the selected shop
+```
+
+There is no per-Capability checkbox. A selected Feature contributes all of its direct
+Capabilities. Features/Capabilities are not removed from this explicit authoring
+composition because of production plan/preference/Release eligibility; an unavailable
+Tool revision fails the composition closed rather than being omitted.
+
+The supported human `/preview` surface is Test Conversations only. The old generic Tool
+test, Release/DRAFT source choice, Fixture scenario, Model-mode and Release-composer
+Preview handoff are removed after the replacement path is complete. Deterministic
+fixture/tool-test infrastructure may remain only for concrete automated/internal
+consumers.
+
 ### Phase 7 — Background parity
 
 Make production grants pin the effective model/prompt and make Background execute the
@@ -1589,6 +1644,8 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -1598,19 +1655,15 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
 | ARCH-021-BACKGROUND-002 | moda_background | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Complete | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
-| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
 
-Phase 5 Feature Capability simplification is now decomposed through DATABASE-003, SHARED-001/002, COMMERCE-088..092, BACKGROUND-002 and terminal SYSTEM-TEST-003. Later Phase 6+ work remains intentionally undecomposed where it is not required by this cutover. Expected later owners still include:
+Phase 5 Feature Capability simplification is decomposed through DATABASE-003, SHARED-001/002, COMMERCE-088..092, the manual-validation correction COMMERCE-104, BACKGROUND-002 and terminal SYSTEM-TEST-003.
 
-- `moda_database` for conversation/preview frozen global model/prompt fields;
-- `moda_shared` for later Agent Configuration grant/runner additions not already covered by SHARED-001;
-- `moda_commerce` for production-equivalent preview and later MCP resolution work;
-- `moda_background` for the later pinned global model/prompt consumption cutover;
-- `moda_system_test` only after the required implementation dependencies are Complete.
+Phase 6 is now decomposed through COMMERCE-105..109, GATEWAY-002 and terminal SYSTEM-TEST-004. No Database or Shared migration is required for Studio Preview: the current direct Feature/Capability/Tool model, existing shared manifest/runner and Redis Preview snapshot are sufficient. Gateway work is required because effective Model selection can choose OPENAI or GROQ dynamically while provider credentials remain server-only environment secrets. Background parity remains later Phase 7 work.
 
 No implementation task may depend on a system-test task.
 
-Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. Manual validation has added COMMERCE-102 as a required implementation correction, so SYSTEM-TEST-002 is Pending until C102 is architect-accepted Complete.
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. Manual validation has added COMMERCE-102 and COMMERCE-103 as required implementation corrections, so SYSTEM-TEST-002 is Pending until both are architect-accepted Complete.
 ### COMMERCE-082 Attempt 1 accepted — 2026-09-28
 
 - Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
@@ -2968,9 +3021,9 @@ The C096 descriptor schemas are Commerce-local JSON-compatible schemas generated
 | ARCH-021-COMMERCE-097 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
 | ARCH-021-COMMERCE-098 | moda_commerce | Complete | ARCH-021-COMMERCE-096 |
 | ARCH-021-COMMERCE-099 | moda_commerce | Complete | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
-| ARCH-021-COMMERCE-100 | moda_commerce | Ready | ARCH-021-COMMERCE-099 |
+| ARCH-021-COMMERCE-100 | moda_commerce | Complete | ARCH-021-COMMERCE-099 |
 
-C096, C097, C098 and C099 are architect-accepted Complete. C100 is now the executable frontier. This follow-up remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge using the same Policy Operation mechanism without a Merchant Knowledge special case in ARCH-021.
+C096, C097, C098, C099 and C100 are architect-accepted Complete. The generic Policy Operation Studio follow-up has no remaining executable ARCH-021 task. This capability remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge through its own materialised tasks without a Merchant Knowledge special case in ARCH-021.
 
 
 ### COMMERCE-098 Attempt 1 accepted — 2026-09-29
@@ -2995,6 +3048,14 @@ Attempt 2 closes the transient Test race with the accepted monotonic provider-lo
 
 C099 is Complete and C100 is **Ready** for publication/reopen/regression validation.
 
+### COMMERCE-100 Attempt 1 accepted — 2026-09-29
+
+The generic Policy Operation publication/reopen boundary is architect-accepted. Policy Operation DRAFTs use the canonical Tool publication lifecycle with current saved-state, validation, Test, authorization and reason gates; exact registry unavailability fails closed before mutation; and published revisions reopen read-only with their exact operation/version and definition.
+
+New Tool creation remains limited to its accepted execution kinds, and no schema/migration or ARCH-023-specific branch was added.
+
+C096-C100 are now all Complete. This bounded generic Policy Operation Studio follow-up has no remaining executable ARCH-021 task.
+
 
 ### COMMERCE-086 Attempt 2 accepted — 2026-09-29
 
@@ -3002,11 +3063,13 @@ The Result Template user-guide delivery path is architect-accepted end to end. C
 
 C093/C094 resolved the unrelated build blockers. A clean normal Commerce build now packages the manual and completes successfully, and the built application serves `/manuals/result-template-guide.html` through `npm run start` with HTTP 200 and the expected HTML title. C086 is Complete and has no dependent implementation task to promote.
 
-### Tool authoring execution-target and single-flight correction — 2026-09-29
+### Tool authoring execution-target, interaction-safety and persisted-navigation corrections — 2026-09-29
 
 Manual validation of the accepted Shopify Admin Test flow exposed a bounded browser-side execution-context mismatch: `ProductionStudioPage` resolves a server-authoritative `StudioShopSelection`, but the normal Tools workspace still receives the raw route `shopId`. The architecture now requires `shopSelection.selectedShop` to be the sole Tool-authoring execution target after resolution. Shopify Admin Test remains navigable but must visibly identify the selected shop domain/offline-session availability and keep Run Test disabled when there is no executable selected shop. C082 remains the server-authoritative shop/session/token boundary; no credential material moves into browser state.
 
 The same validation pass also exposed a common interaction-admission gap. React pending/disabled state is presentation feedback, not a same-tick correctness gate. COMMERCE-102 therefore adds synchronous single-flight admission to consequential Tool-authoring mutations, provider/validation actions and the Explore Shopify one-shot hand-off while preserving existing operation IDs, CAS, unknown-outcome reconciliation and candidate-staleness semantics. Local repeatable controls are not globally debounced.
+
+Manual validation of an existing persisted Shopify Admin DRAFT then exposed the sequential-navigation parity gap deliberately left out of COMMERCE-095. COMMERCE-103 adds the shared `Previous`/`Next` footer to persisted External HTTP, Shopify Admin and Policy Operation DRAFT authoring. It reuses the same canonical six-step order but adds no unlock frontier: persisted tabs remain directly clickable, and Previous/Next only change the active section.
 
 ```text
 route shopId
@@ -3047,6 +3110,99 @@ existing async mutation/provider/validation action
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
-| ARCH-021-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-102 |
+| ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
+| ARCH-021-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-102, ARCH-021-COMMERCE-103 |
 
-COMMERCE-102 is independent of the Policy Operation C096..100 chain. SYSTEM-TEST-002 is re-gated behind C102 and remains terminal validation; no Commerce implementation task depends on the system-test task.
+COMMERCE-102 and COMMERCE-103 are independent implementation corrections.
+
+### COMMERCE-103 accepted — 2026-09-30
+
+COMMERCE-103 is **Complete / Accepted**. Persisted External HTTP, Shopify Admin and Policy Operation DRAFTs now share the canonical six-step Previous/Next traversal while keeping every persisted tab directly clickable and preserving validation/Test/Save independence. The final canonical project typecheck passes with zero diagnostics and the task worktree is clean.
+
+C103's SYSTEM-TEST-002 dependency is satisfied. SYSTEM-TEST-002 remains **Pending** on COMMERCE-102 and remains terminal validation; no Commerce implementation task depends on the system-test task.
+
+### Add Capability direct-phase navigation correction — 2026-09-29
+
+Manual validation of the accepted COMMERCE-091 `Capability -> Tool -> Review` flow exposed a first-entry admission mismatch between the visible phase buttons and the footer `Next` path. C091's monotonic `enabledThrough` frontier correctly preserves access **after** a phase is unlocked, but the phase buttons currently consult only that historical frontier. A valid Capability therefore leaves Tool disabled until `Next` performs the first unlock; similarly, a valid Capability + eligible selected Tool leaves Review unavailable for first direct entry until the Tool footer path unlocks it.
+
+COMMERCE-104 corrects this without changing the local-first Capability architecture. The normal availability contract is:
+
+```text
+phaseAvailable(destination)
+  = historicallyUnlocked(destination)
+    OR currentlyReadyForFirstEntry(destination)
+
+currentlyReadyForFirstEntry(Capability) = true
+currentlyReadyForFirstEntry(Tool)       = validCapability
+currentlyReadyForFirstEntry(Review)     = canReview
+```
+
+Direct phase click and `Next` must share that same admission path. First direct entry monotonically advances `enabledThrough`; later invalidation never re-locks a previously unlocked Tool/Review. Final `Create capability` remains independently gated by the **current** `canReview`, and all navigation remains browser-local with zero Capability mutation/reconciliation calls. Pending/unknown-outcome locks remain unchanged.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
+| ARCH-021-SYSTEM-TEST-003 | moda_system_test | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-COMMERCE-104, ARCH-021-BACKGROUND-002 |
+
+COMMERCE-104 is independent of COMMERCE-102/103. SYSTEM-TEST-003 is re-gated behind C104 and remains terminal Feature/Capability validation; no Commerce implementation task depends on the system-test task.
+
+### Phase 6 Feature-composed selected-shop Test Conversations refinement — 2026-09-29
+
+organised around the older Tool/Release/fixture Preview model. The agreed product
+behaviour is now explicit: the author selects a shop and a set of Features; every direct
+Capability under each selected Feature is part of the test composition. The browser does
+not select Capability IDs, Tool revisions, Model/provider, Prompt revision or credentials.
+
+Server composition freezes the exact Feature order, Feature Behaviour, Capabilities and
+current published Tool revisions. Conversation creation independently freezes the
+selected shop's effective Model and published Prompt. Real Tool calls use the same
+production DefinitionExecutor against that selected shop. A running conversation never
+floats to later Feature/Tool/model/prompt changes.
+
+The redundant human-facing Preview paths are removed only after the replacement UI and
+real execution path are both accepted. Deterministic fixture/tool-test backend seams are
+retained only when a concrete automated/internal consumer (including External Code
+Response where applicable) still uses them.
+
+```text
+COMMERCE-105 (Feature composition) [Ready]
+        |
+        v
+COMMERCE-106 (shop + effective model/prompt freeze)
+        |
+        +---------------------+
+        |                     |
+        v                     v
+COMMERCE-107 (Feature UI)  COMMERCE-108 (real Tool execution)
+        |                     |
+        +----------+----------+
+                   |
+                   v
+COMMERCE-109 (remove redundant human Preview paths)
+                   |
+                   v
+GATEWAY-002 (provider credential wiring / old env removal)
+                   |
+                   v
+SYSTEM-TEST-004 (terminal integrated validation)
+```
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-105 | moda_commerce | Ready | ARCH-021-COMMERCE-092 |
+| ARCH-021-COMMERCE-106 | moda_commerce | Pending | ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-105 |
+| ARCH-021-COMMERCE-107 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
+| ARCH-021-COMMERCE-108 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
+| ARCH-021-COMMERCE-109 | moda_commerce | Pending | ARCH-021-COMMERCE-107, ARCH-021-COMMERCE-108 |
+| ARCH-021-GATEWAY-002 | moda_gateway | Pending | ARCH-021-COMMERCE-106, ARCH-021-COMMERCE-109 |
+| ARCH-021-SYSTEM-TEST-004 | moda_system_test | Pending | ARCH-021-COMMERCE-105..109, ARCH-021-GATEWAY-002 |
+
+COMMERCE-105 is the initial Phase-6 executable frontier. COMMERCE-107 and COMMERCE-108
+may execute in parallel only after COMMERCE-106 is architect-accepted Complete. The
+system-test task is terminal and gates no implementation task.
+COMMERCE-104 is independent of COMMERCE-102/103.
+
+### COMMERCE-104 Attempt 1 accepted — 2026-09-29
+
+
+Every declared dependency of SYSTEM-TEST-003 is now Complete. SYSTEM-TEST-003 is therefore **Ready** as terminal Feature/Capability validation. No Commerce implementation task depends on the system-test task, and terminal validation is not started automatically.
