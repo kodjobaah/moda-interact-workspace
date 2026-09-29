@@ -253,11 +253,11 @@ This is a repository-local Commerce authoring contract. It is not a cross-servic
 
 ## Validation
 
-- [ ] Focused policy registry/executor tests.
-- [ ] Focused Studio descriptor server-action/read-boundary tests.
-- [ ] Targeted TypeScript diagnostics for changed files.
-- [ ] Targeted ESLint for changed files.
-- [ ] `git diff --check`.
+- [x] Focused policy registry/executor tests.
+- [x] Focused Studio descriptor server-action/read-boundary tests.
+- [x] Targeted TypeScript diagnostics for changed files.
+- [x] Targeted ESLint for changed files.
+- [x] `git diff --check`.
 
 If repository-wide typecheck/build is already required by the current ARCH-021 baseline/task convention, run it and classify only pre-existing diagnostics according to `docs/development-baseline.md`; this task must introduce no changed-file diagnostic.
 
@@ -336,7 +336,7 @@ The task's original literal `SubsetSchema` / `CommerceResultSchema` field types 
 - Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-096`, `task/ARCH-021-COMMERCE-096`; launcher head `229d5548e18cf5ae2b41ead25f97717a625d3a5a`.
 - Both remote task branches were already current (`remote_task_branch_fast_forwarded: not-needed`; `origin/main_incorporated: already-current`). Neither shared checkout was switched/mutated and no other task worktree was reused.
 - Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`.
-- Implementation commits will be published on the implementation task branch; this parent report and lifecycle transition will be published on the mirrored parent task branch. No main branch or submodule pointer was changed.
+- Implementation commit `e37408b` was pushed on the implementation task branch. Parent report/lifecycle commit `623375c5` was pushed on the mirrored parent task branch. No main branch or submodule pointer was changed.
 
 ## Architect Review
 
