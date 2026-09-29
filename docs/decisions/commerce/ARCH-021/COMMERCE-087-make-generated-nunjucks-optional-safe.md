@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 74
-executor: copilot
-claimed_at: 2026-09-29T07:53:47Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-084
@@ -828,26 +828,26 @@ If existing C085 diagnostics cannot display the new canonical issue at all, repo
 
 ## Work Items
 
-- [ ] Reproduce the observed `resultValidation Passed -> resultRendering Failed` case with a focused test and prove whether schema-permitted omission is the cause.
-- [ ] Confirm/centralize required-vs-optional property metadata in the canonical result-contract representation.
-- [ ] Add or reuse bounded `is defined` presence-test support required by this task.
-- [ ] Extend the default-template generator to guard optional scalar properties.
-- [ ] Extend the generator to guard optional objects before any child dereference.
-- [ ] Extend the generator recursively for optional descendants of required/optional objects.
-- [ ] Extend the generator with the exact optional-array absent/empty semantics in R9.
-- [ ] Preserve direct generation for required scalars and required collections.
-- [ ] Preserve deterministic lexical property ordering, aliasing and indentation from C084.
-- [ ] Extend the canonical Result Template validator with `unguarded_optional_result_path`.
-- [ ] Implement the exact presence-scope/dominance rules from R13/R14.
-- [ ] Keep the Nunjucks renderer strict; do not globally hide undefined access.
-- [ ] Add the exact observed `values.items[]` regression from R17.
-- [ ] Add falsy-present regressions for `0`, `false` and `""`.
-- [ ] Add the nested optionality matrix from R19.
-- [ ] Add External live-Test regression proving resultRendering passes with omitted optional projected fields.
-- [ ] Add Shopify Admin equivalent where the focused Admin contract supports optional omission.
-- [ ] Prove missing required fields still fail result validation and are not normalized away.
-- [ ] Prove a manually authored unguarded optional dereference fails canonical template validation.
-- [ ] Run the focused C084 generator/validator/renderer/publication/Test packet plus required repository checks.
+- [x] Reproduce the observed `resultValidation Passed -> resultRendering Failed` case with a focused test and prove whether schema-permitted omission is the cause.
+- [x] Confirm/centralize required-vs-optional property metadata in the canonical result-contract representation.
+- [x] Add or reuse bounded `is defined` presence-test support required by this task.
+- [x] Extend the default-template generator to guard optional scalar properties.
+- [x] Extend the generator to guard optional objects before any child dereference.
+- [x] Extend the generator recursively for optional descendants of required/optional objects.
+- [x] Extend the generator with the exact optional-array absent/empty semantics in R9.
+- [x] Preserve direct generation for required scalars and required collections.
+- [x] Preserve deterministic lexical property ordering, aliasing and indentation from C084.
+- [x] Extend the canonical Result Template validator with `unguarded_optional_result_path`.
+- [x] Implement the exact presence-scope/dominance rules from R13/R14.
+- [x] Keep the Nunjucks renderer strict; do not globally hide undefined access.
+- [x] Add the exact observed `values.items[]` regression from R17.
+- [x] Add falsy-present regressions for `0`, `false` and `""`.
+- [x] Add the nested optionality matrix from R19.
+- [x] Add External live-Test regression proving resultRendering passes with omitted optional projected fields.
+- [x] Add Shopify Admin equivalent where the focused Admin contract supports optional omission.
+- [x] Prove missing required fields still fail result validation and are not normalized away.
+- [x] Prove a manually authored unguarded optional dereference fails canonical template validation.
+- [x] Run the focused C084 generator/validator/renderer/publication/Test packet plus required repository checks.
 
 ## Interfaces / Contracts
 
@@ -896,29 +896,29 @@ The architect should add C087 to any not-yet-executed ARCH-021 terminal system-t
 
 ## Acceptance Criteria
 
-- [ ] The observed optional-field rendering failure is reproduced and its root cause is documented in the Completion Report.
-- [ ] If the observed failure is not caused by schema-permitted omission, no unrelated renderer change is made and the task is returned Blocked with evidence.
-- [ ] Required/optional property semantics are derived only from the canonical result contract.
-- [ ] `nunjucks.v1` supports the bounded `is defined` presence predicate required for optional guards.
-- [ ] Generated optional scalar accesses use presence guards, not truthiness guards.
-- [ ] Generated required scalar accesses remain direct.
-- [ ] Generated optional objects are guarded before child dereference.
-- [ ] Optional descendants are guarded recursively.
-- [ ] Required arrays preserve the current loop shape apart from guards required inside their item body.
-- [ ] Optional arrays render the same deterministic `No <label> available.` message when absent or present-empty.
-- [ ] Generator output remains deterministic and passes the canonical Result Template validator.
-- [ ] The canonical validator reports `unguarded_optional_result_path` for unsafe direct access to an optional result path.
-- [ ] Presence established by an `is defined` guard is scoped exactly to the positive branch and does not leak after `endif` or into `else`.
-- [ ] Optional collection paths cannot be used by `for` unless required or proven present.
-- [ ] `0`, `false` and `""` are treated as present values and are not mistaken for omission.
-- [ ] Missing required properties still fail canonical result validation.
-- [ ] No schema-permitted omitted optional scalar/object/collection in the mandatory matrix causes generated-template `RESULT_RENDERING_FAILED`.
-- [ ] The exact `values.items[]` regression with omitted projected fields renders successfully.
-- [ ] External live Test reports `resultRendering Passed` and returns `renderedText` for the omitted-optional-field fixture.
-- [ ] Shopify Admin equivalent passes where the focused contract supports the same optionality case.
-- [ ] No provider-specific optionality validator or renderer is introduced.
-- [ ] No C085 UI redesign is included.
-- [ ] No durable Tool/Test/publication-proof write is introduced.
+- [x] The observed optional-field rendering failure is reproduced and its root cause is documented in the Completion Report.
+- [x] If the observed failure is not caused by schema-permitted omission, no unrelated renderer change is made and the task is returned Blocked with evidence.
+- [x] Required/optional property semantics are derived only from the canonical result contract.
+- [x] `nunjucks.v1` supports the bounded `is defined` presence predicate required for optional guards.
+- [x] Generated optional scalar accesses use presence guards, not truthiness guards.
+- [x] Generated required scalar accesses remain direct.
+- [x] Generated optional objects are guarded before child dereference.
+- [x] Optional descendants are guarded recursively.
+- [x] Required arrays preserve the current loop shape apart from guards required inside their item body.
+- [x] Optional arrays render the same deterministic `No <label> available.` message when absent or present-empty.
+- [x] Generator output remains deterministic and passes the canonical Result Template validator.
+- [x] The canonical validator reports `unguarded_optional_result_path` for unsafe direct access to an optional result path.
+- [x] Presence established by an `is defined` guard is scoped exactly to the positive branch and does not leak after `endif` or into `else`.
+- [x] Optional collection paths cannot be used by `for` unless required or proven present.
+- [x] `0`, `false` and `""` are treated as present values and are not mistaken for omission.
+- [x] Missing required properties still fail canonical result validation.
+- [x] No schema-permitted omitted optional scalar/object/collection in the mandatory matrix causes generated-template `RESULT_RENDERING_FAILED`.
+- [x] The exact `values.items[]` regression with omitted projected fields renders successfully.
+- [x] External live Test reports `resultRendering Passed` and returns `renderedText` for the omitted-optional-field fixture.
+- [x] Shopify Admin equivalent passes where the focused contract supports the same optionality case.
+- [x] No provider-specific optionality validator or renderer is introduced.
+- [x] No C085 UI redesign is included.
+- [x] No durable Tool/Test/publication-proof write is introduced.
 
 ## Validation
 
@@ -926,20 +926,20 @@ Run the actual scripts declared by `moda-interact-commerce/package.json`; do not
 
 Required focused validation includes:
 
-- [ ] focused unit test reproducing the originally observed rendering failure before the fix and passing after the fix;
-- [ ] Result Template generator deterministic snapshot/assertions for required vs optional fields;
-- [ ] canonical validator tests for `unguarded_optional_result_path`;
-- [ ] positive/negative presence-scope tests (`if ... is defined`, `else`, after `endif`, optional parent + optional child);
-- [ ] falsy-present tests for `0`, `false`, `""`;
-- [ ] nested optionality matrix from R19;
-- [ ] result-validation regression proving a missing required property is rejected;
-- [ ] External live-Test regression with omitted optional projected fields;
-- [ ] Shopify Admin live-Test equivalent where applicable;
-- [ ] existing C084 Result Template authoring/generator/renderer tests;
-- [ ] existing publication template-validation tests affected by the canonical validator;
-- [ ] targeted ESLint for every changed source/test file;
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with known-baseline reconciliation;
-- [ ] `git diff --check`.
+- [x] focused unit test reproducing the originally observed rendering failure before the fix and passing after the fix;
+- [x] Result Template generator deterministic snapshot/assertions for required vs optional fields;
+- [x] canonical validator tests for `unguarded_optional_result_path`;
+- [x] positive/negative presence-scope tests (`if ... is defined`, `else`, after `endif`, optional parent + optional child);
+- [x] falsy-present tests for `0`, `false`, `""`;
+- [x] nested optionality matrix from R19;
+- [x] result-validation regression proving a missing required property is rejected;
+- [x] External live-Test regression with omitted optional projected fields;
+- [x] Shopify Admin live-Test equivalent where applicable;
+- [x] existing C084 Result Template authoring/generator/renderer tests;
+- [x] existing publication template-validation tests affected by the canonical validator;
+- [x] targeted ESLint for every changed source/test file;
+- [x] changed-file TypeScript diagnostics, or repository typecheck with known-baseline reconciliation;
+- [x] `git diff --check`.
 
 When reporting live-Test validation, record the stage outcomes explicitly. The required fixed External regression must show semantically:
 
@@ -986,35 +986,88 @@ If source inspection shows C084 already deliberately defines absent optional sca
 
 ### Status
 
-Not Started
+Attempt 1 implementation complete; submitted for Architect Review.
 
 ### Files Changed
 
-None
+`moda-interact-commerce/src/commerce/execution/renderer.ts`
+`moda-interact-commerce/src/commerce/tool-authoring/nunjucks-template.ts`
+`moda-interact-commerce/src/commerce/tool-authoring/result-template-generator.ts`
+`moda-interact-commerce/tests/definition-execution.test.ts`
+`moda-interact-commerce/tests/external-http-live-test.test.ts`
+`moda-interact-commerce/tests/result-template-authoring.test.ts`
+`moda-interact-commerce/tests/result-template-optionality.test.ts`
+`moda-interact-commerce/tests/result-template-renderer.test.ts`
 
 ### Work Completed
 
-None
+- Reproduced the C084 boundary mismatch: canonical normalization accepts omitted optional properties, while a direct strict Nunjucks lookup fails on the absent value. The External live-Test regression now proves `resultValidation: Passed` and `resultRendering: Passed` for that same permitted omission.
+- Generated templates use canonical `required` membership at root and nested object boundaries. Optional scalar/object paths are guarded with `is defined`; absent optional arrays use the deterministic unavailable-for-collection message, including when present-empty; required scalar paths remain direct.
+- The canonical validator recognizes only the bounded `is defined` AST test, tracks positive-branch presence without leaking scope, validates optional loop sources, and reports `unguarded_optional_result_path` for unsafe accesses.
+- Registered the `defined` test in the existing strict renderer without changing `throwOnUndefined`. A local intersection type describes the runtime `addTest` API omitted from the installed Nunjucks declaration.
+- Added the exact six-optional-field item fixture, empty-item rendering, nested optionality matrix, falsy-present values, top-level optionality, required-field rejection, unsafe-authored-template cases, External live-Test coverage and a Shopify Admin canonical execution regression.
+- The C087 implementation commit changes no C085 UI/state files, provider-specific validators, persisted template shape, publication-proof writes or durable Test writes. C085 files visible in the task branch are unchanged files brought in by the required `origin/main` merge.
 
 ### Validation Results
 
-None
+- Final focused C087 packet after merging current `origin/main`: 11 files passed, 132 tests passed. It covers generator, canonical validator, renderer, Admin definition execution, External live Test, publication/preflight and commerce lifecycle boundaries.
+- External omitted-optional-field Test asserts `resultValidation: passed`, `resultRendering: passed`, and returned rendered text. Missing required data remains rejected before rendering. Shopify Admin coverage uses a compiler-supported nullable selected field, canonical omission normalization and the production definition executor; no Admin Test UI is introduced by this task.
+- Targeted ESLint on all eight changed files passed. VS Code changed-file diagnostics reported no errors. Project-wide `tsc --noEmit` remains nonzero on unrelated C085 Result Template tab test diagnostics (`tests/result-template-tab.test.tsx`); filtered diagnostics contain no C087-changed file. C084 Attempt 2 also records a broad pre-existing repository typecheck baseline.
+- `git diff --check` passed before commit and after mainline synchronization.
+- A 12-file supplemental run passed 152/154 tests. Its two failures are existing QuickJS request-preview cases in `tests/external-tool-authoring-validation.test.ts`: the packaged runtime reports `MODULE_NOT_FOUND`, producing `RUNTIME_UNAVAILABLE`. C084 Attempt 1 documents the same QuickJS preview baseline; the C087-focused 11-file packet passes when those unrelated cases are excluded.
 
 ### Deviations
 
-None
+- The repository has no Shopify Admin live-Test action/test integration yet; that UI integration is explicitly owned by C083 and is out of scope here. The Admin production-execution regression covers the same canonical optional-result and strict-rendering path.
+- Whole-project typecheck and the two QuickJS-dependent external-authoring tests remain limited by the documented repository/runtime baseline; no C087-changed file is implicated.
 
 ### Assumptions
 
-None
+The C082/C083 Admin live-Test surface will consume the same canonical renderer; C087 does not add a second provider-specific presence implementation.
 
 ### Unresolved Issues
 
-None
+No C087-owned issue remains. The existing QuickJS `MODULE_NOT_FOUND` preview condition and unrelated C085/repository type diagnostics are recorded above for Architect review.
 
 ### Architectural Concerns
 
-None
+None. Strict undefined rendering, the persisted `nunjucks.v1` shape, canonical schema ownership and C085 UI ownership are preserved.
+
+### Git / VCS
+
+Task branch: `task/ARCH-021-COMMERCE-087`
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-087`
+- parent branch: `task/ARCH-021-COMMERCE-087`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-087`
+- implementation branch: `task/ARCH-021-COMMERCE-087`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+- parent remote task branch fast-forwarded: yes (launcher-prepared; verified current before report update)
+- parent `origin/main` incorporated: yes
+- implementation remote task branch fast-forwarded: not-needed (no remote task ref existed before publication)
+- implementation `origin/main` incorporated: yes
+
+Implementation repository:
+- repository: `moda-interact-commerce`
+- implementation commit: `8905d9b` (C087 implementation `dfefb3f`; mainline merge `8905d9b`)
+- remote branch: `origin/task/ARCH-021-COMMERCE-087`
+- pushed: yes
+
+Parent workspace:
+- task file: `docs/decisions/commerce/ARCH-021/COMMERCE-087-make-generated-nunjucks-optional-safe.md`
+- commit: recorded after this task-file commit
+- remote branch: `origin/task/ARCH-021-COMMERCE-087`
+- pushed: pending
+- submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
