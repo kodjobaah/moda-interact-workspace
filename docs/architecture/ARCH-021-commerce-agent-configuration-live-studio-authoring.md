@@ -1092,7 +1092,7 @@ Manual architecture review of Tool result/prompt authoring establishes the follo
 7. A non-persisted source-neutral `ToolResultContract` is compiled from the canonical output/result schema and supplies exact scalar/collection bindings for template authoring. React does not infer provider-specific result paths independently.
 8. `responseTemplate` remains the persisted/runtime representation but receives its own Result Template authoring surface. Agent Contract retains definition version, Agent description and Agent input schema only.
 9. Result Template supports only the existing bounded `text` / `items` runtime grammar in this refinement; no conditional language, arbitrary JavaScript or rich-text dependency is introduced.
-10. General tab traversal/gating, global Next/Back behavior and cross-tab validation checkpoint coordination remain explicitly deferred until all individual tabs are implemented.
+10. Progressive Previous/Next traversal for **new Tool creation only** is owned by COMMERCE-095 after the individual Tool surfaces are implemented. Its unlock frontier is browser/session-local and monotonic; persisted-DRAFT traversal remains unchanged.
 
 Implementation tasks:
 
@@ -1122,17 +1122,44 @@ Implementation tasks:
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
-| ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
+| ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
-| ARCH-021-SHARED-002 | moda_shared | Ready | ARCH-021-SHARED-001 |
-| ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-DATABASE-003 |
-| ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
-| ARCH-021-COMMERCE-090 | moda_commerce | Pending | ARCH-021-COMMERCE-088 |
-| ARCH-021-COMMERCE-091 | moda_commerce | Pending | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
-| ARCH-021-BACKGROUND-002 | moda_background | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
+| ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
+| ARCH-021-COMMERCE-088 | moda_commerce | Complete | ARCH-021-DATABASE-003 |
+| ARCH-021-COMMERCE-089 | moda_commerce | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
+| ARCH-021-BACKGROUND-002 | moda_background | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Pending | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-COMMERCE-093 | moda_commerce | Complete | - |
 | ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
+
+
+Current Phase 5 frontier after COMMERCE-088 acceptance:
+
+```text
+COMMERCE-090
+```
+
+COMMERCE-088 Attempt 2 is architect-accepted Complete. COMMERCE-090 is Ready because C088 is its only dependency. COMMERCE-089 remains Pending on SHARED-002, so the release/runtime branch is not yet executable. COMMERCE-091 remains Pending on COMMERCE-090.
+
+Current Phase 5 Feature-UI frontier after COMMERCE-090 acceptance:
+
+```text
+COMMERCE-091
+```
+
+COMMERCE-090 Attempt 3 is architect-accepted Complete. COMMERCE-091 is Ready because COMMERCE-088 and COMMERCE-090 are Complete. COMMERCE-092 remains dependency-gated.
+
+### COMMERCE-091 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-091 is **Complete / Accepted, Attempt 2**. The local-first `Capability -> Tool -> Review` flow now uses a monotonic session-local unlock frontier: first-time forward access is readiness-gated, but previously unlocked phases remain directly navigable after upstream edits. Review access is independent from current mutation readiness; `Create capability` stays disabled unless the current Capability metadata and eligible Tool selection are valid.
+
+The accepted final-create boundary remains exactly one `createFeatureCapability` mutation with candidate preservation/reconciliation for recoverable or uncertain outcomes. Attempt 2 also corrects the earlier task-worktree synchronization evidence and preserves Attempt 1 history.
+
+C091's dependency into COMMERCE-092 is satisfied. COMMERCE-092 remains Pending on its other declared dependencies.
+
 
 Current independent execution frontier after COMMERCE-062 acceptance:
 
@@ -1459,7 +1486,7 @@ The architectural ownership rules are:
 Implementation graph:
 
 ```text
-COMMERCE-077 -> COMMERCE-078 -> COMMERCE-079 -> COMMERCE-081 -> COMMERCE-083 -> SYSTEM-TEST-002
+COMMERCE-077 -> COMMERCE-078 -> COMMERCE-079 -> COMMERCE-081 -> COMMERCE-083 -> COMMERCE-095 -> SYSTEM-TEST-002
                                              ^              ^
 COMMERCE-080 --------------------------------+              |
 COMMERCE-082 -----------------------------------------------+
@@ -1534,14 +1561,15 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-085 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-086 | moda_commerce | Blocked | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
-| ARCH-021-DATABASE-003 | moda_database | Ready | ARCH-021-DATABASE-002 |
+| ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
+| ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
-| ARCH-021-SHARED-002 | moda_shared | Ready | ARCH-021-SHARED-001 |
-| ARCH-021-COMMERCE-088 | moda_commerce | Pending | ARCH-021-DATABASE-003 |
-| ARCH-021-COMMERCE-089 | moda_commerce | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
-| ARCH-021-COMMERCE-090 | moda_commerce | Pending | ARCH-021-COMMERCE-088 |
-| ARCH-021-COMMERCE-091 | moda_commerce | Pending | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
-| ARCH-021-BACKGROUND-002 | moda_background | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
+| ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
+| ARCH-021-COMMERCE-088 | moda_commerce | Complete | ARCH-021-DATABASE-003 |
+| ARCH-021-COMMERCE-089 | moda_commerce | Complete | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-090 | moda_commerce | Complete | ARCH-021-COMMERCE-088 |
+| ARCH-021-COMMERCE-091 | moda_commerce | Complete | ARCH-021-COMMERCE-088, ARCH-021-COMMERCE-090 |
+| ARCH-021-BACKGROUND-002 | moda_background | Ready | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-089 |
 | ARCH-021-COMMERCE-092 | moda_commerce | Pending | ARCH-021-COMMERCE-089, ARCH-021-COMMERCE-091, ARCH-021-BACKGROUND-002 |
 | ARCH-021-SYSTEM-TEST-003 | moda_system_test | Pending | ARCH-021-DATABASE-003, ARCH-021-SHARED-002, ARCH-021-COMMERCE-088..092, ARCH-021-BACKGROUND-002 |
 
@@ -1555,7 +1583,7 @@ Phase 5 Feature Capability simplification is now decomposed through DATABASE-003
 
 No implementation task may depend on a system-test task.
 
-Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending on COMMERCE-079, COMMERCE-081 and COMMERCE-083. It becomes Ready only after those Commerce tasks are architect-accepted Complete.
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. COMMERCE-079, COMMERCE-081, COMMERCE-083 and COMMERCE-095 are architect-accepted Complete, so SYSTEM-TEST-002 is Ready for terminal validation.
 ### COMMERCE-082 Attempt 1 accepted — 2026-09-28
 
 - Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
@@ -1563,6 +1591,28 @@ Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`, Pending o
 - Candidate schema, mapped arguments, compiler-derived result contract and Result Template compatibility are checked before provider I/O. Successful execution returns only the five bounded stage outcomes, canonical normalized `values` and canonical rendered text; one provider request is budgeted and `LIVE_TEST_REQUIRED` remains unchanged.
 - Accepted submitted validation: 96/96 focused tests across eight files, targeted ESLint and `git diff --check`; repository TypeScript remains red only on 30 unrelated diagnostics with no C082 changed-file diagnostics.
 - C082's COMMERCE-083 UI follow-up is materialised and Ready after C078 Attempt 4 acceptance; both dependencies are Complete.
+
+### COMMERCE-095 Attempt 1 changes requested — 2026-09-29
+
+The progressive new-Tool traversal refinement is now represented explicitly in
+ARCH-021 and terminal SYSTEM-TEST-002 is re-gated behind C095. Attempt 1 is
+accepted in substance but remains Ready for correction because an unresolved
+provider-reset confirmation does not freeze navigation at Tool Definition and
+the pre-provider guidance still describes the superseded unlock model.
+
+### COMMERCE-095 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-095 is **Complete / Accepted, Attempt 2**. The provider-reset decision
+now freezes progressive traversal at Tool Definition, Cancel restores the prior
+frontier, confirmed replacement resets it, and the pre-provider guidance matches
+the accepted Next-based unlock model. The Completion Report also contains the
+required prepared execution evidence. During acceptance reconciliation, the
+architect restored accidental report text that had been written into the
+architect-owned R1/R2 Requirements block; the runtime implementation itself did
+not require further correction.
+
+With C079, C081, C083 and C095 Complete, terminal
+`ARCH-021-SYSTEM-TEST-002` is now **Ready**.
 
 ## Open Questions
 
@@ -1581,6 +1631,21 @@ configurable behavioural prompt are resolved per shop with platform fallback and
 independent of features.
 
 ## Change History
+
+### 2026-09-29 — COMMERCE-089 direct release/runtime cutover accepted
+
+- COMMERCE-089 Attempt 1 is Complete / Accepted after final synchronization with current `origin/main` and post-merge validation.
+- Releases now pin exact published Tool revisions for direct Capability members and snapshot Feature Behaviour once per represented Feature; runtime manifests consume those immutable rows.
+- The required disposable C20 proof passed 2/2 and the bounded C089 paths contain no BASE/`conversation_core`, Capability-draft or multi-binding dependency.
+- DATABASE-003, SHARED-002, COMMERCE-088, COMMERCE-089, COMMERCE-090 and COMMERCE-091 are Complete.
+- BACKGROUND-002 is now Ready. COMMERCE-092 remains Pending until BACKGROUND-002 is Complete.
+
+### 2026-09-29 — Simplified Shared Feature Capability contract published
+
+- Accepted SHARED-002 publication of `@modainteract/moda-interact-shared@1.0.0` from the architect-accepted SHARED-001 source.
+- Release commit `abd1c65` changes package version metadata only; Commerce and Background consumers remain separate follow-on tasks.
+- The published package is the canonical cross-service contract for the direct Feature/Capability/Tool manifest, zero-capability grants and once-per-Feature behaviour composition.
+- COMMERCE-089 remains gated by COMMERCE-088; BACKGROUND-002 remains gated by COMMERCE-089.
 
 ### 2026-09-29 — Feature Capability authoring simplified around Feature -> Capability -> Tool
 
@@ -2820,3 +2885,43 @@ The code-response validation route-import correction is architect-accepted. The 
 The next production-build blocker is repository-wide TypeScript checking: 23 diagnostics across 12 unrelated files. That bounded correction/build gate is owned by COMMERCE-094, materialised separately by the developer and dependent on C093.
 
 C086 remains Blocked on C094. After C094 is Complete, C086 returns to Ready for Attempt 2 and reruns only the unresolved terminal validation: clean production build plus bounded production-start HTTP smoke for the packaged Result Template guide.
+
+
+### Generic Policy Operation Studio authoring follow-up — 2026-09-29
+
+ARCH-021 extends the accepted Tool-authoring architecture to existing persisted `POLICY_OPERATION` Tools without introducing a new function runtime or allowing Studio to author executable source.
+
+The generic flow is:
+
+```text
+registered Moda-owned Policy Operation
+        |
+        v
+C096 canonical registration
+  adapter + input/output validators
+  + Commerce-local browser-safe authoring descriptor
+        |
+        +----------------------+
+        |                      |
+        v                      v
+C097 persisted editor     C098 non-durable live Test
+        |                      |
+        +----------+-----------+
+                   v
+              C099 CAS Save
+                   |
+                   v
+              C100 Publish/reopen
+```
+
+The C096 descriptor schemas are Commerce-local JSON-compatible schemas generated from the same canonical Zod runtime validators. They deliberately are not forced into Shared `SubsetSchema` / current `CommerceResultSchema`, because existing accepted policy contracts include nested proposal structures, nullable values and collection bounds above the current Result Template schema limits. C097 consumes this descriptor rather than maintaining a second Studio operation catalogue.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-096 | moda_commerce | Complete | ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-097 | moda_commerce | Ready | ARCH-021-COMMERCE-096 |
+| ARCH-021-COMMERCE-098 | moda_commerce | Ready | ARCH-021-COMMERCE-096 |
+| ARCH-021-COMMERCE-099 | moda_commerce | Pending | ARCH-021-COMMERCE-097, ARCH-021-COMMERCE-098 |
+| ARCH-021-COMMERCE-100 | moda_commerce | Pending | ARCH-021-COMMERCE-099 |
+
+C096 Attempt 1 is architect-accepted. C097/C098 are the executable frontier and may run in parallel. This follow-up remains generic: ARCH-023 may later register/bootstrap Merchant Knowledge using the same Policy Operation mechanism without a Merchant Knowledge special case in ARCH-021.

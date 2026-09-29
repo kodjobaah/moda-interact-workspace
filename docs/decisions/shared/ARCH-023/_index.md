@@ -1,18 +1,55 @@
 # ARCH-023 shared tasks
 
-Architecture: [`ARCH-023`](../../../architecture/ARCH-023-merchant-knowledge-store-aware-commerce-agent.md).
+Architecture: [`ARCH-023`](../../../architecture/ARCH-023-merchant-knowledge.md).
 
-Assigned agent: `moda_shared`. Repository: `moda-interact-shared`. Coordinator: `moda_architect`.
+Assigned agent: `moda_shared`.
 
-These are portable task definitions from the 2026-09-27 review patch; individual task YAML is authoritative. No task branch/worktree is materialised by this patch.
+Repository: `moda-interact-shared`.
 
-| Task | Outcome | Status | Depends on |
+Coordinator: `moda_architect`.
+
+The current Shared design deliberately has exactly two executable tasks:
+
+```text
+ARCH-023-DATABASE-001
+        |
+        v
+ARCH-023-SHARED-001
+    implement all C1-C4 contracts
+    + Commerce runner trust change
+        |
+        v
+ARCH-023-SHARED-002
+    publish exact accepted package revision
+```
+
+Individual task YAML is authoritative.
+
+| Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [SHARED-001](SHARED-001-define-store-aware-commerce-configuration-contracts.md) | Store-aware Commerce configuration contracts | Ready | - |
-| [SHARED-002](SHARED-002-define-merchant-knowledge-contracts.md) | Merchant Knowledge contracts/content units | Ready | - |
-| [SHARED-003](SHARED-003-harden-commerce-runner-instruction-trust.md) | Runner instruction trust contract | Ready | - |
-| [SHARED-004](SHARED-004-publish-arch023-shared-contracts.md) | Publish ARCH-023 Shared contracts | Pending | SHARED-001, SHARED-002, SHARED-003 |
+| [SHARED-001](SHARED-001-implement-arch023-shared-contracts.md) | Implement all ARCH-023 Shared contracts and Commerce runner trust | Pending | DATABASE-001 |
+| [SHARED-002](SHARED-002-publish-arch023-shared-package.md) | Publish the accepted Shared package as one patch release | Pending | SHARED-001 |
+| [SHARED-003](SHARED-003-harden-commerce-runner-instruction-trust.md) | Historical split task; folded into SHARED-001 | Superseded | — |
+| [SHARED-004](SHARED-004-publish-arch023-shared-contracts.md) | Historical publication task; replaced by SHARED-002 | Superseded | — |
 
 ## Execution frontier
 
-Ready: `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-SHARED-003`
+No ARCH-023 Shared task is executable until:
+
+```text
+ARCH-023-DATABASE-001 = Complete / architect-accepted
+```
+
+Then:
+
+```text
+SHARED-001 -> Ready
+```
+
+Only after SHARED-001 is Complete/accepted:
+
+```text
+SHARED-002 -> Ready
+```
+
+Consumer repositories must wait for the exact published revision from SHARED-002.

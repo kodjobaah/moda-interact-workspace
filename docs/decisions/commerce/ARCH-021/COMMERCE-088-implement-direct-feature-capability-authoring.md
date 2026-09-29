@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 90
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-021-DATABASE-003
 enables:
@@ -173,16 +173,16 @@ COMMERCE-092 owns complete deletion once all consumers have moved.
 
 ## Work Items
 
-- [ ] Consume DATABASE-003 schema through the Commerce database submodule.
-- [ ] Define the Feature-centric read contract with nested direct Capabilities/Tools.
-- [ ] Implement direct Feature reads without publication snapshots or billing/subscription eligibility reads.
-- [ ] Implement CAS Feature behaviour update/upsert with audit/replay semantics.
-- [ ] Implement atomic narrow `createFeatureCapability` persistence.
-- [ ] Validate Feature, enabled Tool, at least one published Tool revision and unique Capability key on final create.
-- [ ] Return the created Capability directly without rereading the whole publication aggregate.
-- [ ] Add exact replay/conflicting replay/ambiguous-result reconciliation tests.
-- [ ] Add focused authorization and concurrency tests.
-- [ ] Keep any temporary legacy Capability API clearly isolated for COMMERCE-092 removal.
+- [x] Consume DATABASE-003 schema through the Commerce database submodule.
+- [x] Define the Feature-centric read contract with nested direct Capabilities/Tools.
+- [x] Implement direct Feature reads without publication snapshots or billing/subscription eligibility reads.
+- [x] Implement CAS Feature behaviour update/upsert with audit/replay semantics.
+- [x] Implement atomic narrow `createFeatureCapability` persistence.
+- [x] Validate Feature, enabled Tool, at least one published Tool revision and unique Capability key on final create.
+- [x] Return the created Capability directly without rereading the whole publication aggregate.
+- [x] Add exact replay/conflicting replay/ambiguous-result reconciliation tests.
+- [x] Add focused authorization and concurrency tests.
+- [x] Keep any temporary legacy Capability API clearly isolated for COMMERCE-092 removal.
 
 ## Interfaces / Contracts
 
@@ -207,25 +207,25 @@ The final names may follow established Studio feature-domain naming, but semanti
 
 ## Acceptance Criteria
 
-- [ ] Feature reads show direct Capability -> Tool relationships and no revision state.
-- [ ] Feature authoring reads/writes do not consult subscription/billing-plan eligibility.
-- [ ] Feature behaviour uses one current CAS row, not drafts/revisions.
-- [ ] Capability creation performs exactly one durable create transaction after final submission.
-- [ ] No Capability row exists when a would-be authoring session is abandoned before final create.
-- [ ] One Capability stores one Tool identity; no Tool revision is selected by the authoring mutation.
-- [ ] Tool identity may be reused by multiple Capabilities.
-- [ ] Final server validation rejects missing Feature, missing/disabled Tool, Tool with no published revision and duplicate Capability key.
-- [ ] Exact replay returns the original result without duplicate rows/audits.
-- [ ] New contracts contain none of the removed Capability concepts listed in R7.
+- [x] Feature reads show direct Capability -> Tool relationships and no revision state.
+- [x] Feature authoring reads/writes do not consult subscription/billing-plan eligibility.
+- [x] Feature behaviour uses one current CAS row, not drafts/revisions.
+- [x] Capability creation performs exactly one durable create transaction after final submission.
+- [x] No Capability row exists when a would-be authoring session is abandoned before final create.
+- [x] One Capability stores one Tool identity; no Tool revision is selected by the authoring mutation.
+- [x] Tool identity may be reused by multiple Capabilities.
+- [x] Final server validation rejects missing Feature, missing/disabled Tool, Tool with no published revision and duplicate Capability key.
+- [x] Exact replay returns the original result without duplicate rows/audits.
+- [x] New contracts contain none of the removed Capability concepts listed in R7.
 
 ## Validation
 
-- [ ] focused Feature/Capability service tests
-- [ ] focused narrow persistence/replay tests
-- [ ] focused authorization tests
-- [ ] `npm run lint -- <changed files>` or repository-supported targeted ESLint equivalent
-- [ ] changed-file TypeScript diagnostics / `npm run typecheck` evidence according to repository baseline policy
-- [ ] `git diff --check`
+- [x] focused Feature/Capability service tests
+- [x] focused narrow persistence/replay tests
+- [x] focused authorization tests
+- [x] `npm run lint -- <changed files>` or repository-supported targeted ESLint equivalent
+- [x] changed-file TypeScript diagnostics / `npm run typecheck` evidence according to repository baseline policy
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -239,58 +239,141 @@ Model this after the successful narrow initial Tool creation boundary, not after
 
 ### Status
 
-Not Started
+Attempt 2 is ready for Architect Review. Claim metadata is cleared.
 
 ### Files Changed
 
-None
+- `src/studio/features/contracts.ts`
+- `src/studio/features/persistence.ts`
+- `src/studio/features/services.ts`
+- `src/studio/features/reconciliation-server-actions.ts`
+- `src/studio/server-actions.ts`
+- `tests/feature-authoring.test.ts`
+- `tests/feature-operation-reconciliation.test.ts`
 
 ### Work Completed
 
-None
+- Consumed the prepared DATABASE-003 submodule at `e9fb60221f1532205650154dfff2aadb6270b14c`; no nested database schema changes were made.
+- Added direct list/get Feature reads with current behaviour prompt/editVersion and nested Capability-to-Tool identity/display data. The new read model does not expose Capability revision or publication state and does not query subscription/billing eligibility.
+- Added authenticated `updateFeatureBehaviour` using initial version 0 for an absent configuration, monotonic CAS updates, immutable audit receipts, exact replay, and stale/conflicting replay results.
+- Added authenticated atomic `createFeatureCapability` with Feature, enabled Tool, published Tool revision, and unique key validation; writes one direct Feature/Tool Capability plus audit receipt in one narrow transaction and returns the created result without a publication snapshot.
+- Added exact-result operation reconciliation for Feature behaviour and Capability creation. Kept existing generic Capability lifecycle APIs available for their current consumers; the new Feature APIs do not call them.
+- Added coverage for direct reads, initial and concurrent CAS, authorization, missing/disabled/unpublished identities, duplicate keys, same-Tool reuse, exact replay, conflicting replay, and reconciliation.
+- Implementation commits: `47b1c4a` (`Implement direct Feature capability authoring backend`) and `be6a71e` (`Avoid redundant revision read in Capability result`).
 
 ### Validation Results
 
-None
+- `npx vitest run tests/feature-authoring.test.ts tests/feature-operation-reconciliation.test.ts tests/studio-integration.test.ts tests/tool-authoring-server-actions.test.ts`: passed, 31 tests across 4 files. The dedicated C088 pair also passed 12 tests.
+- Focused ESLint on all changed source and test files: passed with no warnings.
+- Pylance changed-file diagnostics: no errors in any changed file.
+- `git diff --check`: passed.
+- New Feature API retired-concept scan (`selectionBinding`, `CapabilityRevision`, per-Capability prompt/configuration, capability limits, `toolBindings`): no matches.
+- `npm run typecheck`: non-zero with 144 diagnostics in 15 files, all outside C088 changed files. The failures include legacy Commerce references incompatible with the accepted DATABASE-003 schema and unrelated existing tests. The workspace baseline document's historical 48-error count does not match this observed run; no baseline documentation was changed.
+- Live PostgreSQL rehearsal was not run because the repository rehearsal requires a developer-confirmed isolated `DATABASE_URL`; the available environment was not assumed disposable.
 
 ### Deviations
 
-None
+The existing generic `StudioServices` legacy Capability surface remains for current UI consumers, as allowed by R8; the new feature-domain contract and actions are isolated under `src/studio/features/` for COMMERCE-090/091 consumption.
 
 ### Assumptions
 
-None
+An absent `CommerceFeatureConfiguration` is treated as blank at version 0. Its first successful mutation creates that initial row and advances it to version 1 in the same transaction, consistent with the accepted schema's default version and no-delete lifecycle.
 
 ### Unresolved Issues
 
-None
+Repository-wide TypeScript validation remains blocked by 144 diagnostics outside this task's changed files; remediation is outside C088 scope.
 
 ### Architectural Concerns
 
-None
+No C088-specific architecture deviation identified. Production database behavior should still be exercised against an isolated PostgreSQL target during the owning integration validation.
+
+### Attempt 2 Review Reconciliation (A1-R1 / A1-R2)
+
+The launcher preparation packet was retained and is the source for historical start-of-attempt synchronization values.
+
+Physical worktree isolation:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-088`, `task/ARCH-021-COMMERCE-088`.
+- Implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-088`, `task/ARCH-021-COMMERCE-088`.
+- The launcher reused the exact dedicated C088 worktrees; no other task worktree was reused. Attempt 2 source work remained in the dedicated implementation worktree. Neither shared/default checkout was switched or edited for C088.
+- At final reconciliation, the canonical workspace had modified submodule entries and an untracked `token.txt`; the shared Commerce source checkout had untracked `commerce-assertion-keys/`, `generate-commerce-assertion-keys.sh`, and `typescript`. These were not modified for C088 in Attempt 2; their provenance was not determined and they were left untouched.
+
+Start-of-attempt synchronization from the retained launcher packet:
+
+- Parent remote task branch fast-forwarded: `not-needed`; parent `origin/main` incorporated: `yes`.
+- Implementation remote task branch fast-forwarded: `not-needed`; implementation `origin/main` incorporated: `yes`.
+
+Recursive implementation submodule:
+
+- `database` was initialized at `e9fb60221f1532205650154dfff2aadb6270b14c`; launcher status was `ready` and final reconciliation found the submodule clean at that same commit.
+
+Published task state:
+
+- Implementation commits `47b1c4a` (`Implement direct Feature capability authoring backend`) and `be6a71e` (`Avoid redundant revision read in Capability result`) are on `origin/task/ARCH-021-COMMERCE-088`.
+- The launcher-created synchronization merge `a9c728c` incorporates current `origin/main`; it was pushed non-forced to `origin/task/ARCH-021-COMMERCE-088`. The implementation worktree and remote task ref now match at `a9c728c`.
+- The prior Attempt 1 task-report commit is `afd8df87`; the full Attempt 2 reconciliation report is committed as `59608bab`, and the follow-up recording that report identity is `a955748e`. Both are pushed on `origin/task/ARCH-021-COMMERCE-088`.
+- The parent task branch was clean and matched `origin/task/ARCH-021-COMMERCE-088` at the Attempt 2 claim commit `a35ea45c` before report edits; `origin/main` is an ancestor of both task worktree heads.
+- Neither task branch was merged into its `main` branch.
+
+For A1-R2, this returned task is in `review` with `executor: null` and `claimed_at: null`. No implementation source or tests were changed during Attempt 2; the only implementation-branch update was publishing the launcher-created synchronization merge. Focused `git diff --check` passed in the implementation worktree, and worktree/submodule/branch state was verified from the launcher-provided paths.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Attempt 2 is accepted.
+
+A1-R1 and A1-R2 are fully reconciled in the durable task record. The Completion Report now records the retained launcher packet, canonical parent and implementation worktrees, all four start-of-attempt synchronization outcomes, the recursive `database` submodule pin, implementation and parent publication state, final clean/tracking state, and the unrelated dirty items observed in the shared/default checkouts without modifying them. The task returns with `executor: null` and `claimed_at: null`.
+
+Attempt 2 introduced only the launcher-created synchronization merge plus task-report metadata. The synchronization merge did not modify any C088-owned implementation or test file compared with the already-reviewed Attempt-1 snapshot: `src/studio/features/contracts.ts`, `persistence.ts`, `services.ts`, `reconciliation-server-actions.ts`, `src/studio/server-actions.ts`, `tests/feature-authoring.test.ts`, and `tests/feature-operation-reconciliation.test.ts` are byte-for-byte unchanged. The accepted Attempt-1 focused validation therefore remains applicable; no duplicate source-test rerun is required solely for this documentation/workflow reconciliation.
+
+The implementation remains architecturally conformant. Feature reads come directly from the direct Feature -> Capability -> Tool model and do not derive legacy Capability revision/publication state or consult billing/subscription eligibility. Feature behaviour uses one current `CommerceFeatureConfiguration` row with version-0 creation semantics, monotonic CAS, immutable audit replay and no draft/revision lifecycle.
+
+`createFeatureCapability` remains one narrow atomic transaction: Feature existence, Tool existence/enabled state, at least one PUBLISHED Tool revision and Capability-key uniqueness are validated before writing one direct Feature/Tool Capability plus immutable audit/replay receipt. The contract carries one `toolId`, not Tool bindings or Tool-revision selection. Exact replay returns the original result and conflicting operation reuse fails without duplicate Capability rows. Legacy Capability APIs remain separate for existing consumers.
+
+The unrun live PostgreSQL rehearsal is not a C088 acceptance blocker because it is not listed as required task Validation and requires a developer-confirmed isolated `DATABASE_URL`. The Completion Report records that limitation; production PostgreSQL behavior remains appropriate for later owning integration/system validation.
 
 ### Reviewed Files
 
-None
+- `src/studio/features/contracts.ts`
+- `src/studio/features/persistence.ts`
+- `src/studio/features/services.ts`
+- `src/studio/features/reconciliation-server-actions.ts`
+- `src/studio/server-actions.ts`
+- `tests/feature-authoring.test.ts`
+- `tests/feature-operation-reconciliation.test.ts`
+- accepted DATABASE-003 schema at `database/`
+- `docs/agent-worktree-isolation-policy.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
 
 ### Validation Reviewed
 
-None
+- Attempt 1 focused Feature/Capability packet: 31/31 passed across four files.
+- Dedicated C088 Feature tests: 12 passed.
+- Focused ESLint over all changed source/test files: passed with no warnings.
+- Changed-file/Pylance diagnostics: no errors.
+- New Feature API retired-concept scan: no prohibited legacy concepts found.
+- Attempt 1 `git diff --check`: passed.
+- Attempt 2 `git diff --check`: passed.
+- Repository `npm run typecheck`: 144 diagnostics in 15 files, all outside the C088 changed-file set.
+- Attempt 2 source comparison: all C088-owned implementation/test files are byte-for-byte unchanged from the validated Attempt-1 snapshot after the `origin/main` synchronization merge.
+- Live PostgreSQL rehearsal: not run because no developer-confirmed isolated `DATABASE_URL` was available; not a required C088 validation item.
 
 ### Architecture Conformance
 
-Pending
+Conforms.
+
+C088 establishes the direct Feature authoring backend required by ARCH-021: Admin-owned Features remain identity/read sources, Commerce owns one current Feature behaviour configuration, direct Capabilities bind exactly one Feature to exactly one Tool, authoring creates no durable shell before final create, and release/runtime Tool-revision pinning remains outside this task.
 
 ### Follow-up
 
-None
+ARCH-021-COMMERCE-088 is Complete.
+
+ARCH-021-COMMERCE-090 depends only on C088 and is promoted to Ready.
+
+ARCH-021-COMMERCE-089 remains Pending because ARCH-021-SHARED-002 is not yet Complete.
