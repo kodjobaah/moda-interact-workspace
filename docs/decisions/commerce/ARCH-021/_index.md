@@ -1213,19 +1213,19 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [COMMERCE-096](COMMERCE-096-expose-policy-operation-authoring-descriptors.md) | Canonical policy registration owns runtime validators + browser-safe authoring descriptor | Complete | COMMERCE-095 |
-| [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Ready | COMMERCE-096 |
+| [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Complete | COMMERCE-096 |
 | [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Complete | COMMERCE-096 |
-| [COMMERCE-099](COMMERCE-099-round-trip-save-policy-operation-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Pending | COMMERCE-097, COMMERCE-098 |
+| [COMMERCE-099](COMMERCE-099-round-trip-and-save-policy-operation-tool-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Ready | COMMERCE-097, COMMERCE-098 |
 | [COMMERCE-100](COMMERCE-100-publish-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Pending | COMMERCE-099 |
 
 ```text
                     C096 Complete
                     /           \
                    v             v
-             C097 Ready      C098 Ready
+          C097 Complete      C098 Complete
                    \             /
                     v           v
-                     C099 Pending
+                      C099 Ready
                            |
                            v
                      C100 Pending
@@ -1245,3 +1245,9 @@ COMMERCE-098 is **Complete / Accepted, Attempt 1**. Policy Operation candidate T
 Canonical business outcomes such as `NOT_FOUND` remain valid Test results when a policy operation requires production state that is intentionally absent from the synthetic preview context; C098 does not fabricate production recovery/grant identity.
 
 COMMERCE-099 remains **Pending** because COMMERCE-097 is still Ready. No dependent task is promoted by C098 alone.
+
+### COMMERCE-097 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-097 is **Complete / Accepted, Attempt 2**. Policy Operation Result Template authoring now shares the production Policy result-schema projection and exposes descriptor fields directly as `result.<field>`; External HTTP and Shopify Admin retain their existing `result.values.*` envelopes. Response/Review continue to show the exact descriptor schema read-only, and C097 remains local-only.
+
+Because COMMERCE-098 is already Complete, both dependencies of COMMERCE-099 are now satisfied. COMMERCE-099 is **Ready**; COMMERCE-100 remains Pending on C099.
