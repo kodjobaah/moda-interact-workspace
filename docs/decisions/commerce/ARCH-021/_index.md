@@ -1151,7 +1151,7 @@ All SYSTEM-TEST-002 implementation dependencies are now Complete, so terminal
 | [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Complete | DATABASE-003, SHARED-002, COMMERCE-088 |
 | [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Complete | COMMERCE-088 |
 | [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Complete | COMMERCE-088, COMMERCE-090 |
-| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Ready | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
+| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Complete | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
 
 
 ### COMMERCE-088 Attempt 2 accepted — 2026-09-29
@@ -1186,6 +1186,13 @@ The required disposable C20 proof passed 2/2 on the final post-merge implementat
 BACKGROUND-002 is **Complete / Accepted, Attempt 1**. The Background Commerce host now consumes the published Shared 1.0.0 direct Feature/Capability/Tool manifest, removes MCP Capability-prompt retrieval, accepts valid zero-Capability grants and retains exact Tool/grant provenance authorization.
 
 COMMERCE-089, COMMERCE-091 and BACKGROUND-002 are all Complete, so COMMERCE-092 is now **Ready** as the final Phase 5 subtractive cleanup task.
+
+### COMMERCE-092 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-092 is **Complete / Accepted, Attempt 1**. Architect review traced the deleted standalone Capability revision/list/editor lifecycle against the current Feature-centric authoring, Tool publication, release composition, activation/rollback and MCP/runtime paths. Current Feature-owned Capability creation remains under `/features/[id]/capabilities/new`; releases still select direct Capabilities, snapshot Feature Behaviour and pin exact published Tool revisions. No supported caller remains for the removed Capability revision/draft/binding APIs.
+
+The disposable C20 DB/Redis rehearsal remains explicitly unexecuted because disposable targets were not configured. Terminal SYSTEM-TEST-003 is now Ready and owns the end-to-end validation of the completed simplified architecture.
+
 
 
 ### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
