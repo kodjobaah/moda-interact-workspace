@@ -9,14 +9,15 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 86
-executor: copilot
-claimed_at: 2026-09-29T10:50:29Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-084
   - ARCH-021-COMMERCE-085
+  - ARCH-021-COMMERCE-093
 enables: []
 created: 2026-09-28
 updated: 2026-09-29
@@ -482,6 +483,7 @@ No database or cross-repository runtime contract is introduced.
 
 - ARCH-021-COMMERCE-084
 - ARCH-021-COMMERCE-085
+- ARCH-021-COMMERCE-093
 
 ## Enables
 
@@ -644,24 +646,99 @@ declared task scope; the architect chose a separate Commerce-owned task.
 
 ### Review Status
 
-Pending
+Blocked
 
 ### Review Notes
 
-None
+Attempt 1 is architect-reviewed as **Blocked by an out-of-scope Commerce build defect**, not by a C086 implementation defect.
+
+The C086 implementation evidence is coherent:
+
+- canonical manual source/package/smoke behavior is implemented;
+- `predev` packages and verifies the manual before code-runtime packaging;
+- the production `build` command includes manual package/smoke before the existing code-runtime/Prisma/Next build stages;
+- stale generated manual cleanup and missing-source failure regressions pass;
+- the Result Template guide link is present with the required href/target/rel and zero authoring-state mutation;
+- focused packaging/UI/C084 compatibility packet passed 43 tests;
+- targeted ESLint and `git diff --check` passed;
+- changed-file diagnostics contain no C086-introduced TypeScript diagnostics.
+
+The normal clean production build reaches the Next compilation stage and then fails in an **untouched file outside C086 scope**:
+
+```text
+app/api/studio/code-response/validate/route.ts
+```
+
+That route imports:
+
+```ts
+../../../../../../lib/preview/http
+../../../../../../lib/preview/runtime
+../../../../../../src/commerce/preview/types
+```
+
+From:
+
+```text
+app/api/studio/code-response/validate/
+```
+
+six parent traversals resolve one directory above the Commerce repository. The repository-local `lib/` and `src/` roots are five parent traversals away.
+
+The three referenced modules exist. This is therefore a bounded route-import-depth defect, not a missing implementation capability and not permission to modify the route inside C086.
+
+`ARCH-021-COMMERCE-093` is materialised by this architect review to own that correction and verify the normal Commerce production build.
+
+C086 now explicitly depends on C093.
+
+Do not modify the already-valid C086 manual packaging/link implementation while blocked.
 
 ### Reviewed Files
 
-None
+- `docs/decisions/commerce/ARCH-021/COMMERCE-086-add-result-template-guide-link.md`
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/scripts/package-manuals.mjs`
+- `moda-interact-commerce/scripts/manuals-packaged-smoke.mjs`
+- `moda-interact-commerce/src/studio/tools/authoring/result-template-tab.tsx`
+- `moda-interact-commerce/tests/manual-packaging.test.ts`
+- `moda-interact-commerce/tests/result-template-tab.test.tsx`
+- `moda-interact-commerce/app/api/studio/code-response/validate/route.ts`
+- C086 Completion Report — Attempt 1
 
 ### Validation Reviewed
 
-None
+Submitted Attempt 1 evidence:
+
+- `npm run predev`: passed;
+- clean manual package + smoke: passed;
+- focused six-file packet: 43 tests passed;
+- targeted ESLint: passed;
+- `git diff --check`: passed;
+- changed-file TypeScript diagnostics: no C086-introduced diagnostics;
+- clean `npm run build`: manual packaging/smoke, code-runtime packaging/smoke and Prisma generation passed; Next compilation then failed on the three over-deep imports in the untouched code-response validation route;
+- R11/R12 production `npm run start` HTTP smoke is therefore not yet executable and is correctly left unclaimed.
+
+The route path calculation independently confirms that five, not six, parent traversals are required to reach the Commerce repository root from the route directory.
 
 ### Architecture Conformance
 
-Pending
+C086 implementation conforms within its declared scope.
+
+The task is blocked only because the production build cannot complete until the unrelated Commerce route-import defect is corrected.
 
 ### Follow-up
 
-None
+1. Execute and architect-review `ARCH-021-COMMERCE-093`.
+2. C093 must correct only the three code-response route imports and prove the normal Commerce production build succeeds.
+3. After C093 is Complete, return this same C086 task to `ready` through the authorized Changes Requested path:
+   - preserve `attempt: 1`;
+   - preserve all Attempt 1 Completion Report evidence;
+   - keep C093 in `depends_on`;
+   - clear execution claim;
+   - make the next claim Attempt 2.
+4. C086 Attempt 2 must rerun from a clean generated-manual state:
+   - normal `npm run build`;
+   - bounded `npm run start` smoke;
+   - `GET /manuals/result-template-guide.html`;
+   - HTTP 200 / HTML Content-Type / exact title assertion.
+5. Do not repeat already-passed focused implementation work unless a relevant intervening change affects it.
