@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 76
-executor: copilot
-claimed_at: 2026-09-29T16:29:46Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-078
@@ -134,11 +134,11 @@ Create one pure Commerce Studio navigation module containing the exact new-Tool 
 
 ```ts
 export const NEW_TOOL_AUTHORING_STEPS = [
-  "tool-definition",
+Ready for Review after Attempt 2.
   "request",
   "response",
   "result-template",
-  "test",
+Attempt 1 implementation commit `96ffdeca8f1e1cc420df9d2c1878fc459f82b530` added the progressive navigation implementation and baseline regression matrix. Attempt 2 correction commit `fb0c5fe00c816c7e599de7611049f4f89e6e4b32` updates `src/studio/tools/authoring/tool-authoring-tabs.tsx`, `src/studio/tools/new-tool-editor.tsx`, and `tests/tool-authoring-screen.test.tsx`. Both commits are pushed to `origin/task/ARCH-021-COMMERCE-095`.
   "review",
 ] as const;
 
@@ -146,18 +146,22 @@ export type NewToolAuthoringStepId =
   (typeof NEW_TOOL_AUTHORING_STEPS)[number];
 ```
 
+- A1-R1: while provider replacement confirmation is unresolved, the new-Tool tab list disables navigation away from the active Tool Definition step, and Next/Previous/tab handlers reject navigation. Cancel clears only the pending choice and restores the prior frontier; successful replacement still resets it. Covered in `tool-authoring-screen.test.tsx`.
+- A1-R2: replaced the pre-provider text with accurate guidance to complete Tool Definition and use Next to unlock each step; the screen regression asserts the exact guidance.
+- A1-R3: added the prepared worktree, branch synchronization, claim and recursive submodule evidence below. The Architect Review section was not modified.
 `ToolAuthoringTabs` and the Previous/Next logic must consume this same order. Do not maintain a second independently ordered six-step array for new Tool navigation.
 
 The existing persisted Tool tab order may continue to use its current representation; this task must not alter persisted-DRAFT behaviour.
 
-### R2 — session-scoped unlock frontier
-
-Extend `NewToolAuthoringState` with exactly one navigation frontier:
+- Focused provider-confirmation regression — 1 test passed; asserts navigation is frozen during the decision, cancellation restores the enabled Request step, and confirmation starts the new provider at Tool Definition before Next.
+- Targeted ESLint across all 13 changed source/test paths passed in Attempt 1; Attempt 2 ESLint on all three corrected files passed with no warnings. Changed-file TypeScript diagnostics report no errors.
+- `git diff --check` — passed after Attempt 2.
+- Repository `pnpm run typecheck` from Attempt 1 reported 146 TypeScript errors across 17 unchanged files; none referenced C095-changed files. Attempt 2 changed-file diagnostics remain clean.
 
 ```ts
 type NewToolAuthoringNavigationState = {
   enabledThrough: NewToolAuthoringStepId;
-};
+No implementation scope deviations. The persisted editor retains its pre-existing tablist accessible name; only new-Tool creation uses the provider-neutral label. The enabled `ARCH-021-SYSTEM-TEST-002` task was not started.
 ```
 
 Initial new Tool state is exactly:
@@ -723,11 +727,11 @@ Keep those two concerns separate.
 
 ### Status
 
-Ready for Review.
+Ready for Review after Attempt 2.
 
 ### Files Changed
 
-Implementation commit `96ffdeca8f1e1cc420df9d2c1878fc459f82b530` changes 13 files in `moda-interact-commerce`: 8 source files and 5 focused test files. The commit is pushed to `origin/task/ARCH-021-COMMERCE-095`.
+Attempt 1 implementation commit `96ffdeca8f1e1cc420df9d2c1878fc459f82b530` added progressive navigation and its baseline regression matrix. Attempt 2 correction commit `fb0c5fe00c816c7e599de7611049f4f89e6e4b32` changes `src/studio/tools/authoring/tool-authoring-tabs.tsx`, `src/studio/tools/new-tool-editor.tsx`, and `tests/tool-authoring-screen.test.tsx`. Both commits are pushed to `origin/task/ARCH-021-COMMERCE-095`.
 
 ### Work Completed
 
@@ -735,18 +739,22 @@ Implementation commit `96ffdeca8f1e1cc420df9d2c1878fc459f82b530` changes 13 file
 - Exposed External Request structural-validity/current-validation state without adding another validator; persisted the optional frontier in v1 Explore sessions and restored active step/frontier compatibly.
 - Preserved persisted-DRAFT navigation, provider confirmation semantics, and independent Review/Save readiness; no durable schema or non-Commerce repository changes.
 - Extended UI/state/session regressions for disabled steps, successful/failed/stale checkpoints, backwards/monotonic navigation, provider reset, Explore restore, zero writes, and persisted editor behavior.
+- A1-R1: while provider replacement confirmation is unresolved, the tab list disables navigation away from the active Tool Definition step, and Next/Previous/tab handlers reject navigation. Cancel clears only the pending choice and restores the prior frontier; confirmation still resets the new provider to Tool Definition. The confirmation regression verifies both cases.
+- A1-R2: replaced the stale pre-provider instruction with guidance to complete Tool Definition and use Next to unlock each step; the fresh-session screen test asserts the updated text.
+- A1-R3: recorded the launcher-resolved worktree, synchronization, claim and recursive submodule evidence below. Architect Review was not edited.
 
 ### Validation Results
 
-- `pnpm exec vitest run tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-session.test.ts tests/new-tool-authoring-state.test.ts --reporter=dot` — 5 files passed, 181 tests passed.
-- Targeted ESLint across all 13 changed source/test paths — passed with no warnings.
-- `git diff --check` — passed before implementation commit.
-- `pnpm run typecheck` — fails with 146 TypeScript errors in 17 unchanged files; none of the diagnostics reference C095-changed files.
+- Attempt 2: `pnpm exec vitest run tests/tool-authoring-screen.test.tsx tests/external-tools-ui.test.tsx tests/shopify-admin-tools-ui.test.tsx tests/tool-authoring-session.test.ts tests/new-tool-authoring-state.test.ts --reporter=dot` — 5 files passed, 181 tests passed.
+- Provider-confirmation regression — 1 test passed; verifies navigation remains at Tool Definition while pending, cancellation restores the prior enabled tab, and confirmation resets the frontier before Next progresses.
+- Targeted ESLint across all 13 changed source/test paths passed in Attempt 1; Attempt 2 rerun on the three corrected files passed with no warnings. Changed-file TypeScript diagnostics report no errors.
+- `git diff --check` — passed after Attempt 2.
+- Repository `pnpm run typecheck` in Attempt 1 reported 146 TypeScript errors across 17 unchanged files; none of the diagnostics reference C095-changed files. Attempt 2 changed-file diagnostics remain clean.
 - Prisma Client was generated locally in the isolated worktree to enable the UI regression suites; no Prisma schema or gitlink was changed.
 
 ### Deviations
 
-No implementation scope deviations. The persisted editor retains its pre-existing tablist accessible name; only new-Tool creation uses the provider-neutral label.
+No implementation scope deviations. The persisted editor retains its pre-existing tablist accessible name; only new-Tool creation uses the provider-neutral label. `ARCH-021-SYSTEM-TEST-002` was not started.
 
 ### Assumptions
 
@@ -754,11 +762,34 @@ The v1 authoring-session contract remains unchanged; `editor.enabledThrough` is 
 
 ### Unresolved Issues
 
-The repository-wide typecheck remains blocked by the 146 diagnostics in 17 untouched files noted above; focused C095 tests and lint are clean.
+The repository-wide typecheck remains blocked by the 146 diagnostics in 17 untouched files noted above; focused C095 tests, corrected-file diagnostics and lint are clean.
 
 ### Architectural Concerns
 
 None.
+
+### Attempt 2 Prepared Execution Evidence
+
+Launcher claim: Attempt 2, executor `copilot`, claimed at `2026-09-29T16:29:46Z`; claim commit `92607cab5c3e92426247c3dd72386456edb37cbe` was committed and pushed.
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-095`, `task/ARCH-021-COMMERCE-095`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-095`, `task/ARCH-021-COMMERCE-095`.
+- Shared workspace checkout switched or mutated for task work: no. Shared implementation checkout switched or mutated for task work: no. Another task worktree reused: no.
+
+Start-of-attempt synchronization:
+- Parent remote task branch fast-forwarded: not needed; parent branch started at launcher head `6f053ed4045801cb34886136de354f86c4bcfbcb`.
+- Parent `origin/main` incorporated: yes.
+- Implementation remote task branch fast-forwarded: not needed; implementation branch started at launcher head `8227555e071494c4bc5aedbfe7a218aeb0e34902`.
+- Implementation `origin/main` incorporated: yes.
+
+Recursive implementation submodules:
+- `git submodule sync --recursive`: passed.
+- `git submodule update --init --recursive`: passed.
+- Recorded initialized submodule: `database` at `e9fb60221f1532205650154dfff2aadb6270b14c`.
+
+Attempt 2 implementation correction commit `fb0c5fe00c816c7e599de7611049f4f89e6e4b32` is pushed. This report is being published on the mirrored parent task branch with the review transition; task metadata is set to `status: review`, `executor: null` and `claimed_at: null`.
 
 ## Architect Review
 
