@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 75
-executor: copilot
-claimed_at: 2026-09-29T00:07:33Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-021-COMMERCE-063
@@ -787,21 +787,21 @@ If a real non-Commerce runtime consumer is found, STOP before changing the gramm
 
 ## Work Items
 
-- [ ] Perform the bounded Result Template ownership/source audit from R11.
-- [ ] Add direct Nunjucks runtime dependency and lockfile update.
-- [ ] Replace `ResponseTemplateSchema` with the exact `nunjucks.v1` shape.
-- [ ] Replace the hand-written delimiter scanner as the canonical syntax authority with installed-Nunjucks parse/AST validation plus Moda's explicit AST allowlist and stable issue codes.
-- [ ] Validate interpolation, loop and conditional paths against the canonical `CommerceResultSchema`.
-- [ ] Implement bounded `if`/`elif`/`else`, primitive literals, comparisons, boolean operators, parentheses, numeric arithmetic and unary negation with static expression type inference.
-- [ ] Add deterministic division/modulo-by-zero render protection without changing the shared Tool-result error contract.
-- [ ] Enforce source/node/loop/combined-control-depth bounds.
-- [ ] Add JSON-only/null-prototype render-context sanitization.
-- [ ] Replace `renderDefinitionResult` text/items branches with the one Nunjucks renderer.
-- [ ] Add the deterministic provider-neutral default-template generator and prove every generated template passes the canonical validator, including root-scalar/root-array and parallel-loop complexity cases.
-- [ ] Make publication and current live-Test preflight consume the same canonical validator/renderer.
-- [ ] Remove obsolete text/items syntax/runtime branches.
-- [ ] Convert C084-owned Commerce fixtures/tests to `nunjucks.v1`, including `database/scripts/fixtures/arch020-commerce-capability-cases.mjs`; leave C085-owned editor/state fixtures for C085.
-- [ ] Add bounded security, generation, validation and rendering regressions.
+- [x] Perform the bounded Result Template ownership/source audit from R11.
+- [x] Add direct Nunjucks runtime dependency and lockfile update.
+- [x] Replace `ResponseTemplateSchema` with the exact `nunjucks.v1` shape.
+- [x] Replace the hand-written delimiter scanner as the canonical syntax authority with installed-Nunjucks parse/AST validation plus Moda's explicit AST allowlist and stable issue codes.
+- [x] Validate interpolation, loop and conditional paths against the canonical `CommerceResultSchema`.
+- [x] Implement bounded `if`/`elif`/`else`, primitive literals, comparisons, boolean operators, parentheses, numeric arithmetic and unary negation with static expression type inference.
+- [x] Add deterministic division/modulo-by-zero render protection without changing the shared Tool-result error contract.
+- [x] Enforce source/node/loop/combined-control-depth bounds.
+- [x] Add JSON-only/null-prototype render-context sanitization.
+- [x] Replace `renderDefinitionResult` text/items branches with the one Nunjucks renderer.
+- [x] Add the deterministic provider-neutral default-template generator and prove every generated template passes the canonical validator, including root-scalar/root-array and parallel-loop complexity cases.
+- [x] Make publication and current live-Test preflight consume the same canonical validator/renderer.
+- [x] Remove obsolete text/items syntax/runtime branches.
+- [x] Convert C084-owned Commerce fixtures/tests to `nunjucks.v1`, including `database/scripts/fixtures/arch020-commerce-capability-cases.mjs`; leave C085-owned editor/state fixtures for C085.
+- [x] Add bounded security, generation, validation and rendering regressions.
 
 ## Interfaces / Contracts
 
@@ -844,45 +844,45 @@ No new database or cross-repository contract is introduced unless R11 proves the
 
 ## Acceptance Criteria
 
-- [ ] Final Commerce Tool definitions accept only `kind: "nunjucks"`, `runtimeVersion: "nunjucks.v1"` Result Templates.
-- [ ] Legacy final `text` and `items` templates are rejected; no compatibility runtime branch remains.
-- [ ] Supported scalar interpolation, bounded `for`/`else`, bounded `if`/`elif`/`else`, primitive literals, comparisons, boolean expressions, parentheses and numeric arithmetic render correctly for their valid schema types.
-- [ ] Root scalar `{{ result }}` and root-array `{% for item in result %}` are accepted only for matching root schema kinds.
-- [ ] Unsupported Nunjucks constructs are rejected deterministically before render/provider I/O.
-- [ ] The canonical validator never accepts source rejected by the installed Nunjucks parser, and Nunjucks parse success alone never bypasses Moda's AST/type allowlist.
-- [ ] Invalid arithmetic/comparison/boolean operand types fail with deterministic `invalid_template_expression` issues rather than implicit coercion.
-- [ ] Division/modulo by zero falls back deterministically to `responseTemplate.unavailable` with existing `INVALID_INPUT` Tool semantics and never emits `Infinity`/`NaN`.
-- [ ] Every interpolated scalar path and every loop collection path is proven against the current canonical result contract.
-- [ ] No template can access prototype paths, functions, globals, loaders, environment variables, credentials or application service objects; the configured Nunjucks Environment has no loader instance.
-- [ ] Renderer output remains bounded to 4096 characters and renderer failures fall back without escaping exceptions.
-- [ ] The deterministic generator produces the exact expected source for the documented `values.items[]` example.
-- [ ] Generator output is provider-neutral and stable for identical canonical schemas.
-- [ ] Generator output always passes canonical validation; complexity overflow fails as `template_generation_too_large` rather than returning an invalid template.
-- [ ] External and Shopify live-Test backends continue to use the production renderer and remain zero-write.
-- [ ] Publication rejects invalid/incompatible Nunjucks source through the canonical validation boundary.
-- [ ] No database migration or non-Commerce implementation change is introduced.
-- [ ] C084-owned non-UI fixtures no longer construct a final `text` / `items` template; C085-owned editor/state migration remains deferred.
-- [ ] The durable Completion Report records the actual implementation commit, validation results, known C085-owned suite failures and clean dedicated worktree/branch evidence before the task returns to review.
+- [x] Final Commerce Tool definitions accept only `kind: "nunjucks"`, `runtimeVersion: "nunjucks.v1"` Result Templates.
+- [x] Legacy final `text` and `items` templates are rejected; no compatibility runtime branch remains.
+- [x] Supported scalar interpolation, bounded `for`/`else`, bounded `if`/`elif`/`else`, primitive literals, comparisons, boolean expressions, parentheses and numeric arithmetic render correctly for their valid schema types.
+- [x] Root scalar `{{ result }}` and root-array `{% for item in result %}` are accepted only for matching root schema kinds.
+- [x] Unsupported Nunjucks constructs are rejected deterministically before render/provider I/O.
+- [x] The canonical validator never accepts source rejected by the installed Nunjucks parser, and Nunjucks parse success alone never bypasses Moda's AST/type allowlist.
+- [x] Invalid arithmetic/comparison/boolean operand types fail with deterministic `invalid_template_expression` issues rather than implicit coercion.
+- [x] Division/modulo by zero falls back deterministically to `responseTemplate.unavailable` with existing `INVALID_INPUT` Tool semantics and never emits `Infinity`/`NaN`.
+- [x] Every interpolated scalar path and every loop collection path is proven against the current canonical result contract.
+- [x] No template can access prototype paths, functions, globals, loaders, environment variables, credentials or application service objects; the configured Nunjucks Environment has no loader instance.
+- [x] Renderer output remains bounded to 4096 characters and renderer failures fall back without escaping exceptions.
+- [x] The deterministic generator produces the exact expected source for the documented `values.items[]` example.
+- [x] Generator output is provider-neutral and stable for identical canonical schemas.
+- [x] Generator output always passes canonical validation; complexity overflow fails as `template_generation_too_large` rather than returning an invalid template.
+- [x] External and Shopify live-Test backends continue to use the production renderer and remain zero-write.
+- [x] Publication rejects invalid/incompatible Nunjucks source through the canonical validation boundary.
+- [x] No database migration or non-Commerce implementation change is introduced.
+- [x] C084-owned non-UI fixtures no longer construct a final `text` / `items` template; C085-owned editor/state migration remains deferred.
+- [x] The durable Completion Report records the actual implementation commit, validation results, known C085-owned suite failures and clean dedicated worktree/branch evidence before the task returns to review.
 
 ## Validation
 
-- [ ] `npx vitest run tests/arch021-commerce-tool-contract.test.ts tests/result-template-authoring.test.ts tests/definition-execution.test.ts`
-- [ ] `npx vitest run tests/external-http-live-test.test.ts tests/shopify-admin-live-test.test.ts`
-- [ ] focused generator fixtures for scalar/object/object-list/scalar-list/nested-list schemas
-- [ ] focused acceptance tests for `if` / repeated `elif` / optional `else`, nested if+for, literals, comparisons, boolean expressions, precedence/parentheses, arithmetic and unary negation
-- [ ] focused type-matrix rejection tests for string/number/boolean/null misuse and no-coercion behavior
-- [ ] focused rejection tests for each unsupported construct listed in R3, including calls/method calls/filters/set/macros/import/include/inheritance/bracket/computed access/globals/`loop.*`/raw
-- [ ] focused rejection tests for unsafe/unknown paths and non-array loop sources
-- [ ] focused complexity-bound tests for source bytes, AST nodes, loop count and combined if/for nesting depth
-- [ ] focused renderer tests for Error fallback, empty list `else`, condition branches, optional missing values, division/modulo by zero and 4096-character output bound
-- [ ] regression proving the Nunjucks Environment has an explicit empty loader set
-- [ ] generator regressions for root scalar, root array, >16 parallel arrays / >256 generated nodes and self-validation
-- [ ] focused proof that invalid template preflight causes zero provider I/O in External and Shopify Test
-- [ ] bounded source audit proving no non-Commerce runtime consumer was silently changed
-- [ ] source audit proving no C084-owned non-UI fixture still creates legacy final `text` / `items` templates except intentional rejection fixtures
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `npx vitest run tests/arch021-commerce-tool-contract.test.ts tests/result-template-authoring.test.ts tests/definition-execution.test.ts`
+- [x] `npx vitest run tests/external-http-live-test.test.ts tests/shopify-admin-live-test.test.ts`
+- [x] focused generator fixtures for scalar/object/object-list/scalar-list/nested-list schemas
+- [x] focused acceptance tests for `if` / repeated `elif` / optional `else`, nested if+for, literals, comparisons, boolean expressions, precedence/parentheses, arithmetic and unary negation
+- [x] focused type-matrix rejection tests for string/number/boolean/null misuse and no-coercion behavior
+- [x] focused rejection tests for each unsupported construct listed in R3, including calls/method calls/filters/set/macros/import/include/inheritance/bracket/computed access/globals/`loop.*`/raw
+- [x] focused rejection tests for unsafe/unknown paths and non-array loop sources
+- [x] focused complexity-bound tests for source bytes, AST nodes, loop count and combined if/for nesting depth
+- [x] focused renderer tests for Error fallback, empty list `else`, condition branches, optional missing values, division/modulo by zero and 4096-character output bound
+- [x] regression proving the Nunjucks Environment has an explicit empty loader set
+- [x] generator regressions for root scalar, root array, >16 parallel arrays / >256 generated nodes and self-validation
+- [x] focused proof that invalid template preflight causes zero provider I/O in External and Shopify Test
+- [x] bounded source audit proving no non-Commerce runtime consumer was silently changed
+- [x] source audit proving no C084-owned non-UI fixture still creates legacy final `text` / `items` templates except intentional rejection fixtures
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -898,7 +898,7 @@ The default generator is an authoring convenience, not a second runtime grammar.
 
 ### Status
 
-Attempt 2 corrections implemented; submitted for architect review.
+Attempt 3 corrections implemented; submitted for architect review. Execution metadata is reconciled to `status: review`, `executor: null` and `claimed_at: null`.
 
 ### Files Changed
 
@@ -938,6 +938,26 @@ Workspace-wide TypeScript/UI validation still depends on C085 editor/state migra
 ### Architectural Concerns
 
 None identified by the bounded R11 audit. No Shared contract or database migration was introduced.
+
+### Attempt 3 Addendum
+
+#### Corrections
+
+- Equality and inequality now accept only compatible scalar operands, numeric integer/number pairs, or scalar/null checks. Object/object, array/array, object/null and array/null comparisons produce `invalid_template_expression`; scalar optional-null checks remain valid.
+- Plain `else` bodies now count the enclosing `if` in combined control depth. An `elif` represented as an `If` continuation remains at the same chain depth. Added regressions for repeated `elif`, four accepted levels, a fifth level through `else`, and a fifth mixed if/for level through `else`.
+- Reconciled every Work Item, Acceptance Criterion and Validation checkbox against the recorded implementation and evidence. The complete Architect Review history is preserved unchanged.
+
+#### Attempt 3 Files and Validation
+
+- Commerce implementation commit: `421c02dd692664bb435abdcc7a25b5856a29cc62`, pushed to `origin/task/ARCH-021-COMMERCE-084`; it changes only `src/commerce/tool-authoring/nunjucks-template.ts` and `tests/nunjucks-template.test.ts`.
+- Focused 10-file packet: 125 tests passed. Required contract/authoring/execution and External/Shopify live-Test packet: 4 files, 56 tests passed. Parser regression suite: 7 tests passed. Targeted ESLint and Commerce/database `git diff --check` passed.
+- Repository `tsc --noEmit --pretty false` remains nonzero with 266 errors, matching the Attempt 2 baseline count; no diagnostics reference either changed file. Full Commerce suite and environment-dependent QuickJS/C20/MCP checks were not rerun; prior documented blockers remain.
+
+#### Attempt 3 Execution Evidence
+
+- Launcher-resolved parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-084`; Commerce implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-084`; nested database worktree: Commerce `database/`.
+- At attempt start the parent task branch was `a311e8feb5521d834722bcf4529fb393e67f8e2a`; the launcher reported task branches already current with `origin/main`, no fast-forward required. Commerce started at `5efd2d1eaad7941d4e8230d29eeacbfdfd7f5905`. The launcher verified recursive submodule initialization at database commit `4da313921d9521c23058722188e2802f7fbf7779`.
+- Commerce Attempt 3 commit and remote task-branch tip match at `421c02dd692664bb435abdcc7a25b5856a29cc62`. Database local and remote task-branch tips match at `4da313921d9521c23058722188e2802f7fbf7779`. Commerce and database worktrees were clean after publication. Parent task report is now committed and pushed on its mirrored task branch; local and remote parent tips were verified equal.
 
 ## Architect Review
 
