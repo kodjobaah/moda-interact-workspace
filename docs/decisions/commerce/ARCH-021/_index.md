@@ -339,7 +339,7 @@ The work is decomposed so backend/compiler tasks and React/UI tasks remain indep
 | [COMMERCE-083](COMMERCE-083-integrate-shopify-admin-test-tab.md) | UI: integrate Shopify Admin Test for new/persisted DRAFTs | Complete | COMMERCE-078, COMMERCE-079, COMMERCE-081, COMMERCE-082, COMMERCE-085, COMMERCE-087 |
 | [COMMERCE-084](COMMERCE-084-result-template-nunjucks.md) | Runtime: replace Result Template grammar/renderer with constrained `nunjucks.v1` | Complete | COMMERCE-063, COMMERCE-078, COMMERCE-080, COMMERCE-082 |
 | [COMMERCE-085](COMMERCE-085-result-template-editor.md) | UI: replace Text/Items authoring with generated CodeMirror Nunjucks source editor | Complete | COMMERCE-078, COMMERCE-084 |
-| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Blocked | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
+| [COMMERCE-086](COMMERCE-086-add-result-template-guide-link.md) | UX/docs: package and link the Result Template user guide | Complete | COMMERCE-084, COMMERCE-085, COMMERCE-093, COMMERCE-094 |
 | [COMMERCE-087](COMMERCE-087-make-generated-nunjucks-safe-for-optional-fields.md) | Runtime correction: make generated Nunjucks safe for schema-permitted optional omissions | Complete | COMMERCE-084 |
 | [COMMERCE-095](COMMERCE-095-add-progressive-new-tool-tab-navigation.md) | UI: progressive Previous/Next and monotonic first-unlock traversal for new Tool authoring | Complete | COMMERCE-078, COMMERCE-083 |
 
@@ -1195,6 +1195,13 @@ The disposable C20 DB/Redis rehearsal remains explicitly unexecuted because disp
 
 
 
+
+### COMMERCE-094 Attempt 3 accepted — 2026-09-29
+
+COMMERCE-094 is **Complete / Accepted, Attempt 3**. The full repository TypeScript check now passes with zero diagnostics and the normal production build completes successfully. The final architect-approved scope expansion required only two test typing corrections because the renderer narrowing fix was already present in the synchronized baseline. No runtime/schema/dependency/C086 behavior was changed.
+
+COMMERCE-086 is therefore promoted from **Blocked** to **Ready** for Attempt 2. It owns its own clean-build confirmation and production-start HTTP smoke.
+
 ### COMMERCE-086 Attempt 1 blocked / COMMERCE-093 materialised — 2026-09-29
 
 C086 is **Blocked** after a clean production build reached Next compilation and failed only on three over-deep imports in the untouched Studio code-response validation route. C086's manual packaging/link implementation remains within scope and its passed Attempt 1 evidence is preserved.
@@ -1222,8 +1229,8 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
 | [COMMERCE-096](COMMERCE-096-expose-policy-operation-authoring-descriptors.md) | Canonical policy registration owns runtime validators + browser-safe authoring descriptor | Complete | COMMERCE-095 |
 | [COMMERCE-097](COMMERCE-097-render-persisted-policy-operation-tool-authoring.md) | Render persisted Policy Operation Tool authoring surfaces | Complete | COMMERCE-096 |
 | [COMMERCE-098](COMMERCE-098-live-test-policy-operation-tool-candidates.md) | Live-test Policy Operation candidates through DefinitionExecutor | Complete | COMMERCE-096 |
-| [COMMERCE-099](COMMERCE-099-round-trip-and-save-policy-operation-tool-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Ready | COMMERCE-097, COMMERCE-098 |
-| [COMMERCE-100](COMMERCE-100-publish-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Pending | COMMERCE-099 |
+| [COMMERCE-099](COMMERCE-099-round-trip-and-save-policy-operation-tool-drafts.md) | Round-trip/Test/CAS-save persisted Policy Operation DRAFTs | Complete | COMMERCE-097, COMMERCE-098 |
+| [COMMERCE-100](COMMERCE-100-publish-and-regression-validate-policy-operation-tools.md) | Publish/reopen/regression-validate Policy Operation Tools | Complete | COMMERCE-099 |
 
 ```text
                     C096 Complete
@@ -1232,10 +1239,10 @@ This bounded follow-up keeps `POLICY_OPERATION` as the existing Moda-owned execu
           C097 Complete      C098 Complete
                    \             /
                     v           v
-                      C099 Ready
+                    C099 Complete
                            |
                            v
-                     C100 Pending
+                    C100 Complete
 ```
 
 ### COMMERCE-096 Attempt 1 accepted — 2026-09-29
@@ -1258,3 +1265,38 @@ COMMERCE-099 remains **Pending** because COMMERCE-097 is still Ready. No depende
 COMMERCE-097 is **Complete / Accepted, Attempt 2**. Policy Operation Result Template authoring now shares the production Policy result-schema projection and exposes descriptor fields directly as `result.<field>`; External HTTP and Shopify Admin retain their existing `result.values.*` envelopes. Response/Review continue to show the exact descriptor schema read-only, and C097 remains local-only.
 
 Because COMMERCE-098 is already Complete, both dependencies of COMMERCE-099 are now satisfied. COMMERCE-099 is **Ready**; COMMERCE-100 remains Pending on C099.
+
+### COMMERCE-099 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-099 is **Complete / Accepted, Attempt 2**. Persisted Policy Operation DRAFTs now share the common four-section validation/Test freshness ledger, execute live Test through C098, and CAS-save the exact current candidate while preserving the original operation/version binding. Conflict and unknown mutation outcomes retain local work; successful Save restores the returned definition and edit version.
+
+Attempt 2 adds the same monotonic transient-generation protection already accepted for Shopify Admin Test, so Test arguments/shop A -> B -> A reversion cannot resurrect an obsolete in-flight result or re-enable Save. The focused packet passes 175/175 tests and the synchronized package-wide TypeScript check exits 0.
+
+COMMERCE-100 is now **Ready** as the final generic Policy Operation publication/reopen/regression-validation task.
+
+### COMMERCE-100 Attempt 1 accepted — 2026-09-29
+
+COMMERCE-100 is **Complete / Accepted, Attempt 1**. Registered Policy Operation DRAFTs now complete the normal Studio lifecycle through saved/current-validation/current-Test/SUPER_ADMIN/reason-gated canonical publication. Exact registry unavailability fails atomically before publication mutation, and published revisions reopen read-only with the exact fixed operation/version and saved definition.
+
+The New Tool selector remains unchanged and does not expose Policy Operation creation. No schema/migration, Merchant Knowledge special case or ARCH-023 implementation was introduced.
+
+The generic Policy Operation Studio follow-up C096-C100 is now fully Complete; there is no remaining executable task in this bounded ARCH-021 follow-up.
+
+
+### COMMERCE-086 Attempt 2 accepted — 2026-09-29
+
+COMMERCE-086 is **Complete / Accepted, Attempt 2**. The Result Template guide has one canonical Commerce-owned source, is deterministically packaged into `public/manuals/` by the normal build, and is linked from Result Template authoring without authoring-state mutation.
+
+After accepted C093/C094 removed the unrelated production-build blockers, C086's clean `npm run build` completed and the normal `npm run start` application served `/manuals/result-template-guide.html` with HTTP 200, HTML content type and the exact required title. No manual deployment copy step or Attempt 2 source change was required.
+
+## Manual-validation follow-up — Tool execution target and interaction safety — 2026-09-29
+
+Manual Shopify Admin Test validation exposed two bounded interaction-safety defects in the accepted Tool-authoring flow: the shell validates the selected shop but the Tools workspace still receives the raw URL `shopId`, and several consequential authoring actions rely on React pending state rather than a synchronous re-entry gate.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-102](COMMERCE-102-harden-tool-authoring-execution-context-and-single-flight-actions.md) | Make validated selected-shop context authoritative and make consequential Tool-authoring actions single-flight | Ready | COMMERCE-083, COMMERCE-095 |
+
+COMMERCE-102 is an independent manual-validation correction. It does not reopen C082/C083/C095 and it does not depend on the Policy Operation C096..100 chain. C082 remains the server-authoritative Shopify Admin execution boundary; C102 fixes the browser execution-target presentation/admission contract and same-tick action re-entry.
+
+`ARCH-021-SYSTEM-TEST-002` is re-gated **Pending** on COMMERCE-102 so terminal Tool-authoring validation runs only after the selected-shop and single-flight corrections are architect-accepted.

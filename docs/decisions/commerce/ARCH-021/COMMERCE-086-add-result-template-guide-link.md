@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: complete
 priority: 86
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 2
 depends_on:
   - ARCH-021-COMMERCE-084
   - ARCH-021-COMMERCE-085
@@ -440,9 +440,9 @@ Deleting an external architect/download handoff copy must have no effect on the 
 - [x] Add exactly one `Open Result Template guide` link to the Result Template header/introductory area.
 - [x] Add focused UI assertions for link text/href/target/rel and zero authoring-state mutation.
 - [x] Run a clean manual-package smoke.
-- [ ] Run the normal production build from a state with no `public/manuals` directory.
-- [ ] Start the built application and prove the exact manual URL returns the packaged HTML with HTTP 200.
-- [ ] Complete the Completion Report and STOP after the production gate is resolved.
+- [x] Run the normal production build from a state with no `public/manuals` directory.
+- [x] Start the built application and prove the exact manual URL returns the packaged HTML with HTTP 200.
+- [x] Complete the Completion Report and STOP after the production gate is resolved.
 
 ## Interfaces / Contracts
 
@@ -503,10 +503,10 @@ None.
 - [x] `manuals:package` and `manuals:smoke` exist with the exact responsibilities defined above.
 - [x] `predev` packages/smokes manuals before existing code-runtime packaging.
 - [x] `build` packages/smokes manuals before code-runtime packaging/smoke, Prisma generation and `next build --webpack`.
-- [ ] The production build succeeds from a clean state where `public/manuals/` does not exist.
-- [ ] The built application's normal `npm run start` serves `/manuals/result-template-guide.html` with HTTP 200 and HTML content.
-- [ ] The served document contains the exact expected title.
-- [ ] No post-build/manual/deployment copy step is needed (production build/start lifecycle not yet proven).
+- [x] The production build succeeds from a clean state where `public/manuals/` does not exist.
+- [x] The built application's normal `npm run start` serves `/manuals/result-template-guide.html` with HTTP 200 and HTML content.
+- [x] The served document contains the exact expected title.
+- [x] No post-build/manual/deployment copy step is needed.
 - [x] The manual remains self-contained and written for non-developers.
 - [x] Every documented grammar example matches architect-accepted C084.
 - [x] Result Template displays exactly one contextual `Open Result Template guide` link.
@@ -529,8 +529,8 @@ None.
 - [x] focused UI assertion: rendering/clicking the anchor causes no authoring-state or Server Action mutation
 - [x] targeted ESLint for changed JS/React/test files
 - [x] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] run `npm run build` with `public/manuals/` absent at start and record success
-- [ ] run bounded production-start HTTP smoke for `/manuals/result-template-guide.html`
+- [x] run `npm run build` with `public/manuals/` absent at start and record success
+- [x] run bounded production-start HTTP smoke for `/manuals/result-template-guide.html`
 - [x] `git diff --check`
 
 ## Stop Condition
@@ -553,11 +553,10 @@ The current Next.js production start topology serves files from `public/`. This 
 
 ### Status
 
-Attempt 1 is blocked at the production-build gate and remains `in_progress`.
-Manual packaging, the authoring link and focused regressions are complete, but
-R11/R12 cannot be proven until the separate Commerce route-import task
-ARCH-021-COMMERCE-093 is materialized, accepted and completed. Per
-`moda_architect`, C086 must not expand scope or move to `review` on this attempt.
+Attempt 2 is complete and ready for Architect re-review. Attempt 1's packaging,
+manual, link and focused regression evidence remains preserved below; Attempt 2
+proves the clean production build and built-application HTTP route after C093
+and C094 were accepted.
 
 ### Files Changed
 
@@ -573,6 +572,9 @@ Implementation commit `c26c0ec` on `task/ARCH-021-COMMERCE-086`:
 
 The canonical source `manuals/result-template-guide.html` was unchanged; no
 generated `public/manuals/` file is committed.
+
+Attempt 2 made no implementation-source changes; it completed the remaining
+production lifecycle validations against the accepted implementation.
 
 ### Work Completed
 
@@ -590,6 +592,32 @@ for URL/target/rel, invalid/stale visibility and zero authoring-state mutation.
 
 ### Validation Results
 
+Attempt 2:
+
+ - Launcher claim: Attempt 2 by `copilot`, dependency gate passed with C084,
+   C085, C093 and C094 complete; claim commit
+   `e170cec45246ad3d4ec3b56bc289ef8c19c26ec6` was pushed.
+ - Confirmed `public/manuals/` did not exist before `npm run build`.
+ - `npm run build`: passed end to end. The build packaged and smoked the manual,
+   packaged and smoked the code runtime, generated Prisma Client, completed
+   Next.js TypeScript validation, generated static pages, collected traces and
+   finalized optimization. The existing Nunjucks critical-dependency warning
+   was emitted during compilation.
+ - Confirmed `public/manuals/result-template-guide.html` exists after build;
+   `npm run manuals:smoke` passed and source/package bytes match. The generated
+   output remains ignored by Git.
+ - Bounded production-start smoke using `npm run start` on port 43186:
+   `GET /manuals/result-template-guide.html` returned HTTP 200,
+   `Content-Type: text/html; charset=UTF-8`, and contained the exact
+   `<title>Result Template Guide | Moda Commerce Studio</title>`. The spawned
+   server was terminated after the assertion.
+ - The first build attempt used stale installed Shared 0.14.2 although the
+   committed package and lockfile pin 1.0.0; it failed with cascading legacy
+   manifest diagnostics. `npm ci` restored the locked dependency state without
+   modifying manifests/lockfile, after which the clean build and route smoke
+   passed. Existing npm peer/engine/deprecation/audit warnings were reported by
+   the clean install.
+
  - `npm run predev`: passed; manual package/smoke preceded existing code-runtime
    packaging.
  - Clean `npm run manuals:package && npm run manuals:smoke`: passed; generated
@@ -603,7 +631,7 @@ for URL/target/rel, invalid/stale visibility and zero authoring-state mutation.
    same lines exist at the C086 starting commit.
  - Canonical guide resource scan found no script, iframe, image, external
    stylesheet or remote URL reference.
- - Clean `npm run build` passed manual packaging/smoke, code-runtime
+ - Attempt 1 clean `npm run build` passed manual packaging/smoke, code-runtime
    packaging/smoke and Prisma generation, then failed during Next compilation
    on three imports in the untouched
    `app/api/studio/code-response/validate/route.ts`:
@@ -612,14 +640,14 @@ for URL/target/rel, invalid/stale visibility and zero authoring-state mutation.
    `../../../../../../src/commerce/preview/types`. The referenced modules
    exist in the Commerce repository; the route's six parent traversals resolve
    outside the repository (one level too far).
- - R11/R12 production build and `npm run start` HTTP smoke remain unverified;
-   no HTTP 200/title assertion is claimed.
+ - Attempt 1 R11/R12 production build and `npm run start` HTTP smoke remained
+   unverified; Attempt 2 completes both validations above.
 
 ### Deviations
 
-The production lifecycle cannot pass because of the unrelated route-import
-defect. The route was not changed: it is outside C086 scope and
-`moda_architect` directed that the correction be a separate task.
+Attempt 1's production lifecycle was blocked by the unrelated route-import
+defect. C093 and C094 are now accepted/completed; Attempt 2 verified the full
+build and static manual route without changing out-of-scope source.
 
 ### Assumptions
 
@@ -627,30 +655,143 @@ None.
 
 ### Unresolved Issues
 
-ARCH-021-COMMERCE-093 is the architect-directed task to correct the three
-preview-validation route imports and verify the Commerce production build. Its
-definition is not yet materialized, so it is not yet added to C086's
-`depends_on` list.
-
-After C093 is accepted and complete, `moda_architect` directed that C086 be
-returned through the authorized Changes Requested path: add C093 as a
-dependency, clear `executor` and `claimed_at`, preserve `attempt: 1`, and set
-C086 to `ready`. The next authorized claim will be Attempt 2. Attempt 1's
-evidence and implementation commit must be preserved.
+None. C093 and C094 are complete and remain in C086's dependency list. Attempt 2
+proved the production build/start lifecycle.
 
 ### Architectural Concerns
 
-The existing preview-validation route import-depth defect blocks the normal
-Commerce build independently of C086. Correcting it here would cross the
-declared task scope; the architect chose a separate Commerce-owned task.
+No unresolved architectural concern remains. The earlier route-import and
+project TypeScript blockers were fixed by their owning tasks, not by C086.
 
 ## Architect Review
 
 ### Review Status
 
-Blocked
+Accepted
 
 ### Review Notes
+
+Attempt 2 is accepted.
+
+C086 now satisfies the complete packaging, authoring-link and production-serving contract.
+
+Attempt 1 had already established the implementation itself:
+
+- `manuals/result-template-guide.html` is the single canonical source;
+- generated `public/manuals/` is ignored build output;
+- `scripts/package-manuals.mjs` owns one explicit deterministic manifest and removes stale generated manuals before copying;
+- packaging fails closed on missing/non-regular/escaping/duplicate inputs;
+- `scripts/manuals-packaged-smoke.mjs` validates source/package byte equality plus the exact title and visible heading without repairing output;
+- `predev` executes manual package -> manual smoke -> code-runtime package;
+- `build` executes manual package -> manual smoke -> code-runtime package -> code-runtime smoke -> Prisma generation -> Next production build;
+- the Result Template authoring surface exposes exactly one normal anchor to `/manuals/result-template-guide.html` with `_blank` and `noopener noreferrer`;
+- rendering/opening the guide link does not participate in authoring validation, dirty state, Test state or persistence;
+- the canonical guide remains self-contained and its examples were checked against accepted C084 grammar;
+- the focused packaging/UI/C084 packet passed 43 tests, with targeted ESLint and `git diff --check` clean.
+
+Attempt 1 could not prove the terminal production lifecycle because unrelated Commerce build defects were encountered. Those defects were correctly separated into C093 and C094 rather than being fixed inside C086.
+
+Both dependencies are now architect-accepted Complete.
+
+Attempt 2 performed no implementation-source change and proves the remaining R11/R12 lifecycle from a clean generated-manual state:
+
+```text
+public/manuals absent
+        |
+        v
+npm run build
+        |
+        +-- manuals:package
+        +-- manuals:smoke
+        +-- code-runtime:package
+        +-- code-runtime:smoke
+        +-- prisma:generate
+        +-- Next TypeScript/build/static generation
+        |
+        v
+public/manuals/result-template-guide.html exists
+        |
+        v
+npm run start
+        |
+        v
+GET /manuals/result-template-guide.html
+        |
+        +-- HTTP 200
+        +-- Content-Type: text/html; charset=UTF-8
+        +-- exact <title>Result Template Guide | Moda Commerce Studio</title>
+```
+
+The production server was terminated after the bounded assertion.
+
+The initial Attempt 2 build failure caused by stale installed Shared 0.14.2 is not a C086 defect: the committed package/lock state requires Shared 1.0.0, and `npm ci` restored the declared locked dependency set without changing package manifests or lockfile. The subsequent clean normal build and production-start smoke passed.
+
+The existing Nunjucks critical-dependency build warning is non-fatal and did not prevent production output.
+
+C086 therefore requires no further correction.
+
+### Reviewed Files
+
+- `manuals/result-template-guide.html`
+- `.gitignore`
+- `package.json`
+- `scripts/package-manuals.mjs`
+- `scripts/manuals-packaged-smoke.mjs`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `tests/manual-packaging.test.ts`
+- `tests/result-template-tab.test.tsx`
+- C086 Completion Report — Attempts 1 and 2
+- accepted C093/C094 dependency records
+
+### Validation Reviewed
+
+Attempt 1 preserved evidence:
+
+- `npm run predev`: passed;
+- clean manual package/smoke: passed;
+- focused six-file packet: **43 tests passed**;
+- targeted ESLint: passed;
+- `git diff --check`: passed;
+- no C086-introduced changed-file TypeScript diagnostics.
+
+Attempt 2 terminal evidence:
+
+- dependency gate passed with C084, C085, C093 and C094 Complete;
+- confirmed `public/manuals/` absent before the build;
+- normal `npm run build`: **passed end to end**;
+- generated manual exists after build and `npm run manuals:smoke` passes;
+- source and packaged bytes match;
+- generated manual remains ignored by Git;
+- bounded `npm run start` smoke:
+  - `GET /manuals/result-template-guide.html` -> **HTTP 200**;
+  - `Content-Type: text/html; charset=UTF-8`;
+  - exact required `<title>` present;
+  - spawned production server terminated after assertion;
+- no implementation source changed in Attempt 2;
+- parent task report commit `e1981b36` reported pushed and worktrees clean/aligned.
+
+### Architecture Conformance
+
+Conforms.
+
+The manual is application-owned source packaged deterministically by the normal Commerce build, exposed as a static built asset, and linked from Result Template authoring without coupling documentation to authoring/runtime state. No deployment-side copy step, external documentation dependency, runtime renderer change or persistence change is introduced.
+
+### Follow-up
+
+C086 is Complete / Accepted — Attempt 2.
+
+C086 has no dependent implementation task to promote.
+
+The historical Attempt 1 architect review is preserved below for audit continuity.
+
+### Historical Attempt 1 Architect Review
+
+
+#### Historical Review Status
+
+Blocked
+
+#### Historical Review Notes
 
 Attempt 1 is architect-reviewed as **Blocked by an out-of-scope Commerce build defect**, not by a C086 implementation defect.
 
@@ -695,7 +836,7 @@ C086 now explicitly depends on C093.
 
 Do not modify the already-valid C086 manual packaging/link implementation while blocked.
 
-### Reviewed Files
+#### Historical Reviewed Files
 
 - `docs/decisions/commerce/ARCH-021/COMMERCE-086-add-result-template-guide-link.md`
 - `moda-interact-commerce/package.json`
@@ -707,7 +848,7 @@ Do not modify the already-valid C086 manual packaging/link implementation while 
 - `moda-interact-commerce/app/api/studio/code-response/validate/route.ts`
 - C086 Completion Report — Attempt 1
 
-### Validation Reviewed
+#### Historical Validation Reviewed
 
 Submitted Attempt 1 evidence:
 
@@ -722,13 +863,13 @@ Submitted Attempt 1 evidence:
 
 The route path calculation independently confirms that five, not six, parent traversals are required to reach the Commerce repository root from the route directory.
 
-### Architecture Conformance
+#### Historical Architecture Conformance
 
 C086 implementation conforms within its declared scope.
 
 The route-import defect is now corrected by accepted C093. C086 remains blocked because the production build still cannot complete until the unrelated TypeScript diagnostics/build gate owned by C094 is corrected.
 
-### Follow-up
+#### Historical Follow-up
 
 1. C093 is Complete / Accepted and remains in `depends_on`.
 2. Execute and architect-review `ARCH-021-COMMERCE-094`, which owns the unrelated TypeScript diagnostics and repository production-build gate.

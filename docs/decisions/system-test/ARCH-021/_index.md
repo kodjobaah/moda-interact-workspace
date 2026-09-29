@@ -56,7 +56,7 @@ are architect-accepted Complete.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify | Ready | COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095 |
+| [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083, COMMERCE-095, COMMERCE-102 |
 
 SYSTEM-TEST-002 is terminal validation. Every listed Commerce dependency is now architect-accepted Complete, so it is Ready. No Commerce implementation task depends on it.
 
@@ -81,3 +81,7 @@ leave it Ready while manually exercising the completed Tool-authoring flow.
 | [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Ready | DATABASE-003, SHARED-002, COMMERCE-088..092, BACKGROUND-002 |
 
 SYSTEM-TEST-003 is terminal validation and is now Ready because all declared implementation/publication dependencies are Complete. No implementation/publication task depends on it, and the developer may leave it Ready while manually exercising the completed Feature flow.
+
+### SYSTEM-TEST-002 re-gated for Tool execution safety — 2026-09-29
+
+Manual validation exposed the COMMERCE-102 selected-shop execution-target and Tool-authoring single-flight correction. SYSTEM-TEST-002 is therefore **Pending** on C102 and will return to Ready only after C102 is architect-accepted Complete. It remains terminal validation; no Commerce implementation task depends on it.
