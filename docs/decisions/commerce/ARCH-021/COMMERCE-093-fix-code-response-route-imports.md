@@ -202,14 +202,14 @@ C086 will rerun its own production manual/start smoke after C093 is accepted Com
 
 ## Work Items
 
-- [ ] Correct the three over-deep imports in the code-response validation route.
-- [ ] Add/execute a bounded import-resolution or route-compilation regression.
-- [ ] Verify route behavior contract remains unchanged.
-- [ ] Run targeted ESLint for changed files.
-- [ ] Run changed-file TypeScript diagnostics.
-- [ ] Run `git diff --check`.
-- [ ] Run the normal repository `npm run build`.
-- [ ] Record build evidence and any unrelated blocker in the Completion Report.
+- [x] Correct the three over-deep imports in the code-response validation route.
+- [x] Add/execute a bounded import-resolution or route-compilation regression.
+- [x] Verify route behavior contract remains unchanged.
+- [x] Run targeted ESLint for changed files.
+- [x] Run changed-file TypeScript diagnostics.
+- [x] Run `git diff --check`.
+- [ ] Run the normal repository `npm run build` successfully (attempted; blocked by unrelated project type errors).
+- [x] Record build evidence and any unrelated blocker in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -235,21 +235,21 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] All three route imports resolve to existing files inside the Commerce repository.
-- [ ] No route request/authorization/validation/service/error behavior changes.
-- [ ] No C086 manual-packaging/link source is modified.
-- [ ] Focused route/import validation passes.
-- [ ] Changed-file lint/TypeScript diagnostics are clean.
-- [ ] `git diff --check` passes.
+- [x] All three route imports resolve to existing files inside the Commerce repository.
+- [x] No route request/authorization/validation/service/error behavior changes.
+- [x] No C086 manual-packaging/link source is modified.
+- [x] Focused route/import validation passes.
+- [x] Changed-file lint/TypeScript diagnostics are clean.
+- [x] `git diff --check` passes.
 - [ ] Normal `npm run build` succeeds.
 
 ## Validation
 
-- [ ] focused route/import-resolution regression or equivalent bounded route-compilation check
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics
-- [ ] `git diff --check`
-- [ ] `npm run build`
+- [x] focused route/import-resolution regression or equivalent bounded route-compilation check
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics
+- [x] `git diff --check`
+- [ ] `npm run build` (blocked by unrelated project type errors; see Completion Report)
 
 ## Stop Condition
 
@@ -269,35 +269,71 @@ The production build is required because this defect was discovered specifically
 
 ### Status
 
-Not Started
+Route imports are corrected, but this task remains `in_progress` and blocked
+from review: the required production build fails at TypeScript validation with
+23 diagnostics in 12 unrelated files. No diagnostic names the corrected route.
+Per R4 and the task scope, those files were not modified; returning the blocker
+to `moda_architect`.
 
 ### Files Changed
 
-None
+`app/api/studio/code-response/validate/route.ts` (only the three import paths).
 
 ### Work Completed
 
-None
+Changed the three over-deep imports from six parent traversals to five. No route
+behavior, request schema, authorization, service call, response header, runtime
+or dynamic setting changed. No C086 source or test file was touched.
 
 ### Validation Results
 
-None
+- Focused TypeScript module-resolution check passed. The corrected specifiers
+  resolve to `lib/preview/http.ts`, `lib/preview/runtime.ts`, and
+  `src/commerce/preview/types.ts`, all inside the Commerce repository.
+- Targeted ESLint for the changed route passed.
+- `git diff --check` passed; the diff contains only the three import-path edits.
+- `npx tsc --noEmit --pretty false` reports 23 project-wide diagnostics across
+  12 files. No diagnostic references
+  `app/api/studio/code-response/validate/route.ts`.
+- Required `npm run build` failed at `Failed to type check.` after the route
+  import-resolution errors were removed. Diagnostics are in:
+  `scripts/validate-shopify-admin-local.ts`,
+  `src/studio/discovery/admin-query-builder.ts`,
+  `src/studio/tools/authoring/result-template-tab.tsx`,
+  `tests/admin-query-execution.test.ts`,
+  `tests/agent-configuration-effective.test.ts`,
+  `tests/agent-configuration-prompts-postgres.test.ts`,
+  `tests/c20-integration-fixture.test.ts`,
+  `tests/local-external-mcp-diagnostic.test.ts`,
+  `tests/result-template-tab.test.tsx`,
+  `tests/selected-shop-context.test.ts`,
+  `tests/shopify-admin-live-test.test.ts`, and
+  `tests/tool-result-contract.test.ts`.
+  These files are outside C093's permitted implementation scope. R4 is not
+  met and no production-start test was attempted.
 
 ### Deviations
 
-None
+The production build acceptance criterion remains blocked by TypeScript errors
+outside the scoped route. The route correction and local module-resolution
+check pass.
 
 ### Assumptions
 
-None
+None.
 
 ### Unresolved Issues
 
-None
+`npm run build` cannot pass until the reported TypeScript diagnostics are
+resolved or otherwise dispositioned by `moda_architect`. C093 prohibits fixing
+those unrelated defects; architect direction is required before this task can
+meet R4 and enable C086.
 
 ### Architectural Concerns
 
-None
+The build now advances past the targeted route-import failure but is blocked by
+unrelated repository type errors. Keep C093 scoped to the three route imports;
+do not absorb those additional fixes here.
 
 ## Architect Review
 
