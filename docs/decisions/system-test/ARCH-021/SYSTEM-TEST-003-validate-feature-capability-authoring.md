@@ -9,7 +9,7 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 120
 executor: null
 claimed_at: null
@@ -24,6 +24,7 @@ depends_on:
   - ARCH-021-BACKGROUND-002
   - ARCH-021-COMMERCE-092
   - ARCH-021-COMMERCE-104
+  - ARCH-021-COMMERCE-110
 enables: []
 created: 2026-09-29
 updated: 2026-09-29
@@ -82,9 +83,11 @@ Feature
  -> Review
 ```
 
-Before pressing Capability `Next`, enter valid Capability metadata and prove the Tool phase button becomes directly usable. Enter Tool by direct phase click, select an eligible Tool, and prove Review becomes directly usable before pressing Tool `Next`. Directly enter Review.
+Prove the phase selector is a semantic tablist named `Capability setup` with exactly three tabs in order: `Capability`, `Tool`, `Review`. Prove no numbered ordered-list presentation remains and the visible phase panel is linked to the selected tab.
 
-Then invalidate an upstream field after Tool/Review have been unlocked and prove those phases remain navigable while final `Create capability` becomes unavailable until the current candidate is valid again.
+Before pressing Capability `Next`, enter valid Capability metadata and prove the Tool tab becomes directly usable. Enter Tool by direct tab click, select an eligible Tool, and prove Review becomes directly usable before pressing Tool `Next`. Directly enter Review.
+
+Then invalidate an upstream field after Tool/Review have been unlocked and prove those tabs remain navigable while final `Create capability` becomes unavailable until the current candidate is valid again.
 
 Prove all phase/Previous/Next navigation remains browser-local and no Capability row exists after entering/editing/selecting/navigating/cancelling before final Create.
 
@@ -151,6 +154,7 @@ Validates the integrated outputs of all declared dependencies. System-test does 
 - ARCH-021-BACKGROUND-002
 - ARCH-021-COMMERCE-092
 - ARCH-021-COMMERCE-104
+- ARCH-021-COMMERCE-110
 
 ## Enables
 
@@ -158,6 +162,7 @@ None
 
 ## Acceptance Criteria
 
+- [ ] Add Capability presents Capability / Tool / Review as one semantic tablist with matching tabpanels and no numbered-list chrome.
 - [ ] Existing Feature ownership remains with Admin/billing data.
 - [ ] Tool/Review become directly clickable from current readiness before Next, then stay navigable once unlocked while Create remains current-candidate gated.
 - [ ] Cancelling before final Create leaves zero new Capability rows.

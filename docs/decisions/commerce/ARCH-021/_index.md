@@ -1329,6 +1329,18 @@ COMMERCE-104 is a bounded browser-navigation correction. Before first entry, Too
 
 `ARCH-021-SYSTEM-TEST-003` is re-gated **Pending** on COMMERCE-104 so terminal Feature/Capability validation runs only after this direct-phase correction is architect-accepted.
 
+## Manual-validation follow-up — Add Capability semantic tabs — 2026-09-30
+
+COMMERCE-104 corrected first-entry and monotonic-unlock mechanics, but manual validation shows the phase selector is still an unstyled numbered ordered list rather than a tab interface.
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-110](COMMERCE-110-render-add-capability-phases-as-tabs.md) | Render Capability / Tool / Review as semantic tabs while preserving C104 navigation mechanics | Ready | COMMERCE-104 |
+
+C110 is presentation-only: it replaces the numbered list with a semantic `Capability setup` tablist plus matching tabpanels and a bounded three-column/responsive style. It must not change C104 readiness, unlock, Previous/Next, Create or persistence semantics.
+
+`ARCH-021-SYSTEM-TEST-003` is re-gated Pending on C110.
+
 ## Phase 6 — Feature-composed selected-shop Test Conversations — 2026-09-29
 
 Product decision: Test Conversations is Feature-composed. Selecting a Feature means **all direct Capabilities under that Feature**; there is no per-Capability exclusion. The browser submits Feature IDs and selected shop ID only. Commerce resolves Capabilities/Tool revisions and effective Agent Configuration server-side and freezes them when the conversation starts.
