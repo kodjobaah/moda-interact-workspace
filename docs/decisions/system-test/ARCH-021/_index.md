@@ -59,3 +59,11 @@ are architect-accepted Complete.
 | [SYSTEM-TEST-002](SYSTEM-TEST-002-validate-tool-definition-template-test-review-flow.md) | Validate Create Tool -> Tool Definition -> Request -> Response -> Result Template -> Test -> Review/Save/Cancel for External + Shopify | Pending | COMMERCE-079, COMMERCE-081, COMMERCE-083 |
 
 SYSTEM-TEST-002 is terminal validation and must remain Pending until every listed Commerce dependency is architect-accepted Complete. No Commerce implementation task depends on it.
+
+## Phase 5 — Feature Capability simplification validation — 2026-09-29
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Pending | DATABASE-003, SHARED-002, COMMERCE-088..092, BACKGROUND-002 |
+
+SYSTEM-TEST-003 is terminal validation. No implementation/publication task depends on it, and the developer may leave it Pending/Ready while manually exercising the completed Feature flow.

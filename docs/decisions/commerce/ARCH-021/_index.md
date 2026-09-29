@@ -1106,3 +1106,15 @@ Manual live-Test validation separately exposed a C084 generator/runtime mismatch
 COMMERCE-087 is **Complete / Accepted, Attempt 2**. Generated Nunjucks templates now remain within the accepted C084 grammar while schema-permitted omissions are normalized only in a pure template-safe render context. Optional/effectively-optional scalar output uses the existing `!= null` guard, optional arrays normalize to empty collections for deterministic fallback, nested optional objects are schema-shaped safely, present values are preserved, required omissions remain invalid, and provider results are not mutated.
 
 C078, C079, C081, C082, C085 and C087 are Complete, so COMMERCE-083 is **Ready**. SYSTEM-TEST-002 remains Pending until C083 is Complete.
+
+## Phase 5 — Feature Capability authoring simplification — 2026-09-29
+
+| Task | Description | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-088](COMMERCE-088-implement-direct-feature-capability-authoring.md) | Backend: direct Feature reads/Behaviour prompt and atomic Feature + Tool Capability creation | Pending | DATABASE-003 |
+| [COMMERCE-089](COMMERCE-089-compose-releases-from-direct-capabilities.md) | Backend/runtime: releases pin exact Tool revisions and snapshot Feature Behaviour | Pending | DATABASE-003, SHARED-002, COMMERCE-088 |
+| [COMMERCE-090](COMMERCE-090-build-feature-configuration-surface.md) | UI: Feature-centric Behaviour + current Capability/Tool surface | Pending | COMMERCE-088 |
+| [COMMERCE-091](COMMERCE-091-build-local-first-add-capability-flow.md) | UI: local-first Capability -> Tool -> Review -> Create flow | Pending | COMMERCE-088, COMMERCE-090 |
+| [COMMERCE-092](COMMERCE-092-remove-legacy-capability-architecture.md) | Delete old Capability revision/binding/routes/services/fixtures after replacement paths are complete | Pending | COMMERCE-089, COMMERCE-091, BACKGROUND-002 |
+
+The two implementation branches after COMMERCE-088 are intentionally parallel: COMMERCE-089 owns release/runtime composition while COMMERCE-090/091 own the user-facing Feature authoring flow. COMMERCE-092 is the subtractive gate and must not execute until both replacement paths and Background consumption are accepted.
