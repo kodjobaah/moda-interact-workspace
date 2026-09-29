@@ -1,5 +1,5 @@
 ---
-id: ARCH-021-COMMERCE-093
+id: ARCH-021-COMMERCE-095
 architecture_id: ARCH-021
 title: Add progressive Previous/Next traversal to new Tool authoring
 task_kind: implementation
