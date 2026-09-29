@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 76
-executor: copilot
-claimed_at: 2026-09-29T00:37:04Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-078
@@ -505,19 +505,19 @@ The Test tab continues to display the server-returned `renderedText` exactly; C0
 
 ## Work Items
 
-- [ ] Replace Text/Items/Collection authoring controls with one `nunjucks.v1` source + unavailable fallback surface.
-- [ ] Add a dedicated CodeMirror 6 `ResultTemplateEditor` without the JavaScript language extension.
-- [ ] Add session-only GENERATED/USER_MODIFIED metadata and canonical Response fingerprint handling.
-- [ ] Auto-generate the first new-Tool template from the first current VALID Response contract.
-- [ ] Auto-regenerate only while the template remains GENERATED.
-- [ ] Preserve USER_MODIFIED source byte-for-byte across Response changes.
-- [ ] Add confirmed `Regenerate from Response` semantics exactly as R10.
-- [ ] Render the recursive provider-neutral Available result data tree.
-- [ ] Add schema-derived interpolation/loop insertion or completion helpers.
-- [ ] Add bounded Nunjucks delimiter syntax presentation in CodeMirror.
-- [ ] Keep canonical validation server/domain-owned and wire results to C078 central validation state.
-- [ ] Ensure Review/persistence receive only the canonical `responseTemplate` object.
-- [ ] Add deterministic pristine/regeneration/manual-edit/stale-validation regressions.
+- [x] Replace Text/Items/Collection authoring controls with one `nunjucks.v1` source + unavailable fallback surface.
+- [x] Add a dedicated CodeMirror 6 `ResultTemplateEditor` without the JavaScript language extension.
+- [x] Add session-only GENERATED/USER_MODIFIED metadata and canonical Response fingerprint handling.
+- [x] Auto-generate the first new-Tool template from the first current VALID Response contract.
+- [x] Auto-regenerate only while the template remains GENERATED.
+- [x] Preserve USER_MODIFIED source byte-for-byte across Response changes.
+- [x] Add confirmed `Regenerate from Response` semantics exactly as R10.
+- [x] Render the recursive provider-neutral Available result data tree.
+- [x] Add schema-derived interpolation/loop insertion or completion helpers.
+- [x] Add bounded Nunjucks delimiter syntax presentation in CodeMirror.
+- [x] Keep canonical validation server/domain-owned and wire results to C078 central validation state.
+- [x] Ensure Review/persistence receive only the canonical `responseTemplate` object.
+- [x] Add deterministic pristine/regeneration/manual-edit/stale-validation regressions.
 
 ## Interfaces / Contracts
 
@@ -561,37 +561,37 @@ No database/cross-service contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Result Template no longer exposes Text/Items/Collection/Item-template/Empty-fallback controls.
-- [ ] Result Template uses the repository CodeMirror 6 stack and exposes one editable Nunjucks source.
-- [ ] A new Tool with a current VALID Response automatically receives the deterministic generated template without persistence.
-- [ ] The documented `values.items[]` Response opens with generated loop source over `result.values.items`, not `{{result.values.value}}` and not an empty Text template.
-- [ ] Generated source is marked GENERATED and still requires explicit Result Template validation.
-- [ ] Editing source or unavailable fallback switches to USER_MODIFIED and immediately stales validation/Test.
-- [ ] A later Response change automatically regenerates only GENERATED templates.
-- [ ] A later Response change never overwrites USER_MODIFIED source/fallback.
-- [ ] Cancelled Regenerate changes no authoring or validation/Test state.
-- [ ] Confirmed Regenerate replaces source deterministically and returns origin to GENERATED.
-- [ ] Available result data displays recursive object/array/scalar paths and optionality from the canonical schema.
-- [ ] Completion/insertion suggestions originate only from the canonical schema/generator helpers.
-- [ ] Canonical validation remains COMMERCE-084-owned; CodeMirror does not become a second validator.
-- [ ] React never renders/evaluates Nunjucks and never uses rendered source as HTML.
-- [ ] Authoring metadata remains session-only and is absent from the persisted Tool definition.
+- [x] Result Template no longer exposes Text/Items/Collection/Item-template/Empty-fallback controls.
+- [x] Result Template uses the repository CodeMirror 6 stack and exposes one editable Nunjucks source.
+- [x] A new Tool with a current VALID Response automatically receives the deterministic generated template without persistence.
+- [x] The documented `values.items[]` Response opens with generated loop source over `result.values.items`, not `{{result.values.value}}` and not an empty Text template.
+- [x] Generated source is marked GENERATED and still requires explicit Result Template validation.
+- [x] Editing source or unavailable fallback switches to USER_MODIFIED and immediately stales validation/Test.
+- [x] A later Response change automatically regenerates only GENERATED templates.
+- [x] A later Response change never overwrites USER_MODIFIED source/fallback.
+- [x] Cancelled Regenerate changes no authoring or validation/Test state.
+- [x] Confirmed Regenerate replaces source deterministically and returns origin to GENERATED.
+- [x] Available result data displays recursive object/array/scalar paths and optionality from the canonical schema.
+- [x] Completion/insertion suggestions originate only from the canonical schema/generator helpers.
+- [x] Canonical validation remains COMMERCE-084-owned; CodeMirror does not become a second validator.
+- [x] React never renders/evaluates Nunjucks and never uses rendered source as HTML.
+- [x] Authoring metadata remains session-only and is absent from the persisted Tool definition.
 
 ## Validation
 
-- [ ] `npx vitest run tests/result-template-tab.test.tsx tests/tool-authoring-screen.test.tsx`
-- [ ] focused new-Tool auto-generation regression for the exact `values.items[]` six-field example
-- [ ] focused GENERATED -> Response change -> automatic regeneration regression
-- [ ] focused USER_MODIFIED -> Response change -> preserve-byte-for-byte regression
-- [ ] focused Regenerate cancel/confirm regressions
-- [ ] focused validation-revision race regression: validation for source revision N cannot validate revision N+1
-- [ ] focused result-data-tree recursion/optionality regression
-- [ ] focused completion/snippet insertion regression proving schema-derived paths
-- [ ] focused proof that no Result Template edit/regeneration/validation writes Tool/ToolRevision state
-- [ ] existing External and Shopify Result Template integration UI tests updated for the one-source editor
-- [ ] targeted ESLint for changed files
-- [ ] changed-file TypeScript diagnostics, or repository typecheck with baseline reconciliation
-- [ ] `git diff --check`
+- [x] `vitest run tests/result-template-tab.test.tsx tests/tool-authoring-screen.test.tsx` (also included with New Tool state/session suites below)
+- [x] focused new-Tool auto-generation regression for the exact `values.items[]` six-field example
+- [x] focused GENERATED -> Response change -> automatic regeneration regression
+- [x] focused USER_MODIFIED -> Response change -> preserve-byte-for-byte regression
+- [x] focused Regenerate cancel/confirm regressions
+- [x] focused validation-revision race regression: validation for source revision N cannot validate revision N+1
+- [x] focused result-data-tree recursion/optionality regression
+- [x] focused completion/snippet insertion regression proving schema-derived paths, including scalar arrays
+- [x] focused proof that no Result Template edit/regeneration/validation writes Tool/ToolRevision state
+- [x] External and Shopify Result Template UI tests updated; execution blocked before collection by the missing generated Prisma Client
+- [x] targeted ESLint for changed files
+- [x] changed-file TypeScript diagnostics are clean; repository `tsc --noEmit` reports existing unrelated errors and missing generated Prisma types
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -607,35 +607,59 @@ If generalising `src/studio/code-response/code-editor.tsx`, preserve its existin
 
 ### Status
 
-Not Started
+Attempt 1 implementation complete; ready for Architect Review. Task metadata is reconciled to `status: review`, `executor: null` and `claimed_at: null`.
 
 ### Files Changed
 
-None
+Implementation changes are in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-085` on `task/ARCH-021-COMMERCE-085`:
+
+- `src/studio/tools/authoring-session.ts`
+- `src/studio/tools/authoring/result-template-editor.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/new-tool-authoring-state.ts`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/external-tools-ui.test.tsx`
+- `tests/new-tool-authoring-state.test.ts`
+- `tests/result-template-tab.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
 
 ### Work Completed
 
-None
+Replaced the Text/Items Result Template form with a dedicated CodeMirror 6 Nunjucks editor, canonical schema tree and schema-derived root/loop insertions. Added deterministic generation tied to the current canonical Response fingerprint, session-only GENERATED/USER_MODIFIED metadata, preservation of user-authored source across Response changes, confirmed regeneration and stale-safe COMMERCE-084 validation wired through C078 state. New Tool, persisted External/Admin Tool and Explore Shopify browser-session flows consume the canonical response template without persisting authoring metadata or rendering Nunjucks in React.
+
+Updated New Tool/External integration fixtures and selectors for the single-source editor, and added focused coverage for the six-field `values.items[]` example, scalar arrays, source preservation, confirmation, validation races, optionality and canonical snippet insertion.
 
 ### Validation Results
 
-None
+Passed: `vitest run tests/result-template-tab.test.tsx tests/new-tool-authoring-state.test.ts tests/tool-authoring-session.test.ts tests/tool-authoring-screen.test.tsx` (4 files, 63 tests); targeted ESLint over all changed TypeScript/TSX files; changed-file editor diagnostics; `git diff --check`.
+
+Attempted `tests/external-tools-ui.test.tsx` and `tests/shopify-admin-tools-ui.test.tsx`; both stop before test collection because `.prisma/client/default` is absent. Prisma generation was not run because its package workflow includes submodule/build setup that was not approved for this attempt. The repository-wide `tsc --noEmit` remains nonzero with errors outside the changed C085 files and missing generated Prisma types; the changed-file diagnostic check is clean.
 
 ### Deviations
 
-None
+Prisma-backed External and Shopify UI suites could not execute in this worktree. Their tests were migrated, but they need a rerun after the generated Prisma Client is made available through the approved setup workflow.
 
 ### Assumptions
 
-None
+COMMERCE-084 remains the sole source of Nunjucks grammar, canonical validation and server rendering; COMMERCE-078 remains the owner of local revision/checkpoint and Test freshness behavior.
 
 ### Unresolved Issues
 
-None
+The External and Shopify Admin UI integration suites remain unexecuted due to the missing generated Prisma Client. Architect review is pending.
 
 ### Architectural Concerns
 
-None
+None identified during implementation; architect review remains pending.
+
+### VCS and Worktree
+
+- Implementation: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-085`, branch `task/ARCH-021-COMMERCE-085`, implementation commit `297123e` (`Implement generated Result Template authoring`), pushed.
+- Parent task report: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-085`, branch `task/ARCH-021-COMMERCE-085`.
+- The launcher prepared and claimed Attempt 1 in these dedicated task worktrees. The implementation baseline recorded in the handoff was `b78681d`; the initialized database submodule was at `4da3139`.
+- The shared coordinator checkout and shared implementation checkout were not switched or modified for task implementation. The coordinator checkout's unrelated existing changes were left untouched. No submodule gitlink change was staged.
+- The parent task report is committed and pushed separately on the matching task branch; Architect Review remains unchanged and pending.
 
 ## Architect Review
 
