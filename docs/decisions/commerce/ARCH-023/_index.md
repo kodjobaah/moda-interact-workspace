@@ -40,7 +40,7 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Ready | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
+| [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Ready — Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
 | [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Pending | COMMERCE-001, ADMIN-001 |
 | [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Pending | DATABASE-001, SHARED-002, ADMIN-003 |
 
@@ -50,8 +50,13 @@ Individual task YAML is authoritative.
 `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-002` and `ARCH-021-COMMERCE-096` are Complete/accepted, so:
 
 ```text
-COMMERCE-001 -> Ready
+COMMERCE-001 -> Ready for Attempt 2
 ```
+
+Attempt 1 implementation is retained. Architect review requires a bounded validation
+correction: the disposable PostgreSQL/pgvector test must execute the production Merchant
+Knowledge retrieval path rather than only a standalone temporary-vector-table smoke query.
+COMMERCE-002 remains gated until that proof is accepted.
 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 
