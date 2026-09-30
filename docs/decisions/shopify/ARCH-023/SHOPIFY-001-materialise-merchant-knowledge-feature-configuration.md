@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -400,3 +400,17 @@ declared dependencies are satisfied and it does not depend on SHOPIFY-001.
 3. After that integration is visible on the canonical base, return to `moda_architect` for blocker clearance. The architect should verify the resolver is present in the base and then change this same task `blocked -> ready`; Attempt 1 remains preserved until the next claim increments it to Attempt 2.
 4. On the reclaimed ARCH-023 attempt, adopt exact Shared `1.0.1`, regenerate Prisma Client, and implement only this task's configuration-copy/pre-validation delta.
 5. Keep ARCH-023-SHOPIFY-003 and ARCH-023-SHOPIFY-004 gated on SHOPIFY-001 completion. Do not start either while this blocker remains.
+
+## Developer Override
+
+### Decision
+Reopened on 2026-09-30 by explicit developer request: `/moda_developer_update ARCH-023-SHOPIFY-001 reopen`.
+
+### Previous Attempt
+Attempt 1 is the prior attempt. There is no previously accepted attempt; Attempt 1 ended Blocked. The existing Architect Review remains unchanged and records the missing accepted ARCH-017 resolver/base integration prerequisite.
+
+### Reason
+The developer explicitly requested reopening; no further reason was supplied. This override changes workflow state only and does not claim that the Architect Review blocker has been cleared. No implementation work was performed and no new attempt was claimed.
+
+### Downstream Dependency Reconciliation
+`ARCH-023-SHOPIFY-003` and `ARCH-023-SHOPIFY-004` remain `pending` because they depend on SHOPIFY-001, which is not Complete. Both were already pending, so no downstream status regression was needed. `ARCH-023-SHOPIFY-002` remains Complete and independent of SHOPIFY-001; its task record was inspected and left untouched. `ARCH-023-SHOPIFY-005` remains pending behind SHOPIFY-004 and was left untouched.
