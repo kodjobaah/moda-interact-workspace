@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-023-SHOPIFY-003
   - ARCH-023-SHOPIFY-004
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Materialise Merchant Knowledge plan-feature configuration
@@ -104,7 +104,7 @@ Before implementation:
 
 1. advance the repository `database` gitlink to the accepted/merged `ARCH-023-DATABASE-001` revision;
 2. do not edit files inside the database submodule;
-3. update `@modainteract/moda-interact-shared` to the exact version published by `ARCH-023-SHARED-002`;
+3. pin `@modainteract/moda-interact-shared` to exactly `1.0.1`, the Architect-Accepted revision published by `ARCH-023-SHARED-002`; do not substitute a range, `latest`, workspace link or later release without architect reconciliation;
 4. regenerate Prisma Client using the existing repository script.
 
 If either accepted dependency is unavailable, STOP.

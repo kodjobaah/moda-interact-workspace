@@ -16,6 +16,14 @@ is underway. `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` are **Complete / A
 Attempt 2**. `ARCH-023-ADMIN-003` is now Ready, while `ARCH-023-SHARED-001` remains
 independently Ready from DATABASE-001 acceptance. All other ARCH-023 implementation tasks
 remain gated by their declared dependencies.
+is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**,
+`ARCH-023-SHARED-001` is **Complete / Accepted at Attempt 2**, and the accepted Shared
+implementation is now published and architect-accepted through `ARCH-023-SHARED-002` as
+exact revision `@modainteract/moda-interact-shared@1.0.1`.
+
+The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`,
+`ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and
+`ARCH-023-SHOPIFY-002`. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3216,6 +3224,31 @@ all other ARCH-023 implementation tasks remain gated by their declared dependenc
 SHARED-001 and ADMIN-003 are independent at this frontier and may execute in parallel.
 Their execution still requires the normal task claim/preparation path; architect acceptance
 does not start either task implicitly.
+Current execution frontier after SHARED-002 Attempt 1 acceptance:
+
+```text
+ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
+ARCH-023-SHARED-001     Complete — Accepted Attempt 2
+ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+
+ARCH-023-ADMIN-001      Ready
+ARCH-023-ADMIN-002      Ready
+ARCH-023-BACKGROUND-001 Ready
+ARCH-023-COMMERCE-001   Ready
+ARCH-023-SHOPIFY-001    Ready
+ARCH-023-SHOPIFY-002    Ready
+all other ARCH-023 implementation tasks remain gated by their declared dependencies
+```
+
+Canonical published Shared revision for ARCH-023 consumers:
+
+```text
+@modainteract/moda-interact-shared@1.0.1
+integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==
+```
+
+Ready tasks are independent except where their own task YAML declares otherwise. No consumer
+implementation task is started implicitly by this architect review.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3249,6 +3282,20 @@ through bounded task reviews without changing the agreed architecture contract.
 - No database correction task or migration is required. DATABASE-001 remains Complete,
   ADMIN-002 returns to Ready for Attempt 2, and ADMIN-003 remains gated on ADMIN-002
   completion.
+### 2026-09-30 — SHARED-002 Attempt 1 accepted
+
+- Accepted the publication-only `ARCH-023-SHARED-002` release gate after verifying that Shared source is unchanged from accepted SHARED-001 and release metadata advances exactly `1.0.0 -> 1.0.1`.
+- Recorded canonical ARCH-023 Shared revision `@modainteract/moda-interact-shared@1.0.1` with integrity `sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==`.
+- Promoted `ARCH-023-ADMIN-001`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and `ARCH-023-SHOPIFY-002` to Ready because all of their declared dependencies are now Complete. `ARCH-023-ADMIN-002` was already Ready and remains so.
+- Pinned later direct Shared consumers to the same exact revision while leaving them Pending until their remaining dependencies are Complete.
+- No consumer implementation was started by the architect review.
+
+### 2026-09-30 — SHARED-001 Attempt 2 accepted
+
+- Accepted `ARCH-023-SHARED-001` after the evidence-only Attempt 2 recorded the required launcher-resolved dedicated worktrees, start-of-attempt synchronization and recursive-submodule preparation.
+- Confirmed the accepted Shared implementation remained unchanged from Attempt 1 at commit `c96b7eb8eaaae14133ab174de80e130c8551f366`.
+- Marked SHARED-001 Complete and promoted exactly the release-only `ARCH-023-SHARED-002` from Pending to Ready. Consumer tasks remain gated on the published Shared revision.
+- No publication or downstream consumer implementation was started by the architect review.
 
 ### 2026-09-29 — DATABASE-001 Attempt 2 accepted
 

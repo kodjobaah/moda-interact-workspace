@@ -9,17 +9,17 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
 enables:
   - ARCH-023-SHARED-002
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Implement ARCH-023 Shared contracts and Commerce runner trust
@@ -757,23 +757,23 @@ Do not create parallel local versions under `commerce/`, `shopify/` or another S
 
 ## Work Items
 
-- [ ] Add the exact supported configuration-locale constants/schema/type to the existing internationalization entrypoint.
-- [ ] Implement the exact `resolveModaConfigurationLocale` algorithm.
-- [ ] Add complete C1 resolver tests.
-- [ ] Create runtime-safe `src/merchant-knowledge.ts`.
-- [ ] Add exact C2 configuration schemas/types and duplicate-pair validation.
-- [ ] Add exact C3 Purpose/Data Format constants/schemas/types.
-- [ ] Add exact C4 queue constants/job schema/type.
-- [ ] Create Node-only deterministic SHA-256 job-id helper.
-- [ ] Add C2/C3/C4 positive and negative tests.
-- [ ] Add the two exact Merchant Knowledge package subpaths.
-- [ ] Add the exact D7 immutable instruction to the existing Commerce runner kernel.
-- [ ] Preserve instruction ordering and existing runtime authorization semantics.
-- [ ] Add D7 structural/adversarial runner regressions.
-- [ ] Add built-entrypoint validator and exact package script.
-- [ ] Confirm no duplicate local Shared contract definitions were introduced.
-- [ ] Run all task-required validation.
-- [ ] Complete the Completion Report and return only this task for review.
+- [x] Add the exact supported configuration-locale constants/schema/type to the existing internationalization entrypoint.
+- [x] Implement the exact `resolveModaConfigurationLocale` algorithm.
+- [x] Add complete C1 resolver tests.
+- [x] Create runtime-safe `src/merchant-knowledge.ts`.
+- [x] Add exact C2 configuration schemas/types and duplicate-pair validation.
+- [x] Add exact C3 Purpose/Data Format constants/schemas/types.
+- [x] Add exact C4 queue constants/job schema/type.
+- [x] Create Node-only deterministic SHA-256 job-id helper.
+- [x] Add C2/C3/C4 positive and negative tests.
+- [x] Add the two exact Merchant Knowledge package subpaths.
+- [x] Add the exact D7 immutable instruction to the existing Commerce runner kernel.
+- [x] Preserve instruction ordering and existing runtime authorization semantics.
+- [x] Add D7 structural/adversarial runner regressions, including explicit denial of an ungranted Tool.
+- [x] Add built-entrypoint validator and exact package script.
+- [x] Confirm no duplicate local Shared contract definitions were introduced.
+- [x] Run all task-required validation.
+- [x] Complete the Completion Report and return only this task for review.
 
 ## Interfaces / Contracts
 
@@ -863,36 +863,38 @@ No consumer implementation task becomes executable merely because SHARED-001 is 
 
 ## Acceptance Criteria
 
-- [ ] C1 uses the exact 20-tag set from ARCH-023.
-- [ ] `resolveModaConfigurationLocale` implements the exact fallback/Portuguese/Chinese algorithm without a second BCP-47 parser.
-- [ ] C2 validates the exact plan configuration shape including `allowedSourceTypes`.
-- [ ] C2 rejects duplicate source-type pairs but does not encode the database pair matrix.
-- [ ] C3 keys exactly match the accepted DATABASE-001 seed keys.
-- [ ] C4 queue payload is strict/versioned and contains only durable processing identity.
-- [ ] C4 job identity is exactly SHA-256 over `shopId + U+001F + sourceRevisionId + U+001F + generation`.
-- [ ] `requestedAt` does not affect C4 job identity.
-- [ ] New Merchant Knowledge runtime-safe and Node subpaths build and import cleanly.
-- [ ] The exact ARCH-023 runtime-data authority instruction is exported and first in `PLATFORM_INSTRUCTIONS`.
-- [ ] Existing host/response/capability instruction ordering remains unchanged after the platform kernel.
-- [ ] Tool/runtime data never becomes an instruction array element in runner tests.
-- [ ] Existing runner authorization/grant behavior remains unchanged.
-- [ ] Existing Shared public entrypoints remain available.
-- [ ] Package version is unchanged.
-- [ ] No database/provider/consumer implementation is introduced.
-- [ ] No duplicate Shared contract definitions remain.
+- [x] C1 uses the exact 20-tag set from ARCH-023.
+- [x] `resolveModaConfigurationLocale` implements the exact fallback/Portuguese/Chinese algorithm without a second BCP-47 parser.
+- [x] C2 validates the exact plan configuration shape including `allowedSourceTypes`.
+- [x] C2 rejects duplicate source-type pairs but does not encode the database pair matrix.
+- [x] C3 keys exactly match the accepted DATABASE-001 seed keys.
+- [x] C4 queue payload is strict/versioned and contains only durable processing identity.
+- [x] C4 job identity is exactly SHA-256 over `shopId + U+001F + sourceRevisionId + U+001F + generation`.
+- [x] `requestedAt` does not affect C4 job identity.
+- [x] New Merchant Knowledge runtime-safe and Node subpaths build and import cleanly.
+- [x] The exact ARCH-023 runtime-data authority instruction is exported and first in `PLATFORM_INSTRUCTIONS`.
+- [x] Existing host/response/capability instruction ordering remains unchanged after the platform kernel.
+- [x] Tool/runtime data never becomes an instruction array element in runner tests.
+- [x] Existing runner authorization/grant behavior remains unchanged; ungranted Tool remains denied.
+- [x] Existing Shared public entrypoints remain available.
+- [x] Package version is unchanged.
+- [x] No database/provider/consumer implementation is introduced.
+- [x] No duplicate Shared contract definitions remain.
 
 ## Validation
 
 Inspect the repository package scripts before execution, then run at minimum:
 
-- [ ] `npm test`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `npm run validate:internationalization-entrypoint`
-- [ ] `npm run validate:commerce-entrypoints`
-- [ ] `npm run validate:arch023-shared-entrypoints`
-- [ ] `npm pack --dry-run`
-- [ ] `git diff --check`
+- [x] `npm test` — 176 passed, 0 failed, 1 skipped (Redis integration requires unset `TEST_REDIS_URL`).
+- [x] `npm run typecheck` — passed.
+- [x] `npm run build` — passed, including ESM and declaration builds.
+- [x] `npm run validate:internationalization-entrypoint` — passed.
+- [x] `npm run validate:commerce-entrypoints` — passed.
+- [x] `npm run validate:arch023-shared-entrypoints` — passed.
+- [x] `npm pack --dry-run` — passed; package remains version `1.0.0` and reports 81 files.
+- [x] `git diff --check` — passed.
+
+Focused tests also passed: internationalization (13), Merchant Knowledge runtime-safe contracts (7), Merchant Knowledge Node helper (as included in the full suite), and Commerce runner (20, rerun after explicitly asserting ungranted Tool denial). Pylance diagnostics reported no errors in changed source or test files. The R22 source-definition scan found one definition for each listed contract, and the runtime-safe Merchant Knowledge module has no Node, database, queue, Redis, or R2 imports.
 
 Also run the focused tests directly if the full suite obscures failures:
 
@@ -953,58 +955,195 @@ The publication task owns the package version and npm release.
 
 ### Status
 
-Not Started
+Ready for Architect Review (`review`), Attempt 2.
 
 ### Files Changed
 
-None.
+Implementation changes in the Shared package are limited to the authorized scope: `package.json`, `tsup.config.ts`, the internationalization source/test, Merchant Knowledge runtime-safe and Node source/tests, the Commerce runner source/test, and `scripts/validate-arch023-shared-entrypoints.mjs`. `package-lock.json` is unchanged. The parent task report is the only change in the task-control worktree.
 
 ### Work Completed
 
-None.
+Implemented C1 locale tags and resolver using the existing canonicalization helper; C2/C3/C4 schemas, keys, queue contract, and deterministic SHA-256 job identity; D7 immutable first platform instruction and trust-boundary regressions; package subpaths and built-entrypoint validation. Preserved existing package exports, runner authorization semantics, and package version.
 
 ### Validation Results
 
-None.
+Attempt 2 reran all required validation from the canonical implementation task worktree. `npm test`: 176 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` was not configured. `npm run typecheck`, `npm run build`, `npm run validate:internationalization-entrypoint`, `npm run validate:commerce-entrypoints`, `npm run validate:arch023-shared-entrypoints`, `npm pack --dry-run`, and `git diff --check` all passed. The four focused test files passed: 40 passed, 0 failed, 0 skipped. Package dry-run reported version `1.0.0` and 81 files. No implementation changes were needed for Attempt 2.
 
 ### Deviations
 
-None.
+The isolated implementation worktree did not initially have local `tsx`; `npm ci` restored the lockfile-declared dependencies without modifying tracked dependency metadata. The existing Redis integration test was skipped because `TEST_REDIS_URL` was unset. No scope, API, or package-version deviations.
 
 ### Assumptions
 
-None.
+The accepted `ARCH-023-DATABASE-001` Purpose/Data Format seed keys are the authoritative identities; Shared validates identities only and deliberately does not encode pair compatibility.
 
 ### Unresolved Issues
 
-None.
+The optional Redis integration test remains unexecuted without `TEST_REDIS_URL`; all other suite tests passed.
 
 ### Architectural Concerns
 
-None.
+None identified.
+
+### Execution Provenance
+
+Physical worktree isolation:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent repository/worktree: moda-interact-workspace at /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHARED-001
+parent branch: task/ARCH-023-SHARED-001
+implementation repository/worktree: moda-interact-shared at /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHARED-001
+implementation branch: task/ARCH-023-SHARED-001
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+```
+
+Attempt 2 launcher preparation resolved these paths from the canonical primary workspace and reused the two dedicated worktrees. The dependency gate passed (`ARCH-023-DATABASE-001`: complete). The launcher claim was committed and pushed as `9950bfdd4b6a95d50243ea3c09ef2d3e4f6bc128`.
+
+Start-of-attempt synchronization (launcher preparation):
+
+```text
+parent fetch/prune: passed
+parent task-branch fast-forward: not-needed
+parent origin/main: already-current
+parent pre-claim synchronized HEAD: 7c61e7a42333e17e45fff6c0ea70d338eef24771
+implementation fetch/prune: passed
+implementation task-branch fast-forward: not-needed
+implementation origin/main: already-current
+implementation synchronized HEAD: c96b7eb8eaaae14133ab174de80e130c8551f366
+```
+
+The launcher clean-worktree synchronization gate passed for both worktrees before the claim. Recursive implementation submodule preparation passed: `git submodule sync --recursive` and `git submodule update --init --recursive` passed; recursive status was `ready`, with no submodule entries.
+
+Attempt 2 made no implementation changes. The submitted implementation commit is `c96b7eb8eaaae14133ab174de80e130c8551f366`; the implementation worktree was clean and its local HEAD matched `origin/task/ARCH-023-SHARED-001`. The parent task/report branch contains the launcher claim and this report correction; at handoff its worktree is clean and local HEAD matches `origin/task/ARCH-023-SHARED-001`. The final parent report commit is the task branch HEAD and its exact object ID is provided in the handoff, since a commit cannot include its own object ID in its contents.
 
 ## Architect Review
 
-### Review Status
+### Attempt 2 Review Status
 
-Pending
+Accepted — Attempt 2
 
-### Review Notes
+### Attempt 2 Review Notes
 
-Pending.
+Attempt 2 satisfies the sole correction contract from Attempt 1 without implementation churn. The Completion Report now records the launcher-resolved dedicated parent and implementation worktrees, both `task/ARCH-023-SHARED-001` branch identities, the dependency gate, start-of-attempt fetch/prune and synchronization results, the clean-worktree gate, recursive-submodule preparation, and the submitted implementation identity.
 
-### Reviewed Files
+The implementation commit remains `c96b7eb8eaaae14133ab174de80e130c8551f366`, exactly as required for the evidence-only correction. Architect comparison against the Attempt 1 review archive confirmed the complete task-owned implementation surface is byte-for-byte unchanged. The submitted parent report commit is `c7526ac8f4a0c82834eaa2c185988174e4466b21`; the handoff states both local task-branch HEADs match their corresponding remote branches and both worktrees are clean.
 
-Pending.
+No source correction, package-version change, publication, or consumer-repository change is required.
 
-### Validation Reviewed
+### Attempt 2 Validation Reviewed
 
-Pending.
+The Completion Report records rerunning the required validation from the canonical implementation worktree:
 
-### Architecture Conformance
+```text
+focused four-file test set                    40 passed, 0 failed, 0 skipped
+npm test                                      176 passed, 0 failed, 1 Redis integration skip
+npm run typecheck                             passed
+npm run build                                 passed
+npm run validate:internationalization-entrypoint passed
+npm run validate:commerce-entrypoints         passed
+npm run validate:arch023-shared-entrypoints   passed
+npm pack --dry-run                            passed; package version 1.0.0
+git diff --check                              passed
+```
 
-Pending.
+The Redis integration skip remains non-blocking because `TEST_REDIS_URL` was not configured and all non-optional suite tests passed. The review archive contains no installed dependencies, so the architect did not rerun the npm suite independently; acceptance relies on the durable canonical-worktree evidence plus the unchanged implementation already inspected in Attempt 1.
 
-### Follow-up
+### Attempt 2 Architecture Conformance
 
-Pending.
+Accepted. The reviewed implementation remains conformant with ARCH-023 C1-C4 and D7: the exact configuration-locale contract, strict Merchant Knowledge feature/catalogue/queue contracts, deterministic job identity, package-entrypoint isolation, and immutable first Commerce runner runtime-data authority instruction are unchanged from the substantively conformant Attempt 1 implementation.
+
+The task uses `completion_mode: automatic`, therefore architect acceptance completes `ARCH-023-SHARED-001`.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-023-SHARED-001` is now Complete. Its only executable dependant is the release-only `ARCH-023-SHARED-002`, so that task is promoted from Pending to Ready. Consumer implementation tasks remain gated until SHARED-002 publishes and is architect-accepted; no consumer task is started implicitly by this review.
+
+### Attempt 1 Review Status
+
+Changes Requested — Attempt 1
+
+### Attempt 1 Review Notes
+
+The ARCH-023 Shared implementation is substantively conformant with the task contract by architect inspection. C1 uses the exact 20 supported configuration locales and the existing BCP-47 canonicalizer; C2/C3/C4 use the required strict Zod contracts and deterministic SHA-256 job identity; the Purpose/Data Format keys match the accepted `ARCH-023-DATABASE-001` catalogue; the new runtime-safe and Node-only package subpaths are isolated correctly; and D7 adds the exact immutable runtime-data authority instruction as the first `PLATFORM_INSTRUCTIONS` entry without changing the existing instruction-composition or Tool-authorization model.
+
+The review is blocked only by mandatory task-execution provenance. The Completion Report does not record the launcher-resolved dedicated parent and implementation worktree paths, the start-of-attempt synchronization result for both repositories, or the launcher/preparation recursive-submodule evidence required by `docs/agent-worktree-isolation-policy.md` and the `moda_architect` review contract. The statement that the implementation used an isolated worktree, plus clean/pushed state at handoff, does not substitute for the required durable preparation/synchronization evidence.
+
+This is workflow non-conformance, not a request for implementation churn. Do not change the ARCH-023 Shared contracts merely to create a new implementation commit. If the work was already performed in the canonical task worktrees, recover the launcher/preparation evidence, rerun the task-required validation there, and record that evidence in the Completion Report. If it was not, restore/create the canonical task worktrees, check out the already-pushed `task/ARCH-023-SHARED-001` branches there, synchronize them according to policy, rerun the required validation, and update only the report/evidence unless validation exposes a real implementation defect.
+
+### Attempt 1 Reviewed Files
+
+Architect review covered the task-owned implementation surface:
+
+```text
+moda-interact-shared/src/internationalization.ts
+moda-interact-shared/src/internationalization.test.ts
+moda-interact-shared/src/merchant-knowledge.ts
+moda-interact-shared/src/merchant-knowledge.test.ts
+moda-interact-shared/src/merchant-knowledge.node.ts
+moda-interact-shared/src/merchant-knowledge.node.test.ts
+moda-interact-shared/src/commerce/runner/index.ts
+moda-interact-shared/src/commerce/runner/runner.test.ts
+moda-interact-shared/scripts/validate-arch023-shared-entrypoints.mjs
+moda-interact-shared/tsup.config.ts
+moda-interact-shared/package.json
+docs/decisions/shared/ARCH-023/SHARED-001-implement-arch023-shared-contracts.md
+```
+
+The architect also checked the accepted `ARCH-023-DATABASE-001` Purpose/Data Format identities, the Shared ARCH-023 index, and the canonical ARCH-023 architecture/frontier.
+
+### Attempt 1 Validation Reviewed
+
+The submitted Completion Report records:
+
+```text
+npm test                                      176 passed, 0 failed, 1 Redis integration skip
+npm run typecheck                             passed
+npm run build                                 passed
+npm run validate:internationalization-entrypoint passed
+npm run validate:commerce-entrypoints         passed
+npm run validate:arch023-shared-entrypoints   passed
+npm pack --dry-run                            passed
+git diff --check                              passed
+```
+
+Architect inspection additionally confirmed:
+
+```text
+the exact ordered 20-tag C1 set
+the exact seven C3 Purpose keys
+the exact three C3 Data Format keys
+C3 key correspondence with accepted DATABASE-001 seeds
+the exact D7 runtime-data authority string
+D7 is PLATFORM_INSTRUCTIONS[0]
+the required Merchant Knowledge package exports and tsup entries
+package version remains 1.0.0
+no Merchant Knowledge root convenience re-export
+no forbidden Node/database/Redis/R2 import in the runtime-safe entrypoint
+exactly one Shared source definition for every R22 contract symbol
+```
+
+The review archive does not contain installed dependencies or Git worktree metadata, so the architect did not independently rerun the complete npm suite or reconstruct the missing start-of-attempt provenance from the archive. Attempt 2 must make that provenance durable in the Completion Report and rerun the required validation from the canonical implementation task worktree.
+
+### Attempt 1 Architecture Conformance
+
+The implementation is architecturally conformant with ARCH-023 C1-C4 and D7 on the reviewed source. No code correction is currently requested.
+
+Acceptance is deferred solely because physical task isolation and start-of-attempt synchronization are mandatory acceptance evidence for repository tasks.
+
+### Attempt 1 Follow-up
+
+For Attempt 2, keep the same task branches and worktrees and do only the bounded evidence correction unless rerun validation finds a genuine defect:
+
+1. Verify/reuse the launcher-resolved canonical parent task worktree and implementation task worktree for `ARCH-023-SHARED-001`.
+2. Record both absolute launcher-resolved paths, repository identities and `task/ARCH-023-SHARED-001` branch identities in the Completion Report.
+3. Record the start-of-attempt synchronization result for both repositories: fetch/prune, clean state, own remote-branch fast-forward result, and current `origin/main` containment/merge result.
+4. Record launcher/preparation recursive-submodule evidence, explicitly stating when the implementation repository has no registered recursive submodules.
+5. Rerun all task-required validation from the canonical implementation worktree and record the result.
+6. Record the exact submitted implementation commit and parent-report commit, clean worktree state, and local-HEAD/remote-task-branch equality for both repositories.
+7. Leave the package version unchanged, do not publish, and do not start `ARCH-023-SHARED-002`.
+8. Return this same task to `review` with the active claim cleared.
+
+`ARCH-023-SHARED-002` remains Pending until SHARED-001 is architect-accepted.

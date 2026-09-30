@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 50
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-023-SHOPIFY-003
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Select Store Category and persist pending Shop profile
@@ -110,7 +110,7 @@ Use the repository's existing authenticated Shopify route/session/access helpers
 
 ### R1 — adopt exact dependencies
 
-Advance the `database` gitlink to accepted `ARCH-023-DATABASE-001`, adopt exact `ARCH-023-SHARED-002` package version, and regenerate Prisma Client.
+Advance the `database` gitlink to accepted `ARCH-023-DATABASE-001`, pin exactly `@modainteract/moda-interact-shared@1.0.1` from Architect-Accepted `ARCH-023-SHARED-002` (no range, `latest`, workspace link or later release without architect reconciliation), and regenerate Prisma Client.
 
 Do not edit database submodule schema/migrations.
 

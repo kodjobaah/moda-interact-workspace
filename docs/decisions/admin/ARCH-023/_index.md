@@ -34,9 +34,9 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ADMIN-001](ADMIN-001-author-merchant-knowledge-plan-entitlement.md) | Merchant Knowledge Feature/default plan inclusion and plan-specific C2 configuration | Pending | DATABASE-001, SHARED-002 |
+| [ADMIN-001](ADMIN-001-author-merchant-knowledge-plan-entitlement.md) | Merchant Knowledge Feature/default plan inclusion and plan-specific C2 configuration | Ready | DATABASE-001, SHARED-002 |
 | [ADMIN-002](ADMIN-002-manage-store-categories-default-templates.md) | Store Category, canonical-English default templates and Shopify taxonomy mappings | Complete — Accepted Attempt 2 | DATABASE-001 |
-| [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Ready | DATABASE-001, ADMIN-002 |
+| [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Complete | DATABASE-001, ADMIN-002 |
 
 ## Removed obsolete decomposition
 
@@ -59,4 +59,15 @@ After DATABASE-001 and SHARED-002 are Complete/accepted:
 
 ```text
 ADMIN-001 -> Ready
+DATABASE-001 and SHARED-002 are Complete/accepted. The current independent Admin frontier is:
+
+```text
+ADMIN-001 -> Ready   # exact Shared revision: @modainteract/moda-interact-shared@1.0.1
+ADMIN-002 -> Ready
+```
+
+After ADMIN-002 is Complete/accepted:
+
+```text
+ADMIN-003 -> Ready
 ```
