@@ -40,18 +40,27 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Ready | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
-| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Pending | COMMERCE-001, ADMIN-001 |
+| [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
+| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Ready | COMMERCE-001, ADMIN-001 |
 | [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Pending | DATABASE-001, SHARED-002, ADMIN-003 |
 
 
 ## Execution frontier
 
-`ARCH-023-DATABASE-001`, `ARCH-023-SHARED-002` and `ARCH-021-COMMERCE-096` are Complete/accepted, so:
+`ARCH-023-COMMERCE-001` is Complete / Accepted at Attempt 2. Its required live
+PostgreSQL/pgvector proof now executes the production `retrieveMerchantKnowledge()` path
+against the migrated ARCH-023 schema and proves nearest-neighbour ordering plus the
+required tenant/revision/provenance exclusions.
+
+`ARCH-023-ADMIN-001` is also Complete, so both declared dependencies of COMMERCE-002 are
+satisfied:
 
 ```text
-COMMERCE-001 -> Ready
+COMMERCE-001 -> Complete / Accepted Attempt 2
+COMMERCE-002 -> Ready
 ```
+
+This readiness promotion does not claim or start COMMERCE-002.
 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 

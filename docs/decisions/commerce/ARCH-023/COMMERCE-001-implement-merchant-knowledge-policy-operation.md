@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 60
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
   - ARCH-023-SHARED-002
@@ -633,16 +633,16 @@ PostgreSQL integration must use real pgvector on a disposable database and prove
 
 ## Work Items
 
-- [ ] Adopt Database/Shared/C096 accepted revisions.
-- [ ] Add exact embedding server configuration.
-- [ ] Implement C5 input/output contracts.
-- [ ] Implement current-plan entitlement resolver.
-- [ ] Implement query embedding adapter.
-- [ ] Implement exact pgvector retrieval.
-- [ ] Implement result shaping.
-- [ ] Register operation through canonical C096 registry.
-- [ ] Add unit + disposable PostgreSQL/pgvector tests.
-- [ ] Confirm no capability/Tool/release objects are created.
+- [x] Adopt Database/Shared/C096 accepted revisions.
+- [x] Add exact embedding server configuration.
+- [x] Implement C5 input/output contracts.
+- [x] Implement current-plan entitlement resolver.
+- [x] Implement query embedding adapter.
+- [x] Implement exact pgvector retrieval.
+- [x] Implement result shaping.
+- [x] Register operation through canonical C096 registry.
+- [x] Add unit + disposable PostgreSQL/pgvector tests.
+- [x] Confirm no capability/Tool/release objects are created.
 
 ## Interfaces / Contracts
 
@@ -674,25 +674,25 @@ No new Shared contract.
 
 ## Acceptance Criteria
 
-- [ ] One canonical C096 registration owns operation runtime/authoring metadata.
-- [ ] Trusted shop identity never comes from the model.
-- [ ] Commercial entitlement is rechecked inside the operation.
-- [ ] Tool reuse by another Capability cannot bypass Merchant Knowledge plan entitlement.
-- [ ] Exact pgvector retrieval is tenant/source/provenance bounded.
-- [ ] No language filter prevents cross-language retrieval.
-- [ ] C5 result is bounded and contains no storage/security secrets.
-- [ ] No bootstrap/Studio generic UI implementation is introduced.
+- [x] One canonical C096 registration owns operation runtime/authoring metadata.
+- [x] Trusted shop identity never comes from the model.
+- [x] Commercial entitlement is rechecked inside the operation.
+- [x] Tool reuse by another Capability cannot bypass Merchant Knowledge plan entitlement.
+- [x] Exact pgvector retrieval is tenant/source/provenance bounded.
+- [x] No language filter prevents cross-language retrieval.
+- [x] C5 result is bounded and contains no storage/security secrets.
+- [x] No bootstrap/Studio generic UI implementation is introduced.
 
 ## Validation
 
-- [ ] focused C5/entitlement/embedding/operation tests
-- [ ] real disposable PostgreSQL + pgvector retrieval proof
-- [ ] existing DefinitionExecutor/policy-operation regressions
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused C5/entitlement/embedding/operation tests
+- [x] real disposable PostgreSQL + pgvector production retrieval proof
+- [x] existing DefinitionExecutor/policy-operation regressions
+- [x] `npm run typecheck`
+- [x] `npm run lint` (warnings only; changed-file ESLint clean)
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -701,33 +701,264 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Not Started
+Attempt 2 review correction and required PostgreSQL/pgvector proof complete; submitted for architecture review. Attempt 1 Architect Review remains unchanged.
 ### Files Changed
-None.
+- `moda-interact-commerce/.env.example`
+- `moda-interact-commerce/lib/preview/runtime.ts`
+- `moda-interact-commerce/lib/server/config.ts`
+- `moda-interact-commerce/lib/server/connections.ts`
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/package-lock.json`
+- `moda-interact-commerce/src/commerce/execution/policy-operation-authoring.ts`
+- `moda-interact-commerce/src/commerce/execution/renderer.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/contracts.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/embedding.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/entitlement.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/operation.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/retrieval.ts`
+- `moda-interact-commerce/src/commerce/tool-definition/contracts.ts`
+- `moda-interact-commerce/tests/arch021-commerce-tool-contract.test.ts`
+- `moda-interact-commerce/tests/database-contract.test.ts`
+- `moda-interact-commerce/tests/health.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-contract.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-embedding.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-entitlement.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-policy-postgres.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-policy.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-retrieval.test.ts`
+- `moda-interact-commerce/tests/policy-operation-registry.test.ts`
+- `moda-interact-commerce/tests/preview-model-provider.test.ts`
 ### Work Completed
-None.
+- Adopted the prepared Database gitlink revision and the exact `@modainteract/moda-interact-shared@1.0.1` dependency; no database schema/migration changes or gitlink changes were introduced.
+- Added strict C5 input/output runtime validators, OpenAI embedding configuration and adapter, current-plan Merchant Knowledge entitlement enforcement, tenant/source/provenance-bounded exact pgvector retrieval, and canonical `merchantKnowledge.lookup@1.0.0` registration.
+- Added the exact bounded authoring arguments/result descriptors and the five-match renderer item limit. Runtime Zod validation remains authoritative for enum and literal semantics.
+- Added focused contract, entitlement, embedding, retrieval, registration, rendering, and conditional pgvector tests. No Tool/Capability/release bootstrap or Studio UI was introduced.
+- Corrected the connection-check helper types affected by expanding server configuration.
+- Attempt 2 A1-R1: replaced the unrelated temporary-vector-table smoke test with a disposable PostgreSQL test that invokes production `retrieveMerchantKnowledge` against the migrated ARCH-023 tables. Deterministic fixtures prove cosine ordering and exclude closer cross-shop, superseded-revision, and embedding-model-mismatched chunks.
 ### Validation Results
-None.
+- Attempt 1 focused C5/entitlement/embedding/retrieval/operation/registry/DefinitionExecutor/database-contract packet: 8 files passed, 47 tests passed, 1 test skipped. Attempt 2 replaced that skipped smoke test with the live proof below.
+- Attempt 2 live proof: `tests/merchant-knowledge-policy-postgres.test.ts` passed (1/1) against `pgvector/pgvector:pg17`. All 21 migrations from the pinned `database/prisma/schema.prisma` were deployed to a newly created `commerce_arch023_test` database bound only to `127.0.0.1` on a dynamically assigned port; the production retrieval call returned the two expected nearest eligible facts and excluded all three closer ineligible fixtures. The disposable container was removed after the test. `COMMERCE_TEST_DATABASE_URL` rejects non-loopback/non-test targets, URL overrides, and the configured `DATABASE_URL`; no remote database was used.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with warnings only. Targeted ESLint over changed implementation and test files passed without warnings. Remaining full-repository warnings are in untouched files.
+- `npm run build`: passed; existing Nunjucks dynamic dependency warning was emitted during compilation.
+- Changed-file diagnostics: no errors. `git diff --check`: passed.
+- Startup evidence from the deterministic prepare packet: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-001` on `task/ARCH-023-COMMERCE-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-001` on the same task branch. Both worktrees were newly created, no other task worktree or shared checkout was reused or switched. Parent and implementation task branches required no remote fast-forward; `origin/main` was already current in both.
+- Recursive implementation submodule sync/init passed. The `database` submodule was initialized at `2eb17ee910491e8f9df82736fc0a843844415947`.
 ### Deviations
-None.
+None. The live proof used an ephemeral local pgvector container rather than the configured remote database.
 ### Assumptions
-None.
+- The launcher-prepared database gitlink at `2eb17ee910491e8f9df82736fc0a843844415947` is the accepted ARCH-023-DATABASE-001 revision, as established by the deterministic dependency gate and initialized submodule packet.
 ### Unresolved Issues
 None.
 ### Architectural Concerns
-None.
+- None identified. `## Architect Review` below remains unchanged.
 
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 2
+
 ### Review Notes
-Pending.
+
+#### Attempt 2 review — Accepted — 2026-09-30
+
+Reviewed the returned Attempt 2 snapshot identified by the handoff as implementation
+commit `2bc7fdb` and parent report commit `a01160a4` against the original COMMERCE-001
+contract and the complete Attempt 1 correction contract. Attempt 2 is accepted.
+
+A1-R1 is resolved. `tests/merchant-knowledge-policy-postgres.test.ts` now imports and
+invokes the production `retrieveMerchantKnowledge()` function against a real Prisma
+client rather than exercising `<=>` on an unrelated temporary vector table. The fixture
+uses the migrated ARCH-023 Merchant Knowledge tables and the production R11 query while
+stubbing only the external embedding provider with a deterministic vector.
+
+The live fixture proves the required nearest-neighbour behavior through the production
+path: the two eligible rows are returned in cosine-distance order, while closer rows are
+excluded when they belong to another shop, a `SUPERSEDED` revision, or mismatched
+embedding-model provenance. The returned rows also demonstrate the expected active
+revision/source shaping, including resolved/requested WEB_PAGE URL behavior.
+
+The Completion Report records that all 21 migrations were applied to a fresh
+`pgvector/pgvector:pg17` database bound only to loopback on a dynamically assigned port,
+that `COMMERCE_TEST_DATABASE_URL` was distinct from the configured `DATABASE_URL`, that
+the live test passed 1/1, and that the disposable container was removed after the proof.
+The test itself additionally rejects non-loopback/non-test URLs, URL overrides and reuse
+of `DATABASE_URL`.
+
+The production implementation remains unchanged from the previously reviewed Attempt 1
+source. A direct archive-to-archive comparison found the Merchant Knowledge PostgreSQL
+test as the only substantive Commerce source/test change; the generated
+`tsconfig.tsbuildinfo` also changed. The previously reviewed C5 contracts, current-plan
+entitlement check, query embedding adapter, source selection, parameterized exact
+pgvector query, result shaping, C096 registration and bounded renderer integration
+therefore remain architecture-conformant.
+
+No Tool, Capability or release bootstrap was introduced and COMMERCE-002 was not
+started.
+
 ### Reviewed Files
-Pending.
+
+Implementation repository:
+
+- `tests/merchant-knowledge-policy-postgres.test.ts`
+- `src/commerce/merchant-knowledge/retrieval.ts`
+- `src/commerce/merchant-knowledge/operation.ts`
+- `src/commerce/merchant-knowledge/entitlement.ts`
+- `src/commerce/merchant-knowledge/contracts.ts`
+- `src/commerce/merchant-knowledge/embedding.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/execution/policy-operation-authoring.ts`
+- `src/commerce/execution/renderer.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `lib/server/config.ts`
+
+Parent workspace:
+
+- `docs/decisions/commerce/ARCH-023/COMMERCE-001-implement-merchant-knowledge-policy-operation.md`
+- `docs/decisions/commerce/ARCH-023/COMMERCE-002-bootstrap-merchant-knowledge-publication.md`
+- `docs/decisions/commerce/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
 ### Validation Reviewed
-Pending.
+
+- Attempt 2 production retrieval PostgreSQL/pgvector proof: **1/1 passed** against a
+  disposable `pgvector/pgvector:pg17` database after all 21 migrations were applied.
+- The live proof invokes production `retrieveMerchantKnowledge()` and demonstrates known
+  nearest-neighbour ordering plus exclusion of closer cross-shop, non-ACTIVE and
+  mismatched-provenance chunks.
+- Submitted Attempt 2 targeted ESLint, `npm run typecheck` and `git diff --check` passed.
+- Attempt 1 focused packet recorded **47 passed / 1 live test skipped**; Attempt 2 replaces
+  that skipped smoke test with the required production-path proof.
+- Attempt 1 `npm run build` and full lint completed successfully (lint warnings only);
+  production implementation did not change in Attempt 2.
+- Reviewed the launcher-resolved dedicated parent/implementation worktree,
+  synchronization and recursive database-submodule evidence recorded in the Completion
+  Report.
+- The review archive contains no installed `node_modules` or Docker runtime, so the
+  architect did not claim to rerun dependency-backed or container-backed commands from
+  the archive. The returned source/test/report evidence was inspected directly.
+
 ### Architecture Conformance
-Pending.
+
+Conforms. `merchantKnowledge.lookup@1.0.0` remains a Commerce-owned C096 Policy Operation
+that resolves trusted shop identity from the authorized turn, independently rechecks the
+current Merchant Knowledge BillingPlanFeature entitlement, selects only entitled source
+identities, embeds the bounded query with configured provenance, and performs exact
+parameterized tenant/source/revision/provenance-bounded pgvector ranking.
+
+The live database proof now validates the production R11 boundary that was missing from
+Attempt 1. No capability-dependent authorization, ANN index, Redis vector search,
+bootstrap/publication behavior, Studio-specific registry, schema/migration change or new
+HTTP endpoint is introduced.
+
 ### Follow-up
-Pending.
+
+`ARCH-023-COMMERCE-001` is **Complete / Accepted at Attempt 2**.
+
+`ARCH-023-COMMERCE-002` has both declared dependencies Complete (`COMMERCE-001` and
+`ADMIN-001`) and is therefore promoted from **Pending** to **Ready**. This architect
+reconciliation does not claim or start COMMERCE-002.
+
+#### Historical Attempt 1 — Changes Requested — 2026-09-30
+
+##### Review Status
+Changes Requested — Attempt 1
+
+##### Review Notes
+
+The production implementation is otherwise architecture-conformant on the reviewed
+paths: the exact C5 validators and authoring descriptors are registered through the
+accepted C096 registry; trusted shop identity comes from the authorized turn; current
+commercial entitlement is rechecked independently of capability association; source
+eligibility is resolved before the source cap; the raw query is tenant/source/provenance
+bounded and parameterized; result shaping is bounded; and no Tool/Capability/release
+bootstrap was introduced.
+
+One acceptance-blocking validation defect remains:
+
+**A1-R1 — the required disposable PostgreSQL/pgvector retrieval proof is both unexecuted
+and currently too shallow.** `tests/merchant-knowledge-policy-postgres.test.ts` creates an
+unrelated temporary vector table and exercises the pgvector `<=>` operator directly. It
+does not invoke `retrieveMerchantKnowledge`, the Merchant Knowledge policy adapter, or
+the production R11 SQL. Running that test successfully would therefore prove pgvector is
+available, but would not prove that COMMERCE-001's real tenant/source/provenance-bounded
+retrieval query executes correctly against the ARCH-023 schema.
+
+Attempt 2 is a bounded validation correction. Strengthen the disposable PostgreSQL test
+so it executes the production Merchant Knowledge retrieval path against a local disposable
+test database with the accepted ARCH-023 schema and pgvector enabled. Seed deterministic
+fixtures that prove, through the production query, a known cosine nearest-neighbour
+ordering. The proof must also demonstrate that a closer row is excluded when it belongs
+to another shop, a non-ACTIVE revision, or mismatched embedding provenance. Keep the test
+strictly disposable/local and continue refusing the configured remote database.
+
+No production implementation change is requested unless the strengthened live proof
+exposes an actual defect.
+
+##### Reviewed Files
+
+- `src/commerce/merchant-knowledge/contracts.ts`
+- `src/commerce/merchant-knowledge/embedding.ts`
+- `src/commerce/merchant-knowledge/entitlement.ts`
+- `src/commerce/merchant-knowledge/retrieval.ts`
+- `src/commerce/merchant-knowledge/operation.ts`
+- `src/commerce/execution/policy-operation-authoring.ts`
+- `src/commerce/execution/renderer.ts`
+- `src/commerce/integration/backend.ts`
+- `src/commerce/tool-definition/contracts.ts`
+- `lib/server/config.ts`
+- `lib/server/connections.ts`
+- `lib/preview/runtime.ts`
+- `tests/merchant-knowledge-contract.test.ts`
+- `tests/merchant-knowledge-embedding.test.ts`
+- `tests/merchant-knowledge-entitlement.test.ts`
+- `tests/merchant-knowledge-retrieval.test.ts`
+- `tests/merchant-knowledge-policy.test.ts`
+- `tests/merchant-knowledge-policy-postgres.test.ts`
+- `tests/policy-operation-registry.test.ts`
+- `package.json`
+- `package-lock.json`
+- `docs/decisions/commerce/ARCH-023/COMMERCE-001-implement-merchant-knowledge-policy-operation.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
+##### Validation Reviewed
+
+- Reviewed the recorded focused result: 47 tests passed and the single live pgvector test
+  was skipped.
+- Reviewed the recorded passing TypeScript check and production build.
+- Reviewed the recorded full lint result (warnings only), changed-file ESLint pass,
+  changed-file diagnostics pass and `git diff --check` pass.
+- Confirmed the task's required `real disposable PostgreSQL + pgvector retrieval proof`
+  remains unchecked in the authoritative Validation section.
+- Inspected the skipped PostgreSQL test and confirmed it validates pgvector operator
+  behavior only; it does not execute the production Merchant Knowledge retrieval SQL.
+- Reviewed the launcher-resolved dedicated parent/implementation worktree evidence,
+  synchronization evidence and recursive database-submodule initialization recorded in
+  the Completion Report.
+
+##### Architecture Conformance
+
+The implementation code is consistent with the ARCH-023/C096 ownership boundaries and no
+production-code correction is presently identified. Acceptance is withheld because R16
+and the explicit Validation contract require a real disposable PostgreSQL/pgvector proof
+of the production retrieval path. Mocked Prisma/query-shape tests plus a standalone
+pgvector smoke query are not equivalent to that integration boundary.
+
+##### Follow-up
+
+`ARCH-023-COMMERCE-001` returns to **Ready** for Attempt 2 with `attempt: 1` preserved and
+no active executor/claim. The next normal claim increments it to Attempt 2.
+
+Attempt 2 must:
+
+1. strengthen `tests/merchant-knowledge-policy-postgres.test.ts` as described in A1-R1;
+2. run that test against a local disposable PostgreSQL database with pgvector and the
+   accepted ARCH-023 schema;
+3. record the exact command/database safety evidence and passing result;
+4. mark the live PostgreSQL/pgvector Validation item complete only after the proof passes;
+5. rerun only the focused checks materially affected by the test correction; and
+6. return the same task to Architect Review and STOP.
+
+`ARCH-023-COMMERCE-002` remains **Pending** and must not be started until COMMERCE-001 is
+Accepted/Complete.
