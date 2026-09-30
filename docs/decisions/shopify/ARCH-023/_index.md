@@ -24,15 +24,15 @@ DATABASE-001 + SHARED-002
                        |
                        v
                  SHOPIFY-003
-        initial subscription activation
-        callback happy path only
+        initial Store Category activation
+        after durable subscription activation
 
- SHOPIFY-001
-      |
-      v
- SHOPIFY-004
- WEB_PAGE Merchant Knowledge
- source lifecycle + Recovery Settings
+ SHOPIFY-001 + ADMIN-004
+          |
+          v
+     SHOPIFY-004
+ Merchant opt-in control plane +
+ WEB_PAGE source lifecycle
       |
       v
  SHOPIFY-005
@@ -50,8 +50,8 @@ Individual task YAML is authoritative.
 |---|---|---|---|
 | [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Complete | DATABASE-001, SHARED-002 |
 | [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Complete | DATABASE-001, SHARED-002 |
-| [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Billing callback activation of initial pending Store Category and Shop prompt | Ready | SHOPIFY-001, SHOPIFY-002 |
-| [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Current-plan WEB_PAGE source management and Recovery Settings UI | Ready | SHOPIFY-001, SHARED-002 |
+| [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Initial Store Category/Shop prompt activation only after durable ACTIVE/TRIALING subscription state | Ready | SHOPIFY-001, SHOPIFY-002 |
+| [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Merchant opt-in control plane plus current-plan WEB_PAGE source management | Pending | SHOPIFY-001, SHARED-002, ADMIN-004 |
 | [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Pending | SHOPIFY-004 |
 
 ## Execution frontier
@@ -62,11 +62,11 @@ DATABASE-001 and SHARED-002 are Complete/accepted. SHOPIFY-001 is now Complete /
 SHOPIFY-001 -> Complete — Accepted Attempt 2
 SHOPIFY-002 -> Complete — Accepted Attempt 2
 SHOPIFY-003 -> Ready
-SHOPIFY-004 -> Ready
+SHOPIFY-004 -> Pending (new dependency: ADMIN-004)
 SHOPIFY-005 -> Pending (still gated on SHOPIFY-004)
 ```
 
-SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 and SHOPIFY-004 are independently executable from this frontier; neither is started implicitly by architect acceptance.
+SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 remains independently executable. SHOPIFY-004 is deliberately re-gated on ADMIN-004 so the fixed `merchant_knowledge` Feature is reconciled to `MERCHANT_OPT_IN` before the merchant-facing control plane is implemented.
 
 After SHOPIFY-004:
 
@@ -78,4 +78,8 @@ SHOPIFY-005 -> Ready
 
 ARCH-023 also requires the **existing Background subscription reconciler** to perform the same initial pending Store Category activation when the Shopify billing callback is missed.
 
-SHOPIFY-003 intentionally implements only the callback happy path. A bounded Background reconciliation hook must be defined before final ARCH-023 system acceptance; it must not be hidden inside the new Merchant Knowledge worker.
+SHOPIFY-003 implements the Shopify-repository activation path only after authoritative durable ACTIVE/TRIALING subscription state. A bounded Background reconciliation hook must be defined before final ARCH-023 system acceptance; it must not be hidden inside the new Merchant Knowledge worker.
+
+## Merchant opt-in reconciliation
+
+The current plan grants Merchant Knowledge configuration access; it does not activate the feature. `SHOPIFY-004` reuses the existing Recovery Settings `FeaturePreferences` / `ShopFeaturePreference` control as the single ON/OFF state. Sources may be configured while OFF, but Shopify does not start ingestion until ON. `SHOPIFY-005` remains a separate file/R2 extension.

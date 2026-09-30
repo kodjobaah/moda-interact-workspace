@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-023-GATEWAY-001
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Upload and manage Merchant Knowledge CSV and XLSX sources
@@ -37,6 +37,8 @@ Coordinator: `moda_architect`
 Extend the Merchant Knowledge management surface with private direct-to-R2 CSV/XLSX uploads, upload finalisation, immutable uploaded-asset replacement and Reprocess.
 
 The browser receives only a short-lived signed PUT and asset id; server credentials remain private. A source/revision is created only after the uploaded object is verified to exist and the current plan entitlement is re-checked.
+
+This task inherits SHOPIFY-004's activation model: plan entitlement grants file-source configuration access, while `ShopFeaturePreference` controls effective Merchant Knowledge activation. CSV/XLSX assets/sources may be configured while OFF, but OFF must not start ingestion.
 
 ## Context
 
@@ -154,9 +156,9 @@ originalFileName trimmed 1..255
 sizeBytes positive safe integer <= MERCHANT_KNOWLEDGE_MAX_UPLOAD_BYTES
 ```
 
-Load current entitlement using SHOPIFY-004 service.
+Load current **commercial** entitlement and merchant activation state using SHOPIFY-004 services.
 
-Require exact `(purposeKey,dataFormatKey)` currently entitled and globally active.
+Require exact `(purposeKey,dataFormatKey)` currently plan-entitled and globally active. Do not require `merchantEnabled` merely to configure/upload a source.
 
 Require Data Format:
 
@@ -330,7 +332,7 @@ Within one DB transaction:
    requestedAt = now
    ```
 10. commit;
-11. enqueue C4 best effort via SHOPIFY-004 helper.
+11. when Merchant Knowledge is effectively enabled, enqueue C4 best effort via SHOPIFY-004 helper; when OFF, leave the revision PENDING without enqueue.
 
 ### R10 — replace file atomically
 
@@ -355,7 +357,7 @@ When `sourceId` present:
    uploadedAssetId = new asset.id
    requestedUrl = null
    ```
-10. commit then enqueue best effort.
+10. commit; enqueue best effort only when Merchant Knowledge is effectively enabled; otherwise leave PENDING.
 
 The prior ACTIVE revision and prior immutable asset remain untouched.
 
@@ -380,7 +382,7 @@ For an owned currently entitled uploaded source:
    requestedUrl = null
    status = PENDING
    ```
-7. commit then enqueue best effort.
+7. commit; enqueue best effort only when Merchant Knowledge is effectively enabled; otherwise leave PENDING.
 
 Reprocess never requires browser re-upload.
 
@@ -402,7 +404,7 @@ Shopify app does not delete R2 object synchronously on abandonment.
 
 Extend existing Merchant Knowledge section.
 
-For plan-entitled CSV/XLSX combinations:
+For plan-entitled CSV/XLSX combinations, regardless of current ON/OFF preference:
 
 - Data Format selector shows localized labels;
 - file picker `accept` is derived from persisted canonical extension/content types;
@@ -470,6 +472,8 @@ replace creates new immutable asset + FILE_REPLACE revision
 old ACTIVE/old asset remain on replacement
 Reprocess reuses same asset
 queue failure leaves PENDING durable revision
+merchant disabled -> finalized/create/replace/reprocess leaves PENDING and does not enqueue
+merchant enabled -> normal best-effort enqueue
 abandoned PENDING_UPLOAD creates no source
 browser never receives credentials/objectKey field
 ```
@@ -507,10 +511,10 @@ Gateway wiring may be finalized after both Shopify upload and Background worker 
 - [ ] Browser uploads directly to private R2 with short-lived signed PUT.
 - [ ] Server credentials never reach browser.
 - [ ] Source slot is allocated only at successful finalization.
-- [ ] Current plan entitlement is rechecked at intent and finalization.
+- [ ] Current plan entitlement is rechecked at intent and finalization; merchant OFF does not block configuration.
 - [ ] File replacement is immutable/revisioned.
 - [ ] Reprocess reuses existing immutable asset.
-- [ ] Queue loss remains recoverable through durable PENDING state.
+- [ ] Merchant OFF leaves PENDING work durable without ingestion; merchant ON permits processing, with queue loss recoverable through durable PENDING state.
 - [ ] No file bytes are stored in PostgreSQL.
 
 ## Validation
