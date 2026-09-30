@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 51
 executor: copilot
 claimed_at: 2026-09-30T19:07:21Z
@@ -205,12 +205,12 @@ no Merchant Knowledge preference/source/queue state is mutated
 
 ## Work Items
 
-- [ ] Add exact environment mapper.
-- [ ] Implement idempotent initial activation transaction.
-- [ ] Integrate only after an authoritative durable Shopify-side subscription activation commit.
-- [ ] Preserve later-category Admin boundary.
-- [ ] Add transaction/idempotency/subscription-gate tests.
-- [ ] Record the existing Background billing-reconciliation fallback as a separate unresolved implementation boundary if still absent.
+- [x] Add exact environment mapper.
+- [x] Implement idempotent initial activation transaction.
+- [x] Integrate only after an authoritative durable Shopify-side subscription activation commit.
+- [x] Preserve later-category Admin boundary.
+- [x] Add transaction/idempotency/subscription-gate tests.
+- [x] Record the existing Background billing-reconciliation fallback as a separate unresolved implementation boundary if still absent.
 
 ## Interfaces / Contracts
 
@@ -223,21 +223,21 @@ Consumes SHOPIFY-002 pending state, current Subscription projection and Commerce
 
 ## Acceptance Criteria
 
-- [ ] Only durable current ACTIVE/TRIALING subscription state can activate the initial category.
-- [ ] Initial category/prompt activation is exact, atomic and idempotent.
-- [ ] Later category changes remain Admin-owned.
-- [ ] No plan-handle/onboarding signal is treated as subscription-active authority.
-- [ ] No Merchant Knowledge activation or processing is coupled to subscription activation.
+- [x] Only durable current ACTIVE/TRIALING subscription state can activate the initial category.
+- [x] Initial category/prompt activation is exact, atomic and idempotent.
+- [x] Later category changes remain Admin-owned.
+- [x] No plan-handle/onboarding signal is treated as subscription-active authority.
+- [x] No Merchant Knowledge activation or processing is coupled to subscription activation.
 
 ## Validation
 
-- [ ] focused activation tests
-- [ ] billing/subscription integration regressions
-- [ ] transaction integration test
-- [ ] `npm run typecheck`
-- [ ] changed-file lint/diagnostics
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] focused activation tests
+- [x] billing/subscription integration regressions
+- [ ] transaction integration test execution (suite added; blocked because no container runtime is available and local PostgreSQL does not respond)
+- [x] `npm run typecheck`
+- [x] changed-file lint/diagnostics
+- [x] `npm run build`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -246,21 +246,52 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Not Started
+Attempt 1 implementation complete; returned for Architect Review.
 ### Files Changed
-None.
+`app/services/store-profile/store-category-activation.server.ts`, `app/routes/app/billing/callback/route.tsx`, `tests/unit/store-category-activation.test.ts`, `tests/unit/routes/billing-callback.test.ts`, and `tests/integration/store-category-activation.integration.test.ts`.
 ### Work Completed
-None.
+Added the exact deployment environment mapper and an atomic, idempotent initial activation transaction. It locks the Shop scope used by category selection, requires the current subscription to be ACTIVE/TRIALING with a plan, validates the complete pending profile/revision/template provenance, publishes the existing pinned DRAFT with lowercase SHA-256 of its exact UTF-8 text, updates or creates the one SHOP configuration while preserving model settings, and promotes/clears only the initial pending profile state. Existing active categories return `ALREADY_ACTIVE` without touching later pending selections. The billing callback invokes activation only after a successful durable Paid projection, successful Free completion, or a fresh `syncSubscription` result with a current active/trialing plan. Configure/welcome intent and onboarding completion alone do not invoke activation. No Merchant Knowledge preference/source/queue state or Background worker/reconciler was changed.
 ### Validation Results
-None.
+Focused activation, billing callback, Store Category selection and action regressions: 60 passed; the two disposable PostgreSQL activation tests were skipped in the default run. `npm run typecheck`: passed. Changed-file ESLint: passed (emitted the repository's TypeScript 5.9.3 versus typescript-estree supported-version warning). Changed-file diagnostics: clean. `npm run build`: passed. `git diff --check`: passed. The activation PostgreSQL suite was also explicitly enabled, but Testcontainers failed before provisioning with `Could not find a working container runtime strategy`; the available local PostgreSQL probe reported no response at `/tmp:5432`. Thus the database-backed transaction assertions are implemented but could not be executed in this environment.
 ### Deviations
-None.
+The requested live transaction validation could not run because this environment has neither a working container runtime nor a responding local PostgreSQL server; the disposable PostgreSQL suite is present and opt-in using the repository's existing integration convention.
 ### Assumptions
-None.
+The existing billing callback may invoke the activation service only after the current projection transaction returns; a later Background reconciliation activation hook is a separate repository-owned task and remains outside SHOPIFY-003 scope.
 ### Unresolved Issues
-None.
+The existing Background billing reconciler does not yet invoke this activation contract when subscription activation is established after the Shopify callback; a separate bounded Background task must add that hook. No authorized Commerce audit helper/actor exists in this repository, so this task does not fabricate a system actor or audit event; the audit-actor gap is recorded for architect follow-up. The disposable PostgreSQL transaction suite remains unexecuted in this environment as noted above.
 ### Architectural Concerns
-None.
+The callback path is covered here, but the missed-callback/background-reconciliation path remains a cross-repository follow-up. The existing Commerce audit schema accepts only PlatformAdmin or MerchantAccess actors and this activation has neither; an authorized actor/audit contract needs architect direction before audit records are added.
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-003`
+  parent branch: `task/ARCH-023-SHOPIFY-003`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-003`
+  implementation branch: `task/ARCH-023-SHOPIFY-003`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  `git submodule sync --recursive`: passed
+  `git submodule update --init --recursive`: passed
+  recorded submodule commit: `database` at `2eb17ee910491e8f9df82736fc0a843844415947`
+
+Launcher claim:
+  attempt: 1
+  dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
+  executor: `copilot`
+  claimed at: `2026-09-30T19:07:21Z`
+  claim commit: `9388d1a8fc532eb6aa6a0f3234c60c2b826d4ded` (pushed)
+
+Implementation commit:
+  `be279948ff7421e9f5edfa567b58fd1ffe55e680` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
 
 ## Architect Review
 
