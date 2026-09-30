@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-30T08:56:24Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
@@ -493,21 +493,21 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Architect Review
 ### Files Changed
-None.
+`package.json`, `package-lock.json`, the billing route and drawer wiring, pricing builder/catalogue UI, Merchant Knowledge policy and payload/read-model helpers, pricing and Feature actions, focused unit/security tests, and updated Shared-version/progressive-disclosure security assertions.
 ### Work Completed
-None.
+Pinned Shared to `1.0.1`; made Merchant Knowledge an ordinary Feature fixed by Admin product policy; added explicit C2 configuration authoring with active Purpose/Data Format options and transactional server validation; retained unrelated feature mapping configuration and mirrored identical JSON into an existing BillingPlan; surfaced invalid/missing/stale plan configurations for explicit repair without preference writes or guessed defaults.
 ### Validation Results
-None.
+Focused pricing security: 12/12 passed. Focused policy/payload unit tests: 16/16 passed, including rollout-report states. Updated related security contracts: 41/42 passed; remaining failure is the pre-existing internationalization key-catalogue mismatch. Full unit suite: 142 passed, 2 failed in unrelated translation workbook/translation validation tests. Full security suite retains unrelated stale-contract failures in billing pack-status, internationalization catalogue, security-boundary, and tenant KPI tests. `npm run prisma:validate`, `npx tsc --noEmit --pretty false`, changed-file Pylance diagnostics, `git diff --check`, and `npm run build` passed. Full lint reports existing issues in billing/promotions code and unrelated warnings; no task builder hook warning was reported. Build emitted existing BullMQ optional-dependency warnings.
 ### Deviations
-None.
+Updated existing security expectations for the mandated Shared `1.0.1` release and the expanded billing catalogue props.
 ### Assumptions
-None.
+The downstream Architect Review will assess the remaining unrelated repository-wide baseline failures separately.
 ### Unresolved Issues
-None.
+Repository-wide baseline failures remain in translation tests, billing pack-status and tenant KPI security assertions, internationalization catalogue alignment, security-boundary source-shape assertions, and lint findings outside the Merchant Knowledge implementation.
 ### Architectural Concerns
-None.
+None identified; no schema or consumer-runtime changes were introduced.
 
 ## Architect Review
 
