@@ -3203,7 +3203,7 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after BACKGROUND-002 Attempt 2 review:
+Current execution frontier after BACKGROUND-002 Attempt 3 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
@@ -3212,16 +3212,16 @@ ARCH-023-SHARED-002     Complete — Accepted Attempt 1
 ARCH-023-ADMIN-001      Complete — Accepted Attempt 2
 ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
 ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
+ARCH-023-BACKGROUND-002 Complete — Accepted Attempt 3
 ARCH-023-BACKGROUND-003 Complete — Accepted Attempt 2
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
 ARCH-023-ADMIN-003      Ready
-ARCH-023-BACKGROUND-002 Ready — Attempt 3 correction
+ARCH-023-BACKGROUND-004 Ready
 ARCH-023-COMMERCE-002   Ready
 ARCH-023-SHOPIFY-001    Ready
 
-ARCH-023-BACKGROUND-004 Pending — waits for BACKGROUND-002
 ARCH-023-SHOPIFY-003    Pending — waits for SHOPIFY-001
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
@@ -3273,6 +3273,13 @@ through bounded task reviews without changing the agreed architecture contract.
 - Accepted `merchantKnowledge.lookup@1.0.0` after the strengthened live test invoked the production `retrieveMerchantKnowledge()` path against a disposable `pgvector/pgvector:pg17` database with all 21 migrations applied.
 - Confirmed deterministic nearest-neighbour ordering and production-query exclusion of closer cross-shop, non-ACTIVE-revision and mismatched-embedding-provenance rows; the configured remote database was not used and the disposable container was removed afterward.
 - Marked COMMERCE-001 Complete and promoted COMMERCE-002 to Ready because ADMIN-001 and COMMERCE-001 are both Complete. No COMMERCE-002 implementation was started by this review.
+
+### 2026-09-30 — BACKGROUND-002 Attempt 3 accepted
+
+- Accepted the bounded IPv6 admission correction at implementation `f181dbaa0398fcaec0f072b7439fc94d05681df7`.
+- Confirmed the blanket `2000::/3` allow rule is replaced by the exact architect-supplied positive ordinary-global allocation set, with `2620:4f:8000::/48` explicitly denied as special-use while IPv4 and IPv4-mapped IPv6 behavior remain unchanged.
+- Accepted focused validation **79/79**, build, changed-file diagnostics and `git diff --check`; acquisition-level mixed IPv6 DNS coverage proves rejection occurs before request dispatch.
+- Marked BACKGROUND-002 Complete. BACKGROUND-003 is already Complete, so BACKGROUND-004 becomes Ready under the declared dependency graph; no downstream task was started.
 
 ### 2026-09-30 — BACKGROUND-002 Attempt 2 changes requested
 

@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 31
 executor: null
 claimed_at: null
@@ -469,9 +469,37 @@ After push and fetch, the implementation worktree was clean and its `HEAD` match
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 2
+Accepted — Attempt 3
 
 ### Review Notes
+
+#### Attempt 3 review — Accepted — 2026-09-30
+
+Attempt 3 closes A2-R1 without broadening the task. The blanket `2000::/3` IPv6 allow decision has
+been replaced by the exact architect-supplied positive allocation set for ordinary global-unicast
+use. The implementation separately denies `2620:4f:8000::/48`, preserves the existing special-use
+deny list, and continues to classify IPv4-mapped IPv6 through the unchanged IPv4 policy.
+
+Architect inspection confirms the correction covers the required policy class rather than only the
+representative literals: `2d00::1`, `3000::1`, `3f00::1`, `2004::1`, and
+`2620:4f:8000::1` are denied; ordinary public examples including
+`2606:4700:4700::1111` and `2001:4860:4860::8888` are admitted. The network-policy mixed-DNS
+regression rejects an ordinary public answer combined with `3000::1`, and the acquisition-level
+regression rejects an ordinary public answer combined with `2620:4f:8000::1` before the request
+callback is invoked.
+
+The architect-supplied Attempt 3 handoff explicitly required continuation in the already-prepared
+canonical Attempt 3 worktrees without rerunning `/moda-task`, incrementing the attempt, or creating
+a replacement claim. The Completion Report records those canonical worktrees and final clean
+remote-aligned heads. Submitted implementation is
+`f181dbaa0398fcaec0f072b7439fc94d05681df7`; submitted parent report publication was
+`6656c02ba83eafc963302dbe2b1077a9b5c0cb91`, followed by final report-evidence update
+`998f13933a56d16dc77fe9896b6afa2daac390db`.
+
+No HTML extraction, TLS/SNI pinning, connected-peer verification, redirect handling, deadline/body
+limits, dependency surface, database code, worker orchestration, normalization, chunking,
+embedding, or persistence behavior changed in Attempt 3. BACKGROUND-002 is therefore Complete /
+Accepted at Attempt 3.
 
 #### Attempt 2 review — Changes Requested — 2026-09-30
 
@@ -526,40 +554,39 @@ the corrected focused tests reveal a directly related defect.
 
 ### Reviewed Files
 
-- `package.json`
-- `package-lock.json`
 - `src/services/merchant-knowledge-network-policy.ts`
-- `src/services/merchant-knowledge-html-extraction.ts`
-- `src/services/merchant-knowledge-web-page-acquirer.ts`
 - `tests/unit/services/merchant-knowledge-network-policy.test.ts`
-- `tests/unit/services/merchant-knowledge-html-extraction.test.ts`
 - `tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts`
+- `src/services/merchant-knowledge-web-page-acquirer.ts` (unchanged acquisition boundary verified)
+- `src/services/merchant-knowledge-html-extraction.ts` (unchanged extraction boundary verified)
+- `package.json` / `package-lock.json` (no new Attempt 3 dependency introduced)
 - `docs/decisions/background/ARCH-023/BACKGROUND-002-acquire-merchant-knowledge-web-pages.md`
 - `docs/decisions/background/ARCH-023/_index.md`
 - `docs/architecture/ARCH-023-merchant-knowledge.md`
 
 ### Validation Reviewed
 
-- Submitted Attempt 2 focused suites: **71/71 passed**.
-- Submitted `npm run build`: passed after task-worktree dependencies were installed from the synchronized lockfile.
-- Submitted changed-file diagnostics and `git diff --check`: passed.
-- Direct source inspection confirms the six A1-R1 literals are now denied and mixed DNS is rejected before request dispatch.
-- Direct source inspection also confirms the current `2000::/3` allow predicate admits IANA-reserved/special-purpose IPv6 destinations covered by A2-R1.
-- The review archive contains no installed `node_modules` or usable Git metadata, so the submitted test/build commands were not independently rerun in the review container.
+- Submitted Attempt 3 focused suites: **79/79 passed** across network policy, HTML extraction and acquirer tests.
+- Submitted `npm run build`: passed.
+- Submitted changed-file diagnostics: clean.
+- Submitted `git diff --check`: passed.
+- Architect inspection confirms the positive IPv6 allocation constants exactly match the supplied Attempt 3 list and the `2620:4f:8000::/48` exclusion is applied after positive allocation.
+- Architect inspection confirms the required acquisition-level mixed IPv6 answer is rejected before the request callback.
+- Architect byte comparison against the Attempt 1 review archive confirms `merchant-knowledge-web-page-acquirer.ts` and `merchant-knowledge-html-extraction.ts` are unchanged.
+- The review archive intentionally contains no installed `node_modules`; the submitted Vitest/build commands were therefore not independently rerun. A Node built-in `BlockList` probe over the checked-in policy independently reproduced the required positive/negative address decisions.
 
 ### Architecture Conformance
 
-Changes required only at the D16/R3 IPv6 address-classification boundary. The rest of the reviewed
-WEB_PAGE acquisition adapter remains within the Background-owned acquisition/extraction scope. No
-database, Shared-contract, Gateway, persistence, normalization, chunking, embedding or worker-entrypoint
-change is authorised by this review.
+Accepted. D16/R3 now uses a deterministic local positive IPv6 allocation policy plus explicit
+special-use exclusions, while preserving IPv4/mapped-IPv6 behavior and the previously accepted
+per-hop DNS pinning/TLS/peer-verification acquisition boundary. No out-of-scope behavior is
+introduced.
 
 ### Follow-up
 
-Return the same task through `/moda-task ARCH-023-BACKGROUND-002` for Attempt 3. Preserve the
-current Attempt 2 implementation, correct A2-R1, rerun the focused network-policy/acquirer suites,
-`npm run build`, changed-file diagnostics and `git diff --check`, update the Completion Report, set
-the task back to review and STOP. `ARCH-023-BACKGROUND-004` remains Pending.
+Mark BACKGROUND-002 Complete. BACKGROUND-003 is already Complete / Accepted Attempt 2, so under
+this task branch's declared dependency graph BACKGROUND-004 becomes Ready. Do not start it
+implicitly from this review.
 
 #### Historical Attempt 1 — Changes Requested — 2026-09-30
 
