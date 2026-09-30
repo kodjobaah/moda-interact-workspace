@@ -9,16 +9,16 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-09-18T21:39:51Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
 - ARCH-017-DATABASE-001
 enables: []
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-30
 ---
 
 # ARCH-017-SHOPIFY-001
@@ -859,3 +859,32 @@ Partial. Attempt 2 fixes the previous monotonic-onboarding/token interaction, bu
 ### Follow-up
 
 Return this same task to `ready` at Attempt 2. Attempt 3 begins only when the normal launcher claims it. Do not start terminal ARCH-017 system testing from this review.
+
+## Developer Override
+
+### Reopen Decision
+
+The developer explicitly reopened this task on 2026-09-30. The existing review
+and Changes Requested history remain unchanged. The task returns to `ready`
+without incrementing the attempt.
+
+### Previous Accepted Attempt
+
+None. No architect-accepted or completed attempt is recorded. The current task
+cycle was Attempt 3, which remains the attempt number after this reopen.
+
+### Reason
+
+Developer-requested reopen of `ARCH-017-SHOPIFY-001` for a new execution cycle.
+
+### Lifecycle Transition
+
+- `status: ready`
+- `executor: null`
+- `claimed_at: null`
+- `attempt: 3`
+
+### Downstream Eligibility
+
+No downstream tasks are listed in this task's `enables` field; no downstream
+status transition was required.
