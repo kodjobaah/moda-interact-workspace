@@ -489,13 +489,21 @@ Status: Ready for Review
 
 Attempt: 4, returned for architect review after the Attempt 3 Changes Requested findings.
 
-Implementation commit: `3936763bbee6439cb98db2320cd45b6ccd3574bf` (`fix(shopify): materialize operational plans during sync`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+Implementation commits: `3936763bbee6439cb98db2320cd45b6ccd3574bf` (`fix(shopify): materialize operational plans during sync`) and `bffc796` (`test(shopify): prove feature preferences survive plan changes`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
 
 Accepted DATABASE-001 dependency revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`.
 
 Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-001`; branch: `task/ARCH-017-SHOPIFY-001`, tracking `origin/task/ARCH-017-SHOPIFY-001`.
 
 Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-001`; branch: `task/ARCH-017-SHOPIFY-001`.
+
+Physical worktree isolation and start-of-attempt synchronization:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent and implementation worktrees are the dedicated paths recorded above; both use `task/ARCH-017-SHOPIFY-001` and were clean after publication.
+- Shared workspace checkout switched/mutated for task implementation: no. Shared implementation source checkout switched/mutated for task implementation: no. Another task worktree reused: no.
+- Prepared launcher synchronized the parent and implementation task branches; parent incorporated `origin/main` at merge `41854aa952836435f67a614562d0129e2b6586c3`; implementation incorporated `origin/main` at merge `1c14e2d` before task execution.
+- Recursive implementation submodule sync and update passed during prepared launch. Accepted database submodule revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`.
 
 Implemented Attempt 4 corrections and retained accepted behavior:
 
@@ -504,19 +512,19 @@ Implemented Attempt 4 corrections and retained accepted behavior:
 - Generic sync distinguishes genuine unknown catalogue handles (`UNMAPPED_PLAN_HANDLE`), inactive operational plans (`BILLING_PLAN_INACTIVE`), and invalid catalogue plans (`INVALID_MERCHANT_PRICING_PLAN`) as bounded outcomes.
 - Preserved the provider-confirmation-before-onboarding callback ordering and fresh-current fallback sync for unknown/inactive/invalid local selections. Added an explicit ordering assertion.
 - Added the `FEATURES` surface to active merchant route access/navigation and strengthened policy coverage.
-- Added/updated tests for Free/Paid materialisation, feature projection, invalid/inactive plans, unique-create recovery, callback ordering, and guarded retry with onboarding already true. No proration, feature-preference deletion/copy, top-up meter inference, or database-submodule edits were introduced.
+- Added/updated tests for Free/Paid materialisation, feature projection, invalid/inactive plans, unique-create recovery, callback ordering, guarded retry with onboarding already true, and preference dormancy/reactivation across plan changes without rewriting the saved preference. No proration, feature-preference deletion/copy, top-up meter inference, or database-submodule edits were introduced.
 
 Validation from the implementation worktree:
 
 - `npm run prisma:generate`: passed.
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: passed, 283 tests across 4 files (rerun after the final test changes).
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: passed, 284 tests across 4 files after the final test change.
 - `npm run build`: passed.
 - `npm run typecheck`: passed after implementation and fixture typing changes.
-- Changed-file ESLint command covering the six changed TypeScript/TSX files: passed with no diagnostics; ESLint emitted only its TypeScript 5.9.3 support advisory.
+- Changed-file ESLint command covering the six implementation/test TypeScript/TSX files, plus `npx eslint tests/unit/routes/features-route.test.ts` for the follow-up: passed with no diagnostics; ESLint emitted only its TypeScript 5.9.3 support advisory.
 - `git diff --check`: passed.
 - Repository-wide `npm run lint`: failed on pre-existing diagnostics in unrelated files; the changed-file ESLint check passed.
 
-Source commit was pushed and the implementation worktree was clean at `3936763bbee6439cb98db2320cd45b6ccd3574bf`. Parent report commit (initial Attempt 4 submission): `25128184`; this follow-up records that exact submission revision. Both commits are pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+Implementation worktree was clean after source commits `3936763bbee6439cb98db2320cd45b6ccd3574bf` and `bffc796`; both match the task remote. Parent report commits: initial Attempt 4 submission `25128184`, submission-SHA follow-up `cb139036`, and the current evidence update is committed separately below. All are pushed to `origin/task/ARCH-017-SHOPIFY-001`.
 
 No database submodule contents or Architect Review section were edited.
 
