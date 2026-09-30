@@ -12,10 +12,10 @@ updated: 2026-09-30
 ## Status
 
 Agreed — the architecture and repository task decomposition are materialised and implementation
-is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**. Its additive
-persistence boundary is now architect-accepted, and dependency reconciliation has promoted
-`ARCH-023-SHARED-001` and `ARCH-023-ADMIN-002` to Ready. All other ARCH-023 tasks remain
-gated by their declared dependencies.
+is underway. `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` are **Complete / Accepted at
+Attempt 2**. `ARCH-023-ADMIN-003` is now Ready, while `ARCH-023-SHARED-001` remains
+independently Ready from DATABASE-001 acceptance. All other ARCH-023 implementation tasks
+remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3202,17 +3202,18 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after DATABASE-001 Attempt 2 acceptance:
+Current execution frontier after ADMIN-002 Attempt 2 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
+ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
 
 ARCH-023-SHARED-001     Ready
-ARCH-023-ADMIN-002      Ready
+ARCH-023-ADMIN-003      Ready
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
-SHARED-001 and ADMIN-002 are independent at this frontier and may execute in parallel.
+SHARED-001 and ADMIN-003 are independent at this frontier and may execute in parallel.
 Their execution still requires the normal task claim/preparation path; architect acceptance
 does not start either task implicitly.
 
@@ -3224,6 +3225,18 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — ADMIN-002 Attempt 2 accepted
+
+- Accepted the protected Admin Store Category catalogue for category/template/taxonomy
+  authoring against the corrected immutable-slug contract.
+- Confirmed category enable/default-template invariants, template CAS/audit behavior,
+  taxonomy mapping lifecycle, aggregate Shop Profile reference counts and the unconditional
+  Shopify localization-key warning.
+- Kept the accepted database gitlink/schema/migrations unchanged and introduced no
+  translation persistence, translation queue, Shopify onboarding or Commerce runtime work.
+- Marked ADMIN-002 Complete and promoted exactly ADMIN-003 to Ready. SHARED-001 remains
+  independently Ready; no other ARCH-023 task was promoted by this review.
 
 ### 2026-09-30 — ADMIN-002 Attempt 1 blocker reconciled
 

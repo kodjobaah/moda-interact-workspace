@@ -18,12 +18,13 @@ implementation.
 
 `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**.
 
-The database prerequisite is satisfied. Dependency reconciliation has promoted the two
-direct dependants whose complete dependency sets are now satisfied:
+The database prerequisite remains satisfied. The two direct dependants now stand at:
 
 ```text
 ARCH-023-SHARED-001  Ready
-ARCH-023-ADMIN-002   Ready
+ARCH-023-ADMIN-002   Complete — Accepted Attempt 2
 ```
 
-No additional ARCH-023 task becomes Ready from DATABASE-001 acceptance alone.
+ADMIN-003 is now Ready because ADMIN-002 additionally completed; that promotion is tracked
+in the Admin index and parent architecture and is not a new direct consequence of
+DATABASE-001 acceptance alone.

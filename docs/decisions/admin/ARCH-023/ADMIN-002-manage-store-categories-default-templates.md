@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -480,15 +480,15 @@ audit action/entity metadata correct
 
 ## Work Items
 
-- [ ] Adopt database gitlink.
-- [ ] Add protected Store Categories route/navigation.
-- [ ] Add category/template/taxonomy read model.
-- [ ] Add SUPER_ADMIN server actions with CAS.
-- [ ] Add exact default-template/enable invariants.
-- [ ] Add category/template/taxonomy UI.
-- [ ] Add exact audit events.
-- [ ] Add focused security/validation/UI tests.
-- [ ] Confirm no translation persistence/queue is introduced.
+- [x] Adopt database gitlink.
+- [x] Add protected Store Categories route/navigation.
+- [x] Add category/template/taxonomy read model.
+- [x] Add SUPER_ADMIN server actions with CAS.
+- [x] Add exact default-template/enable invariants.
+- [x] Add category/template/taxonomy UI.
+- [x] Add exact audit events.
+- [x] Add focused security/validation/UI tests.
+- [x] Confirm no translation persistence/queue is introduced.
 
 ## Interfaces / Contracts
 
@@ -624,9 +624,153 @@ claim commit: 81dbf731203bbbcde1e0b2472503ecfd218060f8 (committed and pushed)
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1 — architecture contract corrected
+
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-09-30
+
+Reviewed implementation `255a34651c8184683270493d082b956652c77898` and the submitted
+parent report at `303db168` against the complete Attempt 1 correction contract and the
+original ADMIN-002 acceptance criteria.
+
+Attempt 2 is accepted.
+
+The immutable Store Category identity correction is implemented end-to-end. Category
+creation accepts the bounded canonical `slug`; category update parsing rejects any `slug`
+field; the category mutation service never writes `slug`; and the editor presents the
+persisted slug only as immutable identity. The existing ARCH-021 database category guard
+is unchanged and remains the persistence backstop.
+
+The protected `/system-controls/store-categories` surface is wired into the existing
+Admin shell. Reads use the platform-admin page/read guards. Every mutation enters through
+`requirePlatformAdminMutation()`, requires `SUPER_ADMIN`, provisions the durable
+development admin only inside the mutation transaction, and executes in a Serializable
+transaction.
+
+The catalogue read model uses the required deterministic category/template/taxonomy
+ordering, exposes only active/pending Shop Profile counts rather than complete Shop rows,
+and provides the persisted taxonomy-suggestion inputs required by R13.
+
+Category/default-template lifecycle rules conform: a new category cannot start enabled;
+enabling requires an enabled, non-empty default template in the same category; default
+selection locks/re-reads the category and applies edit-version CAS; disabling a category
+does not rewrite Shop Profile rows; and an enabled category's current default template
+cannot be disabled until another valid default is selected.
+
+Prompt-template identity and CAS rules conform. `key` and `categoryId` are create-only,
+`promptText` remains mutable bounded canonical-English content, stale writes are rejected,
+and content-changing mutations emit exactly one `UPDATE_PROMPT_TEMPLATE_CONTENT` audit
+with changed-field metadata. Category, template, default-template and taxonomy mutations
+use the required existing audit actions without adding a new enum.
+
+Taxonomy mappings support create, weight/category/Shopify-taxonomy-id update, move and
+remove while retaining the database unique constraint as the authoritative duplicate-ID
+backstop. No translation persistence, translation queue, merchant onboarding or Commerce
+runtime behavior is introduced.
+
+The Shopify localization warning is rendered unconditionally in the selected category
+editor, so it remains visible for both enabled and disabled categories as required by the
+Attempt 2 handoff. Admin does not attempt to inspect source-controlled Shopify locale
+catalogues at runtime.
+
+The returned task file left the nine Work Items unchecked even though the Acceptance
+Criteria, Validation section, Completion Report and inspected source show those items are
+complete. This is stale coordination state rather than missing implementation. The
+architect reconciliation therefore marks those Work Items complete instead of forcing a
+code-less Attempt 3. The database-gitlink item is satisfied by the recorded initialized
+accepted DATABASE-001 commit; no gitlink advance was necessary in this attempt.
+
+The review archive intentionally omits Git metadata. The Completion Report nevertheless
+records the launcher-resolved dedicated parent and implementation worktrees, matching task
+branches, Attempt 2 synchronization/claim evidence, recursive submodule preparation,
+pushed implementation commits and clean handoff. The archive limitation therefore does
+not block cross-environment review.
+
+### Reviewed Files
+
+Implementation repository:
+
+- `src/app/(protected)/system-controls/store-categories/page.tsx`
+- `src/app/actions/store-categories.ts`
+- `src/components/admin/admin-shell.tsx`
+- `src/components/admin/sidebar.tsx`
+- `src/components/admin/store-categories/store-category-catalog.tsx`
+- `src/components/admin/store-categories/store-category-editor.tsx`
+- `src/components/admin/store-categories/prompt-template-editor.tsx`
+- `src/components/admin/store-categories/taxonomy-mapping-editor.tsx`
+- `src/lib/admin/store-categories.ts`
+- `src/lib/admin/store-category-validation.ts`
+- `tests/unit/store-categories.test.ts`
+- `tests/unit/store-category-actions.test.ts`
+- `tests/unit/store-category-validation.test.ts`
+- `tests/security/admin-store-categories.test.mjs`
+- `tests/security/admin-sidebar-navigation.test.mjs`
+- `database/prisma/schema.prisma`
+- `database/prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`
+- `database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql`
+
+Parent workspace:
+
+- `docs/decisions/admin/ARCH-023/ADMIN-002-manage-store-categories-default-templates.md`
+- `docs/decisions/admin/ARCH-023/ADMIN-003-author-platform-shop-instructions.md`
+- `docs/decisions/admin/ARCH-023/_index.md`
+- `docs/decisions/database/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
+### Validation Reviewed
+
+- Independently re-ran the three focused unit/action/validation files: **23/23 passed**.
+- Independently re-ran the focused Store Categories security test plus Admin sidebar
+  navigation test: **8/8 passed**.
+- Confirmed the update parser rejects `slug`, template `key` and `categoryId` identity
+  changes and the mutation service does not write those identities.
+- Confirmed the existing ARCH-021 category trigger still rejects any `slug` update and the
+  accepted ARCH-023 migration does not replace or relax that trigger.
+- Confirmed the localization-key warning is unconditional in the category editor rather
+  than gated on `category.enabled`.
+- Inspected the recorded TypeScript pass, changed-file ESLint pass, production build pass,
+  `git diff --check` pass, 23 focused unit tests and 8 focused security/navigation checks.
+- The review archive does not contain installed `node_modules`, so TypeScript, ESLint and
+  the production build were not independently re-run in the review container. Their
+  recorded results and the generated build/typecheck evidence were inspected instead.
+- The reported broad-suite failures are outside the task-owned Store Categories paths and
+  were recorded by the implementing agent as existing and unrelated. They are not treated as new ARCH-023 baseline entries;
+  no inspected ADMIN-002 change couples to those failing merchant-pricing, billing,
+  promotions or legacy security assertions.
+
+### Architecture Conformance
+
+Conforms. ADMIN-002 remains an Admin-owned catalogue/authoring boundary over the accepted
+ARCH-023 persistence model. Store Category `slug` is stable localization identity,
+canonical-English template content stays Admin-owned, source-controlled Shopify locale
+catalogues remain outside Admin persistence, and no new cross-repository runtime contract,
+queue, schema migration or Commerce execution behavior was introduced.
+
+The implementation preserves tenant/security boundaries: catalogue mutation remains
+SUPER_ADMIN-only and Shop Profile data is observed only as aggregate reference counts.
+The task does not weaken the database category-identity guard or create a second identity
+mutability rule.
+
+### Follow-up
+
+`ARCH-023-ADMIN-002` is **Complete / Accepted at Attempt 2**.
+
+Dependency reconciliation makes exactly this newly satisfied dependant Ready:
+
+```text
+ARCH-023-ADMIN-003
+```
+
+`ARCH-023-SHARED-001` remains independently Ready from DATABASE-001 acceptance. All other
+ARCH-023 implementation/system-test tasks remain Pending/Superseded according to their
+declared dependencies. No downstream implementation is started implicitly by this
+review.
+
+#### Historical Attempt 1 — Changes Requested — 2026-09-30
+
+##### Review Notes
 
 The repository agent correctly stopped before implementation. The submitted blocker is
 real: the existing database guard rejects every `CommercePromptTemplateCategory.slug`
@@ -657,7 +801,7 @@ The authoritative Attempt 2 correction contract is now:
 No Admin implementation defect is recorded for Attempt 1 because no implementation was
 started. No database correction task is required.
 
-### Reviewed Files
+##### Reviewed Files
 
 - `docs/decisions/admin/ARCH-023/ADMIN-002-manage-store-categories-default-templates.md`
 - `docs/decisions/admin/ARCH-023/_index.md`
@@ -668,7 +812,7 @@ started. No database correction task is required.
 - `moda-interact-admin/database/prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`
 - `moda-interact-admin/database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql`
 
-### Validation Reviewed
+##### Validation Reviewed
 
 - Confirmed the ARCH-021 migration guard raises `ARCH021 category identity immutable`
   whenever `NEW.slug IS DISTINCT FROM OLD.slug`.
@@ -684,14 +828,14 @@ started. No database correction task is required.
 - Reviewed the recorded parent `git diff --check` pass. Feature validation was correctly
   not run because Attempt 1 stopped before implementation.
 
-### Architecture Conformance
+##### Architecture Conformance
 
 The database behavior is architecture-conformant and remains unchanged. The inconsistent
 piece was ADMIN-002's conditional slug-mutability requirement. Correcting R4/R5/R14
 restores the stable identity contract without introducing a new migration, trigger, raw
 SQL bypass or cross-repository implementation dependency.
 
-### Follow-up
+##### Follow-up
 
 `ARCH-023-ADMIN-002` returns to **Ready** for Attempt 2 with `attempt: 1` preserved and no
 active executor/claim. The next normal claim increments it to Attempt 2.

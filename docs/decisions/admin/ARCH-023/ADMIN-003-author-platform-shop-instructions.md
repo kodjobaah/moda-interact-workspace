@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 41
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
   - ARCH-023-ADMIN-002
 enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Author and publish Platform and Shop Instructions

@@ -35,8 +35,8 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ADMIN-001](ADMIN-001-author-merchant-knowledge-plan-entitlement.md) | Merchant Knowledge Feature/default plan inclusion and plan-specific C2 configuration | Pending | DATABASE-001, SHARED-002 |
-| [ADMIN-002](ADMIN-002-manage-store-categories-default-templates.md) | Store Category, canonical-English default templates and Shopify taxonomy mappings | Ready — Attempt 2 | DATABASE-001 |
-| [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Pending | DATABASE-001, ADMIN-002 |
+| [ADMIN-002](ADMIN-002-manage-store-categories-default-templates.md) | Store Category, canonical-English default templates and Shopify taxonomy mappings | Complete — Accepted Attempt 2 | DATABASE-001 |
+| [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Ready | DATABASE-001, ADMIN-002 |
 
 ## Removed obsolete decomposition
 
@@ -44,24 +44,19 @@ The previous ARCH-023 Admin tasks for database-backed Store Category/template tr
 
 ## Execution frontier
 
-DATABASE-001 is Complete/accepted, so:
+DATABASE-001 and ADMIN-002 are Complete/accepted. ADMIN-002 Attempt 2 implemented the
+Store Category/template/taxonomy catalogue against the corrected immutable-slug contract.
+Therefore:
 
 ```text
-ADMIN-002 -> Ready for Attempt 2
+ADMIN-003 -> Ready
 ```
 
-Attempt 1 correctly stopped on a task/database contract conflict. Architect reconciliation
-retains the existing database identity guard and corrects ADMIN-002 so Store Category
-`slug` is create-only and immutable after creation.
+ADMIN-003 must use the normal task preparation/claim path; this review does not start it
+implicitly.
 
 After DATABASE-001 and SHARED-002 are Complete/accepted:
 
 ```text
 ADMIN-001 -> Ready
-```
-
-After ADMIN-002 is Complete/accepted:
-
-```text
-ADMIN-003 -> Ready
 ```
