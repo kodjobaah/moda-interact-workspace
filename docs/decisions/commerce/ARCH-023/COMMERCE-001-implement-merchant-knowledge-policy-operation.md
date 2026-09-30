@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: copilot
 claimed_at: 2026-09-30T12:56:59Z
@@ -686,7 +686,7 @@ No new Shared contract.
 ## Validation
 
 - [x] focused C5/entitlement/embedding/operation tests
-- [ ] real disposable PostgreSQL + pgvector retrieval proof (not run: local PostgreSQL unavailable; remote database intentionally not used)
+- [x] real disposable PostgreSQL + pgvector production retrieval proof
 - [x] existing DefinitionExecutor/policy-operation regressions
 - [x] `npm run typecheck`
 - [x] `npm run lint` (warnings only; changed-file ESLint clean)
@@ -701,7 +701,7 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Implemented; submitted for architecture review. Attempt 1 remains unchanged.
+Attempt 2 review correction and required PostgreSQL/pgvector proof complete; submitted for architecture review. Attempt 1 Architect Review remains unchanged.
 ### Files Changed
 - `moda-interact-commerce/.env.example`
 - `moda-interact-commerce/lib/preview/runtime.ts`
@@ -735,21 +735,22 @@ Implemented; submitted for architecture review. Attempt 1 remains unchanged.
 - Added the exact bounded authoring arguments/result descriptors and the five-match renderer item limit. Runtime Zod validation remains authoritative for enum and literal semantics.
 - Added focused contract, entitlement, embedding, retrieval, registration, rendering, and conditional pgvector tests. No Tool/Capability/release bootstrap or Studio UI was introduced.
 - Corrected the connection-check helper types affected by expanding server configuration.
+- Attempt 2 A1-R1: replaced the unrelated temporary-vector-table smoke test with a disposable PostgreSQL test that invokes production `retrieveMerchantKnowledge` against the migrated ARCH-023 tables. Deterministic fixtures prove cosine ordering and exclude closer cross-shop, superseded-revision, and embedding-model-mismatched chunks.
 ### Validation Results
-- Focused C5/entitlement/embedding/retrieval/operation/registry/DefinitionExecutor/database-contract packet: 8 files passed, 47 tests passed, 1 test skipped. The skipped test is the live pgvector integration.
+- Attempt 1 focused C5/entitlement/embedding/retrieval/operation/registry/DefinitionExecutor/database-contract packet: 8 files passed, 47 tests passed, 1 test skipped. Attempt 2 replaced that skipped smoke test with the live proof below.
+- Attempt 2 live proof: `tests/merchant-knowledge-policy-postgres.test.ts` passed (1/1) against `pgvector/pgvector:pg17`. All 21 migrations from the pinned `database/prisma/schema.prisma` were deployed to a newly created `commerce_arch023_test` database bound only to `127.0.0.1` on a dynamically assigned port; the production retrieval call returned the two expected nearest eligible facts and excluded all three closer ineligible fixtures. The disposable container was removed after the test. `COMMERCE_TEST_DATABASE_URL` rejects non-loopback/non-test targets, URL overrides, and the configured `DATABASE_URL`; no remote database was used.
 - `npm run typecheck`: passed.
 - `npm run lint`: passed with warnings only. Targeted ESLint over changed implementation and test files passed without warnings. Remaining full-repository warnings are in untouched files.
 - `npm run build`: passed; existing Nunjucks dynamic dependency warning was emitted during compilation.
 - Changed-file diagnostics: no errors. `git diff --check`: passed.
-- Live PostgreSQL/pgvector proof: not run. `COMMERCE_TEST_DATABASE_URL` is unset, loopback PostgreSQL is not listening, and the configured `DATABASE_URL` is remote, so it was not used for this disposable-database requirement.
 - Startup evidence from the deterministic prepare packet: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-001` on `task/ARCH-023-COMMERCE-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-001` on the same task branch. Both worktrees were newly created, no other task worktree or shared checkout was reused or switched. Parent and implementation task branches required no remote fast-forward; `origin/main` was already current in both.
 - Recursive implementation submodule sync/init passed. The `database` submodule was initialized at `2eb17ee910491e8f9df82736fc0a843844415947`.
 ### Deviations
-- The task's live disposable PostgreSQL/pgvector validation remains unverified because this environment has no local PostgreSQL listener or configured disposable test URL. No remote database was used.
+None. The live proof used an ephemeral local pgvector container rather than the configured remote database.
 ### Assumptions
 - The launcher-prepared database gitlink at `2eb17ee910491e8f9df82736fc0a843844415947` is the accepted ARCH-023-DATABASE-001 revision, as established by the deterministic dependency gate and initialized submodule packet.
 ### Unresolved Issues
-- Run `tests/merchant-knowledge-policy-postgres.test.ts` with a local disposable PostgreSQL database that has pgvector enabled before acceptance; the integration test is currently skipped.
+None.
 ### Architectural Concerns
 - None identified. `## Architect Review` below remains unchanged.
 
