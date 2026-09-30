@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 31
-executor: copilot
-claimed_at: 2026-09-30T15:33:08Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-BACKGROUND-001
@@ -442,9 +442,100 @@ Commit identities:
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Changes Requested — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Changes Requested — 2026-09-30
+
+Attempt 2 resolves the six representative A1-R1 addresses, removes the direct `ipaddr.js`
+dependency, rejects mixed public/special-use DNS answers before request dispatch, and records the
+required physical-worktree/start-of-attempt evidence. The HTTPS pinning, peer verification,
+redirect revalidation, bounded decompression and extraction boundaries remain materially
+conformant.
+
+One security-boundary defect remains in R3. `isPublicIpAddress()` uses `2000::/3` as a blanket
+IPv6 allow range and subtracts only a short special-use deny list. `2000::/3` is the architectural
+IPv6 global-unicast address space, but it is not equivalent to *currently globally routable*
+unicast: IANA retains substantial reserved/unallocated blocks inside it, and separately registers
+special-purpose prefixes that this task explicitly requires to be denied. The current predicate
+therefore still returns `true` for addresses that R3 requires rejected, including:
+
+```text
+2d00::1               IANA reserved
+3000::1               IANA reserved
+3f00::1               IANA reserved
+2620:4f:8000::1       special-purpose Direct Delegation AS112 prefix
+```
+
+This is an SSRF policy boundary, so passing the six A1-R1 examples is not sufficient while the
+allow predicate remains broader than the task contract.
+
+##### A2-R1 — make IPv6 admission a positive globally-routable policy
+
+Replace the blanket `GLOBAL_IPV6 = 2000::/3` allow decision with a deterministic local policy that
+admits only IPv6 prefixes allocated for ordinary global-unicast use and then excludes every
+architecture-denied special-purpose prefix. The policy must continue to use Node built-ins and
+local constants only; do not introduce runtime registry/network lookups or a new dependency.
+Preserve IPv4-mapped IPv6 recursion through the IPv4 policy.
+
+At minimum add focused regressions proving all of the following are denied:
+
+```text
+2d00::1
+3000::1
+3f00::1
+2620:4f:8000::1
+```
+
+Retain positive ordinary public IPv6 cases such as `2606:4700:4700::1111`, and add a mixed-DNS
+case containing one ordinary public answer plus one newly covered reserved/special-purpose IPv6
+answer, proving rejection occurs before the request callback. The correction must cover the
+policy class rather than special-casing only these four literals.
+
+No changes are requested to HTML extraction, redirect handling, TLS/SNI pinning, response limits,
+error taxonomy, database code, worker orchestration, or downstream BACKGROUND-004 behavior unless
+the corrected focused tests reveal a directly related defect.
+
+### Reviewed Files
+
+- `package.json`
+- `package-lock.json`
+- `src/services/merchant-knowledge-network-policy.ts`
+- `src/services/merchant-knowledge-html-extraction.ts`
+- `src/services/merchant-knowledge-web-page-acquirer.ts`
+- `tests/unit/services/merchant-knowledge-network-policy.test.ts`
+- `tests/unit/services/merchant-knowledge-html-extraction.test.ts`
+- `tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts`
+- `docs/decisions/background/ARCH-023/BACKGROUND-002-acquire-merchant-knowledge-web-pages.md`
+- `docs/decisions/background/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
+### Validation Reviewed
+
+- Submitted Attempt 2 focused suites: **71/71 passed**.
+- Submitted `npm run build`: passed after task-worktree dependencies were installed from the synchronized lockfile.
+- Submitted changed-file diagnostics and `git diff --check`: passed.
+- Direct source inspection confirms the six A1-R1 literals are now denied and mixed DNS is rejected before request dispatch.
+- Direct source inspection also confirms the current `2000::/3` allow predicate admits IANA-reserved/special-purpose IPv6 destinations covered by A2-R1.
+- The review archive contains no installed `node_modules` or usable Git metadata, so the submitted test/build commands were not independently rerun in the review container.
+
+### Architecture Conformance
+
+Changes required only at the D16/R3 IPv6 address-classification boundary. The rest of the reviewed
+WEB_PAGE acquisition adapter remains within the Background-owned acquisition/extraction scope. No
+database, Shared-contract, Gateway, persistence, normalization, chunking, embedding or worker-entrypoint
+change is authorised by this review.
+
+### Follow-up
+
+Return the same task through `/moda-task ARCH-023-BACKGROUND-002` for Attempt 3. Preserve the
+current Attempt 2 implementation, correct A2-R1, rerun the focused network-policy/acquirer suites,
+`npm run build`, changed-file diagnostics and `git diff --check`, update the Completion Report, set
+the task back to review and STOP. `ARCH-023-BACKGROUND-004` remains Pending.
+
+#### Historical Attempt 1 — Changes Requested — 2026-09-30
+
 The acquisition adapter is otherwise well bounded and the HTTPS redirect/DNS pinning, connected-peer verification, deadline/body limits, status classification and deterministic HTML/plain-text extraction are materially aligned with D16. Attempt 1 is not accepted because the public-address classifier does not yet enforce R3 exactly and the Completion Report is missing mandatory start-of-attempt provenance.
 
 #### A1-R1 — enforce the complete R3 public-address boundary
