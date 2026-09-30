@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-09-30T10:50:30Z
@@ -487,36 +487,36 @@ Set task to `review`. Completion Report must include implementation commit, pare
 
 Status: Ready for Review
 
-Attempt: 3 rework completed against the complete Attempt 3 correction contract.
+Attempt: 4, returned for architect review after the Attempt 3 Changes Requested findings.
 
-Implementation commit: `a6772e5` (`fix(shopify): verify managed pricing before onboarding`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+Implementation commit: `3936763bbee6439cb98db2320cd45b6ccd3574bf` (`fix(shopify): materialize operational plans during sync`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
 
 Accepted DATABASE-001 dependency revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`.
 
-Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-001`; implementation branch: `task/ARCH-017-SHOPIFY-001`.
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-001`; branch: `task/ARCH-017-SHOPIFY-001`, tracking `origin/task/ARCH-017-SHOPIFY-001`.
 
-Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-001`; parent branch: `task/ARCH-017-SHOPIFY-001`.
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-001`; branch: `task/ARCH-017-SHOPIFY-001`.
 
-Implemented Attempt 3 corrections:
+Implemented Attempt 4 corrections and retained accepted behavior:
 
-- Provider fence/state are read before onboarding or either activation preparation; onboarding is committed only for an authenticated provider-confirmed current or pending requested handle.
-- Provider verification failure preserves the existing guarded retry path without onboarding or local materialisation.
-- Fresh provider-confirmed current selections with no initial durable projection call `syncSubscription()` without a fabricated token, preserving UNMAPPED and SYNC_ERROR result codes; pending plan changes retain hosted-return handling.
-- Added focused regressions for arbitrary requests, verification failure, confirmed ordering, unknown/inactive/invalid fresh selections, and pending-plan preservation.
-- Preserved accepted durable-token semantics, BillingPlan materialisation/concurrency behavior, inactive-plan fail-closed handling, feature preferences, and no-proration scope.
+- Added one BillingService resolver/materialiser for active `MerchantPricingPlan` rows and used it for Free activation, Paid activation, and generic subscription sync. Existing active operational plans remain usable after catalogue deactivation; inactive operational plans are not reactivated.
+- Materialisation validates plan kind, required checkout feature, complete feature mappings, dedicated recovery-meter rules, and included credits; it projects dynamic features and recovers unique-create races by rereading the winner. Top-up usage events are not used as the recovery usage meter.
+- Generic sync distinguishes genuine unknown catalogue handles (`UNMAPPED_PLAN_HANDLE`), inactive operational plans (`BILLING_PLAN_INACTIVE`), and invalid catalogue plans (`INVALID_MERCHANT_PRICING_PLAN`) as bounded outcomes.
+- Preserved the provider-confirmation-before-onboarding callback ordering and fresh-current fallback sync for unknown/inactive/invalid local selections. Added an explicit ordering assertion.
+- Added the `FEATURES` surface to active merchant route access/navigation and strengthened policy coverage.
+- Added/updated tests for Free/Paid materialisation, feature projection, invalid/inactive plans, unique-create recovery, callback ordering, and guarded retry with onboarding already true. No proration, feature-preference deletion/copy, top-up meter inference, or database-submodule edits were introduced.
 
-Validation:
+Validation from the implementation worktree:
 
 - `npm run prisma:generate`: passed.
-- `npm test -- --run tests/unit/routes/billing-callback.test.ts`: 34 passed.
-- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: 266 passed across 4 files.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: passed, 283 tests across 4 files (rerun after the final test changes).
 - `npm run build`: passed.
-- Changed-file lint (`npx eslint app/routes/app/billing/callback/route.tsx tests/unit/routes/billing-callback.test.ts`): passed with 0 errors.
+- `npm run typecheck`: passed after implementation and fixture typing changes.
+- Changed-file ESLint command covering the six changed TypeScript/TSX files: passed with no diagnostics; ESLint emitted only its TypeScript 5.9.3 support advisory.
 - `git diff --check`: passed.
-- `npm run typecheck`: failed on existing repository-wide diagnostics in unrelated JSX, webhook, Redis, and implicit-`any` files; no diagnostic referenced the changed callback route or focused tests.
-- `npm run lint`: failed with 16 existing unrelated errors and 2 existing warnings; no changed-file errors.
+- Repository-wide `npm run lint`: failed on pre-existing diagnostics in unrelated files; the changed-file ESLint check passed.
 
-Parent report commit: `e319ee7e` (`task(ARCH-017-SHOPIFY-001): return Attempt 3 rework for review`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+Source commit was pushed and the implementation worktree was clean at `3936763bbee6439cb98db2320cd45b6ccd3574bf`. Parent report commit: recorded in the follow-up report commit after this report was first committed; pushed to `origin/task/ARCH-017-SHOPIFY-001`.
 
 No database submodule contents or Architect Review section were edited.
 
