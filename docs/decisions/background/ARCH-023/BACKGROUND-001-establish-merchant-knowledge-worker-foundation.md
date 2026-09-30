@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -577,47 +577,53 @@ Merged to implementation `main`: no. Merged to workspace `main`: no.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 2
+Changes Requested — Attempt 3
 
 ### Review Notes
-The implementation is substantively aligned with the bounded BACKGROUND-001 objective: the dedicated readiness identity, single Shared-Redis queue resource, internal acquisition contracts, current-plan-only entitlement/eligibility resolver, bounded deterministic PENDING reconciliation and injected Merchant Knowledge worker factory all match the intended architecture. The exact Shared dependency is pinned to `@modainteract/moda-interact-shared@1.0.1`, no deployable Merchant Knowledge entrypoint has been introduced, and no acquisition/embedding/vector implementation has leaked into this task.
+Attempt 3 resolves the two source/report corrections that remained from the prior review:
 
-Acceptance is withheld for three bounded corrections:
+1. **A2-R1 is satisfied.** The reconciliation producer now uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`, and the focused reconciliation test asserts the canonical Shared constant rather than a duplicated local literal.
+2. **A2-R3 is satisfied.** The Completion Report now records the launcher-resolved parent/implementation worktrees, matching task branches, shared-checkout non-use, start-of-attempt synchronization and recursive submodule preparation evidence.
 
-1. **A2-R1 — use the canonical Shared C4 schema-version constant.** `src/services/merchant-knowledge-reconciliation.service.ts` constructs the cross-service C4 payload with a local literal `schemaVersion: 1` even though the accepted Shared contract exports `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`. The architect cross-service contract rule requires the Shared schema-version constant when one exists. Import and use that constant in production code, and make the focused reconciliation test assert the Shared constant rather than a duplicated local literal.
-2. **A2-R2 — close the required PostgreSQL integration acceptance check.** The task still has an unchecked Acceptance Criterion and unchecked Validation item for recovery of a committed eligible PENDING revision after simulated initial queue loss. The repository already has the canonical disposable integration wrapper in `scripts/test-integration.mjs`, backed by `withDisposableIntegrationInfrastructure`. Run `npm run test:integration -- tests/integration/merchant-knowledge-reconciliation.integration.test.ts` from the canonical implementation worktree and record the passing result. A localhost `pg_isready` failure does not satisfy or replace this repository-owned disposable test path. If the Docker-compatible disposable harness genuinely cannot run, return the task `blocked` rather than resubmitting with this required check open.
-3. **A2-R3 — make the mandatory execution-provenance evidence durable.** The Completion Report does not record the launcher-resolved physical parent/implementation worktrees, both task branches, shared-checkout non-use, start-of-attempt fast-forward/mainline synchronization results, or recursive implementation-submodule preparation. Record the required evidence from the prepared execution packet/worktree state. Clean branches and pushed commit identifiers alone do not substitute for the mandated Completion Report evidence.
+Architect acceptance remains withheld only for the required database-backed enqueue-loss proof. The Attempt 3 failure is an integration-environment limitation, not evidence of a Merchant Knowledge implementation defect: the repository wrapper delegates to Shared's disposable helper without selecting a PostgreSQL image, so its default `postgres:17.6-alpine` image cannot apply migration `20260929160000_arch023_merchant_knowledge_schema` because pgvector is unavailable.
 
-The task is returned to `ready` with `attempt: 2` preserved. The next authorized claim increments it to Attempt 3. `ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003` remain Pending until BACKGROUND-001 is architect-accepted Complete.
+**A3-R1 — run the existing reconciliation integration test against a task-local disposable pgvector PostgreSQL container.** This task is explicitly authorised to create and destroy its own one-off Docker PostgreSQL environment for validation. Do not modify Shared's disposable helper, `scripts/test-integration.mjs`, Gateway infrastructure, the database schema, or production Background source merely to provision the test database.
+
+The Attempt 4 validation must:
+
+1. start a fresh disposable PostgreSQL 17 container whose image includes the pgvector extension (for example `pgvector/pgvector:pg17`);
+2. use a task-unique container name and isolated database credentials/host port so no existing local or remote database is touched;
+3. wait until the disposable PostgreSQL instance is ready;
+4. point `DATABASE_URL` at that disposable database and apply the repository's real Prisma migrations, including `20260929160000_arch023_merchant_knowledge_schema`;
+5. run only `tests/integration/merchant-knowledge-reconciliation.integration.test.ts` with `TEST_DATABASE_URL` pointing at the same disposable database and `MODA_DISPOSABLE_INTEGRATION=1` so the authored production-path integration test actually executes;
+6. confirm the queue-loss scenario passes and then check the previously open Acceptance Criterion/Validation item;
+7. always remove the disposable container (and any task-created disposable volume/network, if used) after validation, whether the test passes or fails;
+8. record the Docker image, database/migration command, test command/result, and teardown evidence in the Completion Report.
+
+The integration test mocks queue publication, so Redis is not required for this bounded proof. Do not use the configured remote database. No production source change is requested unless this stronger live proof exposes a genuine defect; if it does, correct only that defect within BACKGROUND-001 scope and rerun the focused validation.
+
+If a Docker-capable local environment is genuinely unavailable, return the same task `blocked` with the concrete Docker failure rather than substituting a remote database or marking the acceptance item complete.
+
+The task is returned to `ready` with `attempt: 3` preserved. The next authorised claim increments it to Attempt 4. `ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003` remain Pending until BACKGROUND-001 is architect-accepted Complete.
 
 ### Reviewed Files
 - `docs/decisions/background/ARCH-023/BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md`
 - `docs/decisions/background/ARCH-023/_index.md`
 - `docs/architecture/ARCH-023-merchant-knowledge.md`
-- `moda-interact-background/package.json`
-- `moda-interact-background/package-lock.json`
 - `moda-interact-background/scripts/test-integration.mjs`
-- `moda-interact-background/database/prisma/schema.prisma`
-- `moda-interact-background/src/runtime/readiness.ts`
-- `moda-interact-background/src/entrypoints/merchant-knowledge-resources.ts`
-- `moda-interact-background/src/services/merchant-knowledge-acquisition.ts`
-- `moda-interact-background/src/services/merchant-knowledge-entitlement.service.ts`
+- `moda-interact-background/tests/integration/merchant-knowledge-reconciliation.integration.test.ts`
 - `moda-interact-background/src/services/merchant-knowledge-reconciliation.service.ts`
-- `moda-interact-background/src/workers/merchant-knowledge.worker.ts`
-- `moda-interact-background/src/observability/worker-metrics.ts`
-- `moda-interact-background/src/observability/queue-performance.ts`
-- focused Merchant Knowledge unit/integration tests
-- `docs/agent-worktree-isolation-policy.md`
+- accepted ARCH-023 database migration surface referenced by the integration failure
 
 ### Validation Reviewed
-- Reported focused validation is internally consistent: entitlement 7/7, reconciliation 7/7, worker 5/5 and readiness 8/8 (27 tests total).
-- Reported `npx tsc --noEmit`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run build`, changed-file diagnostics and `git diff --check` passed.
-- `package.json` exposes the canonical `npm run test:integration` wrapper, and `scripts/test-integration.mjs` provisions disposable PostgreSQL/Redis, deploys the real Prisma migrations and supplies the opt-in integration environment to Vitest.
-- The required Merchant Knowledge PostgreSQL integration test remains unexecuted in the submitted Completion Report, so its Acceptance Criterion/Validation item correctly remains unchecked and prevents acceptance.
-- The supplied review archive does not itself provide verifiable Git worktree history; the mandatory execution-provenance evidence must therefore be present durably in the Completion Report before acceptance.
+- Attempt 3 focused unit validation passed 19/19: entitlement 7/7, reconciliation 7/7 and worker 5/5.
+- `npx tsc --noEmit` and `git diff --check` passed.
+- A2-R1 code/test correction is present and uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`.
+- The required integration command reached disposable infrastructure setup but failed before Vitest because `postgres:17.6-alpine` does not contain `vector.control`; therefore the queue-loss Acceptance Criterion correctly remains unchecked.
+- The existing integration test exercises the production `MerchantKnowledgeReconciliationService` against PostgreSQL while mocking only queue publication, so a standalone pgvector-capable PostgreSQL container is sufficient to close the missing proof.
 
 ### Architecture Conformance
-**Conformant in substance, not yet acceptable.** Repository ownership, PostgreSQL/BullMQ boundaries, current-plan entitlement semantics, deterministic PENDING repair, worker isolation, Shared 1.0.1 consumption and non-deployable foundation scope are aligned with ARCH-023. The remaining issues are one cross-service contract-consumption correction plus required validation/provenance evidence; no architecture redesign or new task is required.
+**Conformant in implementation; acceptance pending one required live validation.** The worker foundation remains within the intended Background boundary, consumes the canonical Shared schema-version constant, preserves the accepted database contract, and records the required execution provenance. Creating a disposable pgvector-capable PostgreSQL container solely for task validation does not introduce runtime infrastructure or alter repository ownership.
 
 ### Follow-up
-For Attempt 3, make only the bounded correction/evidence changes above. Preserve database submodule commit `2eb17ee910491e8f9df82736fc0a843844415947` and exact Shared `1.0.1`; do not start BACKGROUND-002 or BACKGROUND-003. After the source/test correction, rerun the task-required focused validation including the disposable PostgreSQL integration test, update the Completion Report and return this same task to `review`.
+Reclaim this same task for Attempt 4 and perform the bounded disposable-Docker PostgreSQL validation above. Do not start BACKGROUND-002 or BACKGROUND-003. If the migration and queue-loss integration test pass, update the Completion Report, check the remaining Acceptance Criterion/Validation item, return the task to `review`, clear the claim and STOP.

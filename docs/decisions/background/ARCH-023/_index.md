@@ -40,7 +40,7 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md) | Dedicated worker foundation, current entitlement and durable PENDING reconciliation | Ready — Changes Requested (Attempt 2; next claim Attempt 3) | DATABASE-001, SHARED-002 |
+| [BACKGROUND-001](BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md) | Dedicated worker foundation, current entitlement and durable PENDING reconciliation | Ready — Changes Requested (Attempt 3; next claim Attempt 4) | DATABASE-001, SHARED-002 |
 | [BACKGROUND-002](BACKGROUND-002-acquire-merchant-knowledge-web-pages.md) | SSRF-safe WEB_PAGE acquisition and extraction | Pending | BACKGROUND-001 |
 | [BACKGROUND-003](BACKGROUND-003-acquire-merchant-knowledge-uploads.md) | Private R2 CSV/XLSX acquisition/extraction and safe asset cleanup | Pending | BACKGROUND-001 |
 | [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Pending | BACKGROUND-002, BACKGROUND-003 |
@@ -51,13 +51,15 @@ Individual task YAML is authoritative.
 DATABASE-001 and SHARED-002 are Complete/architect-accepted, so:
 
 ```text
-BACKGROUND-001 -> Ready — Changes Requested (Attempt 2; next claim Attempt 3)
+BACKGROUND-001 -> Ready — Changes Requested (Attempt 3; next claim Attempt 4)
 ```
 
-BACKGROUND-001 remains on exact `@modainteract/moda-interact-shared@1.0.1`. Its Attempt 2
-implementation is substantively aligned, but architect acceptance is withheld until the Shared
-C4 schema-version constant, required disposable PostgreSQL integration validation and durable
-worktree/synchronization/submodule evidence are corrected.
+BACKGROUND-001 remains on exact `@modainteract/moda-interact-shared@1.0.1`. Attempt 3
+resolved the Shared C4 schema-version and execution-provenance corrections. Architect acceptance
+is now withheld only for the required queue-loss integration proof. Attempt 4 is authorised to
+provision its own task-local disposable pgvector-capable PostgreSQL Docker container, apply the
+real migrations, run the existing integration test, and tear the container down; no shared helper
+or permanent integration-harness change is required.
 
 BACKGROUND-002 and BACKGROUND-003 remain Pending. After BACKGROUND-001 is accepted Complete:
 

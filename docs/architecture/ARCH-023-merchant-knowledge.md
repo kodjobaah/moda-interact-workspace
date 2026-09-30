@@ -19,7 +19,7 @@ is exactly `@modainteract/moda-interact-shared@1.0.1`.
 The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`,
 `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and
 `ARCH-023-BACKGROUND-001`. BACKGROUND-001 is Ready under **Changes Requested after Attempt
-2**; its next authorized claim is Attempt 3. BACKGROUND-002/BACKGROUND-003 remain gated until
+3**; its next authorized claim is Attempt 4. BACKGROUND-002/BACKGROUND-003 remain gated until
 BACKGROUND-001 is architect-accepted Complete. All other ARCH-023 tasks remain gated by their
 declared dependencies.
 
@@ -3208,7 +3208,7 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after BACKGROUND-001 Attempt 2 review:
+Current execution frontier after BACKGROUND-001 Attempt 3 review:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
@@ -3218,7 +3218,7 @@ ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
 
 ARCH-023-ADMIN-001      Ready
 ARCH-023-ADMIN-003      Ready
-ARCH-023-BACKGROUND-001 Ready — Changes Requested Attempt 2; next claim Attempt 3
+ARCH-023-BACKGROUND-001 Ready — Changes Requested Attempt 3; next claim Attempt 4
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
 ARCH-023-SHOPIFY-002    Ready
@@ -3246,6 +3246,14 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — BACKGROUND-001 Attempt 3 validation blocker reconciled
+
+- Accepted the Attempt 3 correction to use Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` and the newly recorded launcher/worktree/submodule provenance.
+- Confirmed the remaining failure occurs before Vitest because the canonical disposable wrapper defaults to `postgres:17.6-alpine`, which cannot apply the accepted pgvector migration.
+- Authorised Attempt 4 to provision a task-local disposable PostgreSQL 17 Docker container with pgvector, apply the real migrations, run the existing queue-loss integration test against it, and destroy the container afterward.
+- No Shared helper, Background integration-wrapper, Gateway, database-schema or production-runtime change is required solely to close this validation.
+- Returned BACKGROUND-001 to Ready with Attempt 3 preserved; BACKGROUND-002 and BACKGROUND-003 remain Pending.
 
 ### 2026-09-30 — BACKGROUND-001 Attempt 2 changes requested
 
