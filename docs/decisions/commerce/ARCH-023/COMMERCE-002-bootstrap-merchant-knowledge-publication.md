@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 61
-executor: copilot
-claimed_at: 2026-09-30T21:34:11Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-023-COMMERCE-001
@@ -736,8 +736,9 @@ Produces one canonical initial working publication without introducing any Capab
 
 - `ARCH-023-COMMERCE-001`
 - `ARCH-023-ADMIN-001`
+- `ARCH-023-DATABASE-004`
 
-Both dependencies are Complete and architect-accepted. Attempt 2 returned with incomplete task-owned implementation/validation rather than an architectural dependency. Architect review returns the same task to Ready with Attempt 2 preserved; the next normal launcher claim is Attempt 3.
+All three dependencies are Complete and architect-accepted. `ARCH-023-DATABASE-004` is the narrow forward-migration correction discovered by Attempt 3's real PostgreSQL successor-release proof. Attempt 4 consumed that accepted migration and completed the required Commerce validation.
 
 ## Enables
 
@@ -858,6 +859,66 @@ Implementation commit `649037fce8a2aea7f321b1e6436920c90164dfbd` is pushed on `t
 The architect authorizes a narrowly scoped Database-owned `ARCH-023-DATABASE-004` task to define a forward migration and PostgreSQL regression coverage for this guard conflict. This supersedes the earlier “no Database task” restriction only for the demonstrated successor snapshot invariant; it does not authorize Commerce schema edits, trigger bypasses, mutation of existing releases, or restoration of retired Capability concepts. `ARCH-023-DATABASE-004` is the required Database-owned prerequisite. Its portable canonical definition is supplied by the architect with this adjudication and must be materialized through the normal `/moda-task ARCH-023-DATABASE-004 --definition ...` path. Keep this Commerce task `blocked` until DATABASE-004 is architect-accepted Complete.
 
 ## Architect Review
+
+### Attempt 4 Review Status
+
+Accepted — Attempt 4
+
+### Attempt 4 Review Notes
+
+Attempt 4 closes the external DATABASE-004 blocker and the activation replay collision exposed by the first rerun against the accepted migration. The submitted bootstrap still uses the accepted direct `Feature -> CommerceCapability -> CommerceTool` model, requires the commercial `merchant_knowledge` Feature to be `MERCHANT_OPT_IN`, performs no `ShopFeaturePreference` mutation, and preserves restart-safe no-op semantics for an already-usable publication.
+
+The accepted DATABASE-004 guard now permits the required exact historical Feature Behaviour snapshot for the same Feature. Against that schema, the production successor-release path preserves the selected base release's response/compatibility contract, exact unrelated Tool revision pins and immutable Feature Behaviour snapshots even when newer unrelated authoring state exists. Merchant Knowledge is appended with its exact published Tool revision and the successor is activated successfully.
+
+The deterministic activation operation id is now derived from the environment, expected pointer edit version and target release id. This prevents an earlier activation replay key from being reused with different pointer-transition input while retaining deterministic retry behaviour for the same transition.
+
+No retired `CommerceCapabilityRevision`, `selectionBinding`, per-Capability prompt/configuration or `toolBindings[]` concept is reintroduced. No database change is made by Commerce beyond consuming the architect-accepted DATABASE-004 submodule revision.
+
+### Attempt 4 Reviewed Files
+
+```text
+database
+src/commerce/bootstrap/merchant-knowledge.ts
+src/commerce/publication/lifecycle.ts
+src/commerce/integration/backend/publication-storage.ts
+tests/merchant-knowledge-bootstrap.test.ts
+tests/merchant-knowledge-bootstrap-postgres.test.ts
+scripts/run-merchant-knowledge-bootstrap-postgres.mjs
+instrumentation.ts
+package.json
+docs/decisions/commerce/ARCH-023/COMMERCE-002-bootstrap-merchant-knowledge-publication.md
+```
+
+### Attempt 4 Validation Reviewed
+
+Submitted canonical-worktree evidence records:
+
+```text
+focused bootstrap/startup/lifecycle/Feature tests          56 passed, 0 failed
+disposable pgvector PostgreSQL successor proof             passed
+exact unrelated Tool revision pin preservation             passed
+exact historical Feature Behaviour snapshot preservation   passed
+restart/replay durable no-op                                passed
+owned disposable container teardown                        passed
+npm run typecheck                                           passed
+npm run lint                                                passed; 5 unrelated warnings, 0 errors
+npm run build                                               passed; existing Nunjucks dynamic-dependency warning
+retired-concept scan                                        passed
+changed-file diagnostics                                    passed
+git diff --check / staged whitespace check                  passed
+```
+
+The supplied review archive contains source and durable validation evidence rather than the developer's installed dependency/runtime state, so architect review does not claim to redundantly rerun Node/Docker validation from this archive. Source, task-owned tests and recorded PostgreSQL evidence are mutually consistent.
+
+### Attempt 4 Architecture Conformance
+
+Accepted. The bootstrap is convergent and restart-safe, preserves later valid Studio authoring, preserves immutable base-release snapshots during successor creation, keeps the commercial Feature Admin-owned, remains preference-neutral, and uses existing/task-authorized lifecycle boundaries rather than direct lifecycle-row insertion. `completion_mode: automatic` therefore completes `ARCH-023-COMMERCE-002`.
+
+### Attempt 4 Dependency Reconciliation
+
+`ARCH-023-COMMERCE-002` is Complete / Accepted Attempt 4. `ARCH-023-COMMERCE-004` remains Pending because its other prerequisite, `ARCH-023-ADMIN-004`, is not Complete. `ARCH-023-GATEWAY-001` and `ARCH-023-SYSTEM-TEST-002` also retain other unmet prerequisites. No downstream task is promoted solely by this acceptance.
+
+The earlier transitional COMMERCE-004 wording that assigned the `MERCHANT_OPT_IN` bootstrap correction to COMMERCE-004 is now obsolete because COMMERCE-002 itself has been accepted with that guard. COMMERCE-004 is narrowed to request-time merchant-activation enforcement for `merchantKnowledge.lookup`; it must not redo the accepted bootstrap.
 
 ### Review Status
 Changes Requested
