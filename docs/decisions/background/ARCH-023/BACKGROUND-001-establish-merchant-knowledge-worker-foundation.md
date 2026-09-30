@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 30
-executor: copilot
-claimed_at: 2026-09-30T10:15:41Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-023-DATABASE-001
@@ -511,28 +511,68 @@ The repository may use dependency injection/factories in tests, but do not creat
 ## Completion Report
 
 ### Status
-Ready for Architect Review (`review`); Attempt 2 implementation is committed and pushed.
+Blocked; Attempt 3 correction is committed and pushed, but the required disposable PostgreSQL integration check cannot apply the accepted schema with the wrapper's default PostgreSQL image.
 
 ### Files Changed
-Implementation task commit `06566f8` changes only `package.json`, `package-lock.json`, `src/runtime/readiness.ts`, `src/entrypoints/merchant-knowledge-resources.ts`, `src/services/merchant-knowledge-acquisition.ts`, `src/services/merchant-knowledge-entitlement.service.ts`, `src/services/merchant-knowledge-reconciliation.service.ts`, `src/workers/merchant-knowledge.worker.ts`, and the existing worker/queue telemetry name unions in `src/observability/worker-metrics.ts` and `src/observability/queue-performance.ts`, plus the three focused unit tests and the gated reconciliation integration test. The database submodule remains at accepted commit `2eb17ee910491e8f9df82736fc0a843844415947`; no database file or gitlink changed.
+Attempt 3 implementation correction commit `3ed6621` changes only `src/services/merchant-knowledge-reconciliation.service.ts` and `tests/unit/services/merchant-knowledge-reconciliation.service.test.ts`. It is pushed to `origin/task/ARCH-023-BACKGROUND-001`. The prior foundation remains in implementation commit `06566f8`; the database submodule remains at `2eb17ee910491e8f9df82736fc0a843844415947`, with no database file or gitlink changed.
 
 ### Work Completed
-Pinned `@modainteract/moda-interact-shared` exactly to `1.0.1` and regenerated Prisma Client through the repository script. Added the dedicated readiness identity, single shared-Redis BullMQ queue resource, and the three internal acquisition interfaces. Implemented current-plan-only entitlement resolution with strict Shared C2 parsing, active supported pair checks, allowed-pair filtering before deterministic source allowance counting, and a bounded PENDING revision reconciler using the Shared deterministic job ID. Added an isolated Merchant Knowledge worker factory using existing Redis, BullMQ telemetry and `observeWorkerJob`, with final-attempt failure marking based only on a bounded error-name code. No production startup entrypoint, acquisition implementation, embedding/vector work, or database schema change was added.
+Attempt 2 established the foundation described above. Attempt 3 dispositions for the Architect Review corrections:
+
+- A2-R1 — implemented: the reconciler and focused test now use `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` from the Shared C4 contract instead of duplicating literal `1`.
+- A2-R2 — blocked: the exact required integration command was run. The disposable wrapper started PostgreSQL/Redis, but `prisma migrate deploy` failed with P3018 applying `20260929160000_arch023_merchant_knowledge_schema` because the default `postgres:17.6-alpine` image has no `vector.control`. The shared helper accepts a `postgres.image` option, but `scripts/test-integration.mjs` supplies no image option and exposes no environment override. The integration test did not execute; its Acceptance Criterion and Validation item remain unchecked.
+- A2-R3 — implemented: launcher/worktree provenance is recorded below from the prepared Attempt 3 packet.
+
+No production entrypoint, acquisition implementation, embedding/vector processing, or database schema change was added.
 
 ### Validation Results
-The three task-required unit suites passed (entitlement 7/7, reconciliation 7/7, worker 5/5); the existing readiness suite passed 8/8. `npx tsc --noEmit`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run build`, `git diff --check`, and changed-file diagnostics all passed. The database-backed integration test was added but skipped because neither disposable integration settings nor a local PostgreSQL service are available (`pg_isready` reported no response). `npm install` reported three high-severity audit advisories and install-script approval warnings; no unrelated audit remediation was attempted.
+Attempt 3 focused unit suites passed: entitlement 7/7, reconciliation 7/7, and worker 5/5 (19 total). `npx tsc --noEmit` and `git diff --check` passed. Required command `npm run test:integration -- tests/integration/merchant-knowledge-reconciliation.integration.test.ts` was attempted and failed before Vitest because the disposable database could not apply the ARCH-023 migration: PostgreSQL reported `extension "vector" is not available` (`/usr/local/share/postgresql/extension/vector.control` missing). The integration acceptance remains unverified. Attempt 2's other passing validation remains recorded above; it does not replace the newly required integration check.
 
 ### Deviations
-The database-backed integration test could not be executed in this environment; it is gated by the repository's disposable-database opt-in and is recorded as an unresolved validation item. The readiness/queue telemetry name unions were extended in their existing observability modules because the new worker's actual identity must be accepted by `observeWorkerJob` and queue-performance telemetry.
+The canonical integration wrapper was not modified to select another PostgreSQL image because test-infrastructure changes are outside this task's bounded implementation scope. A2-R2 therefore remains blocked as directed by the Architect Review. No unrelated audit remediation was attempted.
 
 ### Assumptions
-The accepted ARCH-023 database migration and catalogue are available in the prepared local integration environment when `TEST_DATABASE_URL` and `MODA_DISPOSABLE_INTEGRATION=1` are configured.
+None.
 
 ### Unresolved Issues
-The database-backed enqueue-loss integration test still needs to run against an explicitly disposable PostgreSQL database before the pending acceptance criterion can be verified end to end.
+The canonical disposable integration path needs a pgvector-capable PostgreSQL image or an explicitly supported image configuration before the enqueue-loss test can run end to end. Coordinate the test-harness/image provision with the owning workflow and rerun the exact integration command before returning this task to review.
 
 ### Architectural Concerns
-None. Architect Review remains owned by `moda_architect` and was not modified.
+The Shared disposable helper supports an image option, but the Background repository wrapper does not expose or set it; its default image cannot apply the accepted ARCH-023 migration requiring pgvector. Architect Review remains owned by `moda_architect` and was not modified.
+
+### Git / VCS
+
+Task branch: `task/ARCH-023-BACKGROUND-001` in both repositories.
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-001`, `task/ARCH-023-BACKGROUND-001`
+- implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-001`, `task/ARCH-023-BACKGROUND-001`
+- shared workspace checkout switched or mutated: no
+- shared implementation checkout used or mutated: no
+- another task worktree reused: no; the canonical worktrees for this task were reused
+
+Start-of-attempt synchronization from the prepared packet:
+- parent remote task branch fast-forwarded: not-needed
+- parent `origin/main` incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation `origin/main` incorporated: already-current
+
+Implementation repository:
+- repository: `moda-interact-background`
+- correction commit: `3ed6621`
+- remote branch: `origin/task/ARCH-023-BACKGROUND-001`
+- pushed: yes
+
+Parent workspace:
+- task file: `docs/decisions/background/ARCH-023/BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md`
+- claim commit from prepared packet: `bc125cef619a4359d7a7d8903cd037b7e4b742ab`
+- report update: committed and pushed on `origin/task/ARCH-023-BACKGROUND-001` (current task-branch tip)
+- submodule gitlink staged: no
+
+Recursive implementation submodule preparation from the prepared packet: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; status `ready`; database commit `2eb17ee910491e8f9df82736fc0a843844415947` initialized.
+
+Merged to implementation `main`: no. Merged to workspace `main`: no.
 
 ## Architect Review
 
