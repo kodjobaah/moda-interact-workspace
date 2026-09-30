@@ -3337,17 +3337,17 @@ all other ARCH-023 implementation tasks remain gated by their declared dependenc
 
 SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
-Current Shopify correction frontier after SHOPIFY-003 Attempt 2 review:
+Current Shopify frontier after SHOPIFY-003 Attempt 3 acceptance:
 
 ```text
 ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
-ARCH-023-SHOPIFY-003    Ready — Attempt 3 provenance correction
+ARCH-023-SHOPIFY-003    Complete — Accepted Attempt 3
 ARCH-023-SHOPIFY-004    Pending — requires ADMIN-004
 ARCH-023-SHOPIFY-005    Pending — requires SHOPIFY-004
 ```
 
-SHOPIFY-003 Attempt 2 closed the authored real PostgreSQL activation/rollback proof (2/2). Acceptance is now withheld only for a bounded provenance correction: initial activation must publish the exact already-pinned pending DRAFT even if Admin later reassigns the category's current `defaultTemplateId`. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
+SHOPIFY-003 Attempt 3 is accepted. Initial activation now publishes the exact already-pinned pending DRAFT even if Admin later reassigns the category's current `defaultTemplateId`; the Template-A -> Template-B regression passes in both focused and disposable-PostgreSQL coverage, and the existing activation/rollback/replay proof remains green. This acceptance promotes no new task. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3357,6 +3357,12 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHOPIFY-003 Attempt 3 accepted
+
+- Accepted A2-R1: activation now treats `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance and no longer compares the pinned Template-A source with the category's later mutable `defaultTemplateId`.
+- Reviewed the strengthened unit and disposable-PostgreSQL regressions proving a pinned Template-A DRAFT still publishes after the category default moves to Template B, while missing provenance continues to fail closed. The PostgreSQL suite passed 2/2 including the existing rollback/replay proof and removed its disposable pgvector container.
+- Marked SHOPIFY-003 Complete / Accepted Attempt 3. No downstream task is promoted by this acceptance; SHOPIFY-004 remains gated on ADMIN-004, SHOPIFY-005 remains gated on SHOPIFY-004, and the separate Background missed-callback activation hook remains required before final ARCH-023 system acceptance.
 
 ### 2026-09-30 — SHOPIFY-003 Attempt 2 changes requested
 

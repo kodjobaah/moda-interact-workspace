@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 51
-executor: copilot
-claimed_at: 2026-09-30T20:33:16Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-023-SHOPIFY-001
@@ -331,6 +331,58 @@ Attempt 3 implementation commit:
   `e9ea92efbf75cd59b3eeaa1cc314aadf5dc6cf29` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
 
 ## Architect Review
+
+### Attempt 3 Review Status
+
+Accepted — Attempt 3
+
+### Attempt 3 Review Notes
+
+A2-R1 is closed. The submitted activation path now treats `sourceTemplateId` and `sourceTemplateEditVersion` only as selection-time provenance. `activateInitialPendingStoreCategoryIfEligible(...)` still requires the pending category identity, exact pending DRAFT, SHOP scope/same shop, non-null template provenance and non-empty pinned prompt text, but it no longer loads or compares the category's mutable current `defaultTemplateId`. Publication therefore remains anchored to the exact already-pinned pending revision.
+
+The focused unit regression now accepts a pending Template-A revision while the category's current default is Template B and still fails closed when either provenance field is missing. The real PostgreSQL success fixture creates distinct enabled Templates A and B, pins the pending revision from Template A, reassigns the category default to Template B before activation, and proves activation publishes the original Template-A revision with exact text, original `sourceTemplateId`, original `sourceTemplateEditVersion` and the expected SHA-256 content hash. The existing rollback/replay integration case remains intact.
+
+No billing projection semantics, onboarding milestones, database schema/migrations, Background reconciliation, Commerce audit actor, Merchant Knowledge preference/source/queue state or another Shopify task were changed for A2-R1. The separately required Background missed-callback activation hook remains outside SHOPIFY-003 and is still required before final ARCH-023 system acceptance.
+
+### Attempt 3 Reviewed Files
+
+```text
+app/services/store-profile/store-category-activation.server.ts
+tests/unit/store-category-activation.test.ts
+tests/integration/store-category-activation.integration.test.ts
+app/routes/app/billing/callback/route.tsx
+tests/unit/routes/billing-callback.test.ts
+docs/decisions/shopify/ARCH-023/SHOPIFY-003-activate-initial-store-category.md
+docs/decisions/shopify/ARCH-023/_index.md
+docs/architecture/ARCH-023-merchant-knowledge.md
+```
+
+### Attempt 3 Validation Reviewed
+
+Submitted canonical-worktree evidence records:
+
+```text
+focused activation + billing callback tests           50 passed, 0 failed
+disposable PostgreSQL activation integration          2 passed, 0 failed
+Template-A -> Template-B provenance regression         passed
+rollback + replay/idempotency PostgreSQL regression    passed
+npm run typecheck                                     passed
+changed-file ESLint                                   passed with non-blocking TypeScript-version warning
+changed-file diagnostics                              passed
+npm run build                                         passed with non-blocking build warnings
+git diff --check                                      passed
+disposable pgvector container teardown                 passed; no matching container remained
+```
+
+The supplied review archive contains source and durable validation evidence rather than the developer's installed dependency/runtime state, so the architect did not claim to redundantly rerun Node/Docker validation from the archive. Source and regression inspection are consistent with the reported results.
+
+### Attempt 3 Architecture Conformance
+
+Accepted. The durable current ACTIVE/TRIALING Subscription projection remains the only activation authority; the exact pending DRAFT, SHOP configuration pointer and profile promotion remain one transaction; later pending category changes remain Admin-owned; and selection-time template provenance is no longer incorrectly coupled to a later mutable category default. `completion_mode: automatic` therefore completes `ARCH-023-SHOPIFY-003`.
+
+### Attempt 3 Dependency Reconciliation
+
+`ARCH-023-SHOPIFY-003` is now Complete / Accepted Attempt 3. Its task declares no `enables` dependency, so this acceptance promotes no new task. `ARCH-023-SHOPIFY-004` remains Pending on `ARCH-023-ADMIN-004`, and `ARCH-023-SHOPIFY-005` remains Pending behind SHOPIFY-004. The separate Background subscription-reconciliation activation hook remains required before final ARCH-023 system acceptance and is not started implicitly by this review.
 
 ### Review Status
 Changes Requested — Attempt 2

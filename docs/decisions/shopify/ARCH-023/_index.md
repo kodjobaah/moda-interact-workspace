@@ -50,7 +50,7 @@ Individual task YAML is authoritative.
 |---|---|---|---|
 | [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Complete | DATABASE-001, SHARED-002 |
 | [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Complete | DATABASE-001, SHARED-002 |
-| [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Initial Store Category/Shop prompt activation only after durable ACTIVE/TRIALING subscription state | Ready — Attempt 3 provenance correction | SHOPIFY-001, SHOPIFY-002 |
+| [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Initial Store Category/Shop prompt activation only after durable ACTIVE/TRIALING subscription state | Complete — Accepted Attempt 3 | SHOPIFY-001, SHOPIFY-002 |
 | [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Merchant opt-in control plane plus current-plan WEB_PAGE source management | Pending | SHOPIFY-001, SHARED-002, ADMIN-004 |
 | [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Pending | SHOPIFY-004 |
 
@@ -61,14 +61,14 @@ DATABASE-001 and SHARED-002 are Complete/accepted. SHOPIFY-001 is now Complete /
 ```text
 SHOPIFY-001 -> Complete — Accepted Attempt 2
 SHOPIFY-002 -> Complete — Accepted Attempt 2
-SHOPIFY-003 -> Ready — Attempt 3 provenance correction
+SHOPIFY-003 -> Complete — Accepted Attempt 3
 SHOPIFY-004 -> Pending (new dependency: ADMIN-004)
 SHOPIFY-005 -> Pending (still gated on SHOPIFY-004)
 ```
 
-SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 remains independently executable. SHOPIFY-004 is deliberately re-gated on ADMIN-004 so the fixed `merchant_knowledge` Feature is reconciled to `MERCHANT_OPT_IN` before the merchant-facing control plane is implemented.
+SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 is Complete / Accepted Attempt 3. SHOPIFY-004 is deliberately re-gated on ADMIN-004 so the fixed `merchant_knowledge` Feature is reconciled to `MERCHANT_OPT_IN` before the merchant-facing control plane is implemented.
 
-SHOPIFY-003 Attempt 2 closed the required disposable PostgreSQL activation/rollback proof (2/2). It remains Ready for one bounded Attempt 3 correction: treat `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance and do not compare them with a category's later `defaultTemplateId`. No billing redesign, database change, Background hook or Commerce audit actor is part of that correction.
+SHOPIFY-003 Attempt 3 is accepted. Activation treats `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance, publishes the exact pinned DRAFT even after a later category `defaultTemplateId` reassignment, and retains the passing disposable PostgreSQL activation/rollback/idempotency proof. Acceptance promotes no new Shopify task; the separate Background missed-callback activation hook remains required before final ARCH-023 system acceptance.
 
 After SHOPIFY-004:
 
