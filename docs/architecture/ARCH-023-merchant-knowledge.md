@@ -19,6 +19,13 @@ is underway. `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-00
 `ARCH-023-ADMIN-002` are Complete/architect-accepted. The canonical Shared consumer revision
 is exactly `@modainteract/moda-interact-shared@1.0.1`.
 
+The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`,
+`ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`,
+`ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003`. BACKGROUND-001 is
+Complete/architect-accepted at Attempt 4 after its disposable pgvector queue-loss proof passed.
+BACKGROUND-002 remains Ready. BACKGROUND-003 is Ready for Attempt 2 corrections after its
+Attempt 1 review identified shared-formula extraction and cleanup-progression defects. All other
+ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3217,7 +3224,7 @@ ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
 ARCH-023-ADMIN-001      Ready
 ARCH-023-ADMIN-003      Ready
 ARCH-023-BACKGROUND-002 Ready
-ARCH-023-BACKGROUND-003 Ready
+ARCH-023-BACKGROUND-003 Ready — Attempt 2 corrections
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
 ARCH-023-SHOPIFY-002    Ready
@@ -3263,6 +3270,14 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — BACKGROUND-003 Attempt 1 changes requested
+
+- Reviewed private R2 acquisition, CSV/XLSX extraction and database-backed upload cleanup as substantially architecture-conformant.
+- Required XLSX extraction to preserve cached scalar results from ExcelJS shared-formula cells while continuing to omit formula expressions.
+- Required cleanup candidate progression so a retained first page of `DELETED` tombstones cannot starve later expired/unreferenced assets.
+- Required focused regressions for shared-formula extraction and >100-candidate cleanup progression; no schema/migration, Gateway, queue, normalization, embedding or worker-entrypoint change is authorised.
+- Returned BACKGROUND-003 to Ready with Attempt 1 preserved; BACKGROUND-004 remains gated on both BACKGROUND-002 and BACKGROUND-003.
 
 ### 2026-09-30 — SHOPIFY-002 Attempt 2 accepted
 
