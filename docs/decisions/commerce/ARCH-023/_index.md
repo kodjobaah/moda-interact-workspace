@@ -42,7 +42,7 @@ Individual task YAML is authoritative.
 |---|---|---|---|
 | [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
 | [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Ready | COMMERCE-001, ADMIN-001 |
-| [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Pending | DATABASE-001, SHARED-002, ADMIN-003 |
+| [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Ready | DATABASE-001, SHARED-002, ADMIN-003 |
 | [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Post-COMMERCE-002 follow-up: reconcile bootstrap guard to `MERCHANT_OPT_IN` and deny lookup while merchant preference is OFF | Pending | COMMERCE-002, ADMIN-004 |
 
 
@@ -65,7 +65,7 @@ This readiness promotion does not claim or start COMMERCE-002. The merchant-opt-
 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-COMMERCE-003 remains Pending until `ARCH-023-ADMIN-003` is Complete/accepted; when it becomes executable it is pinned to the same Shared revision.
+COMMERCE-003 is Ready because `ARCH-023-ADMIN-003`, `ARCH-023-DATABASE-001` and `ARCH-023-SHARED-002` are Complete/accepted. It remains pinned to the same Shared revision and is not claimed or started by this promotion.
 
 ## ARCH-021 Policy Operation relationship
 
