@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 61
 executor: copilot
 claimed_at: 2026-09-30T15:24:46Z
@@ -688,21 +688,25 @@ Do not begin COMMERCE-003 or ARCH-021 generic Studio tasks.
 ## Completion Report
 
 ### Status
-Not Started
+Blocked: required Capability revision lifecycle/storage contract and database schema are absent; implementation cannot safely proceed within task ownership constraints.
 ### Files Changed
-None.
+Only this task report in the parent task worktree. No Commerce implementation files changed.
 ### Work Completed
-None.
+Inspected the publication lifecycle, storage adapter, publication contract, task-pinned schema and package scripts. The required Capability create/draft/publish lifecycle API is absent; current state stores only reduced Capability identity and direct release membership, with no revisions, prompt, configuration, Tool bindings or selectionBinding.
+
+Prepared launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-002`; both use `task/ARCH-023-COMMERCE-002` and were synchronized with current main. Starting parent HEAD `9b8b1a805eee962fc6ed73d057c9fa6038324326`; implementation HEAD `a3cfdd7016196af619d980958a4d2b2c9783ed50`. Recursive submodule sync/update passed; database pin `2eb17ee910491e8f9df82736fc0a843844415947`. Parent claim `31823e243dc6cd80f3508604438077529687467c` was pushed at `2026-09-30T15:24:46Z`.
 ### Validation Results
-None.
+Not run: implementation is blocked before edits. The required disposable PostgreSQL convergence/replay proof remains pending and is not claimed as passing. Repository scripts inspected: `test`, `typecheck`, `lint`, `build`; focused bootstrap tests do not yet exist.
 ### Deviations
-None.
+No source changes were made because the active lifecycle and pinned schema cannot persist the Capability revision required by the acceptance criteria. Adding writes would require forbidden schema/migration changes or bypassing approved lifecycle APIs.
 ### Assumptions
 None.
 ### Unresolved Issues
-None.
+1. The pinned database schema has no `selectionBinding` field or `CommerceCapabilityRevision` model. `CommerceReleaseCapability` references Capability identity and Tool revision directly, so it cannot store the canonical prompt, configuration and revision-specific Tool bindings.
+2. `src/commerce/publication/lifecycle.ts` has no Capability create/draft/publish/enable commands. `src/commerce/integration/backend/publication-storage.ts` snapshots only reduced Capability identity fields and writes no Capability revisions. The publication-service contract describes these commands, but the active implementation and schema do not provide them.
+3. The task prohibits schema/migration edits and permits publication-storage changes only for read helpers. Supported lifecycle writes therefore cannot satisfy R9/R10 until the database-owned schema and Commerce lifecycle/storage contract are supplied or the task is explicitly re-scoped.
 ### Architectural Concerns
-None.
+Return to `moda_architect` to coordinate the missing Database-owned Capability revision/selection-binding schema and corresponding Commerce lifecycle/storage APIs. Do not bypass lifecycle with SQL. Reopen this task on the same mirrored task branches after that prerequisite is integrated; then complete the convergence tests and real disposable PostgreSQL replay proof.
 
 ## Architect Review
 
