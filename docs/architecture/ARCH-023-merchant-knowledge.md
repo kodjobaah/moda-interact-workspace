@@ -11,21 +11,9 @@ updated: 2026-09-30
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation
-is underway. `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` are **Complete / Accepted at
-Attempt 2**. `ARCH-023-ADMIN-003` is now Ready, while `ARCH-023-SHARED-001` remains
-independently Ready from DATABASE-001 acceptance. All other ARCH-023 implementation tasks
-remain gated by their declared dependencies.
-is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**,
-`ARCH-023-SHARED-001` is **Complete / Accepted at Attempt 2**, and the accepted Shared
-implementation is now published and architect-accepted through `ARCH-023-SHARED-002` as
-exact revision `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` at Attempt 2, `ARCH-023-SHARED-001` at Attempt 2, `ARCH-023-SHARED-002` at Attempt 1 with exact published revision `@modainteract/moda-interact-shared@1.0.1`, and `ARCH-023-SHOPIFY-002` at Attempt 2.
 
-The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`,
-`ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-002`.
-`ARCH-023-SHOPIFY-001` is Blocked because the canonical `moda-interact` base used by its
-prepared Attempt 1 does not contain the ARCH-017 BillingPlan materialiser it is required
-to extend. All other ARCH-023 tasks remain gated by their declared dependencies.
+The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-001`. `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001 even though SHOPIFY-002 is now Complete. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3212,33 +3200,23 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after ADMIN-002 Attempt 2 acceptance:
-
-```text
-ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
-ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
-
-ARCH-023-SHARED-001     Ready
-ARCH-023-ADMIN-003      Ready
-all other ARCH-023 implementation tasks remain gated by their declared dependencies
-```
-
-SHARED-001 and ADMIN-003 are independent at this frontier and may execute in parallel.
-Their execution still requires the normal task claim/preparation path; architect acceptance
-does not start either task implicitly.
-Current execution frontier after SHARED-002 Attempt 1 acceptance:
+Current execution frontier after BACKGROUND-001 Attempt 4 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
 ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
 
 ARCH-023-ADMIN-001      Ready
-ARCH-023-ADMIN-002      Ready
-ARCH-023-BACKGROUND-001 Ready
+ARCH-023-ADMIN-003      Ready
+ARCH-023-BACKGROUND-002 Ready
+ARCH-023-BACKGROUND-003 Ready
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
 ARCH-023-SHOPIFY-002    Ready
+
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
@@ -3252,27 +3230,25 @@ integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef
 Ready tasks are independent except where their own task YAML declares otherwise. No consumer
 implementation task is started implicitly by this architect review.
 
-Current execution frontier after ARCH-023-SHOPIFY-001 Attempt 1 blocker review:
+Current execution frontier after SHOPIFY-002 Attempt 2 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
+ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
 ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
 ARCH-023-ADMIN-001      Ready
-ARCH-023-ADMIN-002      Ready
+ARCH-023-ADMIN-003      Ready
 ARCH-023-BACKGROUND-001 Ready
 ARCH-023-COMMERCE-001   Ready
-ARCH-023-SHOPIFY-001    Blocked — ARCH-017 BillingPlan materialiser absent from canonical app base
-ARCH-023-SHOPIFY-002    Ready
+ARCH-023-SHOPIFY-001    Ready
+ARCH-023-SHOPIFY-003    Pending — still depends on SHOPIFY-001
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
-SHOPIFY-001 must not recreate or import the missing resolver inside ARCH-023. The durable
-ARCH-017-SHOPIFY-001 acceptance record must first be reconciled, and the accepted ARCH-017
-Shopify lifecycle chain must then be integrated into the canonical `moda-interact` base
-through the normal developer final-integration workflow. After that base is verified, the
-architect may return this same task from Blocked to Ready.
+SHOPIFY-002 acceptance does not promote SHOPIFY-003 because SHOPIFY-001 is not yet Complete. No downstream task is started implicitly by this review.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3290,6 +3266,36 @@ through bounded task reviews without changing the agreed architecture contract.
 - Identified durable ARCH-017 coordination drift: the ARCH-017 parent architecture and later Shopify task records describe SHOPIFY-001 as Complete, while its individual authoritative task YAML in this workspace still says `ready` / `attempt: 0` and contains no durable Architect Review. That record must be reconciled before its branch is treated as merge-authorised.
 - Required normal developer integration of the architect-accepted ARCH-017 Shopify lifecycle chain into the canonical `moda-interact` base before SHOPIFY-001 may return to Ready.
 - Left SHOPIFY-002 Ready because it is independent of SHOPIFY-001. SHOPIFY-003 and SHOPIFY-004 remain gated on SHOPIFY-001 completion.
+### 2026-09-30 — SHOPIFY-002 Attempt 2 accepted
+
+- Accepted the reusable pending Store Category selection lifecycle after the task-owned PostgreSQL proof exercised the production Prisma transaction against the accepted pgvector PostgreSQL migrations.
+- Confirmed initial lineage/DRAFT creation, exact canonical-template provenance, reselection reuse, active-state preservation, stale/unrelated-DRAFT rollback and two-client row-lock serialization with exactly one concurrent success.
+- Confirmed the Attempt 2 implementation delta is only the PostgreSQL integration test; production source, dependency pins, database gitlink/schema/migrations and locale catalogues are unchanged from the substantively conformant Attempt 1 implementation.
+- Confirmed canonical launcher/worktree synchronization and recursive-submodule evidence. Submitted implementation is `e287ba7b246dc1fd40e752512c47ad823fc18d0a`; submitted parent report is `aa5b7190e43bc975a337b71607198e58c1edf098`.
+- Marked SHOPIFY-002 Complete. SHOPIFY-003 remains Pending because SHOPIFY-001 is still Ready, not Complete; no downstream task was started.
+### 2026-09-30 — BACKGROUND-001 Attempt 4 accepted
+
+- Accepted the dedicated Merchant Knowledge worker/entitlement/PENDING-reconciliation foundation at Attempt 4.
+- Confirmed the C4 producer uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` and deterministic Shared job-id helper on exact Shared `1.0.1`.
+- Accepted the required live queue-loss proof after all real Prisma migrations applied to a disposable `pgvector/pgvector:pg17` PostgreSQL database and the production-path reconciliation integration test passed 1/1.
+- Confirmed the disposable container was torn down and no production runtime, schema, Shared-helper, integration-wrapper or Gateway change was introduced solely for validation.
+- Marked BACKGROUND-001 Complete and promoted BACKGROUND-002 and BACKGROUND-003 to Ready in parallel; BACKGROUND-004 remains gated on both.
+
+### 2026-09-30 — BACKGROUND-001 Attempt 3 validation blocker reconciled
+
+- Accepted the Attempt 3 correction to use Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` and the newly recorded launcher/worktree/submodule provenance.
+- Confirmed the remaining failure occurs before Vitest because the canonical disposable wrapper defaults to `postgres:17.6-alpine`, which cannot apply the accepted pgvector migration.
+- Authorised Attempt 4 to provision a task-local disposable PostgreSQL 17 Docker container with pgvector, apply the real migrations, run the existing queue-loss integration test against it, and destroy the container afterward.
+- No Shared helper, Background integration-wrapper, Gateway, database-schema or production-runtime change is required solely to close this validation.
+- Returned BACKGROUND-001 to Ready with Attempt 3 preserved; BACKGROUND-002 and BACKGROUND-003 remain Pending.
+
+### 2026-09-30 — BACKGROUND-001 Attempt 2 changes requested
+
+- Reviewed the dedicated Merchant Knowledge readiness/queue/acquisition-contract/current-plan-entitlement/PENDING-reconciliation/worker foundation as substantively architecture-conformant.
+- Required the C4 producer to use Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` instead of a duplicated local schema-version literal.
+- Required the still-open committed-PENDING enqueue-loss acceptance check to pass through the existing disposable PostgreSQL integration harness before acceptance.
+- Required the Completion Report to record the mandated launcher-resolved physical worktree, start-of-attempt synchronization and recursive-submodule preparation evidence.
+- Returned BACKGROUND-001 to Ready with Attempt 2 preserved; BACKGROUND-002 and BACKGROUND-003 remain Pending and no downstream implementation was started.
 
 ### 2026-09-30 — ADMIN-002 Attempt 2 accepted
 

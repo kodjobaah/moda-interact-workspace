@@ -48,38 +48,28 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Blocked | DATABASE-001, SHARED-002 |
-| [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Ready | DATABASE-001, SHARED-002 |
+| [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Ready | DATABASE-001, SHARED-002 |
+| [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Complete | DATABASE-001, SHARED-002 |
 | [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Billing callback activation of initial pending Store Category and Shop prompt | Pending | SHOPIFY-001, SHOPIFY-002 |
 | [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Current-plan WEB_PAGE source management and Recovery Settings UI | Pending | SHOPIFY-001, SHARED-002 |
 | [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Pending | SHOPIFY-004 |
 
 ## Execution frontier
 
-DATABASE-001 and SHARED-002 are Complete/accepted. The current Shopify frontier is:
+DATABASE-001 and SHARED-002 are Complete/accepted. SHOPIFY-002 is now Complete / Accepted at Attempt 2, so the current Shopify frontier is:
 
 ```text
-SHOPIFY-001 -> Blocked
-               missing integrated/authoritatively accepted ARCH-017 BillingPlan materialiser baseline
-SHOPIFY-002 -> Ready
+SHOPIFY-001 -> Ready
+SHOPIFY-002 -> Complete — Accepted Attempt 2
+SHOPIFY-003 -> Pending (still gated on SHOPIFY-001)
 ```
 
-The SHOPIFY-001 blocker does not broaden this task or make SHOPIFY-002 dependent on it.
-Before SHOPIFY-001 can return to Ready, the authoritative ARCH-017-SHOPIFY-001 acceptance
-record must be reconciled and the accepted ARCH-017 Shopify lifecycle chain must be
-integrated into the canonical `moda-interact` base used by task preparation.
+SHOPIFY-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-002 already consumed that exact revision.
 
-Both tasks must consume exactly `@modainteract/moda-interact-shared@1.0.1` when they execute.
-
-After SHOPIFY-001 + SHOPIFY-002:
+After SHOPIFY-001 is Complete/architect-accepted:
 
 ```text
 SHOPIFY-003 -> Ready
-```
-
-After SHOPIFY-001:
-
-```text
 SHOPIFY-004 -> Ready
 ```
 
