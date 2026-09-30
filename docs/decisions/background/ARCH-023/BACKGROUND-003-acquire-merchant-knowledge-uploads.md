@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 31
 executor: null
 claimed_at: null
@@ -465,14 +465,67 @@ Recursive implementation submodules:
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-Pending.
+The implementation is substantially aligned with the private-R2 acquisition, bounded byte/hash verification, deterministic CSV extraction, XLSX ZIP preflight, transactional cleanup and repository-boundary requirements. The submitted focused tests, disposable pgvector cleanup integration, build, Prisma validation, changed-file diagnostics and diff check are accepted as valid Attempt 1 evidence.
+
+Two task-scoped corrections remain:
+
+**A1-R1 — preserve cached scalar results for ExcelJS shared formulas.**
+
+`merchant-knowledge-xlsx-extraction.ts` currently recognizes a formula value only when the cell-value object has a `formula` property. ExcelJS also represents shared-formula cells with `sharedFormula` plus an optional cached `result`. Such a cell is therefore treated as an unsupported complex value and its cached scalar is silently omitted. R7 requires every formula form to contribute its cached scalar result only, while never emitting or executing the expression.
+
+Correct the scalar conversion so ordinary/master and shared formula representations use only their cached scalar result. Add an XLSX regression that round-trips an actual shared-formula workbook, proves its cached scalar appears in deterministic extracted text, and proves no formula/shared-formula expression is emitted.
+
+**A1-R2 — cleanup must make progress beyond the first retained tombstone page.**
+
+`cleanupOnce()` selects the oldest 100 eligible rows and leaves successfully deleted rows in `DELETED` state. Because every `DELETED` row remains eligible for later physical-delete retry, the same first 100 tombstones can be selected on every hourly run and permanently prevent later expired `PENDING_UPLOAD`, old unreferenced `AVAILABLE`, or later `DELETED` candidates from being considered. That does not satisfy the cleanup objective once the retained tombstone set reaches one page.
+
+Correct candidate progression/fairness while preserving `pageSize = 100`, transactional row locking/reference re-checks, post-commit R2 deletion, retained `DELETED` tombstones, and the prohibition on bucket-wide R2 listing. No schema/migration change is authorised. Add a database-backed regression with more than one page of earlier retained `DELETED` candidates and a later eligible asset, proving the later asset is reached without physically deleting any referenced asset.
+
+The reported npm dependency-audit findings are not an acceptance blocker for this task and no unrelated audit remediation is requested.
+
 ### Reviewed Files
-Pending.
+- `package.json`
+- `package-lock.json`
+- `src/services/merchant-knowledge-r2-config.ts`
+- `src/services/merchant-knowledge-r2-client.ts`
+- `src/services/merchant-knowledge-uploaded-asset-acquirer.ts`
+- `src/services/merchant-knowledge-csv-extraction.ts`
+- `src/services/merchant-knowledge-xlsx-extraction.ts`
+- `src/services/merchant-knowledge-upload-cleanup.service.ts`
+- `tests/unit/services/merchant-knowledge-csv-extraction.test.ts`
+- `tests/unit/services/merchant-knowledge-xlsx-extraction.test.ts`
+- `tests/unit/services/merchant-knowledge-uploaded-asset-acquirer.test.ts`
+- `tests/integration/merchant-knowledge-upload-cleanup.integration.test.ts`
+- `docs/decisions/background/ARCH-023/BACKGROUND-003-acquire-merchant-knowledge-uploads.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
 ### Validation Reviewed
-Pending.
+Accepted Attempt 1 evidence:
+
+- focused CSV/XLSX/acquirer tests: 16/16 passed;
+- disposable pgvector cleanup integration: 1/1 passed;
+- `npm run build`: passed;
+- `npm run prisma:validate`: passed;
+- `git diff --check`: passed;
+- changed-file diagnostics: clean;
+- broad-suite failures recorded in the Completion Report are outside the BACKGROUND-003 changed surface.
+
+Attempt 2 must rerun the focused XLSX extraction tests, cleanup integration test, build, Prisma validation, changed-file diagnostics and `git diff --check` after the corrections.
+
 ### Architecture Conformance
-Pending.
+Conforms to ARCH-023 ownership and private-R2 boundaries except for A1-R1 and A1-R2 above. No database schema, queue contract, worker entrypoint, normalization/chunking/embedding/promotion behavior or Gateway deployment change is required for the requested correction.
+
 ### Follow-up
-Pending.
+Return the same task to `ready` with `attempt: 1`, no active executor/claim, for the next authorized claim to become Attempt 2.
+
+Attempt 2 correction scope is exactly:
+
+1. support cached scalar extraction from both ordinary/master and shared ExcelJS formula representations without emitting formula expressions;
+2. add the shared-formula XLSX regression;
+3. ensure cleanup progresses beyond an earlier retained `DELETED` page while keeping page size 100 and all existing reference-safety/transaction/R2 boundaries;
+4. add the >100-candidate database-backed cleanup progression regression;
+5. rerun the bounded validation listed above and update the Completion Report;
+6. return to `moda_architect` review and STOP. Do not start BACKGROUND-004.

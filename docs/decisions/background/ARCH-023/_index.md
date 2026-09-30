@@ -42,7 +42,7 @@ Individual task YAML is authoritative.
 |---|---|---|---|
 | [BACKGROUND-001](BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md) | Dedicated worker foundation, current entitlement and durable PENDING reconciliation | Complete — Accepted Attempt 4 | DATABASE-001, SHARED-002 |
 | [BACKGROUND-002](BACKGROUND-002-acquire-merchant-knowledge-web-pages.md) | SSRF-safe WEB_PAGE acquisition and extraction | Ready | BACKGROUND-001 |
-| [BACKGROUND-003](BACKGROUND-003-acquire-merchant-knowledge-uploads.md) | Private R2 CSV/XLSX acquisition/extraction and safe asset cleanup | Ready | BACKGROUND-001 |
+| [BACKGROUND-003](BACKGROUND-003-acquire-merchant-knowledge-uploads.md) | Private R2 CSV/XLSX acquisition/extraction and safe asset cleanup | Ready — Attempt 2 corrections | BACKGROUND-001 |
 | [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Pending | BACKGROUND-002, BACKGROUND-003 |
 | [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Pending | BACKGROUND-004 |
 
@@ -55,7 +55,8 @@ database without changing runtime infrastructure or shared test helpers.
 The current executable Background frontier is therefore:
 
 ```text
-BACKGROUND-002 and BACKGROUND-003 -> Ready in parallel
+BACKGROUND-002 -> Ready
+BACKGROUND-003 -> Ready for Attempt 2 corrections
 ```
 
 After both are Complete:
