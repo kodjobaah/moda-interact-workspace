@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 41
 executor: copilot
 claimed_at: 2026-09-30T11:55:11Z
@@ -597,15 +597,15 @@ no translation data/job is created
 
 ## Work Items
 
-- [ ] Adopt database gitlink if required.
-- [ ] Add deterministic Commerce environment resolver.
-- [ ] Add prompt read/lifecycle service with one-lineage/one-draft rules.
-- [ ] Add exact CAS save/publish/activate transactions.
-- [ ] Add pending Store Category atomic promotion.
-- [ ] Add protected Agent Instructions route/navigation.
-- [ ] Add Platform and selected-Shop editors/history.
-- [ ] Add exact Commerce audits.
-- [ ] Add focused lifecycle/security/UI regressions.
+- [x] Adopt database gitlink if required (already at the required dependency revision; no update needed).
+- [x] Add deterministic Commerce environment resolver.
+- [x] Add prompt read/lifecycle service with one-lineage/one-draft rules.
+- [x] Add exact CAS save/publish/activate transactions.
+- [x] Add pending Store Category atomic promotion.
+- [x] Add protected Agent Instructions route/navigation.
+- [x] Add Platform and selected-Shop editors/history.
+- [x] Add exact Commerce audits.
+- [x] Add focused lifecycle/security/UI regressions.
 
 ## Interfaces / Contracts
 
@@ -634,26 +634,26 @@ Planned Shopify Store Profile/category-change and Commerce prompt-ownership clea
 
 ## Acceptance Criteria
 
-- [ ] Admin is the authoritative UI for Platform and Shop Instructions.
-- [ ] Platform and Shop use one existing durable prompt lifecycle, not duplicate storage.
-- [ ] CAS protects both mutable DRAFTs and active configuration pointer.
-- [ ] Published revisions remain immutable.
-- [ ] Pending Store Category promotion is atomic with exact reviewed Shop prompt publication.
-- [ ] Template provenance is preserved and never re-resolved at publish.
-- [ ] Platform/Shop persistence remains independent/additive.
-- [ ] No translation lifecycle or capability-prompt authoring is introduced.
-- [ ] Existing Commerce prompt tables/constraints remain authoritative.
+- [x] Admin is the authoritative UI for Platform and Shop Instructions.
+- [x] Platform and Shop use one existing durable prompt lifecycle, not duplicate storage.
+- [x] CAS protects both mutable DRAFTs and active configuration pointer.
+- [x] Published revisions remain immutable.
+- [x] Pending Store Category promotion is atomic with exact reviewed Shop prompt publication.
+- [x] Template provenance is preserved and never re-resolved at publish.
+- [x] Platform/Shop persistence remains independent/additive.
+- [x] No translation lifecycle or capability-prompt authoring is introduced.
+- [x] Existing Commerce prompt tables/constraints remain authoritative.
 
 ## Validation
 
-- [ ] focused prompt lifecycle/action tests
-- [ ] pending-category transaction integration test
-- [ ] Admin security regressions
-- [ ] `npm run test:unit`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused prompt lifecycle/action tests
+- [ ] pending-category transaction integration test (transaction-double coverage added; live database integration remains a documented deviation)
+- [x] Admin security regressions (focused authorization tests; broader existing suite failures recorded below)
+- [x] `npm run test:unit` (two unrelated pre-existing failures recorded below)
+- [x] `npm run lint` (unrelated baseline errors/warnings recorded below)
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -664,21 +664,47 @@ Do not begin Shopify or Commerce follow-up work.
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Architect Review
 ### Files Changed
-None.
+Implementation repository `moda-interact-admin`:
+- `src/app/(protected)/system-controls/agent-instructions/page.tsx`
+- `src/app/actions/agent-instructions.ts`
+- `src/components/admin/agent-instructions/agent-instructions-console.tsx`
+- `src/components/admin/admin-shell.tsx`
+- `src/components/admin/sidebar.tsx`
+- `src/lib/admin/agent-instructions.ts`
+- `src/lib/admin/commerce-environment.ts`
+- `tests/unit/agent-instruction-actions.test.ts`
+- `tests/unit/agent-instructions.test.ts`
+
+Task report: this file only.
 ### Work Completed
-None.
+- Added the protected System Controls Agent Instructions page and navigation, including Platform and selected-Shop authoring, revision history, active markers, pending Store Category provenance/banner, and historical published-revision activation.
+- Added strict deployment environment mapping and fail-closed lineage/configuration/DRAFT checks.
+- Added SUPER_ADMIN-authorized Serializable mutations for draft allocation/edit CAS, exact UTF-8 SHA-256 publish, environment/scope/shop configuration-pointer CAS, and historical activation.
+- Pending Store Category publication validates and promotes the exact pending DRAFT in the same transaction as prompt publication and pointer activation, retaining `pendingSelectionGeneration` and recording required audits.
+- Added 15 focused Agent Instructions tests, including transaction-double success and rollback cases for stale configuration and profile CAS.
+- Launcher evidence: `ARCH-023-ADMIN-003` was prepared and claimed as Attempt 1 by `copilot`; dependency gate passed for `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002`; dedicated parent and implementation worktrees were created; recursive submodule checks passed; durable claim commit is `9cce2e1df1d4be3e5022eedff995ef7d439918c8`.
+- Implementation commit `4587e4b7433ed5f4b10d9d5e48cdf481b411a52b` is pushed to `origin/task/ARCH-023-ADMIN-003` in `moda-interact-admin`. The database submodule was already at `2eb17ee910491e8f9df82736fc0a843844415947`; no schema or submodule change was needed.
 ### Validation Results
-None.
+- Focused lifecycle/action suite: 15 passed, 0 failed.
+- `npx tsc --noEmit --pretty false`: passed.
+- Changed production-file ESLint: passed.
+- `npm run test:unit`: 175 tests, 173 passed, 2 failed in existing merchant-pricing translation-workbook tests (`merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`); no Agent Instructions test failed.
+- `npm test`: existing security/observability suite has 9 unrelated contract failures; no Agent Instructions files are involved.
+- Repository-wide `npm run lint`: 3 existing errors and 6 warnings in unrelated billing, promotion, queue, and recovery-credit files. Changed production files lint cleanly.
+- `npm run build`: passed and includes `/system-controls/agent-instructions`; emitted existing BullMQ optional-dependency/critical-dependency warnings.
+- `npm run prisma:validate`: passed.
+- `git diff --check`: passed.
 ### Deviations
-None.
+- The requested pending-category transaction integration coverage is implemented as behavior-level tests using a rollback-capable transaction double, not a live PostgreSQL integration test. This Admin repository has no integration-test runner or disposable PostgreSQL/Testcontainers harness. The tests exercise the actual mutation service and verify success plus rollback on configuration/profile CAS loss; Architect Review should decide whether a shared disposable-database harness is required.
 ### Assumptions
-None.
+- Existing platform-admin read/page guards are sufficient for authenticated reads; all mutation actions additionally require the `SUPER_ADMIN` role.
+- Existing ARCH-023 database models and audit actions are authoritative; no schema change is necessary.
 ### Unresolved Issues
-None.
+- The pre-existing two unit-test failures, nine security/observability contract failures, and repository-wide lint findings remain outside this task's changed files.
 ### Architectural Concerns
-None.
+- No product/schema architecture change was introduced. The absence of a live database integration harness limits the pending-promotion test to a transaction-aware double; see Deviations.
 
 ## Architect Review
 
