@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 62
 executor: null
 claimed_at: null
@@ -417,8 +417,56 @@ After push/fetch, implementation `HEAD` and `origin/task/ARCH-023-DATABASE-004` 
 
 ### Review Status
 
-Pending.
+Accepted — Attempt 1.
 
 ### Review Notes
 
-Pending implementation/review.
+DATABASE-004 satisfies the narrow correction contract authorised from COMMERCE-002 Attempt 3. The forward migration replaces only `commerce.arch021_release_feature_guard()` and preserves the predecessor `billing."Feature" ... FOR SHARE` lock, current `CommerceFeatureConfiguration.behaviourPrompt` lookup, missing-configuration empty-string fallback and SQLSTATE `23514` rejection.
+
+Historical admission is bounded to an exact `CommerceReleaseFeature.behaviourPrompt` already persisted for the same `featureId`. The accepted rule therefore permits immutable successor-release preservation after current Feature authoring advances without making arbitrary stale text or another Feature's history valid.
+
+The migration does not drop/recreate `CommerceReleaseFeature`, disable/recreate its triggers, add a bypass/session flag, alter the Prisma schema, or weaken `arch021_release_feature_immutable`. No release ancestry model or Commerce-side workaround is introduced.
+
+The disposable PostgreSQL upgrade proof exercises the real accepted migration chain through `20260929160000_arch023_merchant_knowledge_schema`, demonstrates the predecessor `23514` rejection, applies DATABASE-004, then proves same-Feature historical acceptance, current-value acceptance, never-published/cross-Feature rejection, UPDATE/DELETE immutability, row preservation and unchanged trigger topology.
+
+The submitted implementation identity is `0cdea8b0a7f1ce61df67bcc80b6325e16d82e12f`. The developer-supplied final parent-report identity is `b4305941d6287c6a60b8e85e21a0f74862b2c2ca`; the Completion Report's earlier `4d0d5f1b` entry is retained as historical pre-final-evidence publication.
+
+### Reviewed Files
+
+- `prisma/migrations/20260930200000_arch023_release_feature_snapshot_history/migration.sql`
+- `scripts/validate-arch023-release-feature-snapshot-history.mjs`
+- `scripts/test-arch023-release-feature-snapshot-history-postgres.mjs`
+- `package.json`
+- predecessor `prisma/migrations/20260929120000_arch021_feature_capability_simplification/migration.sql`
+- `prisma/schema.prisma` and `package-lock.json` for no-change verification
+- DATABASE-004 Completion Report and physical-worktree evidence
+
+### Validation Reviewed
+
+Submitted validation accepted:
+
+- `npm run prisma:validate` — passed.
+- `npm run prisma:generate` — passed.
+- `npm run test:arch023-release-feature-snapshot-history` — passed.
+- `npm run test:arch023-release-feature-snapshot-history:postgres` — passed with owned `pgvector/pgvector:pg17` cleanup.
+- existing ARCH-021 Feature/Capability schema and migration validators — passed.
+- changed-file diagnostics and `git diff --check` — passed.
+
+Architect-side review additionally:
+
+- confirmed `prisma/schema.prisma` and `package-lock.json` are unchanged from the pre-DATABASE-004 ARCH-023 baseline available in the review workspace;
+- executed the static validator successfully against the submitted migration;
+- mutation-probed removal of the historical same-`featureId` match, exact `behaviourPrompt` match and Feature `FOR SHARE` lock; each mutation was rejected by the validator;
+- ran Node syntax checks for both new validation scripts.
+
+The review environment did not provide a Docker daemon, so the PostgreSQL container proof was not independently rerun; the test implementation and recorded canonical-worktree result were inspected instead.
+
+### Architecture Conformance
+
+Conformant. DATABASE-004 changes only the database invariant that prevented an otherwise valid immutable successor snapshot. It preserves repository ownership, release immutability, current Feature-authoring protection, exact Tool-revision/member release guards and the direct ARCH-021 Feature/Capability model.
+
+### Follow-up
+
+Mark `ARCH-023-DATABASE-004` Complete / Accepted Attempt 1. The external database blocker on `ARCH-023-COMMERCE-002` is now satisfied.
+
+The authoritative COMMERCE-002 Attempt 3 record lives on its own task branch, so it must be reconciled there from `blocked -> ready` with `attempt: 3` retained. Its next normal `/moda-task` claim becomes Attempt 4. Attempt 4 should preserve the existing Commerce implementation unless the accepted migration exposes a new defect, update the database submodule to the accepted DATABASE-004 revision, rerun the complete disposable PostgreSQL successor-preservation proof and final validation set, then return to review.
