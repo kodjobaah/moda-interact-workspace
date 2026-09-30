@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-09-30T07:50:28Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
@@ -757,23 +757,23 @@ Do not create parallel local versions under `commerce/`, `shopify/` or another S
 
 ## Work Items
 
-- [ ] Add the exact supported configuration-locale constants/schema/type to the existing internationalization entrypoint.
-- [ ] Implement the exact `resolveModaConfigurationLocale` algorithm.
-- [ ] Add complete C1 resolver tests.
-- [ ] Create runtime-safe `src/merchant-knowledge.ts`.
-- [ ] Add exact C2 configuration schemas/types and duplicate-pair validation.
-- [ ] Add exact C3 Purpose/Data Format constants/schemas/types.
-- [ ] Add exact C4 queue constants/job schema/type.
-- [ ] Create Node-only deterministic SHA-256 job-id helper.
-- [ ] Add C2/C3/C4 positive and negative tests.
-- [ ] Add the two exact Merchant Knowledge package subpaths.
-- [ ] Add the exact D7 immutable instruction to the existing Commerce runner kernel.
-- [ ] Preserve instruction ordering and existing runtime authorization semantics.
-- [ ] Add D7 structural/adversarial runner regressions.
-- [ ] Add built-entrypoint validator and exact package script.
-- [ ] Confirm no duplicate local Shared contract definitions were introduced.
-- [ ] Run all task-required validation.
-- [ ] Complete the Completion Report and return only this task for review.
+- [x] Add the exact supported configuration-locale constants/schema/type to the existing internationalization entrypoint.
+- [x] Implement the exact `resolveModaConfigurationLocale` algorithm.
+- [x] Add complete C1 resolver tests.
+- [x] Create runtime-safe `src/merchant-knowledge.ts`.
+- [x] Add exact C2 configuration schemas/types and duplicate-pair validation.
+- [x] Add exact C3 Purpose/Data Format constants/schemas/types.
+- [x] Add exact C4 queue constants/job schema/type.
+- [x] Create Node-only deterministic SHA-256 job-id helper.
+- [x] Add C2/C3/C4 positive and negative tests.
+- [x] Add the two exact Merchant Knowledge package subpaths.
+- [x] Add the exact D7 immutable instruction to the existing Commerce runner kernel.
+- [x] Preserve instruction ordering and existing runtime authorization semantics.
+- [x] Add D7 structural/adversarial runner regressions, including explicit denial of an ungranted Tool.
+- [x] Add built-entrypoint validator and exact package script.
+- [x] Confirm no duplicate local Shared contract definitions were introduced.
+- [x] Run all task-required validation.
+- [x] Complete the Completion Report and return only this task for review.
 
 ## Interfaces / Contracts
 
@@ -863,36 +863,38 @@ No consumer implementation task becomes executable merely because SHARED-001 is 
 
 ## Acceptance Criteria
 
-- [ ] C1 uses the exact 20-tag set from ARCH-023.
-- [ ] `resolveModaConfigurationLocale` implements the exact fallback/Portuguese/Chinese algorithm without a second BCP-47 parser.
-- [ ] C2 validates the exact plan configuration shape including `allowedSourceTypes`.
-- [ ] C2 rejects duplicate source-type pairs but does not encode the database pair matrix.
-- [ ] C3 keys exactly match the accepted DATABASE-001 seed keys.
-- [ ] C4 queue payload is strict/versioned and contains only durable processing identity.
-- [ ] C4 job identity is exactly SHA-256 over `shopId + U+001F + sourceRevisionId + U+001F + generation`.
-- [ ] `requestedAt` does not affect C4 job identity.
-- [ ] New Merchant Knowledge runtime-safe and Node subpaths build and import cleanly.
-- [ ] The exact ARCH-023 runtime-data authority instruction is exported and first in `PLATFORM_INSTRUCTIONS`.
-- [ ] Existing host/response/capability instruction ordering remains unchanged after the platform kernel.
-- [ ] Tool/runtime data never becomes an instruction array element in runner tests.
-- [ ] Existing runner authorization/grant behavior remains unchanged.
-- [ ] Existing Shared public entrypoints remain available.
-- [ ] Package version is unchanged.
-- [ ] No database/provider/consumer implementation is introduced.
-- [ ] No duplicate Shared contract definitions remain.
+- [x] C1 uses the exact 20-tag set from ARCH-023.
+- [x] `resolveModaConfigurationLocale` implements the exact fallback/Portuguese/Chinese algorithm without a second BCP-47 parser.
+- [x] C2 validates the exact plan configuration shape including `allowedSourceTypes`.
+- [x] C2 rejects duplicate source-type pairs but does not encode the database pair matrix.
+- [x] C3 keys exactly match the accepted DATABASE-001 seed keys.
+- [x] C4 queue payload is strict/versioned and contains only durable processing identity.
+- [x] C4 job identity is exactly SHA-256 over `shopId + U+001F + sourceRevisionId + U+001F + generation`.
+- [x] `requestedAt` does not affect C4 job identity.
+- [x] New Merchant Knowledge runtime-safe and Node subpaths build and import cleanly.
+- [x] The exact ARCH-023 runtime-data authority instruction is exported and first in `PLATFORM_INSTRUCTIONS`.
+- [x] Existing host/response/capability instruction ordering remains unchanged after the platform kernel.
+- [x] Tool/runtime data never becomes an instruction array element in runner tests.
+- [x] Existing runner authorization/grant behavior remains unchanged; ungranted Tool remains denied.
+- [x] Existing Shared public entrypoints remain available.
+- [x] Package version is unchanged.
+- [x] No database/provider/consumer implementation is introduced.
+- [x] No duplicate Shared contract definitions remain.
 
 ## Validation
 
 Inspect the repository package scripts before execution, then run at minimum:
 
-- [ ] `npm test`
-- [ ] `npm run typecheck`
-- [ ] `npm run build`
-- [ ] `npm run validate:internationalization-entrypoint`
-- [ ] `npm run validate:commerce-entrypoints`
-- [ ] `npm run validate:arch023-shared-entrypoints`
-- [ ] `npm pack --dry-run`
-- [ ] `git diff --check`
+- [x] `npm test` — 176 passed, 0 failed, 1 skipped (Redis integration requires unset `TEST_REDIS_URL`).
+- [x] `npm run typecheck` — passed.
+- [x] `npm run build` — passed, including ESM and declaration builds.
+- [x] `npm run validate:internationalization-entrypoint` — passed.
+- [x] `npm run validate:commerce-entrypoints` — passed.
+- [x] `npm run validate:arch023-shared-entrypoints` — passed.
+- [x] `npm pack --dry-run` — passed; package remains version `1.0.0` and reports 81 files.
+- [x] `git diff --check` — passed.
+
+Focused tests also passed: internationalization (13), Merchant Knowledge runtime-safe contracts (7), Merchant Knowledge Node helper (as included in the full suite), and Commerce runner (20, rerun after explicitly asserting ungranted Tool denial). Pylance diagnostics reported no errors in changed source or test files. The R22 source-definition scan found one definition for each listed contract, and the runtime-safe Merchant Knowledge module has no Node, database, queue, Redis, or R2 imports.
 
 Also run the focused tests directly if the full suite obscures failures:
 
@@ -953,35 +955,35 @@ The publication task owns the package version and npm release.
 
 ### Status
 
-Not Started
+Ready for Architect Review (`review`).
 
 ### Files Changed
 
-None.
+Implementation changes in the Shared package are limited to the authorized scope: `package.json`, `tsup.config.ts`, the internationalization source/test, Merchant Knowledge runtime-safe and Node source/tests, the Commerce runner source/test, and `scripts/validate-arch023-shared-entrypoints.mjs`. `package-lock.json` is unchanged. The parent task report is the only change in the task-control worktree.
 
 ### Work Completed
 
-None.
+Implemented C1 locale tags and resolver using the existing canonicalization helper; C2/C3/C4 schemas, keys, queue contract, and deterministic SHA-256 job identity; D7 immutable first platform instruction and trust-boundary regressions; package subpaths and built-entrypoint validation. Preserved existing package exports, runner authorization semantics, and package version.
 
 ### Validation Results
 
-None.
+All required validations passed. `npm test`: 176 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` was not configured. Typecheck, build, all three entrypoint validators, `npm pack --dry-run`, focused tests, editor diagnostics, and `git diff --check` passed. Duplicate Shared definitions were not found.
 
 ### Deviations
 
-None.
+The isolated implementation worktree did not initially have local `tsx`; `npm ci` restored the lockfile-declared dependencies without modifying tracked dependency metadata. The existing Redis integration test was skipped because `TEST_REDIS_URL` was unset. No scope, API, or package-version deviations.
 
 ### Assumptions
 
-None.
+The accepted `ARCH-023-DATABASE-001` Purpose/Data Format seed keys are the authoritative identities; Shared validates identities only and deliberately does not encode pair compatibility.
 
 ### Unresolved Issues
 
-None.
+The optional Redis integration test remains unexecuted without `TEST_REDIS_URL`; all other suite tests passed.
 
 ### Architectural Concerns
 
-None.
+None identified.
 
 ## Architect Review
 
