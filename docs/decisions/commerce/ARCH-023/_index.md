@@ -43,6 +43,7 @@ Individual task YAML is authoritative.
 | [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
 | [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Ready | COMMERCE-001, ADMIN-001 |
 | [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Pending | DATABASE-001, SHARED-002, ADMIN-003 |
+| [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Post-COMMERCE-002 follow-up: reconcile bootstrap guard to `MERCHANT_OPT_IN` and deny lookup while merchant preference is OFF | Pending | COMMERCE-002, ADMIN-004 |
 
 
 ## Execution frontier
@@ -60,7 +61,7 @@ COMMERCE-001 -> Complete / Accepted Attempt 2
 COMMERCE-002 -> Ready
 ```
 
-This readiness promotion does not claim or start COMMERCE-002.
+This readiness promotion does not claim or start COMMERCE-002. The merchant-opt-in architecture decision does not modify COMMERCE-002 while it is in review; COMMERCE-004 remains Pending until both COMMERCE-002 and ADMIN-004 are Complete.
 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 
@@ -97,3 +98,7 @@ commerce/shop-instructions
 A bounded Background task is still required to fetch those prompts and append them to trusted `hostInstructions` in Platform-then-Shop order before invoking the Shared runner.
 
 This follow-up is required before final ARCH-023 system acceptance.
+
+## Merchant opt-in reconciliation
+
+`COMMERCE-002` is intentionally unchanged while it is in review. After it completes, `COMMERCE-004` applies the final opt-in decision to the resulting bootstrap prerequisite and independently gates `merchantKnowledge.lookup` on the exact `ShopFeaturePreference`.

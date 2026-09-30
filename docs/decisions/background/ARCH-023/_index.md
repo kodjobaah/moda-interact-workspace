@@ -55,8 +55,19 @@ database without changing runtime infrastructure or shared test helpers.
 BACKGROUND-002 is now Complete/architect-accepted at Attempt 3 and BACKGROUND-003 is
 Complete/architect-accepted at Attempt 2. Their common processing successor is therefore the
 current executable Background frontier:
+BACKGROUND-003 is now Complete/architect-accepted at Attempt 2. The remaining executable
+Background frontier is:
 
 ```text
+BACKGROUND-002 -> Ready
+```
+
+BACKGROUND-004 remains Pending until BACKGROUND-002 and the new activation follow-up BACKGROUND-006 are Complete. ADMIN-004 must complete before BACKGROUND-006 can become Ready. The sequence is therefore:
+
+```text
+ADMIN-004 -> Complete
+BACKGROUND-006 -> Ready -> Complete
+BACKGROUND-002 -> Complete
 BACKGROUND-004 -> Ready
 ```
 
@@ -67,3 +78,7 @@ BACKGROUND-005 -> Ready
 ```
 
 Gateway deployment must not begin before BACKGROUND-005 is Complete/architect-accepted.
+
+## Merchant opt-in reconciliation
+
+`BACKGROUND-006` is the only new activation task. It extends the accepted BACKGROUND-001 eligibility service so missing/false `ShopFeaturePreference` leaves PENDING work dormant. BACKGROUND-004 consumes that activation-aware service before acquisition and promotion; no new queue or scheduler is introduced.

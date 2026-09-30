@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-023-GATEWAY-001
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Reconcile Merchant Knowledge entitlement changes
@@ -34,7 +34,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Implement periodic current-plan entitlement reconciliation for Merchant Knowledge.
+Implement periodic current-plan entitlement reconciliation for Merchant Knowledge, respecting the merchant activation gate inherited from BACKGROUND-006/BACKGROUND-004.
 
 The task must create `ENTITLEMENT_CHANGE` replacement revisions only when an ACTIVE, currently entitled source exceeds a newly lower `maxContentUnitsPerSource`.
 
@@ -109,9 +109,10 @@ and whose current plan has an enabled active Feature:
 
 ```text
 Feature.key = merchant_knowledge
+Feature.activationMode = MERCHANT_OPT_IN
 ```
 
-with C2-valid `BillingPlanFeature.configuration`.
+with C2-valid `BillingPlanFeature.configuration` **and an enabled ShopFeaturePreference for that shop/Feature**. Shops with missing/false preference are dormant and receive no entitlement-change work.
 
 Pending next-cycle plans are ignored.
 
@@ -125,9 +126,9 @@ A later invocation continues through the normal bounded-scan strategy chosen by 
 
 ### R3 — derive current source eligibility using the existing service
 
-For each candidate shop, use BACKGROUND-001 entitlement/eligibility semantics.
+For each candidate shop, use the activation-aware entitlement/eligibility semantics established by BACKGROUND-006 and consumed by BACKGROUND-004.
 
-The effective source set is:
+The effective source set exists only while Merchant Knowledge is explicitly enabled. Then it is:
 
 1. active globally supported Purpose/Data Format pairs;
 2. exact pairs in current `allowedSourceTypes`;

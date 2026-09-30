@@ -1,7 +1,7 @@
 ---
 id: ARCH-023-SYSTEM-TEST-002
 architecture_id: ARCH-023
-title: Validate Merchant Knowledge end to end
+title: Validate Merchant Knowledge merchant activation end to end
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -16,176 +16,215 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-023-DATABASE-001
-  - ARCH-023-DATABASE-003
-  - ARCH-023-SHARED-004
+  - ARCH-023-SHARED-002
   - ARCH-023-ADMIN-004
-  - ARCH-023-SHOPIFY-003
   - ARCH-023-SHOPIFY-004
-  - ARCH-023-BACKGROUND-003
+  - ARCH-023-SHOPIFY-005
   - ARCH-023-BACKGROUND-004
-  - ARCH-023-COMMERCE-001
+  - ARCH-023-BACKGROUND-005
   - ARCH-023-COMMERCE-002
+  - ARCH-023-COMMERCE-004
   - ARCH-023-GATEWAY-001
 enables: []
 created: 2026-09-27
-updated: 2026-09-27
+updated: 2026-09-30
 ---
 
-# Validate Merchant Knowledge end to end
+# Validate Merchant Knowledge merchant activation end to end
 
 ## Architecture
 
-Architecture ID:
+Architecture ID: `ARCH-023`
 
-`ARCH-023`
+Architecture document: `docs/architecture/ARCH-023-merchant-knowledge.md`
 
-Architecture document:
-
-`docs/architecture/ARCH-023-merchant-knowledge-store-aware-commerce-agent.md`
-
-Coordinator:
-
-`moda_architect`
+Coordinator: `moda_architect`
 
 ## Objective
 
-Validate Merchant Knowledge from plan entitlement and merchant URL configuration through Background ingestion/pgvector retrieval to CommerceAgent use, including tenant isolation, multilingual behaviour, refresh and security boundaries.
+Validate the final Merchant Knowledge lifecycle end to end, with explicit merchant activation as a hard boundary:
 
-## Context
+```text
+subscription/current plan grants configuration access
+        +
+ShopFeaturePreference merchant_knowledge = enabled
+after merchant action
+        -> Background ingestion permitted
+        -> Commerce retrieval permitted
+```
 
-This terminal task validates the complete Merchant Knowledge architecture after implementation, infrastructure wiring and developer manual validation.
+The test must prove OFF is non-destructive and fail-closed at both ingestion and retrieval boundaries.
 
 ## Scope
 
-- Configure `merchant_knowledge` Feature on a plan with bounded logical-entry/content-unit limits.
-- Publish one FEATURE-bound Merchant Knowledge capability/tool through normal Commerce Studio workflow for the test environment.
-- Create logical entries with at least two locale variants and ingest public fixture HTML/plain sources.
-- Validate content-unit truncation/chunk/vector provenance and exact pgvector lookup.
-- Validate manual Refresh success/failure preserving old active revision.
-- Validate downgrade exclusion/re-upgrade restoration without refetch.
-- Validate cross-shop isolation and malicious multilingual page instructions cannot grant an unavailable capability/tool.
-- Validate shop-language knowledge selection independent of customer reply language.
-
-## Out of Scope
-
-- Redis vector search.
-- Automatic scheduled crawling.
-- Headless-browser content.
+- current-plan C2 source limits and Purpose/Data Format entitlement;
+- existing Recovery Settings generic FeaturePreferences activation;
+- WEB_PAGE and CSV/XLSX source configuration;
+- private R2 browser upload path;
+- PENDING reconciliation and processing;
+- pgvector retrieval and tenant isolation;
+- disable/re-enable behaviour;
+- source-count/type/content-limit downgrade behaviour;
+- multilingual retrieval and runtime-data authority;
+- queue-loss repair.
 
 ## Requirements
 
-- Use the deployed embedding config for both ingestion and lookup.
-- System evidence must not log full source body/vector/credentials.
-- Any external fixture source must be controlled and deterministic for system test.
+### R1 — starting state
+
+Create/use a shop whose current ACTIVE/TRIALING plan maps `merchant_knowledge` with C2 configuration and whose Feature is:
+
+```text
+activationMode = MERCHANT_OPT_IN
+systemRequired = false
+active = true
+```
+
+No `ShopFeaturePreference` row initially.
+
+### R2 — subscription grants configuration, not activation
+
+Prove Recovery Settings exposes Merchant Knowledge configuration and the generic Merchant Knowledge FeaturePreferences toggle, while effective Merchant Knowledge is OFF.
+
+Configure at least one WEB_PAGE source while OFF.
+
+Require:
+
+```text
+source/revision persisted
+revision = PENDING
+no processing promotion occurs while OFF
+Commerce lookup denied / Tool not effectively available according to runtime grant
+no source data deleted
+```
+
+### R3 — explicit merchant ON activates processing/retrieval
+
+Enable `merchant_knowledge` through the existing Recovery Settings feature-preference path.
+
+Prove:
+
+1. exact `ShopFeaturePreference.enabled=true` is persisted;
+2. existing periodic PENDING reconciliation discovers the previously staged eligible revision without a new queue type;
+3. Background processes `PENDING -> PROCESSING -> ACTIVE`;
+4. Commerce retrieves only eligible current-shop ACTIVE chunks;
+5. the Tool result remains `UNTRUSTED_REFERENCE`.
+
+### R4 — OFF is non-destructive and immediate at authority boundaries
+
+Disable Merchant Knowledge through the same existing feature-preference path.
+
+Prove:
+
+```text
+ShopFeaturePreference.enabled=false
+ACTIVE source/revision/chunks/vector rows retained
+uploaded asset retained
+new PENDING work is not ingested/promoted
+Commerce retrieval fails closed before embedding/vector query
+```
+
+### R5 — re-enable reuses retained ACTIVE knowledge
+
+Re-enable without refetch/reupload. Previously retained valid ACTIVE knowledge must become retrievable immediately, subject to current plan/source/provenance rules. Any eligible PENDING work may resume through periodic reconciliation.
+
+### R6 — file path
+
+Validate one CSV or XLSX direct-to-private-R2 source through signed browser PUT, finalisation, Background hash/format verification and ACTIVE promotion while Merchant Knowledge is ON.
+
+Validate bucket CORS permits the real deployed application origin PUT/preflight and does not provide public read/list access.
+
+### R7 — entitlement/downgrade behaviour
+
+Prove:
+
+- disallowed source type remains persisted/dormant;
+- allowed sources beyond `maxKnowledgeSources` remain persisted/dormant;
+- lower content limit creates the normal non-destructive entitlement-change replacement only while effectively enabled;
+- plan re-entitlement or merchant re-enable does not by itself require refetch of retained valid ACTIVE content.
+
+### R8 — isolation/security/language
+
+Prove cross-shop lookup returns no foreign chunk; multilingual query/source retrieval works using deployed embedding identity; instruction-like Merchant Knowledge cannot grant/invoke an otherwise unavailable Tool; source language does not control customer reply language.
+
+### R9 — queue repair
+
+Simulate initial enqueue loss for an ON merchant. Durable PENDING reconciliation must later publish the same deterministic C4 job and converge.
 
 ## Work Items
 
-- [ ] Add deterministic public-page fixture and merchant knowledge system scenario.
-- [ ] Execute ingestion/reconcile/lookup/security/language/downgrade/refresh cases.
+- [ ] Add activation OFF -> configure -> ON -> process -> OFF -> deny -> ON scenario.
+- [ ] Add WEB_PAGE and upload fixtures.
+- [ ] Add real private-R2 CORS/presigned-PUT deployment evidence.
+- [ ] Add tenant/language/security/downgrade/queue-repair cases.
 - [ ] Capture bounded evidence and cleanup.
-
-## Interfaces / Contracts
-
-Terminal integrated validation of Merchant Knowledge.
 
 ## Dependencies
 
-- ARCH-023-DATABASE-001
-- ARCH-023-DATABASE-003
-- ARCH-023-SHARED-004
-- ARCH-023-ADMIN-004
-- ARCH-023-SHOPIFY-003
-- ARCH-023-SHOPIFY-004
-- ARCH-023-BACKGROUND-003
-- ARCH-023-BACKGROUND-004
-- ARCH-023-COMMERCE-001
-- ARCH-023-COMMERCE-002
-- ARCH-023-GATEWAY-001
-
-## Enables
-
-None
+- `ARCH-023-DATABASE-001`
+- `ARCH-023-SHARED-002`
+- `ARCH-023-ADMIN-004`
+- `ARCH-023-SHOPIFY-004`
+- `ARCH-023-SHOPIFY-005`
+- `ARCH-023-BACKGROUND-004`
+- `ARCH-023-BACKGROUND-005`
+- `ARCH-023-COMMERCE-002`
+- `ARCH-023-COMMERCE-004`
+- `ARCH-023-GATEWAY-001`
 
 ## Acceptance Criteria
 
-- [ ] One logical entry with multiple locale URLs consumes one entry entitlement.
-- [ ] Cross-shop lookup returns no foreign chunk.
-- [ ] Unsafe/failed refresh leaves previous active knowledge usable.
-- [ ] English customer can receive an English answer derived from shop-language French knowledge.
-- [ ] Knowledge content cannot add/refund/execute an ungranted tool.
-- [ ] Embedding provenance mismatch fails closed.
+- [ ] Current subscription/plan grants configuration access but Merchant Knowledge starts OFF without preference.
+- [ ] OFF blocks Background processing and Commerce retrieval without deleting data.
+- [ ] Explicit merchant ON causes eligible PENDING work to be processed and ACTIVE knowledge to be retrievable.
+- [ ] Disable then re-enable preserves/reuses retained ACTIVE knowledge.
+- [ ] WEB_PAGE and private-R2 CSV/XLSX paths both work.
+- [ ] Cross-shop, entitlement, multilingual and runtime-data-authority boundaries hold.
+- [ ] Queue loss is repaired by durable PENDING reconciliation.
+- [ ] R2 browser PUT CORS is validated from the deployed application origin.
 
 ## Validation
 
-- [ ] Integrated system scenario against architecture-approved Render/local topology.
-- [ ] Database evidence for revision/chunk/provenance lifecycle.
+- [ ] Integrated system scenario against architecture-approved test topology.
+- [ ] Database evidence for preference/source/revision/chunk/provenance lifecycle.
 - [ ] Queue reconciliation evidence after simulated enqueue loss.
-- [ ] `git diff --check` for system-test repository changes.
+- [ ] R2 preflight/PUT evidence and no public read/list exposure.
+- [ ] `git diff --check`.
 
 ## Stop Condition
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin enabled or follow-on tasks.
-
-## Implementation Notes
-
-None
+Set status `review`, complete Completion Report, return to `moda_architect` and STOP.
 
 ## Completion Report
 
 ### Status
-
 Not Started
-
 ### Files Changed
-
-None
-
+None.
 ### Work Completed
-
-None
-
+None.
 ### Validation Results
-
-None
-
+None.
 ### Deviations
-
-None
-
+None.
 ### Assumptions
-
-None
-
+None.
 ### Unresolved Issues
-
-None
-
+None.
 ### Architectural Concerns
-
-None
+None.
 
 ## Architect Review
 
 ### Review Status
-
 Pending
-
 ### Review Notes
-
 None
-
 ### Reviewed Files
-
 None
-
 ### Validation Reviewed
-
 None
-
 ### Architecture Conformance
-
 Pending.
-
 ### Follow-up
-
 None
