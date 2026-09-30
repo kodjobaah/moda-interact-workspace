@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-09-30T12:08:44Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
@@ -565,9 +565,141 @@ another task worktree reused: no
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-09-30
+
+Reviewed the returned Attempt 2 implementation snapshot identified by the handoff as
+implementation commit `c9b26aa` and parent report commit `598af8d8` against the original
+ADMIN-001 contract and the complete Attempt 1 correction contract. Attempt 2 is accepted.
+
+A1-R1 is resolved. Supported-feature rendering is now derived from one bounded control
+model that combines catalogue and existing-plan Feature rows and filters
+`merchant_knowledge` only after that combined identity set is built. The builder therefore
+renders exactly one Merchant Knowledge control for both new and existing plans; that
+control is checked, disabled and labelled as included by product policy. No second generic
+editable Merchant Knowledge checkbox remains.
+
+A1-R2 is resolved through the production persistence boundary rather than a test-only
+materialisation path. Both create and update invoke
+`persistMerchantPricingPlanFeatures()` inside the existing Merchant Pricing Plan
+transaction. The helper persists the deterministic desired mapping objects to
+`MerchantPricingPlanFeature`; when an operational BillingPlan already exists it uses the
+same objects to delete removed mappings and upsert enabled `BillingPlanFeature` rows with
+identical configuration. The helper contains no `ShopFeaturePreference` mutation.
+
+The focused behavioral regression exercises that helper with the real desired-feature
+builder and proves exact Merchant Knowledge JSON persistence, preservation of unrelated
+requested configuration, preservation of inactive retained configuration, identical
+BillingPlan mirror configuration and absence of preference writes. The existing-plan UI
+regression proves there is exactly one locked Merchant Knowledge product-policy control.
+
+The remainder of the original implementation remains architecture-conformant by
+inspection: the ordinary `merchant_knowledge` Feature remains `ALWAYS_ENABLED`, active and
+`systemRequired=false`; conflicting persisted identity/state fails closed; the generic
+Feature toggle cannot deactivate it; C2 parsing uses the published Shared contract; every
+selected purpose/data-format pair is revalidated against active PostgreSQL catalogue
+rows inside the save transaction; no plan-kind/name/handle-specific Merchant Knowledge
+policy exists; invalid or missing existing configuration is surfaced for explicit repair;
+and the rollout helper does not invent defaults.
+
+The Admin package and lockfile pin exactly
+`@modainteract/moda-interact-shared@1.0.1`. The accepted ARCH-023 database revision is the
+recorded initialized submodule commit `2eb17ee910491e8f9df82736fc0a843844415947`; no schema
+or migration edit is part of this task.
+
+A1-R3/A1-R4 are also resolved. The Completion Report now records the launcher-resolved
+dedicated parent and implementation worktrees, matching task branches, start-of-attempt
+synchronization, recursive submodule preparation, shared-checkout non-use and claim
+evidence for both attempts. Work Items and Acceptance Criteria match the completed task
+surface. The two broad unit failures and three broad lint errors remain unchecked only as
+explicit unrelated repository-wide failures; changed production files have no matching
+lint/type diagnostics and the focused task suites pass.
+
+The review archive intentionally omits Git metadata and installed `node_modules`.
+Accordingly the architect did not claim to re-run dependency-backed validation from the
+archive; the submitted validation record was inspected alongside the actual returned
+source and tests.
+
+### Reviewed Files
+
+Implementation repository:
+
+- `package.json`
+- `package-lock.json`
+- `src/lib/admin/merchant-knowledge-plan-policy.ts`
+- `src/lib/admin/merchant/pricing-builder-payload.ts`
+- `src/lib/admin/merchant/pricing-plan.ts`
+- `src/lib/admin/merchant/pricing-plan-feature-controls.ts`
+- `src/lib/admin/merchant/merchant-pricing-plan-feature-persistence.ts`
+- `src/app/actions/merchant-pricing-plan.ts`
+- `src/app/actions/feature-catalogue.ts`
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-catalog.tsx`
+- `src/app/(protected)/billing/page.tsx`
+- `tests/unit/merchant-knowledge-plan-policy.test.ts`
+- `tests/unit/merchant-pricing-builder-payload.test.ts`
+- `tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts`
+- `tests/security/admin-merchant-pricing-plan.test.mjs`
+- accepted ARCH-023 schema exposed through the Admin `database` submodule snapshot
+
+Parent workspace:
+
+- `docs/decisions/admin/ARCH-023/ADMIN-001-author-merchant-knowledge-plan-entitlement.md`
+- `docs/decisions/admin/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
+### Validation Reviewed
+
+- Attempt 2 focused Merchant Knowledge policy/payload/save suites: **19/19 passed**.
+- Attempt 2 focused pricing security suite: **12/12 passed**.
+- Submitted `npm run prisma:validate`, `npx tsc --noEmit --pretty false`, production build,
+  changed-file diagnostics and `git diff --check` all passed.
+- Changed production-file ESLint reported no errors; the two explicitly invoked test files
+  are ignored by the repository ESLint configuration.
+- Full `npm run test:unit` recorded **168 passed / 2 unrelated failures** in the existing
+  merchant-pricing translation suites. Neither failure is in a changed ADMIN-001 file.
+- Full `npm run lint` recorded three unrelated existing errors in billing/promotions UI;
+  none is in the changed production surface.
+- Confirmed by source inspection that create/update both invoke the same persistence
+  helper, the BillingPlan mirror is generic, and there is no `ShopFeaturePreference`
+  operation in that helper.
+- Confirmed the package manifest and lockfile pin exact Shared `1.0.1`.
+- The review archive has no installed `node_modules`; dependency-backed commands were not
+  independently re-run in the review container.
+
+### Architecture Conformance
+
+Conforms. ADMIN-001 remains an Admin-owned pricing-catalogue authoring boundary over the
+accepted ARCH-023 database and Shared contracts. Merchant Knowledge remains an ordinary
+Feature selected by product policy rather than a schema-level required Feature. Plan
+configuration is validated against C2 plus the active Purpose/Data Format catalogue and is
+copied generically into an already-materialised BillingPlan without semantic
+transformation.
+
+No second BillingPlan materialisation mechanism, plan-specific Merchant Knowledge
+default, preference reconstruction, schema/migration change, source CRUD, Background
+processing or Commerce runtime behavior is introduced. PostgreSQL remains authoritative
+for the selectable source-type catalogue and explicit existing-plan repair state.
+
+### Follow-up
+
+`ARCH-023-ADMIN-001` is **Complete / Accepted at Attempt 2**.
+
+This acceptance satisfies one prerequisite of `ARCH-023-COMMERCE-002`, but does not make
+that task Ready because `ARCH-023-COMMERCE-001` is still Ready rather than Complete in the
+current snapshot. No task becomes newly Ready solely from ADMIN-001 acceptance. The
+existing executable frontier therefore retains `ARCH-023-ADMIN-003`,
+`ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001` and
+`ARCH-023-SHOPIFY-001`. No downstream implementation is started implicitly by this
+review.
+
+#### Historical Attempt 1 — Changes Requested — 2026-09-30
+
+##### Review Notes
+
 
 The implementation is substantially aligned with the ARCH-023 plan-entitlement design, but Attempt 1 is not yet acceptable.
 
@@ -581,7 +713,7 @@ A1-R4 — Before returning Attempt 2 to review, update the task-owned Work Items
 
 No database/schema change, new Shared release, plan-specific defaults, preference reconstruction, or downstream ARCH-023 task is authorised by these corrections. Production changes should be limited to A1-R1 unless the new behavioral tests expose a defect within ADMIN-001 scope.
 
-### Reviewed Files
+##### Reviewed Files
 
 - `src/lib/admin/merchant-knowledge-plan-policy.ts`
 - `src/lib/admin/merchant/pricing-builder-payload.ts`
@@ -598,14 +730,14 @@ No database/schema change, new Shared release, plan-specific defaults, preferenc
 - `package.json` / `package-lock.json`
 - accepted ARCH-023 database schema exposed through the Admin `database` submodule snapshot
 
-### Validation Reviewed
+##### Validation Reviewed
 
 Submitted evidence records: focused pricing security 12/12 passed; focused policy/payload tests 16/16 passed; Prisma validation, TypeScript, changed-file diagnostics, `git diff --check`, and production build passed. The submitted report also records broader unrelated translation/security/lint failures. These results are not sufficient for acceptance because R15's action-level plan-save/mirror behavioral proof is missing.
 
-### Architecture Conformance
+##### Architecture Conformance
 
 The server-side product-policy, C2/catalogue validation, configuration-preserving desired mapping, generic BillingPlan mirror, rollout-warning helper and no-preference-write design conform to ARCH-023 by inspection. The existing-plan builder rendering described in A1-R1 does not conform to R7 because it exposes a second editable Merchant Knowledge control. Workflow evidence is also incomplete under the architect worktree-isolation protocol.
 
-### Follow-up
+##### Follow-up
 
 Return the same task to the normal `/moda-task ARCH-023-ADMIN-001` execution path. The next successful claim is Attempt 2. Complete A1-R1 through A1-R4, rerun the focused/required validation appropriate to the changed surface, update the Completion Report, set status to `review`, and STOP. Do not start another ARCH-023 Admin task.
