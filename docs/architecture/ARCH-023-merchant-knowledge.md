@@ -3264,6 +3264,15 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
+### 2026-09-30 — ADMIN-003 Attempt 1 changes requested
+
+- Reviewed the protected Platform/Shop Agent Instructions console as substantively aligned with the intended prompt lifecycle, CAS, pending-category promotion and Admin authorization boundary.
+- Found a real-schema audit incompatibility: the accepted ARCH-021 database has a unique partial index on non-null `CommerceAuditEvent.operationId`, while Attempt 1 reuses one operation ID across paired audit rows for create-draft and publish operations. Attempt 2 must preserve the required audit events but assign a distinct non-null operation ID to each inserted audit row.
+- Reconciled the task-local Platform/Shop prompt bound to 32,000 characters because the accepted `CommerceAgentPromptRevision_prompt_text_check` enforces that limit and ARCH-023 does not require a schema expansion to 100,000 characters.
+- Kept the required pending-category PostgreSQL transaction proof open. Attempt 2 must exercise the production Prisma mutation against a task-local disposable PostgreSQL database with accepted migrations and prove success plus rollback/CAS behavior, including the audit uniqueness fix.
+- Required exact launcher-resolved worktree/branch, synchronization and recursive-submodule evidence in the Completion Report.
+- Returned ADMIN-003 to Ready with Attempt 1 preserved. No dependent task was promoted and no database/Commerce/Shopify follow-on work was started.
+
 ### 2026-09-30 — SHOPIFY-002 Attempt 2 accepted
 
 - Accepted the reusable pending Store Category selection lifecycle after the task-owned PostgreSQL proof exercised the production Prisma transaction against the accepted pgvector PostgreSQL migrations.

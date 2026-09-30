@@ -36,7 +36,17 @@ Individual task YAML is authoritative.
 |---|---|---|---|
 | [ADMIN-001](ADMIN-001-author-merchant-knowledge-plan-entitlement.md) | Merchant Knowledge Feature/default plan inclusion and plan-specific C2 configuration | Ready | DATABASE-001, SHARED-002 |
 | [ADMIN-002](ADMIN-002-manage-store-categories-default-templates.md) | Store Category, canonical-English default templates and Shopify taxonomy mappings | Complete — Accepted Attempt 2 | DATABASE-001 |
-| [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Complete | DATABASE-001, ADMIN-002 |
+| [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Ready — Changes Requested Attempt 1 | DATABASE-001, ADMIN-002 |
+
+### ADMIN-003 Attempt 1 review
+
+ADMIN-003 is `Ready` for Attempt 2 after architect review found two database-bound correctness issues and one required validation/evidence gap:
+
+- each `CommerceAuditEvent` row must use a distinct non-null `operationId` under the accepted unique index;
+- Admin Platform/Shop prompt input is bounded to the accepted database limit of 32,000 characters;
+- the pending-category publish/rollback path must pass the required real PostgreSQL integration proof, and the Completion Report must contain exact launcher/worktree synchronization evidence.
+
+No dependent task is promoted by this review.
 
 ## Removed obsolete decomposition
 

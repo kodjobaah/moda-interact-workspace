@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 41
-executor: copilot
-claimed_at: 2026-09-30T11:55:11Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
@@ -287,7 +287,7 @@ Validation:
 
 ```text
 promptText trimmed non-empty
-promptText <= 100_000 characters
+promptText <= 32_000 characters
 reason trimmed 1..1000
 ```
 
@@ -709,14 +709,44 @@ Task report: this file only.
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-Pending.
+The protected route, environment mapping, lineage/DRAFT handling, CAS mutations, pending-category promotion shape, revision history, SUPER_ADMIN mutation gate and additive Platform/Shop configuration model are substantively aligned with the task. Attempt 1 is not acceptable yet because the submitted implementation conflicts with accepted database invariants and the required live transaction proof remains open.
+
+Correction contract for Attempt 2:
+
+1. **A1-R1 — Do not reuse one `CommerceAuditEvent.operationId` across multiple audit rows.** The accepted ARCH-021 database migration has the partial unique index `CommerceAuditEvent_operation_id_unique` on every non-null `operationId`. `allocateDraft()` currently reuses one UUID for `CREATE_AGENT_PROMPT` and `CREATE_AGENT_PROMPT_DRAFT`; publish currently reuses one UUID for `PUBLISH_AGENT_PROMPT_REVISION` and `SET_AGENT_PROMPT`. Those flows fail on the real database. Preserve every required audit event, but give each inserted `CommerceAuditEvent` its own fresh non-null `operationId`. Do not change the database schema or remove the unique index. Add focused regressions proving paired audit rows receive distinct operation IDs.
+2. **A1-R2 — Align the Admin prompt-text bound with the accepted database guard.** The accepted schema retains `CommerceAgentPromptRevision_prompt_text_check` with `length("promptText") <= 32000`, while Attempt 1 accepts/UI-advertises up to 100,000 characters. ARCH-023 has no architecture-level requirement for a 100,000-character Platform/Shop prompt and this task explicitly excludes schema changes. The task contract is therefore corrected to **32,000 characters**. Update server validation, UI `maxLength` and focused tests so 32,000 is accepted and 32,001 is rejected before Prisma/database execution.
+3. **A1-R3 — Complete the required real-PostgreSQL pending-category transaction proof.** Run the production Prisma mutation path against a task-local disposable PostgreSQL instance with the accepted database migrations applied. Using a task-local disposable container/command is sufficient; do not create a shared permanent Admin database harness solely for this task. The proof must cover at minimum: successful pending-category publish, exact reviewed prompt publication, active configuration pointer update, category promotion, pending-field clearing with `pendingSelectionGeneration` preserved, and complete rollback on stale configuration/profile CAS. It must also exercise the paired audit writes so the `operationId` uniqueness correction is proven against the real schema. If the disposable database cannot be provisioned/executed, return the task `blocked` with this Validation item unchecked rather than returning to review.
+4. **A1-R4 — Make execution provenance durable.** Before returning Attempt 2 to review, record in the Completion Report the exact launcher-resolved parent and implementation worktree paths/branches, start-of-attempt synchronization results for both, and recursive submodule preparation/evidence. General statements that dedicated worktrees existed or were clean are not sufficient for the architect worktree-isolation policy.
+
+No unrelated refactor, database migration, Commerce change, Shopify change or follow-on task is authorized by this review.
+
 ### Reviewed Files
-Pending.
+- `moda-interact-admin/src/app/(protected)/system-controls/agent-instructions/page.tsx`
+- `moda-interact-admin/src/app/actions/agent-instructions.ts`
+- `moda-interact-admin/src/components/admin/agent-instructions/agent-instructions-console.tsx`
+- `moda-interact-admin/src/components/admin/admin-shell.tsx`
+- `moda-interact-admin/src/components/admin/sidebar.tsx`
+- `moda-interact-admin/src/lib/admin/agent-instructions.ts`
+- `moda-interact-admin/src/lib/admin/commerce-environment.ts`
+- `moda-interact-admin/tests/unit/agent-instructions.test.ts`
+- `moda-interact-admin/tests/unit/agent-instruction-actions.test.ts`
+- `moda-interact-admin/database/prisma/schema.prisma`
+- `moda-interact-admin/database/prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`
+- `moda-interact-admin/database/prisma/migrations/20260924103000_arch021_simplify_agent_configuration/migration.sql`
+- this task Completion Report
+
 ### Validation Reviewed
-Pending.
+- Submitted focused Agent Instructions result: 15/15 passed.
+- Submitted TypeScript, changed-production-file ESLint, Prisma validation, production build and `git diff --check`: passed.
+- Submitted broad-suite failures were inspected as reported and are outside the Agent Instructions changed surface.
+- Required pending-category real-database integration validation remains unchecked.
+- The supplied review archive contains no installed dependency tree or live PostgreSQL runtime, so dependency-backed validation was not represented as independently rerun by the architect.
+
 ### Architecture Conformance
-Pending.
+The implementation follows the intended Admin ownership boundary and reuses the existing Commerce prompt/revision/configuration tables rather than introducing duplicate durable state or a private Commerce HTTP API. However, Attempt 1 cannot be accepted while its audit writes violate an accepted database uniqueness constraint, its prompt length validation exceeds the accepted database constraint, and the explicitly required real transaction proof remains incomplete.
+
 ### Follow-up
-Pending.
+Return the same task to `ready` with `attempt: 1` preserved and the execution claim cleared. The next authorized claim becomes Attempt 2. No downstream task becomes Ready from this review.
