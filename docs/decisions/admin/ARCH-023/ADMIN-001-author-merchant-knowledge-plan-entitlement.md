@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-09-30T12:08:44Z
@@ -423,17 +423,17 @@ existing invalid/missing plan is reported, not silently defaulted
 
 ## Work Items
 
-- [ ] Adopt accepted database gitlink and Shared package.
-- [ ] Add Merchant Knowledge product-policy helper.
-- [ ] Protect fixed feature from generic deactivation.
-- [ ] Extend pricing builder payload/read model.
-- [ ] Load active Purpose/Data Format catalogue.
-- [ ] Add explicit configuration UI.
-- [ ] Add authoritative C2/catalogue validation.
-- [ ] Preserve generic mapping configuration across plan edits.
-- [ ] Copy generic feature configuration into existing BillingPlan mirror.
-- [ ] Add rollout warning/report for existing plans needing explicit config.
-- [ ] Add focused tests.
+- [x] Adopt accepted database gitlink and Shared package.
+- [x] Add Merchant Knowledge product-policy helper.
+- [x] Protect fixed feature from generic deactivation.
+- [x] Extend pricing builder payload/read model.
+- [x] Load active Purpose/Data Format catalogue.
+- [x] Add explicit configuration UI.
+- [x] Add authoritative C2/catalogue validation.
+- [x] Preserve generic mapping configuration across plan edits.
+- [x] Copy generic feature configuration into existing BillingPlan mirror.
+- [x] Add rollout warning/report for existing plans needing explicit config.
+- [x] Add focused tests.
 
 ## Interfaces / Contracts
 
@@ -465,26 +465,26 @@ Planned downstream Shopify billing/materialisation and Merchant Knowledge config
 
 ## Acceptance Criteria
 
-- [ ] `merchant_knowledge` remains ordinary (`systemRequired=false`) but is product-policy locked into supported plan authoring.
-- [ ] Every newly-created/updated Merchant Pricing Plan receives one valid Merchant Knowledge mapping.
-- [ ] Source-type selection is data-driven from active database catalogue rows.
-- [ ] No plan-name/plan-kind source-type rules exist.
-- [ ] Existing unrelated Feature configuration is preserved.
-- [ ] Existing materialised BillingPlan receives identical generic configuration through the existing mirror path.
-- [ ] Existing unconfigured plans are surfaced for explicit repair rather than assigned guessed defaults.
-- [ ] No ShopFeaturePreference is mutated.
-- [ ] No DB schema or consumer-runtime work is introduced.
+- [x] `merchant_knowledge` remains ordinary (`systemRequired=false`) but is product-policy locked into supported plan authoring.
+- [x] Every newly-created/updated Merchant Pricing Plan receives one valid Merchant Knowledge mapping.
+- [x] Source-type selection is data-driven from active database catalogue rows.
+- [x] No plan-name/plan-kind source-type rules exist.
+- [x] Existing unrelated Feature configuration is preserved.
+- [x] Existing materialised BillingPlan receives identical generic configuration through the existing mirror path.
+- [x] Existing unconfigured plans are surfaced for explicit repair rather than assigned guessed defaults.
+- [x] No ShopFeaturePreference is mutated.
+- [x] No DB schema or consumer-runtime work is introduced.
 
 ## Validation
 
-- [ ] focused pricing-policy/payload/action tests
-- [ ] existing Merchant Pricing Plan tests
-- [ ] `npm run prisma:validate`
+- [x] focused pricing-policy/payload/action tests
+- [x] existing Merchant Pricing Plan tests
+- [x] `npm run prisma:validate`
 - [ ] `npm run test:unit`
 - [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -493,21 +493,74 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Ready for Architect Review
+Ready for Architect Review (Attempt 2)
 ### Files Changed
-`package.json`, `package-lock.json`, the billing route and drawer wiring, pricing builder/catalogue UI, Merchant Knowledge policy and payload/read-model helpers, pricing and Feature actions, focused unit/security tests, and updated Shared-version/progressive-disclosure security assertions.
+Pricing-plan action and builder, Merchant Knowledge feature-control and persistence helpers, focused plan-save unit coverage, and the pricing-plan security contract test. No package, database gitlink, schema, or migration change was made in Attempt 2.
 ### Work Completed
-Pinned Shared to `1.0.1`; made Merchant Knowledge an ordinary Feature fixed by Admin product policy; added explicit C2 configuration authoring with active Purpose/Data Format options and transactional server validation; retained unrelated feature mapping configuration and mirrored identical JSON into an existing BillingPlan; surfaced invalid/missing/stale plan configurations for explicit repair without preference writes or guessed defaults.
+Addressed A1-R1 by deriving all Supported features controls from one tested model: an existing Merchant Knowledge mapping now contributes no second generic control, while the single product-policy control remains checked and disabled. Addressed A1-R2 by extracting the existing transaction's mapping persistence and BillingPlan mirror into a helper used by the current create/update action; behavioral tests prove exact Merchant Knowledge JSON persistence, preservation of requested and inactive mappings, identical mirror configuration, and no preference writes. Addressed A1-R3/A1-R4 with both attempts' verified launcher provenance and evidence-aligned task checklists.
 ### Validation Results
-Focused pricing security: 12/12 passed. Focused policy/payload unit tests: 16/16 passed, including rollout-report states. Updated related security contracts: 41/42 passed; remaining failure is the pre-existing internationalization key-catalogue mismatch. Full unit suite: 142 passed, 2 failed in unrelated translation workbook/translation validation tests. Full security suite retains unrelated stale-contract failures in billing pack-status, internationalization catalogue, security-boundary, and tenant KPI tests. `npm run prisma:validate`, `npx tsc --noEmit --pretty false`, changed-file Pylance diagnostics, `git diff --check`, and `npm run build` passed. Full lint reports existing issues in billing/promotions code and unrelated warnings; no task builder hook warning was reported. Build emitted existing BullMQ optional-dependency warnings.
+Attempt 2 focused Merchant Knowledge policy/payload/save tests: 19/19 passed. Focused pricing security: 12/12 passed. `npm run prisma:validate`, `npx tsc --noEmit --pretty false`, changed-file diagnostics, `git diff --check`, and `npm run build` passed. The build emitted existing BullMQ optional-dependency warnings. Changed production-file ESLint reported no errors; the two explicitly passed test files are ignored by the repository ESLint configuration.
+
+The full `npm run test:unit` run completed with 168 passed and 2 unrelated failures: `tests/unit/merchant-pricing-translation-workbook.test.ts` / “rejects stale metadata, locale/header changes, and highlight identity changes” failed its existing `assert.ok` at line 207; `tests/unit/merchant-pricing-translations.test.ts` / “returns all bounded validation issues in canonical order” did not produce the expected `PLAN_HANDLE_MISMATCH` issue at line 211. Both are outside the changed files and match the two translation failures recorded in Attempt 1. The full `npm run lint` remains blocked by three errors outside this task: `src/components/admin/billing-drawers.tsx:178` (`react-hooks/purity`, `Date.now` during render), `src/components/admin/promotions/promotion-campaign-reactivation-drawer.tsx:31` (`react-hooks/purity`, `Date.now` during render), and `src/components/admin/promotions/promotion-campaign-reactivation.tsx:74` (`react-hooks/set-state-in-effect`). Changed production files were independently checked with ESLint; no changed-file diagnostics were reported. The task-relevant validation therefore passes without changing unrelated translation, billing, or promotions code.
 ### Deviations
-Updated existing security expectations for the mandated Shared `1.0.1` release and the expanded billing catalogue props.
+Updated existing source-contract security assertions to follow the production transaction helper/control-model boundary, and extracted the existing plan-feature write sequence so the required create/update/mirror behavior can be tested without adding a separate materialization path.
 ### Assumptions
-The downstream Architect Review will assess the remaining unrelated repository-wide baseline failures separately.
+The downstream Architect Review will assess the repeatable, unrelated translation-unit and billing/promotions lint failures separately; no corresponding diagnostics occur in the changed production files.
 ### Unresolved Issues
-Repository-wide baseline failures remain in translation tests, billing pack-status and tenant KPI security assertions, internationalization catalogue alignment, security-boundary source-shape assertions, and lint findings outside the Merchant Knowledge implementation.
+The two repository-wide translation unit failures and three billing/promotions lint errors listed above remain unresolved and outside ADMIN-001 scope. The full broad security suite was not repeated in Attempt 2; its unrelated Attempt 1 failures remain documented above in the original report history.
 ### Architectural Concerns
-None identified; no schema or consumer-runtime changes were introduced.
+None identified; no schema, consumer-runtime, preference, or second materialization mechanism was introduced.
+
+### Launcher Preparation Evidence (Attempt 1)
+
+Recorded from the Attempt 1 launcher packet; preparation was not rerun to create this historical evidence.
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-001
+parent branch: task/ARCH-023-ADMIN-001
+parent remote task-branch fast-forward: not-needed
+parent origin/main incorporated: already-current
+parent synchronized HEAD: 1bd4cf4306dbe31c504a212a7df869faf0d125db
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-ADMIN-001
+implementation branch: task/ARCH-023-ADMIN-001
+implementation remote task-branch fast-forward: not-needed
+implementation origin/main incorporated: already-current
+implementation synchronized HEAD: abb828dd9f42e510627474f3048426102d9c2938
+recursive submodule sync: passed
+recursive submodule update/init: passed
+recursive submodule status: ready
+database recorded commit: 2eb17ee910491e8f9df82736fc0a843844415947 (initialized)
+claim executor: copilot
+claimed_at: 2026-09-30T08:56:24Z
+Attempt 1 claim commit: 4b868fdd366ebfaf438e92982d077473f9c1b6d7 (committed and pushed)
+```
+
+### Launcher Preparation Evidence (Attempt 2)
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-001
+parent branch: task/ARCH-023-ADMIN-001
+parent remote task-branch fast-forward: not-needed
+parent origin/main incorporated: yes (already-current at final parent synchronization)
+parent synchronized HEAD before claim: 3c63add1d0af6789acfc7ac4703acec4a37d8022
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-ADMIN-001
+implementation branch: task/ARCH-023-ADMIN-001
+implementation remote task-branch fast-forward: not-needed
+implementation origin/main incorporated: yes
+implementation synchronized HEAD: 2162216a58c3d6d40e935104e6ef95d39fa04ace
+recursive submodule sync: passed
+recursive submodule update/init: passed
+recursive submodule status: ready
+database recorded commit: 2eb17ee910491e8f9df82736fc0a843844415947 (initialized)
+claim executor: copilot
+claimed_at: 2026-09-30T12:08:44Z
+Attempt 2 claim commit: 8c0048dbea8179f8375fd8e6d487ca537ed376fa (committed and pushed)
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+```
 
 ## Architect Review
 
