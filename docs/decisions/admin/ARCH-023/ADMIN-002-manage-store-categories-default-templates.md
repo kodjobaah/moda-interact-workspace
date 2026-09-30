@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-09-30T08:21:30Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
@@ -516,24 +516,24 @@ Planned Shopify onboarding/profile tasks will also depend on this catalogue afte
 
 ## Acceptance Criteria
 
-- [ ] Admin has one authoritative Store Category management surface.
-- [ ] Category/default-template invariants are enforced server-side.
-- [ ] Category slug is immutable after creation and no Admin update path can rename it.
-- [ ] Templates remain mutable current records with editVersion CAS; no revision table reappears.
-- [ ] Shopify taxonomy mappings are managed deterministically.
-- [ ] No category/template translation database or queue behavior exists.
-- [ ] Existing Admin auth/audit conventions are preserved.
-- [ ] No Shopify/Commerce runtime implementation is introduced.
+- [x] Admin has one authoritative Store Category management surface.
+- [x] Category/default-template invariants are enforced server-side.
+- [x] Category slug is immutable after creation and no Admin update path can rename it.
+- [x] Templates remain mutable current records with editVersion CAS; no revision table reappears.
+- [x] Shopify taxonomy mappings are managed deterministically.
+- [x] No category/template translation database or queue behavior exists.
+- [x] Existing Admin auth/audit conventions are preserved.
+- [x] No Shopify/Commerce runtime implementation is introduced.
 
 ## Validation
 
-- [ ] focused category/template/action tests
-- [ ] Admin security regressions
-- [ ] `npm run test:unit`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] Focused category/template/action tests: 23 passed.
+- [x] Focused Admin catalogue/security/navigation regressions: 8 passed.
+- [x] `npm run test:unit` executed; 157 passed and 2 unrelated existing merchant-pricing translation tests failed.
+- [x] `npm run lint` executed; 3 unrelated existing errors remain in billing/promotions files. Changed-file ESLint passed with zero errors.
+- [x] `npm run build` passed; existing optional BullMQ dependency warnings were emitted.
+- [x] `git diff --check` passed.
+- [x] TypeScript check and changed-file diagnostics clean.
 
 ## Stop Condition
 
@@ -542,23 +542,52 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Blocked before implementation: database-owned slug immutability conflicts with requirement R5.
+Implemented and returned for Architect Review (Attempt 2).
 ### Files Changed
-No Admin source or database files changed. Only this task report was updated.
+Added the protected Store Category catalogue route, mutation actions, validation/read models, category/template/taxonomy editors, navigation integration, and focused unit/security coverage. In the parent worktree, only this report changed; no database schema, migration, or gitlink changes were made.
 ### Work Completed
-Confirmed launcher-prepared ARCH-023 database models and required audit actions are present at the initialized database pin. Confirmed the category slug trigger still rejects every slug change, including when no active or pending profile references the category.
+Implemented the authoritative Admin catalogue for categories, current default templates, and Shopify taxonomy mappings. Every mutation independently authenticates and requires `SUPER_ADMIN`, validates its contract, provisions the durable development admin within its transaction, uses the required transaction/CAS/locking rules, writes exact audit metadata, and revalidates the route. Category slug is create-only and immutable. The required Shopify localization-key warning is shown for enabled and disabled categories; Admin does not inspect locale files or persist translation state.
 ### Validation Results
-No feature validation run because the task cannot satisfy R5 within Admin repository ownership. `git diff --check` passed for the parent report.
+- TypeScript: `npx tsc --noEmit --pretty false` passed.
+- Focused unit/action/validation tests: 23 passed.
+- Focused Admin catalogue/security/navigation regressions: 8 passed.
+- Changed-file ESLint: zero errors; the ESLint configuration warns that `.mjs` and some Node test files are ignored.
+- Production build passed and includes `/system-controls/store-categories`.
+- `git diff --check` passed; changed-file diagnostics are clean.
+- Broad unit suite: 157 passed, 2 unrelated existing merchant-pricing translation tests failed (`merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`).
+- Broad lint: 3 unrelated existing errors remain in billing/promotions files; 6 warnings were also reported.
+- Broad security suite: 9 unrelated existing failure markers, including Tenant Directory KPI, purchase-status, ICU, catalogue, ARCH-014, economics, shared-release, and auth assertions. Focused catalogue/security/navigation tests passed.
 ### Deviations
-Stopped before implementation rather than attempting to bypass a database-owned trigger with application-level raw SQL or trigger manipulation.
+None. Attempt 2 follows the architect-corrected immutable-slug contract. The required localization notice was made unconditional during final contract review.
 ### Assumptions
-None.
+The existing initialized database submodule at `2eb17ee910491e8f9df82736fc0a843844415947` is authoritative and remains unchanged.
 ### Unresolved Issues
-The `CommercePromptTemplateCategory` database guard rejects `NEW.slug IS DISTINCT FROM OLD.slug` unconditionally. ADMIN-002 R5 requires changing a slug to succeed when both active and pending profile reference counts are zero, with CAS. The Admin repository cannot edit the database schema/migration under this task's ownership rules.
+No ADMIN-002 implementation blockers. The unrelated broad-suite baseline failures listed above remain outside this task's scope.
 ### Architectural Concerns
-Database-owner/architect resolution is required: revise the database guard contract through an authorized database task, or amend ADMIN-002 R5 to require immutable slugs in all cases. Once reconciled, return this same task for implementation.
+None identified. Returned to `moda_architect` as required; ADMIN-003 was not started.
 
-### Launcher Preparation Evidence
+### Attempt 2 Launcher Preparation Evidence
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-002
+parent branch: task/ARCH-023-ADMIN-002
+parent synchronized HEAD before claim: 4ec8bb9b390ddfd95ff285a35800dc07066ca861
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-ADMIN-002
+implementation branch: task/ARCH-023-ADMIN-002
+implementation synchronized HEAD before claim: abb828dd9f42e510627474f3048426102d9c2938
+recursive submodule sync/update/init: passed
+database submodule: 2eb17ee910491e8f9df82736fc0a843844415947 (initialized; unchanged)
+dependency gate: passed (ARCH-023-DATABASE-001 status complete)
+claim executor: copilot
+claimed_at: 2026-09-30T08:21:30Z
+claim attempt: 2 (previous attempt 1)
+claim commit: 7ab51b07850811b2388c716553a2d076fabf5828 (committed and pushed)
+implementation commits: 00156c9 and 255a346 (pushed to origin/task/ARCH-023-ADMIN-002)
+final implementation HEAD: 255a34651c8184683270493d082b956652c77898
+```
+
+### Attempt 1 Launcher Preparation Evidence (historical)
 
 ```text
 canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
@@ -583,7 +612,7 @@ claim attempt: 1 (previous attempt 0)
 claim commit: 81dbf731203bbbcde1e0b2472503ecfd218060f8 (committed and pushed)
 ```
 
-### Slug Immutability Conflict Evidence
+### Attempt 1 Slug Immutability Conflict Evidence (resolved by Architect Review)
 
 - At `database/prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`, `commerce.arch021_prompt_template_category_guard()` raises `ARCH021 category identity immutable` when `NEW.slug IS DISTINCT FROM OLD.slug` on any update.
 - The trigger is installed for insert/update/delete on `commerce."CommercePromptTemplateCategory"`.
