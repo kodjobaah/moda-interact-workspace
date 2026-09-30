@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 31
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-023-BACKGROUND-004
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Acquire Merchant Knowledge web pages safely
