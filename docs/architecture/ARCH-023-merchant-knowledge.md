@@ -4,7 +4,7 @@ title: Merchant knowledge, store profiles and CommerceAgent instructions
 status: agreed
 coordinator: moda_architect
 created: 2026-09-28
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # ARCH-023: Merchant knowledge, store profiles and CommerceAgent instructions
@@ -880,11 +880,13 @@ merchant-selectable category `slug` is a product/code change: its keys must ship
 `enabled`, `displayOrder`, the default template and Shopify-taxonomy mappings, but
 ARCH-023 does not create runtime translations for an arbitrary new category.
 
-For ARCH-023 merchant-selectable categories, `slug` is a stable localization identity.
-Admin MUST NOT rename an in-use merchant-selectable `slug` in place. Merchant-facing
-wording changes are made in the locale catalogues while retaining the same `slug`; a
-semantic category-identity change requires a new category/slug and the normal migration
-of any affected mappings/selections.
+For ARCH-023 merchant-selectable categories, `slug` is a stable localization identity
+and is immutable after category creation, whether or not the category is currently
+referenced by an active or pending Shop Profile. Admin MUST NOT rename a `slug` in place.
+Merchant-facing wording changes are made in the locale catalogues while retaining the
+same `slug`; a semantic category-identity change requires a new category/slug and the
+normal migration of any affected mappings/selections. This preserves the existing
+ARCH-021 database category-identity guard rather than creating a second mutability rule.
 
 `CommercePromptTemplate.displayName` and `description` remain canonical-English Admin
 metadata. The merchant onboarding flow selects a localized Store Category; it does not
@@ -3222,6 +3224,18 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — ADMIN-002 Attempt 1 blocker reconciled
+
+- Confirmed the existing ARCH-021 database guard intentionally makes Store Category
+  `id/slug` immutable after INSERT and that the accepted ARCH-023 migration does not alter
+  that invariant.
+- Corrected ADMIN-002 R4/R5/R14 so `slug` is create-only and immutable after category
+  creation, including when the category is unused; the prior conditional unused-slug
+  rename requirement was task-level drift from the stable localization-identity model.
+- No database correction task or migration is required. DATABASE-001 remains Complete,
+  ADMIN-002 returns to Ready for Attempt 2, and ADMIN-003 remains gated on ADMIN-002
+  completion.
 
 ### 2026-09-29 — DATABASE-001 Attempt 2 accepted
 

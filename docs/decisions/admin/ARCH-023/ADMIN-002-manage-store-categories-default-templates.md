@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -165,7 +165,7 @@ Do not load complete Shop rows.
 
 ### R4 — exact category input rules
 
-Create/update category fields:
+Create category fields:
 
 ```text
 slug         1..128, regex /^[a-z][a-z0-9-]{0,127}$/
@@ -173,7 +173,6 @@ displayName  trimmed 1..255
 description  trimmed 0..2000
 displayOrder integer 0..1_000_000
 enabled      boolean
-expectedEditVersion positive integer on update
 reason       trimmed 1..1000
 ```
 
@@ -182,6 +181,19 @@ Create initializes:
 ```text
 editVersion = 1
 ```
+
+Update category fields:
+
+```text
+displayName         trimmed 1..255
+description         trimmed 0..2000
+displayOrder        integer 0..1_000_000
+enabled             boolean
+expectedEditVersion positive integer
+reason              trimmed 1..1000
+```
+
+`slug` is create-only and MUST NOT be accepted by the category update contract.
 
 Update uses CAS:
 
@@ -192,22 +204,20 @@ editVersion += 1
 
 CAS miss returns a bounded stale-write error.
 
-### R5 — category slug stability
+### R5 — category slug identity is immutable after creation
 
-Slug can be changed only when both are zero:
+`CommercePromptTemplateCategory.slug` is a stable category/localization identity and is
+immutable after INSERT, whether or not any active or pending Shop Profile references the
+category.
 
-```text
-activeShopProfiles
-pendingShopProfiles
-```
+Admin MUST NOT expose a slug rename control and no Admin update path may write `slug`.
+The existing database category-identity guard remains the authoritative persistence
+backstop; this task MUST NOT alter or bypass that guard.
 
-If either relation exists, reject slug change:
-
-```text
-An in-use Store Category slug is immutable.
-```
-
-Changing merchant-facing wording uses Shopify locale files; it does not require changing the slug.
+Changing merchant-facing wording uses Shopify locale files while retaining the same slug.
+A different slug means a different category identity: create the new category/slug, ship
+its required Shopify locale keys before enabling it, and migrate any mappings/selections
+through an explicitly authorised workflow rather than renaming the existing row in place.
 
 ### R6 — category enable/disable rules
 
@@ -454,8 +464,7 @@ Tests must prove:
 non-SUPER_ADMIN mutation denied
 duplicate slug rejected
 slug malformed rejected
-in-use slug rename rejected
-unused slug rename allowed with CAS
+category update contract cannot rename slug, including when the category is unused
 stale category/template write rejected
 category cannot enable without valid enabled default
 default template must belong to category
@@ -509,7 +518,7 @@ Planned Shopify onboarding/profile tasks will also depend on this catalogue afte
 
 - [ ] Admin has one authoritative Store Category management surface.
 - [ ] Category/default-template invariants are enforced server-side.
-- [ ] Category slug stability respects active/pending profile references.
+- [ ] Category slug is immutable after creation and no Admin update path can rename it.
 - [ ] Templates remain mutable current records with editVersion CAS; no revision table reappears.
 - [ ] Shopify taxonomy mappings are managed deterministically.
 - [ ] No category/template translation database or queue behavior exists.
@@ -586,14 +595,79 @@ claim commit: 81dbf731203bbbcde1e0b2472503ecfd218060f8 (committed and pushed)
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1 — architecture contract corrected
+
 ### Review Notes
-Pending.
+
+The repository agent correctly stopped before implementation. The submitted blocker is
+real: the existing database guard rejects every `CommercePromptTemplateCategory.slug`
+change, while the Attempt 1 ADMIN-002 R5/R14 text incorrectly required an unused slug
+rename to succeed.
+
+The conflict is resolved by correcting ADMIN-002 rather than weakening the database
+guard. ARCH-021 established category `id/slug` as immutable after INSERT and the existing
+category-authoring surface treated the slug as stable identity rather than mutable display
+metadata. ARCH-023 D9 also defines the slug as the stable merchant-facing localization
+identity and requires a different semantic category identity to use a new category/slug.
+The conditional unused-slug rename rule was therefore an over-permissive task-level drift
+from the durable identity contract.
+
+The authoritative Attempt 2 correction contract is now:
+
+1. `slug` is accepted only when a category is created.
+2. Category update input contains only mutable display/order/enabled metadata plus
+   `expectedEditVersion` and `reason`; it does not accept `slug`.
+3. Admin does not render or implement a slug-rename mutation path.
+4. `activeShopProfiles` / `pendingShopProfiles` counts remain part of the read model, but
+   they do not make slug identity mutable.
+5. The existing database category-identity guard remains unchanged and MUST NOT be
+   bypassed or edited by ADMIN-002.
+6. The regression requirement is to prove the Admin update contract cannot rename a slug,
+   including for an otherwise unused category.
+
+No Admin implementation defect is recorded for Attempt 1 because no implementation was
+started. No database correction task is required.
+
 ### Reviewed Files
-Pending.
+
+- `docs/decisions/admin/ARCH-023/ADMIN-002-manage-store-categories-default-templates.md`
+- `docs/decisions/admin/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+- `docs/decisions/database/ARCH-021/DATABASE-001-persist-agent-configuration-schema.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-013-build-platform-prompt-template-ui.md`
+- `moda-interact-admin/database/prisma/schema.prisma`
+- `moda-interact-admin/database/prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`
+- `moda-interact-admin/database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql`
+
 ### Validation Reviewed
-Pending.
+
+- Confirmed the ARCH-021 migration guard raises `ARCH021 category identity immutable`
+  whenever `NEW.slug IS DISTINCT FROM OLD.slug`.
+- Confirmed the accepted ARCH-023 migration does not replace or relax that guard.
+- Confirmed ARCH-021's database contract explicitly made category `id/slug` immutable
+  after INSERT.
+- Confirmed the existing ARCH-021 category-authoring task treated the slug as stable
+  identity and did not expose it as renameable metadata.
+- Confirmed ARCH-023 D9 defines `slug` as the stable merchant-facing localization identity
+  and uses a new category/slug for an identity change.
+- Reviewed the submitted launcher/claim evidence and the recorded clean unchanged Admin
+  implementation worktree.
+- Reviewed the recorded parent `git diff --check` pass. Feature validation was correctly
+  not run because Attempt 1 stopped before implementation.
+
 ### Architecture Conformance
-Pending.
+
+The database behavior is architecture-conformant and remains unchanged. The inconsistent
+piece was ADMIN-002's conditional slug-mutability requirement. Correcting R4/R5/R14
+restores the stable identity contract without introducing a new migration, trigger, raw
+SQL bypass or cross-repository implementation dependency.
+
 ### Follow-up
-Pending.
+
+`ARCH-023-ADMIN-002` returns to **Ready** for Attempt 2 with `attempt: 1` preserved and no
+active executor/claim. The next normal claim increments it to Attempt 2.
+
+Attempt 2 must implement the full ADMIN-002 scope against the corrected immutable-slug
+contract and then return the same task for Architect Review. `ARCH-023-DATABASE-001`
+remains **Complete / Accepted at Attempt 2**. `ARCH-023-ADMIN-003` remains Pending until
+ADMIN-002 is accepted Complete.
