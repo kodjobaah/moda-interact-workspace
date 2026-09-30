@@ -11,12 +11,13 @@ execution_mode: agent
 completion_mode: automatic
 status: blocked
 priority: 61
-executor: copilot
-claimed_at: 2026-09-30T18:49:50Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-023-COMMERCE-001
   - ARCH-023-ADMIN-001
+  - ARCH-023-DATABASE-004
 enables: []
 created: 2026-09-29
 updated: 2026-09-30
@@ -827,7 +828,7 @@ The implementation and validation evidence above is from Attempt 3 in the implem
 The ARCH-021 `commerce.arch021_release_feature_guard` requires every inserted `CommerceReleaseFeature.behaviourPrompt` to equal the current `CommerceFeatureConfiguration.behaviourPrompt`. That rejects the required exact copy of an immutable base-release snapshot when unrelated Feature authoring has advanced. Commerce cannot resolve this by bypassing lifecycle storage, mutating frozen history, or weakening the exact-snapshot requirement.
 
 ### Architect Adjudication — Attempt 3 Snapshot Guard
-The architect authorizes a narrowly scoped Database-owned `ARCH-023-DATABASE-004` task to define a forward migration and PostgreSQL regression coverage for this guard conflict. This supersedes the earlier “no Database task” restriction only for the demonstrated successor snapshot invariant; it does not authorize Commerce schema edits, trigger bypasses, mutation of existing releases, or restoration of retired Capability concepts. `ARCH-023-DATABASE-004` is authorized but not yet materialized. Keep this Commerce task `blocked` until that correction is available.
+The architect authorizes a narrowly scoped Database-owned `ARCH-023-DATABASE-004` task to define a forward migration and PostgreSQL regression coverage for this guard conflict. This supersedes the earlier “no Database task” restriction only for the demonstrated successor snapshot invariant; it does not authorize Commerce schema edits, trigger bypasses, mutation of existing releases, or restoration of retired Capability concepts. `ARCH-023-DATABASE-004` is the required Database-owned prerequisite. Its portable canonical definition is supplied by the architect with this adjudication and must be materialized through the normal `/moda-task ARCH-023-DATABASE-004 --definition ...` path. Keep this Commerce task `blocked` until DATABASE-004 is architect-accepted Complete.
 
 ## Architect Review
 
@@ -1025,3 +1026,50 @@ launcher should increment `attempt: 2 -> 3` exactly once. Keep request-time
 `ShopFeaturePreference` enforcement out of this bootstrap task. The accepted COMMERCE-001
 runtime boundary must be reconciled separately before terminal system testing. Do not begin
 COMMERCE-003 or any terminal system-test work from this task.
+
+
+## Architect Adjudication — Attempt 3 Database prerequisite — 2026-09-30
+
+### Review Status
+
+Blocked — external Database prerequisite required; Attempt 3 retained.
+
+### Findings
+
+The submitted PostgreSQL failure is a valid architecture blocker, not a Commerce implementation defect. `createSuccessorRelease()` preserves the selected base release's immutable `CommerceReleaseFeature.behaviourPrompt` exactly, as required. The accepted ARCH-021 `commerce.arch021_release_feature_guard()` currently rejects that valid historical snapshot whenever the current `CommerceFeatureConfiguration.behaviourPrompt` has advanced.
+
+Commerce MUST NOT work around this by rewriting the frozen snapshot to current authoring state, disabling/bypassing the trigger, inserting rows outside the lifecycle/storage boundary, mutating the base release or restoring retired Capability revision/binding concepts.
+
+The architect therefore defines `ARCH-023-DATABASE-004` as the narrow owner of the correction. Its database invariant is **current-or-historical exact Feature snapshot admission**:
+
+```text
+new CommerceReleaseFeature.behaviourPrompt is valid iff
+
+  it exactly equals current CommerceFeatureConfiguration.behaviourPrompt
+
+  OR
+
+  it exactly equals an already-persisted immutable CommerceReleaseFeature.behaviourPrompt
+  for the same featureId
+```
+
+Arbitrary never-published stale text and cross-Feature historical text remain invalid. Existing release Feature rows remain immutable. No release ancestry/schema model is added; Commerce remains responsible for proving that its successor copies the selected base release exactly.
+
+### Coordination
+
+`ARCH-023-COMMERCE-002` now explicitly depends on `ARCH-023-DATABASE-004` and remains `blocked`. The active Attempt 3 claim is cleared (`executor: null`, `claimed_at: null`) while the external prerequisite is outstanding.
+
+The portable canonical DATABASE-004 definition is supplied separately because this review environment does not have the developer's canonical workspace and therefore cannot truthfully claim to have materialized its parent task branch.
+
+After DATABASE-004 is architect-accepted Complete, the architect may transition COMMERCE-002 `blocked -> ready` **without changing `attempt: 3`**. The next authorized `/moda-task ARCH-023-COMMERCE-002` claim becomes Attempt 4. Attempt 4 must preserve the current implementation, consume the accepted database migration through the normal database submodule update, rerun the complete disposable PostgreSQL successor-preservation proof and the existing final validation set, update the Completion Report, and return to review.
+
+No additional Commerce source correction is requested at this blocker adjudication.
+
+### Reviewed Evidence
+
+- `ARCH-023-COMMERCE-002` Completion Report and Attempt 3 PostgreSQL runner evidence.
+- `src/commerce/publication/lifecycle.ts` successor-release snapshot-copy semantics.
+- `src/commerce/integration/backend/publication-storage.ts` persisted release Feature snapshot writes.
+- accepted ARCH-021 migration `20260929120000_arch021_feature_capability_simplification/migration.sql`.
+- `commerce.arch021_release_feature_guard()` and `arch021_release_feature_immutable`.
+- PostgreSQL failure `ARCH021 release Feature snapshot must match current behaviour prompt`.

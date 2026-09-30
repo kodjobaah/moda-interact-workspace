@@ -41,7 +41,7 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
-| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Ready | COMMERCE-001, ADMIN-001 |
+| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Blocked — Attempt 3 on DATABASE-004 | COMMERCE-001, ADMIN-001, DATABASE-004 |
 | [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Pending | DATABASE-001, SHARED-002, ADMIN-003 |
 | [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Post-COMMERCE-002 follow-up: reconcile bootstrap guard to `MERCHANT_OPT_IN` and deny lookup while merchant preference is OFF | Pending | COMMERCE-002, ADMIN-004 |
 
@@ -53,15 +53,18 @@ PostgreSQL/pgvector proof now executes the production `retrieveMerchantKnowledge
 against the migrated ARCH-023 schema and proves nearest-neighbour ordering plus the
 required tenant/revision/provenance exclusions.
 
-`ARCH-023-ADMIN-001` is also Complete, so both declared dependencies of COMMERCE-002 are
-satisfied:
+`ARCH-023-ADMIN-001` and `ARCH-023-COMMERCE-001` are Complete, but COMMERCE-002 Attempt 3 exposed a Database-owned predecessor-trigger conflict in the required real PostgreSQL successor-release proof. The architect-defined `ARCH-023-DATABASE-004` is now an explicit prerequisite:
 
 ```text
 COMMERCE-001 -> Complete / Accepted Attempt 2
-COMMERCE-002 -> Ready
+ADMIN-001    -> Complete / Accepted Attempt 2
+DATABASE-004 -> Ready once its supplied portable definition is materialized
+                         |
+                         v
+COMMERCE-002 -> Blocked / Attempt 3 retained
 ```
 
-This readiness promotion does not claim or start COMMERCE-002. The merchant-opt-in architecture decision does not modify COMMERCE-002 while it is in review; COMMERCE-004 remains Pending until both COMMERCE-002 and ADMIN-004 are Complete.
+After DATABASE-004 is architect-accepted Complete, COMMERCE-002 may transition `blocked -> ready` with Attempt 3 retained; the next launcher claim becomes Attempt 4. The merchant-opt-in architecture decision still does not modify COMMERCE-002 while this task is blocked/in review; COMMERCE-004 remains Pending until both COMMERCE-002 and ADMIN-004 are Complete.
 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 

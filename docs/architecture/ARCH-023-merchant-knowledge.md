@@ -3278,6 +3278,38 @@ ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
 `COMMERCE-002` itself is intentionally unchanged while in review. `COMMERCE-004` owns the
 post-review target-state correction.
 
+### COMMERCE-002 Attempt 3 release-snapshot database blocker
+
+The required real PostgreSQL successor-release proof exposed a predecessor ARCH-021 database invariant conflict:
+
+```text
+base release immutable Feature snapshot = v1
+current Feature authoring advances      = v2
+successor must preserve base snapshot   = v1
+
+predecessor arch021_release_feature_guard
+requires every insert to equal current v2
+        -> rejects valid successor history
+```
+
+The architect therefore defines one narrow forward-migration prerequisite:
+
+```text
+ARCH-021-DATABASE-003 + ARCH-023-DATABASE-001
+                        |
+                        v
+              ARCH-023-DATABASE-004
+   allow exact current OR exact same-Feature historical
+           immutable release Feature snapshots
+                        |
+                        v
+              ARCH-023-COMMERCE-002
+```
+
+DATABASE-004 MUST preserve `CommerceReleaseFeature` immutability and arbitrary-stale rejection. It may admit a historical prompt only when that exact prompt is already persisted for the same Feature; it does not add release ancestry or a Commerce bypass.
+
+COMMERCE-002 remains **Blocked, Attempt 3 retained**, with its claim cleared until DATABASE-004 is accepted. After that acceptance the architect may return COMMERCE-002 to Ready without changing the attempt number; the next launcher claim becomes Attempt 4 and reruns the existing successor-preservation PostgreSQL proof.
+
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
