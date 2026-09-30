@@ -1134,7 +1134,7 @@ Implementation tasks:
 | ARCH-021-COMMERCE-086 | moda_commerce | Complete | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
-| ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-102 | moda_commerce | Complete | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
 | ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
 | ARCH-021-COMMERCE-110 | moda_commerce | Ready | ARCH-021-COMMERCE-104 |
@@ -1644,7 +1644,7 @@ docs/decisions/commerce/ARCH-021/
 | ARCH-021-COMMERCE-086 | moda_commerce | Complete | ARCH-021-COMMERCE-084, ARCH-021-COMMERCE-085, ARCH-021-COMMERCE-093, ARCH-021-COMMERCE-094 |
 | ARCH-021-COMMERCE-087 | moda_commerce | Complete | ARCH-021-COMMERCE-084 |
 | ARCH-021-COMMERCE-095 | moda_commerce | Complete | ARCH-021-COMMERCE-078, ARCH-021-COMMERCE-083 |
-| ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-102 | moda_commerce | Complete | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
 | ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
 | ARCH-021-COMMERCE-110 | moda_commerce | Ready | ARCH-021-COMMERCE-104 |
@@ -1665,7 +1665,7 @@ Phase 6 is now decomposed through COMMERCE-105..109, GATEWAY-002 and terminal SY
 
 No implementation task may depend on a system-test task.
 
-Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. Manual validation has added COMMERCE-102 and COMMERCE-103 as required implementation corrections, so SYSTEM-TEST-002 is Pending until both are architect-accepted Complete.
+Terminal validation for this refinement is `ARCH-021-SYSTEM-TEST-002`. COMMERCE-102 and COMMERCE-103 are architect-accepted Complete, so SYSTEM-TEST-002 is Ready as terminal integrated validation.
 ### COMMERCE-082 Attempt 1 accepted — 2026-09-28
 
 - Accepted implementation `c4876fa`: current unsaved/persisted-draft Shopify Admin candidates can be live-tested without creating production grant/release/conversation identity or durable Tool/publication proof.
@@ -3111,17 +3111,23 @@ existing async mutation/provider/validation action
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-021-COMMERCE-102 | moda_commerce | Ready | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
+| ARCH-021-COMMERCE-102 | moda_commerce | Complete | ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095 |
 | ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
-| ARCH-021-SYSTEM-TEST-002 | moda_system_test | Pending | ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-102, ARCH-021-COMMERCE-103 |
+| ARCH-021-SYSTEM-TEST-002 | moda_system_test | Ready | ARCH-021-COMMERCE-079, ARCH-021-COMMERCE-081, ARCH-021-COMMERCE-083, ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-102, ARCH-021-COMMERCE-103 |
 
-COMMERCE-102 and COMMERCE-103 are independent implementation corrections.
+COMMERCE-102 and COMMERCE-103 are architect-accepted Complete implementation corrections.
 
 ### COMMERCE-103 accepted — 2026-09-30
 
 COMMERCE-103 is **Complete / Accepted**. Persisted External HTTP, Shopify Admin and Policy Operation DRAFTs now share the canonical six-step Previous/Next traversal while keeping every persisted tab directly clickable and preserving validation/Test/Save independence. The final canonical project typecheck passes with zero diagnostics and the task worktree is clean.
 
-C103's SYSTEM-TEST-002 dependency is satisfied. SYSTEM-TEST-002 remains **Pending** on COMMERCE-102 and remains terminal validation; no Commerce implementation task depends on the system-test task.
+C103's SYSTEM-TEST-002 dependency is satisfied.
+
+### COMMERCE-102 Attempt 1 accepted — 2026-09-30
+
+COMMERCE-102 is **Complete / Accepted, Attempt 1**. Server-resolved selected-shop context is authoritative for Tool execution presentation, Shopify Test exposes and gates the selected execution target without exposing credentials, and every rendered consequential async authoring action has synchronous admission plus candidate/context stale-completion protection. Unknown mutation outcomes retain the original operation ID for reconciliation; local repeatable controls remain intentionally unlocked.
+
+The final focused packet passes 195 tests across seven files, canonical typecheck and targeted ESLint pass, and the broader `studio-workspace` 7-fail/5-pass result is reproduced exactly on the pre-C102 baseline. With C102 and C103 both Complete, SYSTEM-TEST-002 is now **Ready** as terminal integrated validation and is not started by this acceptance.
 
 ### Add Capability direct-phase navigation correction — 2026-09-29
 
