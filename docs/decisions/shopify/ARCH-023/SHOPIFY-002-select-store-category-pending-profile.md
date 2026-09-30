@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -587,6 +587,61 @@ Parent report submission:
 Merged to implementation `main`: no. Merged to workspace `main`: no.
 
 ## Architect Review
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+Attempt 2 closes both bounded correction items from Attempt 1 without production implementation churn. The only implementation-repository change from the reviewed Attempt 1 archive is `tests/integration/store-category-selection.postgres.integration.test.ts`; the production Store Category selection service, onboarding/Recovery Settings integration, locale catalogues, dependency pins, database gitlink, schema and migrations are unchanged.
+
+A1-R1 is closed by the task-owned disposable PostgreSQL proof. The test applies the accepted repository migrations to `pgvector/pgvector:pg17`, uses the real generated Prisma Client and calls the real `selectPendingStoreCategory` transaction. The five passing cases prove initial profile/SHOP-lineage/DRAFT creation with exact canonical-template provenance, reselection of the same pending DRAFT with generation/edit-version increments, preservation of active category and active prompt configuration, stale-generation rollback, unrelated-DRAFT rollback, and concurrent generation-zero serialization using two independent Prisma clients. The concurrency case produces exactly one success and one `CONFLICT`, one generation increment, one SHOP lineage and one pending DRAFT, which proves the Shop-row `SELECT ... FOR UPDATE` boundary against PostgreSQL.
+
+A1-R2 is also closed. The Completion Report records the launcher-resolved canonical parent and implementation worktrees, `task/ARCH-023-SHOPIFY-002` branch identity in both repositories, dependency gate, start-of-attempt synchronization, recursive submodule preparation/status, the accepted database gitlink, the launcher claim commit, the submitted implementation commit, and clean final implementation/parent worktrees. The final parent-report object ID cannot be included in the commit that creates that same object; the review handoff supplies and this Architect Review records the submitted parent report commit as `aa5b7190e43bc975a337b71607198e58c1edf098`. The submitted implementation commit is `e287ba7b246dc1fd40e752512c47ad823fc18d0a`.
+
+The repository-wide lint findings remain non-blocking because task-owned changed-file lint passed and Attempt 2 added only the focused integration test. No activation/publication authority, subscription decision, database migration, or new Store Profile route is introduced.
+
+### Attempt 2 Reviewed Files
+
+Architect re-review focused on the Attempt 2 delta and the previously reviewed production transaction boundary:
+
+```text
+tests/integration/store-category-selection.postgres.integration.test.ts
+app/services/store-profile/store-category-selection.server.ts
+docs/decisions/shopify/ARCH-023/SHOPIFY-002-select-store-category-pending-profile.md
+docs/decisions/shopify/ARCH-023/_index.md
+docs/architecture/ARCH-023-merchant-knowledge.md
+```
+
+Architect comparison against the Attempt 1 archive confirmed that the new PostgreSQL integration test is the only implementation-repository delta.
+
+### Attempt 2 Validation Reviewed
+
+Submitted canonical-worktree evidence records:
+
+```text
+PostgreSQL/Testcontainers integration              5 passed, 0 failed
+focused selection unit suite                       5 passed, 0 failed
+npm run typecheck                                  passed
+Prettier check                                     passed
+changed-file ESLint                                passed
+git diff --cached --check                         passed
+accepted migrations on fresh pgvector PostgreSQL  passed
+container teardown / no pgvector container left   passed
+```
+
+The review archive contains no installed dependencies or Docker runtime, so the architect did not redundantly rerun the disposable container proof. Acceptance relies on the durable canonical-worktree command/result/exit-code evidence plus architect inspection of the real-client integration test and transaction implementation, as permitted by the cross-environment review policy.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. The implementation remains pending-only: the browser supplies only category/generation input, the authoritative canonical-English template is re-read inside the transaction, category/prompt activation state is preserved, and both onboarding and Recovery Settings use the same selection lifecycle. The real PostgreSQL proof now demonstrates the required rollback and row-lock concurrency semantics rather than only mocked Prisma behavior.
+
+The task uses `completion_mode: automatic`, therefore architect acceptance completes `ARCH-023-SHOPIFY-002`.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-023-SHOPIFY-002` is now Complete. `ARCH-023-SHOPIFY-003` is **not** promoted by this review because its other declared prerequisite, `ARCH-023-SHOPIFY-001`, remains Ready rather than Complete in the submitted snapshot. Once SHOPIFY-001 is architect-accepted Complete, SHOPIFY-003 becomes eligible for Ready. No downstream task is started implicitly.
 
 ### Review Status
 Changes Requested — Attempt 1.

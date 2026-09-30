@@ -11,19 +11,9 @@ updated: 2026-09-30
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation
-is underway. `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` are **Complete / Accepted at
-Attempt 2**. `ARCH-023-ADMIN-003` is now Ready, while `ARCH-023-SHARED-001` remains
-independently Ready from DATABASE-001 acceptance. All other ARCH-023 implementation tasks
-remain gated by their declared dependencies.
-is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**,
-`ARCH-023-SHARED-001` is **Complete / Accepted at Attempt 2**, and the accepted Shared
-implementation is now published and architect-accepted through `ARCH-023-SHARED-002` as
-exact revision `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` at Attempt 2, `ARCH-023-SHARED-001` at Attempt 2, `ARCH-023-SHARED-002` at Attempt 1 with exact published revision `@modainteract/moda-interact-shared@1.0.1`, and `ARCH-023-SHOPIFY-002` at Attempt 2.
 
-The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`,
-`ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and
-`ARCH-023-SHOPIFY-002`. All other ARCH-023 tasks remain gated by their declared dependencies.
+The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-001`. `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001 even though SHOPIFY-002 is now Complete. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3250,6 +3240,26 @@ integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef
 Ready tasks are independent except where their own task YAML declares otherwise. No consumer
 implementation task is started implicitly by this architect review.
 
+Current execution frontier after SHOPIFY-002 Attempt 2 acceptance:
+
+```text
+ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
+ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+ARCH-023-SHARED-001     Complete — Accepted Attempt 2
+ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
+
+ARCH-023-ADMIN-001      Ready
+ARCH-023-ADMIN-003      Ready
+ARCH-023-BACKGROUND-001 Ready
+ARCH-023-COMMERCE-001   Ready
+ARCH-023-SHOPIFY-001    Ready
+ARCH-023-SHOPIFY-003    Pending — still depends on SHOPIFY-001
+all other ARCH-023 implementation tasks remain gated by their declared dependencies
+```
+
+SHOPIFY-002 acceptance does not promote SHOPIFY-003 because SHOPIFY-001 is not yet Complete. No downstream task is started implicitly by this review.
+
 No implementation task may depend on a terminal system-test task.
 
 ## Open Questions
@@ -3258,6 +3268,14 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHOPIFY-002 Attempt 2 accepted
+
+- Accepted the reusable pending Store Category selection lifecycle after the task-owned PostgreSQL proof exercised the production Prisma transaction against the accepted pgvector PostgreSQL migrations.
+- Confirmed initial lineage/DRAFT creation, exact canonical-template provenance, reselection reuse, active-state preservation, stale/unrelated-DRAFT rollback and two-client row-lock serialization with exactly one concurrent success.
+- Confirmed the Attempt 2 implementation delta is only the PostgreSQL integration test; production source, dependency pins, database gitlink/schema/migrations and locale catalogues are unchanged from the substantively conformant Attempt 1 implementation.
+- Confirmed canonical launcher/worktree synchronization and recursive-submodule evidence. Submitted implementation is `e287ba7b246dc1fd40e752512c47ad823fc18d0a`; submitted parent report is `aa5b7190e43bc975a337b71607198e58c1edf098`.
+- Marked SHOPIFY-002 Complete. SHOPIFY-003 remains Pending because SHOPIFY-001 is still Ready, not Complete; no downstream task was started.
 
 ### 2026-09-30 — ADMIN-002 Attempt 2 accepted
 
