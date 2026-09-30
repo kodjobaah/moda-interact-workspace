@@ -20,7 +20,7 @@ depends_on:
   - ARCH-023-ADMIN-003
 enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Resolve additive Platform and Shop Instructions
@@ -512,6 +512,8 @@ A later Background task consumes these via the existing MCP `prompts/get` mechan
 - `ARCH-023-DATABASE-001`
 - `ARCH-023-SHARED-002`
 - `ARCH-023-ADMIN-003`
+
+Resolved Shared release for this task: `@modainteract/moda-interact-shared@1.0.1`. Do not substitute a range, `latest`, workspace link or later release without architect reconciliation.
 
 ## Enables
 

@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ enables:
   - ARCH-023-BACKGROUND-002
   - ARCH-023-BACKGROUND-003
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Establish Merchant Knowledge worker foundation
@@ -122,8 +122,8 @@ Before source work:
 
 1. update the `database` submodule gitlink to the accepted/merged commit containing `ARCH-023-DATABASE-001`;
 2. do not edit files inside the database submodule;
-3. read the exact package revision recorded by `ARCH-023-SHARED-002`;
-4. update `@modainteract/moda-interact-shared` to that exact published version;
+3. use exactly `@modainteract/moda-interact-shared@1.0.1`, the Architect-Accepted revision published by `ARCH-023-SHARED-002`;
+4. pin `@modainteract/moda-interact-shared` to `1.0.1` exactly; do not substitute a range, `latest`, workspace link or later release without architect reconciliation;
 5. regenerate Prisma Client through the repository's existing `prisma:generate` path.
 
 If either accepted dependency is unavailable, STOP.

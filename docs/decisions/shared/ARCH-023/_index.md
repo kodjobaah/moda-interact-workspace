@@ -28,17 +28,24 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
 | [SHARED-001](SHARED-001-implement-arch023-shared-contracts.md) | Implement all ARCH-023 Shared contracts and Commerce runner trust | Complete | DATABASE-001 |
-| [SHARED-002](SHARED-002-publish-arch023-shared-package.md) | Publish the accepted Shared package as one patch release | Ready | SHARED-001 |
+| [SHARED-002](SHARED-002-publish-arch023-shared-package.md) | Publish the accepted Shared package as one patch release | Complete | SHARED-001 |
 | [SHARED-003](SHARED-003-harden-commerce-runner-instruction-trust.md) | Historical split task; folded into SHARED-001 | Superseded | — |
 | [SHARED-004](SHARED-004-publish-arch023-shared-contracts.md) | Historical publication task; replaced by SHARED-002 | Superseded | — |
 
 ## Execution frontier
 
-`ARCH-023-SHARED-001` is Complete / Accepted at Attempt 2. The release-only next step is therefore:
+Shared implementation and publication are now complete:
 
 ```text
-SHARED-001 -> Complete
-SHARED-002 -> Ready
+SHARED-001 -> Complete / Accepted Attempt 2
+SHARED-002 -> Complete / Accepted Attempt 1
 ```
 
-SHARED-002 may publish only the exact architect-accepted SHARED-001 implementation. Consumer repositories must continue to wait for the exact published revision and architect acceptance from SHARED-002.
+Canonical ARCH-023 Shared release:
+
+```text
+@modainteract/moda-interact-shared@1.0.1
+integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==
+```
+
+Consumer tasks must use that exact revision unless `moda_architect` explicitly reconciles a later ARCH-023 Shared release.

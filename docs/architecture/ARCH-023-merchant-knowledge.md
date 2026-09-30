@@ -4,7 +4,7 @@ title: Merchant knowledge, store profiles and CommerceAgent instructions
 status: agreed
 coordinator: moda_architect
 created: 2026-09-28
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # ARCH-023: Merchant knowledge, store profiles and CommerceAgent instructions
@@ -12,10 +12,14 @@ updated: 2026-09-29
 ## Status
 
 Agreed — the architecture and repository task decomposition are materialised and implementation
-is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**. Its additive
-persistence boundary is now architect-accepted, and dependency reconciliation has promoted
-`ARCH-023-SHARED-001` and `ARCH-023-ADMIN-002` to Ready. All other ARCH-023 tasks remain
-gated by their declared dependencies.
+is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**,
+`ARCH-023-SHARED-001` is **Complete / Accepted at Attempt 2**, and the accepted Shared
+implementation is now published and architect-accepted through `ARCH-023-SHARED-002` as
+exact revision `@modainteract/moda-interact-shared@1.0.1`.
+
+The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`,
+`ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and
+`ARCH-023-SHOPIFY-002`. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3200,21 +3204,31 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after SHARED-001 Attempt 2 acceptance:
+Current execution frontier after SHARED-002 Attempt 1 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
 ARCH-023-SHARED-001     Complete — Accepted Attempt 2
+ARCH-023-SHARED-002     Complete — Accepted Attempt 1
 
-ARCH-023-SHARED-002     Ready
+ARCH-023-ADMIN-001      Ready
 ARCH-023-ADMIN-002      Ready
+ARCH-023-BACKGROUND-001 Ready
+ARCH-023-COMMERCE-001   Ready
+ARCH-023-SHOPIFY-001    Ready
+ARCH-023-SHOPIFY-002    Ready
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
-SHARED-002 and ADMIN-002 are independent at this frontier and may execute in parallel.
-SHARED-002 is publication-only and must publish exactly the accepted SHARED-001 revision;
-consumer implementation tasks remain gated until that publication task is Complete and
-architect-accepted. Neither Ready task is started implicitly by this review.
+Canonical published Shared revision for ARCH-023 consumers:
+
+```text
+@modainteract/moda-interact-shared@1.0.1
+integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==
+```
+
+Ready tasks are independent except where their own task YAML declares otherwise. No consumer
+implementation task is started implicitly by this architect review.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3224,6 +3238,14 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHARED-002 Attempt 1 accepted
+
+- Accepted the publication-only `ARCH-023-SHARED-002` release gate after verifying that Shared source is unchanged from accepted SHARED-001 and release metadata advances exactly `1.0.0 -> 1.0.1`.
+- Recorded canonical ARCH-023 Shared revision `@modainteract/moda-interact-shared@1.0.1` with integrity `sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==`.
+- Promoted `ARCH-023-ADMIN-001`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and `ARCH-023-SHOPIFY-002` to Ready because all of their declared dependencies are now Complete. `ARCH-023-ADMIN-002` was already Ready and remains so.
+- Pinned later direct Shared consumers to the same exact revision while leaving them Pending until their remaining dependencies are Complete.
+- No consumer implementation was started by the architect review.
 
 ### 2026-09-30 — SHARED-001 Attempt 2 accepted
 

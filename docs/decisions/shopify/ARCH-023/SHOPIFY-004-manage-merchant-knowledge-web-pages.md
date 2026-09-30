@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-023-SHOPIFY-005
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Manage Merchant Knowledge web-page sources
@@ -510,6 +510,8 @@ Produces C4 jobs for Background.
 
 - `ARCH-023-SHOPIFY-001`
 - `ARCH-023-SHARED-002`
+
+Resolved Shared release for this task: `@modainteract/moda-interact-shared@1.0.1`. Do not substitute a range, `latest`, workspace link or later release without architect reconciliation.
 
 ## Enables
 

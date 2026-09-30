@@ -9,14 +9,21 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 21
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-023-SHARED-001
-enables: []
+enables:
+  - ARCH-023-ADMIN-001
+  - ARCH-023-BACKGROUND-001
+  - ARCH-023-COMMERCE-001
+  - ARCH-023-COMMERCE-003
+  - ARCH-023-SHOPIFY-001
+  - ARCH-023-SHOPIFY-002
+  - ARCH-023-SHOPIFY-004
 created: 2026-09-29
 updated: 2026-09-30
 ---
@@ -293,19 +300,19 @@ Do not update those future tasks from this publication task.
 
 ## Work Items
 
-- [ ] Verify SHARED-001 is Complete and architect-accepted.
-- [ ] Record the accepted SHARED-001 implementation SHA.
-- [ ] Verify checked-in package version equals current npm registry version.
-- [ ] Calculate exactly the next patch version.
-- [ ] Update release/version metadata only.
-- [ ] Publish with the normal npm public-package command.
-- [ ] Verify exact version, integrity and tarball from npm.
-- [ ] Verify the package contains all required ARCH-023 built entrypoints/declarations.
-- [ ] Clean-install the exact published revision in a temporary consumer.
-- [ ] Verify all four required public imports and representative exports.
-- [ ] Confirm no implementation or consumer source changed.
-- [ ] Record publication evidence.
-- [ ] Return only this publication task for architect review.
+- [x] Verify SHARED-001 is Complete and architect-accepted.
+- [x] Record the accepted SHARED-001 implementation SHA.
+- [x] Verify checked-in package version equals current npm registry version.
+- [x] Calculate exactly the next patch version.
+- [x] Update release/version metadata only.
+- [x] Publish with the normal npm public-package command.
+- [x] Verify exact version, integrity and tarball from npm.
+- [x] Verify the package contains all required ARCH-023 built entrypoints/declarations.
+- [x] Clean-install the exact published revision in a temporary consumer.
+- [x] Verify all four required public imports and representative exports.
+- [x] Confirm no implementation or consumer source changed.
+- [x] Record publication attempt and verification evidence.
+- [x] Return only this publication task for architect review.
 
 ## Interfaces / Contracts
 
@@ -340,38 +347,52 @@ The prerequisite must be Complete and architect-accepted.
 
 ## Enables
 
-None are materialised yet.
+The exact published Shared revision is now fixed as:
 
-After this task is accepted Complete, `moda_architect` will attach the exact published revision to the later ARCH-023 Admin, Shopify, Background and Commerce consumer tasks as those tasks are defined.
+```text
+@modainteract/moda-interact-shared@1.0.1
+```
+
+Direct consumer tasks materialised under ARCH-023 are:
+
+- `ARCH-023-ADMIN-001`
+- `ARCH-023-BACKGROUND-001`
+- `ARCH-023-COMMERCE-001`
+- `ARCH-023-COMMERCE-003`
+- `ARCH-023-SHOPIFY-001`
+- `ARCH-023-SHOPIFY-002`
+- `ARCH-023-SHOPIFY-004`
+
+Only tasks whose complete dependency sets are satisfied become Ready when this publication task is accepted.
 
 ## Acceptance Criteria
 
-- [ ] SHARED-001 was Complete and architect-accepted before publication.
-- [ ] Checked-in version matched the npm registry baseline before the bump.
-- [ ] Exactly one patch version was applied.
-- [ ] `npm publish --access public` succeeded.
-- [ ] Exact new version is visible from the intended npm registry.
-- [ ] Registry `dist.integrity` and tarball evidence are recorded.
-- [ ] Published package contains all required ARCH-023 JS and declaration entrypoints.
-- [ ] Clean temporary install of the exact version succeeds.
-- [ ] All required public imports work from the clean consumer.
-- [ ] Representative ARCH-023 exports have the expected runtime behavior.
-- [ ] Only release/version metadata changed in the repository during this task.
-- [ ] No consumer repository was modified.
-- [ ] Published version and accepted implementation SHA are recorded for downstream consumers.
+- [x] SHARED-001 was Complete and architect-accepted before publication.
+- [x] Checked-in version matched the npm registry baseline before the bump.
+- [x] Exactly one patch version was applied.
+- [x] `npm publish --access public` succeeded.
+- [x] Exact new version is visible from the intended npm registry.
+- [x] Registry `dist.integrity` and tarball evidence are recorded.
+- [x] Published package contains all required ARCH-023 JS and declaration entrypoints.
+- [x] Clean temporary install of the exact version succeeds.
+- [x] All required public imports work from the clean consumer.
+- [x] Representative ARCH-023 exports have the expected runtime behavior.
+- [x] Only release/version metadata changed in the repository during this task.
+- [x] No consumer repository was modified.
+- [x] Published version and accepted implementation SHA are recorded for downstream consumers.
 
 ## Validation
 
 Publication validation only:
 
-- [ ] prerequisite acceptance verified
-- [ ] package/registry baseline version check passed
-- [ ] publication command succeeded
-- [ ] exact registry revision verified
-- [ ] package-content verification passed
-- [ ] clean-install/import verification passed
-- [ ] `git diff --check`
-- [ ] changed-file inspection proves no implementation-source changes
+- [x] prerequisite acceptance verified
+- [x] package/registry baseline version check passed
+- [x] publication command succeeded
+- [x] exact registry revision verified
+- [x] package-content verification passed
+- [x] clean-install/import verification passed
+- [x] `git diff --check` — passed.
+- [x] changed-file inspection proves no implementation-source changes.
 
 Do NOT rerun:
 
@@ -409,58 +430,141 @@ Do not infer a release version from this task definition. The exact version is d
 
 ### Status
 
-Not Started
+Ready for Architect Review (`review`).
 
 ### Files Changed
 
-None.
+Implementation task worktree: only `package.json` and `package-lock.json`, with the package version changed from `1.0.0` to `1.0.1`. No implementation source or consumer repository changed. This Completion Report is the only parent-worktree change beyond the launcher claim.
 
 ### Work Completed
 
-None.
+Verified `ARCH-023-SHARED-001` is Complete and Architect Review says “Accepted — Attempt 2”; accepted implementation commit: `c96b7eb8eaaae14133ab174de80e130c8551f366`. Checked-in version `1.0.0` matched npm's current version `1.0.0`; selected exactly patch `1.0.1`. Updated and committed only release version metadata (`9172f8f8b3c0b84c50c7dfd4bd704ad813d3ff35`). The first publish invocation stopped before upload because this fresh worktree lacked `tsup`; after `npm ci`, one successful `npm publish --access public` invocation completed its prepack ESM/declaration build and published `@modainteract/moda-interact-shared@1.0.1`. No second publish was attempted.
 
 ### Validation Results
 
-None.
+Pre-bump registry baseline passed (`npm view ... version` returned `1.0.0`). Registry lookup confirmed `1.0.1` was absent before publication. After a short registry processing delay, exact `npm view @modainteract/moda-interact-shared@1.0.1 version dist.integrity dist.tarball --json --registry=https://registry.npmjs.org` returned:
+
+```text
+version: 1.0.1
+dist.integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==
+dist.tarball: https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.0.1.tgz
+```
+
+The successful publish output reported shasum `c381787626b576d17be14252fb76daf298d94cb6` and 81 files. `npm pack --dry-run` confirmed all required JS and declaration paths: `dist/internationalization.js`/`.d.ts`, `dist/merchant-knowledge.js`/`.d.ts`, `dist/merchant-knowledge/node.js`/`.d.ts`, and `dist/commerce/runner/index.js`/`.d.ts`.
+
+Installed the exact `@modainteract/moda-interact-shared@1.0.1` into an empty temporary consumer outside the repository (`/tmp/moda-shared-1.0.1-consumer.pjve2C`). All four required subpaths imported successfully. Assertions passed for `MODA_SUPPORTED_LANGUAGE_TAGS`, `resolveModaConfigurationLocale("zh-HK") === "zh-Hant"`, Merchant Knowledge schema exports, the exact job-ID prefix/64-lowercase-hex format, and `PLATFORM_INSTRUCTIONS[0] === RUNTIME_DATA_AUTHORITY_INSTRUCTION`. `git diff --check` passed.
 
 ### Deviations
 
-None.
+The first publish attempt failed in `prepack` before upload because dependencies were absent (`sh: tsup: command not found`). `npm ci` restored the lockfile-pinned dependencies without tracked dependency changes; it reported one low-severity audit advisory and install-script approval warnings. npm initially returned 404 while processing the successful publish, then exposed the exact version and tarball; the clean consumer install and imports passed. No source changes or duplicate publish were made.
 
 ### Assumptions
 
-None.
+The accepted SHARED-001 implementation was already merged to `origin/main` before SHARED-002 preparation; the publication branch contains it as an ancestor. Registry processing delay was transient and did not require another publish.
 
 ### Unresolved Issues
 
-None.
+None. npm emitted dependency install-script approval warnings for the temporary consumer install; all required imports and runtime assertions passed.
 
 ### Architectural Concerns
 
-None.
+None. Release scope remains limited to version metadata; no consumer repository was changed.
+
+### Execution Provenance
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent task worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHARED-002
+parent branch: task/ARCH-023-SHARED-002
+implementation repository: moda-interact-shared
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHARED-002
+implementation branch: task/ARCH-023-SHARED-002
+parent remote task-branch fast-forward: not-needed
+parent origin/main: already-current
+implementation remote task-branch fast-forward: not-needed
+implementation origin/main: already-current
+recursive submodule sync/update: passed; ready, no entries
+launcher claim commit: 5a58239abe6eaf93d73cecf059fedb2a03d15d20 (pushed)
+```
+
+The launcher reported clean synchronization gates, dependency `ARCH-023-SHARED-001` complete, and created both canonical task worktrees. Implementation task commit `9172f8f8b3c0b84c50c7dfd4bd704ad813d3ff35` is pushed to `origin/task/ARCH-023-SHARED-002`. Package version `1.0.1` and the accepted SHARED-001 implementation SHA are recorded above for downstream task authoring.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending.
+ARCH-023-SHARED-002 conforms to the publication-only release-gate contract.
+
+- `ARCH-023-SHARED-001` was Complete / Architect-Accepted at Attempt 2 before publication; the accepted implementation identity recorded by this task is `c96b7eb8eaaae14133ab174de80e130c8551f366`.
+- The release metadata advances exactly one patch version, `1.0.0 -> 1.0.1`.
+- Independent review comparison against the accepted SHARED-001 snapshot found no Shared source drift. `package.json` changes only the package version, and `package-lock.json` changes only the root/package version fields.
+- The first `npm publish --access public` invocation stopped inside `prepack` before upload because the fresh worktree did not yet contain `tsup`. After lockfile-pinned `npm ci`, one successful publish completed; no second package upload/republish was used to mask an implementation defect.
+- The Completion Report records the exact npm registry version, integrity, tarball, package-content proof and a clean temporary-consumer install of the published revision.
+- No consumer repository was modified during the publication task.
+
+Canonical ARCH-023 Shared release identity:
+
+```text
+Published Shared revision:
+@modainteract/moda-interact-shared@1.0.1
+
+Integrity:
+sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==
+
+Accepted SHARED-001 implementation:
+c96b7eb8eaaae14133ab174de80e130c8551f366
+
+Release metadata commit:
+9172f8f8b3c0b84c50c7dfd4bd704ad813d3ff35
+```
 
 ### Reviewed Files
 
-Pending.
+- `docs/decisions/shared/ARCH-023/SHARED-002-publish-arch023-shared-package.md`
+- `moda-interact-shared/package.json`
+- `moda-interact-shared/package-lock.json`
+- accepted SHARED-001 Shared source snapshot
+- ARCH-023 Shared/Admin/Background/Commerce/Shopify dependency indexes and direct consumer task definitions
 
 ### Validation Reviewed
 
-Pending.
+Publication review intentionally did not rerun SHARED-001 implementation tests, lint, typecheck or build.
+
+Reviewed publication evidence:
+
+- prerequisite SHARED-001: Complete / Accepted Attempt 2;
+- pre-bump checked-in/registry baseline: `1.0.0`;
+- release version: `1.0.1`;
+- registry integrity: `sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==`;
+- registry tarball: `https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.0.1.tgz`;
+- successful publication output recorded 81 package files and SHA-1 `c381787626b576d17be14252fb76daf298d94cb6`;
+- package-content verification recorded all required ARCH-023 JavaScript/declaration entrypoints;
+- clean external consumer installed exactly `@modainteract/moda-interact-shared@1.0.1` and passed all four required public-subpath imports plus the required runtime assertions;
+- `git diff --check`: PASS;
+- implementation-source comparison: PASS, no source changes beyond authorized release metadata.
+
+Direct npm registry retrieval was unavailable from this architect review environment. Consistent with the cross-environment review policy, the exact registry identity is therefore accepted from the durable publication and clean-install evidence recorded in the Completion Report; no contradictory evidence was found.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. The architect-accepted ARCH-023 Shared contract/runtime trust implementation is now consumable through the canonical exact package revision `@modainteract/moda-interact-shared@1.0.1`. Publication and consumer integration remain separate boundaries as required.
 
 ### Follow-up
 
-Pending.
+Mark `ARCH-023-SHARED-002` Complete and pin ARCH-023 consumers to exactly `@modainteract/moda-interact-shared@1.0.1`.
+
+The dependency graph now makes these tasks Ready:
+
+```text
+ARCH-023-ADMIN-001
+ARCH-023-BACKGROUND-001
+ARCH-023-COMMERCE-001
+ARCH-023-SHOPIFY-001
+ARCH-023-SHOPIFY-002
+```
+
+`ARCH-023-ADMIN-002` was already Ready and remains Ready. `ARCH-023-COMMERCE-003` and `ARCH-023-SHOPIFY-004` are pinned to the same Shared revision but remain Pending until their other declared dependencies are Complete.

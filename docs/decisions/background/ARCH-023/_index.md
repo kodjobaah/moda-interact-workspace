@@ -40,7 +40,7 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md) | Dedicated worker foundation, current entitlement and durable PENDING reconciliation | Pending | DATABASE-001, SHARED-002 |
+| [BACKGROUND-001](BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md) | Dedicated worker foundation, current entitlement and durable PENDING reconciliation | Ready | DATABASE-001, SHARED-002 |
 | [BACKGROUND-002](BACKGROUND-002-acquire-merchant-knowledge-web-pages.md) | SSRF-safe WEB_PAGE acquisition and extraction | Pending | BACKGROUND-001 |
 | [BACKGROUND-003](BACKGROUND-003-acquire-merchant-knowledge-uploads.md) | Private R2 CSV/XLSX acquisition/extraction and safe asset cleanup | Pending | BACKGROUND-001 |
 | [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Pending | BACKGROUND-002, BACKGROUND-003 |
@@ -48,13 +48,13 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-Initially no Background task is executable.
-
-When DATABASE-001 and SHARED-002 are Complete/architect-accepted:
+DATABASE-001 and SHARED-002 are Complete/architect-accepted, so:
 
 ```text
 BACKGROUND-001 -> Ready
 ```
+
+BACKGROUND-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 After BACKGROUND-001:
 
