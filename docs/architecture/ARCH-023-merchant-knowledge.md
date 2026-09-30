@@ -3371,6 +3371,19 @@ through bounded task reviews without changing the agreed architecture contract.
 - Confirmed deterministic nearest-neighbour ordering and production-query exclusion of closer cross-shop, non-ACTIVE-revision and mismatched-embedding-provenance rows; the configured remote database was not used and the disposable container was removed afterward.
 - Marked COMMERCE-001 Complete and promoted COMMERCE-002 to Ready because ADMIN-001 and COMMERCE-001 are both Complete. No COMMERCE-002 implementation was started by this review.
 
+### 2026-09-30 — BACKGROUND-002 Attempt 3 accepted
+
+- Accepted the bounded IPv6 admission correction at implementation `f181dbaa0398fcaec0f072b7439fc94d05681df7`.
+- Confirmed the blanket `2000::/3` allow rule is replaced by the exact architect-supplied positive ordinary-global allocation set, with `2620:4f:8000::/48` explicitly denied as special-use while IPv4 and IPv4-mapped IPv6 behavior remain unchanged.
+- Accepted focused validation **79/79**, build, changed-file diagnostics and `git diff --check`; acquisition-level mixed IPv6 DNS coverage proves rejection occurs before request dispatch.
+- Marked BACKGROUND-002 Complete. BACKGROUND-003 is already Complete, so BACKGROUND-004 becomes Ready under the declared dependency graph; no downstream task was started.
+
+### 2026-09-30 — BACKGROUND-002 Attempt 2 changes requested
+
+- Attempt 2 closed the six representative A1-R1 address cases, removed the direct `ipaddr.js` dependency and supplied the required worktree/synchronization evidence.
+- Architect review found the IPv6 classifier still treats the entire `2000::/3` space as public except a short deny list, admitting IANA-reserved/unallocated and special-purpose destinations that D16/R3 requires denied.
+- Returned BACKGROUND-002 to Ready with Attempt 2 preserved for a bounded Attempt 3 IPv6 admission-policy correction. BACKGROUND-004 remains Pending.
+
 ### 2026-09-30 — BACKGROUND-003 Attempt 2 accepted
 
 - Accepted private R2 upload acquisition/extraction and database-led asset cleanup at Attempt 2.
@@ -3408,6 +3421,15 @@ through bounded task reviews without changing the agreed architecture contract.
 - Required cleanup candidate progression so a retained first page of `DELETED` tombstones cannot starve later expired/unreferenced assets.
 - Required focused regressions for shared-formula extraction and >100-candidate cleanup progression; no schema/migration, Gateway, queue, normalization, embedding or worker-entrypoint change is authorised.
 - Returned BACKGROUND-003 to Ready with Attempt 1 preserved; BACKGROUND-004 remains gated on both BACKGROUND-002 and BACKGROUND-003.
+
+### 2026-09-30 — BACKGROUND-002 Attempt 1 changes requested
+
+- Reviewed the WEB_PAGE acquisition adapter as otherwise structurally aligned with D16: per-hop HTTPS validation, DNS pinning, peer verification, bounded redirect/deadline/decompression handling, status classification and visible-text extraction are all within task scope.
+- Required correction of the R3 public-address classifier because `ipaddr.js@1.9.1` plus the partial deny list still permits special/reserved destinations as generic `unicast`, including special-use IPv4 blocks and IPv6 space outside the globally-routable unicast allocation.
+- Required removal of the unauthorised `ipaddr.js` dependency; this task authorises Node built-ins for network policy and only the HTML parser as a new dependency.
+- Required focused regressions for the newly covered denied address classes and mixed-answer DNS rejection before connection.
+- Required the Completion Report to record the mandatory shared-checkout/non-reuse attestations and all four start-of-attempt synchronization outcomes.
+- Returned BACKGROUND-002 to Ready with Attempt 1 preserved. BACKGROUND-004 remains Pending; BACKGROUND-003 remains independently Ready.
 
 ### 2026-09-30 — SHOPIFY-002 Attempt 2 accepted
 
