@@ -41,7 +41,7 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
-| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Restart-safe direct Feature/Tool Capability bootstrap with exact immutable successor-release preservation | Ready — Attempt 1 blocker reconciled; next claim Attempt 2 | COMMERCE-001, ADMIN-001 |
+| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Restart-safe direct Feature/Tool Capability bootstrap with exact immutable successor-release preservation and canonical `nunjucks.v1` seed | In Progress — Attempt 2; R6 reconciled, validation pending | COMMERCE-001, ADMIN-001 |
 | [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Pending | DATABASE-001, SHARED-002, ADMIN-003 |
 
 
@@ -54,14 +54,15 @@ required tenant/revision/provenance exclusions.
 
 `ARCH-023-ADMIN-001` is also Complete, so both declared dependencies of COMMERCE-002 are
 satisfied. Attempt 1 correctly stopped because the task still described the removed
-ARCH-020 Capability-revision/`selectionBinding` model. Architect reconciliation has now
-rewritten COMMERCE-002 against the accepted ARCH-021 direct model; no Database prerequisite
-is required.
+ARCH-020 Capability-revision/`selectionBinding` model. Architect reconciliation rewrote
+COMMERCE-002 against the accepted ARCH-021 direct model. Attempt 2 is active on its
+canonical task worktrees; the newly discovered response-template conflict is corrected
+to the accepted ARCH-021 `nunjucks.v1` contract without resetting the claim.
 
 ```text
 COMMERCE-001 -> Complete / Accepted Attempt 2
 ADMIN-001    -> Complete / Accepted Attempt 2
-COMMERCE-002 -> Ready; attempt: 1; next claim becomes Attempt 2
+COMMERCE-002 -> In Progress; attempt: 2; existing claim continues
 ```
 
 The corrected bootstrap uses direct `featureId` + `toolId` Capability identity,
@@ -71,7 +72,9 @@ publication is a durable no-op. When adding Merchant Knowledge to an existing re
 a bounded generic successor path must copy unrelated Tool pins and Feature Behaviour
 snapshots exactly rather than re-resolving current authoring state.
 
-This readiness reconciliation does not claim or start COMMERCE-002.
+The R6 reconciliation does not create a new claim or implementation branch. The
+mandatory real PostgreSQL/bootstrap convergence and immutable successor-snapshot proof
+remain outstanding.
 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 

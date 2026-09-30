@@ -295,21 +295,29 @@ Exactly:
 
 No literal shop/plan/limit arguments.
 
-### R6 — canonical Tool response template
+### R6 — canonical seed Tool response template
 
-Exactly:
+ARCH-021-COMMERCE-084 replaces the legacy `text` / `items` response-template grammar
+with the constrained `nunjucks.v1` contract. Seed the fixed Tool revision with exactly:
 
 ```ts
 {
-  kind: "items",
-  itemsPath: "matches",
-  item: "[{{item.purpose}}] {{item.sourceName}}: {{item.content}}",
-  empty: "No relevant Merchant Knowledge was found.",
+  kind: "nunjucks",
+  runtimeVersion: "nunjucks.v1",
+  source: "{% for item in result.matches %}[{{ item.purpose }}] {{ item.sourceName }}: {{ item.content }}\n{% else %}No relevant Merchant Knowledge was found.{% endfor %}",
   unavailable: "Merchant Knowledge is unavailable."
 }
 ```
 
-The structured `CommerceToolResult.data` from COMMERCE-001 remains present; rendered text does not replace the structured C5 envelope.
+The template loops over the exact COMMERCE-001 result contract. Each match is rendered
+as `[purpose] sourceName: content`, one line per match; the loop's empty branch renders
+`No relevant Merchant Knowledge was found.` The `unavailable` value is plain output
+text, not Nunjucks source. The structured `CommerceToolResult.data` from COMMERCE-001
+remains present; rendered text does not replace the structured C5 envelope.
+
+Do not retain, parse or adapt legacy `kind: "items"` / `itemsPath` / `item` / `empty`
+templates. Such a persisted published revision is incompatible and must fail closed
+through the fixed-Tool conflict path; no compatibility adapter is authorized.
 
 ### R7 — canonical initial Tool revision
 
@@ -333,7 +341,12 @@ If there is no usable PUBLISHED fixed Tool revision:
 
 Do not insert revision rows directly.
 
-A later PUBLISHED revision is usable for bootstrap when it still satisfies the fixed Tool invariants in R5/R17 and the C5/R4 input contract. Bootstrap MUST NOT create a new seed revision merely because its revision id/number differs from the original seed.
+A later PUBLISHED revision is usable for bootstrap when it still satisfies the fixed
+Tool invariants in R5/R17 and the C5/R4 input contract, and its response template
+passes the ARCH-021 canonical `nunjucks.v1` schema and validator. Its source and
+unavailable text may be later Studio-authored values. Bootstrap MUST NOT create a new
+seed revision merely because its revision id/number differs from the original seed.
+Legacy `text` / `items` templates are not usable.
 
 Deterministic operation-id prefix:
 
@@ -401,7 +414,7 @@ A usable publication exists only when the current active release contains one di
 capabilityId = fixed merchant_knowledge Capability.id
 featureId    = current merchant_knowledge Feature.id
 toolId       = fixed merchant_knowledge_lookup Tool.id
-toolRevisionId -> PUBLISHED revision of that Tool
+toolRevisionId -> PUBLISHED revision of that Tool with an ARCH-021-valid nunjucks.v1 response template
 ```
 
 The pinned Tool revision must satisfy:
@@ -449,7 +462,7 @@ blank/missing Feature Behaviour
 
 Complete only missing canonical steps using deterministic operation ids and existing lifecycle/authoring commands.
 
-If a fixed identity or fixed Tool definition has incompatible content that cannot be proven safe under R3/R5/R9/R17:
+If a fixed identity or fixed Tool definition has incompatible content that cannot be proven safe under R3/R5/R6/R9/R17:
 
 ```text
 MERCHANT_KNOWLEDGE_BOOTSTRAP_CONFLICT
@@ -591,6 +604,7 @@ every DRAFT/PUBLISHED definition must:
   execution.operation = merchantKnowledge.lookup
   execution.operationVersion = 1.0.0
   preserve C5/R4 agent input contract
+  responseTemplate.kind = nunjucks and runtimeVersion = nunjucks.v1
 ```
 
 Studio may edit only fields permitted by the generic ARCH-021 Policy Operation flow that do not violate those fixed invariants.
@@ -671,6 +685,8 @@ incompatible fixed Capability featureId/toolId/enabled -> conflict
 cannot disable fixed Tool; fixed Capability cannot be rebound/disabled through any existing generic mutation
 fixed Tool can be reused by a second direct Capability
 fixed Tool cannot rebind operation/version
+  legacy kind=text/items response template fails closed without an adapter
+  valid Studio-authored nunjucks.v1 source/unavailable text is preserved
 startup instrumentation invokes ensure once per process and durable replay remains a no-op across process restarts
 bootstrap path contains no CommerceCapabilityRevision, selectionBinding or toolBindings dependency
 ```
@@ -697,6 +713,7 @@ Consumes:
 
 ```text
 COMMERCE-001 merchantKnowledge.lookup@1.0.0
+ARCH-021-COMMERCE-084 canonical nunjucks.v1 result-template schema and validator (Complete)
 ADMIN-001 Feature.key=merchant_knowledge
 ARCH-021 direct Feature -> Capability -> Tool authoring
 ARCH-021 release Tool-revision pinning + CommerceReleaseFeature behaviour snapshots
@@ -725,6 +742,7 @@ Planned system tests and generic ARCH-021 Policy Operation Studio evolution afte
 - [ ] Later valid Studio-authored Tool revision/Feature Behaviour publication survives restart untouched.
 - [ ] Fixed direct Capability key/Feature/Tool identity cannot be repurposed or disabled.
 - [ ] Tool-to-operation binding remains fixed.
+- [ ] The seed Tool response template uses the accepted `nunjucks.v1` contract, renders `result.matches` in the required format, and preserves the structured C5 envelope without a legacy adapter.
 - [ ] Tool reuse across other direct Capabilities remains non-exclusive.
 - [ ] No commercial Feature row is created by Commerce.
 - [ ] No `CommerceCapabilityRevision`, `selectionBinding`, per-Capability prompt/configuration or `toolBindings[]` persistence/API is introduced.
@@ -758,25 +776,32 @@ The ordinary `createRelease()` semantics remain useful for fresh composition bec
 ## Completion Report
 
 ### Status
-Blocked: required Capability revision lifecycle/storage contract and database schema are absent; implementation cannot safely proceed within task ownership constraints.
+In Progress — Attempt 2. Implementation is on `task/ARCH-023-COMMERCE-002` at `8acd9d9536b51020a07b9cf059841e5e9c618959`; the Nunjucks seed-contract correction is now authoritative and implementation/required validation remain in progress.
 ### Files Changed
-Only this task report in the parent task worktree. No Commerce implementation files changed.
-### Work Completed
-Inspected the publication lifecycle, storage adapter, publication contract, task-pinned schema and package scripts. The required Capability create/draft/publish lifecycle API is absent; current state stores only reduced Capability identity and direct release membership, with no revisions, prompt, configuration, Tool bindings or selectionBinding.
+Implementation commit `8acd9d9536b51020a07b9cf059841e5e9c618959` changes:
+- `src/commerce/publication/lifecycle.ts`
+- `src/commerce/publication/validation.ts`
+- `tests/commerce-lifecycle.test.ts`
 
-Prepared launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-002`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-002`; both use `task/ARCH-023-COMMERCE-002` and were synchronized with current main. Starting parent HEAD `9b8b1a805eee962fc6ed73d057c9fa6038324326`; implementation HEAD `a3cfdd7016196af619d980958a4d2b2c9783ed50`. Recursive submodule sync/update passed; database pin `2eb17ee910491e8f9df82736fc0a843844415947`. Parent claim `31823e243dc6cd80f3508604438077529687467c` was pushed at `2026-09-30T15:24:46Z`.
+Parent architect coordination changes: this task file and `docs/architecture/ARCH-023-merchant-knowledge.md`. No implementation source is changed by this reconciliation.
+### Work Completed
+Attempt 1 stopped before implementation because the task still specified the retired Capability revision/binding architecture. The original Attempt 1 report and Architect Review below remain as historical evidence; their review text is unchanged.
+
+Attempt 2 began after the architect corrected the task to the accepted ARCH-021 direct Capability model. The implementation agent reports that lifecycle work is committed and pushed as `8acd9d9536b51020a07b9cf059841e5e9c618959` on `task/ARCH-023-COMMERCE-002`. Architect-observed commit contents are limited to generic successor-release lifecycle/validation and focused lifecycle tests in the three files listed above. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-002`; the implementation task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-002`. At the architect's pre-edit check, both were registered, clean, on `task/ARCH-023-COMMERCE-002`, and contained current `origin/main`. The implementation branch remains clean and pushed at the exact commit above.
+
+This reconciliation resolves the newly discovered R6 conflict against accepted `ARCH-021-COMMERCE-084`: the seed now uses the canonical `nunjucks.v1` shape over COMMERCE-001's `result.matches` contract, and legacy `items` templates are explicitly incompatible.
 ### Validation Results
-Not run: implementation is blocked before edits. The required disposable PostgreSQL convergence/replay proof remains pending and is not claimed as passing. Repository scripts inspected: `test`, `typecheck`, `lint`, `build`; focused bootstrap tests do not yet exist.
+`moda_commerce` reports the focused implementation tests passed. The mandatory real disposable PostgreSQL/bootstrap convergence, restart-idempotency and exact successor-snapshot preservation proof remains outstanding and is not claimed as passing. The most recent visible terminal command, `npx vitest run tests/commerce-lifecycle.test.ts -t 'keeps the Merchant Knowledge Tool operation and input contract fixed and cannot disable it'`, exited 1; its failure output was not available in this architect session. Re-run and record that focused check after implementing the corrected template contract. Record the exact launcher packet, attempt-start synchronization and recursive-submodule preparation evidence in the completed Attempt 2 report before requesting review.
 ### Deviations
-No source changes were made because the active lifecycle and pinned schema cannot persist the Capability revision required by the acceptance criteria. Adding writes would require forbidden schema/migration changes or bypassing approved lifecycle APIs.
+Attempt 1 was blocked by stale task requirements and made no implementation source changes. Attempt 2 is proceeding on the corrected direct model. No deviation is currently established; the Nunjucks seed change is a task/architecture correction, not a request to restore compatibility.
 ### Assumptions
-None.
+The reported passed tests refer to the current Attempt 2 implementation before this Nunjucks task correction; they do not close the filtered test command observed exiting 1 or the mandatory PostgreSQL/bootstrap validation.
 ### Unresolved Issues
-1. The pinned database schema has no `selectionBinding` field or `CommerceCapabilityRevision` model. `CommerceReleaseCapability` references Capability identity and Tool revision directly, so it cannot store the canonical prompt, configuration and revision-specific Tool bindings.
-2. `src/commerce/publication/lifecycle.ts` has no Capability create/draft/publish/enable commands. `src/commerce/integration/backend/publication-storage.ts` snapshots only reduced Capability identity fields and writes no Capability revisions. The publication-service contract describes these commands, but the active implementation and schema do not provide them.
-3. The task prohibits schema/migration edits and permits publication-storage changes only for read helpers. Supported lifecycle writes therefore cannot satisfy R9/R10 until the database-owned schema and Commerce lifecycle/storage contract are supplied or the task is explicitly re-scoped.
+1. Complete implementation and validation of the canonical `nunjucks.v1` seed plus fail-closed handling of legacy `items` response templates.
+2. Complete the real disposable PostgreSQL/bootstrap convergence, restart-idempotency and immutable successor-release preservation validations.
+3. Re-run the filtered lifecycle test that exited 1 and record its result and the full required task validation commands.
 ### Architectural Concerns
-Return to `moda_architect` to coordinate the missing Database-owned Capability revision/selection-binding schema and corresponding Commerce lifecycle/storage APIs. Do not bypass lifecycle with SQL. Reopen this task on the same mirrored task branches after that prerequisite is integrated; then complete the convergence tests and real disposable PostgreSQL replay proof.
+None beyond the R6/R7 contract correction recorded below. Do not create a Database task or restore any retired Capability revision/binding model.
 
 ## Architect Review
 
@@ -811,3 +836,27 @@ The Attempt 1 stop was conformant with repository ownership because fabricating 
 
 ### Follow-up
 Reclaim `ARCH-023-COMMERCE-002` through the normal `/moda-task` preparation path. The next claim is Attempt 2. Do not create Database work for `CommerceCapabilityRevision`, `selectionBinding`, per-Capability prompt/configuration or `toolBindings[]`.
+
+### Architect Review Addendum — Attempt 2 R6 Contract Reconciliation
+
+#### Outcome
+
+The Attempt 1 Changes Requested outcome remains historical and unchanged. The newly
+discovered R6 conflict is resolved in this task definition and the parent architecture.
+Attempt 2 remains `in_progress` with its existing claim; no additional launcher reclaim
+is required. Continue on the existing canonical implementation worktree and
+`task/ARCH-023-COMMERCE-002` branch. Do not create a new attempt or branch.
+
+#### Authoritative correction
+
+- Implement the R6 seed exactly as the `nunjucks.v1` object now specified above.
+- Render `result.matches` with one `[purpose] sourceName: content` line per result; use the loop `else` empty-state text and the plain `unavailable` text.
+- Preserve the structured COMMERCE-001 result envelope. Do not use the superseded `kind: "items"` shape or add a compatibility adapter.
+- Validate any existing/later published revision through the ARCH-021 `nunjucks.v1` contract. A legacy `items` template is incompatible and fails closed.
+- Keep the current Attempt 2 code commit. The implementation branch already contains `8acd9d9536b51020a07b9cf059841e5e9c618959`; no new launcher reclaim is needed solely because of this parent task/architecture correction.
+- Complete the required PostgreSQL/bootstrap validations and record exact results, plus launcher-resolved worktree, synchronization and recursive-submodule preparation evidence, before setting this attempt to review.
+
+#### Review Status
+
+Pending implementation completion and validation; this addendum is a contract correction,
+not acceptance of the Attempt 2 implementation.

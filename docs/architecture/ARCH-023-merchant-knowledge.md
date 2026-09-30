@@ -13,10 +13,7 @@ updated: 2026-09-30
 
 Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-002` and `ARCH-023-SHOPIFY-001`. COMMERCE-002 is Ready because COMMERCE-001 and ADMIN-001 are Complete; `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001. All other ARCH-023 tasks remain gated by their declared dependencies.
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` at Attempt 2, `ARCH-023-SHARED-001` at Attempt 2, `ARCH-023-SHARED-002` at Attempt 1 with exact published revision `@modainteract/moda-interact-shared@1.0.1`, and `ARCH-023-SHOPIFY-002` at Attempt 2.
-
-.
+The current executable frontier is `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-002` and `ARCH-023-SHOPIFY-001`. COMMERCE-002 is In Progress at Attempt 2 because COMMERCE-001 and ADMIN-001 are Complete; its R6 seed response template is reconciled to ARCH-021-COMMERCE-084, with implementation and mandatory validation still pending. `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -2410,6 +2407,27 @@ The policy operation returns exactly this envelope:
 }
 ```
 
+The canonical initial `merchant_knowledge_lookup` Tool revision uses the ARCH-021
+`nunjucks.v1` response-template contract established by
+`ARCH-021-COMMERCE-084`:
+
+```ts
+{
+  kind: "nunjucks",
+  runtimeVersion: "nunjucks.v1",
+  source: "{% for item in result.matches %}[{{ item.purpose }}] {{ item.sourceName }}: {{ item.content }}\n{% else %}No relevant Merchant Knowledge was found.{% endfor %}",
+  unavailable: "Merchant Knowledge is unavailable."
+}
+```
+
+The template renders each C5 match as `[purpose] sourceName: content`, one line per
+match. Its loop `else` renders the no-match text; `unavailable` is plain output text,
+not template source. Rendering supplements and never replaces the structured C5
+`CommerceToolResult.data` envelope. Legacy `text` / `items` templates are not accepted
+or adapted: ARCH-021-COMMERCE-084 is a pre-production breaking replacement with no
+legacy compatibility adapter. Later Studio-authored source/unavailable text may differ
+while the response template continues to pass the canonical `nunjucks.v1` validator.
+
 `trust` is a fixed server-produced literal. The agent cannot supply or override it.
 `languageTag` and `dataFormat` describe the returned source. Neither is an authorization
 signal. `sourceUrl` is returned only for `WEB_PAGE`; R2 object keys, uploaded asset ids
@@ -3335,6 +3353,23 @@ through bounded task reviews without changing the agreed architecture contract.
   not be used to silently advance unrelated authoring state.
 - Returned COMMERCE-002 to Ready with Attempt 1 preserved; the next normal claim is
   Attempt 2. No implementation was started by this reconciliation.
+
+### 2026-09-30 — COMMERCE-002 Attempt 2 R6 contract reconciled to ARCH-021-COMMERCE-084
+
+- Replaced the stale Merchant Knowledge `kind: items` seed with the accepted
+  `nunjucks.v1` response-template shape, looping over the exact C5 `result.matches`
+  contract and rendering `[purpose] sourceName: content` with the specified empty and
+  unavailable text.
+- Recorded that legacy `text` / `items` templates are incompatible and must not receive
+  a compatibility adapter; preserved the structured C5 result envelope.
+- Attempt 2 remains in progress on its existing prepared task branch/worktree. No new
+  launcher reclaim is required solely for this task-definition/architecture correction.
+- Implementation commit currently reported and inspected:
+  `8acd9d9536b51020a07b9cf059841e5e9c618959`.
+- The implementation agent reports focused tests passed; the latest visible filtered
+  lifecycle command exited 1, with failure output unavailable to the architect. The
+  required disposable PostgreSQL/bootstrap convergence and immutable-snapshot proof
+  remains outstanding.
 
 ### 2026-09-30 — COMMERCE-001 Attempt 2 accepted
 
