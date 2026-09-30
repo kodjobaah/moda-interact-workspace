@@ -78,9 +78,9 @@ leave it Ready while manually exercising the completed Tool-authoring flow.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, direct ready-phase navigation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Pending | DATABASE-003, SHARED-002, COMMERCE-088..092, COMMERCE-104, COMMERCE-110, BACKGROUND-002 |
+| [SYSTEM-TEST-003](SYSTEM-TEST-003-validate-feature-capability-authoring.md) | Validate local-first Capability creation, direct ready-phase navigation, shared Feature Behaviour, immutable release snapshots and simplified runtime | Ready | DATABASE-003, SHARED-002, COMMERCE-088..092, COMMERCE-104, COMMERCE-110, BACKGROUND-002 |
 
-SYSTEM-TEST-003 is terminal validation. COMMERCE-104 remains architect-accepted Complete, but manual validation introduced COMMERCE-110 for the missing Add Capability semantic-tab presentation. SYSTEM-TEST-003 is therefore **Pending** until C110 is architect-accepted Complete. No implementation/publication task depends on it.
+SYSTEM-TEST-003 is terminal validation. COMMERCE-110 is now architect-accepted Complete and every declared implementation dependency is Complete, so SYSTEM-TEST-003 is **Ready**. No implementation/publication task depends on it; the developer may leave it Ready while manually validating the completed implementation.
 
 ### SYSTEM-TEST-002 re-gated for Tool execution safety — 2026-09-29
 
@@ -111,4 +111,4 @@ COMMERCE-104 Attempt 1 is now architect-accepted Complete. Every SYSTEM-TEST-003
 
 Manual validation after C104 showed that Add Capability still renders its phases as a numbered ordered list. COMMERCE-110 owns the bounded semantic/presentation correction to a real `Capability / Tool / Review` tablist while preserving C104 navigation behaviour.
 
-SYSTEM-TEST-003 therefore also depends on C110 and remains Pending until C110 is architect-accepted Complete.
+COMMERCE-110 is now architect-accepted Complete. SYSTEM-TEST-003's C110 dependency is satisfied and terminal Feature/Capability validation is **Ready**.

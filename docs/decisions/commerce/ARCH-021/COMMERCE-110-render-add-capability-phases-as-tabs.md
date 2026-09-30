@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 76
 executor: null
 claimed_at: null
@@ -516,24 +516,100 @@ claim commit: 83b71464f4ad46419a3904554671b2da39578817 (committed and pushed)
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+COMMERCE-110 Attempt 1 is **Accepted / Complete**.
+
+The implementation satisfies the bounded semantic-tab presentation correction without changing the accepted COMMERCE-091/104 Add Capability state machine.
+
+The reviewed implementation now renders exactly one semantic phase tablist:
+
+```text
+Capability | Tool | Review
+```
+
+with the required accessibility contract:
+
+- tablist role and accessible name `Capability setup`;
+- exactly three native phase buttons with `role="tab"`;
+- exact deterministic tab ids:
+  - `capability-phase-tab`
+  - `tool-phase-tab`
+  - `review-phase-tab`;
+- exact matching `aria-controls` panel ids;
+- `aria-selected` reflects the active phase;
+- `aria-disabled` and native `disabled` use the same existing availability/operation-lock boolean;
+- only the active panel remains mounted;
+- every active panel uses `role="tabpanel"` plus the exact matching id / `aria-labelledby`.
+
+The previous ordered-list/list-item phase chrome is removed, so browser-generated `1. / 2. / 3.` numbering no longer exists.
+
+The implementation also preserves the exact C104 navigation authority:
+
+```text
+disabled =
+  !isPhaseAvailable(item)
+  || pending
+  || outcomeUnknown
+```
+
+and direct tab activation still delegates to the existing `goTo(item)` path. No second tab-specific readiness, unlock or navigation state was introduced.
+
+The previously accepted behavioural boundaries remain intact:
+
+- Tool first-entry availability still follows current `validCapability`;
+- Review first-entry availability still follows current `canReview`;
+- readiness may be revoked before first entry;
+- direct first entry still advances the monotonic `enabledThrough` frontier;
+- later invalidation does not re-lock a historically unlocked phase;
+- pending / unknown-outcome state still locks all phase navigation;
+- `Create capability` remains independently gated by the current candidate;
+- Previous / Next keep their existing placement and share the same navigation path;
+- tab/footer navigation remains local-only and invokes neither `createFeatureCapability` nor `reconcileFeatureOperation`;
+- candidate fields, selected Tool, operation identity and local message state survive phase traversal.
+
+The CSS change is correctly bounded to `.capability-authoring-tabs` plus its 760px responsive rule. The existing `.tool-editor-tabs` styles were not modified.
+
+The focused tests explicitly prove semantic roles/order, no list/listitem phase semantics, exact tab-panel relationships, direct first-entry navigation, readiness revocation before entry, monotonic access after entry, pending/unknown locking, current Create gating, Previous/Next traversal, candidate retention and zero create/reconciliation calls.
 
 ### Reviewed Files
 
-None
+- `docs/decisions/commerce/ARCH-021/COMMERCE-110-render-add-capability-phases-as-tabs.md`
+- `moda-interact-commerce/src/studio/features/add-capability/add-capability-screen.tsx`
+- `moda-interact-commerce/app/styles.css`
+- `moda-interact-commerce/tests/add-capability-screen.test.tsx`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/decisions/system-test/ARCH-021/SYSTEM-TEST-003-validate-feature-capability-authoring.md`
+- `docs/decisions/system-test/ARCH-021/_index.md`
 
 ### Validation Reviewed
 
-None
+Attempt 1 submitted evidence:
+
+- focused Add Capability packet: **2 files / 9 tests passed**;
+- targeted ESLint: passed;
+- project `npm run typecheck`: passed;
+- `git diff --check`: passed;
+- changed-file editor diagnostics: clean;
+- CSS diff review: only the requested C110 tab styles and responsive rule were added.
+
+The task worktree initially lacked installed dependencies. The Completion Report records a local `npm ci` using the existing lockfile and local Prisma Client generation, with no manifest/lockfile changes. The available Node runtime (`24.21.0`) was newer than the package-declared `24.19.0` and produced an engine warning; all required C110 validation nevertheless completed successfully.
+
+The submitted review archive does not include the installed `node_modules`, so the commands were not independently rerun here. The implementation and regressions were inspected directly and no C110-owned defect was identified.
 
 ### Architecture Conformance
 
-Pending
+Accepted.
+
+C110 is a presentation-only correction. It adds semantic/visual tabs while leaving COMMERCE-104 navigation readiness, monotonic unlocking, zero-write authoring and final Create admission unchanged.
 
 ### Follow-up
 
-None
+Set `ARCH-021-COMMERCE-110` to **Complete**.
+
+All declared dependencies of `ARCH-021-SYSTEM-TEST-003` are now architect-accepted Complete. Promote SYSTEM-TEST-003 from `pending` to **`ready`** as terminal Feature/Capability validation.
+
+Do not start SYSTEM-TEST-003 automatically. The developer may leave it Ready while manually validating the completed Feature/Capability flow.
