@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 32
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-30T23:35:49Z
+attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-002
   - ARCH-023-BACKGROUND-003
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-023-BACKGROUND-005
 created: 2026-09-29
-updated: 2026-10-01
+updated: 2026-09-30
 ---
 
 # Process and promote Merchant Knowledge revisions
