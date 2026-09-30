@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-30T09:43:11Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
@@ -425,17 +425,17 @@ customer messages
 
 ## Work Items
 
-- [ ] Advance database submodule gitlink to accepted ARCH-023-DATABASE-001.
-- [ ] Adopt exact published SHARED-002 package revision.
-- [ ] Add `moda-merchant-knowledge-worker` readiness identity.
-- [ ] Add the Merchant Knowledge queue resource.
-- [ ] Add internal acquisition interfaces.
-- [ ] Implement current-plan Merchant Knowledge entitlement resolution.
-- [ ] Implement source-type/source-count eligibility exactly.
-- [ ] Implement bounded PENDING reconciliation with deterministic job ids.
-- [ ] Add dedicated BullMQ worker factory with injected processing service.
-- [ ] Add focused unit/integration tests.
-- [ ] Record accepted database commit and Shared package version in Completion Report.
+- [x] Verify database submodule is at accepted ARCH-023-DATABASE-001 commit `2eb17ee910491e8f9df82736fc0a843844415947`; no database files or gitlink were changed.
+- [x] Adopt exact published SHARED-002 package revision `@modainteract/moda-interact-shared@1.0.1`.
+- [x] Add `moda-merchant-knowledge-worker` readiness identity.
+- [x] Add the Merchant Knowledge queue resource.
+- [x] Add internal acquisition interfaces.
+- [x] Implement current-plan Merchant Knowledge entitlement resolution.
+- [x] Implement source-type/source-count eligibility exactly.
+- [x] Implement bounded PENDING reconciliation with deterministic job ids.
+- [x] Add dedicated BullMQ worker factory with injected processing service.
+- [x] Add focused unit tests and a disposable-database-gated integration test.
+- [x] Record accepted database commit and Shared package version in Completion Report.
 
 ## Interfaces / Contracts
 
@@ -474,28 +474,29 @@ Both must be Complete/architect-accepted. SHARED-002 supplies the exact package 
 
 ## Acceptance Criteria
 
-- [ ] Merchant Knowledge has its own BullMQ worker factory and is not attached to an unrelated worker.
-- [ ] Current entitlement ignores pending next-cycle plans.
-- [ ] C2 malformed configuration fails closed.
-- [ ] Source-type filtering occurs before source-count limiting.
-- [ ] Dormant/disallowed/excess sources do not enqueue processing work.
-- [ ] A committed eligible PENDING revision can be re-enqueued after simulated initial queue loss.
-- [ ] Repeated reconciliation uses the same deterministic job id.
-- [ ] Stale/non-current revision generations are skipped.
-- [ ] Existing Background workers/readiness identities remain unchanged.
-- [ ] No deployable Merchant Knowledge entrypoint exists yet.
-- [ ] No source acquisition/embedding/vector work is implemented in this task.
+- [x] Merchant Knowledge has its own BullMQ worker factory and is not attached to an unrelated worker.
+- [x] Current entitlement ignores pending next-cycle plans.
+- [x] C2 malformed configuration fails closed.
+- [x] Source-type filtering occurs before source-count limiting.
+- [x] Dormant/disallowed/excess sources do not enqueue processing work.
+- [ ] A committed eligible PENDING revision can be re-enqueued after simulated initial queue loss (integration test is authored but could not run without local PostgreSQL).
+- [x] Repeated reconciliation uses the same deterministic job id.
+- [x] Stale/non-current revision generations are skipped.
+- [x] Existing Background workers/readiness identities remain unchanged.
+- [x] No deployable Merchant Knowledge entrypoint exists yet.
+- [x] No source acquisition/embedding/vector work is implemented in this task.
 
 ## Validation
 
-- [ ] `npm test -- --run tests/unit/services/merchant-knowledge-entitlement.service.test.ts`
-- [ ] `npm test -- --run tests/unit/services/merchant-knowledge-reconciliation.service.test.ts`
-- [ ] `npm test -- --run tests/unit/workers/merchant-knowledge.worker.test.ts`
-- [ ] database-backed reconciliation integration test
-- [ ] `npm run prisma:validate`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] `npm test -- --run tests/unit/services/merchant-knowledge-entitlement.service.test.ts` — 7 passed.
+- [x] `npm test -- --run tests/unit/services/merchant-knowledge-reconciliation.service.test.ts` — 7 passed.
+- [x] `npm test -- --run tests/unit/workers/merchant-knowledge.worker.test.ts` — 5 passed.
+- [ ] Database-backed reconciliation integration test — skipped; no disposable database configured, and `pg_isready -h localhost -p 5432 -d moda_interact -U postgres` reported no response.
+- [x] `npm run prisma:validate` — passed.
+- [x] `npm run prisma:generate` — passed through the repository script.
+- [x] `npm run build` — passed.
+- [x] `git diff --check` — passed.
+- [x] Changed-file diagnostics clean; `npx tsc --noEmit` passed.
 
 ## Stop Condition
 
@@ -510,28 +511,28 @@ The repository may use dependency injection/factories in tests, but do not creat
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Architect Review (`review`); Attempt 2 implementation is committed and pushed.
 
 ### Files Changed
-None.
+Implementation task commit `06566f8` changes only `package.json`, `package-lock.json`, `src/runtime/readiness.ts`, `src/entrypoints/merchant-knowledge-resources.ts`, `src/services/merchant-knowledge-acquisition.ts`, `src/services/merchant-knowledge-entitlement.service.ts`, `src/services/merchant-knowledge-reconciliation.service.ts`, `src/workers/merchant-knowledge.worker.ts`, and the existing worker/queue telemetry name unions in `src/observability/worker-metrics.ts` and `src/observability/queue-performance.ts`, plus the three focused unit tests and the gated reconciliation integration test. The database submodule remains at accepted commit `2eb17ee910491e8f9df82736fc0a843844415947`; no database file or gitlink changed.
 
 ### Work Completed
-None.
+Pinned `@modainteract/moda-interact-shared` exactly to `1.0.1` and regenerated Prisma Client through the repository script. Added the dedicated readiness identity, single shared-Redis BullMQ queue resource, and the three internal acquisition interfaces. Implemented current-plan-only entitlement resolution with strict Shared C2 parsing, active supported pair checks, allowed-pair filtering before deterministic source allowance counting, and a bounded PENDING revision reconciler using the Shared deterministic job ID. Added an isolated Merchant Knowledge worker factory using existing Redis, BullMQ telemetry and `observeWorkerJob`, with final-attempt failure marking based only on a bounded error-name code. No production startup entrypoint, acquisition implementation, embedding/vector work, or database schema change was added.
 
 ### Validation Results
-None.
+The three task-required unit suites passed (entitlement 7/7, reconciliation 7/7, worker 5/5); the existing readiness suite passed 8/8. `npx tsc --noEmit`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run build`, `git diff --check`, and changed-file diagnostics all passed. The database-backed integration test was added but skipped because neither disposable integration settings nor a local PostgreSQL service are available (`pg_isready` reported no response). `npm install` reported three high-severity audit advisories and install-script approval warnings; no unrelated audit remediation was attempted.
 
 ### Deviations
-None.
+The database-backed integration test could not be executed in this environment; it is gated by the repository's disposable-database opt-in and is recorded as an unresolved validation item. The readiness/queue telemetry name unions were extended in their existing observability modules because the new worker's actual identity must be accepted by `observeWorkerJob` and queue-performance telemetry.
 
 ### Assumptions
-None.
+The accepted ARCH-023 database migration and catalogue are available in the prepared local integration environment when `TEST_DATABASE_URL` and `MODA_DISPOSABLE_INTEGRATION=1` are configured.
 
 ### Unresolved Issues
-None.
+The database-backed enqueue-loss integration test still needs to run against an explicitly disposable PostgreSQL database before the pending acceptance criterion can be verified end to end.
 
 ### Architectural Concerns
-None.
+None. Architect Review remains owned by `moda_architect` and was not modified.
 
 ## Architect Review
 
