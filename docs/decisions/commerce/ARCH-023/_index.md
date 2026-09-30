@@ -66,6 +66,7 @@ COMMERCE-002 -> Complete / Accepted Attempt 4
                          +--> COMMERCE-004 remains Pending on ADMIN-004
 ```
 
+This readiness promotion does not claim or start COMMERCE-002. ADMIN-004 is now Complete / Accepted Attempt 1. The merchant-opt-in architecture decision does not modify COMMERCE-002 while it is in review; COMMERCE-004 remains Pending only until COMMERCE-002 is Complete.
 COMMERCE-004 is narrowed to request-time merchant activation enforcement; it no longer owns a bootstrap activation-mode correction.
 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
