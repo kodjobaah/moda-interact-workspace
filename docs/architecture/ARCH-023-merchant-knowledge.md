@@ -13,7 +13,7 @@ updated: 2026-09-30
 
 Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` at Attempt 2, `ARCH-023-SHARED-001` at Attempt 2, `ARCH-023-SHARED-002` at Attempt 1 with exact published revision `@modainteract/moda-interact-shared@1.0.1`, and `ARCH-023-SHOPIFY-002` at Attempt 2.
 
-The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-001`. `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001 even though SHOPIFY-002 is now Complete. All other ARCH-023 tasks remain gated by their declared dependencies.
+The currently architect-accepted foundation includes `ARCH-023-SHOPIFY-001` and `ARCH-023-SHOPIFY-002` at Attempt 2. The current executable frontier includes `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-003` and `ARCH-023-SHOPIFY-004`. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3250,6 +3250,29 @@ all other ARCH-023 implementation tasks remain gated by their declared dependenc
 
 SHOPIFY-002 acceptance does not promote SHOPIFY-003 because SHOPIFY-001 is not yet Complete. No downstream task is started implicitly by this review.
 
+Current execution frontier after SHOPIFY-001 Attempt 2 acceptance:
+
+```text
+ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
+ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+ARCH-023-SHARED-001     Complete — Accepted Attempt 2
+ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
+
+ARCH-023-ADMIN-001      Ready
+ARCH-023-ADMIN-003      Ready
+ARCH-023-BACKGROUND-002 Ready
+ARCH-023-BACKGROUND-003 Ready
+ARCH-023-COMMERCE-001   Ready
+ARCH-023-SHOPIFY-003    Ready
+ARCH-023-SHOPIFY-004    Ready
+ARCH-023-SHOPIFY-005    Pending — still depends on SHOPIFY-004
+all other ARCH-023 implementation tasks remain gated by their declared dependencies
+```
+
+SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
+
 No implementation task may depend on a terminal system-test task.
 
 ## Open Questions
@@ -3258,6 +3281,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHOPIFY-001 Attempt 2 accepted
+
+- Accepted the bounded Merchant Knowledge extension of the existing ARCH-017 BillingPlan materialiser at implementation `787b62a5c27c6d732503c02476eb094ae5258ffa` and parent report `548175c859458d77d87b0df7f3d1111c6a07f2b3`.
+- Confirmed Merchant Knowledge C2/pair validation occurs before first BillingPlan creation while the feature projection remains generic and copies configuration unchanged. Existing operational-plan reuse/concurrency recovery is preserved and no ShopFeaturePreference mutation is introduced.
+- Accepted the developer-supplied procedural capture as closure of the review-evidence gap: canonical task worktrees/branches are registered, submitted HEADs equal remote task heads, the database submodule is materialised at the accepted gitlink, and reflogs prove parent and implementation `origin/main` synchronization immediately before the Attempt 2 claim.
+- Marked SHOPIFY-001 Complete and promoted SHOPIFY-003 plus SHOPIFY-004 to Ready. SHOPIFY-005 remains Pending behind SHOPIFY-004. No downstream task was started implicitly.
 
 ### 2026-09-30 — SHOPIFY-001 Attempt 1 blocked on missing ARCH-017 integration baseline
 

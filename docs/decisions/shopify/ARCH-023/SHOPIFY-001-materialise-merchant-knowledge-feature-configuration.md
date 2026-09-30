@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-09-30T12:32:00Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
@@ -339,6 +339,46 @@ The existing resolver now loads feature configuration and validates a single `me
 Added regressions for generic and Merchant Knowledge configuration projection, malformed configuration, missing active compatibility, duplicate mappings, existing-plan reuse, and absence of ShopFeaturePreference writes. The copy loop remains generic and no plan-name-specific rules or new materialisation path were added.
 
 Launcher claim evidence: attempt 2, executor `copilot`, claimed at `2026-09-30T12:32:00Z`, claim commit `27532f57e275d451cdba7c514721031bc4292487` pushed. Implementation commit `787b62a5c27c6d732503c02476eb094ae5258ffa` is pushed to `origin/task/ARCH-023-SHOPIFY-001`; implementation worktree is clean.
+
+Physical worktree isolation:
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-001
+parent branch: task/ARCH-023-SHOPIFY-001
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-001
+implementation branch: task/ARCH-023-SHOPIFY-001
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+```
+
+Start-of-attempt synchronization:
+
+```text
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: yes — merge commit 9ae594d3 at 2026-09-30 13:31:21 +0100
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: yes — fast-forward to 81cda41 at 2026-09-30 13:31:45 +0100
+```
+
+The later read-only evidence capture reported current parent `origin/main` containment as `NO`; that does not contradict start-of-attempt synchronization because `origin/main` can advance after the task starts. The parent reflog proves the required mainline merge immediately before claim commit `27532f57` at 13:32:01. The implementation reflog likewise proves the mainline fast-forward immediately before implementation.
+
+Implementation submodule preparation/status:
+
+```text
+database 2eb17ee910491e8f9df82736fc0a843844415947 (heads/main)
+uninitialised (-) entries: none
+divergent (+) entries: none
+unresolved (U) entries: none
+```
+
+Submitted heads:
+
+```text
+implementation: 787b62a5c27c6d732503c02476eb094ae5258ffa
+parent report: 548175c859458d77d87b0df7f3d1111c6a07f2b3
+```
 ### Validation Results
 Passed: focused billing materialisation and billing callback regression tests (247 tests); `npm run prisma:validate`; `npm run typecheck`; changed-file lint; `npm run build` (which runs `npm run prisma:generate`); changed-file diagnostics; and `git diff --check`.
 
@@ -353,6 +393,55 @@ Repository-wide lint remains red for 17 unrelated errors; the changed files pass
 None identified in the implemented scope. The pre-existing Attempt 1 `Architect Review` and Developer Override were left unchanged.
 
 ## Architect Review
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+Attempt 2 clears the Attempt 1 integration blocker and satisfies R1–R9. The prepared canonical baseline now contains the accepted ARCH-017 `resolveOrMaterializeBillingPlan(...)` lifecycle, and this task extends that resolver rather than creating a second materialisation path. Exact `@modainteract/moda-interact-shared@1.0.1` is pinned and the accepted database gitlink `2eb17ee910491e8f9df82736fc0a843844415947` is present.
+
+The Merchant Knowledge delta is bounded pre-validation before new BillingPlan creation. Exactly one `merchant_knowledge` mapping is parsed with `MerchantKnowledgeFeatureConfigurationSchema`; every configured Purpose/Data Format pair must resolve through the active compatibility catalogue; malformed, duplicate or unavailable mappings return `INVALID_CATALOGUE_PLAN` / `INVALID_MERCHANT_KNOWLEDGE_CONFIGURATION` before `BillingPlan` creation. The actual projection loop remains generic and copies each source mapping's `configuration` unchanged. Existing operational-plan reuse, `materializedAt` repair and unique-handle race recovery are preserved, and the task performs no `ShopFeaturePreference` mutation.
+
+The focused regression set covers arbitrary non-Merchant-Knowledge configuration copying, valid Merchant Knowledge projection, malformed configuration, missing compatibility, duplicate mappings, existing-plan reuse, unique-handle concurrency recovery and the no-preference-write boundary. The submitted canonical-worktree validation reports 247 focused billing/callback tests passing, Prisma validation, typecheck, build, changed-file lint/diagnostics and `git diff --check` passing. The repository-wide 17 lint errors remain outside task-owned files and are non-blocking.
+
+The developer-supplied read-only procedural capture closes the remaining review-evidence gap. It proves the canonical parent and implementation worktrees are registered on `task/ARCH-023-SHOPIFY-001`, both submitted HEADs equal their remote task branches, the implementation submodule is materialised at the accepted database gitlink, and the reflogs prove start-of-attempt mainline synchronization before the claim. Parent `origin/main` was merged at `9ae594d3` on 2026-09-30 13:31:21 +0100, then the task was claimed at 13:32:01; implementation `origin/main` fast-forwarded to `81cda41` at 13:31:45. The later current-state containment result of `NO` for the parent is not contradictory because `origin/main` may advance after attempt start. No task-branch fast-forward reflog entry exists before those mainline synchronizations, so both remote task-branch fast-forwards were not needed.
+
+Submitted implementation is `787b62a5c27c6d732503c02476eb094ae5258ffa`; submitted parent report is `548175c859458d77d87b0df7f3d1111c6a07f2b3`.
+
+### Attempt 2 Reviewed Files
+
+```text
+moda-interact/app/services/billing/billing.service.ts
+moda-interact/tests/unit/services/billing.service.test.ts
+moda-interact/package.json
+moda-interact/package-lock.json
+docs/decisions/shopify/ARCH-023/SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md
+docs/decisions/shopify/ARCH-023/_index.md
+docs/architecture/ARCH-023-merchant-knowledge.md
+```
+
+### Attempt 2 Validation Reviewed
+
+```text
+focused billing + callback tests   247 passed
+npm run prisma:validate            passed
+npm run typecheck                  passed
+npm run build                      passed
+changed-file ESLint                passed
+changed-file diagnostics           passed
+git diff --check                   passed
+full repository lint               17 unrelated errors; non-blocking
+```
+
+### Attempt 2 Architecture Conformance
+
+Accepted. One ARCH-017 materialiser remains authoritative; Merchant Knowledge validation fails closed before first materialisation; configuration copying remains generic; existing BillingPlan reuse is not rewritten; no plan-name-specific Merchant Knowledge policy and no merchant preference mutation are introduced. `completion_mode: automatic` therefore completes `ARCH-023-SHOPIFY-001`.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-023-SHOPIFY-001` is now Complete. `ARCH-023-SHOPIFY-002` is already Complete / Accepted Attempt 2, so `ARCH-023-SHOPIFY-003` now has all declared dependencies satisfied and becomes Ready. `ARCH-023-SHOPIFY-004` also has all declared dependencies satisfied (`SHOPIFY-001` + `SHARED-002`) and becomes Ready. `ARCH-023-SHOPIFY-005` remains Pending behind SHOPIFY-004. No downstream task is started implicitly.
 
 ### Review Status
 Blocked
