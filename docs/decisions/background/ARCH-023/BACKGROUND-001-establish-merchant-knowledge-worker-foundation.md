@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-09-30T11:05:58Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on:
   - ARCH-023-DATABASE-001
@@ -479,7 +479,7 @@ Both must be Complete/architect-accepted. SHARED-002 supplies the exact package 
 - [x] C2 malformed configuration fails closed.
 - [x] Source-type filtering occurs before source-count limiting.
 - [x] Dormant/disallowed/excess sources do not enqueue processing work.
-- [ ] A committed eligible PENDING revision can be re-enqueued after simulated initial queue loss (integration test is authored but could not run without local PostgreSQL).
+- [x] A committed eligible PENDING revision can be re-enqueued after simulated initial queue loss (Attempt 4 disposable PostgreSQL integration passed).
 - [x] Repeated reconciliation uses the same deterministic job id.
 - [x] Stale/non-current revision generations are skipped.
 - [x] Existing Background workers/readiness identities remain unchanged.
@@ -491,7 +491,7 @@ Both must be Complete/architect-accepted. SHARED-002 supplies the exact package 
 - [x] `npm test -- --run tests/unit/services/merchant-knowledge-entitlement.service.test.ts` — 7 passed.
 - [x] `npm test -- --run tests/unit/services/merchant-knowledge-reconciliation.service.test.ts` — 7 passed.
 - [x] `npm test -- --run tests/unit/workers/merchant-knowledge.worker.test.ts` — 5 passed.
-- [ ] Database-backed reconciliation integration test — skipped; no disposable database configured, and `pg_isready -h localhost -p 5432 -d moda_interact -U postgres` reported no response.
+- [x] Database-backed reconciliation integration test — passed against a fresh disposable `pgvector/pgvector:pg17` container; all repository Prisma migrations applied, including `20260929160000_arch023_merchant_knowledge_schema`.
 - [x] `npm run prisma:validate` — passed.
 - [x] `npm run prisma:generate` — passed through the repository script.
 - [x] `npm run build` — passed.
@@ -511,34 +511,40 @@ The repository may use dependency injection/factories in tests, but do not creat
 ## Completion Report
 
 ### Status
-Blocked; Attempt 3 correction is committed and pushed, but the required disposable PostgreSQL integration check cannot apply the accepted schema with the wrapper's default PostgreSQL image.
+Review requested after Attempt 4; awaiting `moda_architect`. No architect acceptance decision has been made by this agent.
 
 ### Files Changed
-Attempt 3 implementation correction commit `3ed6621` changes only `src/services/merchant-knowledge-reconciliation.service.ts` and `tests/unit/services/merchant-knowledge-reconciliation.service.test.ts`. It is pushed to `origin/task/ARCH-023-BACKGROUND-001`. The prior foundation remains in implementation commit `06566f8`; the database submodule remains at `2eb17ee910491e8f9df82736fc0a843844415947`, with no database file or gitlink changed.
+Attempt 4 made no implementation-source changes. The Attempt 3 correction remains at implementation commit `3ed6621`, pushed to `origin/task/ARCH-023-BACKGROUND-001`; the prior foundation is in implementation commit `06566f8`. This attempt updates only this task report in the parent worktree. The database submodule remains at `2eb17ee910491e8f9df82736fc0a843844415947`; no database files or gitlink were changed.
 
 ### Work Completed
-Attempt 2 established the foundation described above. Attempt 3 dispositions for the Architect Review corrections:
+Attempt 2 established the worker foundation. Attempt 3 addressed Architect Review corrections A2-R1 and A2-R3 and recorded A3-R1 as blocked because the repository integration wrapper's default PostgreSQL image lacked pgvector. Attempt 4 satisfies A3-R1 without changing the integration wrapper, Shared helper, Gateway, production Background code, database schema, or migration history.
 
-- A2-R1 — implemented: the reconciler and focused test now use `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` from the Shared C4 contract instead of duplicating literal `1`.
-- A2-R2 — blocked: the exact required integration command was run. The disposable wrapper started PostgreSQL/Redis, but `prisma migrate deploy` failed with P3018 applying `20260929160000_arch023_merchant_knowledge_schema` because the default `postgres:17.6-alpine` image has no `vector.control`. The shared helper accepts a `postgres.image` option, but `scripts/test-integration.mjs` supplies no image option and exposes no environment override. The integration test did not execute; its Acceptance Criterion and Validation item remain unchecked.
-- A2-R3 — implemented: launcher/worktree provenance is recorded below from the prepared Attempt 3 packet.
-
-No production entrypoint, acquisition implementation, embedding/vector processing, or database schema change was added.
+Started a fresh task-unique `pgvector/pgvector:pg17` container with a random password, a dedicated database, and a dynamically assigned loopback-only host port. Waited for Docker health to become `healthy`, validated the Prisma schema, and applied every repository migration through `npx prisma migrate deploy --schema database/prisma/schema.prisma`, including `20260929160000_arch023_merchant_knowledge_schema`. The queue-loss integration test exercised the production reconciliation service against PostgreSQL while mocking queue publication: it verified that failed initial enqueue left the durable revision PENDING, then recovery enqueued it with a stable job ID. The EXIT cleanup trap removed the container; no volume or network was created. No production entrypoint, acquisition implementation, embedding/vector processing, or database schema change was added.
 
 ### Validation Results
-Attempt 3 focused unit suites passed: entitlement 7/7, reconciliation 7/7, and worker 5/5 (19 total). `npx tsc --noEmit` and `git diff --check` passed. Required command `npm run test:integration -- tests/integration/merchant-knowledge-reconciliation.integration.test.ts` was attempted and failed before Vitest because the disposable database could not apply the ARCH-023 migration: PostgreSQL reported `extension "vector" is not available` (`/usr/local/share/postgresql/extension/vector.control` missing). The integration acceptance remains unverified. Attempt 2's other passing validation remains recorded above; it does not replace the newly required integration check.
+Attempt 4 live integration evidence:
+
+- Image: `pgvector/pgvector:pg17` (`sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f`).
+- Container: `arch023-background001-attempt4-1790766444-19077`; database `arch023_bg001_a4`; dynamically assigned loopback port `32776`; random password not retained in this report.
+- Readiness: Docker health reached `healthy` before connecting.
+- Schema validation: `npm run prisma:validate` passed.
+- Migration command: `npx prisma migrate deploy --schema database/prisma/schema.prisma`; all migrations applied successfully, including `20260929160000_arch023_merchant_knowledge_schema`.
+- Integration command: `TEST_DATABASE_URL="$database_url" DATABASE_URL="$database_url" MODA_DISPOSABLE_INTEGRATION=1 npx vitest run tests/integration/merchant-knowledge-reconciliation.integration.test.ts` — 1 test passed.
+- Teardown: EXIT trap ran `docker rm -f arch023-background001-attempt4-1790766444-19077`; the terminal recorded `DISPOSABLE_CONTAINER_TORN_DOWN`. No container volume or network was created.
+
+Attempt 3 focused unit suites passed: entitlement 7/7, reconciliation 7/7, and worker 5/5 (19 total). `npx tsc --noEmit` and `git diff --check` passed. Attempt 2's other passing validation remains recorded above. Attempt 4 made no implementation-source changes.
 
 ### Deviations
-The canonical integration wrapper was not modified to select another PostgreSQL image because test-infrastructure changes are outside this task's bounded implementation scope. A2-R2 therefore remains blocked as directed by the Architect Review. No unrelated audit remediation was attempted.
+No implementation or shared test-infrastructure changes were required. Validation used only the task-authorized disposable container. No unrelated audit remediation was attempted.
 
 ### Assumptions
 None.
 
 ### Unresolved Issues
-The canonical disposable integration path needs a pgvector-capable PostgreSQL image or an explicitly supported image configuration before the enqueue-loss test can run end to end. Coordinate the test-harness/image provision with the owning workflow and rerun the exact integration command before returning this task to review.
+None known. The generic wrapper's default image limitation remains unchanged; the required queue-loss proof passed using the explicitly authorized task-local pgvector container.
 
 ### Architectural Concerns
-The Shared disposable helper supports an image option, but the Background repository wrapper does not expose or set it; its default image cannot apply the accepted ARCH-023 migration requiring pgvector. Architect Review remains owned by `moda_architect` and was not modified.
+The generic integration wrapper still does not select a pgvector image, but this task-local validation requirement is satisfied without changing shared infrastructure. Architect Review remains owned by `moda_architect` and was not modified.
 
 ### Git / VCS
 
@@ -560,14 +566,15 @@ Start-of-attempt synchronization from the prepared packet:
 
 Implementation repository:
 - repository: `moda-interact-background`
-- correction commit: `3ed6621`
+- current implementation commit: `3ed66214bf43ec7e882c28bbdef4c6b290a39734`; no Attempt 4 implementation commit was needed
 - remote branch: `origin/task/ARCH-023-BACKGROUND-001`
 - pushed: yes
 
 Parent workspace:
 - task file: `docs/decisions/background/ARCH-023/BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md`
-- claim commit from prepared packet: `bc125cef619a4359d7a7d8903cd037b7e4b742ab`
-- report update: committed and pushed on `origin/task/ARCH-023-BACKGROUND-001` (current task-branch tip)
+- Attempt 4 claim: launcher commit `6b5c0d2a01ce4b2057b61b0417b1bbbe960cdbb8`, timestamp `2026-09-30T11:05:58Z`; committed and pushed before execution
+- prior report update: committed and pushed on `origin/task/ARCH-023-BACKGROUND-001` before Attempt 4
+- Attempt 4 report update: this task report only; commit and push follow validation
 - submodule gitlink staged: no
 
 Recursive implementation submodule preparation from the prepared packet: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; status `ready`; database commit `2eb17ee910491e8f9df82736fc0a843844415947` initialized.
