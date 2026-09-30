@@ -936,7 +936,7 @@ shop's pending DRAFT Shop prompt revision under the normal prompt CAS lifecycle.
 
 If the merchant leaves Shopify Managed Pricing without choosing a plan, the pending
 category plus DRAFT prompt remain inactive and are restored when onboarding is resumed.
-A later edit to the default template cannot mutate that already-pinned DRAFT.
+A later edit to the default template cannot mutate that already-pinned DRAFT. A later Admin reassignment of the category's `defaultTemplateId` likewise does not invalidate, reseed or rewrite the existing pending DRAFT: its `sourceTemplateId` / `sourceTemplateEditVersion` remain selection-time provenance.
 
 ### D11 — Shopify subscription projection is the category activation boundary
 
@@ -2739,7 +2739,7 @@ false, the new result is stale and must not replace the current ACTIVE revision.
 Initial category activation publishes the already-pinned pending DRAFT and updates the
 active category / `CommerceAgentConfiguration.activePromptRevisionId` in one logical
 database transaction so active category and active Shop Instructions cannot diverge.
-The transaction never re-resolves or translates the current template.
+The transaction never re-resolves or translates the current template. It validates that the pending revision carries non-null template provenance but MUST NOT compare `sourceTemplateId` with the category's current `defaultTemplateId`; that default may have changed after the pending selection was written.
 
 ### At-least-once processing
 
@@ -3339,17 +3339,17 @@ all other ARCH-023 implementation tasks remain gated by their declared dependenc
 
 SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
-Current Shopify correction frontier after SHOPIFY-003 Attempt 1 review:
+Current Shopify correction frontier after SHOPIFY-003 Attempt 2 review:
 
 ```text
 ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
-ARCH-023-SHOPIFY-003    Ready — Attempt 1 PostgreSQL proof
+ARCH-023-SHOPIFY-003    Ready — Attempt 3 provenance correction
 ARCH-023-SHOPIFY-004    Pending — requires ADMIN-004
 ARCH-023-SHOPIFY-005    Pending — requires SHOPIFY-004
 ```
 
-SHOPIFY-003 source is substantively conformant; acceptance is withheld only until its authored real PostgreSQL activation/rollback proof is executed. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
+SHOPIFY-003 Attempt 2 closed the authored real PostgreSQL activation/rollback proof (2/2). Acceptance is now withheld only for a bounded provenance correction: initial activation must publish the exact already-pinned pending DRAFT even if Admin later reassigns the category's current `defaultTemplateId`. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3359,6 +3359,12 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHOPIFY-003 Attempt 2 changes requested
+
+- Accepted the Attempt 2 disposable PostgreSQL evidence: all accepted migrations applied to `pgvector/pgvector:pg17`, 2/2 production activation/rollback cases passed, replay remained idempotent, the pre-existing ACTIVE billing projection survived activation rollback and the disposable container was removed.
+- Identified one remaining production defect: activation compares selection-time `sourceTemplateId` provenance with the category's current `defaultTemplateId`, even though ADMIN-002 permits that default to change without rewriting pending profiles and ARCH-023 defines the pending DRAFT as a durable snapshot.
+- Returned SHOPIFY-003 to Ready for bounded Attempt 3 correction/test coverage. No database, billing, Background hook, Commerce audit or downstream Shopify work is authorised.
 
 ### 2026-09-30 — SHOPIFY-003 Attempt 1 changes requested
 

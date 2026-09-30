@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 51
-executor: copilot
-claimed_at: 2026-09-30T19:40:30Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-SHOPIFY-001
@@ -129,8 +129,8 @@ In one transaction:
 7. if expected generation is supplied, require exact equality;
 8. load the pending category and exact pending revision;
 9. require DRAFT, SHOP scope, same shop, non-null template provenance;
-10. require the revision's `sourceTemplateId` matches the selected category's pinned default-template identity;
-11. never re-read current template text.
+10. treat `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance only; do **not** compare `sourceTemplateId` with the category's current `defaultTemplateId`;
+11. never re-read current template text or current default-template identity.
 
 Structural inconsistency throws bounded `STORE_CATEGORY_PENDING_STATE_CONFLICT` and rolls back.
 
@@ -196,6 +196,7 @@ ACTIVE -> exact pending DRAFT activates
 TRIALING -> exact pending DRAFT activates
 activeCategoryId already set -> later pending remains untouched
 current template edits after selection do not alter pinned prompt
+category default-template reassignment after selection does not invalidate or reseed the pinned prompt
 configuration pointer + publication + profile promotion are atomic
 mid-transaction failure rolls all three back
 repeated activation is idempotent
@@ -314,69 +315,68 @@ Attempt 2 implementation change: none; the architect-requested correction was va
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Changes Requested — Attempt 2
 
 ### Review Notes
 
-The submitted implementation is substantively architecture-conformant by source inspection. The activation service uses the durable current `Subscription` projection as the only activation gate, locks the Shop scope, validates the exact pending Store Category/DRAFT/provenance, publishes that existing revision, updates the SHOP prompt configuration and promotes the profile inside one Prisma transaction. The billing callback invokes that service only after an ACTIVE/TRIALING projection with a current `planId`; onboarding/configure intent alone does not activate the category. No Merchant Knowledge preference/source/queue state is coupled to this lifecycle.
+Attempt 1 A1-R1 is closed. Attempt 2 executed the exact architect-requested disposable PostgreSQL proof against `pgvector/pgvector:pg17`: all accepted migrations applied, both activation integration cases passed, rollback left the separately committed ACTIVE Subscription intact, replay remained idempotent, and the disposable container was removed. No production change was needed for that validation correction.
 
-Acceptance is withheld for one bounded validation item only.
+Full conformance review nevertheless identified one task-scoped production defect that is inconsistent with the parent ARCH-023 snapshot/provenance contract and with accepted ADMIN-002 default-template management.
 
-**A1-R1 — execute the required real PostgreSQL transaction proof.** The task's `transaction integration test execution` item remains unchecked. This proof is material because the implementation relies on the accepted PostgreSQL schema, raw `SELECT ... FOR UPDATE`, Prisma transaction rollback and database constraints for the core atomicity contract. The authored `tests/integration/store-category-activation.integration.test.ts` covers the correct cases, but both cases were skipped in the focused run and the explicit Testcontainers attempt stopped before PostgreSQL provisioning.
-
-The same repository already proved the working Colima/Testcontainers invocation during accepted `ARCH-023-SHOPIFY-002`. Attempt 2 must rerun the existing SHOPIFY-003 integration suite from the canonical implementation worktree with the known repository-local Docker endpoint before changing production code:
+**A2-R1 — do not revalidate pinned template provenance against the category's current default template.** `CommerceAgentPromptRevision.sourceTemplateId` and `sourceTemplateEditVersion` record the template identity/version **at copy time**. `CommercePromptTemplateCategory.defaultTemplateId` is independently mutable by Admin after the merchant has made a pending Store Category selection. Therefore a valid sequence is:
 
 ```text
-DOCKER_HOST="unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock" \
-TESTCONTAINERS_RYUK_DISABLED=true \
-MODA_DISPOSABLE_INTEGRATION=1 \
-npm test -- tests/integration/store-category-activation.integration.test.ts
+merchant selects Category A while Template A is its default
+    -> pending DRAFT stores sourceTemplateId = Template A
+Admin later changes Category A.defaultTemplateId to Template B
+subscription becomes ACTIVE/TRIALING
+    -> activation must still publish the exact already-pinned Template-A DRAFT
 ```
 
-Required durable evidence:
+The current activation service instead loads the category's current `defaultTemplateId` and rejects when:
 
 ```text
-all accepted migrations apply to fresh pgvector/pgvector:pg17
-2/2 activation PostgreSQL cases pass
-pinned DRAFT publication + configuration pointer + profile promotion commit atomically
-forced profile-promotion failure rolls publication/configuration/profile back
-pre-existing ACTIVE billing projection remains committed after that activation rollback
-replay remains idempotent
-disposable container is removed after the run
+revision.sourceTemplateId !== category.defaultTemplateId
 ```
 
-Do not change the database schema or production activation implementation merely to manufacture this evidence. If the live proof exposes a real defect, correct that defect inside this same task and rerun the focused validation.
+That turns selection-time provenance into a live constraint and can make a legitimate pending onboarding selection impossible to activate after an unrelated Admin default-template reassignment.
 
-The reported callback error propagation is **not an Attempt 1 defect**. R8 requires category activation to execute after, and outside, the durable billing projection transaction; it does not require the Shopify callback to swallow a Store Category activation failure. Keep the current separation for Attempt 2 unless the PostgreSQL proof exposes a correctness problem. A future UX/retry-policy change, if desired, is separate from proving this transaction.
+Attempt 3 must make exactly this bounded correction:
 
-The missing Background billing-reconciliation activation hook is also non-blocking for this Shopify task because it is explicitly out of scope and already required by D11 as a separate bounded Background integration before final ARCH-023 system acceptance. Likewise, R11 explicitly forbids fabricating a PlatformAdmin/system Commerce audit actor; the recorded audit-actor gap does not block SHOPIFY-003.
+1. In `app/services/store-profile/store-category-activation.server.ts`, continue loading/validating the pending category identity and exact pending DRAFT, SHOP scope, same shop, non-null `sourceTemplateId`, non-null `sourceTemplateEditVersion`, and non-empty pinned `promptText`.
+2. Do **not** require `revision.sourceTemplateId === category.defaultTemplateId` and do not re-read/reseed the current default template.
+3. Keep publication of the existing pending revision, SHOP configuration update/create, profile promotion, subscription gate, locking, idempotency and later-category behaviour unchanged.
+4. Update the unit regression that currently treats a changed `defaultTemplateId` as inconsistent. A changed current default must be accepted; null/missing provenance must still fail closed.
+5. Strengthen the PostgreSQL activation case so the fixture pins Template A, then changes the category's current `defaultTemplateId` to a distinct enabled Template B before calling the production activation service. Prove activation still publishes the existing Template-A DRAFT and retains its original `sourceTemplateId` / `sourceTemplateEditVersion`.
+6. Rerun the focused activation/billing tests, the same disposable PostgreSQL integration suite, `npm run typecheck`, changed-file lint/diagnostics, `npm run build` and `git diff --check`.
+
+Do not change database schema/migrations, billing projection semantics, onboarding milestones, Background reconciliation, Commerce audit actors, Merchant Knowledge preference/source/queue state, or another Shopify task. If the bounded correction exposes a different architectural conflict, return it to `moda_architect` rather than expanding scope.
 
 ### Reviewed Files
 
-Reviewed the task contract/report and submitted implementation surfaces, including:
+Reviewed the task/report, parent architecture and submitted implementation/test surfaces including:
 
 ```text
 app/services/store-profile/store-category-activation.server.ts
+app/services/store-profile/store-category-selection.server.ts
 app/routes/app/billing/callback/route.tsx
 tests/unit/store-category-activation.test.ts
 tests/unit/routes/billing-callback.test.ts
 tests/integration/store-category-activation.integration.test.ts
-database/prisma/schema.prisma
+docs/decisions/admin/ARCH-023/ADMIN-002-manage-store-categories-default-templates.md
 docs/architecture/ARCH-023-merchant-knowledge.md
 ```
 
 ### Validation Reviewed
 
-Submitted evidence records 60 focused tests passing with 2 opt-in PostgreSQL activation tests skipped, plus passing TypeScript, production build, changed-file lint/diagnostics and `git diff --check`. The Completion Report also records canonical parent/implementation worktrees, start-of-attempt synchronization, recursive submodule preparation and the accepted database gitlink.
+Accepted the submitted Attempt 2 validation evidence: the exact Colima/Testcontainers command ran the production integration suite against a fresh `pgvector/pgvector:pg17` database with accepted migrations and passed 2/2 cases; teardown evidence reports no remaining test container. Attempt 1 also records 60 focused tests plus passing TypeScript, build, changed-file lint/diagnostics and `git diff --check`.
 
-The review archive does not contain installed dependencies or a runnable Git worktree, so the architect did not claim to rerun the Node/Testcontainers suite from the archive. The missing acceptance evidence is specifically the task-owned real PostgreSQL execution above.
+The uploaded review archive is a source snapshot rather than the developer's runnable worktree, so the architect did not claim to independently rerun Docker/Testcontainers from the archive.
 
 ### Architecture Conformance
 
-Conformant by source inspection. Initial activation is gated only by durable ACTIVE/TRIALING subscription state with a current plan; later pending category changes remain untouched once an active category exists; the exact pinned DRAFT is published without rereading current template text; prompt configuration model state is preserved; and Merchant Knowledge activation remains independent.
+Conformant except for A2-R1. The durable Subscription projection remains the only activation authority; publication/configuration/profile promotion remain one transaction; later category changes remain Admin-owned; Merchant Knowledge activation remains independent. The current-default-template comparison conflicts with ARCH-023's selection-time provenance semantics and accepted Admin ability to change `defaultTemplateId` without rewriting pending profiles.
 
 ### Follow-up
 
-Return this same task to `ready` for Attempt 2 with `attempt: 1` preserved and the execution claim cleared. Attempt 2 should be limited to the existing PostgreSQL integration proof plus any correction that proof actually demonstrates is necessary. Do not begin another Shopify task.
-
-Before final ARCH-023 system acceptance, moda_architect must separately materialise the already-documented Background billing-reconciliation hook that calls this same idempotent activation contract when Background establishes ACTIVE/TRIALING after a missed callback. The Commerce automatic-actor/audit question remains a non-blocking architecture follow-up.
+Return this same task to `ready` for Attempt 3 with `attempt: 2` preserved and the claim cleared. Attempt 3 is limited to A2-R1, its focused regressions and required validation. Do not begin another Shopify task.
