@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 41
 executor: copilot
 claimed_at: 2026-09-30T19:50:45Z
@@ -679,9 +679,9 @@ Do not begin Shopify or Commerce follow-up work.
 ## Completion Report
 
 ### Status
-Ready for Architect Review
+Attempt 3 completed the sole Architect-Requested correction (A2-R1 through A2-R3); returned for Architect Review.
 ### Attempt
-Attempt 2 completed on 2026-09-30. The parent claim commit is `9064a23ed43983f2ec5797b5c7af2356ccb0d896`, claimed at `2026-09-30T13:32:26Z` and pushed to `origin/task/ARCH-023-ADMIN-003`.
+Attempt 2 completed on 2026-09-30. Its parent claim commit was `9064a23ed43983f2ec5797b5c7af2356ccb0d896`, claimed at `2026-09-30T13:32:26Z` and pushed to `origin/task/ARCH-023-ADMIN-003`. Attempt 3 was claimed at `2026-09-30T19:50:45Z`; launcher claim commit `9e6c7bfec2d35f5e4292b787ebc28a2562a6028a` is pushed.
 ### Worktree and Claim Evidence
 - Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-003`, branch `task/ARCH-023-ADMIN-003`.
@@ -696,10 +696,10 @@ Implementation repository `moda-interact-admin`:
 - `src/components/admin/agent-instructions/agent-instructions-console.tsx`
 - `src/components/admin/admin-shell.tsx`
 - `src/components/admin/sidebar.tsx`
-- `src/lib/admin/agent-instructions.ts`
+- `src/lib/admin/agent-instructions.ts` (Attempt 3: pending source-template snapshot validation)
 - `src/lib/admin/commerce-environment.ts`
 - `tests/unit/agent-instruction-actions.test.ts`
-- `tests/unit/agent-instructions.test.ts`
+- `tests/unit/agent-instructions.test.ts` (Attempt 3: changed-default read/publish regressions)
 
 Parent workspace: this task report only. No other task, index, architecture, or implementation-repository file was changed for this report submission.
 ### Work Completed
@@ -708,9 +708,15 @@ Parent workspace: this task report only. No other task, index, architecture, or 
 - **A1-R3 implemented and proven against PostgreSQL:** a disposable local-only `pgvector/pgvector:pg17` container was launched at host `127.0.0.1:32778`, database `admin_test`; all 21 actual Prisma migrations were applied. The production `mutateAgentInstructions` path ran inside SERIALIZABLE Prisma transactions. Successful pending-category publish verified the exact reviewed prompt and hash, configuration pointer update, category promotion, pending-field clearing, `pendingSelectionGeneration` preserved at 42, both required audit actions, distinct unique operation IDs, and pending-promotion audit metadata. Two rollback cases injected stale configuration CAS and stale profile CAS with transaction-local test triggers; each verified the DRAFT, prior pointer, pending category/profile fields, and zero audits remained unchanged. The container was stopped and removed after validation.
 - **A1-R4 implemented:** exact task worktree paths, branch names, synchronization results, recursive submodule preparation, and database commit are recorded above.
 - Implementation commit `e0f39bfe8533184983d42b84d0e4741c153aba8e` (`fix(admin): align agent instructions audit and prompt limits`) is pushed to `origin/task/ARCH-023-ADMIN-003` in `moda-interact-admin`.
+- **A2-R1 implemented:** pending read and publish validation require a DRAFT in the exact Shop lineage with non-null source-template ID/edit version, but no longer compare that selection-time snapshot to the category's mutable current `defaultTemplateId`. The Admin read model continues to display the pinned revision's source-template details and exact saved text.
+- **A2-R2 implemented:** focused regressions prove that a category whose current default is template B still reads the exact pending template-A revision with its original edit version, and publishing promotes that unchanged reviewed text/hash while preserving template-A provenance and `pendingSelectionGeneration`.
+- Implementation commit `1cd8557a5d8317758e96487aa52ebd6d3393657a` is pushed to `origin/task/ARCH-023-ADMIN-003` in `moda-interact-admin`.
+- **A2-R3 proven against disposable PostgreSQL:** the production `mutateAgentInstructions` path ran inside SERIALIZABLE Prisma transactions against local-only `pgvector/pgvector:pg17`, after all 21 accepted migrations were applied. The successful case changed the category default from template A to B before calling the Admin read model and publish path; it verified exact DRAFT text/hash, unchanged A/edit-version provenance, active configuration pointer, promoted category, cleared pending fields, preserved generation 42 and both uniquely identified audit rows. Separate trigger-injected stale-configuration and stale-profile CAS failures verified rollback of revision, configuration, profile and audits. No remote database was used; the named disposable container was removed and a post-cleanup query returned no matching container.
 - No dependency or schema changes were made. During validation, stale `node_modules` contained Shared 0.12.1 while the lockfile pins 1.0.1; `npm ci` restored lockfile dependencies and Prisma Client was regenerated before full unit, typecheck, and build validation. The import-resolution issue was cleared and is not outstanding.
 ### Validation Results
 - Focused Agent Instructions tests: 18/18 passed, including paired audit IDs, length boundaries, and existing Agent Instructions regressions.
+- Attempt 3 focused Agent Instructions tests: 16/16 passed, including the pending-read and pending-publish template-A-to-B regressions.
+- Attempt 3 disposable PostgreSQL A2-R3 proof: passed with all 21 accepted migrations applied; successful pinned-template promotion and stale-configuration/stale-profile transaction rollback cases all passed, as detailed above.
 - Live PostgreSQL pending-category success and stale-configuration/stale-profile rollback proof: passed as detailed above.
 - `npm run test:unit`: 188 total, 186 passed; 2 unrelated existing failures in `merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`. No Agent Instructions test failed.
 - `npx tsc --noEmit --pretty false`: passed.
@@ -720,6 +726,8 @@ Parent workspace: this task report only. No other task, index, architecture, or 
 - Focused ESLint on changed production files: 0 errors; unit-test files are ignored by ESLint. Repository-wide `npm run lint` was attempted and reports 3 unrelated existing errors and 6 warnings in billing, promotion, queue, and recovery-credit files.
 - Changed-file diagnostics: clean.
 - `git diff --check`: passed.
+- Attempt 3 `npx tsc --noEmit --pretty false`: passed. Focused ESLint for `src/lib/admin/agent-instructions.ts`: passed. `npm run build`: passed and includes `/system-controls/agent-instructions`; existing optional BullMQ dependency/critical-dependency warnings remain.
+- Attempt 3 `npm run test:unit`: 190 total, 188 passed; the same two unrelated existing failures remain in `merchant-pricing-translation-workbook.test.ts` and `merchant-pricing-translations.test.ts`. No Agent Instructions test failed.
 ### Deviations
 - Deterministic stale-CAS races in the real PostgreSQL proof were induced with transaction-local test triggers. This added no permanent test harness, schema, or database changes.
 ### Assumptions
@@ -729,6 +737,16 @@ Parent workspace: this task report only. No other task, index, architecture, or 
 - The two unrelated unit-test failures and repository-wide lint errors/warnings listed above remain outside this task's changed files.
 ### Architectural Concerns
 - No product, schema, or cross-repository change was introduced.
+
+### Attempt 3 Launcher and Worktree Evidence
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-003`, branch `task/ARCH-023-ADMIN-003`.
+- Implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-ADMIN-003`, branch `task/ARCH-023-ADMIN-003`.
+- Shared workspace checkout switched/mutated: no. Shared implementation checkout switched/mutated: no. Another task worktree reused: no.
+- Start synchronization: parent remote task fast-forward `not-needed`; parent `origin/main` `already-current`. Implementation remote task fast-forward `not-needed`; implementation `origin/main` `already-current`.
+- Recursive submodule sync/update both passed; `database` was initialized at `2eb17ee910491e8f9df82736fc0a843844415947`.
+- Attempt 3 claim: `9e6c7bfec2d35f5e4292b787ebc28a2562a6028a`, pushed at `2026-09-30T19:50:45Z`.
+- Implementation commit: `1cd8557a5d8317758e96487aa52ebd6d3393657a`, pushed to `origin/task/ARCH-023-ADMIN-003`.
 
 ## Architect Review
 
