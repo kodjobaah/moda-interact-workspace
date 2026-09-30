@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 31
 executor:
 claimed_at:
@@ -429,14 +429,78 @@ Physical worktree isolation:
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-Pending.
+The acquisition adapter is otherwise well bounded and the HTTPS redirect/DNS pinning, connected-peer verification, deadline/body limits, status classification and deterministic HTML/plain-text extraction are materially aligned with D16. Attempt 1 is not accepted because the public-address classifier does not yet enforce R3 exactly and the Completion Report is missing mandatory start-of-attempt provenance.
+
+#### A1-R1 — enforce the complete R3 public-address boundary
+
+`isPublicIpAddress()` currently treats `ipaddr.js@1.9.1` `range() === "unicast"` as an allow decision after a partial hand-maintained deny list. That is not equivalent to `globally routable unicast only` / `reject ... special-use`. At minimum, the current implementation returns public for special/reserved destinations that R3 requires denied, including:
+
+```text
+192.31.196.1    (192.31.196.0/24 special-use)
+192.52.193.1    (192.52.193.0/24 special-use)
+192.175.48.1    (192.175.48.0/24 special-use)
+4000::1         (outside the IPv6 global-unicast 2000::/3 allocation)
+6000::1         (reserved IPv6 space)
+fe00::1         (reserved IPv6 space)
+```
+
+Attempt 2 must replace the permissive `range() === "unicast"` allow predicate with a deterministic policy that proves an address is permitted only when it is globally routable unicast under R3. Use a tested parser/classifier from the authorised Node built-ins rather than regular-expression range detection. Preserve the existing IPv4-mapped-IPv6 recursion rule.
+
+Add focused regression cases proving each representative denied address above is rejected and proving a hostname with one ordinary public answer plus one newly covered denied/special-use answer is rejected before any request. Retain positive IPv4 and IPv6 globally-routable cases.
+
+#### A1-R2 — restore the authorised dependency boundary
+
+The task scope says to use Node built-ins for the network policy and to add only the HTML parser dependency required by this task. `ipaddr.js` was added by Attempt 1 and is therefore outside the authorised dependency surface. Remove `ipaddr.js` from `package.json` / `package-lock.json` and implement A1-R1 with Node built-ins (for example `node:net` parsing/block-list primitives plus an explicit deterministic policy). `parse5` remains authorised.
+
+Do not widen this task into runtime registry fetching or another service dependency; address classification must remain deterministic and local.
+
+#### A1-R3 — record mandatory worktree/start synchronization evidence
+
+The Completion Report records the canonical root, parent/implementation paths, branches, database submodule and launcher claim, but it does not record the mandatory values required by `docs/agent-worktree-isolation-policy.md`:
+
+```text
+Physical worktree isolation:
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+Attempt 2 must run from the canonical task worktrees, rerun the task-required validation after the R3 correction, and record those exact launcher/preparation outcomes plus the final implementation/report commit identities.
+
+The optional full-unit failures reported in Attempt 1 are not correction items for this task: the failing areas are outside the authorised files and the focused 64/64 suite plus build/changed-file diagnostics/diff checks passed. Standalone ESLint is also not invented as a gate because this repository has no `eslint.config.*` and the task does not require a missing script/configuration.
+
 ### Reviewed Files
-Pending.
+- `package.json`
+- `package-lock.json`
+- `src/services/merchant-knowledge-network-policy.ts`
+- `src/services/merchant-knowledge-html-extraction.ts`
+- `src/services/merchant-knowledge-web-page-acquirer.ts`
+- `tests/unit/services/merchant-knowledge-network-policy.test.ts`
+- `tests/unit/services/merchant-knowledge-html-extraction.test.ts`
+- `tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts`
+- `docs/decisions/background/ARCH-023/BACKGROUND-002-acquire-merchant-knowledge-web-pages.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+- `docs/agent-worktree-isolation-policy.md`
+
 ### Validation Reviewed
-Pending.
+- Focused network-policy / HTML-extraction / acquirer suites: submitted `64/64` passed.
+- `npm run build`: submitted pass.
+- Changed-file diagnostics: submitted clean.
+- `git diff --check`: submitted pass.
+- Optional full unit run: submitted `1,190` passing with five unrelated failures and one unrelated missing-fixture suite setup failure; not treated as a BACKGROUND-002 regression.
+- Architect inspection independently demonstrated that the current allow predicate admits R3-denied special/reserved address classes; this is an acceptance blocker regardless of focused-suite success.
+
 ### Architecture Conformance
-Pending.
+Changes required. D16/R3 is a security boundary: every initial and redirect destination must be globally routable public unicast before connection. The current DNS pinning/peer verification structure can remain, but the address-classification predicate and its dependency surface must be corrected. No worker orchestration, persistence, normalization, chunking, embedding, upload or Gateway work is authorised in Attempt 2.
+
 ### Follow-up
-Pending.
+Return the same task through its normal execution path for Attempt 2. BACKGROUND-004 remains Pending. BACKGROUND-003 remains independently Ready and may proceed.

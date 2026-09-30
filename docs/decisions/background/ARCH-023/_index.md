@@ -55,8 +55,11 @@ database without changing runtime infrastructure or shared test helpers.
 The current executable Background frontier is therefore:
 
 ```text
-BACKGROUND-002 and BACKGROUND-003 -> Ready in parallel
+BACKGROUND-002 -> Ready for Attempt 2 correction
+BACKGROUND-003 -> Ready independently
 ```
+
+BACKGROUND-002 Attempt 1 was returned for correction of the R3 public-address classifier and mandatory worktree/start-synchronization evidence. BACKGROUND-004 remains gated on architect-accepted completion of both acquisition tasks.
 
 After both are Complete:
 

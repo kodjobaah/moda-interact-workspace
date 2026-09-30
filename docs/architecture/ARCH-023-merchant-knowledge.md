@@ -20,8 +20,7 @@ The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`,
 `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`,
 `ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003`. BACKGROUND-001 is
 Complete/architect-accepted at Attempt 4 after its disposable pgvector queue-loss proof passed.
-BACKGROUND-002 and BACKGROUND-003 are now Ready in parallel. All other ARCH-023 tasks remain
-gated by their declared dependencies.
+BACKGROUND-002 is Ready for Attempt 2 after its first review identified a bounded R3 address-classification/security correction; BACKGROUND-003 remains Ready independently. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3219,7 +3218,7 @@ ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
 
 ARCH-023-ADMIN-001      Ready
 ARCH-023-ADMIN-003      Ready
-ARCH-023-BACKGROUND-002 Ready
+ARCH-023-BACKGROUND-002 Ready — Attempt 2 correction
 ARCH-023-BACKGROUND-003 Ready
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
@@ -3246,6 +3245,15 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — BACKGROUND-002 Attempt 1 changes requested
+
+- Reviewed the WEB_PAGE acquisition adapter as otherwise structurally aligned with D16: per-hop HTTPS validation, DNS pinning, peer verification, bounded redirect/deadline/decompression handling, status classification and visible-text extraction are all within task scope.
+- Required correction of the R3 public-address classifier because `ipaddr.js@1.9.1` plus the partial deny list still permits special/reserved destinations as generic `unicast`, including special-use IPv4 blocks and IPv6 space outside the globally-routable unicast allocation.
+- Required removal of the unauthorised `ipaddr.js` dependency; this task authorises Node built-ins for network policy and only the HTML parser as a new dependency.
+- Required focused regressions for the newly covered denied address classes and mixed-answer DNS rejection before connection.
+- Required the Completion Report to record the mandatory shared-checkout/non-reuse attestations and all four start-of-attempt synchronization outcomes.
+- Returned BACKGROUND-002 to Ready with Attempt 1 preserved. BACKGROUND-004 remains Pending; BACKGROUND-003 remains independently Ready.
 
 ### 2026-09-30 — BACKGROUND-001 Attempt 4 accepted
 
