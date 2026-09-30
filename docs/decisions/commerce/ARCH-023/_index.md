@@ -41,9 +41,9 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
-| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Ready | COMMERCE-001, ADMIN-001 |
+| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Complete — Accepted Attempt 4 | COMMERCE-001, ADMIN-001, DATABASE-004 |
 | [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Ready | DATABASE-001, SHARED-002, ADMIN-003 |
-| [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Post-COMMERCE-002 follow-up: reconcile bootstrap guard to `MERCHANT_OPT_IN` and deny lookup while merchant preference is OFF | Pending | COMMERCE-002, ADMIN-004 |
+| [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Require request-time Merchant Knowledge opt-in and deny lookup while merchant preference is OFF | Pending | COMMERCE-002, ADMIN-004 |
 
 
 ## Execution frontier
@@ -53,15 +53,21 @@ PostgreSQL/pgvector proof now executes the production `retrieveMerchantKnowledge
 against the migrated ARCH-023 schema and proves nearest-neighbour ordering plus the
 required tenant/revision/provenance exclusions.
 
-`ARCH-023-ADMIN-001` is also Complete, so both declared dependencies of COMMERCE-002 are
-satisfied:
+`ARCH-023-COMMERCE-002` is Complete / Accepted Attempt 4 after consuming the architect-accepted DATABASE-004 guard correction and passing the full disposable PostgreSQL successor-preservation proof. The accepted bootstrap already requires the `MERCHANT_OPT_IN` Feature mode and remains preference-neutral.
 
 ```text
 COMMERCE-001 -> Complete / Accepted Attempt 2
-COMMERCE-002 -> Ready
+ADMIN-001    -> Complete / Accepted Attempt 2
+DATABASE-004 -> Complete / Accepted Attempt 1
+                         |
+                         v
+COMMERCE-002 -> Complete / Accepted Attempt 4
+                         |
+                         +--> COMMERCE-004 remains Pending on ADMIN-004
 ```
 
 This readiness promotion does not claim or start COMMERCE-002. ADMIN-004 is now Complete / Accepted Attempt 1. The merchant-opt-in architecture decision does not modify COMMERCE-002 while it is in review; COMMERCE-004 remains Pending only until COMMERCE-002 is Complete.
+COMMERCE-004 is narrowed to request-time merchant activation enforcement; it no longer owns a bootstrap activation-mode correction.
 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 
@@ -101,4 +107,4 @@ This follow-up is required before final ARCH-023 system acceptance.
 
 ## Merchant opt-in reconciliation
 
-`COMMERCE-002` is intentionally unchanged while it is in review. After it completes, `COMMERCE-004` applies the final opt-in decision to the resulting bootstrap prerequisite and independently gates `merchantKnowledge.lookup` on the exact `ShopFeaturePreference`.
+`COMMERCE-002` is Complete / Accepted Attempt 4 with the final `MERCHANT_OPT_IN` bootstrap prerequisite and zero `ShopFeaturePreference` writes. `COMMERCE-004` therefore owns only the remaining request-time authority check: plan entitlement plus an explicit enabled `ShopFeaturePreference` before embedding or pgvector retrieval.
