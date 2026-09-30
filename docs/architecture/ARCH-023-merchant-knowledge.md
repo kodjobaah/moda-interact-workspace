@@ -11,12 +11,9 @@ updated: 2026-09-30
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-002` and `ARCH-023-SHOPIFY-001`. COMMERCE-002 is Ready because COMMERCE-001 and ADMIN-001 are Complete; `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001. All other ARCH-023 tasks remain gated by their declared dependencies.
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` at Attempt 2, `ARCH-023-SHARED-001` at Attempt 2, `ARCH-023-SHARED-002` at Attempt 1 with exact published revision `@modainteract/moda-interact-shared@1.0.1`, and `ARCH-023-SHOPIFY-002` at Attempt 2.
-
-.
+The current executable frontier is `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-002`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003` and `ARCH-023-SHOPIFY-003`. `COMMERCE-003` is Ready because ADMIN-003, DATABASE-001 and SHARED-002 are Complete. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -936,7 +933,7 @@ shop's pending DRAFT Shop prompt revision under the normal prompt CAS lifecycle.
 
 If the merchant leaves Shopify Managed Pricing without choosing a plan, the pending
 category plus DRAFT prompt remain inactive and are restored when onboarding is resumed.
-A later edit to the default template cannot mutate that already-pinned DRAFT.
+A later edit to the default template cannot mutate that already-pinned DRAFT. A later Admin reassignment of the category's `defaultTemplateId` likewise does not invalidate, reseed or rewrite the existing pending DRAFT: its `sourceTemplateId` / `sourceTemplateEditVersion` remain selection-time provenance.
 
 ### D11 — Shopify subscription projection is the category activation boundary
 
@@ -2739,7 +2736,7 @@ false, the new result is stale and must not replace the current ACTIVE revision.
 Initial category activation publishes the already-pinned pending DRAFT and updates the
 active category / `CommerceAgentConfiguration.activePromptRevisionId` in one logical
 database transaction so active category and active Shop Instructions cannot diverge.
-The transaction never re-resolves or translates the current template.
+The transaction never re-resolves or translates the current template. It validates that the pending revision carries non-null template provenance but MUST NOT compare `sourceTemplateId` with the category's current `defaultTemplateId`; that default may have changed after the pending selection was written.
 
 ### At-least-once processing
 
@@ -3281,7 +3278,7 @@ post-review target-state correction.
 The initial Merchant Knowledge database persistence remains consolidated in DATABASE-001. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard.
 
-Current execution frontier after BACKGROUND-002 Attempt 3 acceptance:
+Current execution frontier after ADMIN-003 Attempt 3 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
@@ -3289,19 +3286,20 @@ ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
 ARCH-023-ADMIN-001      Complete — Accepted Attempt 2
 ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+ARCH-023-ADMIN-003      Complete — Accepted Attempt 3
 ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
-ARCH-023-BACKGROUND-002 Complete — Accepted Attempt 3
 ARCH-023-BACKGROUND-003 Complete — Accepted Attempt 2
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
-ARCH-023-ADMIN-003      Ready
-ARCH-023-BACKGROUND-004 Ready
+ARCH-023-ADMIN-004      Ready
+ARCH-023-BACKGROUND-002 Ready
 ARCH-023-COMMERCE-002   Ready
-ARCH-023-SHOPIFY-001    Ready
+ARCH-023-COMMERCE-003   Ready
+ARCH-023-SHOPIFY-003    Ready
 
-ARCH-023-SHOPIFY-003    Pending — waits for SHOPIFY-001
-all other ARCH-023 implementation tasks remain gated by their declared dependencies
+all other non-superseded ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
 Canonical published Shared revision for ARCH-023 consumers:
@@ -3337,6 +3335,18 @@ all other ARCH-023 implementation tasks remain gated by their declared dependenc
 
 SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
+Current Shopify frontier after SHOPIFY-003 Attempt 3 acceptance:
+
+```text
+ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-003    Complete — Accepted Attempt 3
+ARCH-023-SHOPIFY-004    Pending — requires ADMIN-004
+ARCH-023-SHOPIFY-005    Pending — requires SHOPIFY-004
+```
+
+SHOPIFY-003 Attempt 3 is accepted. Initial activation now publishes the exact already-pinned pending DRAFT even if Admin later reassigns the category's current `defaultTemplateId`; the Template-A -> Template-B regression passes in both focused and disposable-PostgreSQL coverage, and the existing activation/rollback/replay proof remains green. This acceptance promotes no new task. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
+
 No implementation task may depend on a terminal system-test task.
 
 ## Open Questions
@@ -3354,6 +3364,46 @@ through bounded task reviews without changing the agreed architecture contract.
 - Accepted the disposable PostgreSQL predecessor/upgrade proof and exact static validator; architect-side mutation probes independently rejected removal of the same-Feature match, exact prompt match and `FOR SHARE` lock.
 - Marked DATABASE-004 Complete. The external database blocker on COMMERCE-002 Attempt 3 is satisfied; COMMERCE-002 may now be returned to Ready on its authoritative task branch with Attempt 3 retained so the next launcher claim becomes Attempt 4.
 
+### 2026-09-30 — SHOPIFY-003 Attempt 3 accepted
+
+- Accepted A2-R1: activation now treats `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance and no longer compares the pinned Template-A source with the category's later mutable `defaultTemplateId`.
+- Reviewed the strengthened unit and disposable-PostgreSQL regressions proving a pinned Template-A DRAFT still publishes after the category default moves to Template B, while missing provenance continues to fail closed. The PostgreSQL suite passed 2/2 including the existing rollback/replay proof and removed its disposable pgvector container.
+- Marked SHOPIFY-003 Complete / Accepted Attempt 3. No downstream task is promoted by this acceptance; SHOPIFY-004 remains gated on ADMIN-004, SHOPIFY-005 remains gated on SHOPIFY-004, and the separate Background missed-callback activation hook remains required before final ARCH-023 system acceptance.
+
+### 2026-09-30 — SHOPIFY-003 Attempt 2 changes requested
+
+- Accepted the Attempt 2 disposable PostgreSQL evidence: all accepted migrations applied to `pgvector/pgvector:pg17`, 2/2 production activation/rollback cases passed, replay remained idempotent, the pre-existing ACTIVE billing projection survived activation rollback and the disposable container was removed.
+- Identified one remaining production defect: activation compares selection-time `sourceTemplateId` provenance with the category's current `defaultTemplateId`, even though ADMIN-002 permits that default to change without rewriting pending profiles and ARCH-023 defines the pending DRAFT as a durable snapshot.
+- Returned SHOPIFY-003 to Ready for bounded Attempt 3 correction/test coverage. No database, billing, Background hook, Commerce audit or downstream Shopify work is authorised.
+
+### 2026-09-30 — SHOPIFY-003 Attempt 1 changes requested
+
+- Reviewed the initial pending Store Category activation service and billing-callback integration as substantively architecture-conformant: durable ACTIVE/TRIALING current subscription state is the only activation authority, exact pinned DRAFT publication/configuration/profile promotion occur in one transaction, later pending changes remain untouched, and Merchant Knowledge activation is not coupled to subscription activation.
+- Withheld acceptance only because the required real PostgreSQL transaction execution remains open. Attempt 2 must run the already-authored `store-category-activation.integration.test.ts` against fresh `pgvector/pgvector:pg17` migrations using the same known Colima/Testcontainers endpoint that closed SHOPIFY-002, and record 2/2 passing cases plus teardown.
+- Confirmed callback error propagation is not itself a SHOPIFY-003 defect: activation remains outside the already-committed billing transaction. The Background missed-callback activation hook remains a separate required implementation before final system acceptance; the missing automatic Commerce audit actor remains non-blocking under R11.
+- Returned SHOPIFY-003 to Ready with Attempt 1 preserved. SHOPIFY-004/005 remain governed by their existing merchant-opt-in dependencies; no downstream task was started.
+
+### 2026-09-30 — ADMIN-003 Attempt 3 accepted
+
+- Accepted the Admin Platform/Shop Instructions lifecycle after the Attempt 3 snapshot-provenance correction.
+- Confirmed a pending Shop DRAFT seeded from template A remains the exact authoritative DRAFT after the Store Category default changes to template B; Admin read and publish no longer compare pinned provenance to the mutable current default.
+- Accepted the focused regressions and disposable-PostgreSQL proof covering exact template-A text/hash/provenance promotion plus stale configuration/profile rollback.
+- Marked ADMIN-003 Complete and promoted COMMERCE-003 to Ready because DATABASE-001 and SHARED-002 are already Complete. COMMERCE-003 is not claimed or started by this reconciliation.
+
+### 2026-09-30 — ADMIN-003 Attempt 2 changes requested
+
+- Confirmed Attempt 2 resolved the prior audit-operation-ID uniqueness issue, the accepted 32,000-character prompt bound, the required disposable-PostgreSQL pending-category promotion/rollback proof, and durable worktree/synchronization evidence.
+- Found one remaining snapshot-provenance defect: Admin read/publish currently compare the pending revision's `sourceTemplateId` to the Store Category's current `defaultTemplateId`. ARCH-023 defines the revision provenance as the template identity/edit version captured when the pending selection was last written; changing the category default later must not invalidate, rewrite or reseed that already-pinned DRAFT.
+- Returned ADMIN-003 to Ready with Attempt 2 preserved. Attempt 3 is limited to removing the live-default comparison, adding focused read/publish regressions, and rerunning the disposable-PostgreSQL promotion proof with the category default changed after selection. No dependent task was promoted.
+
+### 2026-09-30 — ADMIN-003 Attempt 1 changes requested
+
+- Reviewed the protected Platform/Shop Agent Instructions console as substantively aligned with the intended prompt lifecycle, CAS, pending-category promotion and Admin authorization boundary.
+- Found a real-schema audit incompatibility: the accepted ARCH-021 database has a unique partial index on non-null `CommerceAuditEvent.operationId`, while Attempt 1 reuses one operation ID across paired audit rows for create-draft and publish operations. Attempt 2 must preserve the required audit events but assign a distinct non-null operation ID to each inserted audit row.
+- Reconciled the task-local Platform/Shop prompt bound to 32,000 characters because the accepted `CommerceAgentPromptRevision_prompt_text_check` enforces that limit and ARCH-023 does not require a schema expansion to 100,000 characters.
+- Kept the required pending-category PostgreSQL transaction proof open. Attempt 2 must exercise the production Prisma mutation against a task-local disposable PostgreSQL database with accepted migrations and prove success plus rollback/CAS behavior, including the audit uniqueness fix.
+- Required exact launcher-resolved worktree/branch, synchronization and recursive-submodule evidence in the Completion Report.
+- Returned ADMIN-003 to Ready with Attempt 1 preserved. No dependent task was promoted and no database/Commerce/Shopify follow-on work was started.
 ### 2026-09-30 — COMMERCE-001 Attempt 2 accepted
 
 - Accepted `merchantKnowledge.lookup@1.0.0` after the strengthened live test invoked the production `retrieveMerchantKnowledge()` path against a disposable `pgvector/pgvector:pg17` database with all 21 migrations applied.
