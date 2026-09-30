@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
 executor: copilot
 claimed_at: 2026-09-30T22:54:05Z
@@ -125,18 +125,18 @@ Use a disposable PostgreSQL proof for the false->true PENDING reconciliation tra
 
 ## Acceptance Criteria
 
-- [ ] Background ingestion requires current plan entitlement and explicit merchant ON preference.
-- [ ] OFF leaves durable PENDING/ACTIVE data untouched.
-- [ ] Existing periodic reconciliation starts eligible PENDING work after ON without another queue type.
-- [ ] Existing deterministic job identity is preserved.
+- [x] Background ingestion requires current plan entitlement and explicit merchant ON preference.
+- [x] OFF leaves durable PENDING/ACTIVE data untouched.
+- [x] Existing periodic reconciliation starts eligible PENDING work after ON without another queue type.
+- [x] Existing deterministic job identity is preserved.
 
 ## Validation
 
-- [ ] focused entitlement/reconciliation tests
-- [ ] disposable PostgreSQL transition proof
-- [ ] `npm run build`
-- [ ] changed-file diagnostics
-- [ ] `git diff --check`
+- [x] focused entitlement/reconciliation tests
+- [x] disposable PostgreSQL transition proof
+- [x] `npm run build`
+- [x] changed-file diagnostics
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -145,21 +145,54 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Not Started
+Ready for architect review.
 ### Files Changed
-None.
+Implementation commit `00176555dfe0278f665c6c602621e18a894c0c3e` changed:
+- `src/services/merchant-knowledge-entitlement.service.ts`
+- `tests/unit/services/merchant-knowledge-entitlement.service.test.ts`
+- `tests/unit/services/merchant-knowledge-reconciliation.service.test.ts`
+- `tests/integration/merchant-knowledge-reconciliation.integration.test.ts`
+
+This parent task report is the only parent-worktree file changed.
 ### Work Completed
-None.
+Merchant Knowledge eligibility now preserves the existing subscription, plan, C2 and source rules while additionally requiring an active `MERCHANT_OPT_IN` Feature and an explicitly enabled `ShopFeaturePreference`. Missing/disabled preferences fail closed and are exposed as dormant eligibility. PENDING reconciliation skips dormant sources without changing their revisions or creating preferences; when enabled, the existing periodic reconciliation publishes the same deterministic job identity. No new queue or scheduler was added, and no source, revision, ACTIVE content, chunk/vector or asset data is mutated by the OFF path.
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-006`
+  parent branch: `task/ARCH-023-BACKGROUND-006`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-006`
+  implementation branch: `task/ARCH-023-BACKGROUND-006`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Recursive implementation submodules:
+  `git submodule sync --recursive`: passed
+  `git submodule update --init --recursive`: passed
+  recorded submodule commits: `database` at `2eb17ee910491e8f9df82736fc0a843844415947`
 ### Validation Results
-None.
+  focused entitlement/reconciliation unit tests: passed, 20 tests
+  disposable PostgreSQL PENDING OFF-to-ON transition proof: passed, 1 test; confirmed stable deterministic job ID
+  `npm run build`: passed (Prisma Client generation and TypeScript compilation)
+  changed-file diagnostics: passed, no errors in the four changed implementation files
+  `git diff --check`: passed
+
+The repository integration wrapper's default `postgres:17.6-alpine` image could not apply the existing pgvector migration. The same disposable-infrastructure helper was rerun with `pgvector/pgvector:pg17`; migrations and the required integration test then passed, and the disposable services were cleaned up.
 ### Deviations
-None.
+The PostgreSQL proof used the helper's supported PostgreSQL image option because the wrapper's default image lacks the repository-required `vector` extension. No repository test, migration, or production code was changed to work around the image mismatch.
 ### Assumptions
-None.
+The existing periodic PENDING reconciliation remains the intended mechanism for discovering sources after merchant opt-in; no additional scheduler or queue is required.
 ### Unresolved Issues
 None.
 ### Architectural Concerns
-None.
+None. The activation-aware eligibility result is available for the downstream processing task to check before acquisition and promotion; processing implementation remains outside this task's scope.
 
 ## Architect Review
 
