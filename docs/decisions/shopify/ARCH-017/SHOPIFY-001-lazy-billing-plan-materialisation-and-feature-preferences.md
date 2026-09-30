@@ -503,7 +503,7 @@ Physical worktree isolation and start-of-attempt synchronization:
 - Parent and implementation worktrees are the dedicated paths recorded above; both use `task/ARCH-017-SHOPIFY-001` and were clean after publication.
 - Shared workspace checkout switched/mutated for task implementation: no. Shared implementation source checkout switched/mutated for task implementation: no. Another task worktree reused: no.
 - Prepared launcher synchronized the parent and implementation task branches; parent incorporated `origin/main` at merge `41854aa952836435f67a614562d0129e2b6586c3`; implementation incorporated `origin/main` at merge `1c14e2d` before task execution.
-- Recursive implementation submodule sync and update passed during prepared launch. Accepted database submodule revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`.
+- Recursive implementation submodule sync and update passed during prepared launch. Accepted DATABASE-001 source-task revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`. Exact `database` gitlink materialized and validated in implementation commit `bffc79614f3f5cb92c05fd181ec5b9038e9684a0`: `2eb17ee910491e8f9df82736fc0a843844415947`. These are distinct revisions; the latter is the database submodule commit used by this implementation worktree.
 
 Implemented Attempt 4 corrections and retained accepted behavior:
 
