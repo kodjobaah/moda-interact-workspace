@@ -3213,7 +3213,7 @@ ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
 ARCH-023-ADMIN-003      Ready
 ARCH-023-BACKGROUND-002 Ready
-ARCH-023-BACKGROUND-003 Ready
+ARCH-023-BACKGROUND-003 Ready — Attempt 2 corrections
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
 
@@ -3249,6 +3249,13 @@ through bounded task reviews without changing the agreed architecture contract.
 - Confirmed C2 plus active Purpose/Data Format catalogue validation, explicit existing-plan repair, exact Shared `1.0.1` adoption and the accepted database revision.
 - Reviewed 19/19 focused unit tests and 12/12 focused pricing security tests as passing, together with Prisma validation, TypeScript, production build, changed-file diagnostics and `git diff --check`; recorded broad unit/lint failures remain outside the changed ADMIN-001 surface.
 - Marked ADMIN-001 Complete. COMMERCE-002 remains Pending because COMMERCE-001 is not yet Complete; no task becomes newly Ready solely from this acceptance.
+### 2026-09-30 — BACKGROUND-003 Attempt 1 changes requested
+
+- Reviewed private R2 acquisition, CSV/XLSX extraction and database-backed upload cleanup as substantially architecture-conformant.
+- Required XLSX extraction to preserve cached scalar results from ExcelJS shared-formula cells while continuing to omit formula expressions.
+- Required cleanup candidate progression so a retained first page of `DELETED` tombstones cannot starve later expired/unreferenced assets.
+- Required focused regressions for shared-formula extraction and >100-candidate cleanup progression; no schema/migration, Gateway, queue, normalization, embedding or worker-entrypoint change is authorised.
+- Returned BACKGROUND-003 to Ready with Attempt 1 preserved; BACKGROUND-004 remains gated on both BACKGROUND-002 and BACKGROUND-003.
 
 ### 2026-09-30 — SHOPIFY-002 Attempt 2 accepted
 
