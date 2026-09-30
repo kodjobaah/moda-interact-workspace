@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 61
 executor: copilot
 claimed_at: 2026-09-30T16:21:18Z
@@ -776,7 +776,7 @@ The ordinary `createRelease()` semantics remain useful for fresh composition bec
 ## Completion Report
 
 ### Status
-In Progress — Attempt 2. Implementation is on `task/ARCH-023-COMMERCE-002` at `8acd9d9536b51020a07b9cf059841e5e9c618959`; the Nunjucks seed-contract correction is now authoritative and implementation/required validation remain in progress.
+Blocked — Attempt 2 implementation is incomplete and focused bootstrap tests fail. The implementation branch contains pushed lifecycle work at `8acd9d9536b51020a07b9cf059841e5e9c618959` plus uncommitted bootstrap changes. Do not request review until the bootstrap tests and required real PostgreSQL proofs pass.
 ### Files Changed
 Implementation commit `8acd9d9536b51020a07b9cf059841e5e9c618959` changes:
 - `src/commerce/publication/lifecycle.ts`
@@ -791,15 +791,15 @@ Attempt 2 began after the architect corrected the task to the accepted ARCH-021 
 
 This reconciliation resolves the newly discovered R6 conflict against accepted `ARCH-021-COMMERCE-084`: the seed now uses the canonical `nunjucks.v1` shape over COMMERCE-001's `result.matches` contract, and legacy `items` templates are explicitly incompatible.
 ### Validation Results
-`moda_commerce` reports the focused implementation tests passed. The mandatory real disposable PostgreSQL/bootstrap convergence, restart-idempotency and exact successor-snapshot preservation proof remains outstanding and is not claimed as passing. The most recent visible terminal command, `npx vitest run tests/commerce-lifecycle.test.ts -t 'keeps the Merchant Knowledge Tool operation and input contract fixed and cannot disable it'`, exited 1; its failure output was not available in this architect session. Re-run and record that focused check after implementing the corrected template contract. Record the exact launcher packet, attempt-start synchronization and recursive-submodule preparation evidence in the completed Attempt 2 report before requesting review.
+Passed: `npm run typecheck`; `npx vitest run tests/commerce-lifecycle.test.ts -t 'keeps the Merchant Knowledge Tool operation and input contract fixed and cannot disable it'` (1 passed); `git diff --check HEAD^ HEAD` for the pushed lifecycle commit. Failed: `npx vitest run tests/merchant-knowledge-bootstrap.test.ts` (9 tests, 6 failed). Failures include fixed revision validation receiving an undefined definition and fake draft publication not finding the expected revision. Not run: focused existing lifecycle/Feature suite, full lint/build, changed-file diagnostics after final edits, and the retired-concept scan. No `COMMERCE_TEST_DATABASE_URL` is configured; the existing `DATABASE_URL` is not a verified disposable target and was not used. The required real PostgreSQL convergence/replay/restart-idempotency and immutable successor-snapshot proofs are therefore outstanding. There is currently no `tests/merchant-knowledge-bootstrap-postgres.test.ts`.
 ### Deviations
 Attempt 1 was blocked by stale task requirements and made no implementation source changes. Attempt 2 is proceeding on the corrected direct model. No deviation is currently established; the Nunjucks seed change is a task/architecture correction, not a request to restore compatibility.
 ### Assumptions
 The reported passed tests refer to the current Attempt 2 implementation before this Nunjucks task correction; they do not close the filtered test command observed exiting 1 or the mandatory PostgreSQL/bootstrap validation.
 ### Unresolved Issues
-1. Complete implementation and validation of the canonical `nunjucks.v1` seed plus fail-closed handling of legacy `items` response templates.
-2. Complete the real disposable PostgreSQL/bootstrap convergence, restart-idempotency and immutable successor-release preservation validations.
-3. Re-run the filtered lifecycle test that exited 1 and record its result and the full required task validation commands.
+1. Repair the bootstrap test fixture/validation failures and complete missing bootstrap cases, including fixed identity conflicts, partial-state convergence, successor preservation and startup memoization.
+2. Add and run a real disposable-PostgreSQL bootstrap suite proving durable convergence/replay/restart idempotency and exact immutable successor snapshot preservation. The configured `DATABASE_URL` must not be used unless independently verified as the dedicated disposable test target.
+3. Run and record remaining required lifecycle/Feature tests, startup instrumentation test, retired-concept scan, `npm run lint`, `npm run build`, changed-file diagnostics and final `git diff --check`.
 ### Architectural Concerns
 None beyond the R6/R7 contract correction recorded below. Do not create a Database task or restore any retired Capability revision/binding model.
 
