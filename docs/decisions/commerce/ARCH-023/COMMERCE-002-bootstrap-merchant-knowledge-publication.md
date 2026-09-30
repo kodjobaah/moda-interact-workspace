@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 61
 executor: copilot
 claimed_at: 2026-09-30T18:49:50Z
@@ -786,32 +786,48 @@ The ordinary `createRelease()` semantics remain useful for fresh composition bec
 ## Completion Report
 
 ### Status
-Blocked — Attempt 2 implementation is incomplete and focused bootstrap tests fail. The implementation branch contains pushed lifecycle work at `8acd9d9536b51020a07b9cf059841e5e9c618959` plus uncommitted bootstrap changes. Do not request review until the bootstrap tests and required real PostgreSQL proofs pass.
+Blocked — Attempt 3 implementation and unit coverage are in place, but the required production PostgreSQL successor proof exposes a conflict in the accepted ARCH-021 release Feature snapshot guard. Architect review is required after the authorized Database-owned correction; do not mark this task `review` yet.
+
 ### Files Changed
-Implementation commit `8acd9d9536b51020a07b9cf059841e5e9c618959` changes:
-- `src/commerce/publication/lifecycle.ts`
+Attempt 3 implementation worktree changes:
+- `package.json`
+- `src/commerce/bootstrap/merchant-knowledge.ts`
 - `src/commerce/publication/validation.ts`
+- `scripts/run-merchant-knowledge-bootstrap-postgres.mjs`
+- `tests/merchant-knowledge-bootstrap.test.ts`
+- `tests/merchant-knowledge-bootstrap-postgres.test.ts`
+- `tests/merchant-knowledge-bootstrap-startup.test.ts`
+- `tests/instrumentation-bootstrap.test.ts`
 - `tests/commerce-lifecycle.test.ts`
 
-Parent architect coordination changes: this task file and `docs/architecture/ARCH-023-merchant-knowledge.md`. No implementation source is changed by this reconciliation.
 ### Work Completed
-Attempt 1 stopped before implementation because the task still specified the retired Capability revision/binding architecture. The original Attempt 1 report and Architect Review below remain as historical evidence; their review text is unchanged.
+Attempt 1 and Attempt 2 history above remains unchanged. Attempt 3 continued on the launcher-prepared task branch without reclaiming. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-002`; the implementation worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-002`. The parent branch is `task/ARCH-023-COMMERCE-002` at claim commit `2e4daf54b0b588eaafa2c6d23d26355d6a7bb785`, following merge `3bb9c9accee303077a1ccbedeb3211f6988c757f`. The implementation branch is the same task branch with the preserved Attempt 2 checkpoint `3e5378ddf35ddfe762de37aa1369b3addd3abb40`; the recursive database submodule was prepared at `2eb17ee910491e8f9df82736fc0a843844415947`.
 
-Attempt 2 began after the architect corrected the task to the accepted ARCH-021 direct Capability model. The implementation agent reports that lifecycle work is committed and pushed as `8acd9d9536b51020a07b9cf059841e5e9c618959` on `task/ARCH-023-COMMERCE-002`. Architect-observed commit contents are limited to generic successor-release lifecycle/validation and focused lifecycle tests in the three files listed above. The canonical parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-002`; the implementation task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-002`. At the architect's pre-edit check, both were registered, clean, on `task/ARCH-023-COMMERCE-002`, and contained current `origin/main`. The implementation branch remains clean and pushed at the exact commit above.
+Attempt 3 repaired the Feature prerequisite to require `MERCHANT_OPT_IN`, validates persisted Tool revision `definition` JSON and exact release revision pins, preserves later Studio Tool display metadata, and retains the canonical `nunjucks.v1`/`merchantKnowledge.lookup@1.0.0` contract. Unit tests cover clean/partial convergence, Studio-authored publication preservation, Feature Behaviour preservation, preference read/write neutrality, ambiguous no-pointer history, base snapshot copying, startup Promise memoization, and Node-only instrumentation. The disposable runner applies accepted migrations to one invocation-owned loopback-only `pgvector/pgvector:pg17` container, supplies database URLs only to its child, and verifies cleanup.
 
-This reconciliation resolves the newly discovered R6 conflict against accepted `ARCH-021-COMMERCE-084`: the seed now uses the canonical `nunjucks.v1` shape over COMMERCE-001's `result.matches` contract, and legacy `items` templates are explicitly incompatible.
 ### Validation Results
-Passed: `npm run typecheck`; `npx vitest run tests/commerce-lifecycle.test.ts -t 'keeps the Merchant Knowledge Tool operation and input contract fixed and cannot disable it'` (1 passed); `git diff --check HEAD^ HEAD` for the pushed lifecycle commit. Failed: `npx vitest run tests/merchant-knowledge-bootstrap.test.ts` (9 tests, 6 failed). Failures include fixed revision validation receiving an undefined definition and fake draft publication not finding the expected revision. Not run: focused existing lifecycle/Feature suite, full lint/build, changed-file diagnostics after final edits, and the retired-concept scan. No `COMMERCE_TEST_DATABASE_URL` is configured; the existing `DATABASE_URL` is not a verified disposable target and was not used. The required real PostgreSQL convergence/replay/restart-idempotency and immutable successor-snapshot proofs are therefore outstanding. There is currently no `tests/merchant-knowledge-bootstrap-postgres.test.ts`.
+- Passed: focused Commerce tests: 5 files, 56 tests (`merchant-knowledge-bootstrap-startup`, `instrumentation-bootstrap`, `merchant-knowledge-bootstrap`, `commerce-lifecycle`, `feature-authoring`).
+- Passed: `npm run typecheck`.
+- Passed: changed-file ESLint; full `npm run lint` exited successfully with warnings, including five unrelated existing warnings. Three warnings in changed files were removed and the changed-file lint rerun passed.
+- Passed: `npm run build`; Next.js reported the existing Nunjucks dynamic-dependency warning.
+- Passed: changed-file diagnostics (no errors), `git diff --check`, and production-path retired-concept scan. The sole `kind: 'items'` match is the intentional negative legacy-template test.
+- PostgreSQL partial result: accepted migrations, clean bootstrap, durable replay/no-op and initial cleanup passed in an earlier runner execution. The expanded required successor-snapshot execution fails when `PrismaPublicationStorage` inserts the preserved historical Feature prompt after current Feature authoring advanced. PostgreSQL reports `ARCH021 release Feature snapshot must match current behaviour prompt`; the owned container was cleaned on failure. Therefore the mandatory final PostgreSQL suite does not pass.
+
 ### Deviations
-Attempt 1 was blocked by stale task requirements and made no implementation source changes. Attempt 2 is proceeding on the corrected direct model. No deviation is currently established; the Nunjucks seed change is a task/architecture correction, not a request to restore compatibility.
+No retired Capability revision/binding model or database change was introduced. The final PostgreSQL successor-preservation proof remains failing pending the architect-authorized database-owned correction.
+
 ### Assumptions
-The reported passed tests refer to the current Attempt 2 implementation before this Nunjucks task correction; they do not close the filtered test command observed exiting 1 or the mandatory PostgreSQL/bootstrap validation.
+The implementation and validation evidence above is from Attempt 3 in the implementation worktree. No ambient or user-supplied database URL was used.
+
 ### Unresolved Issues
-1. Repair the bootstrap test fixture/validation failures and complete missing bootstrap cases, including fixed identity conflicts, partial-state convergence, successor preservation and startup memoization.
-2. Add and run a real disposable-PostgreSQL bootstrap suite proving durable convergence/replay/restart idempotency and exact immutable successor snapshot preservation. The configured `DATABASE_URL` must not be used unless independently verified as the dedicated disposable test target.
-3. Run and record remaining required lifecycle/Feature tests, startup instrumentation test, retired-concept scan, `npm run lint`, `npm run build`, changed-file diagnostics and final `git diff --check`.
+1. Resolve the PostgreSQL guard conflict through the separate architect-authorized `ARCH-023-DATABASE-004` task, then rerun the disposable Commerce PostgreSQL suite.
+2. After that prerequisite, rerun the complete final validation set, synchronize and commit/push the implementation and this report, and only then request Architect review.
+
 ### Architectural Concerns
-None beyond the R6/R7 contract correction recorded below. Do not create a Database task or restore any retired Capability revision/binding model.
+The ARCH-021 `commerce.arch021_release_feature_guard` requires every inserted `CommerceReleaseFeature.behaviourPrompt` to equal the current `CommerceFeatureConfiguration.behaviourPrompt`. That rejects the required exact copy of an immutable base-release snapshot when unrelated Feature authoring has advanced. Commerce cannot resolve this by bypassing lifecycle storage, mutating frozen history, or weakening the exact-snapshot requirement.
+
+### Architect Adjudication — Attempt 3 Snapshot Guard
+The architect authorizes a narrowly scoped Database-owned `ARCH-023-DATABASE-004` task to define a forward migration and PostgreSQL regression coverage for this guard conflict. This supersedes the earlier “no Database task” restriction only for the demonstrated successor snapshot invariant; it does not authorize Commerce schema edits, trigger bypasses, mutation of existing releases, or restoration of retired Capability concepts. `ARCH-023-DATABASE-004` is authorized but not yet materialized. Keep this Commerce task `blocked` until that correction is available.
 
 ## Architect Review
 
