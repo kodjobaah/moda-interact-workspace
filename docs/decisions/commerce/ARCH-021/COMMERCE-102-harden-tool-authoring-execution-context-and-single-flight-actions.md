@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 73
 executor: null
 claimed_at: null
@@ -417,11 +417,11 @@ Classification applies to rendered buttons in the active Tool-authoring composit
 
 Passed the final focused packet after all corrections and direct same-tick coverage: 7 files, 195 tests. The Shopify Admin and Policy Test owner suite passed at 41 tests after the final Policy Test duplicate-activation assertion.
 
-Targeted ESLint across all 18 changed implementation and test files passed without warnings or errors. `npm run typecheck` passed (`next typegen && tsc --noEmit`) after regenerating the local Prisma Client with `npx prisma generate --schema database/prisma/schema.prisma`; no schema or migration changes were made. Changed-file diagnostics reported no TypeScript issues in all 18 changed files, and `git diff --check` passed.
+Targeted ESLint across the complete C102-changed implementation/test set passed without warnings or errors. `npm run typecheck` passed (`next typegen && tsc --noEmit`) after regenerating the local Prisma Client with `npx prisma generate --schema database/prisma/schema.prisma`; no schema or migration changes were made. Changed-file diagnostics reported no TypeScript issues in the C102-changed file set, and `git diff --check` passed.
 
 #### Broader Suite Baseline Comparison
 
-The seven `tests/studio-workspace.test.tsx` failures reproduce before C102 changes. Ran the suite in a detached clean worktree at pre-C102 commit `8fb5ebdffb2491803a3918bfb98aa5a51ce56c3a` (created with `git worktree add --detach /tmp/ARCH-021-COMMERCE-102-baseline 8fb5ebdffb2491803a3918bfb98aa5a51ce56c3a`, installed that checkout's lockfile dependencies with `npm ci`, then ran `npm run test -- --run tests/studio-workspace.test.tsx`): **7 failed, 5 passed (12)**. The C102-modified worktree run produced the same **7 failed, 5 passed (12)** and the same observed failures: both Shopify Admin draft workflow assertions look for `Save draft` and fail at test lines 191 and 225. This is baseline evidence, not an inference that the suite is unrelated based only on the task-focused packet. The detached baseline worktree is temporary and will be removed after evidence capture.
+The seven `tests/studio-workspace.test.tsx` failures reproduce before C102 changes. Ran the suite in a detached clean worktree at pre-C102 commit `8fb5ebdffb2491803a3918bfb98aa5a51ce56c3a` (created with `git worktree add --detach /tmp/ARCH-021-COMMERCE-102-baseline 8fb5ebdffb2491803a3918bfb98aa5a51ce56c3a`, installed that checkout's lockfile dependencies with `npm ci`, then ran `npm run test -- --run tests/studio-workspace.test.tsx`): **7 failed, 5 passed (12)**. The C102-modified worktree run produced the same **7 failed, 5 passed (12)** and the same observed failures: both Shopify Admin draft workflow assertions look for `Save draft` and fail at test lines 191 and 225. This is baseline evidence, not an inference that the suite is unrelated based only on the task-focused packet. The detached baseline worktree was removed after evidence capture.
 
 ### Deviations
 
@@ -443,24 +443,57 @@ None. Client-side admission remains a UX/concurrency guard only; durable idempot
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+ARCH-021-COMMERCE-102 is **Complete / Accepted, Attempt 1**.
+
+The selected-shop execution boundary is corrected end to end: only the server-resolved `shopSelection.selectedShop` reaches Tool authoring, Shopify Admin Test visibly identifies the selected target/session availability, and Run Test remains disabled unless that target is executable. No credentials are exposed to the browser; C082 remains the server-authoritative authorization/session boundary.
+
+Consequential Tool-authoring actions now use synchronous admission before operation-ID allocation, Server Action/provider dispatch, local session creation or navigation. Candidate/context identity plus monotonic generation prevents stale async completions from becoming current again, including A -> B -> A reversion. Unknown mutation outcomes retain the original operation ID for reconciliation and never replay the mutation.
+
+The final bounded corrections are accepted: External Request Validate/Preview completion checks use authoritative current-action-key refs after `await`, and confirmed Shopify provider reset stays frozen while metadata resolution is in flight, with deterministic success/failure release behavior.
 
 ### Reviewed Files
 
-None
+- `components/production-studio-page.tsx`
+- `components/studio-workspace.tsx`
+- `src/studio/external-http/request-tab.tsx`
+- `src/studio/external-http/response-tab.tsx`
+- `src/studio/tools/authoring/result-template-tab.tsx`
+- `src/studio/tools/authoring/review-tab.tsx`
+- `src/studio/tools/authoring/shopify-admin-test-tab.tsx`
+- `src/studio/tools/new-tool-editor.tsx`
+- `src/studio/tools/shopify-admin-editor.tsx`
+- `src/studio/tools/shopify-admin-response-editor.tsx`
+- `src/studio/tools/tool-authoring-screen.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- focused C102 route/navigation/Tool-authoring regression files listed in the Completion Report.
+
+Implementation commit reviewed: `b295545`.
+
+Parent review handoff: `2c5904bb`; parent branch was subsequently synchronized with current `origin/main` at `d58cc6538ee1dd24f4c86b291d8e4494afa10a4c` before acceptance coordination.
 
 ### Validation Reviewed
 
-None
+- Final focused packet: **7 files, 195 tests passed**.
+- Targeted ESLint: passed with no warnings/errors.
+- `npm run typecheck` (`next typegen && tsc --noEmit`): passed after local Prisma Client generation; no schema/migration change was made.
+- Changed-file diagnostics: no C102 TypeScript errors.
+- `git diff --check`: passed.
+- Broad `tests/studio-workspace.test.tsx` baseline comparison: pre-C102 and C102 both produced the same **7 failed / 5 passed** result and the same observed `Save draft` failures, so those failures are not introduced by C102.
+- Temporary detached baseline worktree was removed after evidence capture.
+- Final parent and implementation task refs were reported clean and remote-aligned before the parent synchronization merge.
 
 ### Architecture Conformance
 
-Pending
+Accepted.
+
+C102 preserves the existing Tool-authoring architecture rather than adding a second execution or persistence model. Client admission is a UX/concurrency correctness guard only; durable authorization, CAS/idempotency, offline-session resolution and reconciliation remain server-authoritative. Existing C082/C083/C095/C099/C100 ownership boundaries are preserved, local repeatable controls are not globally debounced, and Policy Operation lifecycle semantics are not reopened.
 
 ### Follow-up
 
-None
+Mark ARCH-021-COMMERCE-102 Complete.
+
+COMMERCE-103 is already Complete, so every declared dependency of `ARCH-021-SYSTEM-TEST-002` is now Complete. Promote SYSTEM-TEST-002 to **Ready** as terminal integrated Tool-authoring validation. Do not start it automatically from this acceptance.

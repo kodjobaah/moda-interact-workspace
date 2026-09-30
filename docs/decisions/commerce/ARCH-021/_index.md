@@ -1295,11 +1295,11 @@ Manual Shopify Admin Test validation exposed two bounded interaction-safety defe
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-102](COMMERCE-102-harden-tool-authoring-execution-context-and-single-flight-actions.md) | Make validated selected-shop context authoritative and make consequential Tool-authoring actions single-flight | Ready | COMMERCE-083, COMMERCE-095 |
+| [COMMERCE-102](COMMERCE-102-harden-tool-authoring-execution-context-and-single-flight-actions.md) | Make validated selected-shop context authoritative and make consequential Tool-authoring actions single-flight | Complete | COMMERCE-083, COMMERCE-095 |
 
-COMMERCE-102 is an independent manual-validation correction. It does not reopen C082/C083/C095 and it does not depend on the Policy Operation C096..100 chain. C082 remains the server-authoritative Shopify Admin execution boundary; C102 fixes the browser execution-target presentation/admission contract and same-tick action re-entry.
+COMMERCE-102 is **Complete / Accepted, Attempt 1**. The validated selected-shop context is authoritative for Tool execution presentation, and consequential Tool-authoring actions use synchronous single-flight admission plus stale-completion protection while preserving the server-authoritative C082/C083 lifecycle boundaries.
 
-`ARCH-021-SYSTEM-TEST-002` is re-gated **Pending** on COMMERCE-102 so terminal Tool-authoring validation runs only after the selected-shop and single-flight corrections are architect-accepted.
+`ARCH-021-SYSTEM-TEST-002` is now **Ready** because COMMERCE-102 and COMMERCE-103 are both architect-accepted Complete.
 
 ## Manual-validation follow-up — persisted Tool sequential traversal — 2026-09-29
 
@@ -1315,7 +1315,7 @@ COMMERCE-103 reuses the C095 canonical six-step order/presentation but does **no
 
 COMMERCE-103 is **Complete / Accepted**. The persisted External HTTP, Shopify Admin and Policy Operation traversal implementation and its 163-test regression packet are accepted, and the final canonical `npm run typecheck` now passes with zero diagnostics.
 
-`ARCH-021-SYSTEM-TEST-002` remains **Pending** only because COMMERCE-102 is not yet Complete.
+`ARCH-021-SYSTEM-TEST-002` is **Ready** after COMMERCE-102 Attempt 1 acceptance; both C102 and C103 dependency edges are satisfied.
 
 ## Manual-validation follow-up — Add Capability direct phase readiness — 2026-09-29
 
