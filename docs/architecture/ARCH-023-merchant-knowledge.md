@@ -12,6 +12,10 @@ updated: 2026-09-30
 ## Status
 
 Agreed — the architecture and repository task decomposition are materialised and implementation
+is underway. `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` are **Complete / Accepted at
+Attempt 2**. `ARCH-023-ADMIN-003` is now Ready, while `ARCH-023-SHARED-001` remains
+independently Ready from DATABASE-001 acceptance. All other ARCH-023 implementation tasks
+remain gated by their declared dependencies.
 is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**,
 `ARCH-023-SHARED-001` is **Complete / Accepted at Attempt 2**, and the accepted Shared
 implementation is now published and architect-accepted through `ARCH-023-SHARED-002` as
@@ -884,11 +888,13 @@ merchant-selectable category `slug` is a product/code change: its keys must ship
 `enabled`, `displayOrder`, the default template and Shopify-taxonomy mappings, but
 ARCH-023 does not create runtime translations for an arbitrary new category.
 
-For ARCH-023 merchant-selectable categories, `slug` is a stable localization identity.
-Admin MUST NOT rename an in-use merchant-selectable `slug` in place. Merchant-facing
-wording changes are made in the locale catalogues while retaining the same `slug`; a
-semantic category-identity change requires a new category/slug and the normal migration
-of any affected mappings/selections.
+For ARCH-023 merchant-selectable categories, `slug` is a stable localization identity
+and is immutable after category creation, whether or not the category is currently
+referenced by an active or pending Shop Profile. Admin MUST NOT rename a `slug` in place.
+Merchant-facing wording changes are made in the locale catalogues while retaining the
+same `slug`; a semantic category-identity change requires a new category/slug and the
+normal migration of any affected mappings/selections. This preserves the existing
+ARCH-021 database category-identity guard rather than creating a second mutability rule.
 
 `CommercePromptTemplate.displayName` and `description` remain canonical-English Admin
 metadata. The merchant onboarding flow selects a localized Store Category; it does not
@@ -3204,6 +3210,20 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
+Current execution frontier after ADMIN-002 Attempt 2 acceptance:
+
+```text
+ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
+ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+
+ARCH-023-SHARED-001     Ready
+ARCH-023-ADMIN-003      Ready
+all other ARCH-023 implementation tasks remain gated by their declared dependencies
+```
+
+SHARED-001 and ADMIN-003 are independent at this frontier and may execute in parallel.
+Their execution still requires the normal task claim/preparation path; architect acceptance
+does not start either task implicitly.
 Current execution frontier after SHARED-002 Attempt 1 acceptance:
 
 ```text
@@ -3239,6 +3259,29 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
+### 2026-09-30 — ADMIN-002 Attempt 2 accepted
+
+- Accepted the protected Admin Store Category catalogue for category/template/taxonomy
+  authoring against the corrected immutable-slug contract.
+- Confirmed category enable/default-template invariants, template CAS/audit behavior,
+  taxonomy mapping lifecycle, aggregate Shop Profile reference counts and the unconditional
+  Shopify localization-key warning.
+- Kept the accepted database gitlink/schema/migrations unchanged and introduced no
+  translation persistence, translation queue, Shopify onboarding or Commerce runtime work.
+- Marked ADMIN-002 Complete and promoted exactly ADMIN-003 to Ready. SHARED-001 remains
+  independently Ready; no other ARCH-023 task was promoted by this review.
+
+### 2026-09-30 — ADMIN-002 Attempt 1 blocker reconciled
+
+- Confirmed the existing ARCH-021 database guard intentionally makes Store Category
+  `id/slug` immutable after INSERT and that the accepted ARCH-023 migration does not alter
+  that invariant.
+- Corrected ADMIN-002 R4/R5/R14 so `slug` is create-only and immutable after category
+  creation, including when the category is unused; the prior conditional unused-slug
+  rename requirement was task-level drift from the stable localization-identity model.
+- No database correction task or migration is required. DATABASE-001 remains Complete,
+  ADMIN-002 returns to Ready for Attempt 2, and ADMIN-003 remains gated on ADMIN-002
+  completion.
 ### 2026-09-30 — SHARED-002 Attempt 1 accepted
 
 - Accepted the publication-only `ARCH-023-SHARED-002` release gate after verifying that Shared source is unchanged from accepted SHARED-001 and release metadata advances exactly `1.0.0 -> 1.0.1`.
