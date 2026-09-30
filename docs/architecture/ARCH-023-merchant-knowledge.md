@@ -17,11 +17,11 @@ is underway. `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-00
 is exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`,
-`ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and
-`ARCH-023-BACKGROUND-001`. BACKGROUND-001 is Ready under **Changes Requested after Attempt
-3**; its next authorized claim is Attempt 4. BACKGROUND-002/BACKGROUND-003 remain gated until
-BACKGROUND-001 is architect-accepted Complete. All other ARCH-023 tasks remain gated by their
-declared dependencies.
+`ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`,
+`ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003`. BACKGROUND-001 is
+Complete/architect-accepted at Attempt 4 after its disposable pgvector queue-loss proof passed.
+BACKGROUND-002 and BACKGROUND-003 are now Ready in parallel. All other ARCH-023 tasks remain
+gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3208,23 +3208,23 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after BACKGROUND-001 Attempt 3 review:
+Current execution frontier after BACKGROUND-001 Attempt 4 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
 ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
 ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
 
 ARCH-023-ADMIN-001      Ready
 ARCH-023-ADMIN-003      Ready
-ARCH-023-BACKGROUND-001 Ready — Changes Requested Attempt 3; next claim Attempt 4
+ARCH-023-BACKGROUND-002 Ready
+ARCH-023-BACKGROUND-003 Ready
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
 ARCH-023-SHOPIFY-002    Ready
 
-ARCH-023-BACKGROUND-002 Pending — waits for BACKGROUND-001 Complete
-ARCH-023-BACKGROUND-003 Pending — waits for BACKGROUND-001 Complete
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
@@ -3246,6 +3246,14 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — BACKGROUND-001 Attempt 4 accepted
+
+- Accepted the dedicated Merchant Knowledge worker/entitlement/PENDING-reconciliation foundation at Attempt 4.
+- Confirmed the C4 producer uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` and deterministic Shared job-id helper on exact Shared `1.0.1`.
+- Accepted the required live queue-loss proof after all real Prisma migrations applied to a disposable `pgvector/pgvector:pg17` PostgreSQL database and the production-path reconciliation integration test passed 1/1.
+- Confirmed the disposable container was torn down and no production runtime, schema, Shared-helper, integration-wrapper or Gateway change was introduced solely for validation.
+- Marked BACKGROUND-001 Complete and promoted BACKGROUND-002 and BACKGROUND-003 to Ready in parallel; BACKGROUND-004 remains gated on both.
 
 ### 2026-09-30 — BACKGROUND-001 Attempt 3 validation blocker reconciled
 

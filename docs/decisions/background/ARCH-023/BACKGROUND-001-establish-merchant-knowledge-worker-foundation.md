@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -584,9 +584,131 @@ Merged to implementation `main`: no. Merged to workspace `main`: no.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 3
+Accepted — Attempt 4
 
 ### Review Notes
+
+#### Attempt 4 review — Accepted — 2026-09-30
+
+Reviewed implementation correction `3ed66214bf43ec7e882c28bbdef4c6b290a39734`, the
+existing foundation at `06566f8`, and the submitted Attempt 4 parent report at `3a4c41ba`
+against the original BACKGROUND-001 contract and the complete Attempt 3 correction
+contract. Attempt 4 is accepted.
+
+The production implementation remains architecture-conformant. The repository consumes
+exactly `@modainteract/moda-interact-shared@1.0.1`; readiness adds only
+`moda-merchant-knowledge-worker -> [redis, postgresql]`; the queue resource uses the
+canonical Shared queue/job contract and existing `connectionRedis`; and the acquisition
+interfaces contain extracted source text only.
+
+Current-plan entitlement resolution uses the unique current Subscription, accepts only
+ACTIVE/TRIALING, reads the current plan Feature keyed `merchant_knowledge`, validates C2
+with the published Shared schema, fails closed on malformed configuration, filters by
+active/allowed Purpose/Data Format pairs before applying the deterministic
+`(position ASC, id ASC)` source allowance, and does not consult pending-plan state or
+`ShopFeaturePreference`.
+
+PENDING reconciliation is bounded and ordered, skips stale generations and currently
+ineligible sources, builds C4 jobs with Shared
+`MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`, and uses Shared
+`createMerchantKnowledgeProcessJobId()` for deterministic redelivery. Queue publication
+does not mutate source/revision content. The dedicated worker validates the Shared job
+schema, reuses the existing Redis/telemetry/worker-observation mechanisms, delegates
+processing to the injected processor, and bounds terminal failure codes without logging
+source content.
+
+The final A3-R1 acceptance gate is now satisfied. Attempt 4 provisioned a fresh
+`pgvector/pgvector:pg17` PostgreSQL container with isolated credentials and loopback host
+port, waited for health, applied the repository's real Prisma migrations including
+`20260929160000_arch023_merchant_knowledge_schema`, and ran the authored production-path
+`merchant-knowledge-reconciliation.integration.test.ts` with
+`MODA_DISPOSABLE_INTEGRATION=1`. The test passed 1/1 and proved that an enqueue failure
+leaves the committed revision PENDING and that reconciliation subsequently republishes it
+with a stable deterministic job id. The cleanup trap removed the disposable container;
+no task-created volume/network or remote database was used.
+
+Attempt 4 made no production-source, schema, migration, gitlink, Shared-helper,
+integration-wrapper or Gateway change. The generic integration wrapper's default
+non-pgvector image therefore remains outside this task and is not an acceptance blocker.
+No deployable Merchant Knowledge entrypoint exists yet; final composition remains owned
+by BACKGROUND-004.
+
+The review archive intentionally omits Git metadata and installed dependencies. The
+Completion Report supplies the launcher-resolved dedicated parent/implementation
+worktrees, matching task branches, Attempt 4 claim/synchronization evidence, recursive
+submodule preparation, pushed implementation/report commits and clean handoff. The
+submitted focused validation plus the live disposable-database proof close every task
+Acceptance Criterion and required Validation item.
+
+### Reviewed Files
+
+Implementation repository:
+
+- `package.json`
+- `package-lock.json`
+- `src/runtime/readiness.ts`
+- `src/entrypoints/merchant-knowledge-resources.ts`
+- `src/services/merchant-knowledge-acquisition.ts`
+- `src/services/merchant-knowledge-entitlement.service.ts`
+- `src/services/merchant-knowledge-reconciliation.service.ts`
+- `src/workers/merchant-knowledge.worker.ts`
+- `tests/unit/services/merchant-knowledge-entitlement.service.test.ts`
+- `tests/unit/services/merchant-knowledge-reconciliation.service.test.ts`
+- `tests/unit/workers/merchant-knowledge.worker.test.ts`
+- `tests/integration/merchant-knowledge-reconciliation.integration.test.ts`
+- `database/prisma/schema.prisma`
+
+Parent workspace:
+
+- `docs/decisions/background/ARCH-023/BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md`
+- `docs/decisions/background/ARCH-023/BACKGROUND-002-acquire-merchant-knowledge-web-pages.md`
+- `docs/decisions/background/ARCH-023/BACKGROUND-003-acquire-merchant-knowledge-uploads.md`
+- `docs/decisions/background/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
+### Validation Reviewed
+
+- Attempt 3 focused unit suites passed **19/19**: entitlement 7/7, reconciliation 7/7 and worker 5/5.
+- Attempt 3 `npx tsc --noEmit` and `git diff --check` passed.
+- Confirmed package manifest and lockfile pin exact Shared `1.0.1`.
+- Confirmed reconciliation source and focused regression use Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` rather than a duplicated local literal.
+- Confirmed the integration test exercises production `MerchantKnowledgeReconciliationService` against PostgreSQL and mocks only queue publication.
+- Attempt 4 disposable PostgreSQL proof used `pgvector/pgvector:pg17`; `npm run prisma:validate` passed and `npx prisma migrate deploy --schema database/prisma/schema.prisma` applied all migrations including the ARCH-023 pgvector migration.
+- Attempt 4 production-path queue-loss integration passed **1/1** with `TEST_DATABASE_URL`/`DATABASE_URL` bound to the disposable database and `MODA_DISPOSABLE_INTEGRATION=1`.
+- Attempt 4 teardown recorded `docker rm -f` and `DISPOSABLE_CONTAINER_TORN_DOWN`; no disposable volume/network remained.
+- The archive has no installed `node_modules` or Docker runtime transcript beyond the durable report, so those commands were not independently re-run in this review container; the implementation and authored test path were inspected directly.
+
+### Architecture Conformance
+
+Conforms. BACKGROUND-001 establishes only the Background-owned worker/entitlement/repair
+foundation over the accepted ARCH-023 database and Shared contracts. PostgreSQL remains
+the durable source of truth, BullMQ publication remains retryable/repairable, current-plan
+commercial entitlement is rechecked server-side, and deterministic job identity provides
+at-least-once convergence without introducing exactly-once assumptions.
+
+The implementation does not cross into WEB_PAGE/R2 acquisition, normalization,
+embeddings/vector writes, revision promotion, entitlement-change revision creation,
+Gateway deployment, Commerce lookup or Shopify producer ownership. It also does not make
+the partial worker deployable before BACKGROUND-004 composition.
+
+### Follow-up
+
+`ARCH-023-BACKGROUND-001` is **Complete / Accepted at Attempt 4**.
+
+Dependency reconciliation makes exactly these newly satisfied dependants Ready in
+parallel:
+
+```text
+ARCH-023-BACKGROUND-002
+ARCH-023-BACKGROUND-003
+```
+
+BACKGROUND-004 remains Pending until both are architect-accepted Complete. No downstream
+implementation is started implicitly by this review.
+
+#### Historical Attempt 3 — Changes Requested — 2026-09-30
+
+##### Review Notes
 Attempt 3 resolves the two source/report corrections that remained from the prior review:
 
 1. **A2-R1 is satisfied.** The reconciliation producer now uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`, and the focused reconciliation test asserts the canonical Shared constant rather than a duplicated local literal.
@@ -613,7 +735,7 @@ If a Docker-capable local environment is genuinely unavailable, return the same 
 
 The task is returned to `ready` with `attempt: 3` preserved. The next authorised claim increments it to Attempt 4. `ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003` remain Pending until BACKGROUND-001 is architect-accepted Complete.
 
-### Reviewed Files
+##### Reviewed Files
 - `docs/decisions/background/ARCH-023/BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md`
 - `docs/decisions/background/ARCH-023/_index.md`
 - `docs/architecture/ARCH-023-merchant-knowledge.md`
@@ -622,15 +744,15 @@ The task is returned to `ready` with `attempt: 3` preserved. The next authorised
 - `moda-interact-background/src/services/merchant-knowledge-reconciliation.service.ts`
 - accepted ARCH-023 database migration surface referenced by the integration failure
 
-### Validation Reviewed
+##### Validation Reviewed
 - Attempt 3 focused unit validation passed 19/19: entitlement 7/7, reconciliation 7/7 and worker 5/5.
 - `npx tsc --noEmit` and `git diff --check` passed.
 - A2-R1 code/test correction is present and uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`.
 - The required integration command reached disposable infrastructure setup but failed before Vitest because `postgres:17.6-alpine` does not contain `vector.control`; therefore the queue-loss Acceptance Criterion correctly remains unchecked.
 - The existing integration test exercises the production `MerchantKnowledgeReconciliationService` against PostgreSQL while mocking only queue publication, so a standalone pgvector-capable PostgreSQL container is sufficient to close the missing proof.
 
-### Architecture Conformance
+##### Architecture Conformance
 **Conformant in implementation; acceptance pending one required live validation.** The worker foundation remains within the intended Background boundary, consumes the canonical Shared schema-version constant, preserves the accepted database contract, and records the required execution provenance. Creating a disposable pgvector-capable PostgreSQL container solely for task validation does not introduce runtime infrastructure or alter repository ownership.
 
-### Follow-up
+##### Follow-up
 Reclaim this same task for Attempt 4 and perform the bounded disposable-Docker PostgreSQL validation above. Do not start BACKGROUND-002 or BACKGROUND-003. If the migration and queue-loss integration test pass, update the Completion Report, check the remaining Acceptance Criterion/Validation item, return the task to `review`, clear the claim and STOP.
