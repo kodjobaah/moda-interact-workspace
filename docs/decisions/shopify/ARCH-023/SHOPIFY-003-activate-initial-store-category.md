@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 51
 executor: copilot
 claimed_at: 2026-09-30T19:40:30Z
@@ -233,7 +233,7 @@ Consumes SHOPIFY-002 pending state, current Subscription projection and Commerce
 
 - [x] focused activation tests
 - [x] billing/subscription integration regressions
-- [ ] transaction integration test execution (suite added; blocked because no container runtime is available and local PostgreSQL does not respond)
+- [x] transaction integration test execution
 - [x] `npm run typecheck`
 - [x] changed-file lint/diagnostics
 - [x] `npm run build`
@@ -246,21 +246,29 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Attempt 1 implementation complete; returned for Architect Review.
+Attempt 2 completed the sole Architect-Requested correction (A1-R1); returned for Architect Review.
 ### Files Changed
 `app/services/store-profile/store-category-activation.server.ts`, `app/routes/app/billing/callback/route.tsx`, `tests/unit/store-category-activation.test.ts`, `tests/unit/routes/billing-callback.test.ts`, and `tests/integration/store-category-activation.integration.test.ts`.
 ### Work Completed
 Added the exact deployment environment mapper and an atomic, idempotent initial activation transaction. It locks the Shop scope used by category selection, requires the current subscription to be ACTIVE/TRIALING with a plan, validates the complete pending profile/revision/template provenance, publishes the existing pinned DRAFT with lowercase SHA-256 of its exact UTF-8 text, updates or creates the one SHOP configuration while preserving model settings, and promotes/clears only the initial pending profile state. Existing active categories return `ALREADY_ACTIVE` without touching later pending selections. The billing callback invokes activation only after a successful durable Paid projection, successful Free completion, or a fresh `syncSubscription` result with a current active/trialing plan. Configure/welcome intent and onboarding completion alone do not invoke activation. No Merchant Knowledge preference/source/queue state or Background worker/reconciler was changed.
 ### Validation Results
-Focused activation, billing callback, Store Category selection and action regressions: 60 passed; the two disposable PostgreSQL activation tests were skipped in the default run. `npm run typecheck`: passed. Changed-file ESLint: passed (emitted the repository's TypeScript 5.9.3 versus typescript-estree supported-version warning). Changed-file diagnostics: clean. `npm run build`: passed. `git diff --check`: passed. The activation PostgreSQL suite was also explicitly enabled, but Testcontainers failed before provisioning with `Could not find a working container runtime strategy`; the available local PostgreSQL probe reported no response at `/tmp:5432`. Thus the database-backed transaction assertions are implemented but could not be executed in this environment.
+Attempt 1 focused activation, billing callback, Store Category selection and action regressions: 60 passed; the two disposable PostgreSQL activation tests were skipped in the default run. `npm run typecheck`: passed. Changed-file ESLint: passed (emitted the repository's TypeScript 5.9.3 versus typescript-estree supported-version warning). Changed-file diagnostics: clean. `npm run build`: passed. `git diff --check`: passed.
+
+Attempt 2 A1-R1 exact architect-requested command, run from the canonical implementation worktree:
+
+```text
+DOCKER_HOST="unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock" TESTCONTAINERS_RYUK_DISABLED=true MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/store-category-activation.integration.test.ts
+```
+
+Result: 1 test file passed; 2/2 PostgreSQL integration cases passed. The suite provisioned the disposable `pgvector/pgvector:pg17` database, applied accepted migrations, proved exact pinned DRAFT publication/configuration pointer/profile promotion, proved forced profile-promotion failure rolls all activation writes back while the separately committed Subscription remains ACTIVE, and proved replay idempotency. A post-run Colima `docker ps -a --filter ancestor=pgvector/pgvector:pg17` check returned no matching containers. No production implementation or schema change was needed. The implementation worktree remained clean at `be279948ff7421e9f5edfa567b58fd1ffe55e680`, matching its remote task branch.
 ### Deviations
-The requested live transaction validation could not run because this environment has neither a working container runtime nor a responding local PostgreSQL server; the disposable PostgreSQL suite is present and opt-in using the repository's existing integration convention.
+None. The Attempt 1 container limitation was resolved for the architect-requested rerun by using the known Colima Docker endpoint; the live transaction proof passed in Attempt 2.
 ### Assumptions
 The existing billing callback may invoke the activation service only after the current projection transaction returns; a later Background reconciliation activation hook is a separate repository-owned task and remains outside SHOPIFY-003 scope.
 ### Unresolved Issues
-The existing Background billing reconciler does not yet invoke this activation contract when subscription activation is established after the Shopify callback; a separate bounded Background task must add that hook. An activation transaction error currently propagates from the callback after the billing projection has committed; callback response and retry policy should be decided with the Background fallback boundary. No authorized Commerce audit helper/actor exists in this repository, so this task does not fabricate a system actor or audit event; the audit-actor gap is recorded for architect follow-up. The disposable PostgreSQL transaction suite remains unexecuted in this environment as noted above.
+The existing Background billing reconciler does not yet invoke this activation contract when subscription activation is established after the Shopify callback; a separate bounded Background task must add that hook. No authorized Commerce audit helper/actor exists in this repository, so this task does not fabricate a system actor or audit event; the audit-actor gap is recorded for architect follow-up. These are non-blocking/out-of-scope boundaries per the Architect Review.
 ### Architectural Concerns
-The callback path is covered here, but the missed-callback/background-reconciliation path remains a cross-repository follow-up. Activation errors are not swallowed: they can fail the Shopify callback response, although the prior billing projection commit remains durable. Decide whether that response behavior is desired and how retry/reconciliation will guarantee eventual activation. The existing Commerce audit schema accepts only PlatformAdmin or MerchantAccess actors and this activation has neither; an authorized actor/audit contract needs architect direction before audit records are added.
+The callback path is covered here, but the missed-callback/background-reconciliation path remains a cross-repository follow-up. Activation errors are not swallowed: they can fail the Shopify callback response, although the prior billing projection commit remains durable. Per the Attempt 1 Architect Review, this is not a defect in the required transaction separation; any future callback UX/retry-policy change is separate. The existing Commerce audit schema accepts only PlatformAdmin or MerchantAccess actors and this activation has neither; an authorized actor/audit contract needs architect direction before audit records are added.
 
 Physical worktree isolation:
   canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
@@ -290,8 +298,18 @@ Launcher claim:
   claimed at: `2026-09-30T19:07:21Z`
   claim commit: `9388d1a8fc532eb6aa6a0f3234c60c2b826d4ded` (pushed)
 
+Attempt 2 launcher claim:
+  status before/after: `ready` -> `in_progress`
+  attempt: 2 (previous attempt: 1)
+  dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
+  executor: `copilot`
+  claimed at: `2026-09-30T19:40:30Z`
+  claim commit: `c6ade4e5c336cb28fc9c729615437a1c14514949` (pushed)
+
 Implementation commit:
   `be279948ff7421e9f5edfa567b58fd1ffe55e680` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
+
+Attempt 2 implementation change: none; the architect-requested correction was validation-only.
 
 ## Architect Review
 
