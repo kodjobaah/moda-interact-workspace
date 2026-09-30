@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 51
 executor: copilot
 claimed_at: 2026-09-30T20:33:16Z
@@ -247,7 +247,7 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Attempt 2 completed the sole Architect-Requested correction (A1-R1); returned for Architect Review.
+Attempt 3 completed the Architect-Requested correction (A2-R1); returned for Architect Review.
 ### Files Changed
 `app/services/store-profile/store-category-activation.server.ts`, `app/routes/app/billing/callback/route.tsx`, `tests/unit/store-category-activation.test.ts`, `tests/unit/routes/billing-callback.test.ts`, and `tests/integration/store-category-activation.integration.test.ts`.
 ### Work Completed
@@ -262,6 +262,10 @@ DOCKER_HOST="unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock" TESTCO
 ```
 
 Result: 1 test file passed; 2/2 PostgreSQL integration cases passed. The suite provisioned the disposable `pgvector/pgvector:pg17` database, applied accepted migrations, proved exact pinned DRAFT publication/configuration pointer/profile promotion, proved forced profile-promotion failure rolls all activation writes back while the separately committed Subscription remains ACTIVE, and proved replay idempotency. A post-run Colima `docker ps -a --filter ancestor=pgvector/pgvector:pg17` check returned no matching containers. No production implementation or schema change was needed. The implementation worktree remained clean at `be279948ff7421e9f5edfa567b58fd1ffe55e680`, matching its remote task branch.
+
+Attempt 3 A2-R1 correction: activation now validates the pending category and exact pinned DRAFT without comparing selection-time template provenance to the category's mutable current `defaultTemplateId`. Unit coverage accepts a Template-A revision when Template B is current and still fails closed when `sourceTemplateId` or `sourceTemplateEditVersion` is null. The PostgreSQL success fixture creates distinct enabled Templates A and B, changes the category default from A to B after fixture selection, and proves activation publishes the original Template-A revision with its exact text, source ID/version, and SHA-256 hash.
+
+Attempt 3 focused activation and billing callback tests: 2 files passed; 50/50 tests passed. The exact disposable PostgreSQL command above was rerun with the Colima endpoint: 1 file passed; 2/2 integration tests passed, including Template-A provenance after reassignment and the existing rollback/idempotency proof. Post-run `docker ps -a --filter ancestor=pgvector/pgvector:pg17` returned no matching containers. `npm run typecheck`, changed-file ESLint and diagnostics, `npm run build`, and `git diff --check` passed. ESLint emitted the repository's TypeScript 5.9.3 versus typescript-estree supported-version warning; the build emitted dependency annotation, external Prisma browser entry, and chunk-size warnings but completed successfully.
 ### Deviations
 None. The Attempt 1 container limitation was resolved for the architect-requested rerun by using the known Colima Docker endpoint; the live transaction proof passed in Attempt 2.
 ### Assumptions
@@ -307,10 +311,24 @@ Attempt 2 launcher claim:
   claimed at: `2026-09-30T19:40:30Z`
   claim commit: `c6ade4e5c336cb28fc9c729615437a1c14514949` (pushed)
 
+Attempt 3 launcher claim:
+  status before/after: `ready` -> `in_progress`
+  attempt: 3 (previous attempt: 2)
+  dependency gate: passed (`ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`)
+  executor: `copilot`
+  claimed at: `2026-09-30T20:33:16Z`
+  claim commit: `9bd3d29c5396ed57ff63e248d2759c2dffb4f90e` (pushed)
+  parent origin/main incorporated: yes
+  implementation origin/main: already-current
+  recursive submodule sync/update: passed; database at `2eb17ee910491e8f9df82736fc0a843844415947`
+
 Implementation commit:
   `be279948ff7421e9f5edfa567b58fd1ffe55e680` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
 
 Attempt 2 implementation change: none; the architect-requested correction was validation-only.
+
+Attempt 3 implementation commit:
+  `e9ea92efbf75cd59b3eeaa1cc314aadf5dc6cf29` (pushed to `origin/task/ARCH-023-SHOPIFY-003`)
 
 ## Architect Review
 
