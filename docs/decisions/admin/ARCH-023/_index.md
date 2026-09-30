@@ -35,7 +35,7 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ADMIN-001](ADMIN-001-author-merchant-knowledge-plan-entitlement.md) | Merchant Knowledge Feature/default plan inclusion and plan-specific C2 configuration | Pending | DATABASE-001, SHARED-002 |
-| [ADMIN-002](ADMIN-002-manage-store-categories-default-templates.md) | Store Category, canonical-English default templates and Shopify taxonomy mappings | Pending | DATABASE-001 |
+| [ADMIN-002](ADMIN-002-manage-store-categories-default-templates.md) | Store Category, canonical-English default templates and Shopify taxonomy mappings | Ready | DATABASE-001 |
 | [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Pending | DATABASE-001, ADMIN-002 |
 
 ## Removed obsolete decomposition
@@ -44,7 +44,7 @@ The previous ARCH-023 Admin tasks for database-backed Store Category/template tr
 
 ## Execution frontier
 
-After DATABASE-001 is Complete/accepted:
+DATABASE-001 is Complete/accepted, so:
 
 ```text
 ADMIN-002 -> Ready

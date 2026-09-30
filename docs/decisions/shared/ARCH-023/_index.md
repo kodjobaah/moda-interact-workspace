@@ -27,20 +27,14 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [SHARED-001](SHARED-001-implement-arch023-shared-contracts.md) | Implement all ARCH-023 Shared contracts and Commerce runner trust | Pending | DATABASE-001 |
+| [SHARED-001](SHARED-001-implement-arch023-shared-contracts.md) | Implement all ARCH-023 Shared contracts and Commerce runner trust | Ready | DATABASE-001 |
 | [SHARED-002](SHARED-002-publish-arch023-shared-package.md) | Publish the accepted Shared package as one patch release | Pending | SHARED-001 |
 | [SHARED-003](SHARED-003-harden-commerce-runner-instruction-trust.md) | Historical split task; folded into SHARED-001 | Superseded | — |
 | [SHARED-004](SHARED-004-publish-arch023-shared-contracts.md) | Historical publication task; replaced by SHARED-002 | Superseded | — |
 
 ## Execution frontier
 
-No ARCH-023 Shared task is executable until:
-
-```text
-ARCH-023-DATABASE-001 = Complete / architect-accepted
-```
-
-Then:
+`ARCH-023-DATABASE-001` is Complete/accepted, so:
 
 ```text
 SHARED-001 -> Ready
