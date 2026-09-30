@@ -3200,19 +3200,21 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after DATABASE-001 Attempt 2 acceptance:
+Current execution frontier after SHARED-001 Attempt 2 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
+ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 
-ARCH-023-SHARED-001     Ready
+ARCH-023-SHARED-002     Ready
 ARCH-023-ADMIN-002      Ready
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
-SHARED-001 and ADMIN-002 are independent at this frontier and may execute in parallel.
-Their execution still requires the normal task claim/preparation path; architect acceptance
-does not start either task implicitly.
+SHARED-002 and ADMIN-002 are independent at this frontier and may execute in parallel.
+SHARED-002 is publication-only and must publish exactly the accepted SHARED-001 revision;
+consumer implementation tasks remain gated until that publication task is Complete and
+architect-accepted. Neither Ready task is started implicitly by this review.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3222,6 +3224,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHARED-001 Attempt 2 accepted
+
+- Accepted `ARCH-023-SHARED-001` after the evidence-only Attempt 2 recorded the required launcher-resolved dedicated worktrees, start-of-attempt synchronization and recursive-submodule preparation.
+- Confirmed the accepted Shared implementation remained unchanged from Attempt 1 at commit `c96b7eb8eaaae14133ab174de80e130c8551f366`.
+- Marked SHARED-001 Complete and promoted exactly the release-only `ARCH-023-SHARED-002` from Pending to Ready. Consumer tasks remain gated on the published Shared revision.
+- No publication or downstream consumer implementation was started by the architect review.
 
 ### 2026-09-29 — DATABASE-001 Attempt 2 accepted
 
