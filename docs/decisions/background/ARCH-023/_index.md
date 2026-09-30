@@ -16,14 +16,15 @@ ARCH-023-DATABASE-001 + ARCH-023-SHARED-002
                  v
           BACKGROUND-001
       worker/entitlement/repair
-          /           \
-         v             v
-BACKGROUND-002     BACKGROUND-003
-WEB_PAGE           R2 + CSV/XLSX
-acquisition        acquisition/cleanup
-         \             /
-          \           /
-           v         v
+          /      |       \
+         v       v        v
+BACKGROUND-002 BACKGROUND-003 BACKGROUND-006
+WEB_PAGE       R2 + CSV/XLSX merchant opt-in
+acquisition    acquisition   eligibility gate
+         \       |        /
+          \      |       /
+           \     |      /
+              v   v
           BACKGROUND-004
       normalize/chunk/embed/
        promote + final entrypoint
@@ -43,7 +44,8 @@ Individual task YAML is authoritative.
 | [BACKGROUND-001](BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md) | Dedicated worker foundation, current entitlement and durable PENDING reconciliation | Complete — Accepted Attempt 4 | DATABASE-001, SHARED-002 |
 | [BACKGROUND-002](BACKGROUND-002-acquire-merchant-knowledge-web-pages.md) | SSRF-safe WEB_PAGE acquisition and extraction | Complete — Accepted Attempt 3 | BACKGROUND-001 |
 | [BACKGROUND-003](BACKGROUND-003-acquire-merchant-knowledge-uploads.md) | Private R2 CSV/XLSX acquisition/extraction and safe asset cleanup | Complete — Accepted Attempt 2 | BACKGROUND-001 |
-| [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Ready | BACKGROUND-002, BACKGROUND-003 |
+| [BACKGROUND-006](BACKGROUND-006-respect-merchant-knowledge-activation.md) | Require merchant opt-in in ingestion eligibility and PENDING reconciliation | Ready | BACKGROUND-001, ADMIN-004 |
+| [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Pending | BACKGROUND-002, BACKGROUND-003, BACKGROUND-006 |
 | [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Pending | BACKGROUND-004 |
 
 ## Execution frontier
@@ -52,22 +54,16 @@ DATABASE-001, SHARED-002 and BACKGROUND-001 are Complete/architect-accepted. Att
 closed the final queue-loss validation gate against a task-local disposable pgvector PostgreSQL
 database without changing runtime infrastructure or shared test helpers.
 
-BACKGROUND-002 is now Complete/architect-accepted at Attempt 3 and BACKGROUND-003 is
-Complete/architect-accepted at Attempt 2. Their common processing successor is therefore the
-current executable Background frontier:
-BACKGROUND-003 is now Complete/architect-accepted at Attempt 2. The remaining executable
-Background frontier is:
+BACKGROUND-002 is Complete/architect-accepted at Attempt 3 and BACKGROUND-003 is Complete/architect-accepted at Attempt 2. ADMIN-004 is now Complete / Accepted Attempt 1, so the current executable Background frontier is:
 
 ```text
-BACKGROUND-002 -> Ready
+BACKGROUND-006 -> Ready
 ```
 
-BACKGROUND-004 remains Pending until BACKGROUND-002 and the new activation follow-up BACKGROUND-006 are Complete. ADMIN-004 must complete before BACKGROUND-006 can become Ready. The sequence is therefore:
+BACKGROUND-004 remains Pending until BACKGROUND-006 is Complete. Its other acquisition prerequisites are already Complete. The sequence is therefore:
 
 ```text
-ADMIN-004 -> Complete
 BACKGROUND-006 -> Ready -> Complete
-BACKGROUND-002 -> Complete
 BACKGROUND-004 -> Ready
 ```
 
