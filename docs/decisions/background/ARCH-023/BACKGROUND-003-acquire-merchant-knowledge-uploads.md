@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
-executor: copilot
-claimed_at: 2026-09-30T11:46:26Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-001
@@ -356,15 +356,15 @@ The package lock must pin the actual installed versions.
 
 ## Work Items
 
-- [ ] Add exact R2 runtime config validation.
-- [ ] Add private S3-compatible R2 client.
-- [ ] Implement bounded GET + hash/size validation.
-- [ ] Implement deterministic CSV extraction.
-- [ ] Implement XLSX ZIP safety preflight.
-- [ ] Implement deterministic XLSX extraction.
-- [ ] Implement safe upload-asset cleanup service.
-- [ ] Add unit/integration tests.
-- [ ] Confirm no R2 object key appears in logs/results.
+- [x] Add exact R2 runtime config validation.
+- [x] Add private S3-compatible R2 client.
+- [x] Implement bounded GET + hash/size validation.
+- [x] Implement deterministic CSV extraction.
+- [x] Implement XLSX ZIP safety preflight.
+- [x] Implement deterministic XLSX extraction.
+- [x] Implement safe upload-asset cleanup service.
+- [x] Add unit/integration tests.
+- [x] Confirm no R2 object key appears in logs/results.
 
 ## Interfaces / Contracts
 
@@ -388,25 +388,25 @@ Cleanup service is wired into the dedicated worker entrypoint by BACKGROUND-004.
 
 ## Acceptance Criteria
 
-- [ ] Cross-shop asset access is rejected before R2 access.
-- [ ] Byte count and SHA-256 are independently verified.
-- [ ] Upload/decompressed limits are enforced.
-- [ ] CSV extraction follows the exact row/header rules.
-- [ ] XLSX formulas are never executed and formula expressions are never emitted.
-- [ ] Active content/external workbook mechanisms are rejected.
-- [ ] Referenced assets can never be cleanup-deleted.
-- [ ] R2 object keys/credentials never enter model-facing/source-text results or logs.
-- [ ] No normalization/chunking/embedding/promotion is implemented here.
+- [x] Cross-shop asset access is rejected before R2 access.
+- [x] Byte count and SHA-256 are independently verified.
+- [x] Upload/decompressed limits are enforced.
+- [x] CSV extraction follows the exact row/header rules.
+- [x] XLSX formulas are never executed and formula expressions are never emitted.
+- [x] Active content/external workbook mechanisms are rejected.
+- [x] Referenced assets can never be cleanup-deleted.
+- [x] R2 object keys/credentials never enter model-facing/source-text results or logs.
+- [x] No normalization/chunking/embedding/promotion is implemented here.
 
 ## Validation
 
-- [ ] CSV extraction tests
-- [ ] XLSX safety/extraction tests
-- [ ] R2 acquirer tests using a fake/local S3-compatible client abstraction; no public network
-- [ ] database-backed cleanup integration tests
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] CSV extraction tests
+- [x] XLSX safety/extraction tests
+- [x] R2 acquirer tests using a fake/local S3-compatible client abstraction; no public network
+- [x] database-backed cleanup integration tests
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -415,21 +415,52 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Not Started
+Review
 ### Files Changed
-None.
+Implementation commit `cde2632` changes `package.json`, `package-lock.json`, six Merchant Knowledge service modules, and the three unit suites plus one cleanup integration suite authorized by this task. No database schema, migration, queue resource, worker entrypoint, or other repository was changed.
 ### Work Completed
-None.
+Added exact private R2 configuration validation and an S3-compatible client factory configured for region `auto`, limited to `GetObject` and `DeleteObject`. Uploaded-asset acquisition validates ownership/status/format/metadata before GET, bounds streamed bytes, independently verifies persisted size and SHA-256, and returns only content type and deterministic extracted text with null URL/timestamp.
+
+Added and lockfile-pinned `@aws-sdk/client-s3@3.1143.0`, `csv-parse@7.0.3`, `exceljs@4.4.0`, `yauzl@3.4.0`, and `@types/yauzl@3.4.0`.
+
+Added strict UTF-8/RFC-style CSV extraction and XLSX central-directory preflight before ExcelJS workbook loading. XLSX extraction requires core OOXML parts, enforces archive expansion limits, rejects encryption and forbidden active-content/external-workbook paths, emits visible worksheets in workbook order, and uses cached scalar formula results only.
+
+Added cleanup candidate paging (100), 24-hour AVAILABLE orphan grace, transactional asset row locks and fresh revision-reference checks, bounded tombstone failure codes, and post-commit physical deletion with retryable DELETED tombstones. Cleanup remains unwired to a worker entrypoint, as assigned to BACKGROUND-004.
 ### Validation Results
-None.
+Passed: focused CSV/XLSX/acquirer tests (3 files, 16 tests); cleanup database integration (1 test) using the repository disposable-infrastructure helper with `pgvector/pgvector:pg17` and the accepted migrations; `npm run build` (Prisma Client generation and TypeScript compile); `npm run prisma:validate`; `git diff --check`; changed-file diagnostics (no errors).
+
+The full `npm test` run reported 82 files passed, 5 failed, and 13 skipped (1,187 tests passed, 12 failed, 25 skipped). Failures were outside this task: an evidence fixture resolved under a missing ARCH-020 worktree; four translation integration cases could not reach `localhost:5432`; three billing reconciliation expectation failures; one checkout recovery language expectation failure; and four observability startup/version failures. All BACKGROUND-003 focused tests passed, and the cleanup integration passed in the disposable pgvector environment.
 ### Deviations
-None.
+No implementation-scope deviations. `npm install` reported five dependency audit findings in the installed dependency graph and install-script approval notices; no unrelated audit fixes or dependency upgrades were applied.
 ### Assumptions
-None.
+Gateway will provide the six task-defined `MERCHANT_KNOWLEDGE_*` runtime variables in a later task. BACKGROUND-004 owns worker-entrypoint wiring for cleanup and acquisition composition.
 ### Unresolved Issues
-None.
+The unrelated full-suite failures listed under Validation Results remain outside this task's scope. No task-scoped validation failure remains.
 ### Architectural Concerns
-None.
+None identified. The implementation does not add schema changes, source normalization, chunking, embeddings, promotion, or a general cloud-storage abstraction.
+
+### Execution Provenance
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-003`
+- parent branch: `task/ARCH-023-BACKGROUND-003`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-003`
+- implementation branch: `task/ARCH-023-BACKGROUND-003`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+- parent remote task branch fast-forwarded: no; no fast-forward was needed
+- parent `origin/main` incorporated: yes; already current at preparation
+- implementation remote task branch fast-forwarded: no; no fast-forward was needed
+- implementation `origin/main` incorporated: yes; already current at preparation
+
+Recursive implementation submodules:
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- recorded database submodule commit: `2eb17ee910491e8f9df82736fc0a843844415947`
+- implementation commit pushed: `cde2632` (`task/ARCH-023-BACKGROUND-003`)
 
 ## Architect Review
 
