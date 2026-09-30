@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 76
-executor: copilot
-claimed_at: 2026-09-30T00:00:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-104
@@ -329,18 +329,18 @@ Do not change Tool-authoring tab contracts.
 
 ## Work Items
 
-- [ ] Remove the Add Capability ordered-list/list-item phase markup.
-- [ ] Render one `Capability setup` semantic tablist from the existing `phases`.
-- [ ] Add exact tab IDs, `role="tab"`, `aria-selected`, `aria-disabled` and `aria-controls`.
-- [ ] Add exact matching tabpanel IDs, `role="tabpanel"` and `aria-labelledby`.
-- [ ] Preserve the exact C104 availability expression and `goTo` path.
-- [ ] Add the exact `.capability-authoring-tabs` styles and responsive rule.
-- [ ] Preserve Previous/Next/Create placement and behaviour.
-- [ ] Add focused semantic-tab regressions.
-- [ ] Preserve the existing C104 readiness/unlock regression behaviour.
-- [ ] Prove tab/footer navigation causes zero create/reconciliation calls.
-- [ ] Run focused tests, targeted ESLint, `npm run typecheck` and `git diff --check`.
-- [ ] Complete the Completion Report and STOP.
+- [x] Remove the Add Capability ordered-list/list-item phase markup.
+- [x] Render one `Capability setup` semantic tablist from the existing `phases`.
+- [x] Add exact tab IDs, `role="tab"`, `aria-selected`, `aria-disabled` and `aria-controls`.
+- [x] Add exact matching tabpanel IDs, `role="tabpanel"` and `aria-labelledby`.
+- [x] Preserve the exact C104 availability expression and `goTo` path.
+- [x] Add the exact `.capability-authoring-tabs` styles and responsive rule.
+- [x] Preserve Previous/Next/Create placement and behaviour.
+- [x] Add focused semantic-tab regressions.
+- [x] Preserve the existing C104 readiness/unlock regression behaviour.
+- [x] Prove tab/footer navigation causes zero create/reconciliation calls.
+- [x] Run focused tests, targeted ESLint, `npm run typecheck` and `git diff --check`.
+- [x] Complete the Completion Report and STOP.
 
 ## Interfaces / Contracts
 
@@ -365,24 +365,24 @@ No server/database/Shared/Background/Gateway contract changes.
 
 ## Acceptance Criteria
 
-- [ ] Exactly three phase tabs render: Capability, Tool, Review.
-- [ ] No ordered/unordered list or browser list numbering remains in the phase selector.
-- [ ] The selector has `role="tablist"` with accessible name exactly `Capability setup`.
-- [ ] Each phase button has `role="tab"`.
-- [ ] Exactly one tab has `aria-selected="true"`.
-- [ ] Every tab points to the exact matching panel ID with `aria-controls`.
-- [ ] The active panel has `role="tabpanel"` and matching `aria-labelledby`.
-- [ ] Initial Tool/Review availability still follows C104 readiness.
-- [ ] Live first-entry readiness still makes Tool/Review directly clickable before Next.
-- [ ] First direct tab entry still advances the monotonic unlock frontier.
-- [ ] Later invalidation does not re-lock a historically unlocked phase.
-- [ ] Pending/unknown outcome still locks phase navigation.
-- [ ] `Create capability` remains independently gated by current `canReview`.
-- [ ] Direct tab clicks, Previous and Next invoke zero Capability mutation/reconciliation calls.
-- [ ] Candidate values and selected Tool survive tab traversal.
-- [ ] Desktop/tablet presentation uses three equal columns.
-- [ ] At/below 760px the tab layout becomes one column.
-- [ ] Existing Tool-authoring tabs are unchanged.
+- [x] Exactly three phase tabs render: Capability, Tool, Review.
+- [x] No ordered/unordered list or browser list numbering remains in the phase selector.
+- [x] The selector has `role="tablist"` with accessible name exactly `Capability setup`.
+- [x] Each phase button has `role="tab"`.
+- [x] Exactly one tab has `aria-selected="true"`.
+- [x] Every tab points to the exact matching panel ID with `aria-controls`.
+- [x] The active panel has `role="tabpanel"` and matching `aria-labelledby`.
+- [x] Initial Tool/Review availability still follows C104 readiness.
+- [x] Live first-entry readiness still makes Tool/Review directly clickable before Next.
+- [x] First direct tab entry still advances the monotonic unlock frontier.
+- [x] Later invalidation does not re-lock a historically unlocked phase.
+- [x] Pending/unknown outcome still locks phase navigation.
+- [x] `Create capability` remains independently gated by current `canReview`.
+- [x] Direct tab clicks, Previous and Next invoke zero Capability mutation/reconciliation calls.
+- [x] Candidate values and selected Tool survive tab traversal.
+- [x] Desktop/tablet presentation uses three equal columns.
+- [x] At/below 760px the tab layout becomes one column.
+- [x] Existing Tool-authoring tabs are unchanged.
 
 ## Validation
 
@@ -443,35 +443,74 @@ Do not begin SYSTEM-TEST-003 or another follow-on task.
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+`src/studio/features/add-capability/add-capability-screen.tsx`
+`app/styles.css`
+`tests/add-capability-screen.test.tsx`
 
 ### Work Completed
 
-None
+- Replaced the numbered ordered-list selector with one `Capability setup` tablist rendered directly from the existing canonical `phases` array. The existing availability expression and shared `goTo` handler remain authoritative.
+- Added the required phase tab IDs, selected/disabled ARIA state, controls relationships, and matching active tabpanel IDs/labels. Only the current phase panel remains mounted.
+- Added only the bounded `.capability-authoring-tabs` three-column style and the one-column breakpoint at 760px; existing Tool-authoring styles and global disabled opacity are unchanged.
+- Extended the screen regressions for semantic roles/order, tab-panel relationships, readiness revocation/unlock monotonicity, pending/unknown locks, zero-write navigation, Create gating, and candidate/message retention across traversal.
 
 ### Validation Results
 
-None
+- `npm exec -- vitest run tests/add-capability-screen.test.tsx tests/add-capability-route.test.tsx --reporter=dot` — passed, 2 files and 9 tests.
+- `npm exec -- eslint src/studio/features/add-capability/add-capability-screen.tsx tests/add-capability-screen.test.tsx` — passed.
+- `npm run typecheck` — passed (`next typegen` and `tsc --noEmit`).
+- `git diff --check` — passed.
+- VS Code diagnostics for both changed TypeScript files — no errors.
+- `git diff -- app/styles.css` — only the dedicated C110 tab styling and responsive rule were added; `.tool-editor-tabs` was not changed.
 
 ### Deviations
 
-None
+- The prepared implementation worktree had no `node_modules`, so the first focused test invocation could not resolve `vitest/config`. Installed the exact lockfile dependencies with `npm ci` (no package or lockfile changes), generated the Prisma client from the initialized task-worktree schema with `npm exec -- prisma generate --schema database/prisma/schema.prisma`, then reran the required tests, lint and typecheck successfully.
+- `npm ci` reported an engine warning because the available Node runtime was `v24.21.0` while the Commerce package declares `24.19.0`; all required validation passed under the available runtime.
 
 ### Assumptions
 
-None
+The existing Phase labels (`Capability`, `Tool`, `Review`) lowercase to the exact required stable tab/panel ID prefixes; no additional phase order or availability source was introduced.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None identified.
+
+### Launcher Preparation Evidence
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-021-COMMERCE-110
+parent branch: task/ARCH-021-COMMERCE-110
+parent remote task-branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+parent synchronized HEAD: a87770d21251f2f21e6f6160b87d16068aef1988
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-021-COMMERCE-110
+implementation branch: task/ARCH-021-COMMERCE-110
+implementation remote task-branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+implementation synchronized HEAD: d9844599deab67a955eb7d4cac2f07c0026a316e
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+recursive git submodule sync: passed
+recursive git submodule update/init: passed
+recursive submodule status: ready
+database submodule commit: e9fb60221f1532205650154dfff2aadb6270b14c (initialized)
+dependency gate: passed (ARCH-021-COMMERCE-104 status complete)
+claim executor: copilot
+claim timestamp: 2026-09-30T00:00:20Z
+claim attempt: 1 (previous attempt 0)
+claim commit: 83b71464f4ad46419a3904554671b2da39578817 (committed and pushed)
+```
 
 ## Architect Review
 
