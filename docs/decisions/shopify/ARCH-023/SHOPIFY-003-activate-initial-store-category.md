@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 51
-executor: copilot
-claimed_at: 2026-09-30T19:07:21Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-SHOPIFY-001
@@ -296,14 +296,69 @@ Implementation commit:
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-Pending.
+
+The submitted implementation is substantively architecture-conformant by source inspection. The activation service uses the durable current `Subscription` projection as the only activation gate, locks the Shop scope, validates the exact pending Store Category/DRAFT/provenance, publishes that existing revision, updates the SHOP prompt configuration and promotes the profile inside one Prisma transaction. The billing callback invokes that service only after an ACTIVE/TRIALING projection with a current `planId`; onboarding/configure intent alone does not activate the category. No Merchant Knowledge preference/source/queue state is coupled to this lifecycle.
+
+Acceptance is withheld for one bounded validation item only.
+
+**A1-R1 — execute the required real PostgreSQL transaction proof.** The task's `transaction integration test execution` item remains unchecked. This proof is material because the implementation relies on the accepted PostgreSQL schema, raw `SELECT ... FOR UPDATE`, Prisma transaction rollback and database constraints for the core atomicity contract. The authored `tests/integration/store-category-activation.integration.test.ts` covers the correct cases, but both cases were skipped in the focused run and the explicit Testcontainers attempt stopped before PostgreSQL provisioning.
+
+The same repository already proved the working Colima/Testcontainers invocation during accepted `ARCH-023-SHOPIFY-002`. Attempt 2 must rerun the existing SHOPIFY-003 integration suite from the canonical implementation worktree with the known repository-local Docker endpoint before changing production code:
+
+```text
+DOCKER_HOST="unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock" \
+TESTCONTAINERS_RYUK_DISABLED=true \
+MODA_DISPOSABLE_INTEGRATION=1 \
+npm test -- tests/integration/store-category-activation.integration.test.ts
+```
+
+Required durable evidence:
+
+```text
+all accepted migrations apply to fresh pgvector/pgvector:pg17
+2/2 activation PostgreSQL cases pass
+pinned DRAFT publication + configuration pointer + profile promotion commit atomically
+forced profile-promotion failure rolls publication/configuration/profile back
+pre-existing ACTIVE billing projection remains committed after that activation rollback
+replay remains idempotent
+disposable container is removed after the run
+```
+
+Do not change the database schema or production activation implementation merely to manufacture this evidence. If the live proof exposes a real defect, correct that defect inside this same task and rerun the focused validation.
+
+The reported callback error propagation is **not an Attempt 1 defect**. R8 requires category activation to execute after, and outside, the durable billing projection transaction; it does not require the Shopify callback to swallow a Store Category activation failure. Keep the current separation for Attempt 2 unless the PostgreSQL proof exposes a correctness problem. A future UX/retry-policy change, if desired, is separate from proving this transaction.
+
+The missing Background billing-reconciliation activation hook is also non-blocking for this Shopify task because it is explicitly out of scope and already required by D11 as a separate bounded Background integration before final ARCH-023 system acceptance. Likewise, R11 explicitly forbids fabricating a PlatformAdmin/system Commerce audit actor; the recorded audit-actor gap does not block SHOPIFY-003.
+
 ### Reviewed Files
-Pending.
+
+Reviewed the task contract/report and submitted implementation surfaces, including:
+
+```text
+app/services/store-profile/store-category-activation.server.ts
+app/routes/app/billing/callback/route.tsx
+tests/unit/store-category-activation.test.ts
+tests/unit/routes/billing-callback.test.ts
+tests/integration/store-category-activation.integration.test.ts
+database/prisma/schema.prisma
+docs/architecture/ARCH-023-merchant-knowledge.md
+```
+
 ### Validation Reviewed
-Pending.
+
+Submitted evidence records 60 focused tests passing with 2 opt-in PostgreSQL activation tests skipped, plus passing TypeScript, production build, changed-file lint/diagnostics and `git diff --check`. The Completion Report also records canonical parent/implementation worktrees, start-of-attempt synchronization, recursive submodule preparation and the accepted database gitlink.
+
+The review archive does not contain installed dependencies or a runnable Git worktree, so the architect did not claim to rerun the Node/Testcontainers suite from the archive. The missing acceptance evidence is specifically the task-owned real PostgreSQL execution above.
+
 ### Architecture Conformance
-Pending.
+
+Conformant by source inspection. Initial activation is gated only by durable ACTIVE/TRIALING subscription state with a current plan; later pending category changes remain untouched once an active category exists; the exact pinned DRAFT is published without rereading current template text; prompt configuration model state is preserved; and Merchant Knowledge activation remains independent.
+
 ### Follow-up
-Pending.
+
+Return this same task to `ready` for Attempt 2 with `attempt: 1` preserved and the execution claim cleared. Attempt 2 should be limited to the existing PostgreSQL integration proof plus any correction that proof actually demonstrates is necessary. Do not begin another Shopify task.
+
+Before final ARCH-023 system acceptance, moda_architect must separately materialise the already-documented Background billing-reconciliation hook that calls this same idempotent activation contract when Background establishes ACTIVE/TRIALING after a missed callback. The Commerce automatic-actor/audit question remains a non-blocking architecture follow-up.

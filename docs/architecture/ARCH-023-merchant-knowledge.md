@@ -3339,6 +3339,18 @@ all other ARCH-023 implementation tasks remain gated by their declared dependenc
 
 SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
+Current Shopify correction frontier after SHOPIFY-003 Attempt 1 review:
+
+```text
+ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-003    Ready — Attempt 1 PostgreSQL proof
+ARCH-023-SHOPIFY-004    Pending — requires ADMIN-004
+ARCH-023-SHOPIFY-005    Pending — requires SHOPIFY-004
+```
+
+SHOPIFY-003 source is substantively conformant; acceptance is withheld only until its authored real PostgreSQL activation/rollback proof is executed. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
+
 No implementation task may depend on a terminal system-test task.
 
 ## Open Questions
@@ -3347,6 +3359,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHOPIFY-003 Attempt 1 changes requested
+
+- Reviewed the initial pending Store Category activation service and billing-callback integration as substantively architecture-conformant: durable ACTIVE/TRIALING current subscription state is the only activation authority, exact pinned DRAFT publication/configuration/profile promotion occur in one transaction, later pending changes remain untouched, and Merchant Knowledge activation is not coupled to subscription activation.
+- Withheld acceptance only because the required real PostgreSQL transaction execution remains open. Attempt 2 must run the already-authored `store-category-activation.integration.test.ts` against fresh `pgvector/pgvector:pg17` migrations using the same known Colima/Testcontainers endpoint that closed SHOPIFY-002, and record 2/2 passing cases plus teardown.
+- Confirmed callback error propagation is not itself a SHOPIFY-003 defect: activation remains outside the already-committed billing transaction. The Background missed-callback activation hook remains a separate required implementation before final system acceptance; the missing automatic Commerce audit actor remains non-blocking under R11.
+- Returned SHOPIFY-003 to Ready with Attempt 1 preserved. SHOPIFY-004/005 remain governed by their existing merchant-opt-in dependencies; no downstream task was started.
 
 ### 2026-09-30 — COMMERCE-001 Attempt 2 accepted
 
