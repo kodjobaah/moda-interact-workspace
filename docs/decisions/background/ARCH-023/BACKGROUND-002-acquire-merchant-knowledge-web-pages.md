@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
-executor: copilot
-claimed_at: 2026-09-30T16:24:37Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-023-BACKGROUND-001
@@ -438,6 +438,32 @@ Start-of-attempt synchronization:
 Commit identities:
   implementation commit: `3a9b355af29a1535fac865fa4063f267efcc30b9` (pushed to `origin/task/ARCH-023-BACKGROUND-002`)
   completion-report commit: this parent task-report update; its commit identity is included in the task handoff.
+
+### Attempt 3 Completion
+#### Status
+Attempt 3 complete; returned to Architect Review with `status: review`, `attempt: 3`, `executor: null`, and `claimed_at: null`.
+#### Files Changed
+Implementation repository files changed:
+- `src/services/merchant-knowledge-network-policy.ts`
+- `tests/unit/services/merchant-knowledge-network-policy.test.ts`
+- `tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts`
+
+No other implementation files, dependencies, contracts, schemas, or acquisition mechanisms changed.
+#### Work Completed
+The IPv6 positive allow predicate now admits only the architect-supplied explicit allocation CIDR set and still excludes `NON_PUBLIC_SPECIAL_USE_CIDRS`. Added an explicit `2620:4f:8000::/48` special-use exclusion; `2001:db8::/32` remains denied, and `2001::/23` and `2002::/16` remain outside the allow set. IPv4 policy and IPv4-mapped IPv6 normalization/recursive IPv4 classification are unchanged. The pre-request mixed-answer rejection, DNS ordering and pinning, TLS/SNI, peer verification, redirects, deadline, body limit, and extraction path are unchanged.
+#### Validation Results
+Focused command, run exactly as required:
+```sh
+npx vitest run tests/unit/services/merchant-knowledge-network-policy.test.ts tests/unit/services/merchant-knowledge-html-extraction.test.ts tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts
+```
+Result: 3 test files passed; **79/79 tests passed**. `npm run build`: passed. Changed-file diagnostics for all three changed implementation/test files: no errors found. `git diff --check`: passed.
+#### Commit Identities
+Implementation commit: `f181dbaa0398fcaec0f072b7439fc94d05681df7` (`fix(background): restrict public IPv6 address admission`).
+Parent report commit: to be recorded after publication of this report update.
+#### Worktree Evidence
+Canonical parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-002`, branch `task/ARCH-023-BACKGROUND-002`.
+Canonical implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-002`, branch `task/ARCH-023-BACKGROUND-002`.
+Both are the already-prepared Attempt 3 worktrees; no new claim or attempt was created, and no other task worktree was reused. Final clean and remote-synchronization evidence will be recorded after both task branches are pushed and verified.
 
 ## Architect Review
 
