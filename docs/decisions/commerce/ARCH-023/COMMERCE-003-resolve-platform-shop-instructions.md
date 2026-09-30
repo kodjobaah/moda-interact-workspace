@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 60
-executor: copilot
-claimed_at: 2026-09-30T21:34:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
@@ -485,14 +485,14 @@ capability prompt/tool/release authoring regressions remain green
 
 ## Work Items
 
-- [ ] Refactor effective configuration to additive Platform + optional Shop instructions.
-- [ ] Extend effective metadata with template edit provenance.
-- [ ] Add fixed reserved MCP prompts backed by trusted resolution.
-- [ ] Integrate same instruction bundle into Commerce preview.
-- [ ] Remove Platform/Shop mutation UI/actions from Studio.
-- [ ] Retain model editing/read-only effective instruction view.
-- [ ] Add MCP/effective/preview/Studio regression tests.
-- [ ] Record Background host consumption as a required follow-up.
+- [x] Refactor effective configuration to additive Platform + optional Shop instructions.
+- [x] Extend effective metadata with template edit provenance.
+- [x] Add fixed reserved MCP prompts backed by trusted resolution.
+- [x] Integrate same instruction bundle into Commerce preview.
+- [x] Remove Platform/Shop mutation UI/actions from Studio.
+- [x] Retain model editing/read-only effective instruction view.
+- [x] Add MCP/effective/preview/Studio regression tests.
+- [x] Record Background host consumption as a required follow-up.
 
 ## Interfaces / Contracts
 
@@ -521,28 +521,28 @@ A required bounded Background host-integration task that fetches the reserved tr
 
 ## Acceptance Criteria
 
-- [ ] Platform and Shop Instructions are additive and deterministic.
-- [ ] Platform is required; Shop is optional.
-- [ ] Model override semantics are unchanged.
-- [ ] Standard MCP prompt mechanism exposes exact trusted texts tenant/environment-safely.
-- [ ] Commerce preview uses the same order.
-- [ ] Commerce Studio can no longer mutate Platform/Shop Instructions.
-- [ ] Capability prompt/tool/release authoring remains intact.
-- [ ] No translation/template/category runtime lookup is introduced.
-- [ ] Runtime-data trust instruction remains Shared-owned.
+- [x] Platform and Shop Instructions are additive and deterministic.
+- [x] Platform is required; Shop is optional.
+- [x] Model override semantics are unchanged.
+- [x] Standard MCP prompt mechanism exposes exact trusted texts tenant/environment-safely.
+- [x] Commerce preview uses the same order.
+- [x] Commerce Studio can no longer mutate Platform/Shop Instructions.
+- [x] Capability prompt/tool/release authoring remains intact.
+- [x] No translation/template/category runtime lookup is introduced.
+- [x] Runtime-data trust instruction remains Shared-owned.
 
 ## Validation
 
-- [ ] effective configuration tests
-- [ ] MCP authorization/service tests
-- [ ] Commerce preview instruction-order tests
-- [ ] Agent Configuration UI/action negative mutation tests
-- [ ] Capability/tool/release authoring regression set
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] effective configuration tests
+- [x] MCP authorization/service tests
+- [x] Commerce preview instruction-order tests
+- [x] Agent Configuration UI/action negative mutation tests
+- [x] Capability/tool/release authoring regression set
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -559,7 +559,7 @@ The later Background host task is required for production runtime adoption becau
 ## Completion Report
 
 ### Status
-Ready for Architect Review
+Changes Requested — Ready for Attempt 2
 ### Files Changed
 Implementation changes are in the dedicated `moda-interact-commerce` task worktree. They cover effective instruction resolution/contracts, MCP authorization and reserved prompts, Preview selection/revalidation, Agent Configuration read-only context, removal of Studio-only mutation adapters, and related tests.
 ### Work Completed
@@ -575,7 +575,7 @@ Removed Platform/Shop and template authoring mutations from Commerce Studio whil
 
 Focused changed-file Vitest run: 16 files passed, 101 tests passed. The C20 integration suite was unable to initialize because `COMMERCE_TEST_DATABASE_URL`, `COMMERCE_TEST_REDIS_URL`, and `COMMERCE_C20_REDIS_NAMESPACE` were not configured for disposable targets.
 
-`npm run lint`: passed with 0 errors and 5 warnings (React Hook dependency warnings in `src/studio/code-response/code-response-panel.tsx`; unused declarations in `tests/agent-configuration-model.test.ts` and `tests/mcp-service.test.ts`).
+`npm run lint`: passed with 0 errors and 4 warnings (React Hook dependency warnings in `src/studio/code-response/code-response-panel.tsx`; unused declarations in `tests/agent-configuration-model.test.ts` and `tests/mcp-service.test.ts`).
 
 `npm run build`: passed, including package/smoke steps; webpack emitted the existing Nunjucks dynamic-dependency warning.
 
@@ -594,14 +594,54 @@ Production conversation execution remains Background-owned, so these resolved pr
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-Pending.
+No implementation-source correction is requested. The submitted Commerce implementation is architecturally conformant for this attempt: additive Platform + optional Shop resolution, fixed reserved MCP prompts, Preview ordering, Studio mutation retirement, model-selection preservation and the Background ownership boundary are all within the task contract. No Background files were changed.
+
+Attempt 1 cannot be accepted because the task execution/report evidence does not satisfy the repository workflow contract:
+
+1. **Start-of-attempt synchronization is not proven and the implementation branch is stale.** At review, `task/ARCH-023-COMMERCE-003` is five commits behind current `origin/main`; two of those mainline commits pre-date the recorded Attempt 1 claim. This is incompatible with the mandatory start-of-attempt rule requiring both canonical task worktrees to fetch, fast-forward their own remote task branch when applicable, and merge current `origin/main` before implementation work begins.
+2. **Canonical worktree/provenance evidence is missing.** The Completion Report does not durably record the launcher-resolved parent and implementation worktree paths, branch identities, shared-checkout/non-reuse attestations, start-of-attempt synchronization outcomes for both repositories, recursive submodule preparation, or final submitted heads.
+3. **Completion-report bookkeeping is incomplete.** The Work Items, Acceptance Criteria and Validation checkboxes must reflect the validation actually completed. The lint result is 0 errors / 4 warnings, not 5. The full-suite result must identify the failing files/suites (or a bounded categorized list from the refreshed run) and distinguish task-owned failures from unrelated baseline failures instead of only stating the aggregate 61-test failure count.
+
+Submitted Attempt 1 checkpoints reviewed:
+
+```text
+implementation: c5f40a4e
+parent report:  3218da44
+```
+
 ### Reviewed Files
-Pending.
+Reviewed the COMMERCE-003 task/completion report and the task-owned implementation surfaces for effective instruction resolution, MCP authorization/service reserved prompts, Preview host-instruction composition, Agent Configuration read-only presentation/mutation retirement, and focused regression coverage.
+
 ### Validation Reviewed
-Pending.
+The following evidence is sufficient for code-level review and does not itself block acceptance:
+
+```text
+npm run typecheck                         PASS
+focused Commerce tests                    101 PASS
+additional MCP service tests               18 PASS
+npm run lint                              PASS (0 errors, 4 warnings)
+npm run build                             PASS
+git diff --check                          PASS
+changed-file diagnostics                  PASS
+```
+
+The package-wide suite is not clean (61 failed tests) and the C20 integration suite could not start without disposable PostgreSQL/Redis configuration. These results are not, by themselves, an Attempt 1 implementation blocker because the task-owned focused validation is green; Attempt 2 must rerun after synchronization and record the exact remaining full-suite failure set clearly enough for architect attribution.
+
 ### Architecture Conformance
-Pending.
+No code-level architecture blocker was found. Platform and Shop Instructions are additive and deterministic, trusted text is exported through the reserved MCP prompt contract, Preview consumes the same order, model-selection semantics remain independent, and Platform/Shop authoring is retired from Commerce Studio without moving runtime ownership into Commerce.
+
+The required Background host-consumption follow-up remains mandatory before final ARCH-023 system acceptance. It is an architect coordination follow-up, not an implementation-source correction for this task.
+
 ### Follow-up
-Pending.
+Return the same task to `ready` with `attempt: 1`, `executor: null`, and `claimed_at: null`. Then start Attempt 2 only through:
+
+```text
+/moda-task ARCH-023-COMMERCE-003
+```
+
+The launcher must reuse the canonical dedicated task worktrees, synchronize both against their remote task refs and current `origin/main`, and record the exact synchronization packet in the Completion Report. Preserve the current implementation unless the required mainline merge or refreshed validation exposes a real regression. Do not make speculative source changes merely to create a new attempt.
+
+Attempt 2 must also reconcile the completion checkboxes, record the correct lint warning count, enumerate/classify the refreshed full-suite failures, rerun the required focused/typecheck/lint/build/diff/diagnostic validation, clear the claim, set `status: review`, leave this Architect Review history unchanged, and return to `moda_architect`.
