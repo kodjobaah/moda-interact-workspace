@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -19,7 +19,7 @@ depends_on:
   - ARCH-023-SHARED-002
 enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Author Merchant Knowledge plan entitlement
@@ -118,8 +118,8 @@ Before implementation:
 
 1. advance the Admin `database` submodule gitlink to the accepted/merged `ARCH-023-DATABASE-001` commit;
 2. do not edit schema/migrations inside the Admin repository's database submodule;
-3. read the exact `@modainteract/moda-interact-shared` version published by `ARCH-023-SHARED-002`;
-4. update Admin to that exact package version;
+3. use exactly `@modainteract/moda-interact-shared@1.0.1`, the Architect-Accepted revision published by `ARCH-023-SHARED-002`;
+4. pin Admin to `1.0.1` exactly; do not substitute a range, `latest`, workspace link or later release without architect reconciliation;
 5. regenerate Prisma Client through the existing repository script.
 
 If either accepted dependency is unavailable, STOP.

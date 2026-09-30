@@ -48,20 +48,22 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Pending | DATABASE-001, SHARED-002 |
-| [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Pending | DATABASE-001, SHARED-002 |
+| [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Ready | DATABASE-001, SHARED-002 |
+| [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Ready | DATABASE-001, SHARED-002 |
 | [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Billing callback activation of initial pending Store Category and Shop prompt | Pending | SHOPIFY-001, SHOPIFY-002 |
 | [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Current-plan WEB_PAGE source management and Recovery Settings UI | Pending | SHOPIFY-001, SHARED-002 |
 | [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Pending | SHOPIFY-004 |
 
 ## Execution frontier
 
-After DATABASE-001 and SHARED-002 are Complete/accepted:
+DATABASE-001 and SHARED-002 are Complete/accepted, so:
 
 ```text
 SHOPIFY-001 -> Ready
 SHOPIFY-002 -> Ready
 ```
+
+Both tasks must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 After SHOPIFY-001 + SHOPIFY-002:
 

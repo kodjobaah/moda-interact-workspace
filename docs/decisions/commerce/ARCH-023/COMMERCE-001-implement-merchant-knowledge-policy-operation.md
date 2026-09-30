@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-023-COMMERCE-002
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Implement Merchant Knowledge lookup policy operation
@@ -118,7 +118,7 @@ Before implementation:
 
 1. advance `database` gitlink to accepted/merged `ARCH-023-DATABASE-001`;
 2. do not edit schema/migrations inside the Commerce database submodule;
-3. adopt the exact Shared revision published by `ARCH-023-SHARED-002`;
+3. adopt exactly `@modainteract/moda-interact-shared@1.0.1`, the Architect-Accepted revision published by `ARCH-023-SHARED-002`; do not substitute a range, `latest`, workspace link or later release without architect reconciliation;
 4. work on the accepted implementation of `ARCH-021-COMMERCE-096`;
 5. regenerate Prisma Client.
 
