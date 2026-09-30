@@ -22,8 +22,10 @@ implementation is now published and architect-accepted through `ARCH-023-SHARED-
 exact revision `@modainteract/moda-interact-shared@1.0.1`.
 
 The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`,
-`ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and
-`ARCH-023-SHOPIFY-002`. All other ARCH-023 tasks remain gated by their declared dependencies.
+`ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-002`.
+`ARCH-023-SHOPIFY-001` is Blocked because the canonical `moda-interact` base used by its
+prepared Attempt 1 does not contain the ARCH-017 BillingPlan materialiser it is required
+to extend. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3250,6 +3252,28 @@ integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef
 Ready tasks are independent except where their own task YAML declares otherwise. No consumer
 implementation task is started implicitly by this architect review.
 
+Current execution frontier after ARCH-023-SHOPIFY-001 Attempt 1 blocker review:
+
+```text
+ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
+ARCH-023-SHARED-001     Complete — Accepted Attempt 2
+ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+
+ARCH-023-ADMIN-001      Ready
+ARCH-023-ADMIN-002      Ready
+ARCH-023-BACKGROUND-001 Ready
+ARCH-023-COMMERCE-001   Ready
+ARCH-023-SHOPIFY-001    Blocked — ARCH-017 BillingPlan materialiser absent from canonical app base
+ARCH-023-SHOPIFY-002    Ready
+all other ARCH-023 implementation tasks remain gated by their declared dependencies
+```
+
+SHOPIFY-001 must not recreate or import the missing resolver inside ARCH-023. The durable
+ARCH-017-SHOPIFY-001 acceptance record must first be reconciled, and the accepted ARCH-017
+Shopify lifecycle chain must then be integrated into the canonical `moda-interact` base
+through the normal developer final-integration workflow. After that base is verified, the
+architect may return this same task from Blocked to Ready.
+
 No implementation task may depend on a terminal system-test task.
 
 ## Open Questions
@@ -3258,6 +3282,14 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHOPIFY-001 Attempt 1 blocked on missing ARCH-017 integration baseline
+
+- Confirmed the prepared `moda-interact` base at `3ec4c6fb4e519ddcb640e03a614d442f525a630c` does not contain the ARCH-017 `resolveOrMaterializeBillingPlan(...)` path that ARCH-023-SHOPIFY-001 is required to extend.
+- Kept SHOPIFY-001 Blocked rather than authorising a duplicate/new BillingPlan materialiser inside ARCH-023. No implementation source change is required for the blocked attempt.
+- Identified durable ARCH-017 coordination drift: the ARCH-017 parent architecture and later Shopify task records describe SHOPIFY-001 as Complete, while its individual authoritative task YAML in this workspace still says `ready` / `attempt: 0` and contains no durable Architect Review. That record must be reconciled before its branch is treated as merge-authorised.
+- Required normal developer integration of the architect-accepted ARCH-017 Shopify lifecycle chain into the canonical `moda-interact` base before SHOPIFY-001 may return to Ready.
+- Left SHOPIFY-002 Ready because it is independent of SHOPIFY-001. SHOPIFY-003 and SHOPIFY-004 remain gated on SHOPIFY-001 completion.
 
 ### 2026-09-30 — ADMIN-002 Attempt 2 accepted
 

@@ -11,8 +11,8 @@ execution_mode: agent
 completion_mode: automatic
 status: blocked
 priority: 50
-executor: copilot
-claimed_at: 2026-09-30T09:59:14Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
@@ -342,14 +342,61 @@ The app manifest and lockfile still pin `@modainteract/moda-interact-shared` to 
 ## Architect Review
 
 ### Review Status
-Pending
+Blocked
+
 ### Review Notes
-Pending.
+
+Attempt 1 is correctly blocked before implementation. The supplied prepared Shopify
+baseline at `3ec4c6fb4e519ddcb640e03a614d442f525a630c` does not contain the
+ARCH-017 `resolveOrMaterializeBillingPlan(...)` resolver, a BillingPlan creation path,
+or the BillingPlanFeature projection path that this task is explicitly required to
+extend. Implementing or copying that missing resolver inside ARCH-023-SHOPIFY-001 would
+violate R2 and would broaden this task into ownership of the earlier ARCH-017 capability.
+
+The blocker is therefore an integration/coordination prerequisite, not a defect in an
+ARCH-023 implementation. No application source change was required or authorised in this
+attempt.
+
+The durable ARCH-017 coordination state must also be reconciled before its branch is used
+as a prerequisite. The current workspace's ARCH-017 parent architecture and later
+SHOPIFY-002/SHOPIFY-003 records describe ARCH-017-SHOPIFY-001 as Complete, while the
+individual authoritative ARCH-017-SHOPIFY-001 task file still says `status: ready`,
+`attempt: 0` and contains no Completion Report or Architect Review. Do not treat
+`1333957364903afc87bec9a9938b19d3f5b3b0d3` as merge-authorised solely because the
+implementation exists on `task/ARCH-017-SHOPIFY-001`; first recover/reconcile the durable
+acceptance record for that task.
+
 ### Reviewed Files
-Pending.
+
+- `docs/decisions/shopify/ARCH-023/SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md`
+- `docs/decisions/shopify/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+- `docs/architecture/ARCH-017-billing-plan-materialisation-dynamic-features.md`
+- `docs/decisions/shopify/ARCH-017/SHOPIFY-001-lazy-billing-plan-materialisation-and-feature-preferences.md`
+- `docs/decisions/shopify/ARCH-017/SHOPIFY-002-callback-onboarding-milestone-decoupling.md`
+- `docs/decisions/shopify/ARCH-017/SHOPIFY-003-current-billing-period-plan-projection.md`
+- `moda-interact/app/services/billing/` and current billing-related tests for the required resolver/materialisation path
+- `moda-interact/package.json` and `moda-interact/package-lock.json`
+
 ### Validation Reviewed
-Pending.
+
+- The repository agent reported `git diff --check` passing with no implementation files changed.
+- Source inspection of the supplied app baseline found no `resolveOrMaterializeBillingPlan` implementation and no current BillingPlan/BillingPlanFeature materialisation path to extend.
+- The current app manifest/lockfile still declare `@modainteract/moda-interact-shared` `0.13.1`; exact `1.0.1` adoption remains required by this task after the prerequisite baseline is available.
+- Implementation tests were not required for this blocked attempt because implementation correctly stopped before application/dependency edits.
+
 ### Architecture Conformance
-Pending.
+
+The stop is architecture-conformant. ARCH-023-SHOPIFY-001 must extend the one existing
+ARCH-017 materialiser and must not recreate it. The task remains Blocked until the
+canonical Shopify base used by `/moda-task` contains an architect-accepted ARCH-017
+resolver/lifecycle baseline. SHOPIFY-002 remains independently executable because its
+declared dependencies are satisfied and it does not depend on SHOPIFY-001.
+
 ### Follow-up
-Pending.
+
+1. Reconcile the authoritative ARCH-017-SHOPIFY-001 task record with the actual branch/review history. If commit `1333957364903afc87bec9a9938b19d3f5b3b0d3` was not architect-accepted, submit that task for its required review rather than merging it implicitly.
+2. Through the normal developer final-integration workflow, integrate the accepted ARCH-017 Shopify lifecycle chain into `moda-interact` so the base used for new task preparation contains `resolveOrMaterializeBillingPlan(...)` and the later accepted ARCH-017 Shopify corrections. Do not copy/cherry-pick the resolver as an ARCH-023 implementation shortcut.
+3. After that integration is visible on the canonical base, return to `moda_architect` for blocker clearance. The architect should verify the resolver is present in the base and then change this same task `blocked -> ready`; Attempt 1 remains preserved until the next claim increments it to Attempt 2.
+4. On the reclaimed ARCH-023 attempt, adopt exact Shared `1.0.1`, regenerate Prisma Client, and implement only this task's configuration-copy/pre-validation delta.
+5. Keep ARCH-023-SHOPIFY-003 and ARCH-023-SHOPIFY-004 gated on SHOPIFY-001 completion. Do not start either while this blocker remains.
