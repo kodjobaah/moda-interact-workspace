@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-09-30T12:32:00Z
@@ -262,12 +262,12 @@ Existing ARCH-017 billing-materialisation tests must remain green.
 
 ## Work Items
 
-- [ ] Adopt accepted database and Shared revisions.
-- [ ] Extend existing materialisation read to include mapping configuration.
-- [ ] Add bounded Merchant Knowledge pre-validation.
-- [ ] Copy every Feature mapping/configuration generically.
-- [ ] Preserve existing BillingPlan reuse/concurrency behavior.
-- [ ] Add focused materialisation regressions.
+- [x] Adopt accepted database and Shared revisions.
+- [x] Extend existing materialisation read to include mapping configuration.
+- [x] Add bounded Merchant Knowledge pre-validation.
+- [x] Copy every Feature mapping/configuration generically.
+- [x] Preserve existing BillingPlan reuse/concurrency behavior.
+- [x] Add focused materialisation regressions.
 
 ## Interfaces / Contracts
 
@@ -298,23 +298,23 @@ MerchantPricingPlan.materializedAt
 
 ## Acceptance Criteria
 
-- [ ] One existing BillingPlan materialiser remains authoritative.
-- [ ] New operational plan Feature configuration is copied unchanged.
-- [ ] Merchant Knowledge config/pairs fail closed before materialisation.
-- [ ] No plan-name-specific rules are introduced.
-- [ ] Existing operational plan is not rewritten by resolver reuse.
-- [ ] No merchant preference state is touched.
+- [x] One existing BillingPlan materialiser remains authoritative.
+- [x] New operational plan Feature configuration is copied unchanged.
+- [x] Merchant Knowledge config/pairs fail closed before materialisation.
+- [x] No plan-name-specific rules are introduced.
+- [x] Existing operational plan is not rewritten by resolver reuse.
+- [x] No merchant preference state is touched.
 
 ## Validation
 
-- [ ] focused billing materialisation tests
-- [ ] existing billing service/callback regression tests
-- [ ] `npm run prisma:validate`
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused billing materialisation tests
+- [x] existing billing service/callback regression tests
+- [x] `npm run prisma:validate`
+- [x] `npm run typecheck`
+- [ ] `npm run lint` (run; 17 errors are in unrelated files, changed-file lint passes)
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -323,21 +323,34 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Blocked
+Review
 ### Files Changed
-Task report only; no implementation files changed.
+Implementation commit `787b62a5c27c6d732503c02476eb094ae5258ffa` changes:
+
+- `app/services/billing/billing.service.ts`
+- `tests/unit/services/billing.service.test.ts`
+
+The database gitlink and exact Shared `1.0.1` dependency were already present in the prepared baseline and were not changed.
 ### Work Completed
-Confirmed the accepted database submodule revision is present at `2eb17ee910491e8f9df82736fc0a843844415947` and the exact Shared `1.0.1` package is published with the expected registry integrity. Inspected the prepared app branch at `3ec4c6fb4e519ddcb640e03a614d442f525a630c`: it does not contain `resolveOrMaterializeBillingPlan`, any BillingPlan creation path, or a BillingPlanFeature copy path. The resolver implementation exists only in commit `1333957364903afc87bec9a9938b19d3f5b3b0d3` on `task/ARCH-017-SHOPIFY-001`, which is not merged into `main`.
+Implemented attempt 2 against the prepared canonical app baseline, which includes the accepted ARCH-017 `resolveOrMaterializeBillingPlan` resolver. The launcher confirmed the accepted database revision `2eb17ee910491e8f9df82736fc0a843844415947`, exact Shared `1.0.1`, synchronized implementation branch, and initialized recursive submodule.
+
+The existing resolver now loads feature configuration and validates a single `merchant_knowledge` mapping with `MerchantKnowledgeFeatureConfigurationSchema` and the active Purpose/Data Format compatibility catalogue before creating the operational BillingPlan. Invalid or duplicate Merchant Knowledge mappings return `INVALID_CATALOGUE_PLAN` with reason `INVALID_MERCHANT_KNOWLEDGE_CONFIGURATION` before plan creation. The existing generic feature projection copies each mapping's configuration unchanged; reuse of an existing operational plan remains unchanged.
+
+Added regressions for generic and Merchant Knowledge configuration projection, malformed configuration, missing active compatibility, duplicate mappings, existing-plan reuse, and absence of ShopFeaturePreference writes. The copy loop remains generic and no plan-name-specific rules or new materialisation path were added.
+
+Launcher claim evidence: attempt 2, executor `copilot`, claimed at `2026-09-30T12:32:00Z`, claim commit `27532f57e275d451cdba7c514721031bc4292487` pushed. Implementation commit `787b62a5c27c6d732503c02476eb094ae5258ffa` is pushed to `origin/task/ARCH-023-SHOPIFY-001`; implementation worktree is clean.
 ### Validation Results
-No implementation validation run because the required existing resolver is absent from the authorized branch. Shopify app-pricing documentation search confirmed existing Billing API subscriptions are retained until migrated; no Shopify billing behavior change is needed for this task.
+Passed: focused billing materialisation and billing callback regression tests (247 tests); `npm run prisma:validate`; `npm run typecheck`; changed-file lint; `npm run build` (which runs `npm run prisma:generate`); changed-file diagnostics; and `git diff --check`.
+
+Full `npm run lint` was run but reports 17 errors in unrelated files. No changed-file lint or diagnostic errors were reported.
 ### Deviations
-Implementation stopped before dependency or source edits because adding or importing a resolver from another task branch would exceed this task's boundary and conflict with R2 and the out-of-scope prohibition on a new BillingPlan creation path.
+No scope deviations. No source changes were needed in the database submodule or dependency manifests because the prepared baseline already had the accepted database and exact Shared revisions.
 ### Assumptions
-None.
+The launcher-prepared canonical app baseline is authoritative for the accepted ARCH-017 integration; it contains the single resolver required by R2.
 ### Unresolved Issues
-The app manifest and lockfile still pin `@modainteract/moda-interact-shared` to `0.13.1`, although `1.0.1` is available; dependency adoption must occur after the resolver prerequisite is made available.
+Repository-wide lint remains red for 17 unrelated errors; the changed files pass focused lint and diagnostics.
 ### Architectural Concerns
-`ARCH-023-SHOPIFY-001` cannot extend the ARCH-017 resolver while the accepted resolver commit is absent from `main`. The ARCH-017 task branch must be merged/accepted into the base before this task is reclaimed, or `moda_architect` must explicitly revise the dependency/scope sequencing. No `Architect Review` content was changed.
+None identified in the implemented scope. The pre-existing Attempt 1 `Architect Review` and Developer Override were left unchanged.
 
 ## Architect Review
 
