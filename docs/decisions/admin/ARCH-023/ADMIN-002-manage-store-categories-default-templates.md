@@ -9,17 +9,17 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 40
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-30T07:48:10Z
+attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
 enables:
   - ARCH-023-ADMIN-003
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Manage Store Categories and default templates
