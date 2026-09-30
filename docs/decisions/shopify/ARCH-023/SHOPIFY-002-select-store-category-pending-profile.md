@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-30T11:18:13Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
@@ -491,7 +491,7 @@ Admin Store Category authoring may be implemented in parallel against the same d
 ## Validation
 
 - [x] focused service/action/component tests
-- [ ] disposable PostgreSQL integration for the R7/R8 selection transaction, rollback and row-lock concurrency
+- [x] disposable PostgreSQL integration for the R7/R8 selection transaction, rollback and row-lock concurrency (Attempt 2 Testcontainers proof passed 5/5)
 - [x] locale-catalogue validator
 - [x] existing onboarding and Recovery Settings regressions
 - [x] `npm run typecheck`
@@ -514,22 +514,77 @@ The Product GraphQL category field is Shopify Standard Product Taxonomy identity
 Review requested; awaiting `moda_architect`. No architect acceptance decision has been made by this agent.
 ### Files Changed
 `moda-interact`: `package.json`, `package-lock.json`; onboarding and Recovery Settings route/view integration; the shared category action, read model, selection service, localization helper, and Shopify taxonomy suggestion service; all 20 locale catalogues; locale validator; focused Store Category, onboarding, Recovery Settings, locale, and home-route tests. Shared v1 API compatibility updates were made to feature-preference selection and its existing integration test.
+
+Attempt 2 adds only `tests/integration/store-category-selection.postgres.integration.test.ts` in the implementation repository; no production source, dependency, schema, migration, locale, or database gitlink changes were made in this attempt.
 ### Work Completed
 Implemented one authenticated selection endpoint backed by one Shop-row-locked transaction. It validates the pending generation, pins the exact canonical-English default template text and source-template version to one pending Shop DRAFT, reuses that DRAFT on reselection, and leaves active category/prompt configuration unchanged. Added category eligibility and localized read models, bounded one-page Shopify taxonomy suggestion/scoring, onboarding persistence before Managed Pricing navigation, and the Store Profile section in Recovery Settings. Added localized category, Store Profile UI, and Merchant Knowledge labels, plus a validator that derives category slugs from English key pairs and checks all required keys across the 20 supported locales.
+Attempt 2 adds a task-owned Testcontainers integration against real PostgreSQL 17 with pgvector and the real generated Prisma Client. It verifies initial profile/SHOP lineage/DRAFT creation and exact canonical-template provenance, preserves existing active category and configuration during reselection, increments the same DRAFT and selection generation, rejects stale generations without committed mutation, rolls back a newly created profile when an unrelated DRAFT causes conflict, and serializes concurrent generation-zero calls so exactly one succeeds.
 ### Validation Results
 Passed: 49 focused and adjacent tests; locale validator (20 locales, 12 required category/knowledge keys); merchant ICU runtime loading for all 20 locales; `npm run typecheck`; changed-file ESLint; `npm run build`; `git diff --check`; changed-file diagnostics.
 
 Repository-wide `npm run lint` still reports 20 errors and 2 warnings in unrelated existing files. The existing opt-in PostgreSQL merchant-settings tests were skipped (6 tests) because `MODA_SETTINGS_POSTGRES` was not enabled; transaction behavior is covered by focused service tests, and action scoping/input validation by route-level tests.
 
 The Shared dependency is pinned exactly to `1.0.1`. The database submodule was already at accepted ARCH-023-DATABASE-001 commit `2eb17ee910491e8f9df82736fc0a843844415947`; no database schema, migration, or gitlink changes were made. Prisma Client generation completed during the production build.
+
+Attempt 2 real PostgreSQL proof:
+
+- Testcontainers image: `pgvector/pgvector:pg17` (`pgvector/pgvector@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f`). Testcontainers generated isolated per-run database credentials and a dynamically mapped port.
+- Migration command, run by integration setup against that fresh database: `npx prisma migrate deploy --schema database/prisma/schema.prisma`; all accepted repository migrations applied successfully.
+- Test command: `DOCKER_HOST="unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock" TESTCONTAINERS_RYUK_DISABLED=true MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/store-category-selection.postgres.integration.test.ts`.
+- Result: exit code 0; `Test Files 1 passed (1)`, `Tests 5 passed (5)`. The cases use the real generated Prisma Client and independent clients for the concurrent calls.
+- Teardown: the test's `afterAll` stopped the Testcontainers PostgreSQL instance; `docker ps -a --filter ancestor=pgvector/pgvector:pg17 --format '{{.Names}} {{.Status}}'` returned no containers.
+- Additional Attempt 2 checks: `npm run typecheck` passed; `npm test -- tests/unit/store-category-selection.test.ts` passed 5/5; Prettier check and changed-file ESLint passed; `git diff --cached --check` passed. ESLint emitted only the repository's existing TypeScript-version support warning.
+
+Testcontainers could not infer the active Colima context from the default environment. Supplying its Docker socket and disabling Ryuk's unsupported socket bind allowed Testcontainers to start; the integration test retained and verified its own explicit PostgreSQL teardown. No runtime or test infrastructure was changed.
 ### Deviations
-No functional scope deviations. Repository-wide lint and real PostgreSQL execution remain as noted under Validation Results.
+No functional scope deviations. Repository-wide lint still reports the 20 unrelated errors and 2 warnings recorded in Attempt 1; changed-file lint passes. The real PostgreSQL requirement is satisfied in Attempt 2.
 ### Assumptions
 The existing accepted Admin task fixture supplies the currently manifested stable category slug `home-goods`; additional Admin-authored slugs remain unselectable until their English key pair and locale translations are shipped.
 ### Unresolved Issues
-No known implementation blockers. No real PostgreSQL container validation was run for this task.
+No known implementation blockers. The A1-R1 real PostgreSQL transaction proof and A1-R2 durable workflow provenance are recorded for architect review.
 ### Architectural Concerns
 None identified. Selection remains pending-only and does not activate or publish a prompt.
+
+### Git / VCS
+
+Task branch: `task/ARCH-023-SHOPIFY-002` in both repositories.
+
+Dependency gate from the prepared Attempt 2 packet: passed; `ARCH-023-DATABASE-001` and `ARCH-023-SHARED-002` were both `complete`.
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-002`, `task/ARCH-023-SHOPIFY-002`
+- implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-002`, `task/ARCH-023-SHOPIFY-002`
+- shared workspace/source-reference checkout switched or mutated: no
+- another task worktree reused: no; the launcher-reused canonical worktrees belong to this task
+
+Start-of-attempt synchronization from the prepared packet:
+- parent remote task branch fast-forwarded: not-needed
+- parent `origin/main` incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation `origin/main` incorporated: already-current
+
+Recursive implementation submodules from the prepared packet:
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- status: ready; database submodule at `2eb17ee910491e8f9df82736fc0a843844415947`
+- no database files or submodule gitlink changes were made
+
+Attempt 2 claim: launcher commit `b60ae301577a78740eb84b649aa2b8bea5ec710f`, timestamp `2026-09-30T11:18:13Z`; committed and pushed before implementation. Parent report branch at claim: `b60ae301577a78740eb84b649aa2b8bea5ec710f`.
+
+Implementation submission:
+- repository: `moda-interact`
+- commit: `e287ba7b246dc1fd40e752512c47ad823fc18d0a`
+- branch: `origin/task/ARCH-023-SHOPIFY-002`; pushed
+- changed file: `tests/integration/store-category-selection.postgres.integration.test.ts`
+- final implementation worktree: clean
+
+Parent report submission:
+- task file: `docs/decisions/shopify/ARCH-023/SHOPIFY-002-select-store-category-pending-profile.md`
+- branch: `task/ARCH-023-SHOPIFY-002`; this Attempt 2 report update is committed and pushed with the review submission
+- final parent worktree: clean after report submission
+
+Merged to implementation `main`: no. Merged to workspace `main`: no.
 
 ## Architect Review
 
