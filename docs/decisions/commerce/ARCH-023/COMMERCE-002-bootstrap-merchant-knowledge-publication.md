@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 61
 executor: null
 claimed_at: null
@@ -1073,3 +1073,26 @@ No additional Commerce source correction is requested at this blocker adjudicati
 - accepted ARCH-021 migration `20260929120000_arch021_feature_capability_simplification/migration.sql`.
 - `commerce.arch021_release_feature_guard()` and `arch021_release_feature_immutable`.
 - PostgreSQL failure `ARCH021 release Feature snapshot must match current behaviour prompt`.
+
+## Developer Override — Reopen — 2026-09-30
+
+### Previous State
+
+The latest task cycle was Attempt 3, `status: blocked`, with `executor: null` and `claimed_at: null`, pending the Database-owned successor-snapshot guard correction. No COMMERCE-002 attempt has an accepted completion record; the prior review and blocker adjudications above remain unchanged.
+
+### Reason
+
+The Database prerequisite `ARCH-023-DATABASE-004` has now been accepted Complete. Reopen this task so its existing Attempt 3 implementation can resume through the normal task execution workflow and be reconciled against the accepted migration. The next normal launcher claim is Attempt 4. This override is not a claim and does not increment the attempt.
+
+### Dependency Frontier
+
+Direct downstream tasks `ARCH-023-COMMERCE-004` and `ARCH-023-SYSTEM-TEST-002` are both already `pending`; neither required a readiness regression. No downstream task status was changed.
+
+### Reopen State
+
+```yaml
+status: ready
+executor: null
+claimed_at: null
+attempt: 3
+```
