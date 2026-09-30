@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-09-30T10:50:30Z
+executor:
+claimed_at:
 attempt: 4
 depends_on:
 - ARCH-017-DATABASE-001
@@ -896,3 +896,62 @@ Developer-requested reopen of `ARCH-017-SHOPIFY-001` for a new execution cycle.
 
 No downstream tasks are listed in this task's `enables` field; no downstream
 status transition was required.
+
+## Architect Review — Attempt 4
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 4 closes the reopened ARCH-017-SHOPIFY-001 correction cycle. The actual implementation and focused regressions were inspected rather than relying only on the Completion Report. No further repository-source correction is required.
+
+The accepted implementation now provides one `resolveOrMaterializeBillingPlan(...)` path used by Free activation, Paid activation and generic subscription synchronization. Existing active operational plans are reused without copying `MerchantPricingPlan.isActive`; inactive operational plans fail closed; a known active valid catalogue plan is materialised with the complete dynamic feature projection; `materializedAt` is set monotonically; and a unique-create race rereads the persisted winner rather than failing the callback. Genuine unknown catalogue handles remain `UNMAPPED`, while inactive or invalid local plan state becomes bounded `SYNC_ERROR`.
+
+The callback lifecycle is also conformant to the latest ARCH-017 correction contract: Shopify provider state is read before the onboarding milestone or local materialisation; the requested handle must match the provider current plan or pending update before `onboardingCompleted=true` is committed; that monotonic write occurs before local activation/materialisation; and a provider-confirmed fresh current selection that cannot prepare an activation token is projected through `syncSubscription()` so unknown/inactive/invalid local states become durable `UNMAPPED`/`SYNC_ERROR` outcomes rather than disappearing. Provider verification failure or mismatch does not falsely complete onboarding.
+
+The `/app/features` surface is authenticated-shop scoped, uses the central merchant route-access policy, computes effective feature state from active Feature + current BillingPlanFeature + saved merchant preference, and rechecks Feature/current plan support transactionally before preference upsert. The Attempt 4 regression proves an enabled opt-in preference remains stored while unsupported by an intervening plan and becomes effective again when a supporting plan returns, without recreating or rewriting the preference.
+
+The Completion Report now distinguishes the architect-accepted DATABASE-001 source-task revision (`3c7179825c3e12af1d6db805b8a2a73c61c2097c`) from the exact database gitlink used by the implementation worktree (`2eb17ee910491e8f9df82736fc0a843844415947`). The submission identifies implementation head `bffc796` and parent report branch head `c96c6ac3`; the worktree-isolation, synchronization and recursive-submodule evidence is sufficient for this acceptance.
+
+### Reviewed Files
+
+- `app/services/billing/billing.service.ts`
+- `app/routes/app/billing/callback/route.tsx`
+- `app/routes/app/features/route.tsx`
+- `app/services/shop/merchant-route-access-policy.ts`
+- `app/components/dashboard/MerchantNavigation.tsx`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/routes/billing-callback.test.ts`
+- `tests/unit/routes/features-route.test.ts`
+- `tests/unit/merchant-route-access-policy.test.ts`
+- `database/prisma/schema.prisma`
+
+### Validation Reviewed
+
+The durable Attempt 4 evidence records:
+
+- `npm run prisma:generate` — passed;
+- focused billing/callback/features/route-policy suite — 284 tests across 4 files, all passed;
+- `npm run build` — passed;
+- `npm run typecheck` — passed;
+- changed-file ESLint — passed with no diagnostics;
+- `git diff --check` — passed;
+- repository-wide lint — only unrelated pre-existing baseline diagnostics; no changed-file lint regression.
+
+The supplied review archive does not contain the implementation worktree's `node_modules` or Git metadata, so the architect did not manufacture a second dependency installation or claim a local rerun. Source, tests, schema, task evidence and the recorded validation results were inspected directly.
+
+### Architecture Conformance
+
+Conformant after architect reconciliation of the parent ARCH-017 onboarding text. The parent document still described the older callback-entry milestone from SHOPIFY-002; the accepted reopened implementation follows the later correction contract in this task, where provider-confirmed managed-pricing selection is required before the monotonic onboarding write. The parent architecture is updated by this acceptance patch so documented intent and runtime behaviour agree.
+
+ARCH-010 non-prorated billing semantics remain intact. No automatic inactive-plan reactivation, top-up-meter inference, feature-preference deletion/copying, database-submodule source edit or ARCH-011 proration was introduced.
+
+### Follow-up
+
+`ARCH-017-SHOPIFY-001` is Complete at architect-accepted Attempt 4. `ARCH-017-SHOPIFY-002` and `ARCH-017-SHOPIFY-003` remain Complete; their historical acceptance is not regressed. SHOPIFY-002's earlier callback-entry onboarding subrule is superseded by the later provider-confirmed correction accepted here.
+
+No new ARCH-017 implementation task is created by this review.
+
+This acceptance does not by itself unblock `ARCH-023-SHOPIFY-001`: the accepted `moda-interact` implementation branch must first be integrated into the canonical implementation base so the ARCH-017 resolver is physically present there. After that integration is visible in the ARCH-023 task worktree, `moda_architect` may return the blocked ARCH-023 task to Ready.

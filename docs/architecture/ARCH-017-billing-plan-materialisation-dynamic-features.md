@@ -336,17 +336,20 @@ Validation always requires terminal reserve >= 1 and < effective hard limit.
 
 ## Onboarding invariant
 
-`ShopSettings.onboardingCompleted` means: the merchant has completed the Shopify managed-pricing selection step at least once. It is a Shopify-side commercial milestone, not evidence that Moda successfully mapped, materialised or reconciled the selected plan.
+`ShopSettings.onboardingCompleted` means: Shopify provider state has confirmed that the merchant selected a managed-pricing option at least once. It is a Shopify-side commercial milestone, not evidence that Moda successfully mapped, materialised or reconciled the selected plan.
 
 ```text
-fresh install / no authenticated Shopify billing callback yet -> false
-authenticated callback for an ACTIVE shop is entered          -> true
-any later Moda billing lifecycle outcome                       -> remains true
+fresh install / no provider-confirmed managed-pricing selection -> false
+authenticated ACTIVE-shop callback + requested handle confirmed
+  as provider current plan or pending update                     -> true
+any later Moda billing lifecycle outcome                          -> remains true
 ```
 
-The authenticated Shopify billing callback owns this one-way transition. After Shopify admin authentication, authenticated-shop resolution and the ACTIVE-shop guard succeed, the callback MUST persist `onboardingCompleted=true` before validating Moda callback parameters and before any provider verification, BillingPlan resolution/materialisation, Subscription/BillingPeriod projection or retry scheduling. Missing callback metadata or any later Moda/provider failure does not undo or suppress this milestone.
+The authenticated Shopify billing callback owns this one-way transition. After Shopify admin authentication, authenticated-shop resolution, the ACTIVE-shop guard and callback-parameter validation succeed, the callback captures the current verification fence and reads Shopify provider subscription state. It MUST persist `onboardingCompleted=true` only when provider state confirms the requested handle as the current plan or pending update. That monotonic write is committed before any local BillingPlan resolution/materialisation or Subscription/BillingPeriod projection for the confirmed selection.
 
-`BillingService` MUST NOT use `onboardingCompleted` to decide initial activation, token freshness, pending-intent preservation, reconciliation or billing projection. Those decisions derive from durable `Subscription` state and provider truth. UNKNOWN/UNMAPPED, invalid catalogue state, inactive operational plan, SYNC_ERROR, provider/API failure, cancellation, NO_CONTRACT, reinstall and plan change MUST NOT reset true to false.
+An arbitrary authenticated callback visit, provider verification failure, `NO_ACTIVE_SUBSCRIPTION`, or a provider/requested-handle mismatch does not establish the managed-pricing milestone and therefore must not flip onboarding from false to true. Once the milestone is true, later UNKNOWN/UNMAPPED, invalid catalogue state, inactive operational plan, SYNC_ERROR, provider/API failure, cancellation, NO_CONTRACT, reinstall or plan change MUST NOT reset it to false.
+
+`BillingService` MUST NOT use `onboardingCompleted` to decide initial activation, token freshness, pending-intent preservation, reconciliation or billing projection. Those decisions derive from durable `Subscription` state and provider truth.
 
 ## Billing periods
 
@@ -391,11 +394,15 @@ There are no production customers or production billing lifecycle state to prese
 | ARCH-017-DATABASE-001 | moda_database | Complete | - |
 | ARCH-017-BACKGROUND-001 | moda_background | Complete | ARCH-017-DATABASE-001 |
 | ARCH-017-BACKGROUND-002 | moda_background | Complete | ARCH-017-BACKGROUND-001 |
-| ARCH-017-SHOPIFY-001 | moda_app | Ready (Attempt 3; developer-reopened) | ARCH-017-DATABASE-001 |
+| ARCH-017-SHOPIFY-001 | moda_app | Complete (Attempt 4 Accepted) | ARCH-017-DATABASE-001 |
 | ARCH-017-SHOPIFY-002 | moda_app | Complete | ARCH-017-SHOPIFY-001 |
 | ARCH-017-SHOPIFY-003 | moda_app | Complete | ARCH-017-SHOPIFY-002 |
 | ARCH-017-ADMIN-001 | moda_admin | Complete | ARCH-017-DATABASE-001 |
 
 BACKGROUND-002 was a bounded reconciliation-correctness follow-up discovered during manual testing. It is complete and did not reopen BACKGROUND-001.
 
-SHOPIFY-003 is intentionally separate from SHOPIFY-002: SHOPIFY-002 owns the onboarding milestone; SHOPIFY-003 owns current BillingPeriod projection consistency. SHOPIFY-003 depends on SHOPIFY-002 because both modify `billing.service.ts` and had to execute sequentially in the same repository. SHOPIFY-001 was explicitly reopened by the developer on 2026-09-30 and is Ready for Attempt 3. SHOPIFY-002 and SHOPIFY-003 remain Complete; reopening does not silently regress already-completed dependants.
+SHOPIFY-003 is intentionally separate from SHOPIFY-002: SHOPIFY-003 owns current BillingPeriod projection consistency. SHOPIFY-001 was explicitly reopened by the developer on 2026-09-30 and is now Complete at architect-accepted Attempt 4. That reopened correction supersedes SHOPIFY-002's earlier callback-entry onboarding subrule with the provider-confirmed managed-pricing milestone documented above. SHOPIFY-002 and SHOPIFY-003 remain Complete as historical accepted tasks; their status is not silently regressed.
+
+## Change History
+
+- **2026-09-30 — ARCH-017-SHOPIFY-001 Attempt 4 accepted.** Reconciled the onboarding invariant to require provider confirmation of the requested current/pending managed-pricing selection before the monotonic onboarding write. This supersedes the earlier SHOPIFY-002 callback-entry subrule while preserving SHOPIFY-002/003 historical completion. The accepted lazy BillingPlan materialiser and persistent merchant feature-preference behaviour are the implementation baseline to integrate before ARCH-023 Shopify configuration work resumes.
