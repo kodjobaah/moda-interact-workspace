@@ -11,9 +11,9 @@ updated: 2026-09-30
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-BACKGROUND-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-001`. `ARCH-023-COMMERCE-002` remains Pending because COMMERCE-001 is not yet Complete; `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001. All other ARCH-023 tasks remain gated by their declared dependencies.
+The current executable frontier is `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-002` and `ARCH-023-SHOPIFY-001`. COMMERCE-002 is Ready because COMMERCE-001 and ADMIN-001 are Complete; `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3200,7 +3200,7 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after ADMIN-001 Attempt 2 acceptance:
+Current execution frontier after COMMERCE-001 Attempt 2 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
@@ -3209,15 +3209,15 @@ ARCH-023-SHARED-002     Complete — Accepted Attempt 1
 ARCH-023-ADMIN-001      Complete — Accepted Attempt 2
 ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
 ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
+ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
 ARCH-023-ADMIN-003      Ready
 ARCH-023-BACKGROUND-002 Ready
 ARCH-023-BACKGROUND-003 Ready — Attempt 2 corrections
-ARCH-023-COMMERCE-001   Ready
+ARCH-023-COMMERCE-002   Ready
 ARCH-023-SHOPIFY-001    Ready
 
-ARCH-023-COMMERCE-002   Pending — still depends on COMMERCE-001
 ARCH-023-SHOPIFY-003    Pending — still depends on SHOPIFY-001
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
@@ -3240,6 +3240,12 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — COMMERCE-001 Attempt 2 accepted
+
+- Accepted `merchantKnowledge.lookup@1.0.0` after the strengthened live test invoked the production `retrieveMerchantKnowledge()` path against a disposable `pgvector/pgvector:pg17` database with all 21 migrations applied.
+- Confirmed deterministic nearest-neighbour ordering and production-query exclusion of closer cross-shop, non-ACTIVE-revision and mismatched-embedding-provenance rows; the configured remote database was not used and the disposable container was removed afterward.
+- Marked COMMERCE-001 Complete and promoted COMMERCE-002 to Ready because ADMIN-001 and COMMERCE-001 are both Complete. No COMMERCE-002 implementation was started by this review.
 
 ### 2026-09-30 — ADMIN-001 Attempt 2 accepted
 
