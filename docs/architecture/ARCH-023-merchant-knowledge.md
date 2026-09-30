@@ -55,8 +55,7 @@ The missing capability must solve several separate concerns without conflating t
    catalogues; each knowledge URL records its own source language; agent instructions
    remain canonical English; the final reply uses the customer conversation language.
 8. **Prompt ownership** — platform/shop behavioural instructions belong in the Admin
-   application; capability-local operational instructions and tool contracts belong in
-   Commerce Studio.
+   application; shared Feature Behaviour and Tool contracts belong in Commerce Studio.
 
 ## Goals
 
@@ -103,18 +102,23 @@ The missing capability must solve several separate concerns without conflating t
 - Process Merchant Knowledge asynchronously in `moda-interact-background` and write the
   resulting durable state directly to PostgreSQL.
 - Deterministically bootstrap one complete initial working Merchant Knowledge Commerce
-  publication in Commerce application/bootstrap code: the fixed `merchant_knowledge`
-  capability identity, fixed `merchant_knowledge_lookup` Tool identity, canonical initial
-  Tool revision, canonical initial capability revision, Tool-to-capability binding,
-  publication of both revisions and membership in an active Commerce release.
+  publication in Commerce application/bootstrap code using the accepted ARCH-021 direct
+  model: fixed `merchant_knowledge_lookup` Tool identity, a usable PUBLISHED Tool revision,
+  canonical initial `CommerceFeatureConfiguration.behaviourPrompt` when no later authored
+  behaviour exists, fixed direct `merchant_knowledge` Capability identity with required
+  `featureId` + `toolId`, and immutable membership in an active Commerce release.
 - Back the bootstrap Tool revision with the Commerce-internal policy operation
   `merchantKnowledge.lookup` and the exact C5 contract.
-- Make the bootstrap idempotent and convergent: a clean or partially-provisioned
-  environment is completed to one usable initial publication, while an already-usable
-  later Studio-authored publication is preserved and never reset to the seed revision.
-- Use Commerce Studio for **subsequent** versioned evolution of those fixed identities:
-  later Tool/capability revisions, capability-local prompt/configuration changes,
-  Tool-to-capability revision binding, publication and release evolution.
+- Make the bootstrap idempotent, convergent and restart-safe: a clean or partially-
+  provisioned environment is completed to one usable initial publication, while an
+  already-usable later Studio-authored publication is preserved with **zero durable
+  bootstrap writes**. Application restart alone never creates another Tool revision,
+  Capability, Commerce release, Feature Behaviour edit or release-pointer edit.
+- Use Commerce Studio for **subsequent** evolution through the accepted direct model:
+  later Tool revisions, current Feature Behaviour edits, direct Feature/Tool Capability
+  authoring where permitted, and immutable release evolution. ARCH-023 does not restore
+  Capability revisions, `selectionBinding`, per-Capability prompt/configuration or
+  `toolBindings[]`.
 - Ensure merchant configuration creates **knowledge data**, never new Commerce
   capabilities/releases.
 - Add initial Store Category selection to the **existing Shopify onboarding page**.
@@ -125,7 +129,7 @@ The missing capability must solve several separate concerns without conflating t
   **existing Recovery Settings page**.
 - Make each Store Category have exactly one explicit default prompt template.
 - Keep ARCH-023-authored model instructions canonical English: the code-owned kernel,
-  Platform Instructions, Shop Instructions, capability-local instructions and
+  Platform Instructions, Shop Instructions, Feature Behaviour and
   `CommercePromptTemplate.promptText` are not translated per shop/customer locale.
 - Use the existing Shopify application localization catalogues for merchant-facing Store
   Category presentation. ARCH-023 adds no database-backed category/template translation
@@ -253,11 +257,19 @@ The current Commerce database already contains:
 - `CommerceAgentPrompt` scoped `PLATFORM` or `SHOP`;
 - immutable `CommerceAgentPromptRevision` records;
 - `CommerceAgentConfiguration` with platform/shop active prompt pointers;
-- `CommerceCapability`, `CommerceCapabilityRevision`, releases and grants;
-- FEATURE-bound capability selection through feature facts.
+- direct `CommerceCapability` rows with required immutable `featureId` + `toolId`;
+- `CommerceFeatureConfiguration` with one current shared Feature Behaviour prompt;
+- `CommerceTool` plus DRAFT/PUBLISHED `CommerceToolRevision` rows;
+- `CommerceReleaseCapability` rows that pin direct Capability/Feature/Tool identity plus
+  the exact PUBLISHED Tool revision; and
+- `CommerceReleaseFeature` rows that snapshot Feature Behaviour once per represented
+  Feature, plus releases and grants.
 
-ARCH-021 simplification intentionally removed a separate prompt-template revision table.
-ARCH-023 preserves that simplification and does **not** add translation-snapshot tables.
+ARCH-021 simplification intentionally removed both the old Capability revision/binding
+model and a separate prompt-template revision table. `CommerceCapabilityRevision`,
+`selectionBinding`, per-Capability prompt/configuration and `toolBindings[]` are retired
+concepts and ARCH-023 MUST NOT restore them. ARCH-023 also does **not** add translation-
+snapshot tables.
 When a Store Category is selected, the current canonical-English
 `CommercePromptTemplate.promptText` is copied into the shop's existing DRAFT
 `CommerceAgentPromptRevision`; that DRAFT revision is the durable pinned snapshot.
@@ -294,15 +306,15 @@ for Merchant Knowledge semantic retrieval.
 
 ```text
 FEATURE
-    commercial entitlement / generic plan feature
+    commercial entitlement + one shared Commerce Feature Behaviour
         |
         v
-CAPABILITY
-    agent behaviour + executable tool authority
+DIRECT CAPABILITY
+    stable Feature -> Tool association / executable tool authority
         |
         v
 KNOWLEDGE SOURCE
-    one shop-scoped public URL + classification + source language
+    shop-scoped reference data + classification + source language
 ```
 
 The platform creates one ordinary Feature using the existing generic Feature model:
@@ -332,24 +344,28 @@ validation keyed by the stable Feature key, not a database invariant.
 a `ShopFeaturePreference` row for it. `systemRequired` remains `false`.
 
 ARCH-023 Commerce bootstrap owns the complete **initial working publication**, not only
-the fixed identities. The bootstrap MUST use the existing Commerce lifecycle/storage
-boundaries for every create/publish/release transition; it MUST NOT insert lifecycle
-rows directly with SQL or bypass publication validation.
+the fixed identities. Bootstrap MUST use the accepted ARCH-021 lifecycle/authoring and
+storage boundaries for every Tool create/publish, direct Capability create, Feature
+Behaviour edit and release/pointer transition. It MUST NOT insert lifecycle rows directly
+with SQL or bypass publication validation.
 
-The fixed Commerce capability identity has exactly these values:
+The accepted ARCH-021 Capability model is direct and non-revisioned. The fixed Merchant
+Knowledge Capability has:
 
 ```text
-CommerceCapability.key              = merchant_knowledge
-CommerceCapability.displayName      = Merchant Knowledge
-CommerceCapability.description      = Merchant Knowledge lookup capability
-CommerceCapability.selectionBinding = FEATURE
-CommerceCapability.featureId        = Feature.id where Feature.key = merchant_knowledge
-CommerceCapability.enabled          = true
+CommerceCapability.key         = merchant_knowledge
+CommerceCapability.displayName = Merchant Knowledge
+CommerceCapability.description = Merchant Knowledge lookup capability
+CommerceCapability.featureId   = Feature.id where Feature.key = merchant_knowledge
+CommerceCapability.toolId      = CommerceTool.id where name = merchant_knowledge_lookup
+CommerceCapability.enabled     = true
 ```
 
-The capability-identity step is idempotent by `CommerceCapability.key`. It reuses a
-matching existing identity and fails with a configuration conflict rather than silently
-changing an existing row whose selection binding or Feature binding differs.
+`key`, `featureId` and `toolId` are the fixed identity. There is no
+`selectionBinding`, `CommerceCapabilityRevision`, Capability prompt/configuration or
+`toolBindings[]`. The capability step is idempotent by `CommerceCapability.key`: it
+reuses a compatible direct identity and fails with a configuration conflict rather than
+silently changing its Feature/Tool association or enabled state.
 
 The fixed Commerce Tool identity has exactly these values:
 
@@ -374,34 +390,49 @@ merchantKnowledge.lookup
 `merchantKnowledge.lookup` is an internal Commerce execution identifier and is never
 emitted by MCP `tools/list`.
 
-When no usable published Merchant Knowledge configuration already exists, bootstrap:
+Merchant Knowledge behavioural instructions are Feature-owned under ARCH-021. When no
+later non-blank Studio-authored behaviour exists, bootstrap seeds
+`CommerceFeatureConfiguration.behaviourPrompt` with the canonical Merchant Knowledge
+untrusted-reference instruction. A later non-blank authored Feature Behaviour is
+preserved rather than reset on startup.
 
-1. creates/publishes the canonical initial `merchant_knowledge_lookup` Tool revision
+When no usable Merchant Knowledge publication already exists, bootstrap converges:
+
+1. the fixed `merchant_knowledge_lookup` Tool and one usable PUBLISHED Tool revision
    using `POLICY_OPERATION`, `merchantKnowledge.lookup`, operation version `1.0.0` and
    the exact C5 contract;
-2. creates/publishes the canonical initial `merchant_knowledge` capability revision with
-   canonical-English Merchant Knowledge instructions and a binding to that published
-   Tool revision; and
-3. ensures a normal published/active Commerce release contains that published capability
-   revision.
+2. the Merchant Knowledge Feature Behaviour seed only when the current behaviour is
+   absent/blank;
+3. the fixed direct `merchant_knowledge` Capability using the resolved Feature and Tool;
+4. normal immutable release membership that pins the exact selected PUBLISHED Tool
+   revision and snapshots Merchant Knowledge Feature Behaviour; and
+5. the active Commerce release pointer.
 
-Release handling MUST use the existing release lifecycle. If no release exists,
-bootstrap creates/publishes the required initial release. If a published release is
-immutable, bootstrap creates/publishes the normal successor release rather than mutating
-the immutable release in place.
+Release handling MUST preserve immutable snapshots. The ordinary ARCH-021 release-create
+flow intentionally resolves the latest PUBLISHED Tool revision and current Feature
+Behaviour for every selected Capability. Therefore, when bootstrap adds Merchant
+Knowledge to an existing active release, it must use a bounded generic successor-release
+lifecycle path that copies every existing `CommerceReleaseCapability.toolRevisionId` and
+`CommerceReleaseFeature.behaviourPrompt` **exactly**, then appends Merchant Knowledge.
+Bootstrap MUST NOT reconstruct the base release in a way that silently advances unrelated
+Tools or Feature Behaviour.
 
 Bootstrap is complete only when the runtime resolver can reach:
 
 ```text
 active release
-    -> published merchant_knowledge capability revision
-        -> published merchant_knowledge_lookup Tool revision
+    -> direct merchant_knowledge CommerceReleaseCapability member
+        -> exact pinned PUBLISHED merchant_knowledge_lookup Tool revision
             -> POLICY_OPERATION merchantKnowledge.lookup@1.0.0
+    + CommerceReleaseFeature snapshot for Feature.key = merchant_knowledge
 ```
 
-A **usable Merchant Knowledge publication** exists when the fixed identities are valid,
-the active release contains a published `merchant_knowledge` revision, that revision
-binds a published `merchant_knowledge_lookup` revision, and the bound Tool satisfies C5.
+A **usable Merchant Knowledge publication** exists when the fixed direct Capability
+identity is valid, the active release contains that Capability with the expected Feature
+and Tool identity, its pinned PUBLISHED Tool revision satisfies C5 and the fixed policy-
+operation binding, and the release contains the Merchant Knowledge Feature Behaviour
+snapshot. The pinned Tool revision need not be the original seed revision and the Feature
+Behaviour snapshot may contain a later valid Studio-authored value.
 
 Bootstrap behaviour is:
 
@@ -410,42 +441,51 @@ clean environment
     -> create/publish the complete canonical initial chain
 
 partial canonical bootstrap
-    -> complete missing lifecycle steps without duplicating valid completed steps
+    -> complete only missing lifecycle steps without duplicating valid completed steps
 
 usable later Studio-authored Merchant Knowledge publication exists
-    -> leave it unchanged
+    -> PRESERVED; zero durable lifecycle writes
 
-incompatible/conflicting fixed identity or published configuration
+active release lacks Merchant Knowledge
+    -> immutable successor preserves every unrelated Tool pin/Feature snapshot exactly
+       and appends Merchant Knowledge
+
+incompatible/conflicting fixed identity or published Tool configuration
     -> report configuration conflict; do not silently rewrite it
 ```
 
-Once a usable publication exists, Commerce Studio owns subsequent versioned evolution:
-later Tool/capability revisions, capability-local instruction/configuration edits,
-Tool bindings, publication and release evolution.
+Application startup may invoke the bootstrap on every process start, but startup alone is
+not a publication event. Repeated restarts against an already-usable state MUST NOT create
+another Tool revision, Capability, Commerce release, Feature Behaviour edit or release-
+pointer edit.
 
-A subsequent application restart MUST NOT reactivate the canonical seed revision,
-replace a valid later Studio-authored revision, or roll the active release back merely
-because its revision identifiers differ from the seed.
+Once a usable publication exists, Commerce Studio owns subsequent evolution through the
+accepted direct model: later Tool revisions, current Feature Behaviour edits and immutable
+release evolution. The fixed Merchant Knowledge Capability itself remains one direct
+Feature/Tool association; it has no revision lifecycle.
 
-Commerce Studio MUST NOT create, rename, rebind or delete the architecture-defined
-`merchant_knowledge` capability identity or `merchant_knowledge_lookup` Tool identity.
+Commerce Studio MUST NOT create a conflicting `merchant_knowledge` capability identity,
+rename/rebind the fixed identity, or repurpose/delete the `merchant_knowledge_lookup` Tool
+identity. The Tool remains reusable by other valid direct Capabilities; fixed does not
+mean exclusive.
 
 Merchant actions create/update/delete `MerchantKnowledgeSource` rows and their revisions
-only. They do not create Commerce capability/tool identities, revisions or releases.
+only. They do not create Commerce Capability/Tool identities, Tool revisions, Feature
+Behaviour edits or releases.
 
-A merchant whose plan contains the Feature but has no configured knowledge sources
-still has the capability available; the lookup returns no matches. Providing the first
+A merchant whose plan contains the Feature but has no configured knowledge sources still
+has the Capability available; the lookup returns no matches. Providing the first
 knowledge source requires no separate feature-toggle transition.
 
 Knowledge may inform an otherwise-authorised capability. Knowledge must never:
 
 - enable a Feature;
 - select a Capability;
-- add a tool;
+- add a Tool;
 - expand a conversation grant;
 - authorise an action;
 - change tenant identity;
-- override platform/shop/capability instructions.
+- override Platform/Shop/Feature Behaviour instructions.
 
 ### D2 — plan limits apply to configured knowledge sources
 
@@ -691,20 +731,20 @@ runtime translation data.
 
 Commerce application/bootstrap code owns deterministic provisioning of architecture-defined capability/Tool identities such as `merchant_knowledge` and `merchant_knowledge_lookup`.
 
-Commerce Studio owns the versioned authoring lifecycle after those identities exist:
+Commerce Studio owns the accepted direct authoring/release lifecycle after those identities exist:
 
-- capability-local operational instructions/configuration;
+- current shared Feature Behaviour (`CommerceFeatureConfiguration.behaviourPrompt`);
 - Tool revision definitions/contracts;
 - Tool/provider testing;
 - Tool revision publication;
-- Tool-revision association with capability revisions;
-- capability revision publication; and
-- release membership.
+- direct Feature -> Capability -> Tool authoring for non-fixed capabilities; and
+- immutable release composition/activation with exact Tool-revision pinning and one
+  Feature Behaviour snapshot per represented Feature.
 
 Commerce Studio MUST NOT create, rename, rebind or delete the architecture-defined `merchant_knowledge` capability identity or `merchant_knowledge_lookup` Tool identity.
 
-Capability-local instructions must remain limited to the capability's own operational
-contract. Platform/store personality, tone and general behavioural policy belong in
+Feature Behaviour must remain limited to the represented Feature's operational
+behaviour. Platform/store personality, tone and general behavioural policy belong in
 Platform/Shop Instructions.
 
 ARCH-023 does not add a second independent persistence lifecycle. Admin and Commerce
@@ -740,7 +780,7 @@ LEVEL 3 — published Platform Instructions
 
 LEVEL 4 — published Shop Instructions, when configured
 
-LEVEL 5 — selected capability-local operational instructions
+LEVEL 5 — immutable release-snapshotted Feature Behaviour for represented selected Features
 
 LEVEL 6 — runtime data/context
     customer-authored conversation content
@@ -796,16 +836,16 @@ Equivalent instruction-like text in any language has the same runtime-data
 classification. The model may use relevant factual statements from Merchant Knowledge
 to answer the customer, but MUST NOT treat Merchant Knowledge content as:
 
-- system, developer, Platform, Shop or capability instructions;
+- system, developer, Platform, Shop or Feature Behaviour instructions;
 - permission to call a Tool;
 - authorization or approval for a side-effecting operation;
 - evidence of customer intent;
 - a capability/Feature grant;
 - a change to tenant identity, security policy or business-state truth.
 
-Merchant Knowledge-specific capability instructions MAY restate that its content is
-factual reference material, but the global Level-1 rule above is authoritative and MUST
-apply even when a capability author omits such a restatement.
+Merchant Knowledge Feature Behaviour MAY restate that its content is factual reference
+material, but the global Level-1 rule above is authoritative and MUST apply even when the
+Feature Behaviour omits such a restatement.
 
 The primary required behaviour is prevention at model-decision time: runtime data alone
 MUST NOT cause the model to emit a call to another side-effecting Tool. Trusted runtime
@@ -1247,8 +1287,9 @@ During a CommerceAgent turn:
 1. the normal generic release/feature resolver evaluates the active/trialing shop's
    current `BillingPlanFeature` mappings and the `Feature.activationMode`;
 2. when the plan contains an enabled `merchant_knowledge` mapping, the global
-   `merchant_knowledge` capability is eligible and the conversation grant pins the exact
-   `merchant_knowledge_lookup` Tool revision owned by that capability. Because its
+   `merchant_knowledge` capability is eligible and the conversation grant uses the exact
+   `merchant_knowledge_lookup` Tool revision pinned for that direct release Capability
+   member. Because its
    activation mode is `ALWAYS_ENABLED`, no `ShopFeaturePreference` check is required. If
    a mapping is absent because data was created outside the supported plan-authoring
    policy, the generic resolver simply leaves the capability/tool absent; no
@@ -1292,10 +1333,11 @@ tools/list
     -> executable ToolDefinitions currently authorised by the conversation grant
 
 prompts/list / prompts/get
-    -> eligible capability-local prompt instructions
+    -> trusted Platform/Shop instruction prompts exposed by ARCH-023 where eligible
 
 commerce://capabilities
-    -> pinned capability/release manifest information
+    -> pinned direct Capability/Feature/Tool release-manifest information, including
+       immutable Feature Behaviour snapshots
 ```
 
 `tools/list` is not a catalogue of every Commerce Studio Tool and does not return a
@@ -3036,14 +3078,18 @@ capability/Tool publication or release membership.
 ### `moda-interact-commerce` / `moda_commerce`
 
 Owns deterministic, idempotent D1 bootstrap of the complete canonical initial working
-Merchant Knowledge publication through existing Commerce lifecycle/storage boundaries:
-fixed capability/Tool identities, canonical initial Tool revision, canonical initial
-capability revision, Tool binding, publication and active-release membership.
+Merchant Knowledge publication through accepted Commerce lifecycle/authoring/storage
+boundaries: fixed Tool identity, usable PUBLISHED Tool revision, canonical Feature
+Behaviour seed when no later authored value exists, fixed direct Capability
+Feature/Tool association, immutable release Tool pin/Feature snapshot and active-release
+membership. When adding Merchant Knowledge to an existing release, Commerce owns the
+bounded generic successor-release path that preserves every unrelated immutable Tool pin
+and Feature Behaviour snapshot exactly.
 
 It also owns registration/execution of `merchantKnowledge.lookup`, preservation of later
-valid Studio-authored revisions/releases during bootstrap, subsequent Studio
-revision/binding/publication/release evolution, additive canonical-English
-platform/shop/capability instruction composition, enforcement that runtime
+valid Studio-authored Tool revisions/Feature Behaviour/releases during bootstrap,
+subsequent Studio Tool-revision/Feature-Behaviour/release evolution, additive canonical-
+English platform/shop/Feature Behaviour instruction composition, enforcement that runtime
 Tool/provider/retrieval output remains context data and never instruction or
 `hostInstructions`, query embedding, current `allowedSourceTypes` plus
 `maxKnowledgeSources` lookup enforcement and exact pgvector retrieval across all
@@ -3270,6 +3316,26 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
+### 2026-09-30 — COMMERCE-002 Attempt 1 blocker reconciled to accepted ARCH-021 direct model
+
+- Confirmed the Attempt 1 implementation stop was correct: the original COMMERCE-002 task
+  still required removed ARCH-020 concepts (`CommerceCapabilityRevision`,
+  `selectionBinding`, per-Capability prompt/configuration and `toolBindings[]`).
+- Reconciled ARCH-023 to the accepted direct `Feature -> CommerceCapability -> CommerceTool`
+  model. Merchant Knowledge behaviour is `CommerceFeatureConfiguration.behaviourPrompt`;
+  a release pins the exact PUBLISHED Tool revision and snapshots Feature Behaviour.
+- No Database prerequisite is required and the removed Capability revision/binding model
+  MUST NOT be restored.
+- Required bootstrap to be restart-safe: when the active Merchant Knowledge publication
+  is already usable, every subsequent startup is a durable no-op with no new Tool revision,
+  Capability, release, Feature Behaviour edit or pointer edit.
+- Required a bounded generic successor-release lifecycle path for the existing-release
+  case so all unrelated immutable Tool-revision pins and Feature Behaviour snapshots are
+  copied exactly before Merchant Knowledge is appended; ordinary `createRelease()` must
+  not be used to silently advance unrelated authoring state.
+- Returned COMMERCE-002 to Ready with Attempt 1 preserved; the next normal claim is
+  Attempt 2. No implementation was started by this reconciliation.
+
 ### 2026-09-30 — COMMERCE-001 Attempt 2 accepted
 
 - Accepted `merchantKnowledge.lookup@1.0.0` after the strengthened live test invoked the production `retrieveMerchantKnowledge()` path against a disposable `pgvector/pgvector:pg17` database with all 21 migrations applied.
@@ -3424,15 +3490,17 @@ through bounded task reviews without changing the agreed architecture contract.
 - Added revisioned `ENTITLEMENT_CHANGE` reconciliation for content-limit decreases;
   source-count decreases remain non-destructive.
 - Made Background the ingestion owner with direct PostgreSQL writes.
-- Kept one architecture-defined `merchant_knowledge` capability and
-  `merchant_knowledge_lookup` Tool identity, and made Commerce bootstrap establish the
-  complete initial working publication automatically: identities, canonical initial
-  Tool/capability revisions, Tool binding, publication and active-release membership.
-  Bootstrap is convergent and never resets a valid later Studio-authored publication;
-  Studio owns subsequent versioned evolution.
+- Kept one architecture-defined direct `merchant_knowledge` Capability and
+  `merchant_knowledge_lookup` Tool identity. The later accepted ARCH-021 simplification
+  removed Capability revisions/`selectionBinding`/`toolBindings[]`; Commerce bootstrap
+  therefore establishes the initial publication through a PUBLISHED Tool revision,
+  Feature Behaviour, direct Capability and immutable release Tool pin/Feature snapshot.
+  Bootstrap is convergent/restart-safe and never resets a valid later Studio-authored
+  publication; Studio owns subsequent Tool-revision, Feature-Behaviour and release
+  evolution.
 - Defined `merchant_knowledge_lookup` as the MCP-visible Tool name and `merchantKnowledge.lookup` as its Commerce-internal policy operation.
-- Defined MCP `tools/list` as the current conversation-grant tool surface, separate from
-  capability prompts and `commerce://capabilities`.
+- Defined MCP `tools/list` as the current conversation-grant Tool surface, separate from
+  trusted Platform/Shop prompts and `commerce://capabilities`.
 - Added Store Category/default-template onboarding on the existing onboarding page.
 - Added Store Profile and Merchant Knowledge to the existing Recovery Settings page.
 - Kept `ShopBrand` scoped to Shopify-derived branding used by branded customer
@@ -3442,10 +3510,10 @@ through bounded task reviews without changing the agreed architecture contract.
   jobs. Merchant-facing Store Category labels/descriptions now use the existing Shopify
   locale catalogues keyed by `CommercePromptTemplateCategory.slug`.
 - Kept `CommercePromptTemplate.promptText`, Platform Instructions, Shop Instructions and
-  capability instructions canonical English; a pending DRAFT Shop prompt revision pins
-  the exact template text before billing/activation.
+  Feature Behaviour canonical English; a pending DRAFT Shop prompt revision pins the
+  exact template text before billing/activation.
 - Made Platform + Shop Instructions additive and Admin-managed.
-- Kept capability-local tool instructions Commerce-owned.
+- Kept Feature Behaviour and Tool contracts Commerce-owned.
 - Defined shop configuration language independently from source language and customer
   conversation language.
 - Made Merchant Knowledge indirect-prompt-injection handling explicit: lookup results are
