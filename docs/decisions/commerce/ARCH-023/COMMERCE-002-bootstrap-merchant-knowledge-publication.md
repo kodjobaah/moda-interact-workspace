@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 61
-executor: copilot
-claimed_at: 2026-09-30T16:21:18Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-COMMERCE-001
@@ -133,6 +133,9 @@ src/studio/features/persistence.ts           # only bounded read/write support r
 tests/merchant-knowledge-bootstrap.test.ts
 tests/merchant-knowledge-bootstrap-postgres.test.ts
 tests/merchant-knowledge-fixed-identity.test.ts
+
+package.json                                      # only the dedicated ARCH-023 PostgreSQL validation command
+scripts/run-merchant-knowledge-bootstrap-postgres.mjs  # task-owned disposable pgvector runner
 ```
 
 The task MAY add a generic successor-release command/storage path whose sole purpose is to preserve an existing release's immutable member Tool pins and Feature Behaviour snapshots while appending new direct Capability membership.
@@ -142,6 +145,7 @@ Do not implement generic Policy Operation Studio UI; ARCH-021-COMMERCE-097–100
 ## Out of Scope
 
 - `merchantKnowledge.lookup` implementation (COMMERCE-001).
+- request-time current-plan / `ShopFeaturePreference` revalidation for `merchantKnowledge.lookup`; that is runtime lookup reconciliation, not publication bootstrap.
 - Merchant Knowledge source ingestion.
 - Admin plan/Feature provisioning.
 - arbitrary Tool function authoring.
@@ -206,7 +210,7 @@ Require exactly:
 
 ```text
 active = true
-activationMode = ALWAYS_ENABLED
+activationMode = MERCHANT_OPT_IN
 systemRequired = false
 ```
 
@@ -217,6 +221,8 @@ MERCHANT_KNOWLEDGE_FEATURE_CONFLICT
 ```
 
 Commerce bootstrap MUST NOT create/update the commercial Feature.
+
+Commerce bootstrap is platform-global publication bootstrap, not merchant activation. It MUST NOT create, update, delete or infer any `ShopFeaturePreference` row. Merchant activation is shop-scoped and occurs later through Recovery Settings using the existing generic preference model.
 
 ADMIN-001 owns that product-policy row.
 
@@ -668,7 +674,7 @@ Prove at minimum:
 
 ```text
 missing Feature -> conflict/no creation
-wrong Feature activationMode/systemRequired -> conflict
+wrong Feature activationMode/systemRequired -> conflict (including legacy ALWAYS_ENABLED)
 clean Commerce state -> complete usable active publication
 restart/rerun of usable state -> zero new Tool revisions, Capabilities, releases, Feature Behaviour edits or pointer edits
 partial Tool identity -> converges
@@ -688,6 +694,7 @@ fixed Tool cannot rebind operation/version
   legacy kind=text/items response template fails closed without an adapter
   valid Studio-authored nunjucks.v1 source/unavailable text is preserved
 startup instrumentation invokes ensure once per process and durable replay remains a no-op across process restarts
+bootstrap requires Feature.activationMode = MERCHANT_OPT_IN and never creates/updates/deletes ShopFeaturePreference
 bootstrap path contains no CommerceCapabilityRevision, selectionBinding or toolBindings dependency
 ```
 
@@ -696,6 +703,7 @@ Use real disposable PostgreSQL for lifecycle convergence, immutable successor pr
 ## Work Items
 
 - [ ] Add bootstrap actor configuration/resolution.
+- [ ] Require `merchant_knowledge` Feature activation mode `MERCHANT_OPT_IN`; reject `ALWAYS_ENABLED` or any other mode and leave all `ShopFeaturePreference` state untouched.
 - [ ] Implement usable direct-publication detector.
 - [ ] Implement canonical Tool identity/revision convergence.
 - [ ] Seed/preserve Merchant Knowledge Feature Behaviour through the existing CAS authoring path.
@@ -706,6 +714,7 @@ Use real disposable PostgreSQL for lifecycle convergence, immutable successor pr
 - [ ] Add non-exclusive Tool reuse regression.
 - [ ] Wire memoized automatic Node startup bootstrap with durable no-op replay.
 - [ ] Add unit + PostgreSQL convergence/snapshot-preservation tests.
+- [ ] Add a task-owned disposable pgvector PostgreSQL validation runner; never point the proof at an ambient/unverified `DATABASE_URL`.
 
 ## Interfaces / Contracts
 
@@ -727,7 +736,7 @@ Produces one canonical initial working publication without introducing any Capab
 - `ARCH-023-COMMERCE-001`
 - `ARCH-023-ADMIN-001`
 
-Both dependencies are Complete and architect-accepted; this task is therefore Ready for Attempt 2 after this reconciliation.
+Both dependencies are Complete and architect-accepted. Attempt 2 returned with incomplete task-owned implementation/validation rather than an architectural dependency. Architect review returns the same task to Ready with Attempt 2 preserved; the next normal launcher claim is Attempt 3.
 
 ## Enables
 
@@ -750,6 +759,7 @@ Planned system tests and generic ARCH-021 Policy Operation Studio evolution afte
 ## Validation
 
 - [ ] focused bootstrap/fixed-identity/direct-Capability tests
+- [ ] `npm run test:arch023-merchant-knowledge-bootstrap:postgres` against one invocation-owned disposable `pgvector/pgvector:pg17` PostgreSQL instance with accepted migrations applied
 - [ ] real disposable PostgreSQL convergence/replay/restart-idempotency proof
 - [ ] real disposable PostgreSQL successor-release exact-snapshot preservation proof
 - [ ] existing Commerce lifecycle/publication/Feature authoring tests
@@ -860,3 +870,142 @@ is required. Continue on the existing canonical implementation worktree and
 
 Pending implementation completion and validation; this addendum is a contract correction,
 not acceptance of the Attempt 2 implementation.
+
+### Architect Review Addendum — Attempt 2 Changes Requested
+
+#### Review Status
+
+Changes Requested
+
+#### Review Notes
+
+Attempt 2 is **not architecturally blocked**. `ARCH-023-COMMERCE-001` and
+`ARCH-023-ADMIN-001` are Complete, the accepted direct Capability schema is sufficient,
+and the generic successor-release lifecycle extension is already within this task's
+authorised scope. The handoff instead contains incomplete task-owned implementation and
+validation, so the same task returns to `ready` for a normal Attempt 3 reclaim.
+
+The six focused bootstrap failures have an immediate test-fixture defect that must be
+corrected before production semantics are changed: the `CommerceLifecycle` fakes in
+`tests/merchant-knowledge-bootstrap.test.ts` are declared as one-argument functions,
+while the production API is invoked as `(principal, input)`. As a result the Principal is
+currently interpreted as the command input (`proposedDefinition`, `toolRevisionId`,
+`members`, and related fields become undefined). Fix the fakes to honour the real
+lifecycle signatures. **Do not weaken or reshape the production lifecycle API to make the
+broken fixture pass.** After that correction, investigate any failures that remain as
+real implementation defects.
+
+#### Attempt 3 Correction Contract
+
+1. **Preserve the existing Attempt 2 work before reclaim.** The implementation worktree
+   was handed back with task-owned bootstrap changes uncommitted. Do not stash, reset or
+   discard them. Checkpoint and push those changes on `task/ARCH-023-COMMERCE-002` so the
+   canonical implementation worktree is clean before `/moda-task` prepares Attempt 3.
+2. **Repair and complete the focused bootstrap suite.** Fix the lifecycle-double
+   `(principal, input)` signatures, change the Feature prerequisite/fixtures from legacy
+   `ALWAYS_ENABLED` to `MERCHANT_OPT_IN`, prove bootstrap never creates or mutates
+   `ShopFeaturePreference`, and satisfy the complete R20 matrix, including active
+   release successor preservation, newer unrelated Tool/Feature authoring state,
+   ambiguous no-pointer history, fixed Tool/direct-Capability conflicts, non-exclusive
+   Tool reuse, startup memoisation/restart no-op behaviour and retired-concept absence.
+3. **Add the required live PostgreSQL proof without using ambient data.** A task-owned
+   `scripts/run-merchant-knowledge-bootstrap-postgres.mjs` plus the dedicated package
+   command is authorised. The runner must create exactly one invocation-owned disposable
+   `pgvector/pgvector:pg17` container (or an architecture-equivalent image already
+   approved by the repository), expose it only on a loopback ephemeral host port, apply
+   the accepted Prisma migrations, set `DATABASE_URL` and `COMMERCE_TEST_DATABASE_URL`
+   only for the child validation process, run
+   `tests/merchant-knowledge-bootstrap-postgres.test.ts`, and remove the owned container
+   on success, failure or interruption. No persistent volume and no supplied/unverified
+   database URL may be used.
+4. **The PostgreSQL suite must exercise production adapters, not SQL-only fixtures or an
+   in-memory lifecycle double.** Prove clean convergence with the fixed Feature in
+   `MERCHANT_OPT_IN` mode, fail closed for legacy `ALWAYS_ENABLED`, prove no bootstrap
+   `ShopFeaturePreference` write, deterministic replay/restart no-op behaviour, direct
+   Capability uniqueness, release-pointer activation/replay, and
+   a successor release that preserves the base release's exact unrelated Tool revision
+   pins and Feature Behaviour snapshots even after newer unrelated authoring state exists.
+5. **Finish the task's ordinary validation.** Run the relevant existing Commerce
+   lifecycle/Feature authoring tests, startup instrumentation test, retired-concept scan,
+   `npm run typecheck`, `npm run lint`, `npm run build`, changed-file diagnostics and
+   `git diff --check`. A known unrelated baseline may be referenced only when the observed
+   failure still matches the documented baseline and no changed file contributes.
+6. Record the exact Attempt 3 launcher-resolved parent/implementation worktree paths,
+   branch synchronization evidence and recursive submodule preparation evidence in the
+   Completion Report before returning to `review`.
+
+
+#### Activation-mode enhancement — authoritative for Attempt 3
+
+The Merchant Knowledge commercial Feature is `MERCHANT_OPT_IN`, not `ALWAYS_ENABLED`.
+COMMERCE-002 bootstraps one global published Tool/Capability/release surface only; that
+publication must be usable by eligible shops but must not itself activate Merchant
+Knowledge for any shop. The bootstrap therefore requires:
+
+```text
+Feature.key = merchant_knowledge
+Feature.active = true
+Feature.activationMode = MERCHANT_OPT_IN
+Feature.systemRequired = false
+```
+
+and performs **zero `ShopFeaturePreference` writes**. A plan's enabled
+`BillingPlanFeature` grants access to configure Merchant Knowledge; the merchant's
+explicit Recovery Settings preference controls shop activation. Background ingestion and
+Commerce retrieval are allowed only while that shop preference is enabled.
+
+The request-time lookup gate is deliberately **not** COMMERCE-002 work. Publication
+bootstrap must not read or write a shop preference. The runtime contract is:
+
+```text
+merchantKnowledge.lookup request
+    |
+    v
+re-resolve current ACTIVE/TRIALING plan entitlement for merchant_knowledge
+    |
+    +--> not entitled -> return no Merchant Knowledge data; no source read, embedding or pgvector query
+    |
+    v
+resolve current ShopFeaturePreference for merchant_knowledge
+    |
+    +--> missing / enabled=false -> return no Merchant Knowledge data; no source read, embedding or pgvector query
+    |
+    v
+enabled=true -> continue the existing bounded Merchant Knowledge lookup
+```
+
+The initial generic capability resolver may also use the preference when determining Tool
+eligibility, but that does not replace this request-time revalidation: a previously created
+conversation grant must not keep Merchant Knowledge usable after the merchant opts out.
+The accepted COMMERCE-001 implementation predates this activation-mode correction and
+must receive a bounded runtime reconciliation before terminal ARCH-023 system acceptance.
+Do **not** implement that runtime correction inside COMMERCE-002 Attempt 3.
+
+The accepted ADMIN-001 task/report also predates this correction and still records the
+fixed product-policy Feature as `ALWAYS_ENABLED`. Its Admin-owned descriptor/durable
+product-policy reconciliation must be corrected separately to `MERCHANT_OPT_IN` before
+integrated rollout. COMMERCE-002 must continue to fail closed on a legacy
+`ALWAYS_ENABLED` Feature; it must **not** mutate the commercial Feature to compensate.
+
+This enhancement supersedes every earlier COMMERCE-002/parent-architecture statement
+that described Merchant Knowledge as `ALWAYS_ENABLED`. It does not restore any retired
+Capability-revision concept and does not change the restart-safe/idempotent bootstrap
+contract.
+
+#### Architecture Conformance
+
+The pushed generic successor-release lifecycle direction remains architecture-conformant
+by inspection: it preserves the immutable base release's compatibility/response contract,
+existing member pins and Feature snapshots, appends one supplied direct Capability with an
+exact PUBLISHED Tool revision, and leaves normal `createRelease()` semantics unchanged.
+No Database task, Capability revision model, `selectionBinding`, per-Capability prompt or
+`toolBindings[]` restoration is authorised.
+
+#### Follow-up
+
+After the current uncommitted implementation is checkpointed/pushed and the implementation
+worktree is clean, reclaim this same task through `/moda-task ARCH-023-COMMERCE-002`. The
+launcher should increment `attempt: 2 -> 3` exactly once. Keep request-time
+`ShopFeaturePreference` enforcement out of this bootstrap task. The accepted COMMERCE-001
+runtime boundary must be reconciled separately before terminal system testing. Do not begin
+COMMERCE-003 or any terminal system-test work from this task.

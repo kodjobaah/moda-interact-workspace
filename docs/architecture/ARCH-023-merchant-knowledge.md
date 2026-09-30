@@ -13,7 +13,7 @@ updated: 2026-09-30
 
 Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-002` and `ARCH-023-SHOPIFY-001`. COMMERCE-002 is In Progress at Attempt 2 because COMMERCE-001 and ADMIN-001 are Complete; its R6 seed response template is reconciled to ARCH-021-COMMERCE-084, with implementation and mandatory validation still pending. `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001. All other ARCH-023 tasks remain gated by their declared dependencies.
+The current executable frontier includes `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-COMMERCE-002`, `ARCH-023-SHOPIFY-003` and `ARCH-023-SHOPIFY-004`. COMMERCE-002 is Ready after Attempt 2 Changes Requested: its dependencies are Complete, the direct-model architecture is settled, and the remaining work is bounded bootstrap/test/PostgreSQL validation owned by the same task. The next normal claim is Attempt 3. All other ARCH-023 tasks remain governed by their individual YAML dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -56,10 +56,15 @@ The missing capability must solve several separate concerns without conflating t
 
 ## Goals
 
-- Add `merchant_knowledge` as an ordinary Feature using the existing `ALWAYS_ENABLED`
+- Add `merchant_knowledge` as an ordinary Feature using the existing `MERCHANT_OPT_IN`
   activation mode. Application/domain plan policy includes it by default on every
-  merchant pricing plan; the database schema does not make this Feature structurally
-  special or required.
+  merchant pricing plan, which grants access to configure Merchant Knowledge; the
+  database schema does not make this Feature structurally special or required. A merchant
+  must explicitly activate it in Recovery Settings before Background ingestion or Commerce
+  retrieval is permitted.
+- Use the existing shop-scoped `ShopFeaturePreference` as the explicit Merchant Knowledge
+  activation state. Missing or `enabled=false` means opted out; plan inclusion alone grants
+  configuration entitlement and never implies runtime activation.
 - Represent plan limits as generic plan-feature configuration rather than hard-coded
   Free/Starter checks.
 - Let each pricing plan select its allowed Merchant Knowledge Purpose/Data Format
@@ -180,7 +185,7 @@ ARCH-023 does not introduce:
   action should occur;
 - background jobs whose purpose is to create merchant-specific Commerce capabilities;
 - a second Shopify onboarding wizard or a separate Merchant Knowledge settings page;
-- a merchant-facing enable/disable toggle for Merchant Knowledge;
+- a Merchant-Knowledge-specific preference table or activation mechanism; use the existing generic `ShopFeaturePreference` control instead;
 - `.xls`, `.xlsm`, `.ods`, PDF or DOCX ingestion in the initial release;
 - execution of spreadsheet macros, formulas, external workbook links, embedded objects
   or other active content; and
@@ -197,7 +202,7 @@ The current database already provides:
 - `Feature` with `FeatureActivationMode` and `systemRequired`;
 - `MerchantPricingPlanFeature` for pricing-catalogue feature membership;
 - `BillingPlanFeature` for materialised runtime plan-feature membership;
-- `ShopFeaturePreference` for merchant opt-in state on optional features; ARCH-023 does not use `ShopFeaturePreference` to enable or disable `merchant_knowledge`;
+- `ShopFeaturePreference` for merchant opt-in state on optional features; ARCH-023 uses the existing generic row as the explicit per-shop activation state for `merchant_knowledge`;
 - `Subscription.status` using `SubscriptionProjectionStatus` including `ACTIVE` and
   `TRIALING`.
 
@@ -320,7 +325,7 @@ The platform creates one ordinary Feature using the existing generic Feature mod
 key:            merchant_knowledge
 displayName:    Merchant Knowledge
 active:         true
-activationMode: ALWAYS_ENABLED
+activationMode: MERCHANT_OPT_IN
 systemRequired: false
 ```
 
@@ -337,8 +342,12 @@ validation keyed by the stable Feature key, not a database invariant.
 `BillingPlan` materialisation remains generic: it copies the already-approved
 `MerchantPricingPlanFeature` rows and their configuration without a
 `merchant_knowledge`-specific branch. Because the Feature uses the existing
-`ALWAYS_ENABLED` activation mode, the normal generic feature resolver does not require
-a `ShopFeaturePreference` row for it. `systemRequired` remains `false`.
+`MERCHANT_OPT_IN` activation mode, the normal generic feature resolver requires the
+shop's existing `ShopFeaturePreference.enabled = true` before the Capability/Tool is
+eligible. Missing/false preference means dormant, not commercially unentitled; plan
+membership still permits configuration. `systemRequired` remains `false`. ARCH-023
+Commerce bootstrap is global publication bootstrap and MUST NOT create or mutate that
+shop-scoped preference.
 
 ARCH-023 Commerce bootstrap owns the complete **initial working publication**, not only
 the fixed identities. Bootstrap MUST use the accepted ARCH-021 lifecycle/authoring and
@@ -1019,7 +1028,8 @@ The existing Recovery Settings page gains two sections:
 ```text
 Conversation features
     existing FeaturePreferences remain unchanged
-    Merchant Knowledge is not rendered as an editable FeaturePreferences checkbox
+    Merchant Knowledge is rendered through the existing generic FeaturePreferences control
+    enabled only when ShopFeaturePreference.enabled = true
 
 Store Profile
     localized active Store Category label/description from Shopify locale files
@@ -1066,6 +1076,22 @@ When adding/editing a source:
   a source is first created in v1; changing format requires creating a replacement source.
 
 No separate Merchant Knowledge settings navigation is introduced in v1.
+
+The current-plan `merchant_knowledge` mapping grants access to configure sources but does
+not activate runtime use. Merchant Knowledge activation is the existing generic
+`ShopFeaturePreference` toggle in Recovery Settings:
+
+- missing/`enabled=false` keeps Merchant Knowledge dormant; configured sources, assets and
+  prior processed content are retained;
+- source configuration may be created/edited while dormant, but Background must not fetch,
+  extract, embed or activate a revision while the preference is disabled;
+- enabling the preference permits Background reconciliation/ingestion for otherwise
+  entitled sources and permits Commerce retrieval; and
+- disabling the preference immediately removes Merchant Knowledge from conversation Tool
+  eligibility and blocks new Background ingestion without destructively deleting source
+  configuration or previously produced content.
+
+Global Commerce bootstrap never writes this preference.
 
 ### D14 — ingestion is Background-owned; uploaded originals live in private R2
 
@@ -1282,15 +1308,16 @@ Redis remains BullMQ/reconciliation infrastructure only.
 During a CommerceAgent turn:
 
 1. the normal generic release/feature resolver evaluates the active/trialing shop's
-   current `BillingPlanFeature` mappings and the `Feature.activationMode`;
-2. when the plan contains an enabled `merchant_knowledge` mapping, the global
-   `merchant_knowledge` capability is eligible and the conversation grant uses the exact
-   `merchant_knowledge_lookup` Tool revision pinned for that direct release Capability
-   member. Because its
-   activation mode is `ALWAYS_ENABLED`, no `ShopFeaturePreference` check is required. If
-   a mapping is absent because data was created outside the supported plan-authoring
-   policy, the generic resolver simply leaves the capability/tool absent; no
-   database-specific Merchant Knowledge invariant is introduced;
+   current `BillingPlanFeature` mappings, `Feature.activationMode` and current
+   `ShopFeaturePreference` when deciding initial Tool eligibility;
+2. when the plan contains an enabled `merchant_knowledge` mapping **and** the current
+   `ShopFeaturePreference.enabled = true`, the global `merchant_knowledge` capability is
+   eligible and the conversation grant uses the exact `merchant_knowledge_lookup` Tool
+   revision pinned for that direct release Capability member. Missing/false preference
+   leaves the Capability/Tool absent even though the plan permits configuration. If a
+   mapping is absent because data was created outside the supported plan-authoring policy,
+   the generic resolver likewise leaves the capability/tool absent; no database-specific
+   Merchant Knowledge invariant is introduced;
 3. MCP `tools/list` exposes `merchant_knowledge_lookup` only when that exact pinned Tool
    remains currently authorised and at least one of its owning capability keys remains
    eligible;
@@ -1301,24 +1328,33 @@ During a CommerceAgent turn:
    `merchantKnowledge.lookup` policy operation;
 6. the model may supply only semantic query text and optional Knowledge Purposes;
 7. `shopId` is supplied exclusively from the trusted conversation/grant context;
-8. Commerce loads the current `BillingPlanFeature.configuration`, validates C2 and
-   filters the shop's persisted sources to those whose `(purposeKey, dataFormatKey)`
-   appears in the current plan's `allowedSourceTypes`;
-9. Commerce selects only the first `maxKnowledgeSources` of those currently allowed
-   sources ordered by `(position ASC, id ASC)`;
-10. if `purposes` was supplied, Commerce further filters the entitled sources by
-   `MerchantKnowledgePurpose.key`; source language does not exclude an otherwise-entitled
-   source;
-11. Commerce embeds the query using the current D17 embedding environment;
-12. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
+8. **every `merchantKnowledge.lookup` request revalidates current state before any
+   Merchant Knowledge source read, query embedding or pgvector operation**:
+   1. resolve the current `ACTIVE`/`TRIALING` BillingPlan entitlement and C2 configuration;
+      if not entitled, return without Merchant Knowledge data and perform no embedding or
+      pgvector query;
+   2. resolve the current `ShopFeaturePreference` for `merchant_knowledge`; missing or
+      `enabled=false` is disabled and returns without Merchant Knowledge data, again with
+      no embedding or pgvector query;
+   3. only `enabled=true` continues into source selection and semantic retrieval;
+9. after both gates pass, Commerce validates C2 and filters the shop's persisted sources
+   to those whose `(purposeKey, dataFormatKey)` appears in the current plan's
+   `allowedSourceTypes`;
+10. Commerce selects only the first `maxKnowledgeSources` of those currently allowed
+    sources ordered by `(position ASC, id ASC)`;
+11. if `purposes` was supplied, Commerce further filters the entitled sources by
+    `MerchantKnowledgePurpose.key`; source language does not exclude an otherwise-entitled
+    source;
+12. Commerce embeds the query using the current D17 embedding environment;
+13. Commerce performs exact cosine-distance pgvector ranking across eligible ACTIVE
     chunks with matching embedding provenance;
-13. the policy operation returns the exact C5 envelope with
+14. the policy operation returns the exact C5 envelope with
     `trust = "UNTRUSTED_REFERENCE"` and at most 5 matches, each retaining its source
     `languageTag`;
-14. Commerce presents those matches only as Tool-result/context data under the global
+15. Commerce presents those matches only as Tool-result/context data under the global
     D7 runtime-data authority rule. Match content is never promoted into any instruction
     layer or into `hostInstructions`;
-15. Merchant Knowledge content may contribute facts to the answer, but it is never
+16. Merchant Knowledge content may contribute facts to the answer, but it is never
     accepted as customer intent, authorization, approval, capability authority or a
     reason by itself to invoke another Tool. In particular, instruction-like match
     content MUST NOT cause the model to emit a side-effecting Tool call.
@@ -1372,8 +1408,8 @@ For Feature key `merchant_knowledge`, C2 is enforced as follows:
 | BillingPlan materialisation | validate selected keys against the active catalogue and copy unchanged | validate/copy configuration unchanged | validate/copy configuration unchanged |
 | Shopify UI | offer only currently plan-entitled Purpose/Data Format pairs | display `configured / max` for currently allowed sources | display source usage / max |
 | Shopify server action | reject create/upload/finalize when the pair is not currently allowed | reject creation that would exceed the allowance after filtering to currently allowed sources | no content decision before fetch |
-| Background processing | re-check the source pair against the current materialised BillingPlan entitlement before processing | re-check source position within the ordered currently allowed set | normalize/truncate before chunking/embedding |
-| Commerce lookup | exclude sources whose pair is not currently allowed | search only the first N currently allowed sources | consume ACTIVE indexed content |
+| Background processing | require current materialised BillingPlan entitlement **and `ShopFeaturePreference.enabled=true`** before processing; then re-check the source pair | re-check source position within the ordered currently allowed set | normalize/truncate before chunking/embedding |
+| Commerce lookup | on every request require current materialised BillingPlan entitlement **then `ShopFeaturePreference.enabled=true`** before any embedding/pgvector work; then exclude disallowed source pairs | search only the first N currently allowed sources | consume ACTIVE indexed content |
 | Background reconciliation | leave disallowed sources dormant and do not enqueue/process them until entitlement returns | retain excess allowed sources but do not enqueue/process them | automatically reprocess oversized ACTIVE entitled sources after a decrease |
 
 Plan source-type entitlement is always read from the shop's **current materialised
@@ -2613,6 +2649,7 @@ runtime-validate Shared payload
     v
 load source + Purpose + Data Format + revision + shop + current BillingPlan entitlement
     |
+    +--> ShopFeaturePreference missing/false -> leave dormant; do not acquire/embed/promote
     +--> stale generation -> skip without promotion
     +--> source Purpose/Data Format not in current allowedSourceTypes -> leave dormant
     +--> source position outside maxKnowledgeSources within currently allowed sources -> do not process
@@ -2662,14 +2699,17 @@ It does not automatically reprocess on allowance increases.
 ### Flow F — conversation lookup
 
 ```text
-conversation grant
+conversation grant / Tool request
     |
     v
 normal capability selection
     |
     +--> merchant_knowledge mapping absent/disabled -> generic resolver leaves tool absent
     |
-    +--> merchant_knowledge mapping present/enabled (normal application-created plan)
+    +--> merchant_knowledge mapping present/enabled but ShopFeaturePreference missing/false
+    |         -> configuration remains available; runtime Tool remains absent
+    |
+    +--> merchant_knowledge mapping present/enabled + ShopFeaturePreference.enabled=true
               |
               v
         merchant_knowledge_lookup granted
@@ -2681,7 +2721,17 @@ normal capability selection
         Commerce injects trusted shopId
               |
               v
-        resolve current C2 config + first maxKnowledgeSources ordered sources
+        re-resolve current ACTIVE/TRIALING plan entitlement + C2
+              |
+              +--> not entitled -> no Merchant Knowledge result; NO embedding / NO pgvector
+              |
+              v
+        re-resolve current ShopFeaturePreference
+              |
+              +--> missing/false -> no Merchant Knowledge result; NO embedding / NO pgvector
+              |
+              v
+        enabled=true -> first maxKnowledgeSources ordered sources
               |
               v
         optional purpose filter; NO source-language filter
@@ -3063,7 +3113,7 @@ existing `app/i18n/locales/<locale>.json` catalogues, source CRUD/refresh/reproc
 actions, server-side current-plan `allowedSourceTypes` and `maxKnowledgeSources`
 enforcement, Purpose/Data Format compatibility selection, source-language
 defaulting/selection, private-R2 signed upload issuance and upload finalization, and C4
-processing-job publication. Merchant Knowledge has no merchant enable/disable preference.
+processing-job publication, plus the merchant-facing generic `ShopFeaturePreference` activation control for `merchant_knowledge`. Plan entitlement permits configuration; missing/false preference keeps runtime use dormant.
 
 ### `moda-interact-background` / `moda_background`
 
@@ -3159,9 +3209,10 @@ Merchant Knowledge format/storage acceptance must additionally verify:
 2. Admin derives plan-selectable source types from active
    `MerchantKnowledgePurposeDataFormat` rows and no Free/Starter/Growth-specific source
    availability branch is required;
-3. two plans may select different `allowedSourceTypes` from the same catalogue and the
-   current materialised BillingPlan alone determines merchant authoring/processing/lookup
-   entitlement;
+3. two plans may select different `allowedSourceTypes` from the same catalogue; the
+   current materialised BillingPlan determines authoring/configuration entitlement and
+   bounds, while Background processing and Commerce lookup additionally require the
+   current `ShopFeaturePreference.enabled = true`;
 4. `PRODUCT_INFORMATION` and `PRICING` globally support `WEB_PAGE`, `CSV` and `XLSX`,
    while a plan may allow any validated subset of those globally supported pairs;
 5. globally unsupported or currently plan-disallowed Purpose/Data Format pairs fail
@@ -3267,8 +3318,7 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after COMMERCE-001 Attempt 2 acceptance:
-Current execution frontier after BACKGROUND-003 Attempt 2 acceptance:
+Current execution frontier after COMMERCE-002 Attempt 2 Changes Requested:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
@@ -3277,19 +3327,23 @@ ARCH-023-SHARED-002     Complete — Accepted Attempt 1
 ARCH-023-ADMIN-001      Complete — Accepted Attempt 2
 ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
 ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
-ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-BACKGROUND-003 Complete — Accepted Attempt 2
+ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
 ARCH-023-ADMIN-003      Ready
 ARCH-023-BACKGROUND-002 Ready
-ARCH-023-BACKGROUND-003 Ready — Attempt 2 corrections
-ARCH-023-COMMERCE-002   Ready
-ARCH-023-COMMERCE-001   Ready
-ARCH-023-SHOPIFY-001    Ready
+ARCH-023-COMMERCE-002   Ready — Attempt 2 Changes Requested; next claim Attempt 3
+ARCH-023-SHOPIFY-003    Ready
+ARCH-023-SHOPIFY-004    Ready
 
-ARCH-023-SHOPIFY-003    Pending — still depends on SHOPIFY-001
-all other ARCH-023 implementation tasks remain gated by their declared dependencies
+ARCH-023-BACKGROUND-004 Pending
+ARCH-023-BACKGROUND-005 Pending
+ARCH-023-COMMERCE-003   Pending
+ARCH-023-GATEWAY-001    Pending
+ARCH-023-SHOPIFY-005    Pending
+terminal system-test tasks remain gated by their declared dependencies/manual checkpoint
 ```
 
 Canonical published Shared revision for ARCH-023 consumers:
@@ -3333,6 +3387,23 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — Merchant Knowledge activation changed to MERCHANT_OPT_IN
+
+- Superseded the earlier `ALWAYS_ENABLED` decision. The canonical `merchant_knowledge` Feature now uses `MERCHANT_OPT_IN` with `systemRequired=false`.
+- A current enabled plan mapping grants access to Merchant Knowledge configuration but does not activate runtime use. The merchant explicitly activates/deactivates Merchant Knowledge in Recovery Settings through the existing generic `ShopFeaturePreference`.
+- Only an enabled shop preference permits Background ingestion/reconciliation and Commerce retrieval. Deactivation is non-destructive: source configuration and prior durable content remain stored but dormant.
+- Commerce bootstrap remains platform-global and restart-safe. It requires the Feature to be `MERCHANT_OPT_IN` but creates/updates no `ShopFeaturePreference` and never activates a shop merely by publishing the global Tool/Capability/release.
+- This architecture change supersedes earlier task/review statements that said Merchant Knowledge does not consult `ShopFeaturePreference`. Accepted/pending runtime tasks carrying that older assumption require bounded reconciliation before integrated ARCH-023 completion; historical review text is retained as history rather than rewritten.
+- Every `merchantKnowledge.lookup` request must recheck current plan entitlement first and then require `ShopFeaturePreference.enabled=true` before Merchant Knowledge source reads, query embedding or pgvector. Missing/false preference returns no Merchant Knowledge data and performs no vector work, including when a previously-created conversation grant exists. This request-time runtime correction is separate from COMMERCE-002 publication bootstrap.
+
+### 2026-09-30 — COMMERCE-002 Attempt 2 changes requested
+
+- Reviewed the pushed generic successor-release lifecycle direction as architecture-conformant; it preserves the base release's frozen member Tool pins and Feature Behaviour snapshots rather than re-resolving unrelated current authoring state.
+- Reclassified the handoff from architectural `blocked` to `Changes Requested`: dependencies/schema are sufficient and the remaining failures are task-owned implementation/validation work.
+- Identified the immediate 6/9 focused-suite defect: lifecycle test doubles use one-argument signatures even though production calls `(principal, input)`, causing command fields such as `proposedDefinition` to become undefined. Production lifecycle signatures must not be weakened to accommodate that fixture.
+- Required completion of the full R20 regression matrix and a production-adapter PostgreSQL proof using one invocation-owned disposable `pgvector/pgvector:pg17` target; ambient/unverified `DATABASE_URL` remains forbidden.
+- Returned COMMERCE-002 to Ready with Attempt 2 preserved. The current uncommitted Attempt 2 bootstrap work must be checkpointed/pushed so the implementation worktree is clean before the next `/moda-task` claim increments to Attempt 3.
 
 ### 2026-09-30 — COMMERCE-002 Attempt 1 blocker reconciled to accepted ARCH-021 direct model
 
@@ -3506,9 +3577,12 @@ through bounded task reviews without changing the agreed architecture contract.
 - Reused the existing private Cloudflare R2 account for immutable original CSV/XLSX
   uploads; PostgreSQL remains authoritative for ownership, lifecycle, normalized content
   and embeddings.
-- Kept `merchant_knowledge` as an ordinary Feature (`ALWAYS_ENABLED`,
+- Kept `merchant_knowledge` as an ordinary Feature (`MERCHANT_OPT_IN`,
   `systemRequired=false`); application/domain plan policy includes it by default on every
-  merchant pricing plan, with no database-level required-feature invariant.
+  merchant pricing plan, with no database-level required-feature invariant. Plan inclusion
+  grants configuration access; explicit merchant activation is stored in the existing
+  shop-scoped `ShopFeaturePreference` and gates Background ingestion plus Commerce
+  retrieval.
 - Defined generic feature configuration as `maxKnowledgeSources`,
   `maxContentUnitsPerSource` and plan-selected `allowedSourceTypes`.
 - Made Merchant Knowledge Purpose/Data Format plan entitlement data-driven: Admin selects
