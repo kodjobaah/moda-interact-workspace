@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 61
 executor: copilot
 claimed_at: 2026-09-30T21:34:11Z
@@ -703,19 +703,19 @@ Use real disposable PostgreSQL for lifecycle convergence, immutable successor pr
 
 ## Work Items
 
-- [ ] Add bootstrap actor configuration/resolution.
-- [ ] Require `merchant_knowledge` Feature activation mode `MERCHANT_OPT_IN`; reject `ALWAYS_ENABLED` or any other mode and leave all `ShopFeaturePreference` state untouched.
-- [ ] Implement usable direct-publication detector.
-- [ ] Implement canonical Tool identity/revision convergence.
-- [ ] Seed/preserve Merchant Knowledge Feature Behaviour through the existing CAS authoring path.
-- [ ] Implement/reuse the fixed direct Capability through `createFeatureCapability` semantics.
-- [ ] Add generic immutable successor-release preservation needed by bootstrap.
-- [ ] Implement release activation/no-pointer cases.
-- [ ] Add fixed Tool/direct-Capability guards without restoring retired concepts.
-- [ ] Add non-exclusive Tool reuse regression.
-- [ ] Wire memoized automatic Node startup bootstrap with durable no-op replay.
-- [ ] Add unit + PostgreSQL convergence/snapshot-preservation tests.
-- [ ] Add a task-owned disposable pgvector PostgreSQL validation runner; never point the proof at an ambient/unverified `DATABASE_URL`.
+- [x] Add bootstrap actor configuration/resolution.
+- [x] Require `merchant_knowledge` Feature activation mode `MERCHANT_OPT_IN`; reject `ALWAYS_ENABLED` or any other mode and leave all `ShopFeaturePreference` state untouched.
+- [x] Implement usable direct-publication detector.
+- [x] Implement canonical Tool identity/revision convergence.
+- [x] Seed/preserve Merchant Knowledge Feature Behaviour through the existing CAS authoring path.
+- [x] Implement/reuse the fixed direct Capability through `createFeatureCapability` semantics.
+- [x] Add generic immutable successor-release preservation needed by bootstrap.
+- [x] Implement release activation/no-pointer cases.
+- [x] Add fixed Tool/direct-Capability guards without restoring retired concepts.
+- [x] Add non-exclusive Tool reuse regression.
+- [x] Wire memoized automatic Node startup bootstrap with durable no-op replay.
+- [x] Add unit + PostgreSQL convergence/snapshot-preservation tests.
+- [x] Add a task-owned disposable pgvector PostgreSQL validation runner; never point the proof at an ambient/unverified `DATABASE_URL`.
 
 ## Interfaces / Contracts
 
@@ -745,32 +745,32 @@ Planned system tests and generic ARCH-021 Policy Operation Studio evolution afte
 
 ## Acceptance Criteria
 
-- [ ] Clean/partial state converges to one usable active direct-Capability publication.
-- [ ] Repeated startup/replay against an already-usable state produces zero new Tool revisions, Capabilities, releases, Feature Behaviour edits or pointer edits.
-- [ ] All Tool create/publish, direct Capability create and release/pointer transitions use existing or task-authorized generic lifecycle/authoring APIs; no direct SQL lifecycle insertion is used.
-- [ ] A successor release preserves every unrelated existing Tool revision pin and Feature Behaviour snapshot exactly.
-- [ ] Later valid Studio-authored Tool revision/Feature Behaviour publication survives restart untouched.
-- [ ] Fixed direct Capability key/Feature/Tool identity cannot be repurposed or disabled.
-- [ ] Tool-to-operation binding remains fixed.
-- [ ] The seed Tool response template uses the accepted `nunjucks.v1` contract, renders `result.matches` in the required format, and preserves the structured C5 envelope without a legacy adapter.
-- [ ] Tool reuse across other direct Capabilities remains non-exclusive.
-- [ ] No commercial Feature row is created by Commerce.
-- [ ] No `CommerceCapabilityRevision`, `selectionBinding`, per-Capability prompt/configuration or `toolBindings[]` persistence/API is introduced.
+- [x] Clean/partial state converges to one usable active direct-Capability publication.
+- [x] Repeated startup/replay against an already-usable state produces zero new Tool revisions, Capabilities, releases, Feature Behaviour edits or pointer edits.
+- [x] All Tool create/publish, direct Capability create and release/pointer transitions use existing or task-authorized generic lifecycle/authoring APIs; no direct SQL lifecycle insertion is used.
+- [x] A successor release preserves every unrelated existing Tool revision pin and Feature Behaviour snapshot exactly.
+- [x] Later valid Studio-authored Tool revision/Feature Behaviour publication survives restart untouched.
+- [x] Fixed direct Capability key/Feature/Tool identity cannot be repurposed or disabled.
+- [x] Tool-to-operation binding remains fixed.
+- [x] The seed Tool response template uses the accepted `nunjucks.v1` contract, renders `result.matches` in the required format, and preserves the structured C5 envelope without a legacy adapter.
+- [x] Tool reuse across other direct Capabilities remains non-exclusive.
+- [x] No commercial Feature row is created by Commerce.
+- [x] No `CommerceCapabilityRevision`, `selectionBinding`, per-Capability prompt/configuration or `toolBindings[]` persistence/API is introduced.
 
 ## Validation
 
-- [ ] focused bootstrap/fixed-identity/direct-Capability tests
-- [ ] `npm run test:arch023-merchant-knowledge-bootstrap:postgres` against one invocation-owned disposable `pgvector/pgvector:pg17` PostgreSQL instance with accepted migrations applied
-- [ ] real disposable PostgreSQL convergence/replay/restart-idempotency proof
-- [ ] real disposable PostgreSQL successor-release exact-snapshot preservation proof
-- [ ] existing Commerce lifecycle/publication/Feature authoring tests
-- [ ] startup instrumentation test
-- [ ] retired-concept scan for new COMMERCE-002 production paths (`CommerceCapabilityRevision`, `selectionBinding`, `toolBindings`)
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused bootstrap/fixed-identity/direct-Capability tests
+- [x] `npm run test:arch023-merchant-knowledge-bootstrap:postgres` against one invocation-owned disposable `pgvector/pgvector:pg17` PostgreSQL instance with accepted migrations applied
+- [x] real disposable PostgreSQL convergence/replay/restart-idempotency proof
+- [x] real disposable PostgreSQL successor-release exact-snapshot preservation proof
+- [x] existing Commerce lifecycle/publication/Feature authoring tests
+- [x] startup instrumentation test
+- [x] retired-concept scan for new COMMERCE-002 production paths (`CommerceCapabilityRevision`, `selectionBinding`, `toolBindings`)
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -787,7 +787,7 @@ The ordinary `createRelease()` semantics remain useful for fresh composition bec
 ## Completion Report
 
 ### Status
-Blocked — Attempt 3 implementation and unit coverage are in place, but the required production PostgreSQL successor proof exposes a conflict in the accepted ARCH-021 release Feature snapshot guard. Architect review is required after the authorized Database-owned correction; do not mark this task `review` yet.
+Ready for Review — Attempt 4 completed after consuming the architect-accepted DATABASE-004 migration at integrated database commit `6a8602e67d2308189af81ee0091e5189f1ffd71a`. Attempt 3 blocker history and validation evidence below are superseded by the Attempt 4 report.
 
 ### Files Changed
 Attempt 3 implementation worktree changes:
@@ -826,6 +826,33 @@ The implementation and validation evidence above is from Attempt 3 in the implem
 
 ### Architectural Concerns
 The ARCH-021 `commerce.arch021_release_feature_guard` requires every inserted `CommerceReleaseFeature.behaviourPrompt` to equal the current `CommerceFeatureConfiguration.behaviourPrompt`. That rejects the required exact copy of an immutable base-release snapshot when unrelated Feature authoring has advanced. Commerce cannot resolve this by bypassing lifecycle storage, mutating frozen history, or weakening the exact-snapshot requirement.
+
+### Attempt 4 — Current Completion Report
+
+#### Files Changed
+- `database` submodule pin: `2eb17ee910491e8f9df82736fc0a843844415947` -> `6a8602e67d2308189af81ee0091e5189f1ffd71a` (accepted DATABASE-004 integrated mainline revision).
+- `src/commerce/bootstrap/merchant-knowledge.ts`: make release activation operation IDs deterministic per environment, expected pointer edit version, and release ID, so successor activation does not collide with an earlier activation replay key.
+- `tests/merchant-knowledge-bootstrap-postgres.test.ts`: give the full production-adapter PostgreSQL scenario a bounded 60-second test timeout.
+
+#### Work Completed
+Preserved the Attempt 3 implementation and consumed the accepted DATABASE-004 migration through the authorized submodule pin update. The first rerun against the accepted pin exposed an activation operation-ID collision when bootstrap activated a successor release. The lifecycle correctly rejected reuse of an operation ID with different input; the bootstrap now derives a distinct deterministic operation ID from the pointer transition inputs. The disposable proof then passed, including clean bootstrap, replay no-op, exact unrelated Tool revision and Feature snapshot preservation after newer authoring, and successor activation. No Feature or ShopFeaturePreference state is changed by bootstrap.
+
+Launcher-prepared evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-002`; both task branches are `task/ARCH-023-COMMERCE-002`. The launcher reported current `origin/main` incorporated, dependency gate passed for COMMERCE-001, ADMIN-001, and DATABASE-004, recursive submodule synchronization and initialization passed, and the database was initially materialized at `2eb17ee910491e8f9df82736fc0a843844415947`. Attempt 4 claim commit: `84cfc0a6b49e5af885aca93d6b03b6683921bee5`; executor `copilot`; claimed at `2026-09-30T21:34:11Z`.
+
+#### Validation Results
+- Passed: focused bootstrap, startup instrumentation, lifecycle, and Feature-authoring tests: 5 files, 56 tests.
+- Passed: `npm run test:arch023-merchant-knowledge-bootstrap:postgres` against one invocation-owned disposable `pgvector/pgvector:pg17` instance after accepted migrations; successor snapshot proof passed and cleanup verified zero owned containers.
+- Passed: `npm run typecheck`.
+- Passed: `npm run lint` with five existing warnings in unrelated Studio/MCP test files; zero errors.
+- Passed: `npm run build`; production build and Prisma generation completed. Next.js emitted the existing Nunjucks dynamic-dependency warning.
+- Passed: retired-concept scan over the relevant bootstrap/publication/backend production paths and task tests; no `CommerceCapabilityRevision`, `selectionBinding`, or `toolBindings` matches.
+- Passed: `git diff --check`, staged diff whitespace check, and changed-file diagnostics for edited source/test/package files.
+
+#### Deviations and Unresolved Issues
+The initial PostgreSQL invocation used the launcher-recorded pre-DATABASE-004 gitlink and reproduced the historical guard rejection. After confirming DATABASE-004 commit `6a8602e` was integrated on database `main` and architect-accepted, the task-authorized Commerce submodule pin was advanced and the proof passed. The build script reset the nested checkout to the old recorded gitlink once; the accepted revision was restored and staged, and the final PostgreSQL proof passed with that pin. No unresolved implementation or architecture concerns remain.
+
+#### Publication
+Implementation commit `649037fce8a2aea7f321b1e6436920c90164dfbd` is pushed on `task/ARCH-023-COMMERCE-002`; the parent task report is being committed and pushed on its matching branch. This task is returned to `review`; no main branch was updated and no parent gitlink to the Commerce implementation was staged.
 
 ### Architect Adjudication — Attempt 3 Snapshot Guard
 The architect authorizes a narrowly scoped Database-owned `ARCH-023-DATABASE-004` task to define a forward migration and PostgreSQL regression coverage for this guard conflict. This supersedes the earlier “no Database task” restriction only for the demonstrated successor snapshot invariant; it does not authorize Commerce schema edits, trigger bypasses, mutation of existing releases, or restoration of retired Capability concepts. `ARCH-023-DATABASE-004` is the required Database-owned prerequisite. Its portable canonical definition is supplied by the architect with this adjudication and must be materialized through the normal `/moda-task ARCH-023-DATABASE-004 --definition ...` path. Keep this Commerce task `blocked` until DATABASE-004 is architect-accepted Complete.
