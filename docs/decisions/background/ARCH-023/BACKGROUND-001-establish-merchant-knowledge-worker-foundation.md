@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -537,19 +537,47 @@ None. Architect Review remains owned by `moda_architect` and was not modified.
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 2
 
 ### Review Notes
-Pending.
+The implementation is substantively aligned with the bounded BACKGROUND-001 objective: the dedicated readiness identity, single Shared-Redis queue resource, internal acquisition contracts, current-plan-only entitlement/eligibility resolver, bounded deterministic PENDING reconciliation and injected Merchant Knowledge worker factory all match the intended architecture. The exact Shared dependency is pinned to `@modainteract/moda-interact-shared@1.0.1`, no deployable Merchant Knowledge entrypoint has been introduced, and no acquisition/embedding/vector implementation has leaked into this task.
+
+Acceptance is withheld for three bounded corrections:
+
+1. **A2-R1 — use the canonical Shared C4 schema-version constant.** `src/services/merchant-knowledge-reconciliation.service.ts` constructs the cross-service C4 payload with a local literal `schemaVersion: 1` even though the accepted Shared contract exports `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION`. The architect cross-service contract rule requires the Shared schema-version constant when one exists. Import and use that constant in production code, and make the focused reconciliation test assert the Shared constant rather than a duplicated local literal.
+2. **A2-R2 — close the required PostgreSQL integration acceptance check.** The task still has an unchecked Acceptance Criterion and unchecked Validation item for recovery of a committed eligible PENDING revision after simulated initial queue loss. The repository already has the canonical disposable integration wrapper in `scripts/test-integration.mjs`, backed by `withDisposableIntegrationInfrastructure`. Run `npm run test:integration -- tests/integration/merchant-knowledge-reconciliation.integration.test.ts` from the canonical implementation worktree and record the passing result. A localhost `pg_isready` failure does not satisfy or replace this repository-owned disposable test path. If the Docker-compatible disposable harness genuinely cannot run, return the task `blocked` rather than resubmitting with this required check open.
+3. **A2-R3 — make the mandatory execution-provenance evidence durable.** The Completion Report does not record the launcher-resolved physical parent/implementation worktrees, both task branches, shared-checkout non-use, start-of-attempt fast-forward/mainline synchronization results, or recursive implementation-submodule preparation. Record the required evidence from the prepared execution packet/worktree state. Clean branches and pushed commit identifiers alone do not substitute for the mandated Completion Report evidence.
+
+The task is returned to `ready` with `attempt: 2` preserved. The next authorized claim increments it to Attempt 3. `ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003` remain Pending until BACKGROUND-001 is architect-accepted Complete.
 
 ### Reviewed Files
-Pending.
+- `docs/decisions/background/ARCH-023/BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md`
+- `docs/decisions/background/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+- `moda-interact-background/package.json`
+- `moda-interact-background/package-lock.json`
+- `moda-interact-background/scripts/test-integration.mjs`
+- `moda-interact-background/database/prisma/schema.prisma`
+- `moda-interact-background/src/runtime/readiness.ts`
+- `moda-interact-background/src/entrypoints/merchant-knowledge-resources.ts`
+- `moda-interact-background/src/services/merchant-knowledge-acquisition.ts`
+- `moda-interact-background/src/services/merchant-knowledge-entitlement.service.ts`
+- `moda-interact-background/src/services/merchant-knowledge-reconciliation.service.ts`
+- `moda-interact-background/src/workers/merchant-knowledge.worker.ts`
+- `moda-interact-background/src/observability/worker-metrics.ts`
+- `moda-interact-background/src/observability/queue-performance.ts`
+- focused Merchant Knowledge unit/integration tests
+- `docs/agent-worktree-isolation-policy.md`
 
 ### Validation Reviewed
-Pending.
+- Reported focused validation is internally consistent: entitlement 7/7, reconciliation 7/7, worker 5/5 and readiness 8/8 (27 tests total).
+- Reported `npx tsc --noEmit`, `npm run prisma:generate`, `npm run prisma:validate`, `npm run build`, changed-file diagnostics and `git diff --check` passed.
+- `package.json` exposes the canonical `npm run test:integration` wrapper, and `scripts/test-integration.mjs` provisions disposable PostgreSQL/Redis, deploys the real Prisma migrations and supplies the opt-in integration environment to Vitest.
+- The required Merchant Knowledge PostgreSQL integration test remains unexecuted in the submitted Completion Report, so its Acceptance Criterion/Validation item correctly remains unchecked and prevents acceptance.
+- The supplied review archive does not itself provide verifiable Git worktree history; the mandatory execution-provenance evidence must therefore be present durably in the Completion Report before acceptance.
 
 ### Architecture Conformance
-Pending.
+**Conformant in substance, not yet acceptable.** Repository ownership, PostgreSQL/BullMQ boundaries, current-plan entitlement semantics, deterministic PENDING repair, worker isolation, Shared 1.0.1 consumption and non-deployable foundation scope are aligned with ARCH-023. The remaining issues are one cross-service contract-consumption correction plus required validation/provenance evidence; no architecture redesign or new task is required.
 
 ### Follow-up
-Pending.
+For Attempt 3, make only the bounded correction/evidence changes above. Preserve database submodule commit `2eb17ee910491e8f9df82736fc0a843844415947` and exact Shared `1.0.1`; do not start BACKGROUND-002 or BACKGROUND-003. After the source/test correction, rerun the task-required focused validation including the disposable PostgreSQL integration test, update the Completion Report and return this same task to `review`.
