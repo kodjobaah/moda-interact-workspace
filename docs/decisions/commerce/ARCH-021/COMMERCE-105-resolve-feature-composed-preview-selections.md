@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 100
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-30T11:39:46Z
+attempt: 1
 depends_on:
   - ARCH-021-COMMERCE-092
 enables:
   - ARCH-021-COMMERCE-106
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Resolve Feature-composed Preview selections
