@@ -524,7 +524,7 @@ Validation from the implementation worktree:
 - `git diff --check`: passed.
 - Repository-wide `npm run lint`: failed on pre-existing diagnostics in unrelated files; the changed-file ESLint check passed.
 
-Implementation worktree was clean after source commits `3936763bbee6439cb98db2320cd45b6ccd3574bf` and `bffc796`; both match the task remote. Parent report commits: initial Attempt 4 submission `25128184`, submission-SHA follow-up `cb139036`, and the current evidence update is committed separately below. All are pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+Implementation worktree was clean after source commits `3936763bbee6439cb98db2320cd45b6ccd3574bf` and `bffc796`; both match the task remote. Parent report commits: initial Attempt 4 submission `25128184`, submission-SHA follow-up `cb139036`, and evidence update `bb98e9e4`. These report commits are pushed to `origin/task/ARCH-017-SHOPIFY-001`; the current SHA-recording follow-up is the only remaining parent report commit.
 
 No database submodule contents or Architect Review section were edited.
 
