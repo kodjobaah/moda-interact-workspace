@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
-executor: copilot
-claimed_at: 2026-09-30T20:40:57Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-021-DATABASE-003
@@ -273,29 +273,29 @@ next Commerce attempt reruns its existing real PostgreSQL successor-preservation
 
 ## Work Items
 
-- [ ] Add the fixed forward migration.
-- [ ] Replace only `commerce.arch021_release_feature_guard()` with current-or-historical exact admission.
-- [ ] Preserve all release Feature immutability and other ARCH-021 release guards.
-- [ ] Add the exact static validator.
-- [ ] Add the disposable pgvector/PostgreSQL before/after upgrade rehearsal.
-- [ ] Add package scripts for both validators.
-- [ ] Run Prisma validation/generation only as required to prove no schema regression.
-- [ ] Record canonical parent/implementation worktree preparation, synchronization and recursive-submodule evidence.
-- [ ] Update the Completion Report and return to architect review.
+- [x] Add the fixed forward migration.
+- [x] Replace only `commerce.arch021_release_feature_guard()` with current-or-historical exact admission.
+- [x] Preserve all release Feature immutability and other ARCH-021 release guards.
+- [x] Add the exact static validator.
+- [x] Add the disposable pgvector/PostgreSQL before/after upgrade rehearsal.
+- [x] Add package scripts for both validators.
+- [x] Run Prisma validation/generation only as required to prove no schema regression.
+- [x] Record canonical parent/implementation worktree preparation, synchronization and recursive-submodule evidence.
+- [x] Update the Completion Report and return to architect review.
 
 ## Acceptance Criteria
 
-- [ ] No Prisma model/schema semantic change is introduced.
-- [ ] Existing current Feature Behaviour snapshots remain valid.
-- [ ] An exact historical immutable snapshot for the same Feature becomes valid in a later release after current authoring advances.
-- [ ] Arbitrary never-published stale prompt text remains invalid.
-- [ ] A historical prompt from a different Feature remains invalid.
-- [ ] Existing `CommerceReleaseFeature` rows remain immutable.
-- [ ] Existing Tool-revision/member release guards remain unchanged.
-- [ ] The disposable PostgreSQL upgrade proof demonstrates the predecessor failure and corrected post-migration success.
-- [ ] The migration preserves existing release/configuration data.
-- [ ] No Commerce implementation workaround or retired Capability model is introduced.
-- [ ] All required validation passes and the task-owned container is removed.
+- [x] No Prisma model/schema semantic change is introduced.
+- [x] Existing current Feature Behaviour snapshots remain valid.
+- [x] An exact historical immutable snapshot for the same Feature becomes valid in a later release after current authoring advances.
+- [x] Arbitrary never-published stale prompt text remains invalid.
+- [x] A historical prompt from a different Feature remains invalid.
+- [x] Existing `CommerceReleaseFeature` rows remain immutable.
+- [x] Existing Tool-revision/member release guards remain unchanged.
+- [x] The disposable PostgreSQL upgrade proof demonstrates the predecessor failure and corrected post-migration success.
+- [x] The migration preserves existing release/configuration data.
+- [x] No Commerce implementation workaround or retired Capability model is introduced.
+- [x] All required validation passes and the task-owned container is removed.
 
 ## Validation
 
@@ -334,23 +334,39 @@ Do not start or modify `ARCH-023-COMMERCE-002` from this task.
 
 ### Status
 
-Not started.
+Attempt 1 complete; returned to Architect Review with `status: review`, `attempt: 1`, `executor: null`, and `claimed_at: null`.
 
 ### Files Changed
 
-None.
+Implementation files:
+- `prisma/migrations/20260930200000_arch023_release_feature_snapshot_history/migration.sql`
+- `scripts/validate-arch023-release-feature-snapshot-history.mjs`
+- `scripts/test-arch023-release-feature-snapshot-history-postgres.mjs`
+- `package.json`
+
+The Prisma schema, package lockfile, other repositories, and all out-of-scope models/guards were unchanged.
 
 ### Work Completed
 
-None.
+Added a forward-only `CREATE OR REPLACE FUNCTION` migration that replaces only `commerce.arch021_release_feature_guard()`. It retains the Feature-row `FOR SHARE` lock, current prompt lookup, and empty-string fallback; it admits a historical prompt only when an already-persisted `CommerceReleaseFeature` row has both the same `featureId` and exact `behaviourPrompt`. Otherwise it continues to reject with SQLSTATE `23514`. Existing trigger identities and immutability remain intact.
+
+Added a static validator that requires the fixed replacement function and checks the lock, current fallback, exact two-column historical match, rejection code, absence of bypass/trigger/schema changes, and one-function-only migration. Added a disposable `pgvector/pgvector:pg17` migration-chain rehearsal that proves predecessor rejection, corrected same-Feature historical acceptance, current-value acceptance, never-published and cross-Feature rejection, UPDATE/DELETE immutability, data preservation, and unchanged trigger topology. The runner uses one invocation-owned container on `--network none` and removes it in `finally`.
 
 ### Validation Results
 
-Not run.
+`npm run prisma:validate`: passed. `npm run prisma:generate`: passed.
+
+`npm run test:arch023-release-feature-snapshot-history`: passed.
+
+`npm run test:arch023-release-feature-snapshot-history:postgres`: passed; full accepted migration chain through `20260929160000_arch023_merchant_knowledge_schema` applied, all predecessor/upgrade and negative cases passed, and invocation-owned container removed.
+
+`npm run test:arch021-feature-capability-schema`: passed. `npm run test:arch021-feature-capability-migration`: passed (structural mode).
+
+Changed-file diagnostics: no errors found for the migration, both new scripts, and `package.json`. `git diff --check`: passed. The initial Prisma validation attempt could not find Prisma because the prepared worktree had no `node_modules`; `npm ci` installed the existing lockfile dependencies without changing package manifests, after which validation and generation passed. The task-runner output noted 3 high-severity npm audit findings; no audit remediation or dependency changes were in scope.
 
 ### Deviations
 
-None.
+The existing ARCH-021 validators required no edits: their schema validator inspects the accepted predecessor migration, and their migration validator's stale prompt is never-persisted text, so it remains correctly rejected under the new contract. The supplied launcher skill notation accepts `--definition` at the workflow level, but this installed launcher rejected that option; after its normal `--prepare` reported the task missing, the documented route-only exception was followed and the portable definition was materialized unchanged before preparing again.
 
 ### Assumptions
 
@@ -362,7 +378,38 @@ None at definition time.
 
 ### Architectural Concerns
 
-None at definition time.
+None identified. No Commerce workaround, Prisma schema change, trigger bypass, release ancestry model, or retired Capability model was introduced.
+
+### Physical Worktree and Launcher Evidence
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-DATABASE-004
+parent branch: task/ARCH-023-DATABASE-004
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-DATABASE-004
+implementation branch: task/ARCH-023-DATABASE-004
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recursive submodule entries: none
+dependency gate: passed (ARCH-021-DATABASE-003 and ARCH-023-DATABASE-001 complete)
+```
+
+### Commit Identities
+
+Implementation commit: `0cdea8b` (`fix(database): allow immutable historical release feature snapshots`).
+
+Parent definition-materialization commit: `5950ba78e428610e800e88e5ee7b86688f7ba4da`.
+
+Parent launcher claim commit: `9c4d7dad1cb0f326a39f65cb3000dbe6536f58e7`.
+
+Parent Completion Report commit and final task-ref synchronization evidence will be recorded immediately after publication.
 
 ## Architect Review
 
