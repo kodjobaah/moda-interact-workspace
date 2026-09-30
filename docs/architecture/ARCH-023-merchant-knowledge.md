@@ -3217,17 +3217,19 @@ Current execution frontier after BACKGROUND-003 Attempt 2 acceptance:
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
 ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+ARCH-023-ADMIN-001      Complete — Accepted Attempt 2
 ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
 ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
 ARCH-023-BACKGROUND-003 Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
-ARCH-023-ADMIN-001      Ready
 ARCH-023-ADMIN-003      Ready
 ARCH-023-BACKGROUND-002 Ready
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
-ARCH-023-SHOPIFY-002    Ready
 
+ARCH-023-COMMERCE-002   Pending — still depends on COMMERCE-001
+ARCH-023-SHOPIFY-003    Pending — still depends on SHOPIFY-001
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
@@ -3238,28 +3240,31 @@ Canonical published Shared revision for ARCH-023 consumers:
 integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==
 ```
 
-Ready tasks are independent except where their own task YAML declares otherwise. No consumer
-implementation task is started implicitly by this architect review.
+Ready tasks are independent except where their own task YAML declares otherwise. No
+consumer implementation task is started implicitly by this architect review.
 
-Current execution frontier after SHOPIFY-002 Attempt 2 acceptance:
+Current execution frontier after SHOPIFY-001 Attempt 2 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
 ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
 ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
 ARCH-023-ADMIN-001      Ready
 ARCH-023-ADMIN-003      Ready
-ARCH-023-BACKGROUND-001 Ready
+ARCH-023-BACKGROUND-002 Ready
+ARCH-023-BACKGROUND-003 Ready
 ARCH-023-COMMERCE-001   Ready
-ARCH-023-SHOPIFY-001    Ready
-ARCH-023-SHOPIFY-003    Pending — still depends on SHOPIFY-001
+ARCH-023-SHOPIFY-003    Ready
+ARCH-023-SHOPIFY-004    Ready
+ARCH-023-SHOPIFY-005    Pending — still depends on SHOPIFY-004
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
-SHOPIFY-002 acceptance does not promote SHOPIFY-003 because SHOPIFY-001 is not yet Complete. No downstream task is started implicitly by this review.
+SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3278,6 +3283,28 @@ through bounded task reviews without changing the agreed architecture contract.
 - Accepted focused upload tests 16/16, shared-formula coverage 5/5 and disposable pgvector cleanup integration 2/2; build, Prisma validation, TypeScript, diagnostics and diff checks are recorded as passed.
 - Marked BACKGROUND-003 Complete. BACKGROUND-004 remains Pending because BACKGROUND-002 is still Ready, not Complete; no downstream task was started.
 
+### 2026-09-30 — SHOPIFY-001 Attempt 2 accepted
+
+- Accepted the bounded Merchant Knowledge extension of the existing ARCH-017 BillingPlan materialiser at implementation `787b62a5c27c6d732503c02476eb094ae5258ffa` and parent report `548175c859458d77d87b0df7f3d1111c6a07f2b3`.
+- Confirmed Merchant Knowledge C2/pair validation occurs before first BillingPlan creation while the feature projection remains generic and copies configuration unchanged. Existing operational-plan reuse/concurrency recovery is preserved and no ShopFeaturePreference mutation is introduced.
+- Accepted the developer-supplied procedural capture as closure of the review-evidence gap: canonical task worktrees/branches are registered, submitted HEADs equal remote task heads, the database submodule is materialised at the accepted gitlink, and reflogs prove parent and implementation `origin/main` synchronization immediately before the Attempt 2 claim.
+- Marked SHOPIFY-001 Complete and promoted SHOPIFY-003 plus SHOPIFY-004 to Ready. SHOPIFY-005 remains Pending behind SHOPIFY-004. No downstream task was started implicitly.
+
+### 2026-09-30 — SHOPIFY-001 Attempt 1 blocked on missing ARCH-017 integration baseline
+
+- Confirmed the prepared `moda-interact` base at `3ec4c6fb4e519ddcb640e03a614d442f525a630c` does not contain the ARCH-017 `resolveOrMaterializeBillingPlan(...)` path that ARCH-023-SHOPIFY-001 is required to extend.
+- Kept SHOPIFY-001 Blocked rather than authorising a duplicate/new BillingPlan materialiser inside ARCH-023. No implementation source change is required for the blocked attempt.
+- Identified durable ARCH-017 coordination drift: the ARCH-017 parent architecture and later Shopify task records describe SHOPIFY-001 as Complete, while its individual authoritative task YAML in this workspace still says `ready` / `attempt: 0` and contains no durable Architect Review. That record must be reconciled before its branch is treated as merge-authorised.
+- Required normal developer integration of the architect-accepted ARCH-017 Shopify lifecycle chain into the canonical `moda-interact` base before SHOPIFY-001 may return to Ready.
+- Left SHOPIFY-002 Ready because it is independent of SHOPIFY-001. SHOPIFY-003 and SHOPIFY-004 remain gated on SHOPIFY-001 completion.
+### 2026-09-30 — ADMIN-001 Attempt 2 accepted
+
+- Accepted the Merchant Knowledge pricing-plan entitlement authoring path at Attempt 2.
+- Confirmed exactly one locked Merchant Knowledge product-policy control is rendered for new and existing plans.
+- Confirmed create/update use one generic mapping persistence helper that preserves unrelated/inactive configuration and mirrors identical JSON into an already-materialised BillingPlan without touching `ShopFeaturePreference`.
+- Confirmed C2 plus active Purpose/Data Format catalogue validation, explicit existing-plan repair, exact Shared `1.0.1` adoption and the accepted database revision.
+- Reviewed 19/19 focused unit tests and 12/12 focused pricing security tests as passing, together with Prisma validation, TypeScript, production build, changed-file diagnostics and `git diff --check`; recorded broad unit/lint failures remain outside the changed ADMIN-001 surface.
+- Marked ADMIN-001 Complete. COMMERCE-002 remains Pending because COMMERCE-001 is not yet Complete; no task becomes newly Ready solely from this acceptance.
 ### 2026-09-30 — BACKGROUND-003 Attempt 1 changes requested
 
 - Reviewed private R2 acquisition, CSV/XLSX extraction and database-backed upload cleanup as substantially architecture-conformant.
