@@ -4,7 +4,7 @@ title: CommerceAgent configuration and live Studio authoring
 status: agreed
 coordinator: moda_architect
 created: 2026-09-23
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # ARCH-021: CommerceAgent configuration and live Studio authoring
@@ -3239,3 +3239,27 @@ SYSTEM-TEST-003 returned to Pending until C110 was architect-accepted Complete.
 COMMERCE-110 is **Complete / Accepted, Attempt 1**. Add Capability now renders `Capability / Tool / Review` as one semantic tablist with deterministic tab/tabpanel relationships and bounded responsive styling, while preserving COMMERCE-104 readiness, monotonic unlocking, Previous/Next, current Create gating and zero-write navigation.
 
 All declared SYSTEM-TEST-003 dependencies are now Complete. SYSTEM-TEST-003 is therefore **Ready** as terminal Feature/Capability validation and is not started automatically.
+
+### Tool-library truthfulness and PostgreSQL rehearsal isolation follow-ups — 2026-09-30
+
+Manual validation of Add Capability exposed two independent issues.
+
+First, the Global tool library currently lists every Tool but shows only total revision count while describing the surface as reusable/published. Add Capability correctly requires `enabled && at least one PUBLISHED revision`, so DRAFT-only Tools can appear in the library yet be absent from Capability selection with no visible explanation. COMMERCE-111 makes the library truthful by showing enabled state, published/draft/total revision counts and the exact Add Capability eligibility result while leaving the authoritative Add Capability predicate unchanged.
+
+Second, the backend PostgreSQL rehearsal currently accepts an arbitrary `DATABASE_URL` and creates durable rehearsal Tool/Audit/Release state without deleting it. That allowed rehearsal rows such as `Updated rehearsal`, `Race A`, `Race B` and `Narrow rehearsal` to accumulate in a long-lived development database. COMMERCE-112 makes the rehearsal fail closed outside an invocation-owned disposable PostgreSQL target, seeds its own prerequisite graph and destroys the task-owned database container after the run.
+
+These are independent bounded corrections:
+
+```text
+COMMERCE-111  Tool-library lifecycle / Capability-eligibility presentation
+COMMERCE-112  backend PostgreSQL rehearsal disposable isolation
+```
+
+Neither task changes Add Capability eligibility, production Tool publication semantics or release/runtime composition.
+
+| Task | Owner | Status | Depends On |
+|---|---|---|---|
+| ARCH-021-COMMERCE-111 | moda_commerce | Ready | - |
+| ARCH-021-COMMERCE-112 | moda_commerce | Ready | - |
+
+The Commerce ARCH-021 `_index.md` is intentionally not changed when these tasks are materialised. Each task's Architect Review/acceptance step owns the corresponding index reconciliation after implementation evidence is available.
