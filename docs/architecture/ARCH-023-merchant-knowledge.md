@@ -12,18 +12,16 @@ updated: 2026-09-30
 ## Status
 
 Agreed — the architecture and repository task decomposition are materialised and implementation
-is underway. `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` are **Complete / Accepted at
-Attempt 2**. `ARCH-023-ADMIN-003` is now Ready, while `ARCH-023-SHARED-001` remains
-independently Ready from DATABASE-001 acceptance. All other ARCH-023 implementation tasks
-remain gated by their declared dependencies.
-is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**,
-`ARCH-023-SHARED-001` is **Complete / Accepted at Attempt 2**, and the accepted Shared
-implementation is now published and architect-accepted through `ARCH-023-SHARED-002` as
-exact revision `@modainteract/moda-interact-shared@1.0.1`.
+is underway. `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002` and
+`ARCH-023-ADMIN-002` are Complete/architect-accepted. The canonical Shared consumer revision
+is exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`,
-`ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and
-`ARCH-023-SHOPIFY-002`. All other ARCH-023 tasks remain gated by their declared dependencies.
+The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-003`,
+`ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`,
+`ARCH-023-BACKGROUND-002` and `ARCH-023-BACKGROUND-003`. BACKGROUND-001 is
+Complete/architect-accepted at Attempt 4 after its disposable pgvector queue-loss proof passed.
+BACKGROUND-002 and BACKGROUND-003 are now Ready in parallel. All other ARCH-023 tasks remain
+gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3210,33 +3208,23 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after ADMIN-002 Attempt 2 acceptance:
-
-```text
-ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
-ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
-
-ARCH-023-SHARED-001     Ready
-ARCH-023-ADMIN-003      Ready
-all other ARCH-023 implementation tasks remain gated by their declared dependencies
-```
-
-SHARED-001 and ADMIN-003 are independent at this frontier and may execute in parallel.
-Their execution still requires the normal task claim/preparation path; architect acceptance
-does not start either task implicitly.
-Current execution frontier after SHARED-002 Attempt 1 acceptance:
+Current execution frontier after BACKGROUND-001 Attempt 4 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
 ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
 
 ARCH-023-ADMIN-001      Ready
-ARCH-023-ADMIN-002      Ready
-ARCH-023-BACKGROUND-001 Ready
+ARCH-023-ADMIN-003      Ready
+ARCH-023-BACKGROUND-002 Ready
+ARCH-023-BACKGROUND-003 Ready
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
 ARCH-023-SHOPIFY-002    Ready
+
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
@@ -3258,6 +3246,30 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — BACKGROUND-001 Attempt 4 accepted
+
+- Accepted the dedicated Merchant Knowledge worker/entitlement/PENDING-reconciliation foundation at Attempt 4.
+- Confirmed the C4 producer uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` and deterministic Shared job-id helper on exact Shared `1.0.1`.
+- Accepted the required live queue-loss proof after all real Prisma migrations applied to a disposable `pgvector/pgvector:pg17` PostgreSQL database and the production-path reconciliation integration test passed 1/1.
+- Confirmed the disposable container was torn down and no production runtime, schema, Shared-helper, integration-wrapper or Gateway change was introduced solely for validation.
+- Marked BACKGROUND-001 Complete and promoted BACKGROUND-002 and BACKGROUND-003 to Ready in parallel; BACKGROUND-004 remains gated on both.
+
+### 2026-09-30 — BACKGROUND-001 Attempt 3 validation blocker reconciled
+
+- Accepted the Attempt 3 correction to use Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` and the newly recorded launcher/worktree/submodule provenance.
+- Confirmed the remaining failure occurs before Vitest because the canonical disposable wrapper defaults to `postgres:17.6-alpine`, which cannot apply the accepted pgvector migration.
+- Authorised Attempt 4 to provision a task-local disposable PostgreSQL 17 Docker container with pgvector, apply the real migrations, run the existing queue-loss integration test against it, and destroy the container afterward.
+- No Shared helper, Background integration-wrapper, Gateway, database-schema or production-runtime change is required solely to close this validation.
+- Returned BACKGROUND-001 to Ready with Attempt 3 preserved; BACKGROUND-002 and BACKGROUND-003 remain Pending.
+
+### 2026-09-30 — BACKGROUND-001 Attempt 2 changes requested
+
+- Reviewed the dedicated Merchant Knowledge readiness/queue/acquisition-contract/current-plan-entitlement/PENDING-reconciliation/worker foundation as substantively architecture-conformant.
+- Required the C4 producer to use Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` instead of a duplicated local schema-version literal.
+- Required the still-open committed-PENDING enqueue-loss acceptance check to pass through the existing disposable PostgreSQL integration harness before acceptance.
+- Required the Completion Report to record the mandated launcher-resolved physical worktree, start-of-attempt synchronization and recursive-submodule preparation evidence.
+- Returned BACKGROUND-001 to Ready with Attempt 2 preserved; BACKGROUND-002 and BACKGROUND-003 remain Pending and no downstream implementation was started.
 
 ### 2026-09-30 — ADMIN-002 Attempt 2 accepted
 
