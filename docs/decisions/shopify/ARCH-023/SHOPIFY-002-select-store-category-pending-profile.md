@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
   - ARCH-023-SHARED-002
@@ -444,14 +444,14 @@ promptText copied exactly in canonical English
 
 ## Work Items
 
-- [ ] Adopt database/Shared revisions.
-- [ ] Add category eligibility/localization read model.
-- [ ] Add locale catalogue keys + validator.
-- [ ] Add bounded Shopify taxonomy suggestion adapter.
-- [ ] Implement one transactional pending-category selection service.
-- [ ] Integrate selection into existing onboarding CTAs.
-- [ ] Add Store Profile section to Recovery Settings.
-- [ ] Add route/action and focused tests.
+- [x] Adopt database/Shared revisions.
+- [x] Add category eligibility/localization read model.
+- [x] Add locale catalogue keys + validator.
+- [x] Add bounded Shopify taxonomy suggestion adapter.
+- [x] Implement one transactional pending-category selection service.
+- [x] Integrate selection into existing onboarding CTAs.
+- [x] Add Store Profile section to Recovery Settings.
+- [x] Add route/action and focused tests.
 
 ## Interfaces / Contracts
 
@@ -480,24 +480,25 @@ Admin Store Category authoring may be implemented in parallel against the same d
 
 ## Acceptance Criteria
 
-- [ ] Initial and later category selection use one service/transaction.
-- [ ] Selection pins exact template text/editVersion into one pending Shop DRAFT.
-- [ ] No selection directly changes active category/prompt.
-- [ ] Taxonomy suggestion is bounded, deterministic and advisory.
-- [ ] Existing onboarding route structure and `/app/billing/select` destination are preserved.
-- [ ] Category and Merchant Knowledge localization keys exist across all 20 catalogues.
-- [ ] No database translation lifecycle exists.
+- [x] Initial and later category selection use one service/transaction.
+- [x] Selection pins exact template text/editVersion into one pending Shop DRAFT.
+- [x] No selection directly changes active category/prompt.
+- [x] Taxonomy suggestion is bounded, deterministic and advisory.
+- [x] Existing onboarding route structure and `/app/billing/select` destination are preserved.
+- [x] Category and Merchant Knowledge localization keys exist across all 20 catalogues.
+- [x] No database translation lifecycle exists.
 
 ## Validation
 
-- [ ] focused service/action/component tests
-- [ ] locale-catalogue validator
-- [ ] existing onboarding and Recovery Settings regressions
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused service/action/component tests
+- [x] disposable PostgreSQL integration for the R7/R8 selection transaction, rollback and row-lock concurrency (Attempt 2 Testcontainers proof passed 5/5)
+- [x] locale-catalogue validator
+- [x] existing onboarding and Recovery Settings regressions
+- [x] `npm run typecheck`
+- [x] `npm run lint` (task-owned files clean; repository-wide command has unrelated existing failures)
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -510,33 +511,212 @@ The Product GraphQL category field is Shopify Standard Product Taxonomy identity
 ## Completion Report
 
 ### Status
-Not Started
+Review requested; awaiting `moda_architect`. No architect acceptance decision has been made by this agent.
 ### Files Changed
-None.
+`moda-interact`: `package.json`, `package-lock.json`; onboarding and Recovery Settings route/view integration; the shared category action, read model, selection service, localization helper, and Shopify taxonomy suggestion service; all 20 locale catalogues; locale validator; focused Store Category, onboarding, Recovery Settings, locale, and home-route tests. Shared v1 API compatibility updates were made to feature-preference selection and its existing integration test.
+
+Attempt 2 adds only `tests/integration/store-category-selection.postgres.integration.test.ts` in the implementation repository; no production source, dependency, schema, migration, locale, or database gitlink changes were made in this attempt.
 ### Work Completed
-None.
+Implemented one authenticated selection endpoint backed by one Shop-row-locked transaction. It validates the pending generation, pins the exact canonical-English default template text and source-template version to one pending Shop DRAFT, reuses that DRAFT on reselection, and leaves active category/prompt configuration unchanged. Added category eligibility and localized read models, bounded one-page Shopify taxonomy suggestion/scoring, onboarding persistence before Managed Pricing navigation, and the Store Profile section in Recovery Settings. Added localized category, Store Profile UI, and Merchant Knowledge labels, plus a validator that derives category slugs from English key pairs and checks all required keys across the 20 supported locales.
+Attempt 2 adds a task-owned Testcontainers integration against real PostgreSQL 17 with pgvector and the real generated Prisma Client. It verifies initial profile/SHOP lineage/DRAFT creation and exact canonical-template provenance, preserves existing active category and configuration during reselection, increments the same DRAFT and selection generation, rejects stale generations without committed mutation, rolls back a newly created profile when an unrelated DRAFT causes conflict, and serializes concurrent generation-zero calls so exactly one succeeds.
 ### Validation Results
-None.
+Passed: 49 focused and adjacent tests; locale validator (20 locales, 12 required category/knowledge keys); merchant ICU runtime loading for all 20 locales; `npm run typecheck`; changed-file ESLint; `npm run build`; `git diff --check`; changed-file diagnostics.
+
+Repository-wide `npm run lint` still reports 20 errors and 2 warnings in unrelated existing files. The existing opt-in PostgreSQL merchant-settings tests were skipped (6 tests) because `MODA_SETTINGS_POSTGRES` was not enabled; transaction behavior is covered by focused service tests, and action scoping/input validation by route-level tests.
+
+The Shared dependency is pinned exactly to `1.0.1`. The database submodule was already at accepted ARCH-023-DATABASE-001 commit `2eb17ee910491e8f9df82736fc0a843844415947`; no database schema, migration, or gitlink changes were made. Prisma Client generation completed during the production build.
+
+Attempt 2 real PostgreSQL proof:
+
+- Testcontainers image: `pgvector/pgvector:pg17` (`pgvector/pgvector@sha256:cf134a767f474095eeba57e0117be8e568e011a63f33fbf252f14c9b760f8e6f`). Testcontainers generated isolated per-run database credentials and a dynamically mapped port.
+- Migration command, run by integration setup against that fresh database: `npx prisma migrate deploy --schema database/prisma/schema.prisma`; all accepted repository migrations applied successfully.
+- Test command: `DOCKER_HOST="unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock" TESTCONTAINERS_RYUK_DISABLED=true MODA_DISPOSABLE_INTEGRATION=1 npm test -- tests/integration/store-category-selection.postgres.integration.test.ts`.
+- Result: exit code 0; `Test Files 1 passed (1)`, `Tests 5 passed (5)`. The cases use the real generated Prisma Client and independent clients for the concurrent calls.
+- Teardown: the test's `afterAll` stopped the Testcontainers PostgreSQL instance; `docker ps -a --filter ancestor=pgvector/pgvector:pg17 --format '{{.Names}} {{.Status}}'` returned no containers.
+- Additional Attempt 2 checks: `npm run typecheck` passed; `npm test -- tests/unit/store-category-selection.test.ts` passed 5/5; Prettier check and changed-file ESLint passed; `git diff --cached --check` passed. ESLint emitted only the repository's existing TypeScript-version support warning.
+
+Testcontainers could not infer the active Colima context from the default environment. Supplying its Docker socket and disabling Ryuk's unsupported socket bind allowed Testcontainers to start; the integration test retained and verified its own explicit PostgreSQL teardown. No runtime or test infrastructure was changed.
 ### Deviations
-None.
+No functional scope deviations. Repository-wide lint still reports the 20 unrelated errors and 2 warnings recorded in Attempt 1; changed-file lint passes. The real PostgreSQL requirement is satisfied in Attempt 2.
 ### Assumptions
-None.
+The existing accepted Admin task fixture supplies the currently manifested stable category slug `home-goods`; additional Admin-authored slugs remain unselectable until their English key pair and locale translations are shipped.
 ### Unresolved Issues
-None.
+No known implementation blockers. The A1-R1 real PostgreSQL transaction proof and A1-R2 durable workflow provenance are recorded for architect review.
 ### Architectural Concerns
-None.
+None identified. Selection remains pending-only and does not activate or publish a prompt.
+
+### Git / VCS
+
+Task branch: `task/ARCH-023-SHOPIFY-002` in both repositories.
+
+Dependency gate from the prepared Attempt 2 packet: passed; `ARCH-023-DATABASE-001` and `ARCH-023-SHARED-002` were both `complete`.
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-002`, `task/ARCH-023-SHOPIFY-002`
+- implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-002`, `task/ARCH-023-SHOPIFY-002`
+- shared workspace/source-reference checkout switched or mutated: no
+- another task worktree reused: no; the launcher-reused canonical worktrees belong to this task
+
+Start-of-attempt synchronization from the prepared packet:
+- parent remote task branch fast-forwarded: not-needed
+- parent `origin/main` incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation `origin/main` incorporated: already-current
+
+Recursive implementation submodules from the prepared packet:
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- status: ready; database submodule at `2eb17ee910491e8f9df82736fc0a843844415947`
+- no database files or submodule gitlink changes were made
+
+Attempt 2 claim: launcher commit `b60ae301577a78740eb84b649aa2b8bea5ec710f`, timestamp `2026-09-30T11:18:13Z`; committed and pushed before implementation. Parent report branch at claim: `b60ae301577a78740eb84b649aa2b8bea5ec710f`.
+
+Implementation submission:
+- repository: `moda-interact`
+- commit: `e287ba7b246dc1fd40e752512c47ad823fc18d0a`
+- branch: `origin/task/ARCH-023-SHOPIFY-002`; pushed
+- changed file: `tests/integration/store-category-selection.postgres.integration.test.ts`
+- final implementation worktree: clean
+
+Parent report submission:
+- task file: `docs/decisions/shopify/ARCH-023/SHOPIFY-002-select-store-category-pending-profile.md`
+- branch: `task/ARCH-023-SHOPIFY-002`; this Attempt 2 report update is committed and pushed with the review submission
+- final parent worktree: clean after report submission
+
+Merged to implementation `main`: no. Merged to workspace `main`: no.
 
 ## Architect Review
 
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+Attempt 2 closes both bounded correction items from Attempt 1 without production implementation churn. The only implementation-repository change from the reviewed Attempt 1 archive is `tests/integration/store-category-selection.postgres.integration.test.ts`; the production Store Category selection service, onboarding/Recovery Settings integration, locale catalogues, dependency pins, database gitlink, schema and migrations are unchanged.
+
+A1-R1 is closed by the task-owned disposable PostgreSQL proof. The test applies the accepted repository migrations to `pgvector/pgvector:pg17`, uses the real generated Prisma Client and calls the real `selectPendingStoreCategory` transaction. The five passing cases prove initial profile/SHOP-lineage/DRAFT creation with exact canonical-template provenance, reselection of the same pending DRAFT with generation/edit-version increments, preservation of active category and active prompt configuration, stale-generation rollback, unrelated-DRAFT rollback, and concurrent generation-zero serialization using two independent Prisma clients. The concurrency case produces exactly one success and one `CONFLICT`, one generation increment, one SHOP lineage and one pending DRAFT, which proves the Shop-row `SELECT ... FOR UPDATE` boundary against PostgreSQL.
+
+A1-R2 is also closed. The Completion Report records the launcher-resolved canonical parent and implementation worktrees, `task/ARCH-023-SHOPIFY-002` branch identity in both repositories, dependency gate, start-of-attempt synchronization, recursive submodule preparation/status, the accepted database gitlink, the launcher claim commit, the submitted implementation commit, and clean final implementation/parent worktrees. The final parent-report object ID cannot be included in the commit that creates that same object; the review handoff supplies and this Architect Review records the submitted parent report commit as `aa5b7190e43bc975a337b71607198e58c1edf098`. The submitted implementation commit is `e287ba7b246dc1fd40e752512c47ad823fc18d0a`.
+
+The repository-wide lint findings remain non-blocking because task-owned changed-file lint passed and Attempt 2 added only the focused integration test. No activation/publication authority, subscription decision, database migration, or new Store Profile route is introduced.
+
+### Attempt 2 Reviewed Files
+
+Architect re-review focused on the Attempt 2 delta and the previously reviewed production transaction boundary:
+
+```text
+tests/integration/store-category-selection.postgres.integration.test.ts
+app/services/store-profile/store-category-selection.server.ts
+docs/decisions/shopify/ARCH-023/SHOPIFY-002-select-store-category-pending-profile.md
+docs/decisions/shopify/ARCH-023/_index.md
+docs/architecture/ARCH-023-merchant-knowledge.md
+```
+
+Architect comparison against the Attempt 1 archive confirmed that the new PostgreSQL integration test is the only implementation-repository delta.
+
+### Attempt 2 Validation Reviewed
+
+Submitted canonical-worktree evidence records:
+
+```text
+PostgreSQL/Testcontainers integration              5 passed, 0 failed
+focused selection unit suite                       5 passed, 0 failed
+npm run typecheck                                  passed
+Prettier check                                     passed
+changed-file ESLint                                passed
+git diff --cached --check                         passed
+accepted migrations on fresh pgvector PostgreSQL  passed
+container teardown / no pgvector container left   passed
+```
+
+The review archive contains no installed dependencies or Docker runtime, so the architect did not redundantly rerun the disposable container proof. Acceptance relies on the durable canonical-worktree command/result/exit-code evidence plus architect inspection of the real-client integration test and transaction implementation, as permitted by the cross-environment review policy.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. The implementation remains pending-only: the browser supplies only category/generation input, the authoritative canonical-English template is re-read inside the transaction, category/prompt activation state is preserved, and both onboarding and Recovery Settings use the same selection lifecycle. The real PostgreSQL proof now demonstrates the required rollback and row-lock concurrency semantics rather than only mocked Prisma behavior.
+
+The task uses `completion_mode: automatic`, therefore architect acceptance completes `ARCH-023-SHOPIFY-002`.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-023-SHOPIFY-002` is now Complete. `ARCH-023-SHOPIFY-003` is **not** promoted by this review because its other declared prerequisite, `ARCH-023-SHOPIFY-001`, remains Ready rather than Complete in the submitted snapshot. Once SHOPIFY-001 is architect-accepted Complete, SHOPIFY-003 becomes eligible for Ready. No downstream task is started implicitly.
+
 ### Review Status
-Pending
+Changes Requested — Attempt 1.
+
 ### Review Notes
-Pending.
+The implementation is structurally aligned with the ARCH-023 Store Category contract, but two bounded acceptance gaps remain.
+
+**A1-R1 — prove the R7/R8 transaction against real PostgreSQL.** The core service uses `PrismaClient.$transaction`, a raw `SELECT ... FOR UPDATE` Shop-row lock and database-enforced relations/uniqueness, but the submitted transaction tests replace `$transaction`, `$queryRaw` and all Prisma repositories with mocks. The route-level integration test also mocks `selectPendingStoreCategory`. The six opt-in PostgreSQL tests reported as skipped belong to the pre-existing merchant-settings suite and do not execute this task's selection transaction. Mock coverage therefore does not prove that the exact raw SQL, migration/schema shape, rollback behaviour and row-lock serialization work together.
+
+Attempt 2 must add a task-owned disposable PostgreSQL/Testcontainers integration for `selectPendingStoreCategory` using the accepted database migrations and the real generated Prisma Client. It must prove at minimum:
+
+```text
+initial generation 0 selection -> one CommerceShopProfile, one SHOP lineage and one DRAFT
+DRAFT promptText/sourceTemplateId/sourceTemplateEditVersion exactly match the selected canonical template
+activeCategoryId / activeCategoryActivatedAt and active prompt configuration remain unchanged
+repeat selection reuses the same pending DRAFT and increments DRAFT editVersion + selection generation
+stale expected generation rejects and commits no partial mutation
+unrelated existing DRAFT with no pending profile pointer rejects without overwrite
+two concurrent calls with the same expected generation serialize on the Shop row: exactly one succeeds, one conflicts, generation increments once, and no duplicate lineage/DRAFT is created
+```
+
+Do not change the accepted database schema/migration to manufacture the proof. The existing `@testcontainers/postgresql` pattern may be reused. Under the workspace validation policy, the repository agent may add the bounded test and report the exact developer command; developer-supplied command/result/exit-code evidence is acceptable and does not need an architect rerun.
+
+**A1-R2 — persist canonical task-worktree/start-of-attempt provenance.** The Completion Report currently records neither launcher-resolved task paths nor the prepared synchronization packet. Before acceptance it must durably record:
+
+```text
+launcher-resolved parent task worktree
+launcher-resolved moda-interact implementation worktree
+branch task/ARCH-023-SHOPIFY-002 in both worktrees
+start-of-attempt fetch / task-branch fast-forward / origin/main containment-or-merge result for both
+recursive implementation-submodule preparation/status
+dependency gate showing DATABASE-001 and SHARED-002 architect-accepted
+clean final state and exact submitted implementation/report HEADs
+```
+
+If Attempt 1 was not executed in the canonical launcher-resolved implementation worktree, restore/reuse that canonical worktree on the already-pushed task branch and rerun the task-required validation there. Do not introduce implementation churn solely to create another commit.
+
+The repository-wide lint result (20 unrelated errors and 2 warnings) is non-blocking because changed-file lint passed and no reported diagnostic is in task-owned files. The Shared `1.0.1` compatibility adjustment to existing feature-preference code is also acceptable as bounded dependency-adoption work; no further change is requested there.
+
 ### Reviewed Files
-Pending.
+Reviewed the task contract/report plus the submitted implementation surfaces, including:
+
+```text
+package.json
+package-lock.json
+app/services/store-profile/store-category.server.ts
+app/services/store-profile/store-category-selection.server.ts
+app/services/store-profile/shopify-taxonomy-suggestion.server.ts
+app/services/store-profile/store-category-localization.ts
+app/routes/app/store-profile/category/route.ts
+app/routes/app/home/route.jsx
+app/components/onboarding/Onboarding.jsx
+app/routes/app/recovery-settings/route.tsx
+app/routes/app/recovery-settings/RecoverySettingsView.tsx
+app/components/settings/StoreProfileSection.tsx
+scripts/validate-arch023-store-category-locales.mjs
+tests/unit/store-category-selection.test.ts
+tests/integration/store-category-selection.integration.test.ts
+tests/unit/shopify-taxonomy-suggestion.test.ts
+tests/unit/onboarding-store-category.test.jsx
+tests/unit/store-profile-section.test.tsx
+tests/unit/store-category-locales.test.mjs
+app/services/feature-preferences/feature-preferences.server.ts
+tests/integration/merchant-feature-preferences.test.ts
+```
+
+All 20 locale catalogues were also inspected through the validator contract.
+
 ### Validation Reviewed
-Pending.
+Submitted evidence records 49 passing focused/adjacent tests, typecheck, production build, changed-file ESLint, locale/ICU validation and diff checks. The ARCH-023 locale validator was independently executed against the submitted archive and passed for all 20 locales / 12 currently-derived required keys. The review archive does not include installed dependencies, so the TypeScript/build suite was not redundantly rerun.
+
+The missing acceptance evidence is the task-owned real PostgreSQL transaction proof described in A1-R1, not the unrelated skipped merchant-settings PostgreSQL suite.
+
 ### Architecture Conformance
-Pending.
+The implementation design conforms by inspection to the required pending-only lifecycle: category eligibility is server-authoritative, Shopify taxonomy evidence is bounded/advisory, prompt text is not exposed by the category DTO, onboarding and Recovery Settings share one selection endpoint/service, the canonical-English template is re-read inside the transaction, and no activation/publication authority is introduced. Acceptance is withheld only for A1-R1 and A1-R2.
+
 ### Follow-up
-Pending.
+Return this same task to `ready` for Attempt 2. Preserve Attempt 1 and this review history. Attempt 2 should be limited to the PostgreSQL proof/test plus durable workflow evidence unless that proof exposes a real implementation defect. `ARCH-023-SHOPIFY-003` remains Pending; it also still depends on `ARCH-023-SHOPIFY-001`.
