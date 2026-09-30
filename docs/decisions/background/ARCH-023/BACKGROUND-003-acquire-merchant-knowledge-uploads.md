@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 31
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 2
 depends_on:
   - ARCH-023-BACKGROUND-001
 enables:
@@ -415,9 +415,9 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Review
+Ready for Architect Review — Attempt 2
 ### Files Changed
-Implementation commit `cde2632` changes `package.json`, `package-lock.json`, six Merchant Knowledge service modules, and the three unit suites plus one cleanup integration suite authorized by this task. No database schema, migration, queue resource, worker entrypoint, or other repository was changed.
+Attempt 1 implementation commit `cde2632` added the private R2 acquisition, extraction, and cleanup services. Attempt 2 commit `ad38c3a04c3532755323f34a146d72d718c3181f` changes `src/services/merchant-knowledge-xlsx-extraction.ts`, `src/services/merchant-knowledge-upload-cleanup.service.ts`, `tests/unit/services/merchant-knowledge-xlsx-extraction.test.ts`, and `tests/integration/merchant-knowledge-upload-cleanup.integration.test.ts`. No database schema, migration, queue resource, worker entrypoint, or other repository was changed.
 ### Work Completed
 Added exact private R2 configuration validation and an S3-compatible client factory configured for region `auto`, limited to `GetObject` and `DeleteObject`. Uploaded-asset acquisition validates ownership/status/format/metadata before GET, bounds streamed bytes, independently verifies persisted size and SHA-256, and returns only content type and deterministic extracted text with null URL/timestamp.
 
@@ -426,8 +426,12 @@ Added and lockfile-pinned `@aws-sdk/client-s3@3.1143.0`, `csv-parse@7.0.3`, `exc
 Added strict UTF-8/RFC-style CSV extraction and XLSX central-directory preflight before ExcelJS workbook loading. XLSX extraction requires core OOXML parts, enforces archive expansion limits, rejects encryption and forbidden active-content/external-workbook paths, emits visible worksheets in workbook order, and uses cached scalar formula results only.
 
 Added cleanup candidate paging (100), 24-hour AVAILABLE orphan grace, transactional asset row locks and fresh revision-reference checks, bounded tombstone failure codes, and post-commit physical deletion with retryable DELETED tombstones. Cleanup remains unwired to a worker entrypoint, as assigned to BACKGROUND-004.
+
+Attempt 2 addressed both architect findings. A1-R1: XLSX scalar extraction now accepts both `formula` and `sharedFormula` cell objects and recursively emits only their cached scalar result; a serialized/reloaded shared-formula workbook proves master and follower cached values appear while neither formula expression nor shared reference is emitted. A1-R2: cleanup now advances by `(createdAt, id)` keyset across successive queries of at most 100 rows, so retained DELETED tombstones cannot pin the first page; the PostgreSQL regression uses 101 earlier tombstones followed by an expired upload and proves the later asset is tombstoned and physically deleted. Existing row locking, reference re-check, post-commit deletion, retained tombstones, and referenced-asset protection remain intact.
 ### Validation Results
 Passed: focused CSV/XLSX/acquirer tests (3 files, 16 tests); cleanup database integration (1 test) using the repository disposable-infrastructure helper with `pgvector/pgvector:pg17` and the accepted migrations; `npm run build` (Prisma Client generation and TypeScript compile); `npm run prisma:validate`; `git diff --check`; changed-file diagnostics (no errors).
+
+Attempt 2 passed: focused CSV/XLSX/acquirer unit suites (3 files, 16 tests); XLSX shared-formula suite (5/5); cleanup PostgreSQL integration (2/2) using the shared disposable-infrastructure helper with `pgvector/pgvector:pg17`; `npm run build`; `npm run prisma:validate`; `npx tsc --noEmit`; `git diff --check`; changed-file diagnostics (no errors). The repository `npm run test:integration` wrapper defaults to plain PostgreSQL and cannot apply the existing `vector` extension migration; the same shared helper was invoked with its supported pgvector image option to run the required disposable database test. Attempt 1 broad-suite failures remain unrelated and were not rerun for this bounded correction.
 
 The full `npm test` run reported 82 files passed, 5 failed, and 13 skipped (1,187 tests passed, 12 failed, 25 skipped). Failures were outside this task: an evidence fixture resolved under a missing ARCH-020 worktree; four translation integration cases could not reach `localhost:5432`; three billing reconciliation expectation failures; one checkout recovery language expectation failure; and four observability startup/version failures. All BACKGROUND-003 focused tests passed, and the cleanup integration passed in the disposable pgvector environment.
 ### Deviations
@@ -460,14 +464,114 @@ Recursive implementation submodules:
 - `git submodule sync --recursive`: passed
 - `git submodule update --init --recursive`: passed
 - recorded database submodule commit: `2eb17ee910491e8f9df82736fc0a843844415947`
-- implementation commit pushed: `cde2632` (`task/ARCH-023-BACKGROUND-003`)
+- Attempt 1 implementation commit: `cde2632` (`task/ARCH-023-BACKGROUND-003`)
+- Attempt 2 implementation commit pushed: `ad38c3a04c3532755323f34a146d72d718c3181f` (`task/ARCH-023-BACKGROUND-003`)
 
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-09-30
+
+Reviewed implementation commit `ad38c3a04c3532755323f34a146d72d718c3181f` and
+submitted parent report commit `f95fc217a2f2a873e830471dd9437d99970574bc` against
+the full BACKGROUND-003 contract and the complete Attempt 1 correction contract. Attempt 2
+is accepted.
+
+The private-R2 acquisition boundary remains conformant. `MerchantKnowledgeUploadedAssetAcquirer`
+loads the persisted asset before storage access, rejects cross-shop/unavailable/wrong-format assets
+before GET, streams only the persisted object key through the server-side R2 client, enforces the
+configured byte ceiling during streaming, recomputes SHA-256 and exact byte length, and returns only
+content type plus deterministic extracted text. The result contains no object key, asset id, signed
+URL or raw workbook bytes.
+
+CSV extraction remains deterministic and non-normalizing: fatal UTF-8 decoding with optional BOM,
+comma/RFC-style quoting, first non-empty header, deterministic blank-header labels, omission of blank
+cells, bounded header-column output and exactly two LF characters between emitted rows. XLSX safety
+preflight still reads the ZIP central directory before ExcelJS expands workbook semantics, enforces
+the aggregate uncompressed-byte limit, rejects encrypted entries and the architecture-forbidden
+active/external-content paths, and processes only visible worksheets in workbook order.
+
+A1-R1 is resolved. `scalar()` now treats both ExcelJS `formula` and `sharedFormula` value shapes as
+formula cells and recursively emits only their cached `result`. The regression serializes and reloads
+a real shared-formula workbook, verifies both the master and follower cached scalar values in the
+extracted text, and verifies that neither the formula expression nor shared-formula reference is
+emitted. No formula execution path or complex-object serialization was introduced.
+
+A1-R2 is resolved. `cleanupOnce()` retains `pageSize = 100` but now keyset-pages by the stable
+`(createdAt, id)` ordering. Each candidate is still reloaded under `FOR UPDATE`, revision references
+are re-counted transactionally, eligible PENDING/AVAILABLE rows are tombstoned before commit, and
+physical `DeleteObject` occurs only after commit. Referenced rows are skipped, successful/failed
+physical deletion leaves the durable `DELETED` tombstone, and the service never lists R2 globally.
+The new PostgreSQL regression places 101 earlier `DELETED` rows before a later expired upload and
+proves the later asset is reached, tombstoned and physically deleted while the page size remains 100.
+
+The implementation introduces no schema/migration change, queue contract, normalization, chunking,
+embedding, revision-promotion behavior, worker entrypoint or Gateway wiring. BACKGROUND-004 retains
+ownership of final worker composition. The reported broad-suite failures and npm audit findings are
+outside the BACKGROUND-003 changed surface and are not acceptance blockers for this bounded task.
+
+The review archive contains source/task state but no Git metadata or installed `node_modules`, so the
+submitted commands were not independently rerun in this review container. The implementation and
+authored regression paths were inspected directly, and the durable Completion Report records the
+launcher-resolved parent/implementation worktrees, synchronization/submodule preparation, pushed
+commits, clean handoff and the passing focused/disposable-database evidence.
+
+### Reviewed Files
+
+Implementation repository:
+
+- `package.json`
+- `package-lock.json`
+- `src/services/merchant-knowledge-r2-config.ts`
+- `src/services/merchant-knowledge-r2-client.ts`
+- `src/services/merchant-knowledge-uploaded-asset-acquirer.ts`
+- `src/services/merchant-knowledge-csv-extraction.ts`
+- `src/services/merchant-knowledge-xlsx-extraction.ts`
+- `src/services/merchant-knowledge-upload-cleanup.service.ts`
+- `tests/unit/services/merchant-knowledge-csv-extraction.test.ts`
+- `tests/unit/services/merchant-knowledge-xlsx-extraction.test.ts`
+- `tests/unit/services/merchant-knowledge-uploaded-asset-acquirer.test.ts`
+- `tests/integration/merchant-knowledge-upload-cleanup.integration.test.ts`
+- `database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql`
+
+Parent workspace:
+
+- `docs/decisions/background/ARCH-023/BACKGROUND-003-acquire-merchant-knowledge-uploads.md`
+- `docs/decisions/background/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
+### Validation Reviewed
+
+- Attempt 2 focused CSV/XLSX/acquirer suites passed **16/16**.
+- Shared-formula XLSX coverage passed **5/5** and exercises a serialized/reloaded shared-formula workbook.
+- Disposable pgvector PostgreSQL cleanup integration passed **2/2**, including the >100-candidate progression case.
+- `npm run build`, `npm run prisma:validate`, `npx tsc --noEmit`, changed-file diagnostics and `git diff --check` are recorded as passed.
+- The cleanup regression uses the accepted migrations with a pgvector-capable disposable image rather than the wrapper's non-pgvector default.
+- Broad-suite failures recorded by the implementing agent are outside the task-owned source/tests and do not contradict the focused acceptance evidence.
+
+### Architecture Conformance
+
+Conforms. BACKGROUND-003 owns only private uploaded-asset acquisition/extraction and safe cleanup.
+PostgreSQL remains authoritative for tenant ownership and asset/revision lifecycle; Cloudflare R2
+contains only immutable original bytes; object keys remain private runtime locators; spreadsheet
+content remains untrusted runtime data; cleanup is reference-safe and database-led rather than
+bucket-led. No responsibility belonging to Shopify, Gateway or BACKGROUND-004 was absorbed.
+
+### Follow-up
+
+`ARCH-023-BACKGROUND-003` is **Complete / Accepted at Attempt 2**.
+
+`ARCH-023-BACKGROUND-004` remains Pending because its other dependency,
+`ARCH-023-BACKGROUND-002`, is still Ready rather than Complete. This acceptance therefore does not
+promote or start a downstream Background task.
+
+#### Historical Attempt 1 — Changes Requested — 2026-09-30
+
+##### Review Notes
 The implementation is substantially aligned with the private-R2 acquisition, bounded byte/hash verification, deterministic CSV extraction, XLSX ZIP preflight, transactional cleanup and repository-boundary requirements. The submitted focused tests, disposable pgvector cleanup integration, build, Prisma validation, changed-file diagnostics and diff check are accepted as valid Attempt 1 evidence.
 
 Two task-scoped corrections remain:
@@ -486,7 +590,7 @@ Correct candidate progression/fairness while preserving `pageSize = 100`, transa
 
 The reported npm dependency-audit findings are not an acceptance blocker for this task and no unrelated audit remediation is requested.
 
-### Reviewed Files
+##### Reviewed Files
 - `package.json`
 - `package-lock.json`
 - `src/services/merchant-knowledge-r2-config.ts`
@@ -502,7 +606,7 @@ The reported npm dependency-audit findings are not an acceptance blocker for thi
 - `docs/decisions/background/ARCH-023/BACKGROUND-003-acquire-merchant-knowledge-uploads.md`
 - `docs/architecture/ARCH-023-merchant-knowledge.md`
 
-### Validation Reviewed
+##### Validation Reviewed
 Accepted Attempt 1 evidence:
 
 - focused CSV/XLSX/acquirer tests: 16/16 passed;
@@ -515,10 +619,10 @@ Accepted Attempt 1 evidence:
 
 Attempt 2 must rerun the focused XLSX extraction tests, cleanup integration test, build, Prisma validation, changed-file diagnostics and `git diff --check` after the corrections.
 
-### Architecture Conformance
+##### Architecture Conformance
 Conforms to ARCH-023 ownership and private-R2 boundaries except for A1-R1 and A1-R2 above. No database schema, queue contract, worker entrypoint, normalization/chunking/embedding/promotion behavior or Gateway deployment change is required for the requested correction.
 
-### Follow-up
+##### Follow-up
 Return the same task to `ready` with `attempt: 1`, no active executor/claim, for the next authorized claim to become Attempt 2.
 
 Attempt 2 correction scope is exactly:
