@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 31
-executor: copilot
-claimed_at: 2026-09-30T22:54:05Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-001
@@ -20,7 +20,7 @@ depends_on:
 enables:
   - ARCH-023-BACKGROUND-004
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Respect Merchant Knowledge merchant activation
@@ -197,14 +197,35 @@ None. The activation-aware eligibility result is available for the downstream pr
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1.
+
 ### Review Notes
-Pending.
+The implementation satisfies the bounded merchant-activation eligibility contract. Current commercial entitlement remains derived from the active/trialing current BillingPlan and its accepted C2 configuration, while effective source processing now additionally fails closed unless the `merchant_knowledge` Feature is active, uses `MERCHANT_OPT_IN`, and has an explicit enabled `ShopFeaturePreference` for the shop. Missing/false preference leaves PENDING work dormant; Background creates no preference rows and does not mutate source/revision/content/vector/asset state merely because the feature is OFF.
+
+The accepted BACKGROUND-001 reconciliation path and deterministic C4 job identity remain unchanged. The false-to-true PostgreSQL proof demonstrates that the same durable PENDING revision is skipped while OFF and becomes enqueue-eligible after ON without another queue/scheduler. The activation-aware `resolveSourceEligibility` result is also the exact contract BACKGROUND-004 is required to re-check before acquisition and before promotion, preserving the processing-race safety boundary.
+
+The submitted task frontmatter still carried the launcher claim while already at `status: review`; this architect reconciliation clears `executor` / `claimed_at` while completing the task. No implementation retry is required for that metadata mismatch.
+
 ### Reviewed Files
-Pending.
+- `src/services/merchant-knowledge-entitlement.service.ts`
+- `src/services/merchant-knowledge-reconciliation.service.ts`
+- `tests/unit/services/merchant-knowledge-entitlement.service.test.ts`
+- `tests/unit/services/merchant-knowledge-reconciliation.service.test.ts`
+- `tests/integration/merchant-knowledge-reconciliation.integration.test.ts`
+- this task definition / Completion Report
+
 ### Validation Reviewed
-Pending.
+- 20 focused entitlement/reconciliation unit tests reported passed.
+- Disposable PostgreSQL OFF-to-ON PENDING reconciliation proof reported passed 1/1 using `pgvector/pgvector:pg17`, including stable deterministic job identity and no Background-created preference row.
+- `npm run build` reported passed.
+- changed-file diagnostics reported clean.
+- `git diff --check` reported passed.
+- implementation commit `00176555dfe0278f665c6c602621e18a894c0c3e` and parent report commit `33a3064e` were reported pushed with clean synchronized task worktrees.
+
+The supplied review archive contains the authored source/tests/report but not installed `node_modules` or usable Git metadata, so dependency-backed commands were inspected from durable evidence rather than rerun in the review container.
+
 ### Architecture Conformance
-Pending.
+Conformant. The task extends only effective Background processing eligibility. It preserves current-plan/C2/source-count semantics, introduces no preference store, queue, scheduler, destructive OFF transition, schema/migration or deployment behavior, and leaves final acquisition/promotion race checks to the already-defined BACKGROUND-004 processing task.
+
 ### Follow-up
-Pending.
+`ARCH-023-BACKGROUND-004` is promoted to Ready because BACKGROUND-002, BACKGROUND-003 and BACKGROUND-006 are now Complete. `ARCH-023-BACKGROUND-005` remains Pending on BACKGROUND-004. No downstream task is claimed or started by this acceptance.
