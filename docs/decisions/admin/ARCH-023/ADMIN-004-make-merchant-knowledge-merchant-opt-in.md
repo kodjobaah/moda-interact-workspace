@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 42
-executor: copilot
-claimed_at: 2026-09-30T21:29:45Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-ADMIN-001
@@ -199,14 +199,33 @@ None. The task is handed off for architect review; no Architect Review fields ha
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1.
+
 ### Review Notes
-Pending.
+The implementation satisfies the bounded merchant-opt-in reconciliation contract. The fixed `merchant_knowledge` descriptor is now `MERCHANT_OPT_IN`, `systemRequired=false`, `active=true`; the exact previously accepted `ALWAYS_ENABLED` state is transitioned with a compare-and-set `updateMany` that changes only `activationMode`, and the transition writes one normal `PLAN_CATALOG_CHANGED` audit event in the existing authenticated pricing-plan transaction. Already-target state is idempotent and incompatible state fails closed.
+
+The generic Feature catalogue cannot create a competing `merchant_knowledge` Feature and cannot deactivate an active one. No `ShopFeaturePreference` row is created or modified by the reconciliation, so missing preference remains OFF as required. Existing Merchant Pricing Plan mappings and C2 configuration remain owned by the unchanged generic plan persistence path.
+
+The submitted task frontmatter still carried the launcher claim while the body had already been moved to `review`; this architect reconciliation clears `executor` / `claimed_at` while completing the task. No implementation retry is required for that metadata mismatch.
+
 ### Reviewed Files
-Pending.
+- `src/lib/admin/merchant-knowledge-plan-policy.ts`
+- `src/app/actions/feature-catalogue.ts`
+- `tests/unit/merchant-knowledge-plan-policy.test.ts`
+- `tests/security/admin-merchant-pricing-plan.test.mjs`
+- existing Merchant Pricing Plan persistence/control surfaces needed to verify the transaction and no-preference-write boundaries
+- this task definition / Completion Report
+
 ### Validation Reviewed
-Pending.
+- 11 focused ADMIN-004 tests passed.
+- 12 existing Admin security regressions passed.
+- `npm run build` passed; this repository has no standalone `typecheck` script and `next.config.ts` does not disable Next.js build-time TypeScript validation.
+- changed-file lint/diagnostics passed.
+- `git diff --check` passed.
+- implementation commit `dc6641249225857404192aff72ced80647c1d2d8` and parent report commit `b55a7e8e` were reported pushed with clean task worktrees.
+
 ### Architecture Conformance
-Pending.
+Conformant. This task changes only the fixed Feature product-policy mode and supported reconciliation path. It does not seed merchant activation, alter billing materialisation, change C2 plan configuration, or implement Shopify/Background/Commerce activation behaviour.
+
 ### Follow-up
-Pending.
+`ARCH-023-SHOPIFY-004` and `ARCH-023-BACKGROUND-006` are promoted to Ready. `ARCH-023-COMMERCE-004` remains Pending because `ARCH-023-COMMERCE-002` is not Complete. `ARCH-023-BACKGROUND-004` is corrected to Pending until its newly declared `BACKGROUND-006` dependency completes.

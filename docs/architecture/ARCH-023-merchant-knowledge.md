@@ -11,9 +11,9 @@ updated: 2026-09-30
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-002`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003` and `ARCH-023-SHOPIFY-003`. `COMMERCE-003` is Ready because ADMIN-003, DATABASE-001 and SHARED-002 are Complete. Ready tasks remain unclaimed until their normal task launcher is invoked.
+The current executable frontier is `ARCH-023-BACKGROUND-006`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003` and `ARCH-023-SHOPIFY-004`. `BACKGROUND-004` remains Pending until BACKGROUND-006 completes, `SHOPIFY-005` remains Pending until SHOPIFY-004 completes, and `COMMERCE-004` remains Pending until COMMERCE-002 completes. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3355,6 +3355,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — ADMIN-004 Attempt 1 accepted
+
+- Accepted the bounded reconciliation of fixed Feature `merchant_knowledge` from the previously accepted `ALWAYS_ENABLED` policy to `MERCHANT_OPT_IN`.
+- Confirmed the exact legacy state transitions by compare-and-set inside the existing authenticated Merchant Pricing Plan transaction, with one normal `PLAN_CATALOG_CHANGED` audit event; already-target state is idempotent and conflicting state fails closed.
+- Confirmed no `ShopFeaturePreference` rows are seeded or mutated, generic Feature creation/deactivation cannot conflict with the fixed policy, and plan mappings/C2 configuration remain unchanged.
+- Marked ADMIN-004 Complete and promoted `ARCH-023-SHOPIFY-004` and `ARCH-023-BACKGROUND-006` to Ready. `ARCH-023-COMMERCE-004` remains Pending on COMMERCE-002. Corrected BACKGROUND-004 to Pending until its new BACKGROUND-006 dependency completes.
 
 ### 2026-09-30 — DATABASE-004 Attempt 1 accepted
 
