@@ -1335,11 +1335,17 @@ COMMERCE-104 corrected first-entry and monotonic-unlock mechanics, but manual va
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-110](COMMERCE-110-render-add-capability-phases-as-tabs.md) | Render Capability / Tool / Review as semantic tabs while preserving C104 navigation mechanics | Ready | COMMERCE-104 |
+| [COMMERCE-110](COMMERCE-110-render-add-capability-phases-as-tabs.md) | Render Capability / Tool / Review as semantic tabs while preserving C104 navigation mechanics | Complete | COMMERCE-104 |
 
 C110 is presentation-only: it replaces the numbered list with a semantic `Capability setup` tablist plus matching tabpanels and a bounded three-column/responsive style. It must not change C104 readiness, unlock, Previous/Next, Create or persistence semantics.
 
-`ARCH-021-SYSTEM-TEST-003` is re-gated Pending on C110.
+`ARCH-021-SYSTEM-TEST-003` was re-gated Pending on C110.
+
+### COMMERCE-110 Attempt 1 accepted — 2026-09-30
+
+COMMERCE-110 is **Complete / Accepted, Attempt 1**. Add Capability now uses three semantic Capability/Tool/Review tabs with exact tabpanel relationships and the requested responsive presentation, while preserving the accepted C104 navigation/state model.
+
+Every SYSTEM-TEST-003 dependency is now Complete, so SYSTEM-TEST-003 is **Ready** for terminal validation.
 
 ## Phase 6 — Feature-composed selected-shop Test Conversations — 2026-09-29
 
