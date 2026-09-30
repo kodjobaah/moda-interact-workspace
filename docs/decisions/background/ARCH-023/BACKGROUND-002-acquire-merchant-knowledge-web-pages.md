@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
 executor: copilot
 claimed_at: 2026-09-30T15:33:08Z
@@ -401,19 +401,19 @@ Prefer built-in `node:https`, `node:dns/promises`, `node:zlib` and a small dedic
 ## Completion Report
 
 ### Status
-Ready for Architect Review
+Attempt 2 complete; ready for Architect Review.
 ### Files Changed
-`package.json`, `package-lock.json`; `src/services/merchant-knowledge-network-policy.ts`, `src/services/merchant-knowledge-html-extraction.ts`, `src/services/merchant-knowledge-web-page-acquirer.ts`; and the three authorized focused service test files.
+Attempt 2 changed `src/services/merchant-knowledge-network-policy.ts`, `tests/unit/services/merchant-knowledge-network-policy.test.ts`, and `tests/unit/services/merchant-knowledge-web-page-acquirer.test.ts`. The synchronization merge also retained the current upstream package manifest/lockfile changes, including `parse5` and the BACKGROUND-003 dependencies, while removing the unauthorized `ipaddr.js` dependency.
 ### Work Completed
-Added parser-based global IP validation with explicit special-use CIDR exclusions, all-answer A/AAAA resolution and deterministic selection, pinned per-hop HTTPS lookup with TLS hostname verification and connected-peer checking, no socket reuse, strict redirect/deadline/status policy, bounded streaming decompression and MIME checks, deterministic parse5 visible-text extraction, and stable retryable/permanent error codes. The adapter returns only the required document fields and performs no persistence, normalization, chunking, or embedding.
+Replaced the permissive `ipaddr.js` range predicate with a deterministic Node `node:net` `isIP`/`BlockList` policy. IPv4 candidates are checked against explicit non-public/special-use CIDRs; IPv6 is limited to `2000::/3` with explicit special-use exclusions; IPv4-mapped IPv6 continues through the mapped IPv4 policy. Added regression coverage for all six A1-R1 addresses (`192.31.196.1`, `192.52.193.1`, `192.175.48.1`, `4000::1`, `6000::1`, `fe00::1`) and for a mixed public/special-use DNS answer rejected before the request callback. Existing positive global IPv4 and IPv6 cases remain passing. DNS ordering, pinned HTTPS connections, TLS hostname verification, peer checking, redirect handling, bounded decompression, extraction, and the BACKGROUND-001 contract were otherwise unchanged.
 ### Validation Results
-Focused network-policy, HTML-extraction, and acquirer suites: 64/64 passed. `npm run build`: passed. Changed-file diagnostics: clean. `git diff --check`: passed. Optional full `npm run test:unit`: 1,190 passed, 5 failed, and one suite failed to load. Unrelated failures: recovery materialization language expectation; three billing-reconciliation expectations; stale shared-runtime version expectation (`0.12.1` vs the existing `1.0.1`); and the commerce evidence suite's missing fixture path under an ARCH-020 task worktree. No matching entries were found in `docs/development-baseline.md`. Standalone ESLint was not available because this repository has no `eslint.config.*`.
+Focused network-policy, HTML-extraction, and acquirer suites: 71/71 passed. `npm run build`: passed. Changed-file diagnostics: clean. `git diff --check`: passed. The initial build attempt lacked upstream-merged BACKGROUND-003 dependencies in this worktree's `node_modules`; installing from the synchronized lockfile with lifecycle scripts disabled resolved the environment issue, and the required build then passed. The optional full-unit failures from Attempt 1 were outside this task's authorized files and were not correction items; the full suite was not rerun for Attempt 2. Standalone ESLint is not a task gate and no repository ESLint configuration was found in Attempt 1.
 ### Deviations
-Added explicit special-purpose IPv4/IPv6 exclusions beyond the IP parser's generic range labels to meet the globally-routable-only rule.
+Used Node's built-in `BlockList` and explicit CIDR policy, as required by A1-R1/A1-R2; no new runtime dependency or registry lookup was introduced.
 ### Assumptions
-The adapter remains a separately injected BACKGROUND-001 contract implementation; worker orchestration is owned by a downstream task.
+The adapter remains a separately injected BACKGROUND-001 contract implementation; worker orchestration is owned by a downstream task. Conservative blocking of explicitly listed special-use ranges is preferable to admitting an address whose global reachability is ambiguous.
 ### Unresolved Issues
-The unrelated repository-wide unit failures listed under Validation Results remain unresolved and were not changed by this task.
+None for the authorized BACKGROUND-002 scope. The optional unrelated repository-wide unit failures reported in Attempt 1 remain outside this task and were not changed.
 ### Architectural Concerns
 None identified. No out-of-scope worker, database, normalization, chunking, embedding, or persistence behavior was introduced.
 
@@ -423,8 +423,21 @@ Physical worktree isolation:
   parent branch: `task/ARCH-023-BACKGROUND-002`
   implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-002`
   implementation branch: `task/ARCH-023-BACKGROUND-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
   database submodule: ready at `2eb17ee910491e8f9df82736fc0a843844415947`
-  launcher claim: Attempt 1, dependency gate passed, claim committed and pushed as `e0128925966d6ab0328e89c2b48c565b61e6c66b`
+  launcher claim: Attempt 2, dependency gate passed, claim committed and pushed as `77cb0eb5f02aae08918843e0d652dbde474daf04`
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent origin/main incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation origin/main incorporated: already-current
+
+Commit identities:
+  implementation commit: `3a9b355af29a1535fac865fa4063f267efcc30b9` (pushed to `origin/task/ARCH-023-BACKGROUND-002`)
+  completion-report commit: this parent task-report update; its commit identity is included in the task handoff.
 
 ## Architect Review
 
