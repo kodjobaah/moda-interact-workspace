@@ -35,7 +35,7 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ADMIN-001](ADMIN-001-author-merchant-knowledge-plan-entitlement.md) | Merchant Knowledge Feature/default plan inclusion and plan-specific C2 configuration | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002 |
-| [ADMIN-004](ADMIN-004-make-merchant-knowledge-merchant-opt-in.md) | Reconcile Merchant Knowledge Feature to `MERCHANT_OPT_IN` without seeding per-shop preferences | Ready | ADMIN-001 |
+| [ADMIN-004](ADMIN-004-make-merchant-knowledge-merchant-opt-in.md) | Reconcile Merchant Knowledge Feature to `MERCHANT_OPT_IN` without seeding per-shop preferences | Complete — Accepted Attempt 1 | ADMIN-001 |
 | [ADMIN-002](ADMIN-002-manage-store-categories-default-templates.md) | Store Category, canonical-English default templates and Shopify taxonomy mappings | Complete — Accepted Attempt 2 | DATABASE-001 |
 | [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Complete — Accepted Attempt 3 | DATABASE-001, ADMIN-002 |
 
@@ -78,13 +78,13 @@ The previous ARCH-023 Admin tasks for database-backed Store Category/template tr
 
 ## Execution frontier
 
-The authoritative Admin task state after ADMIN-003 Attempt 3 acceptance is:
+The authoritative Admin task state after ADMIN-004 Attempt 1 acceptance is:
 
 ```text
 ADMIN-001 -> Complete — Accepted Attempt 2
 ADMIN-002 -> Complete — Accepted Attempt 2
 ADMIN-003 -> Complete — Accepted Attempt 3
-ADMIN-004 -> Ready
+ADMIN-004 -> Complete — Accepted Attempt 1
 ```
 
 ADMIN-003 completion promotes `ARCH-023-COMMERCE-003` to Ready because its other declared
@@ -94,3 +94,9 @@ started implicitly by this review.
 ## Merchant opt-in reconciliation
 
 `ADMIN-004` is a bounded follow-up to accepted ADMIN-001. It does not rewrite ADMIN-001 history; it transitions the fixed `merchant_knowledge` Feature from the previously accepted `ALWAYS_ENABLED` state to the final `MERCHANT_OPT_IN` state.
+
+### ADMIN-004 Attempt 1 review
+
+Attempt 1 is Accepted. The fixed `merchant_knowledge` Feature is reconciled from the exact previously accepted `ALWAYS_ENABLED` state to `MERCHANT_OPT_IN` through the existing authenticated Merchant Pricing Plan transaction, with one normal audit event and no per-shop preference seeding. Already-target state is idempotent and conflicting states fail closed.
+
+ADMIN-004 completion promotes `ARCH-023-SHOPIFY-004` and `ARCH-023-BACKGROUND-006` to Ready. `ARCH-023-COMMERCE-004` remains Pending until COMMERCE-002 is Complete.
