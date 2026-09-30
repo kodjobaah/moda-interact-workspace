@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 40
-executor: copilot
-claimed_at: 2026-09-30T07:48:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
@@ -533,21 +533,55 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Not Started
+Blocked before implementation: database-owned slug immutability conflicts with requirement R5.
 ### Files Changed
-None.
+No Admin source or database files changed. Only this task report was updated.
 ### Work Completed
-None.
+Confirmed launcher-prepared ARCH-023 database models and required audit actions are present at the initialized database pin. Confirmed the category slug trigger still rejects every slug change, including when no active or pending profile references the category.
 ### Validation Results
-None.
+No feature validation run because the task cannot satisfy R5 within Admin repository ownership. `git diff --check` passed for the parent report.
 ### Deviations
-None.
+Stopped before implementation rather than attempting to bypass a database-owned trigger with application-level raw SQL or trigger manipulation.
 ### Assumptions
 None.
 ### Unresolved Issues
-None.
+The `CommercePromptTemplateCategory` database guard rejects `NEW.slug IS DISTINCT FROM OLD.slug` unconditionally. ADMIN-002 R5 requires changing a slug to succeed when both active and pending profile reference counts are zero, with CAS. The Admin repository cannot edit the database schema/migration under this task's ownership rules.
 ### Architectural Concerns
-None.
+Database-owner/architect resolution is required: revise the database guard contract through an authorized database task, or amend ADMIN-002 R5 to require immutable slugs in all cases. Once reconciled, return this same task for implementation.
+
+### Launcher Preparation Evidence
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-ADMIN-002
+parent branch: task/ARCH-023-ADMIN-002
+parent remote task-branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+parent synchronized HEAD: de270f1b1526c60671f9731674cd6669c78861fb
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-ADMIN-002
+implementation branch: task/ARCH-023-ADMIN-002
+implementation remote task-branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+implementation synchronized HEAD: abb828dd9f42e510627474f3048426102d9c2938
+recursive submodule sync: passed
+recursive submodule update/init: passed
+recursive submodule status: ready
+database submodule commit: 2eb17ee910491e8f9df82736fc0a843844415947 (initialized)
+dependency gate: passed (ARCH-023-DATABASE-001 status complete)
+claim executor: copilot
+claimed_at: 2026-09-30T07:48:10Z
+claim attempt: 1 (previous attempt 0)
+claim commit: 81dbf731203bbbcde1e0b2472503ecfd218060f8 (committed and pushed)
+```
+
+### Slug Immutability Conflict Evidence
+
+- At `database/prisma/migrations/20260923150000_arch021_agent_configuration/migration.sql`, `commerce.arch021_prompt_template_category_guard()` raises `ARCH021 category identity immutable` when `NEW.slug IS DISTINCT FROM OLD.slug` on any update.
+- The trigger is installed for insert/update/delete on `commerce."CommercePromptTemplateCategory"`.
+- The later `database/prisma/migrations/20260929160000_arch023_merchant_knowledge_schema/migration.sql` adds `defaultTemplateId`, taxonomy mappings, and profile references, but does not replace or relax the slug trigger.
+- The authoritative initialized submodule commit is `2eb17ee910491e8f9df82736fc0a843844415947`.
+- Requirement R5 explicitly requires an unused category slug rename to be allowed with CAS, and R14 requires a regression for that case. Application-layer count checks cannot make the database update succeed while the trigger remains unconditional.
+- Attempted Admin source changes: none. Submodule gitlink staged: no.
 
 ## Architect Review
 
