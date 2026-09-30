@@ -1,7 +1,7 @@
 ---
 id: ARCH-023-SHOPIFY-003
 architecture_id: ARCH-023
-title: Activate initial pending Store Category after verified subscription
+title: Activate initial pending Store Category after authoritative subscription activation
 task_kind: implementation
 domain: shopify
 repository: moda-interact
@@ -19,10 +19,10 @@ depends_on:
   - ARCH-023-SHOPIFY-002
 enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
-# Activate initial pending Store Category after verified subscription
+# Activate initial pending Store Category after authoritative subscription activation
 
 ## Architecture
 
@@ -34,11 +34,11 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Implement the Shopify billing-callback **happy path** for initial Store Category activation.
+Activate the initial pending Store Category only after Moda has durably established that the shop's **current** Subscription is `ACTIVE` or `TRIALING` with a current `planId`.
 
-Once the shop's durable current Subscription is verified `ACTIVE` or `TRIALING`, publish the exact pending Shop prompt DRAFT, make it the current environment's Shop prompt, activate the pending category and clear pending profile fields in one transaction.
+The plan-selection return/configure signal is not itself activation authority. If the synchronous Shopify-side path observes and commits an active/trialing subscription, it may invoke the activation immediately. If subscription activation is established later by the existing Background billing reconciler, that Background path must invoke the same idempotent activation contract in a separate bounded task.
 
-Later post-onboarding category changes are not auto-activated; Admin publication owns those.
+This task has **no Merchant Knowledge activation behaviour**. Subscription activation only makes plan-backed Merchant Knowledge configuration available; explicit merchant opt-in is owned by SHOPIFY-004/ADMIN-004 and later Background/Commerce follow-ups.
 
 ## Context
 
@@ -52,15 +52,9 @@ pendingPromptRevisionId != null
 
 represents initial onboarding category state.
 
-After initial activation:
+Receiving a plan handle, welcome/configure return, or marking onboarding complete does not prove the subscription is active. The only activation gate is the durable current Subscription projection.
 
-```text
-activeCategoryId != null
-```
-
-therefore any later pending category is a post-onboarding change and must wait for Admin publication.
-
-This task implements the billing callback path only. ARCH-023 also requires the existing Background subscription reconciler to perform the same idempotent activation when the callback is missed. That Background hook must be defined separately before ARCH-023 integrated completion.
+After initial activation, any later pending category is a post-onboarding change and must wait for Admin publication.
 
 ## Scope
 
@@ -70,53 +64,43 @@ Primary authorized implementation surface:
 app/services/store-profile/commerce-environment.server.ts
 app/services/store-profile/store-category-activation.server.ts
 
-app/routes/app/billing/callback/route.tsx
+app/routes/app/billing/callback/route.tsx   # only where this existing path actually commits ACTIVE/TRIALING
+
+existing subscription-sync integration point in moda-interact, if required
 
 tests/unit/store-category-activation.test.ts
 tests/unit/routes/billing-callback.test.ts
 tests/integration/store-category-activation.integration.test.ts
 ```
 
+Do not create a new subscription webhook or a second subscription reconciler.
+
 ## Out of Scope
 
-- Background subscription-reconciliation fallback.
+- Background subscription-reconciliation fallback implementation.
 - later category-change Admin publication.
 - Store Category selection.
-- plan materialisation logic except calling existing billing projection.
-- Merchant Knowledge sources.
+- plan materialisation logic except consuming the existing durable projection.
+- Merchant Knowledge activation, source processing or queue publication.
 - Commerce runtime prompt composition.
 
 ## Requirements
 
 ### R1 — exact environment mapping
 
-Create:
-
-```ts
-resolveShopifyCommerceEnvironment(): CommerceEnvironment
-```
-
-using existing `resolveDeploymentEnvironmentName()`.
-
-Map exactly:
+Create `resolveShopifyCommerceEnvironment(): CommerceEnvironment` using existing `resolveDeploymentEnvironmentName()` and map exactly:
 
 ```text
-local       -> LOCAL
-test        -> TEST
+local -> LOCAL
+test -> TEST
 development -> DEVELOPMENT
-staging     -> STAGING
-production  -> PRODUCTION
+staging -> STAGING
+production -> PRODUCTION
 ```
 
-Unknown value throws:
+Unknown values throw `Commerce environment is unavailable.`
 
-```text
-Commerce environment is unavailable.
-```
-
-Do not default an unknown deployment environment.
-
-### R2 — activation entrypoint
+### R2 — idempotent activation entrypoint
 
 Create:
 
@@ -132,94 +116,31 @@ activateInitialPendingStoreCategoryIfEligible({
 >
 ```
 
-This is a Shopify-repository internal service.
-
 ### R3 — exact transaction eligibility
 
 In one transaction:
 
 1. lock Shop/CommerceShopProfile scope for `shopId`;
-2. load current Subscription;
-3. require:
-   ```text
-   status IN (ACTIVE, TRIALING)
-   planId != null
-   ```
-4. load/create? No: if no `CommerceShopProfile`, return `NO_PENDING`;
-5. if `activeCategoryId != null`, return `ALREADY_ACTIVE`;
-6. require all pending fields non-null:
-   ```text
-   pendingCategoryId
-   pendingPromptRevisionId
-   pendingSelectedAt
-   ```
-   otherwise return `NO_PENDING`;
-7. if optional expected generation supplied, require exact equality;
-8. load pending category and exact pending revision;
-9. require revision:
-   ```text
-   status = DRAFT
-   prompt.scope = SHOP
-   prompt.shopId = shopId
-   sourceTemplateId != null
-   sourceTemplateEditVersion != null
-   ```
-10. require `revision.sourceTemplateId` equals the selected category's persisted `defaultTemplateId` identity expected by the pending selection contract;
-11. do not re-read/copy current template `promptText`.
+2. load the current Subscription;
+3. require `status IN (ACTIVE, TRIALING)` and `planId != null`;
+4. no profile -> `NO_PENDING`;
+5. `activeCategoryId != null` -> `ALREADY_ACTIVE`;
+6. require `pendingCategoryId`, `pendingPromptRevisionId`, `pendingSelectedAt`;
+7. if expected generation is supplied, require exact equality;
+8. load the pending category and exact pending revision;
+9. require DRAFT, SHOP scope, same shop, non-null template provenance;
+10. require the revision's `sourceTemplateId` matches the selected category's pinned default-template identity;
+11. never re-read current template text.
 
-If any structural invariant is inconsistent, throw bounded `STORE_CATEGORY_PENDING_STATE_CONFLICT` and roll back.
+Structural inconsistency throws bounded `STORE_CATEGORY_PENDING_STATE_CONFLICT` and rolls back.
 
-### R4 — publish exact pending DRAFT
+### R4 — publish the exact pending DRAFT
 
-Calculate:
+Use one transaction timestamp and lowercase SHA-256 of exact UTF-8 `promptText`. Require non-empty trimmed text. Publish the existing revision only; do not create a replacement.
 
-```text
-contentHash = lowercase SHA-256(exact UTF-8 revision.promptText)
-now = one transaction timestamp
-```
+### R5 — set current Shop prompt atomically
 
-Require `promptText.trim()` non-empty.
-
-Publish exactly:
-
-```text
-revision.status      = PUBLISHED
-revision.contentHash = contentHash
-revision.publishedAt = now
-revision.editVersion = editVersion + 1
-```
-
-Do not create another revision.
-
-### R5 — set the current Shop prompt pointer atomically
-
-Resolve current Commerce environment from R1.
-
-Find exact `CommerceAgentConfiguration` for:
-
-```text
-environment = current
-scope       = SHOP
-shopId      = shopId
-```
-
-If absent, create it using existing required defaults/model fields according to current Commerce configuration conventions. Do not invent a second configuration row.
-
-Set:
-
-```text
-activePromptRevisionId = published pending revision.id
-promptEditVersion       = previous + 1
-```
-
-Preserve:
-
-```text
-modelId
-modelEditVersion
-```
-
-when configuration already exists.
+Resolve current Commerce environment, find/create the one SHOP `CommerceAgentConfiguration`, set `activePromptRevisionId`, increment `promptEditVersion`, and preserve existing `modelId` / `modelEditVersion`.
 
 ### R6 — promote profile atomically
 
@@ -228,160 +149,99 @@ In the same transaction:
 ```text
 activeCategoryId          = pendingCategoryId
 activeCategoryActivatedAt = now
-
-pendingCategoryId       = null
-pendingPromptRevisionId = null
-pendingSelectedAt       = null
+pendingCategoryId         = null
+pendingPromptRevisionId   = null
+pendingSelectedAt         = null
 ```
 
-Preserve:
+Preserve `pendingSelectionGeneration`.
+
+### R7 — later changes never auto-activate
+
+If `activeCategoryId != null`, return `ALREADY_ACTIVE` even when another pending category exists.
+
+### R8 — integrate only after durable subscription activation
+
+The Shopify-side integration may call R2 only **after** the existing billing/subscription synchronization path has committed:
 
 ```text
-pendingSelectionGeneration
+Subscription.status IN (ACTIVE, TRIALING)
+Subscription.planId != null
 ```
 
-Do not reset it.
+Do not call merely because a plan handle/configure/welcome return was received. If that return records onboarding/plan intent but the durable subscription is not yet active, leave Store Category pending and let the existing Background billing reconciliation path establish subscription state later.
 
-Commit only after R4-R6 all succeed.
+Category activation failure must not roll back an already-committed billing projection.
 
-### R7 — do not auto-activate later changes
+### R9 — onboarding milestone is separate
 
-If:
-
-```text
-profile.activeCategoryId != null
-```
-
-this service returns `ALREADY_ACTIVE` even if a new `pendingCategoryId` exists.
-
-That later pending category remains for Admin review/publication.
-
-### R8 — integrate after durable subscription verification
-
-In `app/routes/app/billing/callback/route.tsx`, call R2 only after the callback path has durable current Subscription status:
-
-```text
-ACTIVE
-or
-TRIALING
-```
-
-and a current `planId`.
-
-Call after the billing service has committed the verified projection.
-
-The category activation failure must not roll back the already-verified billing projection. Surface/log a bounded failure and leave pending state intact for reconciliation repair.
-
-Do not call merely because a request contains `plan_handle`.
-
-### R9 — onboarding milestone
-
-Preserve existing `ShopSettings.onboardingCompleted` semantics.
-
-Category activation and onboardingCompleted are distinct durable facts.
-
-Do not use `onboardingCompleted` as the activation gate.
+Preserve existing `ShopSettings.onboardingCompleted` semantics. It is neither proof of subscription activation nor the category activation gate.
 
 ### R10 — idempotency
 
-Repeated callback:
-
-- after successful activation -> `ALREADY_ACTIVE`;
-- must not publish again;
-- must not increment prompt/config/profile versions again;
-- must not clear a later post-onboarding pending category.
+Repeated invocation after successful activation returns `ALREADY_ACTIVE`, does not republish, does not increment versions again, and never clears a later post-onboarding pending category.
 
 ### R11 — audit
 
-If Shopify app already writes Commerce audit events through an established helper, use:
-
-```text
-PUBLISH_AGENT_PROMPT_REVISION
-SET_AGENT_PROMPT
-```
-
-for the system activation with bounded metadata:
-
-```json
-{"changeKind":"INITIAL_STORE_CATEGORY_ACTIVATION"}
-```
-
-If the repository has no authorized system actor/audit helper, do not invent a PlatformAdmin. Record the gap in Completion Report for architect follow-up rather than faking an actor.
+Use existing authorised Commerce audit helpers if available. Do not invent a PlatformAdmin/system actor solely for this task; record any audit-actor gap for architect follow-up.
 
 ### R12 — tests
 
-Prove:
+Prove at minimum:
 
 ```text
-NO_CONTRACT does not activate
-ACTIVE activates exact pending DRAFT
-TRIALING activates exact pending DRAFT
-activeCategoryId already set -> no-op even if later pending exists
-content hash exact UTF-8
-prompt/template provenance preserved
-current template edits after selection do not change published prompt
-configuration pointer + prompt publication + profile promotion are atomic
-failure midway rolls all three back
-repeated callback idempotent
+plan/configure/welcome signal without durable ACTIVE/TRIALING -> no activation
+NO_CONTRACT -> no activation
+ACTIVE -> exact pending DRAFT activates
+TRIALING -> exact pending DRAFT activates
+activeCategoryId already set -> later pending remains untouched
+current template edits after selection do not alter pinned prompt
+configuration pointer + publication + profile promotion are atomic
+mid-transaction failure rolls all three back
+repeated activation is idempotent
 billing projection remains committed if category activation fails afterward
-arbitrary plan_handle request without verified subscription does not activate
+no Merchant Knowledge preference/source/queue state is mutated
 ```
 
 ## Work Items
 
 - [ ] Add exact environment mapper.
 - [ ] Implement idempotent initial activation transaction.
-- [ ] Integrate after verified billing callback projection.
+- [ ] Integrate only after an authoritative durable Shopify-side subscription activation commit.
 - [ ] Preserve later-category Admin boundary.
-- [ ] Add transaction/idempotency/callback tests.
-- [ ] Record Background fallback as unresolved dependency if not yet materialised.
+- [ ] Add transaction/idempotency/subscription-gate tests.
+- [ ] Record the existing Background billing-reconciliation fallback as a separate unresolved implementation boundary if still absent.
 
 ## Interfaces / Contracts
 
-Consumes:
-
-```text
-CommerceShopProfile pending state from SHOPIFY-002
-current Subscription projection
-Commerce prompt/configuration tables
-```
-
-No new cross-repository contract.
+Consumes SHOPIFY-002 pending state, current Subscription projection and Commerce prompt/configuration tables.
 
 ## Dependencies
 
 - `ARCH-023-SHOPIFY-001`
 - `ARCH-023-SHOPIFY-002`
 
-## Enables
-
-No terminal architecture validation task yet. The required Background subscription-reconciliation fallback must also exist before system acceptance.
-
 ## Acceptance Criteria
 
-- [ ] Initial verified subscription activates exact pending category/prompt atomically.
-- [ ] Later category changes are never auto-activated.
-- [ ] Callback is idempotent.
-- [ ] No current template re-read changes pinned prompt text.
-- [ ] Billing state cannot be rolled back by a category activation failure.
-- [ ] Reconciliation fallback requirement is explicitly handed back to architect if not yet implemented.
+- [ ] Only durable current ACTIVE/TRIALING subscription state can activate the initial category.
+- [ ] Initial category/prompt activation is exact, atomic and idempotent.
+- [ ] Later category changes remain Admin-owned.
+- [ ] No plan-handle/onboarding signal is treated as subscription-active authority.
+- [ ] No Merchant Knowledge activation or processing is coupled to subscription activation.
 
 ## Validation
 
 - [ ] focused activation tests
-- [ ] billing callback regressions
+- [ ] billing/subscription integration regressions
 - [ ] transaction integration test
 - [ ] `npm run typecheck`
-- [ ] `npm run lint`
+- [ ] changed-file lint/diagnostics
 - [ ] `npm run build`
 - [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
 
 ## Stop Condition
 
 Set status `review`, complete Completion Report, return to `moda_architect` and STOP.
-
-Do not implement the Background reconciliation hook inside the Shopify repository.
 
 ## Completion Report
 

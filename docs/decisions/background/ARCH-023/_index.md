@@ -41,9 +41,10 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [BACKGROUND-001](BACKGROUND-001-establish-merchant-knowledge-worker-foundation.md) | Dedicated worker foundation, current entitlement and durable PENDING reconciliation | Complete — Accepted Attempt 4 | DATABASE-001, SHARED-002 |
+| [BACKGROUND-006](BACKGROUND-006-respect-merchant-knowledge-activation.md) | Extend accepted eligibility/reconciliation with explicit Merchant Knowledge opt-in | Pending | BACKGROUND-001, ADMIN-004 |
 | [BACKGROUND-002](BACKGROUND-002-acquire-merchant-knowledge-web-pages.md) | SSRF-safe WEB_PAGE acquisition and extraction | Ready | BACKGROUND-001 |
 | [BACKGROUND-003](BACKGROUND-003-acquire-merchant-knowledge-uploads.md) | Private R2 CSV/XLSX acquisition/extraction and safe asset cleanup | Complete — Accepted Attempt 2 | BACKGROUND-001 |
-| [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Pending | BACKGROUND-002, BACKGROUND-003 |
+| [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Pending | BACKGROUND-002, BACKGROUND-003, BACKGROUND-006 |
 | [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Pending | BACKGROUND-004 |
 
 ## Execution frontier
@@ -59,9 +60,12 @@ Background frontier is:
 BACKGROUND-002 -> Ready
 ```
 
-BACKGROUND-004 remains Pending until BACKGROUND-002 is also Complete. Once that happens:
+BACKGROUND-004 remains Pending until BACKGROUND-002 and the new activation follow-up BACKGROUND-006 are Complete. ADMIN-004 must complete before BACKGROUND-006 can become Ready. The sequence is therefore:
 
 ```text
+ADMIN-004 -> Complete
+BACKGROUND-006 -> Ready -> Complete
+BACKGROUND-002 -> Complete
 BACKGROUND-004 -> Ready
 ```
 
@@ -72,3 +76,7 @@ BACKGROUND-005 -> Ready
 ```
 
 Gateway deployment must not begin before BACKGROUND-005 is Complete/architect-accepted.
+
+## Merchant opt-in reconciliation
+
+`BACKGROUND-006` is the only new activation task. It extends the accepted BACKGROUND-001 eligibility service so missing/false `ShopFeaturePreference` leaves PENDING work dormant. BACKGROUND-004 consumes that activation-aware service before acquisition and promotion; no new queue or scheduler is introduced.
