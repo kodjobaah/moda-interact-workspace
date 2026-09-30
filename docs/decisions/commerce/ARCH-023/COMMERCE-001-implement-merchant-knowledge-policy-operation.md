@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-09-30T08:57:23Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
@@ -633,16 +633,16 @@ PostgreSQL integration must use real pgvector on a disposable database and prove
 
 ## Work Items
 
-- [ ] Adopt Database/Shared/C096 accepted revisions.
-- [ ] Add exact embedding server configuration.
-- [ ] Implement C5 input/output contracts.
-- [ ] Implement current-plan entitlement resolver.
-- [ ] Implement query embedding adapter.
-- [ ] Implement exact pgvector retrieval.
-- [ ] Implement result shaping.
-- [ ] Register operation through canonical C096 registry.
-- [ ] Add unit + disposable PostgreSQL/pgvector tests.
-- [ ] Confirm no capability/Tool/release objects are created.
+- [x] Adopt Database/Shared/C096 accepted revisions.
+- [x] Add exact embedding server configuration.
+- [x] Implement C5 input/output contracts.
+- [x] Implement current-plan entitlement resolver.
+- [x] Implement query embedding adapter.
+- [x] Implement exact pgvector retrieval.
+- [x] Implement result shaping.
+- [x] Register operation through canonical C096 registry.
+- [x] Add unit + disposable PostgreSQL/pgvector tests.
+- [x] Confirm no capability/Tool/release objects are created.
 
 ## Interfaces / Contracts
 
@@ -674,25 +674,25 @@ No new Shared contract.
 
 ## Acceptance Criteria
 
-- [ ] One canonical C096 registration owns operation runtime/authoring metadata.
-- [ ] Trusted shop identity never comes from the model.
-- [ ] Commercial entitlement is rechecked inside the operation.
-- [ ] Tool reuse by another Capability cannot bypass Merchant Knowledge plan entitlement.
-- [ ] Exact pgvector retrieval is tenant/source/provenance bounded.
-- [ ] No language filter prevents cross-language retrieval.
-- [ ] C5 result is bounded and contains no storage/security secrets.
-- [ ] No bootstrap/Studio generic UI implementation is introduced.
+- [x] One canonical C096 registration owns operation runtime/authoring metadata.
+- [x] Trusted shop identity never comes from the model.
+- [x] Commercial entitlement is rechecked inside the operation.
+- [x] Tool reuse by another Capability cannot bypass Merchant Knowledge plan entitlement.
+- [x] Exact pgvector retrieval is tenant/source/provenance bounded.
+- [x] No language filter prevents cross-language retrieval.
+- [x] C5 result is bounded and contains no storage/security secrets.
+- [x] No bootstrap/Studio generic UI implementation is introduced.
 
 ## Validation
 
-- [ ] focused C5/entitlement/embedding/operation tests
-- [ ] real disposable PostgreSQL + pgvector retrieval proof
-- [ ] existing DefinitionExecutor/policy-operation regressions
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused C5/entitlement/embedding/operation tests
+- [ ] real disposable PostgreSQL + pgvector retrieval proof (not run: local PostgreSQL unavailable; remote database intentionally not used)
+- [x] existing DefinitionExecutor/policy-operation regressions
+- [x] `npm run typecheck`
+- [x] `npm run lint` (warnings only; changed-file ESLint clean)
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -701,21 +701,57 @@ Set status to `review`, complete Completion Report, return to `moda_architect` a
 ## Completion Report
 
 ### Status
-Not Started
+Implemented; submitted for architecture review. Attempt 1 remains unchanged.
 ### Files Changed
-None.
+- `moda-interact-commerce/.env.example`
+- `moda-interact-commerce/lib/preview/runtime.ts`
+- `moda-interact-commerce/lib/server/config.ts`
+- `moda-interact-commerce/lib/server/connections.ts`
+- `moda-interact-commerce/package.json`
+- `moda-interact-commerce/package-lock.json`
+- `moda-interact-commerce/src/commerce/execution/policy-operation-authoring.ts`
+- `moda-interact-commerce/src/commerce/execution/renderer.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/contracts.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/embedding.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/entitlement.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/operation.ts`
+- `moda-interact-commerce/src/commerce/merchant-knowledge/retrieval.ts`
+- `moda-interact-commerce/src/commerce/tool-definition/contracts.ts`
+- `moda-interact-commerce/tests/arch021-commerce-tool-contract.test.ts`
+- `moda-interact-commerce/tests/database-contract.test.ts`
+- `moda-interact-commerce/tests/health.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-contract.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-embedding.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-entitlement.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-policy-postgres.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-policy.test.ts`
+- `moda-interact-commerce/tests/merchant-knowledge-retrieval.test.ts`
+- `moda-interact-commerce/tests/policy-operation-registry.test.ts`
+- `moda-interact-commerce/tests/preview-model-provider.test.ts`
 ### Work Completed
-None.
+- Adopted the prepared Database gitlink revision and the exact `@modainteract/moda-interact-shared@1.0.1` dependency; no database schema/migration changes or gitlink changes were introduced.
+- Added strict C5 input/output runtime validators, OpenAI embedding configuration and adapter, current-plan Merchant Knowledge entitlement enforcement, tenant/source/provenance-bounded exact pgvector retrieval, and canonical `merchantKnowledge.lookup@1.0.0` registration.
+- Added the exact bounded authoring arguments/result descriptors and the five-match renderer item limit. Runtime Zod validation remains authoritative for enum and literal semantics.
+- Added focused contract, entitlement, embedding, retrieval, registration, rendering, and conditional pgvector tests. No Tool/Capability/release bootstrap or Studio UI was introduced.
+- Corrected the connection-check helper types affected by expanding server configuration.
 ### Validation Results
-None.
+- Focused C5/entitlement/embedding/retrieval/operation/registry/DefinitionExecutor/database-contract packet: 8 files passed, 47 tests passed, 1 test skipped. The skipped test is the live pgvector integration.
+- `npm run typecheck`: passed.
+- `npm run lint`: passed with warnings only. Targeted ESLint over changed implementation and test files passed without warnings. Remaining full-repository warnings are in untouched files.
+- `npm run build`: passed; existing Nunjucks dynamic dependency warning was emitted during compilation.
+- Changed-file diagnostics: no errors. `git diff --check`: passed.
+- Live PostgreSQL/pgvector proof: not run. `COMMERCE_TEST_DATABASE_URL` is unset, loopback PostgreSQL is not listening, and the configured `DATABASE_URL` is remote, so it was not used for this disposable-database requirement.
+- Startup evidence from the deterministic prepare packet: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-001` on `task/ARCH-023-COMMERCE-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-001` on the same task branch. Both worktrees were newly created, no other task worktree or shared checkout was reused or switched. Parent and implementation task branches required no remote fast-forward; `origin/main` was already current in both.
+- Recursive implementation submodule sync/init passed. The `database` submodule was initialized at `2eb17ee910491e8f9df82736fc0a843844415947`.
 ### Deviations
-None.
+- The task's live disposable PostgreSQL/pgvector validation remains unverified because this environment has no local PostgreSQL listener or configured disposable test URL. No remote database was used.
 ### Assumptions
-None.
+- The launcher-prepared database gitlink at `2eb17ee910491e8f9df82736fc0a843844415947` is the accepted ARCH-023-DATABASE-001 revision, as established by the deterministic dependency gate and initialized submodule packet.
 ### Unresolved Issues
-None.
+- Run `tests/merchant-knowledge-policy-postgres.test.ts` with a local disposable PostgreSQL database that has pgvector enabled before acceptance; the integration test is currently skipped.
 ### Architectural Concerns
-None.
+- None identified. `## Architect Review` below remains unchanged.
 
 ## Architect Review
 
