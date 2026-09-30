@@ -1,17 +1,17 @@
 ---
 id: ARCH-017
 title: Billing-plan materialisation, dynamic features, and billing-policy ownership
-status: Agreed
+status: In Progress
 coordinator: moda_architect
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-30
 ---
 
 # ARCH-017: Billing-plan materialisation, dynamic features, and billing-policy ownership
 
 ## Status
 
-Agreed.
+In Progress.
 
 This architecture is intentionally non-prorated. ARCH-011 is not part of this release and MUST NOT be used to introduce same-cycle plan segments, prorated allowance arithmetic or same-cycle downgrade/upgrade machinery.
 
@@ -339,12 +339,14 @@ Validation always requires terminal reserve >= 1 and < effective hard limit.
 `ShopSettings.onboardingCompleted` means: the merchant has completed the Shopify managed-pricing selection step at least once. It is a Shopify-side commercial milestone, not evidence that Moda successfully mapped, materialised or reconciled the selected plan.
 
 ```text
-fresh install / no Shopify managed-pricing selection yet -> false
-authenticated Shopify pricing selection observed          -> true
-any later Moda billing lifecycle outcome                  -> remains true
+fresh install / no authenticated Shopify billing callback yet -> false
+authenticated callback for an ACTIVE shop is entered          -> true
+any later Moda billing lifecycle outcome                       -> remains true
 ```
 
-The Shopify callback MUST persist this one-way transition before Moda BillingPlan resolution/materialisation so an internal mapping or reconciliation failure cannot roll it back. UNKNOWN/UNMAPPED, invalid catalogue state, inactive operational plan, SYNC_ERROR, cancellation, NO_CONTRACT, reinstall and plan change MUST NOT reset true to false.
+The authenticated Shopify billing callback owns this one-way transition. After Shopify admin authentication, authenticated-shop resolution and the ACTIVE-shop guard succeed, the callback MUST persist `onboardingCompleted=true` before validating Moda callback parameters and before any provider verification, BillingPlan resolution/materialisation, Subscription/BillingPeriod projection or retry scheduling. Missing callback metadata or any later Moda/provider failure does not undo or suppress this milestone.
+
+`BillingService` MUST NOT use `onboardingCompleted` to decide initial activation, token freshness, pending-intent preservation, reconciliation or billing projection. Those decisions derive from durable `Subscription` state and provider truth. UNKNOWN/UNMAPPED, invalid catalogue state, inactive operational plan, SYNC_ERROR, provider/API failure, cancellation, NO_CONTRACT, reinstall and plan change MUST NOT reset true to false.
 
 ## Billing periods
 
@@ -355,6 +357,26 @@ ARCH-010 non-prorated BillingPeriod semantics remain unchanged:
 - plan change is represented at supported period boundary, not by intra-period segments;
 - paid included allowance is period-scoped;
 - lifetime Free and purchased credits remain independent of BillingPeriod.
+
+## Current BillingPeriod projection invariant
+
+Manual system testing on 2026-09-19 exposed a reachable inconsistent state where an ACTIVE mapped Subscription referenced an OPEN BillingPeriod whose `planId` and plan snapshots were null. The defect exists independently in Shopify generic sync and Background reconciliation.
+
+ARCH-017 therefore adds this invariant:
+
+```text
+Subscription.status = ACTIVE | TRIALING
+Subscription.planId != null
+Subscription.billingPeriodId != null
+    =>
+referenced BillingPeriod is OPEN, belongs to that Subscription, represents the exact current provider cycle, and contains the same complete BillingPlan identity.
+```
+
+For FREE, `includedRecoveryCreditsGranted` remains null and no period included-credit counter exists. For PAID_METERED, the period snapshots the plan allowance and exactly one `INCLUDED_RECOVERY_CREDITS` counter exists with the same grant.
+
+An exact current OPEN period with missing/null projection fields may be completed in place when every existing non-null field is compatible with the resolved plan. This is self-healing reconciliation, not historical rewriting. A CLOSED period, another Subscription's period, a different non-null plan, incompatible snapshots, or incompatible paid counter is a conflict and MUST NOT be overwritten. The caller fails closed with `SYNC_ERROR/BILLING_PERIOD_PLAN_CONFLICT` and a bounded retry. No overlapping replacement BillingPeriod is created.
+
+The repair and Subscription projection must commit atomically. No database backfill is required because the platform remains pre-production; the next successful same-cycle reconciliation repairs compatible development state.
 
 ## Rollout classification
 
@@ -367,8 +389,13 @@ There are no production customers or production billing lifecycle state to prese
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-017-DATABASE-001 | moda_database | Complete | - |
-| ARCH-017-BACKGROUND-001 | moda_background | Ready | ARCH-017-DATABASE-001 |
-| ARCH-017-SHOPIFY-001 | moda_app | Ready (Changes Requested, Attempt 2) | ARCH-017-DATABASE-001 |
-| ARCH-017-ADMIN-001 | moda_admin | Ready | ARCH-017-DATABASE-001 |
+| ARCH-017-BACKGROUND-001 | moda_background | Complete | ARCH-017-DATABASE-001 |
+| ARCH-017-BACKGROUND-002 | moda_background | Complete | ARCH-017-BACKGROUND-001 |
+| ARCH-017-SHOPIFY-001 | moda_app | Ready (Attempt 3; developer-reopened) | ARCH-017-DATABASE-001 |
+| ARCH-017-SHOPIFY-002 | moda_app | Complete | ARCH-017-SHOPIFY-001 |
+| ARCH-017-SHOPIFY-003 | moda_app | Complete | ARCH-017-SHOPIFY-002 |
+| ARCH-017-ADMIN-001 | moda_admin | Complete | ARCH-017-DATABASE-001 |
 
-BACKGROUND-001, SHOPIFY-001 and ADMIN-001 intentionally have no dependencies on one another and may execute in parallel after DATABASE-001 is accepted.
+BACKGROUND-002 was a bounded reconciliation-correctness follow-up discovered during manual testing. It is complete and did not reopen BACKGROUND-001.
+
+SHOPIFY-003 is intentionally separate from SHOPIFY-002: SHOPIFY-002 owns the onboarding milestone; SHOPIFY-003 owns current BillingPeriod projection consistency. SHOPIFY-003 depends on SHOPIFY-002 because both modify `billing.service.ts` and had to execute sequentially in the same repository. SHOPIFY-001 was explicitly reopened by the developer on 2026-09-30 and is Ready for Attempt 3. SHOPIFY-002 and SHOPIFY-003 remain Complete; reopening does not silently regress already-completed dependants.

@@ -1,0 +1,287 @@
+<style>
+#commerce-studio-visual{--st-bg:light-dark(#f7f8f8,#141c1c);--st-panel:light-dark(#ffffff,#1b2525);--st-side:light-dark(#eef3f1,#182222);--st-text:light-dark(#203432,#e5efeb);--st-sub:light-dark(#647671,#a6b9b2);--st-line:light-dark(#dce6e1,#344540);--st-accent:light-dark(#236251,#98d7bf);--st-accent-ink:light-dark(#ffffff,#142a22);--st-soft:light-dark(#e8f3ed,#243d32);--st-warn:light-dark(#895f19,#eac37c);--st-warnbg:light-dark(#fff4df,#3c3322);--st-radius:12px;color:var(--st-text);font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:14px;line-height:1.5;max-width:100%;color-scheme:light dark}
+#commerce-studio-visual *{box-sizing:border-box}
+#commerce-studio-visual button,#commerce-studio-visual input,#commerce-studio-visual select,#commerce-studio-visual textarea{font:inherit}
+#commerce-studio-visual button{border:1px solid var(--st-line);border-radius:8px;background:var(--st-panel);color:var(--st-text);padding:8px 12px;display:inline-flex;gap:7px;align-items:center;justify-content:center;max-width:100%;white-space:normal}
+#commerce-studio-visual button:hover{background:var(--st-soft)}
+#commerce-studio-visual button:focus-visible,#commerce-studio-visual input:focus-visible,#commerce-studio-visual textarea:focus-visible,#commerce-studio-visual select:focus-visible{outline:3px solid var(--st-accent);outline-offset:2px}
+#commerce-studio-visual button.primary{background:var(--st-accent);color:var(--st-accent-ink);border-color:var(--st-accent)}
+#commerce-studio-visual button.link{padding:4px 0;border:0;background:transparent;color:var(--st-accent);justify-content:flex-start;text-align:left}
+#commerce-studio-visual button:disabled{opacity:.5;cursor:not-allowed}
+#commerce-studio-visual .toprail{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+#commerce-studio-visual .toprail .left,#commerce-studio-visual .actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#commerce-studio-visual .eyebrow{text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--st-sub);font-weight:500}
+#commerce-studio-visual .shell{display:grid;grid-template-columns:185px minmax(0,1fr);border:1px solid var(--st-line);border-radius:16px;overflow:hidden;background:var(--st-bg);min-height:600px}
+#commerce-studio-visual aside{background:var(--st-side);padding:24px 14px;display:flex;flex-direction:column;gap:22px;border-right:1px solid var(--st-line)}
+#commerce-studio-visual .brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+#commerce-studio-visual .mark{background:var(--st-accent);color:var(--st-accent-ink);border-radius:10px;padding:7px 11px;font-size:20px;font-weight:500}
+#commerce-studio-visual nav{display:grid;gap:5px}
+#commerce-studio-visual nav button{justify-content:flex-start;border:0;background:transparent;padding:10px;text-align:left}
+#commerce-studio-visual nav button.selected{background:var(--st-panel);box-shadow:0 1px 4px light-dark(#16382a12,#00000020);font-weight:500;color:var(--st-accent)}
+#commerce-studio-visual .sidefoot{margin-top:auto;padding:12px 8px;border-top:1px solid var(--st-line);font-size:12px;color:var(--st-sub)}
+#commerce-studio-visual .workspace{min-width:0}
+#commerce-studio-visual .auth-shell{grid-template-columns:1fr}
+#commerce-studio-visual .auth-shell aside,#commerce-studio-visual .auth-shell .appbar,#commerce-studio-visual .auth-shell .flowstrip{display:none}
+#commerce-studio-visual .appbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:13px 25px;border-bottom:1px solid var(--st-line);background:var(--st-panel)}
+#commerce-studio-visual .breadcrumb{font-size:12px;color:var(--st-sub)}
+#commerce-studio-visual .profile{display:flex;align-items:center;gap:8px;font-size:12px}
+#commerce-studio-visual .avatar{padding:5px 8px;border-radius:50%;background:var(--st-soft);color:var(--st-accent)}
+#commerce-studio-visual main{padding:26px;min-width:0}
+#commerce-studio-visual h1{font-size:25px;line-height:1.25;font-weight:500;letter-spacing:-.04em;margin:0 0 6px}
+#commerce-studio-visual h2{font-size:16px;font-weight:500;margin:0 0 10px}
+#commerce-studio-visual h3{font-size:14px;font-weight:500;margin:0 0 8px}
+#commerce-studio-visual p{margin:0 0 12px}
+#commerce-studio-visual .sub{color:var(--st-sub);font-size:12px}
+#commerce-studio-visual .heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap}
+#commerce-studio-visual .heading p{color:var(--st-sub);font-size:13px;max-width:490px;margin:0}
+#commerce-studio-visual .panel{background:var(--st-panel);border:1px solid var(--st-line);border-radius:var(--st-radius);padding:20px;min-width:0;margin-bottom:16px}
+#commerce-studio-visual .panel.flush{padding:0;overflow:hidden}
+#commerce-studio-visual .panelhead{padding:15px 18px;border-bottom:1px solid var(--st-line);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#commerce-studio-visual .panelhead h2{margin:0}
+#commerce-studio-visual .split{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+#commerce-studio-visual .row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:15px 18px;border-bottom:1px solid var(--st-line);flex-wrap:wrap}
+#commerce-studio-visual .row:last-child{border:0}
+#commerce-studio-visual .name{font-weight:500}
+#commerce-studio-visual .badge{display:inline-flex;align-items:center;gap:5px;border-radius:5px;padding:3px 7px;background:var(--st-side);font-size:11px;white-space:nowrap;color:var(--st-sub)}
+#commerce-studio-visual .badge.live{background:var(--st-soft);color:var(--st-accent)}
+#commerce-studio-visual .badge.draft{background:var(--st-warnbg);color:var(--st-warn)}
+#commerce-studio-visual .badge.inactive{background:var(--st-side);color:var(--st-sub)}
+#commerce-studio-visual .notice{background:var(--st-soft);border-radius:8px;padding:12px 14px;font-size:12px;margin:14px 0;color:var(--st-text)}
+#commerce-studio-visual .notice.warn{background:var(--st-warnbg)}
+#commerce-studio-visual label{display:block;font-size:12px;font-weight:500;margin-bottom:14px}
+#commerce-studio-visual input:not([type=checkbox]),#commerce-studio-visual textarea,#commerce-studio-visual select{display:block;width:100%;padding:10px 11px;border:1px solid var(--st-line);border-radius:7px;background:var(--st-panel);color:var(--st-text);margin-top:6px;min-width:0}
+#commerce-studio-visual input[type=checkbox]{accent-color:var(--st-accent);margin-right:7px}
+#commerce-studio-visual textarea{min-height:90px;resize:vertical}
+#commerce-studio-visual .tabs{display:flex;gap:20px;flex-wrap:wrap;border-bottom:1px solid var(--st-line);margin-bottom:20px}
+#commerce-studio-visual .tabs button{padding:0 0 11px;border:0;border-bottom:2px solid transparent;border-radius:0;background:transparent;color:var(--st-sub)}
+#commerce-studio-visual .tabs button.active{border-color:var(--st-accent);color:var(--st-text)}
+#commerce-studio-visual .steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+#commerce-studio-visual .steps button{padding:5px 9px;font-size:11px;background:var(--st-panel)}
+#commerce-studio-visual .steps button.active{background:var(--st-accent);color:var(--st-accent-ink)}
+#commerce-studio-visual .bottom{border-top:1px solid var(--st-line);padding-top:16px;display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}
+#commerce-studio-visual pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--st-side);color:var(--st-text);padding:14px;border-radius:8px;font-size:12px}
+#commerce-studio-visual .path{font-family:ui-monospace,monospace;font-size:11px;color:var(--st-sub);overflow-wrap:anywhere}
+#commerce-studio-visual .pillfields{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+#commerce-studio-visual .pillfields button{font-size:12px;padding:5px 9px;background:var(--st-soft);color:var(--st-accent)}
+#commerce-studio-visual .timeline{display:grid;gap:0}
+#commerce-studio-visual .timeline .event{display:flex;gap:12px;padding:10px 0}
+#commerce-studio-visual .dot{border-radius:50%;background:var(--st-soft);color:var(--st-accent);height:25px;min-width:25px;display:grid;place-items:center;font-size:12px}
+#commerce-studio-visual .chat{display:grid;gap:14px;margin-bottom:18px}
+#commerce-studio-visual .bubble{max-width:90%;padding:13px 15px;background:var(--st-side);border-radius:12px;font-size:13px}
+#commerce-studio-visual .bubble.customer{justify-self:end;background:var(--st-soft)}
+#commerce-studio-visual .flowstrip{display:flex;gap:5px;flex-wrap:wrap;margin-top:20px;font-size:11px;color:var(--st-sub);align-items:center}
+#commerce-studio-visual .flowstrip button{font-size:11px;padding:4px 7px;background:transparent;border:0;color:var(--st-sub)}
+#commerce-studio-visual .flowstrip button.active{background:var(--st-soft);color:var(--st-accent)}
+#commerce-studio-visual .map{padding:24px;border:1px solid var(--st-line);background:var(--st-bg);border-radius:16px}
+#commerce-studio-visual .lanes{display:grid;gap:20px}
+#commerce-studio-visual .lane{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;align-items:start}
+#commerce-studio-visual .nodes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#commerce-studio-visual .node{display:block;text-align:left;min-width:135px;flex:1;padding:13px}
+#commerce-studio-visual .node .sub{display:block;font-size:11px;margin-top:3px}
+#commerce-studio-visual .node .path{display:block;margin-top:7px}
+#commerce-studio-visual .overlay{position:absolute;inset:0;background:light-dark(#20343266,#00000080);z-index:3;padding:35px 15px;display:flex;align-items:flex-start;justify-content:center;border-radius:16px}
+#commerce-studio-visual .dialog{background:var(--st-panel);border:1px solid var(--st-line);border-radius:14px;padding:24px;width:450px;max-width:100%;box-shadow:0 20px 70px light-dark(#14312733,#00000070)}
+#commerce-studio-visual .dialog .actions{justify-content:flex-end;margin-top:20px}
+#commerce-studio-visual .productframe{position:relative}
+#commerce-studio-visual .toast{background:var(--st-soft);color:var(--st-accent);padding:10px 16px;font-size:12px;margin-bottom:12px;border-radius:8px}
+#commerce-studio-visual .auth{max-width:400px;margin:45px auto;padding:28px}
+#commerce-studio-visual .searchline{display:flex;gap:8px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+#commerce-studio-visual .searchline input{margin:0;flex:1;min-width:130px}
+#commerce-studio-visual .detailgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:16px 0}
+#commerce-studio-visual table{width:100%;border-collapse:collapse;font-size:12px}
+#commerce-studio-visual th,#commerce-studio-visual td{text-align:left;padding:11px;border-bottom:1px solid var(--st-line);overflow-wrap:anywhere}
+#commerce-studio-visual th{font-weight:500;color:var(--st-sub)}
+#commerce-studio-visual .compact .row{padding-top:10px;padding-bottom:10px}
+@media(max-width:740px){#commerce-studio-visual .shell{grid-template-columns:1fr}#commerce-studio-visual aside{padding:14px;border-right:0;border-bottom:1px solid var(--st-line);gap:12px}#commerce-studio-visual nav{display:flex;flex-wrap:wrap;gap:3px}#commerce-studio-visual nav button{font-size:12px;padding:7px}#commerce-studio-visual .sidefoot{display:none}#commerce-studio-visual main{padding:18px}#commerce-studio-visual .split{grid-template-columns:1fr}#commerce-studio-visual .appbar{padding:12px 18px}#commerce-studio-visual .lane{grid-template-columns:1fr}#commerce-studio-visual .heading{gap:10px}#commerce-studio-visual .detailgrid{gap:10px}}
+@media(max-width:420px){#commerce-studio-visual .toprail{align-items:flex-start}#commerce-studio-visual .nodes{display:grid;grid-template-columns:1fr}#commerce-studio-visual .nodes>span{display:none}#commerce-studio-visual .detailgrid{grid-template-columns:1fr}#commerce-studio-visual .panel{padding:14px}#commerce-studio-visual h1{font-size:22px}#commerce-studio-visual input,#commerce-studio-visual select,#commerce-studio-visual textarea{font-size:16px!important}#commerce-studio-visual .appbar .profile{display:none}}
+</style>
+<div id="commerce-studio-visual" aria-label="CommerceAgent Studio interactive design">
+ <div class="toprail"><div class="left"><span class="eyebrow">ARCH–020 · Studio walkthrough</span><span class="badge">Sample data · no live changes</span></div><div class="actions"><button type="button" data-action="view-studio" class="primary cursor-interaction">Studio screens</button><button type="button" data-action="view-map" class="cursor-interaction">Page & flow map</button></div></div>
+ <div id="studio-visual-body"></div>
+ <div id="studio-visual-announcement" aria-live="polite" class="sub"></div>
+</div>
+<script>
+(()=>{
+const root=document.getElementById('commerce-studio-visual');
+const body=root.querySelector('#studio-visual-body');
+const announcer=root.querySelector('#studio-visual-announcement');
+const pages={U01:['Sign in','/sign-in'],U02:['Access denied','/access-denied'],U03:['Features','/features'],U04:['Care advice','/features/care-advice'],U05:['Tools','/tools'],U06:['Read product details','/tools/product-details'],U07:['Explore Shopify','/explore'],U08:['Platform configurations','/capabilities'],U09:['Care advice behaviour','/capabilities/care-advice'],U10:['Releases','/releases'],U11:['Release review','/releases/13'],U12:['Merchants','/shops'],U13:['North & Field','/shops/north-and-field'],U14:['Test conversations','/preview']};
+const fresh={page:'U03',view:'studio',step:0,featureConfigured:false,toolCreated:true,toolDraft:true,toolPublished:false,attached:false,behaviourPublished:false,releaseCreated:false,activated:false,queryPicked:false,validated:false,previewStarted:false,previewSent:false,previewMode:'Conversation',previewReturn:'U03',feature:'Care advice',tab:'Definition',exploreTab:'Schema and query builder',modal:null,notice:'',dirty:false,toolName:'read_product_details',purpose:'Read product details to answer questions about materials and care. Refer to the store when the answer is not stated.',prompt:'Answer product-care questions using verified product descriptions. If care instructions are not stated, direct the customer to the store.',message:'How should I wash this linen shirt?',toolLabel:'Read product details',template:'{{result.values.title}}: {{result.values.description}}',inputValue:'linen-shirt',returnToBehaviour:false,role:'SUPER_ADMIN',trace:true};
+let state={...fresh};
+const saved=window.openai?.widgetState?.privateContent;
+if(saved?.schema==='studio-v1'&&pages[saved.page]) state={...state,...saved,modal:null,notice:'',dirty:false};
+const design={density:'Comfortable',corners:12};
+const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icon=n=>`<i data-lucide="${n}" aria-hidden="true"></i>`;
+const btn=(label,action,primary=false,extra='')=>`<button type="button" class="${primary?'primary ':''}cursor-interaction" data-action="${action}" ${extra}>${label}</button>`;
+const link=(label,page)=>`<button type="button" class="link cursor-interaction" data-go="${page}">${label}</button>`;
+const badge=(text,type='')=>`<span class="badge ${type}">${text}</span>`;
+const row=(title,sub,right)=>`<div class="row"><div><div class="name">${title}</div><div class="sub">${sub}</div></div><div class="actions">${right}</div></div>`;
+const head=(title,sub,action='')=>`<div class="heading"><div><h1>${title}</h1><p>${sub}</p></div><div class="actions">${action}</div></div>`;
+const tabs=(names,current,kind)=>`<div class="tabs">${names.map(n=>btn(n,kind,false,`data-value="${n}" aria-pressed="${n===current}"`).replace('class="','class="'+(n===current?'active ':''))).join('')}</div>`;
+const field=(label,key,value,multiline=false)=>`<label>${label}${multiline?`<textarea data-bind="${key}">${esc(value)}</textarea>`:`<input data-bind="${key}" value="${esc(value)}">`}</label>`;
+const notice=(text,warn=false)=>`<div class="notice ${warn?'warn':''}">${text}</div>`;
+const primaryFlow=['U04','U09','U06','U07','U14','U10','U11'];
+const sessionMarker=String(Date.now())+Math.random().toString(36);
+function persist(){window.openai?.setWidgetState?.({modelContent:{screen:pages[state.page][0],page:state.page,view:state.view,toolPublished:state.toolPublished,releaseActivated:state.activated},privateContent:{...state,sessionMarker,schema:'studio-v1',modal:null,notice:'',dirty:false}})?.catch(()=>{});}
+function go(page,force=false){if(state.dirty&&!force){state.pendingPage=page;state.modal='unsaved';render();return;}state.page=page;state.view='studio';state.notice='';state.modal=null;render();persist();}
+function banner(text){state.notice=text;announcer.textContent=text;}
+function pageContent(){
+ switch(state.page){
+ case'U01':return `<div class="panel auth"><span class="eyebrow">Moda / Commerce Studio</span><h1 style="margin-top:20px">Welcome back</h1><p class="sub">Team access using your existing Admin account.</p>${btn('Continue with Google','sign-in',true)}${notice('Design preview: sign-in is simulated.')}<div style="margin-top:22px">${link('View access-denied state','U02')}</div></div>`;
+ case'U02':return `<div class="panel auth">${icon('shield-alert')}<h1>Access denied</h1><p class="sub">This account does not have active Studio access.</p>${btn('Sign out','sign-out')}</div>`;
+ case'U03':return head('Features','Configure how existing Admin features behave in customer conversations.',link('Platform configurations','U08'))+`<div class="searchline"><input aria-label="Search features" placeholder="Search features" data-search="features"><span class="badge">Owned by Admin</span></div><div class="panel flush" data-list="features">${row(btn('Product guidance','feature-product'),'product_guidance · Merchant opt-in',badge('Live','live')+btn('Configure behaviour','feature-product'))}${row(link('Care advice','U04'),'care_advice · Merchant opt-in',badge(state.activated?'Live':state.featureConfigured?'Draft only':'Not configured',state.activated?'live':state.featureConfigured?'draft':'')+btn('Configure behaviour','feature-care',true))}${row(btn('Size information','feature-size'),'size_information · Merchant opt-in',badge('Draft only','draft')+btn('Configure behaviour','feature-size'))}</div>${notice('Feature names, plan availability and activation modes are managed in Admin. Studio defines the agent’s behaviour and tools.')}`;
+ case'U04':return link('← Back to Features','U03')+head(esc(state.feature),'Configure instructions and tools for this existing feature.',btn('Manage feature in Admin','admin-info'))+`<div class="panel"><div class="actions">${badge('Active in Admin','live')}${badge('Merchant opt-in')}</div><div class="detailgrid"><div class="sub">Feature key<div class="name path">${state.feature.toLowerCase().replaceAll(' ','_')}</div></div><div class="sub">Commerce status<div style="margin-top:5px">${badge(state.activated?'Live':state.featureConfigured?'Draft only':'Not configured',state.activated?'live':'draft')}</div></div></div></div><div class="panel flush"><div class="panelhead"><h2>Agent behaviour</h2>${btn('Add behaviour','add-behaviour',!state.featureConfigured)}</div>${state.featureConfigured?row(link(esc(state.feature)+' assistant','U09'),'Draft revision 2 · 1 published revision',badge(state.behaviourPublished?'Published':'Draft',state.behaviourPublished?'live':'draft')+link('Open →','U09')):`<div style="padding:28px"><h2>No behaviour configured yet</h2><p class="sub">Add instructions, then associate the tools the agent can use.</p>${btn('Configure behaviour','add-behaviour',true)}</div>`}</div>`;
+ case'U05':return head('Tools','All reusable tools. Each merchant’s agent receives only its eligible published tools.',btn('+ New tool','new-tool',true))+notice('Looking for the list an agent receives? '+link('Inspect a merchant’s tool list →','U12'))+`<div class="searchline"><input aria-label="Search tools" placeholder="Search tools" data-search="tools"><span class="sub">Published tools can be shared across features</span></div><div class="panel flush" data-list="tools">${row(link(esc(state.toolLabel),'U06'),esc(state.toolName),badge(state.toolPublished?'Published 1.0.0':'Draft 1.0.0',state.toolPublished?'live':'draft')+link('Open →','U06'))}${row('Read recovery basket','Trusted recovery information',badge('Published 1.0.0','live')+btn('Inspect','inspect-basket'))}${row('Evaluate available offer','Discount policy and verified eligibility',badge('Published 1.0.0','live')+btn('Inspect','inspect-offer'))}</div>`;
+ case'U06':return toolEditor();
+ case'U07':return explore();
+ case'U08':return link('← Back to Features','U03')+head('Platform configurations','Shared conversation rules and recovery-policy behaviour.')+`<div class="panel flush">${row('Conversation core','Grounding and store-referral instructions',badge('Base','live')+btn('Open','platform-core'))}${row('Discount assistance','Available when the recovery offer policy permits it',badge('Recovery policy')+btn('Open','platform-discount'))}</div>${notice('These configurations do not create paid features or override merchant plan eligibility.')}`;
+ case'U09':return behaviour();
+ case'U10':return head('Releases','Review and publish a complete set of feature behaviour.',btn('Create release','create-release',true))+`<div class="panel"><span class="eyebrow">Active release</span><h2 style="margin-top:8px">Release ${state.activated?'13':'12'}</h2><p class="sub">Used when a new recovery conversation first receives its tools.</p>${link('Inspect release →','U11')}</div><div class="panel flush">${state.releaseCreated?row(link('Release 13','U11'),'Care advice · product details 1.0.0',badge(state.activated?'Active':'Ready to activate',state.activated?'live':'draft')+link('Review →','U11')):''}${row('Release 12','Product guidance and recovery-policy tools',badge(state.activated?'Previous':'Active',state.activated?'':'live')+btn('Review','release-previous'))}${row('Release 11','Previous published configuration',badge('Previous')+btn('Review rollback','rollback'))}</div>`;
+ case'U11':return releaseReview();
+ case'U12':return head('Merchants','Inspect effective feature eligibility and published tools.')+`<div class="searchline"><input aria-label="Search merchants" placeholder="Search by store name or domain" data-search="shops"></div><div class="panel flush" data-list="shops">${row(link('North & Field','U13'),'north-and-field.myshopify.com',badge('Growth plan')+link('Inspect →','U13'))}${row('Juniper Home','juniper-home.myshopify.com',badge('Starter plan')+btn('Inspect','merchant-demo'))}</div>`;
+ case'U13':return merchant();
+ case'U14':return preview();
+ }
+}
+function toolEditor(){
+ const labels=['Purpose','Inputs','Retrieve','Map inputs','Response','Review & test'];
+ let inner='';
+ if(state.tab==='Metadata') inner=`<div class="panel">${field('Display name','toolLabel',state.toolLabel)}<label>MCP name<input value="${esc(state.toolName)}" readonly></label>${field('Staff description','purpose',state.purpose,true)}${btn('Save metadata','save',true)}${notice('The MCP name is permanent. Agent-facing instructions belong to a version.')}<div class="actions">${btn('Disable tool','disable-tool')}</div></div>`;
+ else if(state.tab==='History')inner=`<div class="panel flush">${row('Version 1.0.0',state.toolPublished?'Published · immutable':'Draft · editable',badge(state.toolPublished?'Published':'Draft',state.toolPublished?'live':'draft')+btn('Open version','open-version'))}</div><div class="panel"><h2>Used by</h2>${state.attached?link(esc(state.feature)+' →','U09'):'<span class="sub">Not yet attached to a published behaviour.</span>'}</div>`;
+ else {
+ let form='';
+ switch(state.step){
+ case 0:form=`${field('When should the agent use this tool?','purpose',state.purpose,true)}<div class="detailgrid"><label>Definition version<input value="1.0.0" readonly></label><label>Tool name<input value="${esc(state.toolName)}" readonly></label></div>${notice('Describe when this tool is useful and when the agent should refer the customer to the store.')}`;break;
+ case 1:form=`<h2>Information supplied by the agent</h2><div class="panel flush">${row('handle','Text · required · maximum 255 characters',badge('Product handle'))}</div>${btn('+ Add input','add-input')}${notice('Shop identity and credentials are supplied by the platform. They cannot be added as agent inputs.')}`;break;
+ case 2:form=`<label>Retrieval method<select data-choice="execution"><option>Public Shopify query</option><option>Recovery / discount operation</option></select></label><div class="actions">${badge('Storefront · 2026-07')}${btn('Browse Shopify','browse',true)}</div><pre>query ProductDetails($handle: String!) {\n  product(handle: $handle) {\n    title\n    description\n  }\n}</pre><label>Result selection<input value="product" readonly></label>${state.queryPicked?notice('Selected in Explore Shopify. Save this draft to keep the query.'):notice('Build a query using Shopify field descriptions, without writing code.')}`;break;
+ case 3:form=`<h2>Connect agent inputs to the query</h2><div class="panel flush">${row('Query variable: handle','Required text',badge('Agent input → handle'))}</div><label>Source<select><option>Agent input: handle</option><option>Fixed sample value</option></select></label>${notice('Only values change at runtime. The published query and store identity stay fixed.')}`;break;
+ case 4:form=`<label>Response layout<select><option>Text</option><option>List of items</option></select></label><div class="sub">Insert a verified result field</div><div class="pillfields">${btn('Product title','insert-title')}${btn('Description','insert-description')}</div>${field('Tool response template','template',state.template,true)}<label>When details are unavailable<input value="Product details could not be verified."></label><div class="notice"><div class="eyebrow">Sample formatted result</div>Linen shirt: Machine wash cold. Air dry.</div>`;break;
+ case 5:form=`<div class="actions">${badge(state.validated?'Valid for selected schema':'Not yet validated',state.validated?'live':'draft')}${btn('Validate definition','validate',!state.validated)}</div><div class="detailgrid"><div><h3>What the agent sees</h3><p class="path">${esc(state.toolName)}</p><p class="sub">${esc(state.purpose)}</p></div><div><h3>Execution</h3><p class="sub">Public Shopify query<br>Storefront 2026-07<br>Input: handle<br>Result: product</p></div></div><div class="actions">${btn('Test with sample data','test-tool')}${state.toolPublished?btn('Attach this version','attach-return',true):btn('Publish tool version','publish-tool',true)}</div>${notice('Publishing a tool does not change any feature or existing conversation.')}`;
+ }
+ inner=`<div class="steps" aria-label="Tool editor steps">${labels.map((x,i)=>btn((i+1)+'. '+x,'step',false,`data-step="${i}" aria-pressed="${i===state.step}"`).replace('class="','class="'+(i===state.step?'active ':''))).join('')}</div><div class="panel">${form}</div><div class="bottom"><div class="actions">${state.step?btn('← Back','prev-step'):''}${state.step<5?btn('Next →','next-step'):''}</div><div class="actions"><span class="sub">${state.dirty?'Unsaved changes':state.toolPublished?'Published version · read only':'Draft saved'}</span>${btn(state.toolPublished?'Create new draft':'Save draft',state.toolPublished?'new-draft':'save',true)}</div></div>`;
+ }
+ return link('← Back to Tools','U05')+head(esc(state.toolLabel),'Define the information this tool retrieves and how it is returned.',badge(state.toolPublished?'Published 1.0.0':'Draft 1.0.0',state.toolPublished?'live':'draft'))+tabs(['Metadata','Definition','History'],state.tab,'tool-tab')+inner;
+}
+function explore(){
+ let content=state.exploreTab==='Documentation'?`<div class="searchline"><input aria-label="Search Shopify documentation" placeholder="Search Shopify documentation" value="product descriptions">${btn('Search','search-docs',true)}</div><div class="panel"><span class="eyebrow">Shopify documentation · sample excerpt</span><h2 style="margin-top:8px">Product information</h2><p class="sub">A product’s title and description can provide the information an agent needs to answer questions about that product.</p><div class="actions">${btn('Read document','read-doc')}${btn('Explore product fields →','schema-tab',true)}</div></div>`:`<div class="split"><div class="panel"><h2>Choose the information to retrieve</h2><label>API surface<select><option>Storefront · public reads · 2026-07</option></select></label><label>Starting point<select><option>Product by handle</option></select></label><div class="row" style="padding:10px 0"><div><span class="name">handle</span><div class="sub">Product identifier · required text</div></div>${badge('Agent input')}</div><div style="margin-top:15px"><label><input type="checkbox" checked disabled>title <span class="sub">Product name</span></label><label><input type="checkbox" checked disabled>description <span class="sub">Plain-text product details</span></label><label><input type="checkbox" disabled>metafields <span class="sub">Token-based access required</span></label></div>${btn('Validate selection','validate',true)}</div><div class="panel"><h2>Query preview</h2><pre>query ProductDetails($handle: String!) {\n  product(handle: $handle) {\n    title\n    description\n  }\n}</pre><div class="sub">Result selection: product</div>${notice(state.validated?'Valid for the selected schema. Sample data is used for testing.':'Select fields to construct a tool. No live store is queried here.')}${btn('Use in tool →','use-query',true)}</div></div>`;
+ return (state.returnToBehaviour||state.toolCreated?link('← Return to tool','U06'):'')+head('Explore Shopify','Find documentation and construct queries inside Studio.',badge('Integrated discovery'))+tabs(['Schema and query builder','Documentation'],state.exploreTab,'explore-tab')+content;
+}
+function behaviour(){return link('← Back to '+(state.feature==='Conversation core'||state.feature==='Discount assistance'?'Platform configurations':'Feature'),state.feature==='Conversation core'||state.feature==='Discount assistance'?'U08':'U04')+head(esc(state.feature)+' behaviour','Instructions and exact tool versions for this feature.',badge(state.behaviourPublished?'Published revision 2':'Draft revision 2',state.behaviourPublished?'live':'draft'))+`<div class="split"><div class="panel">${field('Agent instructions','prompt',state.prompt,true)}<div class="detailgrid"><label>Search result limit<select><option>10</option><option>5</option><option>20</option></select></label><label>Recommendations<select><option>3</option><option>1</option><option>2</option></select></label></div></div><div class="panel"><h2>Configuration ownership</h2><div class="sub">Existing Admin feature</div><p class="name">${esc(state.feature)}</p><div class="sub">Availability</div><p>${badge('Merchant opt-in')}</p><p class="sub">Publishing behaviour never changes the merchant’s plan or preference.</p></div></div><div class="panel flush"><div class="panelhead"><h2>Associated tools</h2><div class="actions">${btn('Create tool','create-from-behaviour')}${btn('Add published tool','attach',true)}</div></div>${state.attached?row(link(esc(state.toolLabel),'U06'),'Exact version 1.0.0 · shared library',badge('Pinned','live')+btn('Remove','remove-tool')):'<div class="row"><span class="sub">No tools attached. Select a published version or create one.</span></div>'}</div><div class="bottom"><div class="actions">${btn('Test behaviour','test-behaviour')}${btn('Save draft','save')}</div>${state.behaviourPublished?btn('Create release →','create-release',true):btn('Publish behaviour','publish-behaviour',true)}</div>`;}
+function releaseReview(){return link('← Back to Releases','U10')+head(state.rollback?'Release 11':'Release 13',state.activated&&!state.rollback?'Active for new conversations.':'Review the exact versions before activation.',badge(state.activated&&!state.rollback?'Active':'Ready to activate',state.activated&&!state.rollback?'live':'draft'))+`<div class="panel flush"><div class="panelhead"><h2>Release changes</h2>${badge('Compared with release 12')}</div>${row('Conversation core','Grounding and referral instructions',badge('Unchanged'))}${row(link(esc(state.feature)+' behaviour','U09'),'Revision 2',badge('Added','live'))}${row(link(esc(state.toolLabel),'U06'),'Exact tool version 1.0.0',badge('Added','live'))}</div><div class="panel"><h2>Publication stages</h2><div class="timeline">${['Tool version published','Behaviour revision published','Release created','Active release selected'].map((x,i)=>`<div class="event"><span class="dot">${i<3||state.activated?'✓':4}</span><div>${x}${i===3?'<div class="sub">Takes effect for newly granted conversations only</div>':''}</div></div>`).join('')}</div></div>${notice('Existing conversations keep their originally granted tool versions. Activation does not upgrade them.')}<div class="actions">${btn('Test release','test-release')}${state.rollback?btn('Rollback to this release','confirm-rollback',true):state.activated?btn('Inspect merchant tools →','inspect-merchant',true):btn('Activate release','activate',true)}</div>`;}
+function merchant(){return link('← Back to Merchants','U12')+head('North & Field','Read-only view of the merchant’s effective configuration.',btn('Test this configuration','test-merchant',true))+`<div class="actions" style="margin-bottom:18px">${badge('Growth plan')}${badge('Active release '+(state.activated?13:12))}${badge('Sample merchant')}</div><div class="panel flush"><div class="panelhead"><h2>Feature eligibility</h2></div>${row(link('Product guidance','U04'),'Admin active · plan included · opted in',badge('Eligible','live'))}${row(link('Care advice','U04'),'Admin active · plan included · opted in',badge(state.activated?'Live tools available':'Not in active release',state.activated?'live':'draft'))}${row('Size information','Admin active · plan included · not opted in',badge('Excluded'))}</div><div class="panel flush"><div class="panelhead"><h2>Agent tool list · new conversation</h2></div>${row('Read recovery basket','Source: Product guidance · exact version 1.0.0',badge('1.0.0'))}${state.activated?row(link(esc(state.toolLabel),'U06'),'Source: Care advice',badge('1.0.0','live')):row('Care advice tool not included','Publish and activate its behaviour to make it available.',link('Review release →','U10'))}</div><div class="panel"><h2>How CommerceAgent receives this list</h2><div class="timeline"><div class="event"><span class="dot">1</span><div>Background identifies the recovery conversation<div class="sub">Trusted shop + recovery + conversation identity</div></div></div><div class="event"><span class="dot">2</span><div>Commerce resolves or reuses its original grant<div class="sub">Plan → enabled features → published behaviour → exact tools</div></div></div><div class="event"><span class="dot">3</span><div>The agent requests available tools<div class="sub">MCP tools/list · authenticated conversation context</div></div></div></div><h3 style="margin-top:15px">Example descriptor returned to the agent</h3><pre>{
+  "name": "commerce_get_basket",
+  "description": "Read the customer’s recovery basket",
+  "inputSchema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": false
+  }
+}</pre><div class="sub">The full list contains one descriptor per available granted tool. Shop identity is authenticated context, not an argument the model chooses.</div></div>${notice('Inspecting this page does not start a conversation, query live products or change merchant settings.')}`;}
+function preview(){
+ const tool=state.previewMode==='Tool test';
+ return link('← Return to '+pages[state.previewReturn][0],state.previewReturn)+head('Test conversations','Synthetic fixtures only. No WhatsApp messages or live store changes.',badge('Isolated sandbox','live'))+tabs(['Conversation','Tool test'],state.previewMode,'preview-mode')+`<div class="split"><div><div class="panel"><div class="actions" style="margin-bottom:15px">${badge(esc(state.toolLabel)+' · 1.0.0')}${badge('Fixture mode')}</div>${tool?field('Sample product handle','inputValue',state.inputValue):'<div class="sub">Basket fixture</div><p class="name">Linen shirt · £48.00 GBP</p>'}${!state.previewStarted?btn(tool?'Run tool test':'Start conversation','start-preview',true):`<div class="chat"><div class="bubble"><span class="eyebrow">Fixture context</span><div>Linen shirt: Machine wash cold. Air dry.</div></div>${state.previewSent?`<div class="bubble customer">${esc(state.message)}</div><div class="bubble">The product description says to machine wash this shirt cold and air dry it.</div>`:''}</div>${!tool?field('Customer message','message',state.message):''}<div class="actions">${btn(tool?'Run again':'Send','send-preview',true)}${btn('Reset conversation','reset-preview')}</div>`}</div>${notice('This sample shows the expected interaction. It does not call a model or Shopify.')}</div><div class="panel"><h2>Execution trace</h2>${state.previewStarted?`<div class="timeline"><div class="event"><span class="dot">1</span><div>Grant frozen<div class="sub">${esc(state.toolName)} · 1.0.0</div></div></div>${state.previewSent||tool?`<div class="event"><span class="dot">2</span><div>Tool selected<div class="sub">Product details for linen-shirt</div></div></div><div class="event"><span class="dot">3</span><div>Verified fixture facts<div class="sub">Care instructions found in description</div></div></div><div class="event"><span class="dot">4</span><div>Response returned<div class="sub">Uses the original granted tool</div></div></div>`:''}</div>`:'<p class="sub">Start a test to inspect the granted tools, returned facts and response.</p>'}</div></div>`;
+}
+function flowMap(){
+ const lanes=[['Access',[['U01','Google sign-in'],['U02','Denied or revoked']]],['Feature configuration',[['U03','Existing Admin catalogue'],['U04','Configure behaviour'],['U09','Instructions + exact tools']]],['Tool authoring',[['U05','Reusable library'],['U06','Six-step editor'],['U07','Docs + schema builder']]],['Test & publish',[['U14','Fixtures + conversation'],['U10','Create a release'],['U11','Review / activate / rollback']]],['Inspect & govern',[['U12','Merchant list'],['U13','Eligibility + tool list'],['U08','Platform configurations']]]];
+ return `<div class="map"><div class="heading"><div><h1>Studio page & flow map</h1><p>Select any page to inspect its sample screen.</p></div>${btn('Start at Features →','start-flow',true)}</div><div class="lanes">${lanes.map(([name,items])=>`<div class="lane"><div class="eyebrow" style="padding-top:12px">${name}</div><div class="nodes">${items.map(([id,desc],i)=>`${i?'<span aria-hidden="true">'+(name==='Access'?'if denied →':name==='Inspect & govern'&&i===2?'·':name==='Test & publish'&&i===1?'·':'→')+'</span>':''}<button type="button" class="node cursor-interaction" data-go="${id}"><span class="eyebrow">${id}</span><div class="name">${pages[id][0]}</div><span class="sub">${desc}</span><span class="path">${pages[id][1]}</span></button>`).join('')}</div></div>`).join('')}</div><div class="notice">Main journey: select feature → configure behaviour → create or reuse tool → explore Shopify → test → publish tool → publish behaviour → create release → activate.</div><div class="sub">Back links return to the parent page. Cancel preserves saved drafts. Publishing and activation are separate steps.</div></div>`;
+}
+function modal(){
+ let title='',content='',confirm='',label='Confirm';
+ switch(state.modal){
+ case'new-tool':title='Create reusable tool';content=field('Display name','toolLabel',state.toolLabel)+field('Permanent tool name','toolName',state.toolName);confirm='create-tool-confirm';label='Create tool';break;
+ case'behaviour':title='Add behaviour to '+esc(state.feature);content=`<label>Capability key<input value="care_advice_assistant"></label><label>Display name<input value="${esc(state.feature)} assistant"></label>${notice('This configuration links to the existing Admin feature. It does not create a new feature.')}`;confirm='create-behaviour-confirm';label='Create behaviour';break;
+ case'publish-tool':title='Publish tool version 1.0.0';content=`<p>${esc(state.toolLabel)}</p>${notice('The published definition becomes read-only. Features must explicitly attach this version.')}<label>Reason<input value="Initial care-advice tool"></label>`;confirm='publish-tool-confirm';label='Publish version';break;
+ case'attach':title='Attach a published tool';content=`<div class="panel"><h3>${esc(state.toolLabel)}</h3><div class="actions">${badge('Published 1.0.0','live')}${badge('Public Shopify query')}</div></div>${notice('The exact version is pinned. Publishing a newer tool will not change this association.')}`;confirm='attach-confirm';label='Attach version 1.0.0';break;
+ case'publish-behaviour':title='Publish behaviour revision';content=`<p>${esc(state.feature)} · revision 2</p>${notice('This freezes the prompt and tool versions. It does not activate a release.')}<label>Reason<input value="Care advice ready for release"></label>`;confirm='publish-behaviour-confirm';label='Publish revision';break;
+ case'create-release':title='Create release 13';content=`<div class="panel flush">${row('Conversation core','Required base configuration',badge('Included'))}${row(esc(state.feature),'Revision 2 · product details 1.0.0',badge('New','live'))}</div>${notice('Preserves the other members of release 12. Creation does not activate the release.')}<label>Reason<input value="Add care-advice behaviour"></label>`;confirm='create-release-confirm';label='Create release';break;
+ case'activate':title='Activate release 13';content=notice('New conversations receive this release. Existing conversations keep their original tools.')+'<label>Reason<input value="Enable published care advice"></label>';confirm='activate-confirm';label='Activate';break;
+ case'rollback':title='Rollback to release 11';content=notice('Only the active release pointer changes. Existing grants and release history remain unchanged.')+'<label>Reason<input value="Restore previous configuration"></label>';confirm='rollback-confirm';label='Confirm rollback';break;
+ case'unsaved':title='Unsaved changes';content='<p>Keep editing or discard changes made since the last save.</p>';confirm='discard';label='Discard changes';break;
+ case'reset':title='Start a new preview conversation?';content=notice('The current synthetic conversation is abandoned. No live conversation is affected.');confirm='reset-confirm';label='Reset';break;
+ default:title='Design detail';content=`<p>${esc(state.modalText||'This control represents the proposed workflow.')}</p>`;confirm='close-modal';label='Close';
+ }
+ return `<div class="overlay"><div class="dialog" role="dialog" aria-modal="true" aria-label="${esc(title)}"><h2>${title}</h2>${content}<div class="actions">${btn(state.modal==='unsaved'?'Stay':'Cancel','cancel-modal')}${btn(label,confirm,true)}</div></div></div>`;
+}
+function render(){
+ root.style.setProperty('--st-radius',design.corners+'px');root.classList.toggle('compact',design.density==='Compact');
+ const tabBtns=root.querySelectorAll('.toprail button');tabBtns[0].classList.toggle('primary',state.view==='studio');tabBtns[1].classList.toggle('primary',state.view==='map');
+ if(state.view==='map')body.innerHTML=flowMap();else{
+ const navs=[['Features','U03','layers'],['Tools','U05','wrench'],['Explore Shopify','U07','compass'],['Test conversations','U14','messages-square'],['Releases','U10','package-check'],['Merchants','U12','store']];
+ const group=['U03','U04','U08','U09'].includes(state.page)?'U03':['U05','U06'].includes(state.page)?'U05':['U10','U11'].includes(state.page)?'U10':['U12','U13'].includes(state.page)?'U12':state.page;
+ body.innerHTML=`<div class="productframe">${state.notice?`<div class="toast" role="status">${esc(state.notice)}</div>`:''}<div class="shell ${['U01','U02'].includes(state.page)?'auth-shell':''}"><aside><div class="brand"><span class="mark">m</span><div><div class="name">moda</div><div class="sub">Commerce Studio</div></div></div><nav aria-label="Studio pages">${navs.map(([label,id,ico])=>`<button type="button" class="cursor-interaction ${group===id?'selected':''}" data-go="${id}" ${group===id?'aria-current="page"':''}>${icon(ico)}${label}</button>`).join('')}</nav><div class="sidefoot">${badge('Release '+(state.activated?'13':'12')+' active','live')}<div style="margin-top:12px">Platform team<br>SUPER_ADMIN</div><div style="margin-top:8px">${btn('Sign out','sign-out')}</div></div></aside><div class="workspace"><div class="appbar"><div class="breadcrumb">Studio / ${pages[state.page][0]}</div><div class="profile"><span class="path">${pages[state.page][1]}</span><span class="avatar">MT</span></div></div><main>${pageContent()}<div class="flowstrip" aria-label="Authoring journey"><span>Journey</span>${primaryFlow.map(id=>`<span aria-hidden="true">›</span><button type="button" data-go="${id}" class="cursor-interaction ${state.page===id?'active':''}">${({U04:'Feature',U09:'Behaviour',U06:'Tool',U07:'Explore',U14:'Test',U10:'Release',U11:'Activate'})[id]}</button>`).join('')}</div></main></div></div>${state.modal?modal():''}</div>`;
+ }
+ if(state.page==='U06'&&state.tab==='Definition'&&state.toolPublished){body.querySelectorAll('main input,main textarea,main select').forEach(el=>el.disabled=true);}
+ if(globalThis.lucide)lucide.createIcons({attrs:{width:16,height:16}});
+ if(state.modal){body.querySelector('.dialog button')?.focus();}
+}
+let busy=false;
+root.addEventListener('click',e=>{
+ const el=e.target.closest('button');if(!el||!root.contains(el)||busy||el.disabled)return;
+ if(el.dataset.go){go(el.dataset.go);return;}
+ const action=el.dataset.action;if(!action)return;
+ busy=true;
+ try{
+ switch(action){
+ case'view-map':state.view='map';break;case'view-studio':state.view='studio';break;case'start-flow':state.page='U03';state.view='studio';break;
+ case'feature-care':state.feature='Care advice';go('U04');return;
+ case'feature-product':state.feature='Product guidance';state.featureConfigured=true;go('U04');return;
+ case'feature-size':state.feature='Size information';state.featureConfigured=true;go('U04');return;
+ case'add-behaviour':state.modal='behaviour';break;
+ case'create-behaviour-confirm':state.featureConfigured=true;state.modal=null;state.page='U09';banner('Behaviour created in prototype. Add instructions and tools.');break;
+ case'new-tool':state.returnToBehaviour=false;state.modal='new-tool';break;
+ case'create-from-behaviour':state.returnToBehaviour=true;state.modal='new-tool';break;
+ case'create-tool-confirm':state.toolCreated=true;state.toolDraft=true;state.toolPublished=false;state.dirty=false;state.step=0;state.tab='Definition';state.page='U06';state.modal=null;banner('Sample tool created. Complete its definition.');break;
+ case'next-step':state.step=Math.min(5,state.step+1);break;case'prev-step':state.step=Math.max(0,state.step-1);break;case'step':state.step=Number(el.dataset.step);break;
+ case'tool-tab':state.tab=el.dataset.value;break;case'explore-tab':state.exploreTab=el.dataset.value;break;case'schema-tab':state.exploreTab='Schema and query builder';break;
+ case'save':state.dirty=false;banner('Draft saved in prototype. No live data changed.');break;
+ case'new-draft':state.toolPublished=false;state.toolDraft=true;state.step=0;banner('New sample draft opened; published history is unchanged.');break;
+ case'browse':state.exploreTab='Schema and query builder';go('U07');return;
+ case'use-query':state.queryPicked=true;state.validated=true;state.step=3;state.page='U06';state.dirty=true;banner('Query applied to the draft. Save to keep these changes.');break;
+ case'validate':state.validated=true;banner('Sample definition validates against the illustrated schema.');break;
+ case'publish-tool':if(!state.validated){banner('Validate the definition before publishing.');state.step=5;}else state.modal='publish-tool';break;
+ case'publish-tool-confirm':state.toolPublished=true;state.dirty=false;state.modal=null;state.step=5;banner('Tool version published in prototype. Attach it to a behaviour next.');break;
+ case'attach-return':state.featureConfigured=true;state.page='U09';state.modal='attach';break;
+ case'attach':if(state.toolPublished)state.modal='attach';else{state.modal='info';state.modalText='Publish a tool version first. Open Tools → Read product details → Review & test to validate and publish it.';}break;
+ case'attach-confirm':state.attached=true;state.dirty=true;state.modal=null;banner('Tool associated with this draft. Save the behaviour.');break;
+ case'remove-tool':state.attached=false;state.dirty=true;break;
+ case'publish-behaviour':state.modal='publish-behaviour';break;
+ case'publish-behaviour-confirm':state.behaviourPublished=true;state.dirty=false;state.modal=null;banner('Behaviour revision published in prototype. Create a release next.');break;
+ case'create-release':state.page='U10';state.modal='create-release';break;
+ case'create-release-confirm':state.releaseCreated=true;state.modal=null;state.page='U11';state.rollback=false;banner('Release 13 created. Activation is a separate step.');break;
+ case'activate':state.modal='activate';break;case'activate-confirm':state.activated=true;state.modal=null;banner('Release 13 activated in prototype for new conversations.');break;
+ case'rollback':state.rollback=true;state.page='U11';break;case'confirm-rollback':state.modal='rollback';break;case'rollback-confirm':state.activated=false;state.modal=null;banner('Rollback illustrated. Existing conversations retain their grants.');break;
+ case'release-previous':state.rollback=true;state.page='U11';break;
+ case'inspect-merchant':go('U13');return;
+ case'test-tool':state.previewReturn='U06';state.previewMode='Tool test';go('U14');return;
+ case'test-behaviour':state.previewReturn='U09';state.previewMode='Conversation';go('U14');return;
+ case'test-release':state.previewReturn='U11';state.previewMode='Conversation';go('U14');return;
+ case'test-merchant':state.previewReturn='U13';state.previewMode='Conversation';go('U14');return;
+ case'preview-mode':state.previewMode=el.dataset.value;state.previewStarted=false;state.previewSent=false;break;
+ case'start-preview':state.previewStarted=true;state.previewSent=state.previewMode==='Tool test';banner('Synthetic preview started. The tool grant is frozen.');break;
+ case'send-preview':state.previewSent=true;state.dirty=false;banner('Sample fixture response returned. No model or provider was called.');break;
+ case'reset-preview':state.modal='reset';break;case'reset-confirm':state.previewStarted=false;state.previewSent=false;state.modal=null;break;
+ case'sign-in':go('U03',true);return;case'sign-out':go('U01',true);return;
+ case'cancel-modal':case'close-modal':state.modal=null;break;case'discard':state.dirty=false;go(state.pendingPage||'U03',true);return;
+ case'open-version':state.tab='Definition';state.step=5;break;
+ case'insert-title':state.template+=' {{result.values.title}}';state.dirty=true;break;case'insert-description':state.template+=' {{result.values.description}}';state.dirty=true;break;
+ case'platform-core':state.feature='Conversation core';state.prompt='Use only granted tools and trusted recovery facts. Refer the customer to the store when the answer cannot be verified.';go('U09');return;
+ case'platform-discount':state.feature='Discount assistance';go('U09');return;
+ case'admin-info':state.modal='info';state.modalText='The implemented link opens the existing Admin feature editor. This prototype stays in Studio and makes no changes.';break;
+ case'add-input':state.modal='info';state.modalText='The input editor provides name, description, type, required status and bounds. The sample tool uses one required product handle.';break;
+ case'read-doc':state.modal='info';state.modalText='Product.title returns the product name. Product.description returns plain-text details. Select these fields in the schema builder to construct a tool.';break;
+ case'search-docs':banner('Showing sample Shopify documentation results.');break;
+ case'disable-tool':state.modal='info';state.modalText='The implemented confirmation requires a reason and an explicit disabled state. It restricts this tool across every associated feature, including retained grants.';break;
+ case'inspect-basket':case'inspect-offer':state.modal='info';state.modalText='This is a published policy-operation helper. Studio can associate its exact version; tenant and discount checks remain enforced by the platform.';break;
+ case'merchant-demo':go('U13');return;
+ }
+ render();persist();
+ }finally{setTimeout(()=>{busy=false;},180);}
+});
+root.addEventListener('input',e=>{const key=e.target.dataset.bind;if(key){state[key]=e.target.value;if(!['message','inputValue'].includes(key)){state.dirty=true;state.validated=false;}}const search=e.target.dataset.search;if(search){const q=e.target.value.toLowerCase();body.querySelectorAll(`[data-list="${search}"]>.row`).forEach(r=>r.hidden=!r.textContent.toLowerCase().includes(q));}});
+root.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.modal){state.modal=null;render();}});
+window.addEventListener('openai:set_globals',e=>{const v=e.detail?.globals?.widgetState?.privateContent;if(v?.schema==='studio-v1'&&v.sessionMarker!==sessionMarker&&pages[v.page]){state={...fresh,...v,modal:null,notice:'',dirty:false};render();}});
+render();
+if(globalThis.Tweak){const tweak=new Tweak({container:root,onChange:render});tweak.addSelect(design,'density',{label:'Row density',options:['Comfortable','Compact']});tweak.addSlider(design,'corners',{label:'Panel corners',min:4,max:18,unit:'px'});}
+})();
+</script>

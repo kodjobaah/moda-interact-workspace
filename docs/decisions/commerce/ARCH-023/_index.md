@@ -1,0 +1,90 @@
+# ARCH-023 Commerce tasks
+
+Architecture: [`ARCH-023`](../../../architecture/ARCH-023-merchant-knowledge.md).
+
+Assigned agent: `moda_commerce`.
+
+Repository: `moda-interact-commerce`.
+
+Coordinator: `moda_architect`.
+
+The Commerce decomposition follows runtime/security/lifecycle ownership rather than UI/file count:
+
+```text
+DATABASE-001 + SHARED-002 + ARCH-021-COMMERCE-096
+                        |
+                        v
+                  COMMERCE-001
+        merchantKnowledge.lookup@1.0.0
+          entitlement + embedding + pgvector
+                        |
+                        v
+                  COMMERCE-002
+        canonical Tool/Capability/release bootstrap
+                        ^
+                        |
+                     ADMIN-001
+
+
+DATABASE-001 + SHARED-002 + ADMIN-003
+                        |
+                        v
+                  COMMERCE-003
+      additive Platform + Shop instruction resolution
+      + reserved MCP prompts + Studio ownership cleanup
+```
+
+COMMERCE-001 and COMMERCE-003 are independent once their own prerequisites are complete.
+
+Individual task YAML is authoritative.
+
+| Task | Outcome | Status | Depends on |
+|---|---|---|---|
+| [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Ready | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
+| [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Pending | COMMERCE-001, ADMIN-001 |
+| [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Pending | DATABASE-001, SHARED-002, ADMIN-003 |
+
+
+## Execution frontier
+
+`ARCH-023-DATABASE-001`, `ARCH-023-SHARED-002` and `ARCH-021-COMMERCE-096` are Complete/accepted, so:
+
+```text
+COMMERCE-001 -> Ready
+```
+
+COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
+
+COMMERCE-003 remains Pending until `ARCH-023-ADMIN-003` is Complete/accepted; when it becomes executable it is pinned to the same Shared revision.
+
+## ARCH-021 Policy Operation relationship
+
+ARCH-023 does not reimplement generic `POLICY_OPERATION` Studio support.
+
+```text
+ARCH-021-COMMERCE-096
+  canonical registry/descriptors
+      ↓
+ARCH-023-COMMERCE-001
+  registers merchantKnowledge.lookup
+
+ARCH-021-COMMERCE-097..100
+  generic existing Policy Operation Studio UI/test/save/publish
+```
+
+COMMERCE-002 runtime/bootstrap correctness does not wait for C097-C100. Once the generic ARCH-021 tasks are complete, the fixed Merchant Knowledge Tool must work through them without another execution-kind implementation.
+
+## Required cross-domain follow-up
+
+Production `runCommerceTurn` is currently invoked by `moda-interact-background`.
+
+COMMERCE-003 exposes exact trusted instruction texts through standard MCP prompts:
+
+```text
+commerce/platform-instructions
+commerce/shop-instructions
+```
+
+A bounded Background task is still required to fetch those prompts and append them to trusted `hostInstructions` in Platform-then-Shop order before invoking the Shared runner.
+
+This follow-up is required before final ARCH-023 system acceptance.

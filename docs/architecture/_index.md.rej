@@ -1,0 +1,11 @@
+diff a/docs/architecture/_index.md b/docs/architecture/_index.md	(rejected hunks)
+@@ -985,3 +985,9 @@
+ agent definition provides no documentation task domain/owner.
+ 
+ [Architecture](ARCH-022-code-cleanup.md)
++
++## ARCH-023 — Merchant knowledge, store profiles and localized CommerceAgent instructions (2026-09-28)
++
++Proposed architecture for plan-limited merchant knowledge, localized Store Category/default-template onboarding, additive Platform + Shop Instructions, Background-owned public-page ingestion and PostgreSQL/pgvector semantic retrieval. Patch 1 defines the exact target schema and cross-application contracts only; no ARCH-023 implementation tasks are materialised yet.
++
++[Architecture](ARCH-023-merchant-knowledge.md)

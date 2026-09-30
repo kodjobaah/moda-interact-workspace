@@ -1,0 +1,256 @@
+---
+id: ARCH-021-COMMERCE-010
+architecture_id: ARCH-021
+title: Resolve effective platform/shop CommerceAgent configuration
+task_kind: implementation
+domain: commerce
+repository: moda-interact-commerce
+assigned_agent: moda_commerce
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: complete
+priority: 60
+executor: null
+claimed_at: null
+attempt: 2
+depends_on:
+  - ARCH-021-COMMERCE-003
+  - ARCH-021-COMMERCE-007
+  - ARCH-021-COMMERCE-009
+enables:
+  - ARCH-021-COMMERCE-012
+created: 2026-09-23
+updated: 2026-09-23
+---
+
+# Resolve effective platform/shop CommerceAgent configuration
+
+## Architecture
+
+Architecture ID:
+
+ARCH-021
+
+Architecture document:
+
+`docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+
+Coordinator:
+
+`moda_architect`
+
+## Objective
+
+Provide one deterministic server-side resolver that returns the effective model and effective configurable prompt for a selected shop using independent shop-override -> platform-default fallback.
+
+## Context
+
+Model and prompt ownership are independent. Phase 2 UI needs to show both the effective value and its source before later preview/runtime phases freeze the same identities. The resolver must not yet create grants/manifests or execute providers.
+
+## Scope
+
+- Resolve the trusted current `CommerceEnvironment` server-side.
+- Validate/resolve the requested Commerce shop id using the accepted shop execution context.
+- Resolve model: explicit shop override when present, otherwise platform default.
+- Resolve prompt: explicit shop override when present, otherwise platform active prompt.
+- Return source (`SHOP` or `PLATFORM`) independently for model and prompt.
+- Return stable ids and safe presentation fields needed by Studio (catalogue entry/provider/model display; prompt lineage/revision/hash/content as appropriate for authorized Studio authoring). `CommerceAgentPrompt` has no separate prompt-name identity in Phase 2; do not invent one in the resolver DTO.
+- Return explicit configuration-unavailable results when mandatory platform state is absent or the selected platform model/prompt state is invalid/disabled.
+- If an explicit shop model override exists but references a disabled/unavailable entry, fail closed and do not fall back.
+- If an explicit prompt pointer is invalid/missing/non-published/scope-invalid, fail closed.
+- Add tests for all four inheritance combinations and failure states.
+
+## Out of Scope
+
+- Freezing configuration into a preview or conversation grant.
+- Manifest changes.
+- Background changes.
+- Provider execution.
+- Feature/capability prompt removal.
+
+## Requirements
+
+- Model and prompt fallback must be calculated independently.
+- Absence of an override is the only condition that triggers fallback.
+- A broken explicit override must remain visible as a configuration error, not masquerade as inheritance.
+- The resolver must be side-effect free.
+- Browser/client input must not select an arbitrary environment.
+- The resolver's model selection, prompt selection and referenced immutable records must be observed through one coherent database read snapshot; do not compose independently committed reads that can return a model/prompt combination that never existed together.
+- A normal multi-statement PostgreSQL `READ COMMITTED` transaction is not sufficient for this invariant. Use either one database statement/query that obtains the complete effective configuration or a transaction with snapshot semantics (`REPEATABLE READ` or stronger) for all participating reads.
+- The resolver must not mutate defaults while resolving.
+
+### Deterministic persistence and file boundary
+
+The resolver must compose the exact Phase 2 rows below in one coherent database snapshot:
+
+```text
+model:
+  CommerceShopModelSelection
+    ?? CommercePlatformModelSelection
+  -> CommerceModelCatalogueEntry
+
+prompt:
+  CommerceShopPromptPointer
+    ?? CommercePlatformPromptPointer
+  -> CommerceAgentPromptRevision
+  -> CommerceAgentPrompt
+```
+
+Primary implementation locations for this task are:
+
+```text
+src/commerce/agent-configuration/effective-configuration.ts
+src/studio/agent-configuration/effective-contracts.ts
+src/studio/agent-configuration/effective-server-actions.ts
+tests/agent-configuration-effective.test.ts
+```
+
+Absence of the shop selection/pointer is the only inheritance signal. Do not infer inheritance from disabled rows, invalid FKs, missing revisions or provider availability. Do not create a new persistence table for the computed effective configuration.
+
+## Work Items
+
+- [ ] Define Commerce-local effective agent-configuration DTO/result types.
+- [ ] Implement server-side model resolution.
+- [ ] Implement server-side prompt resolution.
+- [ ] Ensure model/prompt selection and referenced immutable records are resolved through one coherent database snapshot.
+- [ ] Integrate selected-shop validation.
+- [ ] Add source/provenance fields required by Studio.
+- [ ] Add explicit unavailable/error mapping.
+- [ ] Add focused resolver tests for inheritance matrix and broken override cases.
+
+## Interfaces / Contracts
+
+Consumes:
+
+- model configuration semantics/read contracts from ARCH-021-COMMERCE-007;
+- prompt lifecycle/configuration semantics/read contracts from ARCH-021-COMMERCE-009;
+- selected-shop server validation from ARCH-021-COMMERCE-003;
+- the accepted ARCH-021 Prisma rows when direct snapshot-aware composition is required to satisfy the one-snapshot invariant.
+
+Do not satisfy this interface by calling separately committed model-service and prompt-service reads and combining their results afterward.
+
+Produces the Commerce-local effective configuration read model used by Phase 2 Studio UI. The future grant/manifest Shared contract is intentionally not created here.
+
+## Dependencies
+
+- ARCH-021-COMMERCE-003
+- ARCH-021-COMMERCE-007
+- ARCH-021-COMMERCE-009
+
+## Enables
+
+- ARCH-021-COMMERCE-012
+
+## Acceptance Criteria
+
+- [x] No shop overrides -> platform model + platform prompt.
+- [x] Shop model only -> shop model + platform prompt.
+- [x] Shop prompt only -> platform model + shop prompt.
+- [x] Both overrides -> shop model + shop prompt.
+- [x] Missing platform model or prompt yields explicit unavailable state.
+- [x] A disabled/broken platform default model yields explicit unavailable state; there is no fallback beyond the platform default.
+- [x] An invalid/non-published/scope-invalid platform active prompt yields explicit unavailable state; there is no fallback beyond the platform prompt.
+- [x] Disabled/broken explicit shop model override fails closed without model fallback.
+- [x] Invalid explicit shop prompt pointer fails closed without prompt fallback.
+- [x] No provider call, grant write or manifest mutation occurs.
+
+## Validation
+
+- [x] focused effective-configuration resolver tests: 10 passed
+- [x] coherent-snapshot regression covering configuration mutation during effective resolution
+- [x] selected-shop validation regression: unavailable shop short-circuits before resolution
+- [x] targeted lint/typecheck: touched-file ESLint and diagnostics passed
+- [x] `git diff --check`
+
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, return the Completion Report to `moda_architect` and STOP.
+
+## Implementation Notes
+
+Keep these DTOs Commerce-local until the later runtime phase defines the exact cross-service frozen grant/manifest contract. Do not prematurely publish a Shared schema solely for the Phase 2 UI. Satisfy the coherent-snapshot requirement with either one complete database statement/query or a `REPEATABLE READ`/stronger transaction spanning all required reads; merely wrapping multiple queries in the repository's ordinary `ReadCommitted` transaction pattern does not satisfy this task.
+
+## Completion Report
+
+### Status
+
+Complete
+
+### Files Changed
+
+[src/commerce/agent-configuration/effective-configuration.ts](../../../../moda-interact-commerce/src/commerce/agent-configuration/effective-configuration.ts)
+[src/studio/agent-configuration/effective-contracts.ts](../../../../moda-interact-commerce/src/studio/agent-configuration/effective-contracts.ts)
+[src/studio/agent-configuration/effective-server-actions.ts](../../../../moda-interact-commerce/src/studio/agent-configuration/effective-server-actions.ts)
+[tests/agent-configuration-effective.test.ts](../../../../moda-interact-commerce/tests/agent-configuration-effective.test.ts)
+
+### Work Completed
+
+- Added Commerce-local effective model/prompt DTOs and authenticated server action.
+- Resolved model and prompt independently with shop override -> platform fallback.
+- Validated mandatory platform baselines before applying overrides; broken explicit overrides fail closed.
+- Used one Prisma `REPEATABLE READ` transaction for all model, prompt, and immutable record reads.
+
+### Validation Results
+
+- Focused Vitest suite: 10 tests passed.
+- Touched-file ESLint: passed.
+- Touched-file diagnostics: no errors.
+- `git diff --check`: passed.
+- Full repository typecheck was previously blocked by unrelated baseline errors in preview/UI/integration files.
+
+### Deviations
+
+No deviations from the task scope.
+
+### Assumptions
+
+The accepted Studio shop execution-context service remains the server-side source of truth for selected-shop validation.
+
+### Unresolved Issues
+
+No unresolved task-local issues.
+
+### Architectural Concerns
+
+None.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 2 satisfies the bounded correction contract from Attempt 1. Mandatory platform model and prompt baselines are validated before any shop override is considered, so a shop override cannot mask an unconfigured environment. Model and prompt inheritance remain independent, and explicit broken shop overrides continue to fail closed rather than falling back.
+
+The resolver keeps all selection/pointer and referenced immutable-row reads inside one Prisma interactive transaction configured for `RepeatableRead`; the additional `SET TRANSACTION ISOLATION LEVEL REPEATABLE READ` occurs before the participating reads and does not weaken that boundary. The authenticated Studio action validates the selected shop first and returns that failure without invoking the effective resolver.
+
+### Reviewed Files
+
+- `src/commerce/agent-configuration/effective-configuration.ts`
+- `src/studio/agent-configuration/effective-contracts.ts`
+- `src/studio/agent-configuration/effective-server-actions.ts`
+- `tests/agent-configuration-effective.test.ts`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-010-resolve-effective-agent-configuration.md`
+- `docs/decisions/commerce/ARCH-021/COMMERCE-012-build-shop-agent-configuration-ui.md`
+- `docs/decisions/commerce/ARCH-021/_index.md`
+- `docs/architecture/ARCH-021-commerce-agent-configuration-live-studio-authoring.md`
+
+### Validation Reviewed
+
+- Submitted focused effective-configuration suite: 10 tests passed.
+- Reviewed the controlled mutation regression proving all resolver reads are taken from one transaction snapshot.
+- Reviewed the selected-shop short-circuit regression.
+- Submitted touched-file ESLint and diagnostics: passed.
+- Submitted `git diff --check`: passed.
+- Repository-wide TypeScript failures remain documented unrelated baseline diagnostics.
+
+### Architecture Conformance
+
+Conforms. The resolver is side-effect free, derives environment server-side, requires a valid platform model default and platform active prompt, applies shop model/prompt overrides independently, fails closed on broken explicit overrides, exposes source/provenance fields, and performs no provider call, grant write or manifest mutation.
+
+### Follow-up
+
+Mark ARCH-021-COMMERCE-010 Complete. ARCH-021-COMMERCE-012 is now Ready because all of its dependencies are Complete. COMMERCE-013 and COMMERCE-014 remain independently Ready.

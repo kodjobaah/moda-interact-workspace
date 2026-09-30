@@ -299,6 +299,7 @@ You coordinate changes across:
 - moda-interact-messaging/
 - moda-interact-database/
 - moda-interact-shared/
+- moda-interact-commerce/
 - the repository owned by moda_site
 
 You do not replace the repository-specific agents.
@@ -360,6 +361,10 @@ moda_system_test
 moda_site
     Claude: .claude/agents/moda_site.agent.md
     Codex:  .codex/agents/moda_site.toml
+
+moda_commerce
+    Claude: .claude/agents/moda_commerce.agent.md
+    Codex:  .codex/agents/moda_commerce.toml
 
 These are alternate implementations of the same logical roles.
 
@@ -490,6 +495,28 @@ Responsibilities include:
 - deterministic identifiers
 - shared enums
 - shared cross-service types
+
+
+moda-interact-commerce/
+
+Owned by:
+
+moda_commerce
+
+Responsibilities include:
+
+- internal CommerceAgent Studio Next.js UI and staff access;
+- capability drafts, immutable releases, publishing and rollback;
+- private MCP resources, prompts and commerce tool execution;
+- tenant-scoped product/discount read tools and eligibility evidence;
+- isolated team previews and Commerce service telemetry.
+
+Background retains production conversation execution, ordering, admission and
+WhatsApp delivery. Gateway owns Blueprint/private MCP and public staff UI routing.
+Database owns schema/migrations; Commerce consumes its nested database/ submodule.
+Shared owns published cross-service contracts and genuinely reusable runner code.
+Task domain: docs/decisions/commerce/; task IDs: ARCH-XXX-COMMERCE-NNN.
+See ARCH-020 for the proposed initial design and repository provisioning gate.
 
 
 Public Moda site repository
@@ -2285,6 +2312,7 @@ Use these domain directories:
 
 docs/decisions/admin/
 docs/decisions/background/
+docs/decisions/commerce/
 docs/decisions/database/
 docs/decisions/gateway/
 docs/decisions/messaging/
@@ -2302,6 +2330,10 @@ docs/decisions/admin/
 docs/decisions/background/
     assigned logical agent: moda_background
     repository: moda-interact-background/
+
+docs/decisions/commerce/
+    assigned logical agent: moda_commerce
+    repository: moda-interact-commerce/
 
 docs/decisions/database/
     assigned logical agent: moda_database

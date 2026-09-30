@@ -24,6 +24,7 @@ depends_on:
 - ARCH-016-ADMIN-002
 - ARCH-016-BACKGROUND-002
 - ARCH-016-BACKGROUND-003
+- ARCH-016-BACKGROUND-004
 enables: []
 created: 2026-09-16
 updated: 2026-09-16
@@ -82,6 +83,8 @@ Use Shopify test/dev provider fixtures or documented stubs consistent with syste
 - AI_BEST_APPLICABLE persists with no AI execution;
 - admin override changes effective policy without changing merchant row;
 - override expiry restores merchant policy.
+- pending-recovery inactivity scheduling uses the same effective delay: merchant delay `30` plus active Admin override `120` schedules/reschedules at `lastActivityAt + 120 minutes`; after override expiry/removal the next normal scheduling/rescheduling decision uses the merchant `30` minutes;
+- changing/expiring an override alone does not bulk-rewrite an already-delayed candidate; a later qualifying activity refresh re-resolves policy and applies the then-current delay.
 
 ### C. Outreach credits + Conversation
 

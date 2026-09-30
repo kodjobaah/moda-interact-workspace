@@ -1,0 +1,820 @@
+
+COMMAND: git rev-parse HEAD
+54c0ec2e092cd9db52d76e5bb46899efa4063965
+
+COMMAND: git status --porcelain
+
+COMMAND: docker inspect --format {{.Id}} {{.Image}} {{.Config.Image}} local_postgres
+6e360f916c2f872e1e2ff617776798b42a2139604a74bb7464d9f43ec6b6547a sha256:fe0737ba566a2c5b2a28f34433c0a423261900ec17b9bf7ad115e1aae7e57f1b postgres:15-alpine
+
+COMMAND: docker exec -i -u postgres local_postgres createdb -U postgres --template=template0 arch019_rehearsal_db21e0f6c3e245b7
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+                                         version                                          
+------------------------------------------------------------------------------------------
+ PostgreSQL 15.19 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+(1 row)
+
+
+MIGRATION 20260912000000_arch010_first_production_baseline
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+NOTICE:  schema "public" already exists, skipping
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+NOTICE:  identifier "PlatformBillingPolicy_lifetimeFreeRecoveryAllowance_non_negative" will be truncated to "PlatformBillingPolicy_lifetimeFreeRecoveryAllowance_non_negativ"
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+
+MIGRATION 20260915090000_arch014_merchant_pricing_catalogue
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+NOTICE:  identifier "MerchantPricingUsageTier_merchantPricingUsageEventId_position_key" will be truncated to "MerchantPricingUsageTier_merchantPricingUsageEventId_position_k"
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+
+MIGRATION 20260915140000_arch015_fractional_provider_usage_snapshots
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+ALTER TABLE
+
+MIGRATION 20260915170000_arch014_merchant_pricing_plan_highlights
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+CREATE TABLE
+NOTICE:  identifier "MerchantPricingPlanHighlightTranslation_merchantPricingPlanHighlightId_fkey" will be truncated to "MerchantPricingPlanHighlightTranslation_merchantPricingPlanHigh"
+CREATE TABLE
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+
+MIGRATION 20260915210000_arch014_promotion_campaign_translations
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+CREATE TABLE
+CREATE INDEX
+
+MIGRATION 20260916000000_arch014_background_runtime_config_and_leases
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+CREATE TYPE
+CREATE TYPE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+INSERT 0 1
+
+MIGRATION 20260916083000_arch015_refund_correction_evidence
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+ALTER TABLE
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+
+MIGRATION 20260916100000_arch012_inbound_whatsapp_media_transcription_state
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+CREATE TYPE
+CREATE TYPE
+ALTER TABLE
+ALTER TABLE
+
+MIGRATION 20260916110000_arch014_background_runtime_lease_cadence
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+ALTER TABLE
+
+MIGRATION 20260916150000_arch016_recovery_policy_discounts_outreach_generations
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+CREATE TYPE
+ALTER TYPE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+NOTICE:  identifier "ShopRecoveryPolicyOverrideAuditEvent_platformAdminId_occurredAt_idx" will be truncated to "ShopRecoveryPolicyOverrideAuditEvent_platformAdminId_occurredAt"
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+DROP INDEX
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+
+MIGRATION 20260917122109_add_merchant_pricing_economics_override
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+ALTER TABLE
+
+MIGRATION 20260918120000_arch017_dynamic_features_billing_policy
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+CREATE TYPE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+INSERT 0 4
+ALTER TABLE
+ALTER TABLE
+UPDATE 0
+DO
+ALTER TABLE
+ALTER TABLE
+DROP INDEX
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+DROP TYPE
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+INSERT 0 0
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+
+MIGRATION 20260919171500_arch010_zero_value_recovery_credit_valuation
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+ALTER TABLE
+ALTER TABLE
+
+MIGRATION 20260919194500_arch015_partner_development_test_refunds
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+INSERT 0 2
+INSERT 0 400
+INSERT 0 20000
+INSERT 0 20000
+INSERT 0 201980
+ANALYZE
+ANALYZE
+SELECT 2
+SELECT 11
+
+BEFORE PLANS
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+Tenant 1: date cohort, reverse browse and id tie-breaker
+                                                                                                  QUERY PLAN                                                                                                  
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=907.34..907.40 rows=26 width=39) (actual time=109.856..110.607 rows=26 loops=1)
+   Buffers: shared hit=432
+   ->  Sort  (cost=907.34..918.86 rows=4608 width=39) (actual time=109.838..110.151 rows=26 loops=1)
+         Sort Key: "detectedAt" DESC, id DESC
+         Sort Method: top-N heapsort  Memory: 29kB
+         Buffers: shared hit=432
+         ->  Seq Scan on "CheckoutRecovery"  (cost=0.00..776.00 rows=4608 width=39) (actual time=0.756..56.169 rows=4608 loops=1)
+               Filter: (("detectedAt" >= '2026-08-10 00:00:00'::timestamp without time zone) AND ("detectedAt" < '2026-08-18 00:00:00'::timestamp without time zone) AND ("shopId" = 'arch019-shop-1'::text))
+               Rows Removed by Filter: 15392
+               Buffers: shared hit=426
+ Planning:
+   Buffers: shared hit=235
+ Planning Time: 2.447 ms
+ Execution Time: 111.053 ms
+(14 rows)
+
+Tenant 2: completed status cursor page
+                                                                                                                                                          QUERY PLAN                                                                                                                                                           
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=609.71..609.77 rows=26 width=30) (actual time=18.981..20.178 rows=26 loops=1)
+   Buffers: shared hit=440
+   ->  Sort  (cost=609.71..611.36 rows=663 width=30) (actual time=18.902..19.216 rows=26 loops=1)
+         Sort Key: "detectedAt" DESC, id DESC
+         Sort Method: top-N heapsort  Memory: 29kB
+         Buffers: shared hit=440
+         ->  Bitmap Heap Scan on "CheckoutRecovery"  (cost=81.46..590.81 rows=663 width=30) (actual time=1.794..10.347 rows=577 loops=1)
+               Recheck Cond: (status = 'COMPLETED'::commerce."CheckoutRecoveryStatus")
+               Filter: (("detectedAt" >= '2026-08-10 00:00:00'::timestamp without time zone) AND ("detectedAt" < '2026-08-18 00:00:00'::timestamp without time zone) AND ("shopId" = 'arch019-shop-2'::text) AND (ROW("detectedAt", id) < ROW('2026-08-16 00:00:00'::timestamp without time zone, 'arch019-r-2-09000'::text)))
+               Rows Removed by Filter: 2757
+               Heap Blocks: exact=426
+               Buffers: shared hit=440
+               ->  Bitmap Index Scan on "CheckoutRecovery_status_lastExternalActivityAt_idx"  (cost=0.00..81.29 rows=3334 width=0) (actual time=0.482..0.505 rows=3334 loops=1)
+                     Index Cond: (status = 'COMPLETED'::commerce."CheckoutRecoveryStatus")
+                     Buffers: shared hit=14
+ Planning:
+   Buffers: shared hit=12
+ Planning Time: 0.816 ms
+ Execution Time: 20.763 ms
+(19 rows)
+
+Ongoing multi-status page: optimizer may use a different plan
+                                                                              QUERY PLAN                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=876.28..876.35 rows=26 width=30) (actual time=56.459..57.233 rows=26 loops=1)
+   Buffers: shared hit=273
+   ->  Sort  (cost=876.28..882.04 rows=2304 width=30) (actual time=56.424..56.744 rows=26 loops=1)
+         Sort Key: "detectedAt" DESC, id DESC
+         Sort Method: top-N heapsort  Memory: 29kB
+         Buffers: shared hit=273
+         ->  Bitmap Heap Scan on "CheckoutRecovery"  (cost=278.36..810.61 rows=2304 width=30) (actual time=1.280..28.262 rows=2304 loops=1)
+               Recheck Cond: (("shopId" = 'arch019-shop-1'::text) AND (status = ANY ('{DETECTED,MESSAGE_SENT,ENGAGED}'::commerce."CheckoutRecoveryStatus"[])))
+               Filter: (("detectedAt" >= '2026-08-10 00:00:00'::timestamp without time zone) AND ("detectedAt" < '2026-08-18 00:00:00'::timestamp without time zone))
+               Rows Removed by Filter: 2696
+               Heap Blocks: exact=213
+               Buffers: shared hit=273
+               ->  Bitmap Index Scan on "CheckoutRecovery_active_generation_key"  (cost=0.00..277.79 rows=5000 width=0) (actual time=0.609..0.617 rows=5000 loops=1)
+                     Index Cond: ("shopId" = 'arch019-shop-1'::text)
+                     Buffers: shared hit=60
+ Planning:
+   Buffers: shared hit=24
+ Planning Time: 0.461 ms
+ Execution Time: 58.402 ms
+(19 rows)
+
+Same-customer related recoveries
+                                                                              QUERY PLAN                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=92.85..92.87 rows=6 width=30) (actual time=1.649..1.883 rows=6 loops=1)
+   Buffers: shared hit=52
+   ->  Sort  (cost=92.85..92.91 rows=25 width=30) (actual time=1.627..1.685 rows=6 loops=1)
+         Sort Key: "detectedAt" DESC, id DESC
+         Sort Method: top-N heapsort  Memory: 26kB
+         Buffers: shared hit=52
+         ->  Index Scan using "CheckoutRecovery_customerId_idx" on "CheckoutRecovery"  (cost=0.29..92.40 rows=25 width=30) (actual time=0.026..0.838 rows=49 loops=1)
+               Index Cond: ("customerId" = 'arch019-customer-1-1'::text)
+               Filter: ((id <> 'arch019-r-1-00001'::text) AND ("shopId" = 'arch019-shop-1'::text))
+               Rows Removed by Filter: 1
+               Buffers: shared hit=52
+ Planning:
+   Buffers: shared hit=5
+ Planning Time: 0.272 ms
+ Execution Time: 2.019 ms
+(15 rows)
+
+Chronological transcript: owned recovery and message cursor
+                                                                                               QUERY PLAN                                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=25.08..25.09 rows=1 width=54) (actual time=91.336..93.205 rows=51 loops=1)
+   Buffers: shared hit=2302
+   ->  Sort  (cost=25.08..25.09 rows=1 width=54) (actual time=91.318..92.101 rows=51 loops=1)
+         Sort Key: m."createdAt", m.id
+         Sort Method: top-N heapsort  Memory: 32kB
+         Buffers: shared hit=2302
+         ->  Nested Loop  (cost=0.99..25.07 rows=1 width=54) (actual time=0.172..83.163 rows=760 loops=1)
+               Buffers: shared hit=2302
+               ->  Nested Loop  (cost=0.70..16.75 rows=1 width=86) (actual time=0.124..26.501 rows=760 loops=1)
+                     Buffers: shared hit=22
+                     ->  Index Scan using "Conversation_checkoutRecoveryId_key" on "Conversation" c  (cost=0.28..8.30 rows=1 width=64) (actual time=0.041..0.067 rows=1 loops=1)
+                           Index Cond: ("checkoutRecoveryId" = 'arch019-r-1-00001'::text)
+                           Buffers: shared hit=3
+                     ->  Index Scan using "ConversationMessage_conversationId_createdAt_idx" on "ConversationMessage" m  (cost=0.42..8.45 rows=1 width=75) (actual time=0.058..11.317 rows=760 loops=1)
+                           Index Cond: (("conversationId" = c.id) AND ("createdAt" >= '2026-09-01 00:01:00'::timestamp without time zone))
+                           Filter: (ROW("createdAt", id) > ROW('2026-09-01 00:01:00'::timestamp without time zone, 'arch019-m-1-00001-0240'::text))
+                           Rows Removed by Filter: 1
+                           Buffers: shared hit=19
+               ->  Index Scan using "CheckoutRecovery_pkey" on "CheckoutRecovery" r  (cost=0.29..8.31 rows=1 width=18) (actual time=0.018..0.030 rows=1 loops=760)
+                     Index Cond: (id = 'arch019-r-1-00001'::text)
+                     Filter: ("shopId" = 'arch019-shop-1'::text)
+                     Buffers: shared hit=2280
+ Planning:
+   Buffers: shared hit=273
+ Planning Time: 3.086 ms
+ Execution Time: 93.931 ms
+(26 rows)
+
+Latest transcript window
+                                                                                             QUERY PLAN                                                                                              
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=43.74..43.87 rows=51 width=31) (actual time=43.518..44.756 rows=51 loops=1)
+   Buffers: shared hit=28
+   ->  Sort  (cost=43.74..43.95 rows=84 width=31) (actual time=43.493..43.965 rows=51 loops=1)
+         Sort Key: m."createdAt" DESC, m.id DESC
+         Sort Method: top-N heapsort  Memory: 33kB
+         Buffers: shared hit=28
+         ->  Nested Loop  (cost=0.99..41.06 rows=84 width=31) (actual time=0.202..31.535 rows=1000 loops=1)
+               Buffers: shared hit=28
+               ->  Nested Loop  (cost=0.57..16.62 rows=1 width=32) (actual time=0.114..0.197 rows=1 loops=1)
+                     Buffers: shared hit=6
+                     ->  Index Scan using "Conversation_checkoutRecoveryId_key" on "Conversation" c  (cost=0.28..8.30 rows=1 width=64) (actual time=0.044..0.065 rows=1 loops=1)
+                           Index Cond: ("checkoutRecoveryId" = 'arch019-r-2-00001'::text)
+                           Buffers: shared hit=3
+                     ->  Index Scan using "CheckoutRecovery_pkey" on "CheckoutRecovery" r  (cost=0.29..8.31 rows=1 width=18) (actual time=0.047..0.064 rows=1 loops=1)
+                           Index Cond: (id = 'arch019-r-2-00001'::text)
+                           Filter: ("shopId" = 'arch019-shop-2'::text)
+                           Buffers: shared hit=3
+               ->  Index Scan using "ConversationMessage_conversationId_createdAt_idx" on "ConversationMessage" m  (cost=0.42..24.35 rows=10 width=52) (actual time=0.046..11.639 rows=1000 loops=1)
+                     Index Cond: ("conversationId" = c.id)
+                     Buffers: shared hit=22
+ Planning Time: 0.660 ms
+ Execution Time: 45.824 ms
+(22 rows)
+
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1 --single-transaction
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+DO
+    kind    |  rows  |           fingerprint            
+------------+--------+----------------------------------
+ messages   | 201980 | 885ac513eca6bd4367d5c4e4b4375768
+ recoveries |  20000 | 27c493a66a7bae2c67b9f67e17d741e1
+(2 rows)
+
+ schemaname |                      indexname                       |                                                                         indexdef                                                                          
+------------+------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ commerce   | CheckoutRecovery_shopId_customerId_detectedAt_id_idx | CREATE INDEX "CheckoutRecovery_shopId_customerId_detectedAt_id_idx" ON commerce."CheckoutRecovery" USING btree ("shopId", "customerId", "detectedAt", id)
+ commerce   | CheckoutRecovery_shopId_detectedAt_id_idx            | CREATE INDEX "CheckoutRecovery_shopId_detectedAt_id_idx" ON commerce."CheckoutRecovery" USING btree ("shopId", "detectedAt", id)
+ commerce   | CheckoutRecovery_shopId_status_detectedAt_id_idx     | CREATE INDEX "CheckoutRecovery_shopId_status_detectedAt_id_idx" ON commerce."CheckoutRecovery" USING btree ("shopId", status, "detectedAt", id)
+ whatsapp   | ConversationMessage_conversationId_createdAt_id_idx  | CREATE INDEX "ConversationMessage_conversationId_createdAt_id_idx" ON whatsapp."ConversationMessage" USING btree ("conversationId", "createdAt", id)
+(4 rows)
+
+
+AFTER PLANS
+
+COMMAND: docker exec -i -u postgres local_postgres psql -X -U postgres -d arch019_rehearsal_db21e0f6c3e245b7 -v ON_ERROR_STOP=1
+Tenant 1: date cohort, reverse browse and id tie-breaker
+                                                                                                 QUERY PLAN                                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.41..6.41 rows=26 width=39) (actual time=0.115..1.204 rows=26 loops=1)
+   Buffers: shared hit=2 read=3
+   ->  Index Scan Backward using "CheckoutRecovery_shopId_detectedAt_id_idx" on "CheckoutRecovery"  (cost=0.41..1062.97 rows=4608 width=39) (actual time=0.095..0.514 rows=26 loops=1)
+         Index Cond: (("shopId" = 'arch019-shop-1'::text) AND ("detectedAt" >= '2026-08-10 00:00:00'::timestamp without time zone) AND ("detectedAt" < '2026-08-18 00:00:00'::timestamp without time zone))
+         Buffers: shared hit=2 read=3
+ Planning:
+   Buffers: shared hit=288
+ Planning Time: 4.988 ms
+ Execution Time: 1.801 ms
+(9 rows)
+
+Tenant 2: completed status cursor page
+                                                                                                                                                                                        QUERY PLAN                                                                                                                                                                                         
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.41..2.23 rows=26 width=30) (actual time=0.244..1.096 rows=26 loops=1)
+   Buffers: shared hit=1 read=3
+   ->  Index Only Scan Backward using "CheckoutRecovery_shopId_status_detectedAt_id_idx" on "CheckoutRecovery"  (cost=0.41..46.65 rows=663 width=30) (actual time=0.223..0.600 rows=26 loops=1)
+         Index Cond: (("shopId" = 'arch019-shop-2'::text) AND (status = 'COMPLETED'::commerce."CheckoutRecoveryStatus") AND ("detectedAt" >= '2026-08-10 00:00:00'::timestamp without time zone) AND ("detectedAt" < '2026-08-18 00:00:00'::timestamp without time zone) AND (ROW("detectedAt", id) < ROW('2026-08-16 00:00:00'::timestamp without time zone, 'arch019-r-2-09000'::text)))
+         Heap Fetches: 0
+         Buffers: shared hit=1 read=3
+ Planning:
+   Buffers: shared hit=12
+ Planning Time: 0.804 ms
+ Execution Time: 1.495 ms
+(10 rows)
+
+Ongoing multi-status page: optimizer may use a different plan
+                                                                                                 QUERY PLAN                                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.41..12.60 rows=26 width=30) (actual time=0.074..1.099 rows=26 loops=1)
+   Buffers: shared hit=6 read=1
+   ->  Index Scan Backward using "CheckoutRecovery_shopId_detectedAt_id_idx" on "CheckoutRecovery"  (cost=0.41..1080.25 rows=2304 width=30) (actual time=0.048..0.448 rows=26 loops=1)
+         Index Cond: (("shopId" = 'arch019-shop-1'::text) AND ("detectedAt" >= '2026-08-10 00:00:00'::timestamp without time zone) AND ("detectedAt" < '2026-08-18 00:00:00'::timestamp without time zone))
+         Filter: (status = ANY ('{DETECTED,MESSAGE_SENT,ENGAGED}'::commerce."CheckoutRecoveryStatus"[]))
+         Rows Removed by Filter: 27
+         Buffers: shared hit=6 read=1
+ Planning:
+   Buffers: shared hit=24
+ Planning Time: 0.681 ms
+ Execution Time: 1.432 ms
+(11 rows)
+
+Same-customer related recoveries
+                                                                                         QUERY PLAN                                                                                          
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.41..12.55 rows=6 width=30) (actual time=0.089..0.419 rows=6 loops=1)
+   Buffers: shared hit=6 read=3
+   ->  Index Scan Backward using "CheckoutRecovery_shopId_customerId_detectedAt_id_idx" on "CheckoutRecovery"  (cost=0.41..50.98 rows=25 width=30) (actual time=0.070..0.164 rows=6 loops=1)
+         Index Cond: (("shopId" = 'arch019-shop-1'::text) AND ("customerId" = 'arch019-customer-1-1'::text))
+         Filter: (id <> 'arch019-r-1-00001'::text)
+         Buffers: shared hit=6 read=3
+ Planning:
+   Buffers: shared hit=5
+ Planning Time: 0.230 ms
+ Execution Time: 0.533 ms
+(10 rows)
+
+Chronological transcript: owned recovery and message cursor
+                                                                                                QUERY PLAN                                                                                                
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=25.08..25.09 rows=1 width=54) (actual time=90.716..92.126 rows=51 loops=1)
+   Buffers: shared hit=2305 read=8
+   ->  Sort  (cost=25.08..25.09 rows=1 width=54) (actual time=90.696..91.234 rows=51 loops=1)
+         Sort Key: m."createdAt", m.id
+         Sort Method: top-N heapsort  Memory: 32kB
+         Buffers: shared hit=2305 read=8
+         ->  Nested Loop  (cost=0.99..25.07 rows=1 width=54) (actual time=0.225..81.568 rows=760 loops=1)
+               Buffers: shared hit=2299 read=8
+               ->  Nested Loop  (cost=0.71..16.76 rows=1 width=72) (actual time=0.150..25.294 rows=760 loops=1)
+                     Buffers: shared hit=19 read=8
+                     ->  Index Scan using "Conversation_checkoutRecoveryId_key" on "Conversation" c  (cost=0.29..8.30 rows=1 width=39) (actual time=0.050..0.069 rows=1 loops=1)
+                           Index Cond: ("checkoutRecoveryId" = 'arch019-r-1-00001'::text)
+                           Buffers: shared hit=3
+                     ->  Index Scan using "ConversationMessage_conversationId_createdAt_id_idx" on "ConversationMessage" m  (cost=0.42..8.44 rows=1 width=75) (actual time=0.068..9.279 rows=760 loops=1)
+                           Index Cond: (("conversationId" = c.id) AND (ROW("createdAt", id) > ROW('2026-09-01 00:01:00'::timestamp without time zone, 'arch019-m-1-00001-0240'::text)))
+                           Buffers: shared hit=16 read=8
+               ->  Index Scan using "CheckoutRecovery_pkey" on "CheckoutRecovery" r  (cost=0.29..8.31 rows=1 width=18) (actual time=0.019..0.031 rows=1 loops=760)
+                     Index Cond: (id = 'arch019-r-1-00001'::text)
+                     Filter: ("shopId" = 'arch019-shop-1'::text)
+                     Buffers: shared hit=2280
+ Planning:
+   Buffers: shared hit=272 read=5
+ Planning Time: 4.893 ms
+ Execution Time: 92.862 ms
+(24 rows)
+
+Latest transcript window
+                                                                                                 QUERY PLAN                                                                                                 
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=21.48..21.51 rows=10 width=31) (actual time=47.130..48.445 rows=51 loops=1)
+   Buffers: shared hit=8 read=12
+   ->  Sort  (cost=21.48..21.51 rows=10 width=31) (actual time=47.112..47.572 rows=51 loops=1)
+         Sort Key: m."createdAt" DESC, m.id DESC
+         Sort Method: top-N heapsort  Memory: 33kB
+         Buffers: shared hit=8 read=12
+         ->  Nested Loop  (cost=0.99..21.32 rows=10 width=31) (actual time=0.207..35.647 rows=1000 loops=1)
+               Buffers: shared hit=8 read=12
+               ->  Nested Loop  (cost=0.57..16.62 rows=1 width=21) (actual time=0.110..0.186 rows=1 loops=1)
+                     Buffers: shared hit=6
+                     ->  Index Scan using "Conversation_checkoutRecoveryId_key" on "Conversation" c  (cost=0.29..8.30 rows=1 width=39) (actual time=0.043..0.059 rows=1 loops=1)
+                           Index Cond: ("checkoutRecoveryId" = 'arch019-r-2-00001'::text)
+                           Buffers: shared hit=3
+                     ->  Index Scan using "CheckoutRecovery_pkey" on "CheckoutRecovery" r  (cost=0.29..8.31 rows=1 width=18) (actual time=0.039..0.055 rows=1 loops=1)
+                           Index Cond: (id = 'arch019-r-2-00001'::text)
+                           Filter: ("shopId" = 'arch019-shop-2'::text)
+                           Buffers: shared hit=3
+               ->  Index Only Scan using "ConversationMessage_conversationId_createdAt_id_idx" on "ConversationMessage" m  (cost=0.42..4.59 rows=10 width=52) (actual time=0.067..12.120 rows=1000 loops=1)
+                     Index Cond: ("conversationId" = c.id)
+                     Heap Fetches: 0
+                     Buffers: shared hit=2 read=12
+ Planning:
+   Buffers: shared hit=28
+ Planning Time: 0.720 ms
+ Execution Time: 49.128 ms
+(25 rows)
+
+
+COMMAND: docker exec -i -u postgres local_postgres dropdb -U postgres arch019_rehearsal_db21e0f6c3e245b7
+
+EXIT CODE: 0

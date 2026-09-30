@@ -1,0 +1,7 @@
+{
+  "exit_code": 0,
+  "database": "arch019_rehearsal_db21e0f6c3e245b7",
+  "container": "local_postgres",
+  "evidence": "/var/folders/tc/km4tlxg554dcbpzx2smhsnkc0000gn/T/arch019-pg15-qdmhy3tq",
+  "temporary_database_removed": true
+}

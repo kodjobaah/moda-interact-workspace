@@ -31,3 +31,6 @@
 [submodule "moda-interact-documentation"]
 	path = moda-interact-documentation
 	url = https://github.com/kodjobaah/moda-interact-documentation.git
+[submodule "moda-interact-commerce"]
+	path = moda-interact-commerce
+	url = https://github.com/kodjobaah/moda-interact-commerce.git
