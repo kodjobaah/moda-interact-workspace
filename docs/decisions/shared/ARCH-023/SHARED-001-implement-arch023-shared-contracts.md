@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -989,24 +989,87 @@ None identified.
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-Pending.
+The ARCH-023 Shared implementation is substantively conformant with the task contract by architect inspection. C1 uses the exact 20 supported configuration locales and the existing BCP-47 canonicalizer; C2/C3/C4 use the required strict Zod contracts and deterministic SHA-256 job identity; the Purpose/Data Format keys match the accepted `ARCH-023-DATABASE-001` catalogue; the new runtime-safe and Node-only package subpaths are isolated correctly; and D7 adds the exact immutable runtime-data authority instruction as the first `PLATFORM_INSTRUCTIONS` entry without changing the existing instruction-composition or Tool-authorization model.
+
+The review is blocked only by mandatory task-execution provenance. The Completion Report does not record the launcher-resolved dedicated parent and implementation worktree paths, the start-of-attempt synchronization result for both repositories, or the launcher/preparation recursive-submodule evidence required by `docs/agent-worktree-isolation-policy.md` and the `moda_architect` review contract. The statement that the implementation used an isolated worktree, plus clean/pushed state at handoff, does not substitute for the required durable preparation/synchronization evidence.
+
+This is workflow non-conformance, not a request for implementation churn. Do not change the ARCH-023 Shared contracts merely to create a new implementation commit. If the work was already performed in the canonical task worktrees, recover the launcher/preparation evidence, rerun the task-required validation there, and record that evidence in the Completion Report. If it was not, restore/create the canonical task worktrees, check out the already-pushed `task/ARCH-023-SHARED-001` branches there, synchronize them according to policy, rerun the required validation, and update only the report/evidence unless validation exposes a real implementation defect.
 
 ### Reviewed Files
 
-Pending.
+Architect review covered the task-owned implementation surface:
+
+```text
+moda-interact-shared/src/internationalization.ts
+moda-interact-shared/src/internationalization.test.ts
+moda-interact-shared/src/merchant-knowledge.ts
+moda-interact-shared/src/merchant-knowledge.test.ts
+moda-interact-shared/src/merchant-knowledge.node.ts
+moda-interact-shared/src/merchant-knowledge.node.test.ts
+moda-interact-shared/src/commerce/runner/index.ts
+moda-interact-shared/src/commerce/runner/runner.test.ts
+moda-interact-shared/scripts/validate-arch023-shared-entrypoints.mjs
+moda-interact-shared/tsup.config.ts
+moda-interact-shared/package.json
+docs/decisions/shared/ARCH-023/SHARED-001-implement-arch023-shared-contracts.md
+```
+
+The architect also checked the accepted `ARCH-023-DATABASE-001` Purpose/Data Format identities, the Shared ARCH-023 index, and the canonical ARCH-023 architecture/frontier.
 
 ### Validation Reviewed
 
-Pending.
+The submitted Completion Report records:
+
+```text
+npm test                                      176 passed, 0 failed, 1 Redis integration skip
+npm run typecheck                             passed
+npm run build                                 passed
+npm run validate:internationalization-entrypoint passed
+npm run validate:commerce-entrypoints         passed
+npm run validate:arch023-shared-entrypoints   passed
+npm pack --dry-run                            passed
+git diff --check                              passed
+```
+
+Architect inspection additionally confirmed:
+
+```text
+the exact ordered 20-tag C1 set
+the exact seven C3 Purpose keys
+the exact three C3 Data Format keys
+C3 key correspondence with accepted DATABASE-001 seeds
+the exact D7 runtime-data authority string
+D7 is PLATFORM_INSTRUCTIONS[0]
+the required Merchant Knowledge package exports and tsup entries
+package version remains 1.0.0
+no Merchant Knowledge root convenience re-export
+no forbidden Node/database/Redis/R2 import in the runtime-safe entrypoint
+exactly one Shared source definition for every R22 contract symbol
+```
+
+The review archive does not contain installed dependencies or Git worktree metadata, so the architect did not independently rerun the complete npm suite or reconstruct the missing start-of-attempt provenance from the archive. Attempt 2 must make that provenance durable in the Completion Report and rerun the required validation from the canonical implementation task worktree.
 
 ### Architecture Conformance
 
-Pending.
+The implementation is architecturally conformant with ARCH-023 C1-C4 and D7 on the reviewed source. No code correction is currently requested.
+
+Acceptance is deferred solely because physical task isolation and start-of-attempt synchronization are mandatory acceptance evidence for repository tasks.
 
 ### Follow-up
 
-Pending.
+For Attempt 2, keep the same task branches and worktrees and do only the bounded evidence correction unless rerun validation finds a genuine defect:
+
+1. Verify/reuse the launcher-resolved canonical parent task worktree and implementation task worktree for `ARCH-023-SHARED-001`.
+2. Record both absolute launcher-resolved paths, repository identities and `task/ARCH-023-SHARED-001` branch identities in the Completion Report.
+3. Record the start-of-attempt synchronization result for both repositories: fetch/prune, clean state, own remote-branch fast-forward result, and current `origin/main` containment/merge result.
+4. Record launcher/preparation recursive-submodule evidence, explicitly stating when the implementation repository has no registered recursive submodules.
+5. Rerun all task-required validation from the canonical implementation worktree and record the result.
+6. Record the exact submitted implementation commit and parent-report commit, clean worktree state, and local-HEAD/remote-task-branch equality for both repositories.
+7. Leave the package version unchanged, do not publish, and do not start `ARCH-023-SHARED-002`.
+8. Return this same task to `review` with the active claim cleared.
+
+`ARCH-023-SHARED-002` remains Pending until SHARED-001 is architect-accepted.
