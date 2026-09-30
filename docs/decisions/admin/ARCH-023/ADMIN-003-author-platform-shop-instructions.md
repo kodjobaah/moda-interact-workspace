@@ -9,15 +9,16 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 41
-executor: copilot
-claimed_at: 2026-09-30T19:50:45Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-023-DATABASE-001
   - ARCH-023-ADMIN-002
-enables: []
+enables:
+  - ARCH-023-COMMERCE-003
 created: 2026-09-29
 updated: 2026-09-30
 ---
@@ -642,7 +643,7 @@ No cross-repository event/API is introduced.
 
 ## Enables
 
-Planned Shopify Store Profile/category-change and Commerce prompt-ownership cleanup tasks may depend on this task after their definitions are created.
+- `ARCH-023-COMMERCE-003`
 
 ## Acceptance Criteria
 
@@ -751,9 +752,101 @@ Parent workspace: this task report only. No other task, index, architecture, or 
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 2
+Accepted — Attempt 3
 
 ### Review Notes
+
+#### Attempt 3 review — Accepted — 2026-09-30
+
+Reviewed implementation commit `1cd8557a5d8317758e96487aa52ebd6d3393657a` and the
+submitted Attempt 3 Completion Report against the full ADMIN-003 contract and the complete
+Attempt 2 correction contract. Attempt 3 is accepted.
+
+A2-R1 is resolved. The Shop read path still requires the exact persisted pending revision to
+be a DRAFT in the selected SHOP lineage with non-null `sourceTemplateId` and
+`sourceTemplateEditVersion`, but it no longer compares that pinned provenance to the Store
+Category's mutable current `defaultTemplateId`. The read model therefore continues to open
+the exact selection-time DRAFT and displays the source template attached to that revision.
+
+The pending publish path applies the same snapshot rule. It requires the pending category,
+pending selection timestamp, exact pending revision and non-null source-template provenance,
+then publishes the exact reviewed `promptText`, computes SHA-256 from those exact UTF-8 bytes,
+updates the Shop configuration pointer and promotes the pending category in the same
+transaction. It does not re-read/reseed the current template and does not require the pinned
+`sourceTemplateId` to equal the category's current default.
+
+A2-R2 is resolved by focused regressions that seed a pending DRAFT from template A, change
+the category default to template B, then prove Admin still reads and publishes the exact
+template-A DRAFT. The assertions preserve the exact saved text/hash, template-A identity,
+selection-time source-template edit version and `pendingSelectionGeneration`.
+
+A2-R3 is satisfied by the reported disposable PostgreSQL proof: all 21 accepted migrations
+were applied to a local-only `pgvector/pgvector:pg17` database, the production Admin read and
+`mutateAgentInstructions` publish path succeeded after the default changed from A to B, and
+separate stale-configuration and stale-profile cases rolled back revision, configuration,
+profile and audit changes. The disposable container was removed afterwards and the remote
+database was not used.
+
+The previously accepted audit-operation-ID, 32,000-character prompt bound, authorization,
+CAS, immutable-published-revision and additive Platform/Shop behavior remain unchanged. The
+reported two broad translation-test failures are outside the Agent Instructions changed
+surface and do not contradict the focused acceptance evidence.
+
+### Reviewed Files
+
+Implementation repository:
+
+- `src/lib/admin/agent-instructions.ts`
+- `tests/unit/agent-instructions.test.ts`
+- `src/app/actions/agent-instructions.ts`
+- `src/lib/admin/commerce-environment.ts`
+- `src/app/(protected)/system-controls/agent-instructions/page.tsx`
+- `src/components/admin/agent-instructions/agent-instructions-console.tsx`
+
+Parent workspace:
+
+- `docs/decisions/admin/ARCH-023/ADMIN-003-author-platform-shop-instructions.md`
+- `docs/decisions/admin/ARCH-023/_index.md`
+- `docs/decisions/commerce/ARCH-023/COMMERCE-003-resolve-platform-shop-instructions.md`
+- `docs/decisions/commerce/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
+### Validation Reviewed
+
+- Attempt 3 focused Agent Instructions tests: **16/16** reported passed.
+- Attempt 3 disposable PostgreSQL proof applied all **21** accepted migrations and passed the
+  template-A-to-template-B promotion plus stale-configuration/stale-profile rollback cases.
+- `npx tsc --noEmit --pretty false`, focused changed-file ESLint, production build, changed-file
+  diagnostics and `git diff --check` are recorded as passed.
+- The full unit suite is recorded as **188/190** with the same two unrelated merchant-pricing
+  translation failures from the prior attempt; no Agent Instructions regression failed.
+- The review archive contains no installed dependency tree, Git metadata or live Docker runtime,
+  so dependency-backed commands were not independently rerun here. The implementation and authored
+  regression paths were inspected directly against the durable Completion Report evidence.
+
+### Architecture Conformance
+
+Conforms. Admin remains the authoritative Platform/Shop Instructions authoring boundary and
+continues to use the existing ARCH-021 prompt/revision/configuration/audit lifecycle. Pending
+Store Category prompt provenance is now correctly treated as an immutable selection-time
+snapshot rather than a live dependency on mutable category-template state. No schema, Shopify,
+Commerce runtime, translation lifecycle or capability-local prompt ownership was absorbed.
+
+### Follow-up
+
+`ARCH-023-ADMIN-003` is **Complete / Accepted at Attempt 3**.
+
+Its completion satisfies the final dependency of `ARCH-023-COMMERCE-003` because
+`ARCH-023-DATABASE-001` and `ARCH-023-SHARED-002` are already Complete.
+`ARCH-023-COMMERCE-003` is therefore promoted from Pending to Ready. This reconciliation does
+not claim or start it.
+
+#### Historical Attempt 2 — Changes Requested — 2026-09-30
+
+##### Review Status
+Changes Requested — Attempt 2
+
+##### Review Notes
 Attempt 2 resolves A1-R1 through A1-R4: distinct audit `operationId` values are used,
 the 32,000-character prompt bound matches the accepted database guard, the required
 disposable PostgreSQL pending-category transaction proof passed, and exact launcher/worktree
@@ -788,7 +881,7 @@ One remaining lifecycle defect was found against the parent ARCH-023 architectur
 No database/schema migration, template CRUD change, Shopify change, Commerce change,
 translation lifecycle, or follow-on task is authorised by this review.
 
-### Reviewed Files
+##### Reviewed Files
 - `moda-interact-admin/src/lib/admin/agent-instructions.ts`
 - `moda-interact-admin/src/app/actions/agent-instructions.ts`
 - `moda-interact-admin/src/lib/admin/commerce-environment.ts`
@@ -799,22 +892,23 @@ translation lifecycle, or follow-on task is authorised by this review.
 - accepted ARCH-021/ARCH-023 Prisma schema and migrations
 - this task Completion Report
 
-### Validation Reviewed
+##### Validation Reviewed
 - Attempt 2 focused Agent Instructions tests: 18/18 reported passed.
 - Attempt 2 live PostgreSQL pending-category success plus stale configuration/profile rollback proof: reported passed.
 - TypeScript, Prisma validate/generate, production build, focused changed-file ESLint, diagnostics and `git diff --check`: reported passed.
 - The supplied review archive has no installed dependency tree or live Docker/PostgreSQL runtime, so those dependency-backed commands were inspected from durable evidence rather than independently rerun here.
 - The new A2-R1 snapshot-provenance scenario is not covered by the submitted tests/proof and remains required.
 
-### Architecture Conformance
+##### Architecture Conformance
 The implementation conforms to the Admin ownership, authorization, CAS, audit and additive
 Platform/Shop prompt model, but its current-default-template comparison conflicts with the
 parent ARCH-023 snapshot-provenance invariant. Attempt 2 therefore cannot be accepted yet.
 
-### Follow-up
+##### Follow-up
 Return the same task to `ready` with `attempt: 2` preserved and the execution claim
 cleared. The next authorized claim becomes Attempt 3. No dependent task is promoted by
 this review.
+
 
 ### Historical Architect Review — Attempt 1
 

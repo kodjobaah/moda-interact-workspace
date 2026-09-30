@@ -11,12 +11,9 @@ updated: 2026-09-30
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-002` and `ARCH-023-SHOPIFY-001`. COMMERCE-002 is Ready because COMMERCE-001 and ADMIN-001 are Complete; `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001. All other ARCH-023 tasks remain gated by their declared dependencies.
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001` and `ARCH-023-ADMIN-002` at Attempt 2, `ARCH-023-SHARED-001` at Attempt 2, `ARCH-023-SHARED-002` at Attempt 1 with exact published revision `@modainteract/moda-interact-shared@1.0.1`, and `ARCH-023-SHOPIFY-002` at Attempt 2.
-
-.
+The current executable frontier is `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-002`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003` and `ARCH-023-SHOPIFY-003`. `COMMERCE-003` is Ready because ADMIN-003, DATABASE-001 and SHARED-002 are Complete. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3281,8 +3278,7 @@ post-review target-state correction.
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after COMMERCE-001 Attempt 2 acceptance:
-Current execution frontier after BACKGROUND-003 Attempt 2 acceptance:
+Current execution frontier after ADMIN-003 Attempt 3 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
@@ -3290,20 +3286,20 @@ ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
 ARCH-023-ADMIN-001      Complete — Accepted Attempt 2
 ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+ARCH-023-ADMIN-003      Complete — Accepted Attempt 3
 ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
-ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-BACKGROUND-003 Complete — Accepted Attempt 2
+ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
-ARCH-023-ADMIN-003      Ready
+ARCH-023-ADMIN-004      Ready
 ARCH-023-BACKGROUND-002 Ready
-ARCH-023-BACKGROUND-003 Ready — Attempt 2 corrections
 ARCH-023-COMMERCE-002   Ready
-ARCH-023-COMMERCE-001   Ready
-ARCH-023-SHOPIFY-001    Ready
+ARCH-023-COMMERCE-003   Ready
+ARCH-023-SHOPIFY-003    Ready
 
-ARCH-023-SHOPIFY-003    Pending — still depends on SHOPIFY-001
-all other ARCH-023 implementation tasks remain gated by their declared dependencies
+all other non-superseded ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
 Canonical published Shared revision for ARCH-023 consumers:
@@ -3347,6 +3343,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — ADMIN-003 Attempt 3 accepted
+
+- Accepted the Admin Platform/Shop Instructions lifecycle after the Attempt 3 snapshot-provenance correction.
+- Confirmed a pending Shop DRAFT seeded from template A remains the exact authoritative DRAFT after the Store Category default changes to template B; Admin read and publish no longer compare pinned provenance to the mutable current default.
+- Accepted the focused regressions and disposable-PostgreSQL proof covering exact template-A text/hash/provenance promotion plus stale configuration/profile rollback.
+- Marked ADMIN-003 Complete and promoted COMMERCE-003 to Ready because DATABASE-001 and SHARED-002 are already Complete. COMMERCE-003 is not claimed or started by this reconciliation.
 
 ### 2026-09-30 — ADMIN-003 Attempt 2 changes requested
 
