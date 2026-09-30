@@ -9,17 +9,17 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-09-30T07:50:28Z
+attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
 enables:
   - ARCH-023-SHARED-002
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Implement ARCH-023 Shared contracts and Commerce runner trust
