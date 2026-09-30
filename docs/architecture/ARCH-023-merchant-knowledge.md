@@ -3275,8 +3275,8 @@ ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
 `COMMERCE-002` itself is intentionally unchanged while in review. `COMMERCE-004` owns the
 post-review target-state correction.
 
-The current database decomposition is one consolidated prerequisite. The earlier split
-DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
+The initial Merchant Knowledge database persistence remains consolidated in DATABASE-001. The earlier split
+DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard.
 
 Current execution frontier after ADMIN-003 Attempt 3 acceptance:
 
@@ -3355,6 +3355,14 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — DATABASE-004 Attempt 1 accepted
+
+- Accepted forward migration `20260930200000_arch023_release_feature_snapshot_history` at implementation `0cdea8b0a7f1ce61df67bcc80b6325e16d82e12f`.
+- Confirmed `commerce.arch021_release_feature_guard()` now admits either the current Feature Behaviour prompt or an exact immutable historical prompt already persisted for the same Feature, while arbitrary stale/cross-Feature prompts continue to fail with SQLSTATE `23514`.
+- Confirmed the Feature `FOR SHARE` concurrency lock, current-prompt/empty fallback, `arch021_release_feature_immutable`, release rows/capability rows and Prisma schema remain unchanged.
+- Accepted the disposable PostgreSQL predecessor/upgrade proof and exact static validator; architect-side mutation probes independently rejected removal of the same-Feature match, exact prompt match and `FOR SHARE` lock.
+- Marked DATABASE-004 Complete. The external database blocker on COMMERCE-002 Attempt 3 is satisfied; COMMERCE-002 may now be returned to Ready on its authoritative task branch with Attempt 3 retained so the next launcher claim becomes Attempt 4.
 
 ### 2026-09-30 — SHOPIFY-003 Attempt 3 accepted
 
