@@ -11,15 +11,9 @@ updated: 2026-09-30
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation
-is underway. `ARCH-023-DATABASE-001` is **Complete / Accepted at Attempt 2**,
-`ARCH-023-SHARED-001` is **Complete / Accepted at Attempt 2**, and the accepted Shared
-implementation is now published and architect-accepted through `ARCH-023-SHARED-002` as
-exact revision `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-BACKGROUND-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`,
-`ARCH-023-BACKGROUND-001`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and
-`ARCH-023-SHOPIFY-002`. All other ARCH-023 tasks remain gated by their declared dependencies.
+The current executable frontier is `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001` and `ARCH-023-SHOPIFY-001`. `ARCH-023-COMMERCE-002` remains Pending because COMMERCE-001 is not yet Complete; `ARCH-023-SHOPIFY-003` remains gated on SHOPIFY-001. All other ARCH-023 tasks remain gated by their declared dependencies.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -884,11 +878,13 @@ merchant-selectable category `slug` is a product/code change: its keys must ship
 `enabled`, `displayOrder`, the default template and Shopify-taxonomy mappings, but
 ARCH-023 does not create runtime translations for an arbitrary new category.
 
-For ARCH-023 merchant-selectable categories, `slug` is a stable localization identity.
-Admin MUST NOT rename an in-use merchant-selectable `slug` in place. Merchant-facing
-wording changes are made in the locale catalogues while retaining the same `slug`; a
-semantic category-identity change requires a new category/slug and the normal migration
-of any affected mappings/selections.
+For ARCH-023 merchant-selectable categories, `slug` is a stable localization identity
+and is immutable after category creation, whether or not the category is currently
+referenced by an active or pending Shop Profile. Admin MUST NOT rename a `slug` in place.
+Merchant-facing wording changes are made in the locale catalogues while retaining the
+same `slug`; a semantic category-identity change requires a new category/slug and the
+normal migration of any affected mappings/selections. This preserves the existing
+ARCH-021 database category-identity guard rather than creating a second mutability rule.
 
 `CommercePromptTemplate.displayName` and `description` remain canonical-English Admin
 metadata. The merchant onboarding flow selects a localized Store Category; it does not
@@ -3204,19 +3200,25 @@ docs/decisions/system-test/ARCH-023/
 The current database decomposition is one consolidated prerequisite. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001.
 
-Current execution frontier after SHARED-002 Attempt 1 acceptance:
+Current execution frontier after ADMIN-001 Attempt 2 acceptance:
 
 ```text
 ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
 ARCH-023-SHARED-001     Complete — Accepted Attempt 2
 ARCH-023-SHARED-002     Complete — Accepted Attempt 1
+ARCH-023-ADMIN-001      Complete — Accepted Attempt 2
+ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
+ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
+ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 
-ARCH-023-ADMIN-001      Ready
-ARCH-023-ADMIN-002      Ready
-ARCH-023-BACKGROUND-001 Ready
+ARCH-023-ADMIN-003      Ready
+ARCH-023-BACKGROUND-002 Ready
+ARCH-023-BACKGROUND-003 Ready — Attempt 2 corrections
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-001    Ready
-ARCH-023-SHOPIFY-002    Ready
+
+ARCH-023-COMMERCE-002   Pending — still depends on COMMERCE-001
+ARCH-023-SHOPIFY-003    Pending — still depends on SHOPIFY-001
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
@@ -3227,8 +3229,8 @@ Canonical published Shared revision for ARCH-023 consumers:
 integrity: sha512-xwVRw1rZWZIlfvrnml+psA5roRz+qMoTl7Znob1myNA1PTXIuHYX4lQHCof8Ef2F1QElrvi09jKstOc6QHdcKg==
 ```
 
-Ready tasks are independent except where their own task YAML declares otherwise. No consumer
-implementation task is started implicitly by this architect review.
+Ready tasks are independent except where their own task YAML declares otherwise. No
+consumer implementation task is started implicitly by this architect review.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3239,6 +3241,76 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
+### 2026-09-30 — ADMIN-001 Attempt 2 accepted
+
+- Accepted the Merchant Knowledge pricing-plan entitlement authoring path at Attempt 2.
+- Confirmed exactly one locked Merchant Knowledge product-policy control is rendered for new and existing plans.
+- Confirmed create/update use one generic mapping persistence helper that preserves unrelated/inactive configuration and mirrors identical JSON into an already-materialised BillingPlan without touching `ShopFeaturePreference`.
+- Confirmed C2 plus active Purpose/Data Format catalogue validation, explicit existing-plan repair, exact Shared `1.0.1` adoption and the accepted database revision.
+- Reviewed 19/19 focused unit tests and 12/12 focused pricing security tests as passing, together with Prisma validation, TypeScript, production build, changed-file diagnostics and `git diff --check`; recorded broad unit/lint failures remain outside the changed ADMIN-001 surface.
+- Marked ADMIN-001 Complete. COMMERCE-002 remains Pending because COMMERCE-001 is not yet Complete; no task becomes newly Ready solely from this acceptance.
+### 2026-09-30 — BACKGROUND-003 Attempt 1 changes requested
+
+- Reviewed private R2 acquisition, CSV/XLSX extraction and database-backed upload cleanup as substantially architecture-conformant.
+- Required XLSX extraction to preserve cached scalar results from ExcelJS shared-formula cells while continuing to omit formula expressions.
+- Required cleanup candidate progression so a retained first page of `DELETED` tombstones cannot starve later expired/unreferenced assets.
+- Required focused regressions for shared-formula extraction and >100-candidate cleanup progression; no schema/migration, Gateway, queue, normalization, embedding or worker-entrypoint change is authorised.
+- Returned BACKGROUND-003 to Ready with Attempt 1 preserved; BACKGROUND-004 remains gated on both BACKGROUND-002 and BACKGROUND-003.
+
+### 2026-09-30 — SHOPIFY-002 Attempt 2 accepted
+
+- Accepted the reusable pending Store Category selection lifecycle after the task-owned PostgreSQL proof exercised the production Prisma transaction against the accepted pgvector PostgreSQL migrations.
+- Confirmed initial lineage/DRAFT creation, exact canonical-template provenance, reselection reuse, active-state preservation, stale/unrelated-DRAFT rollback and two-client row-lock serialization with exactly one concurrent success.
+- Confirmed the Attempt 2 implementation delta is only the PostgreSQL integration test; production source, dependency pins, database gitlink/schema/migrations and locale catalogues are unchanged from the substantively conformant Attempt 1 implementation.
+- Confirmed canonical launcher/worktree synchronization and recursive-submodule evidence. Submitted implementation is `e287ba7b246dc1fd40e752512c47ad823fc18d0a`; submitted parent report is `aa5b7190e43bc975a337b71607198e58c1edf098`.
+- Marked SHOPIFY-002 Complete. SHOPIFY-003 remains Pending because SHOPIFY-001 is still Ready, not Complete; no downstream task was started.
+### 2026-09-30 — BACKGROUND-001 Attempt 4 accepted
+
+- Accepted the dedicated Merchant Knowledge worker/entitlement/PENDING-reconciliation foundation at Attempt 4.
+- Confirmed the C4 producer uses Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` and deterministic Shared job-id helper on exact Shared `1.0.1`.
+- Accepted the required live queue-loss proof after all real Prisma migrations applied to a disposable `pgvector/pgvector:pg17` PostgreSQL database and the production-path reconciliation integration test passed 1/1.
+- Confirmed the disposable container was torn down and no production runtime, schema, Shared-helper, integration-wrapper or Gateway change was introduced solely for validation.
+- Marked BACKGROUND-001 Complete and promoted BACKGROUND-002 and BACKGROUND-003 to Ready in parallel; BACKGROUND-004 remains gated on both.
+
+### 2026-09-30 — BACKGROUND-001 Attempt 3 validation blocker reconciled
+
+- Accepted the Attempt 3 correction to use Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` and the newly recorded launcher/worktree/submodule provenance.
+- Confirmed the remaining failure occurs before Vitest because the canonical disposable wrapper defaults to `postgres:17.6-alpine`, which cannot apply the accepted pgvector migration.
+- Authorised Attempt 4 to provision a task-local disposable PostgreSQL 17 Docker container with pgvector, apply the real migrations, run the existing queue-loss integration test against it, and destroy the container afterward.
+- No Shared helper, Background integration-wrapper, Gateway, database-schema or production-runtime change is required solely to close this validation.
+- Returned BACKGROUND-001 to Ready with Attempt 3 preserved; BACKGROUND-002 and BACKGROUND-003 remain Pending.
+
+### 2026-09-30 — BACKGROUND-001 Attempt 2 changes requested
+
+- Reviewed the dedicated Merchant Knowledge readiness/queue/acquisition-contract/current-plan-entitlement/PENDING-reconciliation/worker foundation as substantively architecture-conformant.
+- Required the C4 producer to use Shared `MERCHANT_KNOWLEDGE_PROCESS_SCHEMA_VERSION` instead of a duplicated local schema-version literal.
+- Required the still-open committed-PENDING enqueue-loss acceptance check to pass through the existing disposable PostgreSQL integration harness before acceptance.
+- Required the Completion Report to record the mandated launcher-resolved physical worktree, start-of-attempt synchronization and recursive-submodule preparation evidence.
+- Returned BACKGROUND-001 to Ready with Attempt 2 preserved; BACKGROUND-002 and BACKGROUND-003 remain Pending and no downstream implementation was started.
+
+### 2026-09-30 — ADMIN-002 Attempt 2 accepted
+
+- Accepted the protected Admin Store Category catalogue for category/template/taxonomy
+  authoring against the corrected immutable-slug contract.
+- Confirmed category enable/default-template invariants, template CAS/audit behavior,
+  taxonomy mapping lifecycle, aggregate Shop Profile reference counts and the unconditional
+  Shopify localization-key warning.
+- Kept the accepted database gitlink/schema/migrations unchanged and introduced no
+  translation persistence, translation queue, Shopify onboarding or Commerce runtime work.
+- Marked ADMIN-002 Complete and promoted exactly ADMIN-003 to Ready. SHARED-001 remains
+  independently Ready; no other ARCH-023 task was promoted by this review.
+
+### 2026-09-30 — ADMIN-002 Attempt 1 blocker reconciled
+
+- Confirmed the existing ARCH-021 database guard intentionally makes Store Category
+  `id/slug` immutable after INSERT and that the accepted ARCH-023 migration does not alter
+  that invariant.
+- Corrected ADMIN-002 R4/R5/R14 so `slug` is create-only and immutable after category
+  creation, including when the category is unused; the prior conditional unused-slug
+  rename requirement was task-level drift from the stable localization-identity model.
+- No database correction task or migration is required. DATABASE-001 remains Complete,
+  ADMIN-002 returns to Ready for Attempt 2, and ADMIN-003 remains gated on ADMIN-002
+  completion.
 ### 2026-09-30 — SHARED-002 Attempt 1 accepted
 
 - Accepted the publication-only `ARCH-023-SHARED-002` release gate after verifying that Shared source is unchanged from accepted SHARED-001 and release metadata advances exactly `1.0.0 -> 1.0.1`.
