@@ -17,10 +17,11 @@ attempt: 0
 depends_on:
   - ARCH-023-BACKGROUND-002
   - ARCH-023-BACKGROUND-003
+  - ARCH-023-BACKGROUND-006
 enables:
   - ARCH-023-BACKGROUND-005
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-09-30
 ---
 
 # Process and promote Merchant Knowledge revisions
@@ -35,7 +36,7 @@ Coordinator: `moda_architect`
 
 ## Objective
 
-Complete the production Merchant Knowledge worker by implementing the common processing state machine after source acquisition: current-entitlement guards, exact D3 normalization/content limiting, deterministic chunking, multilingual embedding, pgvector persistence, generation-safe promotion, retry/failure handling, observability and final dedicated entrypoint composition.
+Complete the production Merchant Knowledge worker by implementing the common processing state machine after source acquisition: current-entitlement **and merchant-activation** guards, exact D3 normalization/content limiting, deterministic chunking, multilingual embedding, pgvector persistence, generation-safe promotion, retry/failure handling, observability and final dedicated entrypoint composition.
 
 This is the task that makes:
 
@@ -148,7 +149,7 @@ Before source acquisition:
 
 ### R3 — entitlement before acquisition
 
-Call BACKGROUND-001 `resolveSourceEligibility(source.id)`.
+Call the BACKGROUND-006 activation-aware `resolveSourceEligibility(source.id)` contract (the accepted BACKGROUND-001 service extended by BACKGROUND-006).
 
 Cases:
 
@@ -159,6 +160,7 @@ globallySupported = false
      do not acquire
 
 entitlement null
+or merchantEnabled = false
 or sourceTypeAllowed = false
 or withinSourceAllowance = false
   -> leave/reset revision PENDING
@@ -170,7 +172,7 @@ eligible = true
   -> continue
 ```
 
-Do not infer plan entitlement from purpose/data format alone.
+Do not infer plan entitlement from purpose/data format alone. Do not process when the merchant preference is missing/false, even if the plan maps Merchant Knowledge.
 
 ### R4 — claim processing atomically
 
@@ -327,8 +329,8 @@ No embedding call for zero chunks.
 
 After acquisition/normalization/embedding but before final persistence transaction:
 
-1. re-resolve source eligibility;
-2. require source still current/eligible;
+1. re-resolve activation-aware source eligibility;
+2. require source still current/eligible and Merchant Knowledge still explicitly enabled;
 3. require current `maxContentUnitsPerSource` equals the limit used for normalization.
 
 If the source is now dormant or the content limit changed:
@@ -543,7 +545,7 @@ At minimum prove:
 
 ```text
 stale generation cannot acquire/promote
-dormant source remains PENDING
+merchant-disabled or otherwise dormant source remains PENDING
 globally unsupported source -> FAILED
 valid WEB_PAGE uses web acquirer
 valid CSV/XLSX uses upload acquirer

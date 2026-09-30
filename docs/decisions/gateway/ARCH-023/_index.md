@@ -33,7 +33,7 @@ Gateway owns:
 Render test/production topology
 dedicated Merchant Knowledge worker service
 Redis/PostgreSQL wiring
-private R2 configuration/credential placement
+private R2 configuration/credential placement and exact-origin browser PUT CORS prerequisite
 upload-limit placement
 embedding configuration placement
 Commerce bootstrap-admin environment
@@ -76,3 +76,7 @@ Shopify app -> PostgreSQL / BullMQ / private R2
 Background Merchant Knowledge worker -> Redis / PostgreSQL / private R2 / embedding provider
 Commerce -> PostgreSQL / embedding provider
 ```
+
+## Browser upload CORS
+
+GATEWAY-001 must document and verify the private Cloudflare R2 bucket CORS policy required by SHOPIFY-005: exact deployed Moda Shopify application origin(s), `PUT`, `Content-Type`, no wildcard origin and no public read/list exposure.
