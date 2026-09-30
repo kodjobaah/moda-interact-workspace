@@ -9,16 +9,16 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
-executor: null
-claimed_at: null
-attempt: 0
+executor:
+claimed_at:
+attempt: 4
 depends_on:
 - ARCH-017-DATABASE-001
 enables: []
 created: 2026-09-18
-updated: 2026-09-18
+updated: 2026-09-30
 ---
 
 # ARCH-017-SHOPIFY-001
@@ -482,3 +482,476 @@ STOP and return to moda_architect if:
 ## Completion protocol
 
 Set task to `review`. Completion Report must include implementation commit, parent report commit, exact test commands/results, physical worktree evidence and accepted DATABASE-001 dependency revision.
+
+## Completion Report
+
+Status: Ready for Review
+
+Attempt: 4, returned for architect review after the Attempt 3 Changes Requested findings.
+
+Implementation commits: `3936763bbee6439cb98db2320cd45b6ccd3574bf` (`fix(shopify): materialize operational plans during sync`) and `bffc796` (`test(shopify): prove feature preferences survive plan changes`), pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+
+Accepted DATABASE-001 dependency revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`.
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-017-SHOPIFY-001`; branch: `task/ARCH-017-SHOPIFY-001`, tracking `origin/task/ARCH-017-SHOPIFY-001`.
+
+Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-017-SHOPIFY-001`; branch: `task/ARCH-017-SHOPIFY-001`.
+
+Physical worktree isolation and start-of-attempt synchronization:
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent and implementation worktrees are the dedicated paths recorded above; both use `task/ARCH-017-SHOPIFY-001` and were clean after publication.
+- Shared workspace checkout switched/mutated for task implementation: no. Shared implementation source checkout switched/mutated for task implementation: no. Another task worktree reused: no.
+- Prepared launcher synchronized the parent and implementation task branches; parent incorporated `origin/main` at merge `41854aa952836435f67a614562d0129e2b6586c3`; implementation incorporated `origin/main` at merge `1c14e2d` before task execution.
+- Recursive implementation submodule sync and update passed during prepared launch. Accepted DATABASE-001 source-task revision: `3c7179825c3e12af1d6db805b8a2a73c61c2097c`. Exact `database` gitlink materialized and validated in implementation commit `bffc79614f3f5cb92c05fd181ec5b9038e9684a0`: `2eb17ee910491e8f9df82736fc0a843844415947`. These are distinct revisions; the latter is the database submodule commit used by this implementation worktree.
+
+Implemented Attempt 4 corrections and retained accepted behavior:
+
+- Added one BillingService resolver/materialiser for active `MerchantPricingPlan` rows and used it for Free activation, Paid activation, and generic subscription sync. Existing active operational plans remain usable after catalogue deactivation; inactive operational plans are not reactivated.
+- Materialisation validates plan kind, required checkout feature, complete feature mappings, dedicated recovery-meter rules, and included credits; it projects dynamic features and recovers unique-create races by rereading the winner. Top-up usage events are not used as the recovery usage meter.
+- Generic sync distinguishes genuine unknown catalogue handles (`UNMAPPED_PLAN_HANDLE`), inactive operational plans (`BILLING_PLAN_INACTIVE`), and invalid catalogue plans (`INVALID_MERCHANT_PRICING_PLAN`) as bounded outcomes.
+- Preserved the provider-confirmation-before-onboarding callback ordering and fresh-current fallback sync for unknown/inactive/invalid local selections. Added an explicit ordering assertion.
+- Added the `FEATURES` surface to active merchant route access/navigation and strengthened policy coverage.
+- Added/updated tests for Free/Paid materialisation, feature projection, invalid/inactive plans, unique-create recovery, callback ordering, guarded retry with onboarding already true, and preference dormancy/reactivation across plan changes without rewriting the saved preference. No proration, feature-preference deletion/copy, top-up meter inference, or database-submodule edits were introduced.
+
+Validation from the implementation worktree:
+
+- `npm run prisma:generate`: passed.
+- `npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts`: passed, 284 tests across 4 files after the final test change.
+- `npm run build`: passed.
+- `npm run typecheck`: passed after implementation and fixture typing changes.
+- Changed-file ESLint command covering the six implementation/test TypeScript/TSX files, plus `npx eslint tests/unit/routes/features-route.test.ts` for the follow-up: passed with no diagnostics; ESLint emitted only its TypeScript 5.9.3 support advisory.
+- `git diff --check`: passed.
+- Repository-wide `npm run lint`: failed on pre-existing diagnostics in unrelated files; the changed-file ESLint check passed.
+
+Implementation worktree was clean after source commits `3936763bbee6439cb98db2320cd45b6ccd3574bf` and `bffc796`; both match the task remote. Parent report history includes initial Attempt 4 submission `25128184`, submission-SHA follow-up `cb139036`, evidence update `bb98e9e4`, and SHA-recording follow-up `3c530bd2`; these are pushed to `origin/task/ARCH-017-SHOPIFY-001`.
+
+No database submodule contents or Architect Review section were edited.
+
+## Architect Review
+
+### Review Status
+
+Changes Requested
+
+### Review Notes
+
+The implementation is close and the lazy BillingPlan materialiser plus merchant feature-preference surface are functionally aligned with ARCH-017. One blocking lifecycle defect remains in the first managed-pricing selection path.
+
+The callback now correctly commits `ShopSettings.onboardingCompleted=true` before local BillingPlan resolution. However, the initial-activation and token-fencing code still treats `onboardingCompleted=false` as a prerequisite:
+
+- `prepareFreeActivation()` requires `settings?.onboardingCompleted !== true` before it will create the initial pending token.
+- `preparePaidActivation()` has the same requirement.
+- `matchesInitialFreeActivationToken()` requires `settings?.onboardingCompleted === false`.
+- `syncSubscription()` additionally requires onboarding to remain false for `initialPaidActivation` and uses onboarding=false when deciding whether to preserve initial pending intent.
+
+Because the callback writes onboarding=true first, a fresh Free or Paid selection can materialise/reuse the BillingPlan and then immediately fail the initial-activation eligibility check. The callback therefore falls out of the intended immediate activation/sync path. The existing callback tests do not expose this because the onboarding write and BillingService state are mocked independently.
+
+This is a functional ARCH-017 issue, not a request for broader test hardening. `onboardingCompleted` is now a historical Shopify managed-pricing milestone and MUST NOT remain a gate for whether a valid initial activation token can be created, matched, synchronized or retried.
+
+### Required Corrections
+
+1. Keep the callback's separately committed onboarding transition exactly before local BillingPlan resolution. Do not move it after activation/sync and do not make it conditional on successful Moda mapping.
+2. In `prepareFreeActivation()`, remove `ShopSettings.onboardingCompleted` from initial-activation eligibility. Preserve the existing verified-same-plan replay rule and the protection against overwriting an active/different subscription. A first activation is determined from Subscription state: no Subscription, or `NO_CONTRACT` with `planId=null` and no observed Shopify plan handle.
+3. Apply the same change to `preparePaidActivation()`. A callback that has just set onboarding=true must still be able to persist the initial Paid pending-selection token.
+4. Change `matchesInitialFreeActivationToken()` so the stale-token fence is based on the exact durable Subscription token fields (`subscriptionId`, pending plan id/handle, pending effective time and reconcile time), not on onboarding state. Remove the `settings` dependency from this helper if no longer needed.
+5. Update `syncSubscription()` so an exact current initial token remains valid after onboarding has become true. In particular, remove the onboarding=false requirement from the initial Paid activation branch. Preserve the existing row locks and exact-token stale-write protection.
+6. Update initial-intent preservation/retry logic that currently uses `onboardingCompleted !== true` as the discriminator. The new discriminator must be durable pending-selection/token state, not the historical onboarding flag. Do not weaken stale-token protection and do not overwrite an active different-plan subscription.
+7. Add/adjust focused tests that execute the new ordering rather than mocking the two sides independently:
+   - onboarding already true + fresh `NO_CONTRACT` Free selection -> `prepareFreeActivation()` returns `mode=INITIAL` with a token;
+   - onboarding already true + fresh `NO_CONTRACT` Paid selection -> `preparePaidActivation()` returns `mode=INITIAL` with a token;
+   - an exact initial token still synchronizes when onboarding is true;
+   - current-token retry scheduling still works when onboarding is true;
+   - stale tokens remain no-ops;
+   - active different-plan protection and verified replay behavior remain unchanged.
+8. Replace the contradictory service test that currently asserts a fresh shop must be rejected merely because onboarding is already complete. Under ARCH-017 that expectation is no longer valid.
+9. Preserve all accepted materialisation behavior: no proration, no automatic reactivation of inactive BillingPlan rows, no usage-meter inference from top-up events, and no feature-preference deletion/copying on plan changes.
+10. On Attempt 2, leave one current `## Completion Report`. Remove/supersede the stale earlier `Status: Blocked` Completion Report and record the actual parent report commit used for the resubmission.
+
+### Reviewed Files
+
+- `app/routes/app/billing/callback/route.tsx`
+- `app/services/billing/billing.service.ts`
+- `app/routes/app/features/route.tsx`
+- `app/services/shop/merchant-route-access-policy.ts`
+- `tests/unit/routes/billing-callback.test.ts`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/routes/features-route.test.ts`
+- `database/prisma/schema.prisma`
+
+### Validation Reviewed
+
+The Completion Report records 259 focused tests passing, typecheck/build/changed-file lint/diff checks passing, with 16 unrelated full-lint baseline errors. Those results are accepted as evidence for the areas they exercise. They do not cover the blocking shared-state ordering defect above because the callback test mocks the onboarding persistence separately from BillingService.
+
+### Architecture Conformance
+
+Partial. BillingPlan materialisation, concurrency recovery, dynamic feature preferences, tenant scoping and route-policy integration are consistent with ARCH-017 on inspection. The first managed-pricing selection lifecycle is not yet conformant because historical onboarding state still gates activation-token semantics after the callback deliberately commits that milestone first.
+
+### Follow-up
+
+Return the same task for Attempt 2. No new task is required. Do not start terminal ARCH-017 system testing from this review.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Changes Requested
+
+### Functional Review Summary
+
+Attempt 2 correctly removes `ShopSettings.onboardingCompleted` from initial activation eligibility, exact-token matching, retry scheduling and initial-intent preservation. The durable Subscription token now remains authoritative after onboarding becomes true, and the previously accepted BillingPlan materialisation and merchant feature-preference implementation remains functionally intact on inspection.
+
+Two linked callback defects still block acceptance.
+
+#### Blocking finding 1 — provider selection is not established before onboarding/materialisation
+
+`app/routes/app/billing/callback/route.tsx` currently executes, in this order:
+
+```text
+resolve authenticated shop
+-> set ShopSettings.onboardingCompleted=true
+-> prepareFreeActivation()/preparePaidActivation()
+-> only afterwards read Shopify provider subscription state
+```
+
+This means an authenticated browser request containing an arbitrary `plan_handle` can mark onboarding complete before Shopify provider truth proves that the merchant selected that plan. If the supplied handle names an active MerchantPricingPlan, the same request can also call the BillingPlan materialiser and make that catalogue plan durable even when Shopify has no matching current/pending selection.
+
+ARCH-017 requires the milestone to mean "Shopify managed-pricing selection observed", not merely "authenticated callback route visited with a plan_handle". Provider truth must therefore be established before both the onboarding write and local BillingPlan resolution/materialisation.
+
+#### Blocking finding 2 — fresh unknown/inactive/invalid selections are not projected
+
+When both `prepareFreeActivation()` and `preparePaidActivation()` return `null`, the callback falls into `recordHostedPlanChangeReturn(...)`.
+
+For a fresh shop with no existing Subscription, `recordHostedPlanChangeReturn(...)` returns the provider classification with `subscriptionId=null` and does not call `syncSubscription()`. Therefore a provider-confirmed initial selection whose local result is:
+
+```text
+UNKNOWN_CATALOGUE_PLAN
+INACTIVE_OPERATIONAL_PLAN
+INVALID_CATALOGUE_PLAN
+```
+
+can leave the shop with onboarding complete but no durable Subscription projection at all. That violates the required ARCH-017 outcomes:
+
+```text
+unknown catalogue -> UNMAPPED / UNMAPPED_PLAN_HANDLE
+inactive BillingPlan -> SYNC_ERROR / BILLING_PLAN_INACTIVE
+invalid MerchantPricingPlan -> SYNC_ERROR / INVALID_MERCHANT_PRICING_PLAN
+```
+
+The generic `syncSubscription()` implementation already produces those bounded outcomes correctly; the callback simply fails to invoke it for this fresh-selection branch.
+
+### Required Attempt 3 Corrections
+
+Implement only the following bounded correction. Do not redesign the billing lifecycle.
+
+#### 1. Reorder provider verification before onboarding and local resolution
+
+File:
+
+```text
+app/routes/app/billing/callback/route.tsx
+```
+
+In `loader(...)`, after `resolveShopifyShop(...)` and `assertActiveShop(...)`, perform these operations in this exact order:
+
+```text
+A. capture verificationFence = billingService.getHostedPlanVerificationFence(shop.id)
+B. call billingService.getMerchantShopifySubscriptionState(shop.id)
+C. establish whether provider state confirms requestedPlanHandle
+D. only if confirmed, commit onboardingCompleted=true
+E. only after that commit, call prepareFreeActivation()/preparePaidActivation()
+```
+
+Do not call either `prepareFreeActivation()` or `preparePaidActivation()` before step D.
+
+If the provider read in step B throws:
+
+```text
+- do not update onboardingCompleted;
+- do not call either prepare method;
+- call recordHostedPlanVerificationFailure(shop.id, verificationFence);
+- preserve the existing guarded reconciliation enqueue;
+- redirect with the existing `unverified` result.
+```
+
+#### 2. Define provider-confirmed managed-pricing selection deterministically
+
+Treat the requested handle as provider-confirmed only when:
+
+```text
+state.status === "ACTIVE_SUBSCRIPTION"
+AND
+(
+  state.subscription.planHandle === requestedPlanHandle
+  OR
+  state.subscription.pendingUpdate?.planHandle === requestedPlanHandle
+)
+```
+
+If that condition is false:
+
+```text
+- do not update onboardingCompleted;
+- do not call either prepare method;
+- pass the already-read provider state plus the original verificationFence to recordHostedPlanChangeReturn(...);
+- preserve the existing enqueue/redirect behaviour for current/pending/mismatch/no_active.
+```
+
+Do not infer selection from the query parameter alone.
+
+#### 3. Preserve the monotonic milestone ordering once provider confirmation exists
+
+When step 2 confirms the requested handle, execute the existing idempotent `shopSettings.updateMany(...)` as its own committed database operation before either prepare method.
+
+Required ordering:
+
+```text
+provider confirms requested current/pending handle
+-> onboardingCompleted=true committed
+-> resolve/materialise BillingPlan
+-> Subscription/BillingPeriod projection
+```
+
+Do not move onboarding into a later BillingService transaction. Do not make it conditional on successful local mapping.
+
+#### 4. Keep the known-plan activation path unchanged after the reorder
+
+After the onboarding write, call:
+
+```ts
+const activation = await billingService.prepareFreeActivation(shop.id, requestedPlanHandle) ??
+  await billingService.preparePaidActivation(shop.id, requestedPlanHandle);
+```
+
+If `activation` is non-null, preserve the current Attempt 2 token/sync/retry behaviour. Do not reintroduce any `onboardingCompleted` gate into BillingService.
+
+#### 5. Project a fresh provider-confirmed current selection when no activation token can be prepared
+
+Use the captured `verificationFence` to identify a fresh initial projection candidate:
+
+```text
+verificationFence === null
+OR
+(
+  verificationFence.status === NO_CONTRACT
+  AND verificationFence.planId === null
+  AND verificationFence.observedShopifyPlanHandle === null
+)
+```
+
+When all of the following are true:
+
+```text
+activation === null
+fresh initial projection candidate
+state.status === ACTIVE_SUBSCRIPTION
+state.subscription.planHandle === requestedPlanHandle
+```
+
+call:
+
+```ts
+await billingService.syncSubscription(shop.id)
+```
+
+with no fabricated initial token.
+
+This call is required so the existing resolver writes one of the real durable outcomes:
+
+```text
+READY                       -> normal ACTIVE/TRIALING projection
+UNKNOWN_CATALOGUE_PLAN      -> UNMAPPED + UNMAPPED_PLAN_HANDLE
+INACTIVE_OPERATIONAL_PLAN   -> SYNC_ERROR + BILLING_PLAN_INACTIVE
+INVALID_CATALOGUE_PLAN      -> SYNC_ERROR + INVALID_MERCHANT_PRICING_PLAN
+```
+
+After this fresh-initial fallback sync, return through the existing app/billing-attention UX (redirect to `/app` is acceptable). Do not call `recordHostedPlanChangeReturn(...)` using the pre-sync verification fence after `syncSubscription()` has mutated Subscription state.
+
+Do not run this fallback merely because the requested handle is a provider `pendingUpdate`. Existing non-initial/current-plan-change handling remains owned by the hosted-plan return/reconciliation path.
+
+#### 6. Preserve existing non-initial hosted-plan handling
+
+When the callback is not the fresh-initial-current case from correction 5, continue to use `recordHostedPlanChangeReturn(...)` with the provider state already read in correction 1.
+
+Do not introduce proration, same-cycle downgrade machinery, automatic BillingPlan reactivation, top-up-meter inference, or cross-repository changes.
+
+#### 7. Add focused callback regressions only
+
+File:
+
+```text
+tests/unit/routes/billing-callback.test.ts
+```
+
+Add/adjust tests proving exactly these cases:
+
+1. **arbitrary authenticated request is not onboarding**
+   - `plan_handle=growth` is supplied;
+   - provider returns `NO_ACTIVE_SUBSCRIPTION`;
+   - `shopSettings.updateMany` is not called;
+   - neither prepare method is called;
+   - no local materialisation path is entered.
+
+2. **provider verification failure is not onboarding**
+   - provider-state read throws;
+   - onboarding update is not called;
+   - prepare methods are not called;
+   - existing verification-failure retry path remains active.
+
+3. **confirmed known initial selection preserves ordering**
+   - provider current handle equals requested handle;
+   - onboarding update occurs before `prepareFreeActivation`/`preparePaidActivation`;
+   - existing successful first-subscription flow remains successful.
+
+4. **confirmed unknown initial selection becomes UNMAPPED**
+   - initial verification fence is null or `NO_CONTRACT` with no current plan/observed handle;
+   - provider current handle equals requested unknown handle;
+   - prepare methods return null;
+   - `syncSubscription(shop.id)` is called without an initial token;
+   - mocked sync result is `UNMAPPED` with `UNMAPPED_PLAN_HANDLE`;
+   - `recordHostedPlanChangeReturn` is not called with the stale pre-sync fence.
+
+5. **confirmed inactive/invalid initial selection becomes SYNC_ERROR**
+   - same initial conditions as case 4;
+   - prepare methods return null;
+   - sync result is `SYNC_ERROR` using `BILLING_PLAN_INACTIVE` or `INVALID_MERCHANT_PRICING_PLAN`;
+   - onboarding remains true because provider selection was observed.
+
+6. **existing/pending plan-change behaviour remains unchanged**
+   - provider confirms only a pending update or the shop already has a mapped current subscription;
+   - do not invoke the fresh-initial fallback sync;
+   - preserve `recordHostedPlanChangeReturn(...)`, queueing and redirects.
+
+Do not expand this into exhaustive billing testing. Existing BillingService tests for resolver result codes, stale-token fencing, materialisation concurrency and feature preferences remain valid supporting evidence.
+
+#### 8. Validation
+
+Run from the canonical `moda-interact` Attempt 3 implementation worktree:
+
+```text
+npm run prisma:generate
+npm test -- --run tests/unit/routes/billing-callback.test.ts
+npm test -- --run tests/unit/services/billing.service.test.ts tests/unit/routes/features-route.test.ts tests/unit/routes/billing-callback.test.ts tests/unit/merchant-route-access-policy.test.ts
+npm run build
+npm run typecheck
+npm run lint
+git diff --check
+```
+
+For repository-wide typecheck/lint failures that exactly match the documented baseline, record them factually. Changed callback/service files must not introduce a new diagnostic.
+
+#### 9. Completion Report evidence
+
+The submitted archive's Completion Report says the parent report commit is `f368cdeb`, while the developer submission identifies `8777b7d6`.
+
+On Attempt 3, record one current Completion Report and state the actual pushed parent report commit unambiguously. Do not retain two competing parent-report commit values for the same submission.
+
+### Accepted From Attempt 2
+
+Do not churn these areas unless correction 1-6 requires a direct call-site adjustment:
+
+- `onboardingCompleted` is no longer an activation-token authority bit;
+- exact durable pending token matching is onboarding-independent;
+- initial retry preservation is driven by Subscription pending state;
+- BillingPlan lazy materialisation/concurrency recovery remains accepted;
+- inactive BillingPlan is not auto-reactivated;
+- recovery usage meter is not inferred from top-up events;
+- `/app/features` remains tenant-scoped, plan-gated and data-driven;
+- ShopFeaturePreference rows remain persistent across plan changes;
+- ARCH-011 proration remains out of scope.
+
+### Architecture Conformance
+
+Partial. Attempt 2 fixes the previous monotonic-onboarding/token interaction, but the callback still treats route visitation as sufficient evidence of Shopify pricing selection and does not durably classify fresh provider-confirmed non-ready plans. Those are functional ARCH-017 lifecycle defects.
+
+### Follow-up
+
+Return this same task to `ready` at Attempt 2. Attempt 3 begins only when the normal launcher claims it. Do not start terminal ARCH-017 system testing from this review.
+
+## Developer Override
+
+### Reopen Decision
+
+The developer explicitly reopened this task on 2026-09-30. The existing review
+and Changes Requested history remain unchanged. The task returns to `ready`
+without incrementing the attempt.
+
+### Previous Accepted Attempt
+
+None. No architect-accepted or completed attempt is recorded. The current task
+cycle was Attempt 3, which remains the attempt number after this reopen.
+
+### Reason
+
+Developer-requested reopen of `ARCH-017-SHOPIFY-001` for a new execution cycle.
+
+### Lifecycle Transition
+
+- `status: ready`
+- `executor: null`
+- `claimed_at: null`
+- `attempt: 3`
+
+### Downstream Eligibility
+
+No downstream tasks are listed in this task's `enables` field; no downstream
+status transition was required.
+
+## Architect Review — Attempt 4
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+Attempt 4 closes the reopened ARCH-017-SHOPIFY-001 correction cycle. The actual implementation and focused regressions were inspected rather than relying only on the Completion Report. No further repository-source correction is required.
+
+The accepted implementation now provides one `resolveOrMaterializeBillingPlan(...)` path used by Free activation, Paid activation and generic subscription synchronization. Existing active operational plans are reused without copying `MerchantPricingPlan.isActive`; inactive operational plans fail closed; a known active valid catalogue plan is materialised with the complete dynamic feature projection; `materializedAt` is set monotonically; and a unique-create race rereads the persisted winner rather than failing the callback. Genuine unknown catalogue handles remain `UNMAPPED`, while inactive or invalid local plan state becomes bounded `SYNC_ERROR`.
+
+The callback lifecycle is also conformant to the latest ARCH-017 correction contract: Shopify provider state is read before the onboarding milestone or local materialisation; the requested handle must match the provider current plan or pending update before `onboardingCompleted=true` is committed; that monotonic write occurs before local activation/materialisation; and a provider-confirmed fresh current selection that cannot prepare an activation token is projected through `syncSubscription()` so unknown/inactive/invalid local states become durable `UNMAPPED`/`SYNC_ERROR` outcomes rather than disappearing. Provider verification failure or mismatch does not falsely complete onboarding.
+
+The `/app/features` surface is authenticated-shop scoped, uses the central merchant route-access policy, computes effective feature state from active Feature + current BillingPlanFeature + saved merchant preference, and rechecks Feature/current plan support transactionally before preference upsert. The Attempt 4 regression proves an enabled opt-in preference remains stored while unsupported by an intervening plan and becomes effective again when a supporting plan returns, without recreating or rewriting the preference.
+
+The Completion Report now distinguishes the architect-accepted DATABASE-001 source-task revision (`3c7179825c3e12af1d6db805b8a2a73c61c2097c`) from the exact database gitlink used by the implementation worktree (`2eb17ee910491e8f9df82736fc0a843844415947`). The submission identifies implementation head `bffc796` and parent report branch head `c96c6ac3`; the worktree-isolation, synchronization and recursive-submodule evidence is sufficient for this acceptance.
+
+### Reviewed Files
+
+- `app/services/billing/billing.service.ts`
+- `app/routes/app/billing/callback/route.tsx`
+- `app/routes/app/features/route.tsx`
+- `app/services/shop/merchant-route-access-policy.ts`
+- `app/components/dashboard/MerchantNavigation.tsx`
+- `tests/unit/services/billing.service.test.ts`
+- `tests/unit/routes/billing-callback.test.ts`
+- `tests/unit/routes/features-route.test.ts`
+- `tests/unit/merchant-route-access-policy.test.ts`
+- `database/prisma/schema.prisma`
+
+### Validation Reviewed
+
+The durable Attempt 4 evidence records:
+
+- `npm run prisma:generate` — passed;
+- focused billing/callback/features/route-policy suite — 284 tests across 4 files, all passed;
+- `npm run build` — passed;
+- `npm run typecheck` — passed;
+- changed-file ESLint — passed with no diagnostics;
+- `git diff --check` — passed;
+- repository-wide lint — only unrelated pre-existing baseline diagnostics; no changed-file lint regression.
+
+The supplied review archive does not contain the implementation worktree's `node_modules` or Git metadata, so the architect did not manufacture a second dependency installation or claim a local rerun. Source, tests, schema, task evidence and the recorded validation results were inspected directly.
+
+### Architecture Conformance
+
+Conformant after architect reconciliation of the parent ARCH-017 onboarding text. The parent document still described the older callback-entry milestone from SHOPIFY-002; the accepted reopened implementation follows the later correction contract in this task, where provider-confirmed managed-pricing selection is required before the monotonic onboarding write. The parent architecture is updated by this acceptance patch so documented intent and runtime behaviour agree.
+
+ARCH-010 non-prorated billing semantics remain intact. No automatic inactive-plan reactivation, top-up-meter inference, feature-preference deletion/copying, database-submodule source edit or ARCH-011 proration was introduced.
+
+### Follow-up
+
+`ARCH-017-SHOPIFY-001` is Complete at architect-accepted Attempt 4. `ARCH-017-SHOPIFY-002` and `ARCH-017-SHOPIFY-003` remain Complete; their historical acceptance is not regressed. SHOPIFY-002's earlier callback-entry onboarding subrule is superseded by the later provider-confirmed correction accepted here.
+
+No new ARCH-017 implementation task is created by this review.
+
+This acceptance does not by itself unblock `ARCH-023-SHOPIFY-001`: the accepted `moda-interact` implementation branch must first be integrated into the canonical implementation base so the ARCH-017 resolver is physically present there. After that integration is visible in the ARCH-023 task worktree, `moda_architect` may return the blocked ARCH-023 task to Ready.
