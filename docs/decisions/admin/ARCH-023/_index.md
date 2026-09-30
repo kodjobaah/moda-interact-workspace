@@ -37,7 +37,7 @@ Individual task YAML is authoritative.
 | [ADMIN-001](ADMIN-001-author-merchant-knowledge-plan-entitlement.md) | Merchant Knowledge Feature/default plan inclusion and plan-specific C2 configuration | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002 |
 | [ADMIN-004](ADMIN-004-make-merchant-knowledge-merchant-opt-in.md) | Reconcile Merchant Knowledge Feature to `MERCHANT_OPT_IN` without seeding per-shop preferences | Ready | ADMIN-001 |
 | [ADMIN-002](ADMIN-002-manage-store-categories-default-templates.md) | Store Category, canonical-English default templates and Shopify taxonomy mappings | Complete — Accepted Attempt 2 | DATABASE-001 |
-| [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Ready — Changes Requested Attempt 1 | DATABASE-001, ADMIN-002 |
+| [ADMIN-003](ADMIN-003-author-platform-shop-instructions.md) | Platform/Shop prompt draft, publish, activation and pending-category promotion | Ready — Changes Requested Attempt 2 | DATABASE-001, ADMIN-002 |
 
 ### ADMIN-003 Attempt 1 review
 
@@ -46,6 +46,18 @@ ADMIN-003 is `Ready` for Attempt 2 after architect review found two database-bou
 - each `CommerceAuditEvent` row must use a distinct non-null `operationId` under the accepted unique index;
 - Admin Platform/Shop prompt input is bounded to the accepted database limit of 32,000 characters;
 - the pending-category publish/rollback path must pass the required real PostgreSQL integration proof, and the Completion Report must contain exact launcher/worktree synchronization evidence.
+
+No dependent task is promoted by this review.
+
+### ADMIN-003 Attempt 2 review
+
+Attempt 2 closes the prior audit-operation-ID, 32,000-character bound, real-PostgreSQL
+promotion proof and worktree-evidence corrections. A remaining snapshot-provenance defect
+keeps ADMIN-003 `Ready` for Attempt 3: the Admin read/publish paths must not compare a
+pending revision's `sourceTemplateId` to the category's current `defaultTemplateId`.
+The pending DRAFT remains the authoritative selection-time snapshot even if the category
+default changes later. Attempt 3 is limited to that correction, its focused regressions
+and the corresponding disposable-PostgreSQL proof.
 
 No dependent task is promoted by this review.
 

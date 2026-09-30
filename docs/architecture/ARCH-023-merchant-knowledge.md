@@ -3348,6 +3348,12 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
+### 2026-09-30 — ADMIN-003 Attempt 2 changes requested
+
+- Confirmed Attempt 2 resolved the prior audit-operation-ID uniqueness issue, the accepted 32,000-character prompt bound, the required disposable-PostgreSQL pending-category promotion/rollback proof, and durable worktree/synchronization evidence.
+- Found one remaining snapshot-provenance defect: Admin read/publish currently compare the pending revision's `sourceTemplateId` to the Store Category's current `defaultTemplateId`. ARCH-023 defines the revision provenance as the template identity/edit version captured when the pending selection was last written; changing the category default later must not invalidate, rewrite or reseed that already-pinned DRAFT.
+- Returned ADMIN-003 to Ready with Attempt 2 preserved. Attempt 3 is limited to removing the live-default comparison, adding focused read/publish regressions, and rerunning the disposable-PostgreSQL promotion proof with the category default changed after selection. No dependent task was promoted.
+
 ### 2026-09-30 — ADMIN-003 Attempt 1 changes requested
 
 - Reviewed the protected Platform/Shop Agent Instructions console as substantively aligned with the intended prompt lifecycle, CAS, pending-category promotion and Admin authorization boundary.

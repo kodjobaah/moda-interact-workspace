@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 41
-executor: copilot
-claimed_at: 2026-09-30T13:32:26Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
@@ -266,11 +266,18 @@ revision.id == pendingPromptRevisionId
 revision.status == DRAFT
 revision.prompt.scope == SHOP
 revision.prompt.shopId == selected shop
-revision.sourceTemplateId == pendingCategory.defaultTemplateId snapshot identity expected by persisted profile/revision
-sourceTemplateEditVersion != null
+revision.sourceTemplateId != null
+revision.sourceTemplateEditVersion != null
 ```
 
-If not, fail with bounded configuration-conflict UI; do not repair silently.
+`sourceTemplateId` and `sourceTemplateEditVersion` are snapshot provenance captured when the
+pending selection was last written. Admin MUST NOT compare `revision.sourceTemplateId` to
+the category's **current** `defaultTemplateId` when reading the pending draft. The category
+default may change later without invalidating, rewriting or reseeding the already-pinned
+DRAFT.
+
+If the persisted pending tuple/revision invariants above fail, show bounded
+configuration-conflict UI; do not repair silently.
 
 ### R6 — CAS draft update
 
@@ -403,6 +410,9 @@ revision.prompt.shopId == profile.shopId
 ```
 
 Do not re-read the current template text and do not reset promptText from the template.
+Do not require `revision.sourceTemplateId` to equal the pending category's current
+`defaultTemplateId`; the revision provenance identifies the template snapshot used when
+the pending selection was written, and the category default may have changed afterwards.
 
 After publishing and setting the Shop configuration pointer:
 
@@ -586,8 +596,10 @@ Platform publish never mutates Shop pointer
 pending category:
   exact pending revision shown
   edit preserves template provenance
+  changing the category default template after selection does not invalidate/reseed the pinned DRAFT
   publish promotes category + prompt atomically
-  publish does not re-read current template text
+  publish succeeds from the exact pinned DRAFT even when the category current defaultTemplateId has changed
+  publish does not re-read current template text or current default-template identity
   stale profile/revision/config CAS rolls everything back
   pendingSelectionGeneration preserved
 
@@ -719,6 +731,75 @@ Parent workspace: this task report only. No other task, index, architecture, or 
 - No product, schema, or cross-repository change was introduced.
 
 ## Architect Review
+
+### Review Status
+Changes Requested — Attempt 2
+
+### Review Notes
+Attempt 2 resolves A1-R1 through A1-R4: distinct audit `operationId` values are used,
+the 32,000-character prompt bound matches the accepted database guard, the required
+disposable PostgreSQL pending-category transaction proof passed, and exact launcher/worktree
+provenance is durable in the Completion Report.
+
+One remaining lifecycle defect was found against the parent ARCH-023 architecture:
+
+1. **A2-R1 — Treat Store Category template provenance as a selection-time snapshot, not a
+   live default-template constraint.** `readScope()` currently rejects the exact pending
+   DRAFT when `pendingRevision.sourceTemplateId !== pendingCategory.defaultTemplateId`, and
+   the publish path repeats the same comparison. ARCH-023 D8/D10 and the data-model
+   invariant define `sourceTemplateId`/`sourceTemplateEditVersion` as provenance captured
+   when the pending selection was last written; later template/default changes must not
+   rewrite or invalidate that already-pinned DRAFT. Remove both comparisons to the
+   category's **current** `defaultTemplateId`. Preserve the required checks that the exact
+   pending revision is DRAFT, belongs to the same SHOP lineage/shop, and carries non-null
+   `sourceTemplateId` plus `sourceTemplateEditVersion`. Do not re-read or reseed current
+   template content/identity at read or publish time.
+2. **A2-R2 — Add focused regressions for the snapshot rule.** Prove that after a pending
+   Shop DRAFT was seeded from template A, changing the same category's current
+   `defaultTemplateId` to template B does not cause the Admin read model to reject/reseed
+   the draft and does not block publishing the exact reviewed template-A DRAFT. Assert the
+   published hash/text are still the exact saved DRAFT, the pending category is promoted,
+   and provenance remains template A/edit version captured at selection time.
+3. **A2-R3 — Re-run the real PostgreSQL promotion proof for this case.** Using the same
+   task-local disposable PostgreSQL approach already accepted for Attempt 2, apply the real
+   migrations, seed a pending category/DRAFT from template A, change the category's current
+   default to template B, then execute the production Admin publish path and prove the
+   promotion succeeds atomically without reseeding. Keep the stale configuration/profile
+   rollback checks. Do not use the configured remote database.
+
+No database/schema migration, template CRUD change, Shopify change, Commerce change,
+translation lifecycle, or follow-on task is authorised by this review.
+
+### Reviewed Files
+- `moda-interact-admin/src/lib/admin/agent-instructions.ts`
+- `moda-interact-admin/src/app/actions/agent-instructions.ts`
+- `moda-interact-admin/src/lib/admin/commerce-environment.ts`
+- `moda-interact-admin/src/app/(protected)/system-controls/agent-instructions/page.tsx`
+- `moda-interact-admin/src/components/admin/agent-instructions/agent-instructions-console.tsx`
+- `moda-interact-admin/tests/unit/agent-instructions.test.ts`
+- `moda-interact-admin/tests/unit/agent-instruction-actions.test.ts`
+- accepted ARCH-021/ARCH-023 Prisma schema and migrations
+- this task Completion Report
+
+### Validation Reviewed
+- Attempt 2 focused Agent Instructions tests: 18/18 reported passed.
+- Attempt 2 live PostgreSQL pending-category success plus stale configuration/profile rollback proof: reported passed.
+- TypeScript, Prisma validate/generate, production build, focused changed-file ESLint, diagnostics and `git diff --check`: reported passed.
+- The supplied review archive has no installed dependency tree or live Docker/PostgreSQL runtime, so those dependency-backed commands were inspected from durable evidence rather than independently rerun here.
+- The new A2-R1 snapshot-provenance scenario is not covered by the submitted tests/proof and remains required.
+
+### Architecture Conformance
+The implementation conforms to the Admin ownership, authorization, CAS, audit and additive
+Platform/Shop prompt model, but its current-default-template comparison conflicts with the
+parent ARCH-023 snapshot-provenance invariant. Attempt 2 therefore cannot be accepted yet.
+
+### Follow-up
+Return the same task to `ready` with `attempt: 2` preserved and the execution claim
+cleared. The next authorized claim becomes Attempt 3. No dependent task is promoted by
+this review.
+
+### Historical Architect Review — Attempt 1
+
 
 ### Review Status
 Changes Requested — Attempt 1
