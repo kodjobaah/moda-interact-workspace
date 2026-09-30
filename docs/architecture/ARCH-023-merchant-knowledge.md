@@ -933,7 +933,7 @@ shop's pending DRAFT Shop prompt revision under the normal prompt CAS lifecycle.
 
 If the merchant leaves Shopify Managed Pricing without choosing a plan, the pending
 category plus DRAFT prompt remain inactive and are restored when onboarding is resumed.
-A later edit to the default template cannot mutate that already-pinned DRAFT.
+A later edit to the default template cannot mutate that already-pinned DRAFT. A later Admin reassignment of the category's `defaultTemplateId` likewise does not invalidate, reseed or rewrite the existing pending DRAFT: its `sourceTemplateId` / `sourceTemplateEditVersion` remain selection-time provenance.
 
 ### D11 — Shopify subscription projection is the category activation boundary
 
@@ -2736,7 +2736,7 @@ false, the new result is stale and must not replace the current ACTIVE revision.
 Initial category activation publishes the already-pinned pending DRAFT and updates the
 active category / `CommerceAgentConfiguration.activePromptRevisionId` in one logical
 database transaction so active category and active Shop Instructions cannot diverge.
-The transaction never re-resolves or translates the current template.
+The transaction never re-resolves or translates the current template. It validates that the pending revision carries non-null template provenance but MUST NOT compare `sourceTemplateId` with the category's current `defaultTemplateId`; that default may have changed after the pending selection was written.
 
 ### At-least-once processing
 
@@ -3335,6 +3335,18 @@ all other ARCH-023 implementation tasks remain gated by their declared dependenc
 
 SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
+Current Shopify frontier after SHOPIFY-003 Attempt 3 acceptance:
+
+```text
+ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-003    Complete — Accepted Attempt 3
+ARCH-023-SHOPIFY-004    Pending — requires ADMIN-004
+ARCH-023-SHOPIFY-005    Pending — requires SHOPIFY-004
+```
+
+SHOPIFY-003 Attempt 3 is accepted. Initial activation now publishes the exact already-pinned pending DRAFT even if Admin later reassigns the category's current `defaultTemplateId`; the Template-A -> Template-B regression passes in both focused and disposable-PostgreSQL coverage, and the existing activation/rollback/replay proof remains green. This acceptance promotes no new task. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
+
 No implementation task may depend on a terminal system-test task.
 
 ## Open Questions
@@ -3343,6 +3355,25 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — SHOPIFY-003 Attempt 3 accepted
+
+- Accepted A2-R1: activation now treats `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance and no longer compares the pinned Template-A source with the category's later mutable `defaultTemplateId`.
+- Reviewed the strengthened unit and disposable-PostgreSQL regressions proving a pinned Template-A DRAFT still publishes after the category default moves to Template B, while missing provenance continues to fail closed. The PostgreSQL suite passed 2/2 including the existing rollback/replay proof and removed its disposable pgvector container.
+- Marked SHOPIFY-003 Complete / Accepted Attempt 3. No downstream task is promoted by this acceptance; SHOPIFY-004 remains gated on ADMIN-004, SHOPIFY-005 remains gated on SHOPIFY-004, and the separate Background missed-callback activation hook remains required before final ARCH-023 system acceptance.
+
+### 2026-09-30 — SHOPIFY-003 Attempt 2 changes requested
+
+- Accepted the Attempt 2 disposable PostgreSQL evidence: all accepted migrations applied to `pgvector/pgvector:pg17`, 2/2 production activation/rollback cases passed, replay remained idempotent, the pre-existing ACTIVE billing projection survived activation rollback and the disposable container was removed.
+- Identified one remaining production defect: activation compares selection-time `sourceTemplateId` provenance with the category's current `defaultTemplateId`, even though ADMIN-002 permits that default to change without rewriting pending profiles and ARCH-023 defines the pending DRAFT as a durable snapshot.
+- Returned SHOPIFY-003 to Ready for bounded Attempt 3 correction/test coverage. No database, billing, Background hook, Commerce audit or downstream Shopify work is authorised.
+
+### 2026-09-30 — SHOPIFY-003 Attempt 1 changes requested
+
+- Reviewed the initial pending Store Category activation service and billing-callback integration as substantively architecture-conformant: durable ACTIVE/TRIALING current subscription state is the only activation authority, exact pinned DRAFT publication/configuration/profile promotion occur in one transaction, later pending changes remain untouched, and Merchant Knowledge activation is not coupled to subscription activation.
+- Withheld acceptance only because the required real PostgreSQL transaction execution remains open. Attempt 2 must run the already-authored `store-category-activation.integration.test.ts` against fresh `pgvector/pgvector:pg17` migrations using the same known Colima/Testcontainers endpoint that closed SHOPIFY-002, and record 2/2 passing cases plus teardown.
+- Confirmed callback error propagation is not itself a SHOPIFY-003 defect: activation remains outside the already-committed billing transaction. The Background missed-callback activation hook remains a separate required implementation before final system acceptance; the missing automatic Commerce audit actor remains non-blocking under R11.
+- Returned SHOPIFY-003 to Ready with Attempt 1 preserved. SHOPIFY-004/005 remain governed by their existing merchant-opt-in dependencies; no downstream task was started.
 
 ### 2026-09-30 — ADMIN-003 Attempt 3 accepted
 
