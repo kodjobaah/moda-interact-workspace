@@ -48,30 +48,25 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Ready | DATABASE-001, SHARED-002 |
+| [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Complete | DATABASE-001, SHARED-002 |
 | [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Complete | DATABASE-001, SHARED-002 |
-| [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Billing callback activation of initial pending Store Category and Shop prompt | Pending | SHOPIFY-001, SHOPIFY-002 |
-| [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Current-plan WEB_PAGE source management and Recovery Settings UI | Pending | SHOPIFY-001, SHARED-002 |
+| [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Billing callback activation of initial pending Store Category and Shop prompt | Ready | SHOPIFY-001, SHOPIFY-002 |
+| [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Current-plan WEB_PAGE source management and Recovery Settings UI | Ready | SHOPIFY-001, SHARED-002 |
 | [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Pending | SHOPIFY-004 |
 
 ## Execution frontier
 
-DATABASE-001 and SHARED-002 are Complete/accepted. SHOPIFY-002 is now Complete / Accepted at Attempt 2, so the current Shopify frontier is:
+DATABASE-001 and SHARED-002 are Complete/accepted. SHOPIFY-001 is now Complete / Accepted at Attempt 2 and SHOPIFY-002 is Complete / Accepted at Attempt 2. The current Shopify frontier is:
 
 ```text
-SHOPIFY-001 -> Ready
+SHOPIFY-001 -> Complete — Accepted Attempt 2
 SHOPIFY-002 -> Complete — Accepted Attempt 2
-SHOPIFY-003 -> Pending (still gated on SHOPIFY-001)
-```
-
-SHOPIFY-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-002 already consumed that exact revision.
-
-After SHOPIFY-001 is Complete/architect-accepted:
-
-```text
 SHOPIFY-003 -> Ready
 SHOPIFY-004 -> Ready
+SHOPIFY-005 -> Pending (still gated on SHOPIFY-004)
 ```
+
+SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 and SHOPIFY-004 are independently executable from this frontier; neither is started implicitly by architect acceptance.
 
 After SHOPIFY-004:
 
