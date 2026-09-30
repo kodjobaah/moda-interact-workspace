@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
-executor: copilot
-claimed_at: 2026-09-30T11:46:01Z
+executor:
+claimed_at:
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-001
@@ -337,14 +337,14 @@ Tests must use local controlled servers/fakes; no external internet dependency.
 
 ## Work Items
 
-- [ ] Implement public-IP classification.
-- [ ] Implement DNS resolution and connection binding.
-- [ ] Implement redirect-safe HTTPS fetch.
-- [ ] Implement bounded decompression/media validation.
-- [ ] Implement deterministic HTML/plain-text extraction.
-- [ ] Implement transient/permanent acquisition error types.
-- [ ] Add adversarial unit tests.
-- [ ] Validate no unrelated processing/persistence work was introduced.
+- [x] Implement public-IP classification.
+- [x] Implement DNS resolution and connection binding.
+- [x] Implement redirect-safe HTTPS fetch.
+- [x] Implement bounded decompression/media validation.
+- [x] Implement deterministic HTML/plain-text extraction.
+- [x] Implement transient/permanent acquisition error types.
+- [x] Add adversarial unit tests.
+- [x] Validate no unrelated processing/persistence work was introduced.
 
 ## Interfaces / Contracts
 
@@ -372,23 +372,23 @@ for BACKGROUND-004.
 
 ## Acceptance Criteria
 
-- [ ] No denied destination can be contacted, including through redirects or mixed DNS answers.
-- [ ] Actual connection is bound to and verified against the validated IP.
-- [ ] No merchant/Moda credentials are propagated.
-- [ ] Decompressed response size is bounded at 1 MiB.
-- [ ] Only HTML/plain text is accepted.
-- [ ] HTML extraction executes/fetches no active content/subresources.
-- [ ] Adapter returns extracted source text only.
-- [ ] No database writes/normalization/embedding work exists in this task.
+- [x] No denied destination can be contacted, including through redirects or mixed DNS answers.
+- [x] Actual connection is bound to and verified against the validated IP.
+- [x] No merchant/Moda credentials are propagated.
+- [x] Decompressed response size is bounded at 1 MiB.
+- [x] Only HTML/plain text is accepted.
+- [x] HTML extraction executes/fetches no active content/subresources.
+- [x] Adapter returns extracted source text only.
+- [x] No database writes/normalization/embedding work exists in this task.
 
 ## Validation
 
-- [ ] focused network-policy tests
-- [ ] focused HTML-extraction tests
-- [ ] focused acquirer tests
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused network-policy tests
+- [x] focused HTML-extraction tests
+- [x] focused acquirer tests
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -401,21 +401,30 @@ Prefer built-in `node:https`, `node:dns/promises`, `node:zlib` and a small dedic
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Architect Review
 ### Files Changed
-None.
+`package.json`, `package-lock.json`; `src/services/merchant-knowledge-network-policy.ts`, `src/services/merchant-knowledge-html-extraction.ts`, `src/services/merchant-knowledge-web-page-acquirer.ts`; and the three authorized focused service test files.
 ### Work Completed
-None.
+Added parser-based global IP validation with explicit special-use CIDR exclusions, all-answer A/AAAA resolution and deterministic selection, pinned per-hop HTTPS lookup with TLS hostname verification and connected-peer checking, no socket reuse, strict redirect/deadline/status policy, bounded streaming decompression and MIME checks, deterministic parse5 visible-text extraction, and stable retryable/permanent error codes. The adapter returns only the required document fields and performs no persistence, normalization, chunking, or embedding.
 ### Validation Results
-None.
+Focused network-policy, HTML-extraction, and acquirer suites: 64/64 passed. `npm run build`: passed. Changed-file diagnostics: clean. `git diff --check`: passed. Optional full `npm run test:unit`: 1,190 passed, 5 failed, and one suite failed to load. Unrelated failures: recovery materialization language expectation; three billing-reconciliation expectations; stale shared-runtime version expectation (`0.12.1` vs the existing `1.0.1`); and the commerce evidence suite's missing fixture path under an ARCH-020 task worktree. No matching entries were found in `docs/development-baseline.md`. Standalone ESLint was not available because this repository has no `eslint.config.*`.
 ### Deviations
-None.
+Added explicit special-purpose IPv4/IPv6 exclusions beyond the IP parser's generic range labels to meet the globally-routable-only rule.
 ### Assumptions
-None.
+The adapter remains a separately injected BACKGROUND-001 contract implementation; worker orchestration is owned by a downstream task.
 ### Unresolved Issues
-None.
+The unrelated repository-wide unit failures listed under Validation Results remain unresolved and were not changed by this task.
 ### Architectural Concerns
-None.
+None identified. No out-of-scope worker, database, normalization, chunking, embedding, or persistence behavior was introduced.
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-002`
+  parent branch: `task/ARCH-023-BACKGROUND-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-002`
+  implementation branch: `task/ARCH-023-BACKGROUND-002`
+  database submodule: ready at `2eb17ee910491e8f9df82736fc0a843844415947`
+  launcher claim: Attempt 1, dependency gate passed, claim committed and pushed as `e0128925966d6ab0328e89c2b48c565b61e6c66b`
 
 ## Architect Review
 
