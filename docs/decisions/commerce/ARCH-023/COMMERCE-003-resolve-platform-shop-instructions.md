@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: copilot
 claimed_at: 2026-09-30T21:34:54Z
@@ -559,21 +559,37 @@ The later Background host task is required for production runtime adoption becau
 ## Completion Report
 
 ### Status
-Not Started
+Ready for Architect Review
 ### Files Changed
-None.
+Implementation changes are in the dedicated `moda-interact-commerce` task worktree. They cover effective instruction resolution/contracts, MCP authorization and reserved prompts, Preview selection/revalidation, Agent Configuration read-only context, removal of Studio-only mutation adapters, and related tests.
 ### Work Completed
-None.
+Implemented deterministic additive Platform plus optional Shop instruction resolution. Platform is required; an invalid present Shop configuration fails closed. Existing Shop-over-Platform model selection semantics are preserved, and effective metadata includes source template edit-version provenance.
+
+Exposed exact resolved text through the fixed `commerce/platform-instructions` and `commerce/shop-instructions` MCP prompt names, scoped through the authenticated authorization snapshot. Capability prompt behavior and names remain unchanged.
+
+Commerce Preview now treats the selected shop ID only as a selector, revalidates it through server-side inspection for the authenticated principal, resolves the same trusted instruction bundle, freezes it for the conversation, and passes Preview safety, Platform, then optional Shop instructions to the runner.
+
+Removed Platform/Shop and template authoring mutations from Commerce Studio while retaining model editing and a read-only effective-instructions/provenance view labeled “Managed in Admin”. Durable Commerce prompt/template services remain available to Admin/runtime.
 ### Validation Results
-None.
+`npm run typecheck`: passed.
+
+Focused changed-file Vitest run: 16 files passed, 101 tests passed. The C20 integration suite was unable to initialize because `COMMERCE_TEST_DATABASE_URL`, `COMMERCE_TEST_REDIS_URL`, and `COMMERCE_C20_REDIS_NAMESPACE` were not configured for disposable targets.
+
+`npm run lint`: passed with 0 errors and 5 warnings (React Hook dependency warnings in `src/studio/code-response/code-response-panel.tsx`; unused declarations in `tests/agent-configuration-model.test.ts` and `tests/mcp-service.test.ts`).
+
+`npm run build`: passed, including package/smoke steps; webpack emitted the existing Nunjucks dynamic-dependency warning.
+
+`git diff --check`: passed. Changed-file diagnostics: no errors.
+
+Full `npm test`: not clean; Vitest reported 25 failed files, 122 passed, 3 skipped, with 61 failed tests, 1,257 passed, and 7 skipped. The captured failure details include unrelated `studio-workspace.test.tsx` authoring cases. The task-owned focused tests pass; the broader failure remains for Architect review.
 ### Deviations
-None.
+The implementation stayed within Commerce and did not modify Background, as required. C20 disposable integration validation was not run because its required isolated database/Redis environment was unavailable.
 ### Assumptions
-None.
+The reserved MCP prompts are the production-facing Commerce contract; a separate bounded Background task must fetch them and append Platform then Shop after true host-owned Level-2 instructions before invoking `runCommerceTurn`.
 ### Unresolved Issues
-None.
+The package-wide test suite has the failures recorded above and should be triaged independently. C20 integration requires configured disposable database and Redis targets.
 ### Architectural Concerns
-None.
+Production conversation execution remains Background-owned, so these resolved prompts are not consumed by the production runner until the required Background host-integration task is completed. No Background files were edited here.
 
 ## Architect Review
 
