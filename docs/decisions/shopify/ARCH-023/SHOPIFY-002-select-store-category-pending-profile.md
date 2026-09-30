@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
-executor: copilot
-claimed_at: 2026-09-30T10:01:31Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-001
@@ -444,14 +444,14 @@ promptText copied exactly in canonical English
 
 ## Work Items
 
-- [ ] Adopt database/Shared revisions.
-- [ ] Add category eligibility/localization read model.
-- [ ] Add locale catalogue keys + validator.
-- [ ] Add bounded Shopify taxonomy suggestion adapter.
-- [ ] Implement one transactional pending-category selection service.
-- [ ] Integrate selection into existing onboarding CTAs.
-- [ ] Add Store Profile section to Recovery Settings.
-- [ ] Add route/action and focused tests.
+- [x] Adopt database/Shared revisions.
+- [x] Add category eligibility/localization read model.
+- [x] Add locale catalogue keys + validator.
+- [x] Add bounded Shopify taxonomy suggestion adapter.
+- [x] Implement one transactional pending-category selection service.
+- [x] Integrate selection into existing onboarding CTAs.
+- [x] Add Store Profile section to Recovery Settings.
+- [x] Add route/action and focused tests.
 
 ## Interfaces / Contracts
 
@@ -480,24 +480,24 @@ Admin Store Category authoring may be implemented in parallel against the same d
 
 ## Acceptance Criteria
 
-- [ ] Initial and later category selection use one service/transaction.
-- [ ] Selection pins exact template text/editVersion into one pending Shop DRAFT.
-- [ ] No selection directly changes active category/prompt.
-- [ ] Taxonomy suggestion is bounded, deterministic and advisory.
-- [ ] Existing onboarding route structure and `/app/billing/select` destination are preserved.
-- [ ] Category and Merchant Knowledge localization keys exist across all 20 catalogues.
-- [ ] No database translation lifecycle exists.
+- [x] Initial and later category selection use one service/transaction.
+- [x] Selection pins exact template text/editVersion into one pending Shop DRAFT.
+- [x] No selection directly changes active category/prompt.
+- [x] Taxonomy suggestion is bounded, deterministic and advisory.
+- [x] Existing onboarding route structure and `/app/billing/select` destination are preserved.
+- [x] Category and Merchant Knowledge localization keys exist across all 20 catalogues.
+- [x] No database translation lifecycle exists.
 
 ## Validation
 
-- [ ] focused service/action/component tests
-- [ ] locale-catalogue validator
-- [ ] existing onboarding and Recovery Settings regressions
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused service/action/component tests
+- [x] locale-catalogue validator
+- [x] existing onboarding and Recovery Settings regressions
+- [x] `npm run typecheck`
+- [x] `npm run lint` (task-owned files clean; repository-wide command has unrelated existing failures)
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -510,21 +510,25 @@ The Product GraphQL category field is Shopify Standard Product Taxonomy identity
 ## Completion Report
 
 ### Status
-Not Started
+Review requested; awaiting `moda_architect`. No architect acceptance decision has been made by this agent.
 ### Files Changed
-None.
+`moda-interact`: `package.json`, `package-lock.json`; onboarding and Recovery Settings route/view integration; the shared category action, read model, selection service, localization helper, and Shopify taxonomy suggestion service; all 20 locale catalogues; locale validator; focused Store Category, onboarding, Recovery Settings, locale, and home-route tests. Shared v1 API compatibility updates were made to feature-preference selection and its existing integration test.
 ### Work Completed
-None.
+Implemented one authenticated selection endpoint backed by one Shop-row-locked transaction. It validates the pending generation, pins the exact canonical-English default template text and source-template version to one pending Shop DRAFT, reuses that DRAFT on reselection, and leaves active category/prompt configuration unchanged. Added category eligibility and localized read models, bounded one-page Shopify taxonomy suggestion/scoring, onboarding persistence before Managed Pricing navigation, and the Store Profile section in Recovery Settings. Added localized category, Store Profile UI, and Merchant Knowledge labels, plus a validator that derives category slugs from English key pairs and checks all required keys across the 20 supported locales.
 ### Validation Results
-None.
+Passed: 49 focused and adjacent tests; locale validator (20 locales, 12 required category/knowledge keys); merchant ICU runtime loading for all 20 locales; `npm run typecheck`; changed-file ESLint; `npm run build`; `git diff --check`; changed-file diagnostics.
+
+Repository-wide `npm run lint` still reports 20 errors and 2 warnings in unrelated existing files. The existing opt-in PostgreSQL merchant-settings tests were skipped (6 tests) because `MODA_SETTINGS_POSTGRES` was not enabled; transaction behavior is covered by focused service tests, and action scoping/input validation by route-level tests.
+
+The Shared dependency is pinned exactly to `1.0.1`. The database submodule was already at accepted ARCH-023-DATABASE-001 commit `2eb17ee910491e8f9df82736fc0a843844415947`; no database schema, migration, or gitlink changes were made. Prisma Client generation completed during the production build.
 ### Deviations
-None.
+No functional scope deviations. Repository-wide lint and real PostgreSQL execution remain as noted under Validation Results.
 ### Assumptions
-None.
+The existing accepted Admin task fixture supplies the currently manifested stable category slug `home-goods`; additional Admin-authored slugs remain unselectable until their English key pair and locale translations are shipped.
 ### Unresolved Issues
-None.
+No known implementation blockers. No real PostgreSQL container validation was run for this task.
 ### Architectural Concerns
-None.
+None identified. Selection remains pending-only and does not activate or publish a prompt.
 
 ## Architect Review
 
