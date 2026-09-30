@@ -11,9 +11,9 @@ updated: 2026-09-30
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001` and `ARCH-023-SHOPIFY-002`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001`, `ARCH-023-COMMERCE-002`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-002`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003` and `ARCH-023-SHOPIFY-003`. `COMMERCE-003` is Ready because ADMIN-003, DATABASE-001 and SHARED-002 are Complete. Ready tasks remain unclaimed until their normal task launcher is invoked.
+COMMERCE-002 is Complete / Accepted Attempt 4. COMMERCE-003 remains Ready. COMMERCE-004 remains Pending because ADMIN-004 is not Complete; Gateway and terminal system validation retain additional declared prerequisites. Individual task YAML remains authoritative for executable state in the other domains.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -341,10 +341,7 @@ activation controls whether Background may ingest/process it and whether Commerc
 retrieve it. Disabling is non-destructive: sources, revisions, chunks, embeddings and
 uploaded assets remain stored.
 
-**Transition coordination:** `ARCH-023-COMMERCE-002` was already in review when this
-merchant-opt-in decision was agreed and its task contract is not modified. The bounded
-follow-up `ARCH-023-COMMERCE-004` updates the accepted bootstrap/runtime assumptions after
-COMMERCE-002 completes.
+**Transition coordination:** `ARCH-023-COMMERCE-002` was reconciled during review and is now accepted with the `MERCHANT_OPT_IN` bootstrap prerequisite and zero merchant-preference writes. The bounded follow-up `ARCH-023-COMMERCE-004` therefore owns only request-time merchant-activation enforcement for `merchantKnowledge.lookup`; it does not modify the accepted bootstrap.
 
 ARCH-023 Commerce bootstrap owns the complete **initial working publication**, not only
 the fixed identities. The bootstrap MUST use the existing Commerce lifecycle/storage
@@ -3272,35 +3269,25 @@ ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
            PENDING/processing eligibility requires merchant ON
 ```
 
-`COMMERCE-002` itself is intentionally unchanged while in review. `COMMERCE-004` owns the
-post-review target-state correction.
+`COMMERCE-002` is Complete / Accepted Attempt 4 with the final bootstrap activation-mode guard. `COMMERCE-004` owns only the remaining request-time preference gate after ADMIN-004 establishes the final Admin-owned product-policy row.
 
 The initial Merchant Knowledge database persistence remains consolidated in DATABASE-001. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard.
 
-Current execution frontier after ADMIN-003 Attempt 3 acceptance:
+Commerce-adjacent execution state after COMMERCE-002 Attempt 4 acceptance:
 
 ```text
-ARCH-023-DATABASE-001   Complete — Accepted Attempt 2
-ARCH-023-SHARED-001     Complete — Accepted Attempt 2
-ARCH-023-SHARED-002     Complete — Accepted Attempt 1
-ARCH-023-ADMIN-001      Complete — Accepted Attempt 2
-ARCH-023-ADMIN-002      Complete — Accepted Attempt 2
-ARCH-023-ADMIN-003      Complete — Accepted Attempt 3
-ARCH-023-BACKGROUND-001 Complete — Accepted Attempt 4
-ARCH-023-BACKGROUND-003 Complete — Accepted Attempt 2
+ARCH-023-DATABASE-004   Complete — Accepted Attempt 1
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
-ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
-ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
-
-ARCH-023-ADMIN-004      Ready
-ARCH-023-BACKGROUND-002 Ready
-ARCH-023-COMMERCE-002   Ready
+ARCH-023-COMMERCE-002   Complete — Accepted Attempt 4
 ARCH-023-COMMERCE-003   Ready
-ARCH-023-SHOPIFY-003    Ready
-
-all other non-superseded ARCH-023 implementation tasks remain gated by their declared dependencies
+ARCH-023-ADMIN-004      Ready
+ARCH-023-COMMERCE-004   Pending — waits for ADMIN-004
+ARCH-023-GATEWAY-001    Pending — additional prerequisites remain
+ARCH-023-SYSTEM-TEST-002 Pending — terminal dependencies remain
 ```
+
+Individual task YAML remains authoritative for other domain state. No downstream task is promoted solely by COMMERCE-002 acceptance.
 
 Canonical published Shared revision for ARCH-023 consumers:
 
@@ -3355,6 +3342,14 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-09-30 — COMMERCE-002 Attempt 4 accepted
+
+- Accepted the convergent Merchant Knowledge Tool/Capability/release bootstrap on the accepted direct ARCH-021 model with `Feature.activationMode = MERCHANT_OPT_IN` and zero `ShopFeaturePreference` writes.
+- Confirmed the DATABASE-004 migration resolves the Attempt 3 historical Feature-snapshot guard blocker without weakening same-Feature exact-snapshot admission, and the production successor lifecycle preserves the selected base release's exact unrelated Tool revision pins and Feature Behaviour snapshots after newer authoring exists.
+- Accepted the deterministic release-activation operation id keyed by environment, expected pointer edit version and target release id, preventing replay-key collisions across distinct pointer transitions while retaining deterministic retry behaviour.
+- Reviewed 56 focused tests, the task-owned disposable `pgvector/pgvector:pg17` PostgreSQL successor proof, typecheck, build, lint with only unrelated warnings, retired-concept scan, diagnostics and whitespace checks as passing; the owned container was removed.
+- Marked COMMERCE-002 Complete / Accepted Attempt 4. COMMERCE-004 remains Pending on ADMIN-004 and is narrowed to request-time merchant activation enforcement; Gateway and SYSTEM-TEST-002 retain other unmet prerequisites.
 
 ### 2026-09-30 — DATABASE-004 Attempt 1 accepted
 
