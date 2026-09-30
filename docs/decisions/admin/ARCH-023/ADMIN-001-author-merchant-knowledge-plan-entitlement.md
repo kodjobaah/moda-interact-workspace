@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor:
 claimed_at:
@@ -512,14 +512,47 @@ None identified; no schema or consumer-runtime changes were introduced.
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-Pending.
+
+The implementation is substantially aligned with the ARCH-023 plan-entitlement design, but Attempt 1 is not yet acceptable.
+
+A1-R1 — Existing-plan UI reintroduces `merchant_knowledge` into the generic editable Feature list. The dedicated Merchant Knowledge row is correctly rendered checked and disabled, but the generic list filters `merchant_knowledge` only from `featureCatalogue` before concatenating `plan.features`. An existing plan therefore contributes its Merchant Knowledge Feature again after the filter. Because the Feature is active and `systemRequired=false`, that second row is rendered unchecked and editable. Correct the generic list so `merchant_knowledge` is excluded after all catalogue/existing-plan sources are combined, or equivalently exclude it from every source before combination. Add a regression proving an existing plan renders exactly one Merchant Knowledge Feature control and that control is the locked product-policy control.
+
+A1-R2 — R15 requires behavioral tests for the plan-save contract, but the submitted focused coverage does not include the task-authorized `tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts`. `merchant-knowledge-plan-policy.test.ts` proves the pure mapping policy and C2/catalogue validation; the security test only source-matches the action/mirror implementation. Add focused behavioral coverage that exercises the Merchant Pricing Plan save/mirroring boundary (using repository-local test doubles or a bounded extracted helper where necessary) and proves at minimum: one exact Merchant Knowledge mapping is persisted on create/update; unrelated requested Feature configuration survives; inactive retained Feature configuration survives; a materialised `BillingPlanFeature` receives the same Merchant Knowledge configuration through the generic mirror path; and no `ShopFeaturePreference` mutation is performed. Do not introduce a second materialisation mechanism merely to make the test convenient.
+
+A1-R3 — The durable Completion Report does not record the launcher-resolved parent/implementation worktree paths or the start-of-attempt synchronization/preparation evidence required by `docs/agent-worktree-isolation-policy.md`. Record the actual Attempt 1 provenance already used; do not fabricate or rerun launcher preparation merely to create different evidence. If the original preparation evidence is unavailable, restore/verify the canonical task worktrees, rerun the required validation there, and record that evidence.
+
+A1-R4 — Before returning Attempt 2 to review, update the task-owned Work Items, Acceptance Criteria and Validation checkboxes to match the evidence actually completed. Required repository-wide checks that remain blocked by established unrelated baseline failures may remain unchecked only when the Completion Report identifies the exact failure/baseline evidence and demonstrates that changed files introduce no corresponding regression.
+
+No database/schema change, new Shared release, plan-specific defaults, preference reconstruction, or downstream ARCH-023 task is authorised by these corrections. Production changes should be limited to A1-R1 unless the new behavioral tests expose a defect within ADMIN-001 scope.
+
 ### Reviewed Files
-Pending.
+
+- `src/lib/admin/merchant-knowledge-plan-policy.ts`
+- `src/lib/admin/merchant/pricing-builder-payload.ts`
+- `src/lib/admin/merchant/pricing-plan.ts`
+- `src/app/actions/merchant-pricing-plan.ts`
+- `src/app/actions/feature-catalogue.ts`
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-catalog.tsx`
+- `src/app/(protected)/billing/page.tsx`
+- `src/components/admin/billing-drawers.tsx`
+- `tests/unit/merchant-knowledge-plan-policy.test.ts`
+- `tests/unit/merchant-pricing-builder-payload.test.ts`
+- `tests/security/admin-merchant-pricing-plan.test.mjs`
+- `package.json` / `package-lock.json`
+- accepted ARCH-023 database schema exposed through the Admin `database` submodule snapshot
+
 ### Validation Reviewed
-Pending.
+
+Submitted evidence records: focused pricing security 12/12 passed; focused policy/payload tests 16/16 passed; Prisma validation, TypeScript, changed-file diagnostics, `git diff --check`, and production build passed. The submitted report also records broader unrelated translation/security/lint failures. These results are not sufficient for acceptance because R15's action-level plan-save/mirror behavioral proof is missing.
+
 ### Architecture Conformance
-Pending.
+
+The server-side product-policy, C2/catalogue validation, configuration-preserving desired mapping, generic BillingPlan mirror, rollout-warning helper and no-preference-write design conform to ARCH-023 by inspection. The existing-plan builder rendering described in A1-R1 does not conform to R7 because it exposes a second editable Merchant Knowledge control. Workflow evidence is also incomplete under the architect worktree-isolation protocol.
+
 ### Follow-up
-Pending.
+
+Return the same task to the normal `/moda-task ARCH-023-ADMIN-001` execution path. The next successful claim is Attempt 2. Complete A1-R1 through A1-R4, rerun the focused/required validation appropriate to the changed surface, update the Completion Report, set status to `review`, and STOP. Do not start another ARCH-023 Admin task.

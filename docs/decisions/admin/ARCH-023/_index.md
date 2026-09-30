@@ -47,7 +47,7 @@ The previous ARCH-023 Admin tasks for database-backed Store Category/template tr
 DATABASE-001 and SHARED-002 are Complete/accepted. The current independent Admin frontier is:
 
 ```text
-ADMIN-001 -> Ready   # exact Shared revision: @modainteract/moda-interact-shared@1.0.1
+ADMIN-001 -> Ready   # Attempt 2 correction; exact Shared revision: @modainteract/moda-interact-shared@1.0.1
 ADMIN-002 -> Ready
 ```
 
