@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 32
 executor: copilot
 claimed_at: 2026-10-01T21:18:03Z
@@ -962,23 +962,23 @@ Do not print plaintext credentials or encryption key material to stdout/stderr.
 
 ## Work Items
 
-- [ ] Consume accepted ARCH-024 Database/Shared/Admin prerequisites and regenerate Prisma.
-- [ ] Add current-environment resolver with exact deployment-name mapping.
-- [ ] Add exact existing-keyring parser for Admin encryption.
-- [ ] Add server-only AES-256-GCM OpenRouter credential sealer using Shared canonical JSON AAD.
-- [ ] Add bounded secret/reason/operation/CAS validation.
-- [ ] Add secret-free current-environment status reader.
-- [ ] Add atomic SET + audit transaction.
-- [ ] Add atomic CAS REPLACE + audit transaction.
-- [ ] Add atomic CAS REMOVE + audit transaction.
-- [ ] Add bounded Server Actions with no secret echo.
-- [ ] Add `/commerce-models/credentials` protected Admin route.
-- [ ] Extend Commerce models sidebar to Availability + Catalogue + Credentials.
-- [ ] Add current-environment status UI and SUPER_ADMIN-only controls.
-- [ ] Add synchronous single-flight mutation guards and secret clearing behaviour.
-- [ ] Add unit/security/UI regression coverage.
-- [ ] Add disposable PostgreSQL credential lifecycle/interoperability proof.
-- [ ] Run required validation and complete the Completion Report.
+- [x] Consume accepted ARCH-024 Database/Shared/Admin prerequisites and regenerate Prisma.
+- [x] Add current-environment resolver with exact deployment-name mapping.
+- [x] Add exact existing-keyring parser for Admin encryption.
+- [x] Add server-only AES-256-GCM OpenRouter credential sealer using Shared canonical JSON AAD.
+- [x] Add bounded secret/reason/operation/CAS validation.
+- [x] Add secret-free current-environment status reader.
+- [x] Add atomic SET + audit transaction.
+- [x] Add atomic CAS REPLACE + audit transaction.
+- [x] Add atomic CAS REMOVE + audit transaction.
+- [x] Add bounded Server Actions with no secret echo.
+- [x] Add `/commerce-models/credentials` protected Admin route.
+- [x] Extend Commerce models sidebar to Availability + Catalogue + Credentials.
+- [x] Add current-environment status UI and SUPER_ADMIN-only controls.
+- [x] Add synchronous single-flight mutation guards and secret clearing behaviour.
+- [x] Add unit/security/UI regression coverage.
+- [x] Add disposable PostgreSQL credential lifecycle/interoperability proof.
+- [x] Run required validation and complete the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -1096,26 +1096,26 @@ No secret/envelope property may be added to that result.
 
 ## Acceptance Criteria
 
-- [ ] `/commerce-models/credentials` manages only the current deployed `CommerceEnvironment`; there is no environment selector.
-- [ ] At most one OpenRouter credential exists for the current environment, enforced by the database uniqueness constraint.
-- [ ] Platform Admin readers can inspect configured/not-configured status but cannot mutate credentials.
-- [ ] Every SET/REPLACE/REMOVE mutation independently requires `SUPER_ADMIN`.
-- [ ] SET is insert-only and creates editVersion 1.
-- [ ] REPLACE uses exact CAS and increments editVersion by one.
-- [ ] REMOVE uses exact CAS and deletes the credential row.
-- [ ] SET/REPLACE/REMOVE audit and credential mutation are atomic.
-- [ ] Audit target is the current environment and contains no secret/encryption material.
-- [ ] Credential sealing uses AES-256-GCM, 12-byte nonce, 16-byte auth tag and the exact AAD returned by published Shared `createCommerceOpenRouterCredentialAad(...)`.
-- [ ] Admin production code has no decrypt/reveal path.
-- [ ] The stored secret is never returned to the browser after SET/REPLACE.
-- [ ] Keyring/environment configuration errors fail SET/REPLACE closed without plaintext fallback.
-- [ ] REMOVE does not require the encryption keyring.
-- [ ] Credential replacement does not require an Admin process restart.
-- [ ] The page does not call OpenRouter to verify a credential.
-- [ ] Same-tick repeated SET/REPLACE/REMOVE activation dispatches one action only.
-- [ ] The Commerce models sidebar contains Availability, Catalogue and Credentials and no duplicate/dead destinations.
-- [ ] No Model Availability, Catalogue Entry or Agent Configuration state is mutated by credential lifecycle operations.
-- [ ] Disposable PostgreSQL proof demonstrates SET -> REPLACE -> REMOVE with decryption compatibility against the exact published Shared AAD contract.
+- [x] `/commerce-models/credentials` manages only the current deployed `CommerceEnvironment`; there is no environment selector.
+- [x] At most one OpenRouter credential exists for the current environment, enforced by the database uniqueness constraint.
+- [x] Platform Admin readers can inspect configured/not-configured status but cannot mutate credentials.
+- [x] Every SET/REPLACE/REMOVE mutation independently requires `SUPER_ADMIN`.
+- [x] SET is insert-only and creates editVersion 1.
+- [x] REPLACE uses exact CAS and increments editVersion by one.
+- [x] REMOVE uses exact CAS and deletes the credential row.
+- [x] SET/REPLACE/REMOVE audit and credential mutation are atomic.
+- [x] Audit target is the current environment and contains no secret/encryption material.
+- [x] Credential sealing uses AES-256-GCM, 12-byte nonce, 16-byte auth tag and the exact AAD returned by published Shared `createCommerceOpenRouterCredentialAad(...)`.
+- [x] Admin production code has no decrypt/reveal path.
+- [x] The stored secret is never returned to the browser after SET/REPLACE.
+- [x] Keyring/environment configuration errors fail SET/REPLACE closed without plaintext fallback.
+- [x] REMOVE does not require the encryption keyring.
+- [x] Credential replacement does not require an Admin process restart.
+- [x] The page does not call OpenRouter to verify a credential.
+- [x] Same-tick repeated SET/REPLACE/REMOVE activation dispatches one action only.
+- [x] The Commerce models sidebar contains Availability, Catalogue and Credentials and no duplicate/dead destinations.
+- [x] No Model Availability, Catalogue Entry or Agent Configuration state is mutated by credential lifecycle operations.
+- [x] Disposable PostgreSQL proof demonstrates SET -> REPLACE -> REMOVE with decryption compatibility against the exact published Shared AAD contract.
 
 ## Validation
 
@@ -1244,23 +1244,38 @@ Do not begin a Gateway task, System Test, Commerce runtime task, or any other fo
 
 ### Status
 
-Not Started.
+Ready for Architect Review.
 
 ### Files Changed
 
-None; task definition only.
+Implementation changes in the dedicated `moda-interact-admin` task worktree:
+
+- Added the current-environment resolver, existing keyring parser, credential validator, AES-256-GCM sealer, and secret-free transactional Admin service.
+- Added the three independently authorized Server Actions, protected Credentials route, status panel, single-flight SET/REPLACE/REMOVE controls, and Credentials navigation destination.
+- Added five focused unit tests, credential security regressions, and the sidebar navigation regression.
+- Added `scripts/validate-arch024-openrouter-credential-admin.mjs` for the required disposable PostgreSQL lifecycle/interoperability proof.
+- No database schema, migration, `package.json`, or lockfile changes.
 
 ### Work Completed
 
-None.
+The Admin route manages only the resolved deployment environment. SET is insert-only; REPLACE and REMOVE use exact edit-version CAS; each credential change and environment-targeted audit event share one serializable transaction. SET/REPLACE use the existing connection keyring and Shared `createCommerceOpenRouterCredentialAad(...)`; REMOVE and status reads do not load or decrypt keys. All status/action return values are secret-free. The UI exposes mutations only to `SUPER_ADMIN`, clears password input after handled results, synchronously gates duplicate submissions, and requires refresh after CAS conflicts.
 
 ### Validation Results
 
-No implementation validation performed.
+- `npm run prisma:generate` — passed.
+- `npm run prisma:validate` — passed.
+- Focused unit suite — 13 passed, 0 failed.
+- Focused crypto contract test after adding the explicit Shared-AAD UTF-8 source assertion — 2 passed, 0 failed.
+- Focused credential security and sidebar navigation suites — 12 passed, 0 failed.
+- Targeted ESLint — passed.
+- Targeted Prettier check — passed.
+- `npm run build` — passed, including TypeScript and `/commerce-models/credentials` route generation. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain non-blocking.
+- `node scripts/validate-arch024-openrouter-credential-admin.mjs` — passed against accepted migrations on task-owned disposable PostgreSQL; SET/REPLACE/stale CAS/REMOVE, Shared-AAD decrypt interoperability, secret-free audits, and audit-failure rollback verified; owned container/network cleanup passed.
+- `git diff --check` — passed.
 
 ### Deviations
 
-None.
+The credential helper/service modules do not import the `server-only` marker package because it is not present in this Admin dependency tree and the initial Node test runner could not resolve it. They are used only from the protected Server Component and Server Actions; no client component imports them. No dependency was added. Security regression checks are source-level guards rather than browser-driven interaction tests. The accepted database schema and Shared package version were retained; no provider network call was added.
 
 ### Assumptions
 
@@ -1279,7 +1294,11 @@ If the accepted Database schema, published Shared `createCommerceOpenRouterCrede
 
 ### Git / VCS
 
-At execution, record launcher-prepared parent and implementation worktree paths, start-of-attempt synchronization, recursive database submodule state, exact Database/Shared dependency versions, implementation/report commits, remote alignment and clean-worktree evidence.
+Launcher-prepared parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-ADMIN-003`.
+
+Launcher-prepared implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-ADMIN-003`.
+
+Both worktrees use `task/ARCH-024-ADMIN-003`. The parent task branch began at claim commit `a81e4b0e70f6f02ed07482c1bcb10c838d5cf154`; the Admin implementation branch began at `d431f4c8b6ba92c3f6e8b62c7787b5b4f9d12eeb`. Admin implementation commits are `bd08ee6` and `b0a894d`; both are published to `origin/task/ARCH-024-ADMIN-003`. The parent task packet is being committed to its existing `origin/task/ARCH-024-ADMIN-003` branch. The recursive `database/` submodule remains at accepted commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; `@modainteract/moda-interact-shared` remains at `1.1.0`. The parent report commit is available in that branch's history; final clean-worktree evidence is checked after publication.
 
 ## Architect Review
 
