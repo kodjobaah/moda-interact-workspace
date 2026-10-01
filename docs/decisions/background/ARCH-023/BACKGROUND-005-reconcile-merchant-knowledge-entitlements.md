@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 33
-executor: copilot
-claimed_at: 2026-10-01T10:48:32Z
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-004
@@ -372,21 +370,21 @@ Do not start Gateway deployment.
 ## Completion Report
 
 ### Status
-Not Started
+In Progress (blocked on a database-owned lease prerequisite; implementation checkpoint `a8b04ee` is on `task/ARCH-023-BACKGROUND-005`).
 ### Files Changed
-None.
+`moda-interact-background/src/services/merchant-knowledge-entitlement-reconciliation.service.ts`; `moda-interact-background/src/entrypoints/merchant-knowledge.ts`; `moda-interact-background/tests/unit/services/merchant-knowledge-entitlement-reconciliation.service.test.ts`; `moda-interact-background/tests/unit/entrypoints/merchant-knowledge.test.ts`; `moda-interact-background/tests/integration/merchant-knowledge-entitlement-reconciliation.integration.test.ts`.
 ### Work Completed
-None.
+Implemented bounded, keyset-paged current-subscription reconciliation filtered by an enabled Merchant Knowledge preference; uses the existing activation-aware eligibility service and source-lock transaction to create idempotent `ENTITLEMENT_CHANGE` revisions only for content-limit decreases. Added deterministic post-commit queue publication, non-destructive dormant-source counts, the requested scheduler draft, and focused unit/entrypoint/PostgreSQL integration tests. The requested scheduler lease name is absent from the generated Prisma enum and PostgreSQL enum, so this checkpoint cannot compile until the database contract is extended.
 ### Validation Results
-None.
+Focused unit and entrypoint tests: 15 passed. PostgreSQL integration: 8 passed using the shared disposable infrastructure helper with `pgvector/pgvector:pg17`. `npm run prisma:validate`: passed. Changed-file diagnostics: clean. `git diff --check`: passed. `npm run build`: blocked by TS2820 because `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` is not a `BackgroundRuntimeLeaseName`. `npm test`: failed in unrelated existing suites (billing reconciliation expectations, ARCH-020 fixture path, runtime shared-package version assertion, and PostgreSQL enum tests without a database at `localhost:5432`).
 ### Deviations
-None.
+The repository's standard integration wrapper selected plain `postgres:17.6-alpine`, which lacks the required `vector` extension; the focused suite was rerun successfully with the shared helper's supported pgvector image override. No wrapper or global Docker configuration was changed.
 ### Assumptions
-None.
+The task's no-database-schema/migration boundary remains binding. Reusing either existing Merchant Knowledge lease is not safe: the pending-reconciliation lease conflicts with its existing scheduler and the upload-cleanup lease has a different purpose/cadence.
 ### Unresolved Issues
-None.
+The new lease requires a database-owned `BackgroundRuntimeLeaseName` enum value and a generated Prisma client contract before this Background branch can build. `moda_architect` confirmed this is a separate prerequisite and recommended defining `ARCH-023-DATABASE-006`, making this task depend on it, then resuming after acceptance. This task remains blocked; no architect review/acceptance is claimed.
 ### Architectural Concerns
-None.
+The task requires a distinct persisted lease identity and a 300-second cadence but currently authorizes only Background files. The Background lease service also has a SQL cadence mapping keyed by the database enum. Adding the value here would cross the database ownership boundary; substituting another lease would break mutual exclusion or cadence semantics.
 
 ## Architect Review
 
