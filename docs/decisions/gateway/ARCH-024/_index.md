@@ -12,7 +12,7 @@ ARCH-024 requires one infrastructure/deployment task after the application runti
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [GATEWAY-001](GATEWAY-001-wire-database-backed-openrouter-runtime.md) | Share the accepted credential keyring with authorized runtimes and remove obsolete static Preview provider/model/API-key configuration | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
+| [GATEWAY-001](GATEWAY-001-wire-database-backed-openrouter-runtime.md) | Share the accepted credential keyring with authorized runtimes and remove obsolete static Preview provider/model/API-key configuration | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-002 |
 
 ## Deployment boundary
 

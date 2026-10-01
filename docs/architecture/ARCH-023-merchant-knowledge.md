@@ -11,9 +11,9 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current Background executable frontier is `ARCH-023-BACKGROUND-004`; its acquisition and merchant-activation prerequisites are Complete. `BACKGROUND-005` remains Pending until BACKGROUND-004 completes. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
+The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3265,14 +3265,17 @@ ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
    +----> SHOPIFY-004 -> SHOPIFY-005
    |       existing FeaturePreferences is canonical merchant ON/OFF
    |
-   +----> BACKGROUND-006 -> BACKGROUND-004 -> BACKGROUND-005
-           PENDING/processing eligibility requires merchant ON
+   +----> BACKGROUND-006 -----------------------+
+           PENDING/processing eligibility      |
+                                                v
+        DATABASE-005 -> BACKGROUND-007 -> BACKGROUND-004 -> BACKGROUND-005
+          lease enum      lease cadence       final worker
 ```
 
 `COMMERCE-002` is Complete / Accepted Attempt 4 with the final bootstrap activation-mode guard. `COMMERCE-004` owns only the remaining request-time preference gate after ADMIN-004 establishes the final Admin-owned product-policy row.
 
 The initial Merchant Knowledge database persistence remains consolidated in DATABASE-001. The earlier split
-DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard.
+DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard. DATABASE-005 is a second narrow forward migration discovered by BACKGROUND-004 Attempt 1 and adds only the two Merchant Knowledge `BackgroundRuntimeLeaseName` enum values required by the accepted scheduler design.
 
 Commerce-adjacent execution state after COMMERCE-002 Attempt 4 acceptance:
 
@@ -3281,8 +3284,8 @@ ARCH-023-DATABASE-004   Complete — Accepted Attempt 1
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-COMMERCE-002   Complete — Accepted Attempt 4
 ARCH-023-COMMERCE-003   Complete — Accepted Attempt 2
-ARCH-023-ADMIN-004      Complete — Accepted Attempt 1
-ARCH-023-COMMERCE-004   Ready — Attempt 2 validation correction
+ARCH-023-ADMIN-004      Ready
+ARCH-023-COMMERCE-004   Pending — waits for ADMIN-004
 ARCH-023-GATEWAY-001    Pending — additional prerequisites remain
 ARCH-023-SYSTEM-TEST-002 Pending — terminal dependencies remain
 ```
@@ -3343,11 +3346,19 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
-### 2026-10-01 — COMMERCE-004 Attempt 1 changes requested
+### 2026-10-01 — BACKGROUND-007 Attempt 1 accepted
 
-- Reviewed the request-time Merchant Knowledge activation gate as production-code conformant: current plan entitlement resolves the exact active Feature id, explicit missing/false `ShopFeaturePreference` denies before embedding/retrieval, true preference preserves the accepted lookup path, and bootstrap remains preference-neutral.
-- Withheld acceptance only because the task-owned live PostgreSQL/pgvector validation is still unchecked. The accepted COMMERCE-001 proof exercises `retrieveMerchantKnowledge()` directly and therefore does not validate the new operation-level preference authority path.
-- Returned COMMERCE-004 to Ready with Attempt 1 preserved. Attempt 2 is validation-focused and must use a task-local disposable `pgvector/pgvector:pg17` database with real migrations to prove missing/false denial and OFF-to-ON retrieval of retained ACTIVE knowledge through the production lookup adapter. No downstream task is started.
+- Accepted the bounded Background runtime-lease cadence extension at implementation `b39fc48c5a02e3b4f9d492f6d83e1650390ede53` against the exact architect-accepted DATABASE-005 pin `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`.
+- Confirmed `BackgroundRuntimeLeaseService.tryAcquire()` adds exactly `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION -> 60` seconds and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP -> 3600` seconds while preserving every existing lease branch, PostgreSQL-time gating and generation/owner fencing. No runtime config, scheduler, entrypoint, schema/migration or business-processing change is introduced.
+- Accepted 5 focused unit tests and the 3-case disposable pgvector PostgreSQL proof covering both new lease identities, persisted `lastFinishedAt`, immediate in-cadence suppression, exactly one generation-2 reacquisition after the fixed cadence, stale heartbeat/release rejection and cleanup; Prisma generation, build, diagnostics and whitespace validation also passed.
+- Marked BACKGROUND-007 Complete / Accepted Attempt 1 and resolved the lease prerequisite on BACKGROUND-004. BACKGROUND-004 returns from Blocked to Ready with Attempt 1 preserved; its next launcher claim becomes Attempt 2. BACKGROUND-005 remains Pending.
+
+### 2026-10-01 — DATABASE-005 Attempt 2 accepted
+
+- Accepted the enum-only Merchant Knowledge runtime-lease extension after the evidence-only Attempt 2 recorded the canonical parent/implementation worktrees, synchronization state, dependency gate and recursive submodule preparation required by the architect protocol.
+- Confirmed the implementation remains unchanged at `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`: only `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP` are added to `public.BackgroundRuntimeLeaseName`, and the forward migration contains only those two additive enum statements.
+- Accepted the refreshed formatting, Prisma validate/generate, focused static validation, disposable pgvector PostgreSQL migration/runtime proof, ERD generation, script syntax checks, diagnostics and whitespace validation; the task-owned PostgreSQL container and fixtures were removed.
+- Marked DATABASE-005 Complete / Accepted Attempt 2 and promoted exactly BACKGROUND-007 to Ready. BACKGROUND-004 remains Blocked at Attempt 1 until BACKGROUND-007 is Complete/accepted; BACKGROUND-005 remains Pending.
 
 ### 2026-10-01 — COMMERCE-003 Attempt 2 accepted
 
