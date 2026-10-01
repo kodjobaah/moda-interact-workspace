@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -249,24 +249,70 @@ None identified in the bounded extraction. No provider calls, transaction owners
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None.
+Attempt 1 implementation is source-conformant, but acceptance is blocked on regression-baseline evidence rather than code correction.
+
+Independent review established that implementation commit `ed1e4ebe00f29e16e4acb1d799784a6b60b23531` is exactly one commit ahead of pre-task `moda-interact` baseline `b6d1fd6d362f2a6a302a735e0a54abd8ee677782` and changes only the three authorised files. The extracted billing-period projection/cycle bodies preserve the pre-task Prisma operations, branch ordering, transaction-caller ownership, conflict reasons, counter arithmetic and default-time phase semantics. `billing.service.ts` retains the compatibility export for `deriveBillingPeriodPhase`, and no equivalent helper implementation remains duplicated there.
+
+The frozen `tests/unit/services/billing.service.test.ts` SHA-256 is the required `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`, and the implementation commit does not modify that file. Focused projection tests, typecheck, targeted lint, build and `git diff --check` are reported passing.
+
+However, two required validation gates remain unproven:
+
+1. the frozen façade suite currently reports 18 failures / 213 tests even though the architecture/task text says 127 tests; and
+2. the full suite reports 24 failures, including six outside the frozen façade suite.
+
+The Completion Report gives a credible fixed-date explanation for the 18 façade failures, but `docs/development-baseline.md` contains no matching baseline entry and Attempt 1 did not execute the same suites on the exact pre-task commit. The six other full-suite failures likewise have no durable baseline evidence. Under the ARCH-025 no-regression contract, those failures cannot be treated as pre-existing solely from explanation or unchanged-file scope.
+
+No production or test source change is requested at this point. Attempt 2 is an evidence-only differential validation attempt unless it demonstrates a task-introduced regression.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/billing-period-projection.ts`
+- `moda-interact/tests/unit/services/billing/billing-period-projection.test.ts`
+- `moda-interact/tests/unit/services/billing.service.test.ts`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-001-extract-billing-period-projection.md`
+- `docs/decisions/shopify/ARCH-025/_index.md`
+- `docs/development-baseline.md`
+- implementation commit `ed1e4ebe00f29e16e4acb1d799784a6b60b23531` and its pre-task merge base `b6d1fd6d362f2a6a302a735e0a54abd8ee677782`
 
 ### Validation Reviewed
 
-None.
+- GitHub comparison: pre-task `b6d1fd6d362f2a6a302a735e0a54abd8ee677782` -> submitted `ed1e4ebe00f29e16e4acb1d799784a6b60b23531` is one commit with only the three authorised files changed.
+- Frozen façade source SHA-256: exact required value; implementation commit does not change the frozen test file.
+- Focused extracted-owner suite: reported 11/11 passing.
+- `npm run typecheck`: reported passing.
+- required targeted ESLint: reported passing.
+- `npm run build`: reported passing.
+- `git diff --check`: reported passing.
+- Frozen façade suite: 18 failures / 213 tests; not yet proven identical on the pre-task baseline.
+- Full `npm test`: 24 failures; not yet proven identical on the pre-task baseline.
 
 ### Architecture Conformance
 
-Pending.
+The implementation conforms to the ARCH-025 move-only extraction boundary, authorised file scope, façade compatibility, projection/CAS semantics, transaction ownership, I/O-preservation requirement and repository ownership. Acceptance is withheld only because the architecture's regression gate requires proof that the observed failing tests are not task regressions.
 
 ### Follow-up
 
-None.
+**A1-R1 — Evidence-only baseline differential; no source/test edits requested.**
+
+Reclaim this same task for Attempt 2 through the canonical launcher and keep the existing implementation commit unchanged unless the differential validation identifies a genuine regression.
+
+Using the same Node/dependency state and database submodule revision for both comparisons:
+
+1. preserve the submitted implementation worktree at `ed1e4ebe00f29e16e4acb1d799784a6b60b23531`;
+2. create a disposable detached validation checkout/worktree at exact pre-task commit `b6d1fd6d362f2a6a302a735e0a54abd8ee677782` (validation only; it is not a replacement implementation worktree);
+3. in both baseline and submitted trees verify the frozen file SHA-256;
+4. run `npm test -- tests/unit/services/billing.service.test.ts` in both trees and record the exact failing test names/counts;
+5. run full `npm test` in both trees and record the exact failing file/test names/counts;
+6. demonstrate that the submitted commit has no failure absent from the pre-task baseline. If failure sets are identical, do not modify production code or the frozen test file;
+7. rerun the focused projection suite plus the task-required typecheck, targeted lint, build and `git diff --check` on the submitted implementation tree;
+8. update only the Completion Report/execution evidence, return the task to `review`, clear the claim and STOP.
+
+If the submitted commit has any task-only failure, correct it only if it belongs to this task's authorised scope; otherwise return the dependency/scope issue to `moda_architect`. Do not edit the frozen façade test, do not weaken assertions, and do not start `ARCH-025-SHOPIFY-002`.
+
+The architect will reconcile the erroneous `127` test-count wording and create any durable development-baseline entry only after the baseline differential is proven.
