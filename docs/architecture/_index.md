@@ -998,15 +998,16 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
-Agreed architecture. Current state in this isolated COMMERCE-002 parent branch after
-DATABASE-001, COMMERCE-001, COMMERCE-004, SHARED-001, SHARED-002, ADMIN-004 and COMMERCE-002
-acceptance: **Complete 7, Ready 3, Pending 7**. Current frontier: `ADMIN-001`, `COMMERCE-005`,
-`BACKGROUND-001`. The separately accepted ADMIN-001 reconciliation remains on its sibling
-parent task branch and must be preserved during later integration. The canonical published Shared
-revision is `@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter
-credential administration is Admin-owned; Commerce Studio selects one effective active model
-and composes Test Conversations from selected Features; Background adopts the same OpenRouter
-runtime for production CommerceAgent turns. No Shopify task is required.
+Agreed architecture. Combined parent task state after reconciling accepted Admin, Commerce and
+Background branches: **Complete 11, Ready 3, Pending 3**. Current frontier: `ADMIN-003`,
+`COMMERCE-003` and `COMMERCE-005`. ADMIN-002 is Complete / Accepted at Attempt 2 after closing
+the bounded R3 Server Action authorization correction. COMMERCE-002 and BACKGROUND-001/002 are
+Complete from their accepted mainline reconciliations; ADMIN-001 and ADMIN-004 remain Complete
+from their accepted Admin reconciliations. The canonical published Shared revision is
+`@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter credential
+administration is Admin-owned; Commerce Studio selects one effective active model and composes
+Test Conversations from selected Features; Background adopts the same OpenRouter runtime for
+production CommerceAgent turns. No Shopify task is required.
 
 ARCH-021 COMMERCE-105..109, GATEWAY-002 and SYSTEM-TEST-004 are superseded. ARCH-023
 remains frozen and is consumed as an external instruction dependency. ARCH-024 terminal
