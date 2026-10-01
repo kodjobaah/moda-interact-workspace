@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -759,3 +759,55 @@ No implementation scope deviation or new cross-repository requirement. No unreso
 
 ### Architectural Concerns
 None. The entrypoint consumes the accepted DATABASE-005 lease identities and BACKGROUND-007 cadence mappings without changing their ownership or contract.
+
+## Architect Review — Attempt 2
+
+### Review Status
+Changes Requested — evidence-only workflow correction.
+
+### Review Notes
+The implementation is functionally conformant. No production or test-code correction is requested. The previously blocked processing pipeline was reviewed together with the new dedicated entrypoint because Attempt 1 was Blocked rather than partially accepted. The implementation conforms to R1-R17 by inspection and the recorded focused/pgvector validation: exact normalization and code-point truncation, deterministic chunking, bounded embedding configuration/vector checks, activation-aware current-source guards, acquisition dispatch, retry/permanent-failure handling, transactional pgvector promotion that supersedes the prior ACTIVE revision only after candidate persistence, and the final dedicated worker entrypoint with the exact 60-second PENDING reconciliation and 3600-second upload-cleanup leased schedules.
+
+Attempt 2 also consumes the exact accepted DATABASE-005 pin `b34a563436bbc89b6ca3e26b43a0bd03116a1a66` and the accepted BACKGROUND-007 cadence contract without casts, substitute lease names or cross-repository changes. The bounded Attempt 2 validation is sufficient: 18 focused entrypoint/isolation/worker tests, production build, changed-file diagnostics and `git diff --check` passed. The live readiness CLI need not be rerun solely for this review because its Redis/PostgreSQL dependency contract was already proven with disposable infrastructure in Attempt 1 and the accepted DATABASE-005/BACKGROUND-007 work owns the subsequently added lease identities/cadences. The non-clean repository-wide suite remains documented from Attempt 1 and is not attributed to this bounded entrypoint correction.
+
+The review cannot be accepted yet because the Attempt 2 Completion Report does not contain the mandatory physical-isolation/synchronization evidence required by `docs/agent-worktree-isolation-policy.md`. The report records the canonical paths, branches, `origin/main` incorporation, recursive submodule preparation and dependency gate, but it omits:
+
+1. the three required physical-isolation attestations:
+   - `shared workspace checkout switched/mutated for task work: no`;
+   - `shared implementation checkout switched/mutated for task work: no`;
+   - `another task worktree reused: no`;
+2. the two missing explicit remote-task-branch synchronization outcomes, so all four required start-of-attempt values are not durably recorded in the required `yes|not-needed` / `yes|already-current` form;
+3. the final submitted implementation and parent-report heads. The architect handoff identifies implementation `4f2b4ff` and parent report `69c020d7`, but those final heads must be written into the Completion Report rather than existing only in chat.
+
+Branch cleanliness and successful pushes do not substitute for the missing physical-isolation evidence under the governing policy.
+
+### Attempt 3 correction contract
+Attempt 3 is evidence-only unless synchronization or refreshed validation exposes a genuine regression. Preserve the current implementation; do not begin BACKGROUND-005.
+
+1. Reclaim this same task only through `/moda-task ARCH-023-BACKGROUND-004` so the canonical parent and implementation worktrees are reused and synchronized.
+2. Record the complete launcher packet in the Completion Report, including exactly:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <launcher path>
+  parent worktree: <launcher path>
+  parent branch: task/ARCH-023-BACKGROUND-004
+  implementation worktree: <launcher path>
+  implementation branch: task/ARCH-023-BACKGROUND-004
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+3. Record recursive submodule preparation and the exact DATABASE-005 gitlink, plus the final pushed implementation and parent-report commit IDs.
+4. Rerun the bounded acceptance evidence from the canonical prepared implementation worktree: the 18 focused tests, `npm run build`, changed-file diagnostics and `git diff --check`. The repository-wide suite and live readiness CLI do not need to be repeated solely to manufacture evidence unless the synchronized baseline changes relevant code/contracts or the launcher/task validation policy requires them.
+5. Return the task to `review` with `executor` and `claimed_at` cleared. No implementation-source change is expected.
+
+### Architecture Conformance
+Functionally conforms. The only outstanding issue is workflow evidence. `ARCH-023-BACKGROUND-005` remains gated until BACKGROUND-004 is architect-accepted Complete.
