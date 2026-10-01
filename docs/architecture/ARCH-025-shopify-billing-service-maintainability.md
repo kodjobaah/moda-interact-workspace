@@ -21,7 +21,7 @@ moda-interact/
 
 It refactors the current `app/services/billing/billing.service.ts` monolith behind its existing public façade. It does **not** refactor Background billing reconciliation, CheckoutRecovery, Admin pricing-plan authoring, Commerce Studio, Gateway, Shared, Database or System Test.
 
-ARCH-025 is now materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` is architect-accepted Complete and the sequential execution frontier has advanced to `ARCH-025-SHOPIFY-002`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
+ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` and `ARCH-025-SHOPIFY-002` are architect-accepted Complete, and the sequential execution frontier is `ARCH-025-SHOPIFY-003`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
 
 ## Problem
 
