@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 21
 executor: copilot
 In Progress — npm accepted publication; registry verification pending
@@ -273,16 +273,16 @@ unpublished task branch
 
 ## Work Items
 
-- [ ] Verify SHARED-001 is Complete/Accepted and source is clean.
-- [ ] Read and record the synchronized starting package version.
-- [ ] Compute/apply exactly one minor SemVer increment.
-- [ ] Confirm the release diff contains release metadata only.
-- [ ] Run `npm pack --dry-run` and verify the ARCH-024 model and runner public entrypoints/declarations.
-- [ ] Publish once to the public npm registry.
-- [ ] Verify exact registry version, tarball, shasum, integrity and `latest` tag.
-- [ ] Install the exact published version in a clean disposable consumer and import model, model/node, runner and logging entrypoints.
-- [ ] Record the exact published version for downstream tasks.
-- [ ] Clean the disposable consumer directory and set the task to review.
+- [x] Verify SHARED-001 is Complete/Accepted and source is clean.
+- [x] Read and record the synchronized starting package version.
+- [x] Compute/apply exactly one minor SemVer increment.
+- [x] Confirm the release diff contains release metadata only.
+- [x] Run `npm pack --dry-run` and verify the ARCH-024 model and runner public entrypoints/declarations.
+- [x] Publish once to the public npm registry.
+- [x] Verify exact registry version, tarball, shasum, integrity and `latest` tag.
+- [x] Install the exact published version in a clean disposable consumer and import model, model/node, runner and logging entrypoints.
+- [x] Record the exact published version for downstream tasks.
+- [x] Clean the disposable consumer directory and set the task to review.
 
 ## Interfaces / Contracts
 
@@ -313,16 +313,16 @@ The direct ARCH-024 frontier tasks listed in YAML `enables` depend on this SHARE
 
 ## Acceptance Criteria
 
-- [ ] SHARED-001 was Complete and Accepted before any release mutation.
-- [ ] The package version advanced by exactly one minor SemVer increment from the synchronized starting version.
-- [ ] Only authorised release metadata changed after the accepted SHARED-001 implementation baseline.
-- [ ] `npm pack --dry-run` contains model, model/node and runner JavaScript/declarations and retains the existing logging entrypoint.
-- [ ] Publication to the public npm registry succeeded.
-- [ ] The exact published version is visible in registry metadata.
-- [ ] `dist.tarball`, `dist.shasum` and `dist.integrity` are recorded.
-- [ ] A clean external consumer installed the exact published version and successfully imported model, model/node, runner and logging entrypoints.
-- [ ] No implementation source, Admin, Commerce or Background consumer code was changed by this publication task.
-- [ ] The exact version required by later ARCH-024 consumers is recorded in the Completion Report.
+- [x] SHARED-001 was Complete and Accepted before any release mutation.
+- [x] The package version advanced by exactly one minor SemVer increment from the synchronized starting version.
+- [x] Only authorised release metadata changed after the accepted SHARED-001 implementation baseline.
+- [x] `npm pack --dry-run` contains model, model/node and runner JavaScript/declarations and retains the existing logging entrypoint.
+- [x] Publication to the public npm registry succeeded.
+- [x] The exact published version is visible in registry metadata.
+- [x] `dist.tarball`, `dist.shasum` and `dist.integrity` are recorded.
+- [x] A clean external consumer installed the exact published version and successfully imported model, model/node, runner and logging entrypoints.
+- [x] No implementation source, Admin, Commerce or Background consumer code was changed by this publication task.
+- [x] The exact version required by later ARCH-024 consumers is recorded in the Completion Report.
 
 ## Validation
 
@@ -348,15 +348,15 @@ Do **not** rerun SHARED-001 unit tests, typecheck or explicit production build a
 
 Required publication evidence:
 
-- [ ] SHARED-001 prerequisite acceptance confirmed
-- [ ] starting version recorded
-- [ ] exact minor target version recorded
-- [ ] publish artifact inspected
-- [ ] publication command succeeded
-- [ ] exact registry metadata recorded
-- [ ] clean external exact-version imports passed
-- [ ] release diff contains no unauthorised implementation source changes
-- [ ] `git diff --check` passes
+- [x] SHARED-001 prerequisite acceptance confirmed
+- [x] starting version recorded
+- [x] exact minor target version recorded
+- [x] publish artifact inspected
+- [x] publication command succeeded
+- [x] exact registry metadata recorded
+- [x] clean external exact-version imports passed
+- [x] release diff contains no unauthorised implementation source changes
+- [x] `git diff --check` passes
 
 ## Stop Condition
 
@@ -372,35 +372,70 @@ This task is intentionally release-only. If publication reveals that accepted SH
 
 ### Status
 
-Not Started
+Published; ready for Architect Review
 
 ### Files Changed
 
-None
+- `moda-interact-shared/package.json`
+- `moda-interact-shared/package-lock.json`
 
 ### Work Completed
 
-None
+- Verified SHARED-001 was Complete / Accepted at Attempt 2 and the prepared Shared source contained accepted commit `c4627f1` without source or working-tree drift.
+- Advanced the synchronized package version from `1.0.1` to exactly `1.1.0` with `npm version minor --no-git-tag-version`; no Git tag was created.
+- Inspected the dry-run archive; model, model/node, runner, Commerce, and logging JavaScript/declaration outputs were present.
+- Published once to `https://registry.npmjs.org/`; npm accepted `@modainteract/moda-interact-shared@1.1.0`.
+- Verified exact public registry metadata and installed the exact published version in a clean external consumer. All required imports passed without an OpenRouter request or credential.
+- Downstream ARCH-024 consumers must install exactly `@modainteract/moda-interact-shared@1.1.0`.
 
 ### Validation Results
 
-Not Run
+- SHARED-001 prerequisite: `Complete / Accepted — Attempt 2`; accepted commit `c4627f1` is an ancestor of prepared Shared source head `eaf62bc`.
+- Starting version `1.0.1`; target/published version `1.1.0` (exactly one minor increment).
+- Source identity check passed: no diff between accepted SHARED-001 source and prepared source for source, scripts, build configuration, docs, or package metadata before version mutation.
+- Release diff contained only `package.json` and `package-lock.json`; `git diff --check` passed.
+- `npm pack --dry-run` passed after normal `prepack`. JSON inventory assertions passed for model/model-node JS and declarations, runner JS/declarations, Commerce JS/declarations, and logging JS/declarations.
+- `npm publish --access public --registry=https://registry.npmjs.org/` succeeded. npm accepted version `1.1.0`.
+- Exact public registry metadata:
+
+  ```json
+  {
+    "name": "@modainteract/moda-interact-shared",
+    "version": "1.1.0",
+    "dist.tarball": "https://registry.npmjs.org/@modainteract/moda-interact-shared/-/moda-interact-shared-1.1.0.tgz",
+    "dist.shasum": "923e5b71942bd17e2d2537820f884c9edc3cdeaf",
+    "dist.integrity": "sha512-XZMhMbEn8oy9xZfqrAWmbjcbYdOxScUsCE1myCqiywuUgcDPnhGDs1jj2bORyqhFYvOwhFzI4K5vmkSlxqOwiA==",
+    "dist-tags.latest": "1.1.0"
+  }
+  ```
+
+- Clean consumer directory installed exactly `@modainteract/moda-interact-shared@1.1.0` from npmjs. Imports passed for `commerce/model`, `commerce/model/node`, `commerce/runner`, and `logging`; `CommerceModelCatalogueEntrySchema`, `CommerceModelConfigurationSchema`, `createOpenRouterModelId`, `OpenRouterModelClient`, `runCommerceTurn`, `runnerVersion`, and `createLogger` were present. No model invocation or credential was used. The disposable directory was removed.
+- No implementation source or consumer repository was changed. No unit tests or typecheck were rerun, consistent with publication-only validation scope.
 
 ### Deviations
 
-None
+The prepared worktree initially lacked `tsup`; `npm ci` installed exactly the committed lockfile dependencies before the required dry-run artifact build. No tracked dependency or source file changed.
 
 ### Assumptions
 
-None
+The exact npmjs registry metadata and successful clean-consumer import verify public availability; `1.1.0` is the canonical version for downstream ARCH-024 consumers.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None.
+
+### Prepared Execution Evidence
+
+- Launcher prepared and claimed Attempt 1 for `copilot`; dependency gate passed for `ARCH-024-SHARED-001`. Claim commit `50c4d1fff1a127c97afe2968faea74c806835ea7` was committed and pushed.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-SHARED-002`, `task/ARCH-024-SHARED-002`; prepared head `fef30bcd29cfbcd01ee9aea512196f688633c30f`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-SHARED-002`, `task/ARCH-024-SHARED-002`; prepared head `eaf62bc2e4f7f2e7833c325345108282da04a2e5`.
+- Both task refs did not require fast-forward and `origin/main` was already incorporated. Recursive submodule sync/update passed; the recursive submodule entry list is empty.
+- Release metadata commit `3480905` is pushed to `origin/task/ARCH-024-SHARED-002`. Parent report commit/push completes review submission. No main merge, tag, consumer integration, or downstream task was started.
 
 ## Architect Review
 
