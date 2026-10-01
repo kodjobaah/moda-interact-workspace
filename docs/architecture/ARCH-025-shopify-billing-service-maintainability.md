@@ -306,8 +306,8 @@ The parent workspace contains the architecture/task coordination files. Reposito
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
 | ARCH-025-SHOPIFY-001 | Extract current billing-period projection/cycle invariants | Complete | - |
-| ARCH-025-SHOPIFY-002 | Extract operational BillingPlan resolution/catalogue reads | Ready | SHOPIFY-001 |
-| ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service | Pending | SHOPIFY-002 |
+| ARCH-025-SHOPIFY-002 | Extract operational BillingPlan resolution/catalogue reads | Complete | SHOPIFY-001 |
+| ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service | Ready | SHOPIFY-002 |
 | ARCH-025-SHOPIFY-004 | Extract merchant recovery-capacity read service | Pending | SHOPIFY-003 |
 | ARCH-025-SHOPIFY-005 | Extract merchant billing-state read service | Pending | SHOPIFY-004 |
 | ARCH-025-SHOPIFY-006 | Extract initial activation workflow | Pending | SHOPIFY-005 |
@@ -368,3 +368,4 @@ None.
 - 2026-10-01: Initial agreed Shopify-only BillingService maintainability architecture and eleven-task deterministic extraction sequence defined from the supplied current snapshot.
 - 2026-10-01: Meticulous source/task reconciliation tightened hidden helper ownership, preserved the frozen-suite private resolution delegate, introduced single owners for shared lock/retry mechanics, corrected initial-Paid finalisation to remain inside the caller-owned sync transaction, fixed notification/no-contract semantics, preserved deliberate provider/catalogue rereads and raw UNMAPPED/SYNC_ERROR BillingPeriod projection, added explicit Stop Conditions, and made hash validation cross-platform.
 - 2026-10-01: SHOPIFY-001 Attempt 2 proved the exact pre-task and submitted commits have identical frozen-suite and full-suite failure identifiers. Corrected the frozen asset count from 127 to 213, established durable baseline `ARCH025-TEST-001`, accepted SHOPIFY-001, and advanced SHOPIFY-002 to Ready.
+- 2026-10-01: SHOPIFY-002 Attempt 1 accepted the move-only `BillingPlanResolutionService` extraction at implementation commit `804894cc598d394c7d1f61bc2828c61743d1145f`. The façade retains its frozen private resolver delegate, all observed failures remain within `ARCH025-TEST-001`, and SHOPIFY-003 advances to Ready.
