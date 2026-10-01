@@ -33,14 +33,14 @@ OpenRouter credential
 | [ADMIN-001](ADMIN-001-administer-model-availability.md) | Administer the global Platform Availability and zero/one Shop Availability per Shop | Ready | DATABASE-001, SHARED-002 |
 | [ADMIN-002](ADMIN-002-administer-model-catalogue-entries.md) | Create/edit/enable/disable/reassign Catalogue Entries and validated OpenRouter-style configuration | Pending | DATABASE-001, SHARED-002, ADMIN-001 |
 | [ADMIN-003](ADMIN-003-manage-openrouter-credentials.md) | Set/replace/remove the encrypted OpenRouter credential for the current environment without exposing plaintext | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
-| [ADMIN-004](ADMIN-004-assign-commerce-model-to-merchant-pricing-plans.md) | Assign zero/one enabled Platform-available Commerce model to each Merchant Pricing Plan through the existing billing builder | Ready | DATABASE-001, SHARED-002 |
+| [ADMIN-004](ADMIN-004-assign-commerce-model-to-merchant-pricing-plans.md) | Assign zero/one enabled Platform-available Commerce model to each Merchant Pricing Plan through the existing billing builder | Complete | DATABASE-001, SHARED-002 |
 
 ## Execution frontier
 
-Ready: `ARCH-024-ADMIN-001`, `ARCH-024-ADMIN-004`.
+Ready: `ARCH-024-ADMIN-001`.
 
-Both consume the accepted Database contract plus exactly `@modainteract/moda-interact-shared@1.1.0`. ADMIN-002 remains Pending behind ADMIN-001; ADMIN-003 remains Pending behind ADMIN-002.
+ADMIN-001 consumes the accepted Database contract plus exactly `@modainteract/moda-interact-shared@1.1.0`. ADMIN-002 remains Pending behind ADMIN-001; ADMIN-003 remains Pending behind ADMIN-002.
 
-ADMIN-004 reads accepted Database/Shared contracts directly and may execute in parallel with the Availability/Catalogue/Credential control-plane chain; its tests seed catalogue/availability rows through the accepted schema rather than depending on ADMIN-002 UI implementation.
+ADMIN-004 is Complete at Attempt 1. It consumes the accepted Database/Shared contracts directly and remains independent of the Availability/Catalogue/Credential control-plane chain.
 
 Commerce Studio consumes this state; it does not duplicate Admin Catalogue/Availability/Credential or Price Plan model administration.
