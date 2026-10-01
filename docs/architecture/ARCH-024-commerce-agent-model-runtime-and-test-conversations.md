@@ -682,7 +682,28 @@ ARCH-023 Platform Instructions
 optional ARCH-023 Shop Instructions
 ```
 
-The snapshot means an already-running Test Conversation does not silently float to later model selection, Feature, Capability, Tool revision or instruction edits. Starting a new Test Conversation resolves current authored configuration again.
+Snapshot ownership is explicit:
+
+```text
+COMMERCE-004
+    -> creates the Feature/Capability/Tool/Behaviour composition fragment
+
+COMMERCE-005
+    -> owns Start Conversation
+    -> atomically assembles the complete authored Conversation Configuration Snapshot
+       including selected Shop id/domain, effective model/provenance/configuration,
+       Platform/optional Shop Instructions and the COMMERCE-004 composition fragment
+
+COMMERCE-006
+    -> consumes the frozen snapshot for live selected-Shop Tool execution
+    -> does not add authored snapshot fields
+
+COMMERCE-007
+    -> consumes the frozen snapshot for model execution
+    -> does not re-resolve or add authored model/instruction/Shop fields
+```
+
+The snapshot means an already-running Test Conversation does not silently float to later Shop identity/domain, model selection/configuration, Feature, Capability, Tool revision or instruction edits. Starting a new Test Conversation resolves current authored configuration again.
 
 The snapshot does **not** contain live operational secrets/session material:
 
@@ -697,7 +718,7 @@ Those are resolved from current server-owned durable state when required.
 
 ### Selected-shop Tool execution
 
-Human Test Conversation Tool calls execute the exact Tool revision from the snapshot through existing production execution infrastructure against the validated selected Shop.
+Human Test Conversation Tool calls execute the exact Tool revision from the C005 snapshot through existing production execution infrastructure against `snapshot.shop`.
 
 ```text
 SHOPIFY_ADMIN_GRAPHQL
@@ -717,7 +738,7 @@ The supported human path does not use synthetic `preview.myshopify.com` identity
 For each model invocation in a Test Conversation:
 
 ```text
-snapshot provider/providerModelId/configuration
+snapshot.model provider/providerModelId/configuration
         +
 current environment OpenRouter credential
         -> Shared OpenRouterModelClient

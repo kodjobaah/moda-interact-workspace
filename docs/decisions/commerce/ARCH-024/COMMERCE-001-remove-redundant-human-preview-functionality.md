@@ -306,6 +306,14 @@ Its rendered DOM MUST contain:
 
 The exact text above is the temporary development shell. Later ARCH-024 tasks replace it.
 
+The canonical replacement human UI module is now:
+
+```text
+src/studio/test-conversations/**
+```
+
+ARCH-024-COMMERCE-005 MUST continue from this module. It MUST NOT recreate the deleted `src/studio/preview/preview-screen.tsx` or `src/studio/preview/client.ts` browser implementation. The `/preview` route name remains only the URL/server route boundary; it does not make `src/studio/preview/**` the owner of the new human UI.
+
 ### R4 — delete the old human Preview screen and browser Preview client
 
 Delete:
@@ -319,7 +327,7 @@ tests/preview-client.test.ts
 
 This deletion is mandatory because repository reference inspection shows that the browser `PreviewClient` is consumed only by the obsolete `PreviewScreen` and its tests in the current baseline.
 
-Do **not** reuse the old client as the starting point for later ARCH-024 work. ARCH-024-COMMERCE-004/005 will define the replacement browser/server contract from the new Feature-composed semantics.
+Do **not** reuse the old client as the starting point for later ARCH-024 work. ARCH-024-COMMERCE-004 defines the server-side Feature composition boundary and ARCH-024-COMMERCE-005 MUST define the replacement browser contract/client under `src/studio/test-conversations/**`.
 
 ### R5 — remove Release -> Preview handoff, preserve Release cloning
 
@@ -598,7 +606,7 @@ ARCH-024-COMMERCE-004
     defines Feature-composed conversation creation/composition
 
 ARCH-024-COMMERCE-005
-    defines replacement human Test Conversations client/UI
+    extends `src/studio/test-conversations/**` with the replacement human Test Conversations contracts/client/UI
 
 ARCH-024-COMMERCE-006
     defines selected-shop Tool execution
@@ -623,6 +631,7 @@ This task may be implemented before ARCH-024 database/shared model work because 
 - [ ] `/preview` does not call `listTools()` or `listReleases()` and does not parse Tool definitions for Preview sources.
 - [ ] `src/studio/preview/preview-screen.tsx` is deleted.
 - [ ] `src/studio/preview/client.ts` is deleted.
+- [ ] The canonical replacement human UI module is `src/studio/test-conversations/**`; later ARCH-024 tasks must not recreate the deleted Preview screen/client.
 - [ ] The old Preview screen/client tests are deleted rather than rewritten to preserve old behaviour.
 - [ ] The Release Composer no longer exposes a `Test conversation` button or navigates to `source=release-composer`.
 - [ ] Release `Edit as new release`/clone behaviour remains intact.

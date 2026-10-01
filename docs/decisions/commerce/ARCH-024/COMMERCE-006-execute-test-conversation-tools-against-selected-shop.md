@@ -76,7 +76,7 @@ This task wires real Tool execution only. The human message composer remains dis
 
 ARCH-024-COMMERCE-004 changes human Test Conversation composition to selected Features and stores exact published Tool revisions in the server-side conversation snapshot.
 
-ARCH-024-COMMERCE-005 changes conversation start to require a validated selected Shop and carries that Shop identity into the Feature-composed conversation grant. It deliberately leaves actual conversation execution disabled until the remaining runtime tasks are complete.
+ARCH-024-COMMERCE-005 changes conversation start to require a validated selected Shop and atomically freezes the complete `PreviewConversationSnapshot`, including Shop id/domain, model/instructions and the C004 Feature composition. It deliberately leaves actual conversation execution disabled until the remaining runtime tasks are complete.
 
 The current pre-ARCH-024 Preview adapter still executes conversation Tools through:
 
@@ -128,7 +128,7 @@ moda-interact-commerce/tests/selected-shop-preview-tool-execution.test.ts
 
 for the selected-Shop matrix in R13.
 
-If the accepted ARCH-024-COMMERCE-005 implementation places the selected-Shop server resolver in an additional Preview route/helper file, that exact file may be changed only to carry the bounded server-resolved Shop execution context defined in R1/R2. Record it in the Completion Report.
+The accepted ARCH-024-COMMERCE-005 Start path and snapshot construction are read-only dependencies of this task. Do not change conversation-start authored-state resolution merely to wire Tool execution.
 
 Additional Commerce files may change only when mechanically required to wire the exact contracts below. Every additional file MUST be listed and justified in the Completion Report.
 
@@ -163,9 +163,9 @@ moda-interact-gateway/**
 
 ## Requirements
 
-### R1 — persist one server-resolved Shop execution identity with the conversation
+### R1 — consume the exact C005 Conversation Configuration Snapshot without extending it
 
-The browser start request from ARCH-024-COMMERCE-005 remains exactly:
+The browser start request remains exactly the C005 contract:
 
 ```ts
 {
@@ -180,54 +180,49 @@ The browser start request from ARCH-024-COMMERCE-005 remains exactly:
 
 The browser MUST NOT send `shopDomain`.
 
-After the server-side Shop revalidation already required by ARCH-024-COMMERCE-005, persist exactly this non-secret execution identity in the server-side Preview conversation state:
-
-```ts
-export const PreviewConversationShopSchema = z.strictObject({
-  id: SavedIdSchema,
-  domain: z.string().trim().min(1).max(255),
-});
-
-export type PreviewConversationShop = z.infer<typeof PreviewConversationShopSchema>;
-```
-
-Add to `StoredConversation`:
-
-```ts
-shop: PreviewConversationShop;
-```
-
-and to `StoredConversationSchema`:
-
-```ts
-shop: PreviewConversationShopSchema,
-```
-
-The persisted Shop MUST be constructed only from the accepted server-side Shop resolution result. Never copy a domain from URL/query/body data.
-
-`StoredConversation.shop.id` MUST equal:
+C005 already persists the authoritative selected-Shop execution identity at:
 
 ```text
-StoredConversation.bundle.grant.shopId
+conversation.snapshot.shop.id
+conversation.snapshot.shop.domain
 ```
 
-or conversation creation MUST fail as `UNAVAILABLE`.
-
-ARCH-024 is pre-production. Existing development Preview records without `shop` may be discarded/flushed. Do not add backwards-compatible parsing for them.
-
-### R2 — snapshot Shop id/domain, keep credentials live
-
-For one started Test Conversation:
+This task MUST NOT introduce:
 
 ```text
-Shop id/domain
-    -> Conversation Configuration Snapshot
-    -> stable until Start new conversation
+StoredConversation.shop
+another Shop snapshot
+another model/instruction snapshot
+another authored-state object
 ```
 
-This task intentionally snapshots the selected Shop identity/domain used to construct Tool calls.
+Before any Tool execution, require:
 
-Do **not** snapshot:
+```text
+conversation.snapshot parses as PreviewConversationSnapshot
+conversation.snapshot.shop.id === conversation.bundle.grant.shopId
+```
+
+Any mismatch is bounded `INCOMPATIBLE_VERSION`/`UNAVAILABLE` according to the existing Preview/runner boundary and MUST occur before a provider request.
+
+ARCH-024 is pre-production. Existing development Preview records without the C005 complete snapshot may be discarded/flushed. Do not add backwards-compatible parsing.
+
+### R2 — Shop/model/instruction authoring stays frozen; operational credentials stay live
+
+For one started Test Conversation, C006 consumes but never modifies:
+
+```text
+snapshot.shop
+snapshot.model
+snapshot.instructions
+snapshot.definitions
+snapshot.prompts
+bundle.manifest/grant
+```
+
+This task intentionally uses the frozen `snapshot.shop.id/domain` to construct Tool calls.
+
+Do **not** snapshot or cache:
 
 ```text
 Shopify access token / Session row
@@ -254,8 +249,7 @@ export interface PreviewConversationToolExecutionPort {
     signal: AbortSignal;
     environment: string;
     bundle: PreviewBundle;
-    snapshot: PreviewFrozenSnapshot;
-    shop: PreviewConversationShop;
+    snapshot: PreviewConversationSnapshot;
     conversationId: string;
   }): Promise<CommerceToolResult>;
 }
@@ -352,7 +346,7 @@ Required failure result for missing/invalid frozen definition:
 Before calling `backend.execution.execute(...)`, the selected-Shop executor MUST prove all of these:
 
 ```text
-bundle.grant.shopId === shop.id
+bundle.grant.shopId === snapshot.shop.id
 bundle.grant.conversationId === conversationId
 
 descriptor appears in bundle.manifest.capabilities
@@ -385,7 +379,7 @@ After R5/R6 pass, call `backend.execution.execute(...)` with:
 {
   turn: {
     contractVersion: 'commerce.v1',
-    shopId: shop.id,
+    shopId: snapshot.shop.id,
     checkoutRecoveryId: `preview-${conversationId}`,
     conversationId,
     inboundVersion: bundle.grant.initialInboundVersion,
@@ -397,7 +391,7 @@ After R5/R6 pass, call `backend.execution.execute(...)` with:
   name: descriptor.name,
   definition,
   arguments,
-  shopDomain: shop.domain,
+  shopDomain: snapshot.shop.domain,
   environment: parsedEnvironment,
   limits: {
     maxPolicyOutputItems: 3,
@@ -461,8 +455,8 @@ For `SHOPIFY_ADMIN_GRAPHQL`, C006 MUST use the existing production Admin query d
 The call MUST provide:
 
 ```text
-turn.shopId  = selected Shop id
-shopDomain   = selected Shop domain
+turn.shopId  = snapshot.shop.id
+shopDomain   = snapshot.shop.domain
 ```
 
 The production Admin query session provider MUST continue to resolve the current offline session/token at execution time.
@@ -489,8 +483,8 @@ For `POLICY_OPERATION`, use the production Policy Operation registry already wir
 The Tool call MUST expose:
 
 ```text
-context.turn.shopId = selected Shop id
-context.shopDomain  = selected Shop domain
+context.turn.shopId = snapshot.shop.id
+context.shopDomain  = snapshot.shop.domain
 context.purpose     = preview
 ```
 
@@ -574,7 +568,6 @@ conversationToolExecutor.execute({
   environment: this.environment,
   bundle: conversation.bundle,
   snapshot: conversation.snapshot,
-  shop: conversation.shop,
   conversationId: conversation.id,
 })
 ```
@@ -728,7 +721,7 @@ Normal provider reads and existing non-mutating runtime evaluation are allowed.
 
 ## Work Items
 
-- [ ] Add `PreviewConversationShopSchema` / `PreviewConversationShop` and persist the server-resolved Shop identity in `StoredConversation`.
+- [ ] Consume and validate the C005 `PreviewConversationSnapshot`; do not add another Shop/authored-state field to `StoredConversation`.
 - [ ] Split human conversation Tool execution from retained fixture Tool-test execution.
 - [ ] Add `PreviewConversationToolExecutionPort` with the exact R3 contract.
 - [ ] Implement `createSelectedShopPreviewToolExecutor(...)` using `backend.execution` only.
@@ -754,9 +747,11 @@ From ARCH-024-COMMERCE-004/005:
 ```text
 PreviewSelection = FEATURES
 Feature-composed PreviewBundle / grant
-PreviewFrozenSnapshot exact Tool definitions
+PreviewConversationSnapshot
+  snapshot.shop exact server-resolved Shop id/domain
+  exact Tool definitions / Feature Behaviour
+  frozen model + Platform/optional Shop instructions
 selected Shop id carried into grant
-validated server-side Shop resolution
 ```
 
 Existing Commerce runtime:
@@ -780,8 +775,6 @@ ExternalHttpExecutionPort
 ### Produces
 
 ```ts
-PreviewConversationShopSchema
-PreviewConversationShop
 PreviewConversationToolExecutionPort
 createSelectedShopPreviewToolExecutor(...)
 ```
@@ -811,8 +804,8 @@ No Database/Shared/Admin dependency is added directly here because this task reu
 ## Acceptance Criteria
 
 - [ ] Human Feature Test Conversations no longer execute Shopify/Policy/External Tools through fixture execution.
-- [ ] The selected Shop ID and server-resolved domain are persisted server-side with the conversation and never accepted from browser domain input.
-- [ ] `bundle.grant.shopId` must equal the persisted selected Shop ID.
+- [ ] The selected Shop ID/domain come only from C005 `conversation.snapshot.shop` and are never accepted from browser domain input.
+- [ ] `bundle.grant.shopId` must equal `conversation.snapshot.shop.id`.
 - [ ] Conversation Tool execution uses `backend.execution` / the existing production `DefinitionExecutor`.
 - [ ] Exact frozen Tool revision definitions are used; later Tool publication does not alter a started conversation.
 - [ ] Descriptor/grant/snapshot mismatch fails closed before any provider request.
@@ -880,6 +873,7 @@ Do not begin ARCH-024-COMMERCE-007 or any adjacent OpenRouter/model-runtime work
 - Snapshot **configuration identity**, not credentials. The exact Tool definition and selected Shop id/domain are stable for a started Test Conversation; Shopify/External credentials remain live.
 - `purpose: 'preview'` is required on `AuthorizedToolCall` so Preview execution remains distinguishable in telemetry/domain adapters.
 - `checkoutRecoveryId = preview-<conversationId>` is only a bounded execution identity. It MUST NOT be persisted as a real CheckoutRecovery.
+- C005 owns authored snapshot construction. C006 MUST treat `PreviewConversationSnapshot` as immutable input and must not reread current Shop domain, model, instructions, Feature Behaviour or Tool revision authoring state. Only operational credentials/sessions/connections remain live.
 - The R11 Platform-connection correction is authorised because the existing production `ExternalHttpExecutionPort` always executes in a Shop turn, while Platform credentials are globally scoped. Do not broaden the correction into credential-administration redesign.
 - C006 intentionally leaves the human message composer disabled. This allows real Tool-execution wiring to be reviewed independently before OpenRouter/model execution is enabled.
 
