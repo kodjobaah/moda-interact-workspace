@@ -998,8 +998,8 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
-Agreed architecture. Current task state after DATABASE-001 Attempt 1 acceptance:
-**Complete 1, Ready 2, Pending 14**. Current frontier: `SHARED-001` and `COMMERCE-001`.
+Agreed architecture. Current task state after DATABASE-001, COMMERCE-001 and SHARED-001 acceptance:
+**Complete 3, Ready 2, Pending 12**. Current frontier: `SHARED-002` and `COMMERCE-004`.
 Model Catalogue/Availability/OpenRouter credential administration is Admin-owned; Commerce
 Studio selects one effective active model and composes Test Conversations from selected
 Features; Background adopts the same OpenRouter runtime for production CommerceAgent turns.

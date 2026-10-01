@@ -9,10 +9,10 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-01T16:27:22Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-DATABASE-001
@@ -2249,9 +2249,25 @@ Return control to `moda_architect` for review. Stop before `ARCH-024-SHARED-002`
 
 ### Review Status
 
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-10-01
+
+Reviewed corrective implementation `c4627f1` and the Attempt 2 parent Completion Report against the ARCH-024 SHARED-001 task contract, parent architecture and the explicit Attempt 1 correction contract. Attempt 2 is accepted.
+
+The Attempt 1 runner-to-OpenRouter schema defect is closed. Both runner-created denied/revoked Tool-result paths now append the canonical `CommerceToolResult` ERROR row with `contractVersion: "commerce.v1"`, `status: "ERROR"`, `code: "DENIED"` and `retryable: false`. The correction preserves the existing two authorization boundaries and forced-referral semantics; it does not create Tool authority or change retry/accounting behavior.
+
+The OpenRouter adapter remains fail-closed for externally supplied runtime rows. `requestMessages()` still validates every `ModelRequest.messages[*].result` with `CommerceToolResultSchema`, and the new negative regression proves an external denial row without `contractVersion` continues to fail with bounded `Commerce model unavailable` text. No validation relaxation was introduced to make the runner-generated row pass.
+
+The missing composition proof is now present. The new offline regression executes `runCommerceTurn` through the real `createOpenRouterInvoker` serialization path with only the underlying chat-model factory stubbed. Hostile Merchant-Knowledge-like Tool data is carried as runtime data, the model then requests registered-but-ungranted `refundOrder`, the runner denies the request without executing that Tool, the canonical denial row is accepted by the adapter on the next invocation, and final validation forces `REFER_TO_STORE` with `INSUFFICIENT_TOOLS`. The earlier fake-model hostile-data regression remains as the runner-only trust-boundary proof.
+
+Independent Attempt 1 -> Attempt 2 tree comparison confirms the corrective implementation is limited to `src/commerce/runner/tool-execution.ts`, `src/commerce/runner/runner.test.ts` and `src/commerce/model/openrouter-model-client.test.ts`. There is no unrelated Shared source churn. The parent snapshot additionally contains separately accepted ARCH-024 Commerce coordination updates incorporated during start-of-attempt synchronization; they are not SHARED-001 implementation changes.
+
+The submitted Completion Report records the launcher-resolved canonical workspace, dedicated parent and implementation worktrees, matching task branches, Attempt 2 claim/synchronization evidence, recursive submodule materialisation, implementation commit `c4627f1`, explicit task-branch publication and the stop-before-publication/downstream boundary. The review archive intentionally contains no usable Git metadata or installed dependency tree, so remote heads and Node test/build commands cannot be independently queried/re-executed here; the exact source delta and recorded validation evidence were inspected instead.
+
+The consolidated `runner.test.ts` organization is accepted as a non-behavioural test-layout deviation. Required runner, graph, authorization, trust, logging and adapter-composition assertions remain present and the task does not require separate test files as a runtime/public contract. The reported npm audit advisories remain non-blocking dependency-hygiene evidence for this bounded task; this review does not infer their applicability without advisory details.
 
 #### Attempt 1 review — Changes Requested — 2026-10-01
 
@@ -2263,10 +2279,13 @@ The new Merchant-Knowledge hostile-data regression does not expose this composit
 
 The Runner R12 literal in this task conflicted with the model/OpenRouter R12 requirement that every `ModelRequest.messages` result is a `CommerceToolResult`. This review reconciles that task-definition inconsistency: the canonical synthetic denial row now includes `contractVersion: "commerce.v1"`. That narrow correction is authorised for Attempt 2 and does not weaken Tool authorization, trust boundaries, retry rules or forced-referral behaviour.
 
+
 ### Reviewed Files
 
 - `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 - `docs/decisions/shared/ARCH-024/SHARED-001-implement-model-contracts-openrouter-runtime.md`
+- `docs/decisions/shared/ARCH-024/SHARED-002-publish-arch024-shared-runtime.md`
+- `docs/decisions/shared/ARCH-024/_index.md`
 - `moda-interact-shared/package.json`
 - `moda-interact-shared/package-lock.json`
 - `moda-interact-shared/tsup.config.ts`
@@ -2294,25 +2313,28 @@ The Runner R12 literal in this task conflicted with the model/OpenRouter R12 req
 
 ### Validation Reviewed
 
-- Reviewed the submitted evidence for 11 focused model tests and 32 focused runner tests, plus the full suite result of 199 passed / 0 failed / 1 Redis-dependent skip.
-- Reviewed the submitted typecheck, build, model-entrypoint validation, Commerce-entrypoint validation, package dry-run, dependency-resolution and `git diff --check` evidence.
-- Independently inspected the exact package pins/exports, four-node graph topology, node/module split, runner logging imports and prohibited-mechanism scans in the supplied snapshot.
-- Independently traced the denial path from `executeToolCalls()` into the next `invokeModelNode()` request and then through `OpenRouterModelClient` message validation. Static contract inspection proves the produced denial result omits the `contractVersion` required by `CommerceToolResultSchema`.
-- The review snapshot does not contain an installed dependency tree suitable for rerunning the TypeScript suites in this environment, so the reported package test/build executions were inspected rather than independently reproduced. This does not affect the blocking contract mismatch above, which is directly visible in the submitted source.
+- Independently compared the submitted Attempt 1 and Attempt 2 `moda-interact-shared/` trees: only the three correction-owned files listed above changed.
+- Independently inspected both runner-generated denial branches; each now emits the full canonical `commerce.v1` `CommerceToolResult` ERROR shape required by the adapter.
+- Independently inspected `OpenRouterModelClient` / `createOpenRouterInvoker`; `requestMessages()` still performs strict `CommerceToolResultSchema.safeParse(...)` validation and maps malformed rows to bounded unavailability.
+- Independently inspected the new runner-plus-adapter regression: it uses `runCommerceTurn` with `createOpenRouterInvoker`, stubs only the chat-model factory, proves the ungranted refund Tool is not executed, observes the serialized canonical denial row and requires `REFER_TO_STORE` / `INSUFFICIENT_TOOLS`.
+- Independently inspected the negative adapter regression proving a denial row without `contractVersion` is rejected.
+- Reviewed the refreshed submitted evidence: 11 focused model tests; 33 focused runner tests; full suite 200 passed / 0 failed / 1 Redis-dependent skip; typecheck; build; model and Commerce entrypoint validators; package dry-run; exact LangChain dependency-resolution checks; production runner scans; and `git diff --check` all passed.
+- The supplied review archive contains no installed dependency tree or usable Git metadata, so the Node/package commands and remote branch heads were inspected from the durable Completion Report rather than independently rerun in this environment.
 
 ### Architecture Conformance
 
-The implementation conforms to the intended repository boundary, package/export split, model-provider abstraction, LangGraph topology, Tool-authorization boundaries, trust model and logging architecture. It is not yet acceptable as the coherent Shared runtime because the runner-to-OpenRouter composition is internally schema-incompatible on denied/revoked Tool paths. That defect violates the required forced-referral path and the model R12 `CommerceToolResult` message contract.
+Conforms. SHARED-001 now forms one internally compatible unpublished Shared runtime across the Moda-owned `CommerceModelInvoker` boundary, strict OpenRouter serialization, low-level four-node LangGraph orchestration, Tool authorization/revocation rules, runtime-data trust boundary, final forced-referral behavior and canonical `StructuredLogger` instrumentation. Attempt 2 closes the only blocking defect from Attempt 1 without relaxing adapter validation or broadening task scope.
+
+The task also preserves the publication boundary: no package publication or consumer integration occurred. `ARCH-024-SHARED-002` is therefore the next Shared-owned release gate.
 
 ### Follow-up
 
-Attempt 2 must remain within `ARCH-024-SHARED-001` and make only the bounded correction required by this review:
+`ARCH-024-SHARED-001` is **Complete / Accepted at Attempt 2**.
 
-1. Change every runner-created synthetic denied/revoked runtime result to the canonical `CommerceToolResult` ERROR shape, including `contractVersion: "commerce.v1"`, while retaining `status: "ERROR"`, `code: "DENIED"` and `retryable: false`.
-2. Do not relax `OpenRouterModelClient` validation of `ModelRequest.messages`; malformed externally supplied Tool-result rows must continue to fail with the bounded unavailable error.
-3. Add a regression that exercises `runCommerceTurn` through the actual `OpenRouterModelClient`/`createOpenRouterInvoker` serialization boundary (with the ChatOpenRouter/model factory stubbed so no network call occurs): after hostile Merchant-Knowledge-like data causes the model to request ungranted `refundOrder`, the runner must deny it, must not execute it, the next adapter invocation must accept the synthetic denial row, and the turn must complete only with the required `REFER_TO_STORE` final response.
-4. Retain the existing fake-model hostile-data regression as the runner-only trust-boundary proof; the new regression is the missing runner-plus-adapter composition proof.
-5. Rerun the task's focused model tests, focused runner tests, full package suite, typecheck, build, both entrypoint validators, package dry-run, dependency-resolution checks and `git diff --check`; record the refreshed evidence in the Completion Report.
-6. Do not publish the package and do not begin `ARCH-024-SHARED-002` or any consumer task.
+Dependency reconciliation promotes exactly:
 
-`ARCH-024-SHARED-001` returns to `ready` with Attempt 1 preserved and the execution claim cleared. `ARCH-024-SHARED-002` remains `pending` until this task is corrected, resubmitted and architect-accepted Complete.
+```text
+ARCH-024-SHARED-002 -> Ready
+```
+
+`ARCH-024-COMMERCE-004` remains independently Ready. Admin, Commerce model-consumer and Background tasks remain Pending behind the SHARED-002 publication gate (and their other declared dependencies). No publication or downstream implementation is started implicitly by this review.
