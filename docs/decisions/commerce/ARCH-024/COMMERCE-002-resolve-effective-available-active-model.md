@@ -45,8 +45,9 @@ Coordinator:
 Consume the accepted ARCH-024 database schema and published Shared model contracts, then make `moda-interact-commerce` the authoritative resolver for:
 
 1. which enabled Model Catalogue entries are available to Platform and to a selected Shop;
-2. which single model is effectively active for that Shop in the current Commerce environment; and
-3. whether a requested Platform/Shop model selection is valid for that selection scope.
+2. which current subscribed `MerchantPricingPlan` applies to the Shop for model selection;
+3. which single model is effectively active for that Shop in the current Commerce environment using `SHOP -> PRICING_PLAN -> PLATFORM`; and
+4. whether a requested Platform/Shop model selection is valid for that selection scope.
 
 The task must preserve the existing Agent Configuration selection model:
 
@@ -54,9 +55,16 @@ The task must preserve the existing Agent Configuration selection model:
 Platform Agent Configuration
     modelId -> one Platform-available model
 
+Merchant Pricing Plan
+    commerceModelId = NULL
+        -> no Price Plan override
+
+    commerceModelId != NULL
+        -> product-tier selection from Platform availability only
+
 Shop Agent Configuration
     modelId = NULL
-        -> inherit Platform selection
+        -> no explicit Shop override; resolve Price Plan then Platform
 
     modelId != NULL
         -> explicit Shop selection
@@ -64,7 +72,7 @@ Shop Agent Configuration
            OR that exact Shop's availability
 ```
 
-A broken explicit Shop selection MUST resolve `UNAVAILABLE`; it MUST NOT silently inherit the Platform model.
+A broken explicit Shop selection MUST resolve `UNAVAILABLE`; it MUST NOT inspect Price Plan/Platform fallback. A broken explicit Price Plan selection MUST also resolve `UNAVAILABLE`; it MUST NOT silently downgrade to Platform.
 
 ## Context
 
@@ -85,7 +93,7 @@ model.enabled = true
 
 It does not validate Model Availability.
 
-Current `resolveEffectiveConfiguration(...)` also validates only the selected model's `enabled` flag. In addition, the old implementation first requires a valid Platform model and only then considers a Shop override.
+Current `resolveEffectiveConfiguration(...)` also validates only the selected model's `enabled` flag. In addition, the old implementation first requires a valid Platform model and only then considers a Shop override. There is no current Price Plan model tier between Shop and Platform.
 
 ARCH-024 changes the model boundary:
 
@@ -121,10 +129,14 @@ Availability
     what may be selected
 
 Agent Configuration
-    what has been selected
+    explicit Platform/Shop selection
+
+MerchantPricingPlan.commerceModelId
+    optional product-tier selection
 
 Effective active model
     explicit valid Shop selection when present
+    otherwise current Price Plan selection when configured
     otherwise valid Platform selection
 ```
 
@@ -148,6 +160,7 @@ moda-interact-commerce/package.json
 moda-interact-commerce/package-lock.json
 
 moda-interact-commerce/src/commerce/agent-configuration/model-availability.ts          # NEW
+moda-interact-commerce/src/commerce/agent-configuration/pricing-plan-model.ts           # NEW
 moda-interact-commerce/src/commerce/agent-configuration/model-service.ts
 moda-interact-commerce/src/commerce/agent-configuration/effective-configuration.ts
 
@@ -219,6 +232,10 @@ CommerceModelProvider
 CommerceProviderModelId
 ResolvedCommerceModel
 ResolvedCommerceModelSchema
+CommerceModelSelectionSource
+CommerceModelSelectionSourceSchema
+CommercePricingPlanModelAssignment
+CommercePricingPlanModelAssignmentSchema
 ```
 
 The Commerce repository MUST NOT retain or introduce:
@@ -383,7 +400,66 @@ wrong availability scope/shop    -> INVALID_INPUT
 
 Do not query or require an OpenRouter credential here. Availability/selection is valid independently of current provider credential status.
 
-### R7 — Effective model resolution checks an explicit Shop override first
+### R6A — Resolve the current Price Plan model assignment from verified local subscription state
+
+Create:
+
+```text
+src/commerce/agent-configuration/pricing-plan-model.ts
+```
+
+Export exactly:
+
+```ts
+export type CurrentPricingPlanModelAssignment = {
+  merchantPricingPlanId: string;
+  shopifyPlanHandle: string;
+  modelId: string | null;
+};
+
+export async function resolveCurrentPricingPlanModelAssignment(input: {
+  db: PrismaClient | Prisma.TransactionClient;
+  shopId: string;
+}): Promise<CurrentPricingPlanModelAssignment | null>;
+```
+
+Resolution is exact:
+
+1. load the Shop's unique `Subscription`;
+2. only `Subscription.status IN (ACTIVE, TRIALING)` is eligible;
+3. require current `Subscription.planId` and current `Subscription.plan`;
+4. read current `BillingPlan.shopifyPlanHandle`;
+5. ignore `pendingPlanId`, `pendingPlan` and `pendingShopifyPlanHandle`;
+6. find `MerchantPricingPlan` by the exact same unique `shopifyPlanHandle`;
+7. when no eligible Subscription/current plan or no matching `MerchantPricingPlan` exists, return `null`;
+8. when the matching Price Plan exists, validate `{ merchantPricingPlanId, shopifyPlanHandle, modelId }` with the published `CommercePricingPlanModelAssignmentSchema` and return it.
+
+Do **not** require `MerchantPricingPlan.isActive = true`. Catalogue activation controls whether the plan may be newly sold; an existing subscriber retains the current plan's configured model benefit until billing changes the current plan.
+
+Do not infer a Price Plan from catalogue position, recurring amount, pending selection or Feature set. Do not read a merchant-supplied plan handle.
+
+### R6B — A Price Plan model is selectable only from Platform Availability
+
+When `CurrentPricingPlanModelAssignment.modelId != null`, load that exact Catalogue Entry with its Availability. It is valid only when all are true:
+
+```text
+model exists
+model validates through Shared schema
+model.enabled = true
+availability exists
+availability validates through Shared schema
+availability.enabled = true
+availability.scope = PLATFORM
+availability.shopId = null
+```
+
+A Price Plan is multi-tenant product configuration and MUST NOT select a Shop-availability entry.
+
+If the explicit `commerceModelId` is missing, malformed, disabled, assigned to disabled Availability or no longer Platform-available, effective resolution is `UNAVAILABLE`. Do not clear the Price Plan association and do not fall back to Platform.
+
+If `modelId = null`, there is no Price Plan override and effective resolution may continue to Platform.
+
+### R7 — Effective model resolution uses exact `SHOP -> PRICING_PLAN -> PLATFORM` precedence
 
 Update only the **model** branch of `resolveEffectiveConfiguration(...)`.
 
@@ -392,28 +468,41 @@ Prompt/Instruction resolution is outside this task and must preserve the current
 The exact model algorithm for selected Shop `S` and environment `E` is:
 
 ```text
-load Platform Agent Configuration for E
 load Shop Agent Configuration for (E, S)
 
 IF Shop configuration exists AND shop.modelId IS NOT NULL:
     resolve that exact Shop-selected model
     IF valid for Shop S:
-        return it as the one effective active model
+        winner = SHOP
     ELSE:
         return UNAVAILABLE
-        DO NOT inspect/fall back to Platform selection
+        DO NOT inspect Price Plan or Platform
 
 ELSE:
-    resolve Platform modelId
-    IF valid Platform selection:
-        return it as the one effective active model
+    resolveCurrentPricingPlanModelAssignment(S)
+
+    IF matching current Price Plan exists AND plan.modelId IS NOT NULL:
+        validate that exact Price Plan-selected model as PLATFORM-available
+        IF valid:
+            winner = PRICING_PLAN
+        ELSE:
+            return UNAVAILABLE
+            DO NOT inspect Platform
+
     ELSE:
-        return UNAVAILABLE
+        load Platform Agent Configuration for E
+        resolve Platform modelId
+        IF valid Platform selection:
+            winner = PLATFORM
+        ELSE:
+            return UNAVAILABLE
 ```
 
-A valid explicit Shop model therefore remains the active model even if Platform model selection is currently absent/broken. Platform is a fallback only when the Shop has **no explicit model override**.
+A valid explicit Shop model remains authoritative even if Price Plan/Platform configuration is missing or broken. A valid Price Plan model remains authoritative even if Platform configuration is missing or broken. Platform is used only when there is neither an explicit Shop override nor an explicit current Price Plan model assignment.
 
-This differs intentionally from the old ARCH-021 implementation, which first required a valid Platform model baseline before considering the Shop override.
+Changing the current subscription plan or Price Plan model association affects the next effective-resolution transaction; it MUST NOT change a model already captured for an in-progress Test Conversation/turn.
+
+This differs intentionally from the old ARCH-021 implementation, which had only Shop/Platform selection and first required a valid Platform model baseline before considering the Shop override.
 
 ### R8 — Effective resolution validates current Availability every time
 
@@ -426,7 +515,10 @@ Catalogue Entry validates against Shared schema
 Catalogue Entry enabled = true
 Availability validates against Shared schema
 Availability enabled = true
-selection is allowed for the Agent Configuration scope/shop under R6
+selection is allowed for its selection source:
+    SHOP      -> R6 Shop rules
+    PRICING_PLAN -> R6B Platform-only Price Plan rule
+    PLATFORM  -> R6 Platform rules
 ```
 
 This ensures Admin changes take effect without rewriting Agent Configuration:
@@ -443,11 +535,15 @@ Admin disables/moves selected Availability
 Admin moves Shop-selected model to another Shop
     -> explicit selection remains durable
     -> next resolution = UNAVAILABLE
+
+Admin disables/reassigns Price Plan-selected model away from Platform Availability
+    -> Price Plan `commerceModelId` remains durable
+    -> next resolution = UNAVAILABLE
 ```
 
-Do not clear `modelId` automatically.
+Do not clear `CommerceAgentConfiguration.modelId` or `MerchantPricingPlan.commerceModelId` automatically.
 
-### R9 — Effective-model contract preserves both selection and availability provenance
+### R9 — Effective-model contract preserves selection, Price Plan and Availability provenance
 
 Update `src/studio/agent-configuration/effective-contracts.ts` so `EffectiveModel` is exactly:
 
@@ -462,37 +558,48 @@ export type EffectiveModelUnavailableReason =
   | 'SELECTED_MODEL_NOT_AVAILABLE_FOR_SCOPE';
 
 export type EffectiveModel = {
-  source: 'SHOP' | 'PLATFORM' | 'UNAVAILABLE';
-  selectionSource: 'SHOP' | 'PLATFORM';
+  source: 'SHOP' | 'PRICING_PLAN' | 'PLATFORM' | 'UNAVAILABLE';
+  selectionSource: CommerceModelSelectionSource;
   environment: CommerceEnvironment;
-  selectionEditVersion: number;
+  selectionEditVersion: number | null;
   shopId: string | null;
+  merchantPricingPlanId: string | null;
+  shopifyPlanHandle: string | null;
   reason: EffectiveModelUnavailableReason | null;
   availability: CommerceModelAvailability | null;
   model: ResolvedCommerceModel | null;
 };
 ```
 
-Semantics:
+Semantics are exact:
 
 ```text
 source
-    effective result provenance for compatibility with existing callers;
-    AVAILABLE -> SHOP or PLATFORM
+    effective result provenance; AVAILABLE -> SHOP | PRICING_PLAN | PLATFORM
     unavailable -> UNAVAILABLE
 
 selectionSource
-    which Agent Configuration was authoritative for this resolution attempt
+    authoritative selection tier for this resolution attempt
+    if an explicit Shop selection fails -> SHOP
+    if an explicit current Price Plan selection fails -> PRICING_PLAN
+    if Platform fallback/missing Platform selection fails -> PLATFORM
+    `source = UNAVAILABLE` does not erase the tier that failed
+
+selectionEditVersion
+    SHOP/PLATFORM -> CommerceAgentConfiguration.modelEditVersion
+    PRICING_PLAN  -> null (MerchantPricingPlan uses the billing catalogue transaction/revision fence)
 
 shopId
-    selected Shop ID when selectionSource=SHOP; null for PLATFORM
+    selected Shop ID for SHOP or PRICING_PLAN; null for PLATFORM
+
+merchantPricingPlanId / shopifyPlanHandle
+    non-null only when selectionSource = PRICING_PLAN
 
 availability
     Availability containing the selected Catalogue Entry
 
 model.sourceScope / model.sourceShopId
     Availability provenance of the selected Catalogue Entry
-    (PLATFORM/null or SHOP/exact-shop)
 ```
 
 For a Shop override that explicitly selects a Platform-available entry:
@@ -501,6 +608,20 @@ For a Shop override that explicitly selects a Platform-available entry:
 EffectiveModel.source          = SHOP
 EffectiveModel.selectionSource = SHOP
 EffectiveModel.shopId          = selected Shop
+merchantPricingPlanId          = null
+ResolvedCommerceModel.sourceScope  = PLATFORM
+ResolvedCommerceModel.sourceShopId = null
+```
+
+For a Price Plan winner:
+
+```text
+EffectiveModel.source          = PRICING_PLAN
+EffectiveModel.selectionSource = PRICING_PLAN
+EffectiveModel.shopId          = selected Shop
+merchantPricingPlanId          = current MerchantPricingPlan.id
+shopifyPlanHandle              = current BillingPlan/MerchantPricingPlan handle
+selectionEditVersion           = null
 ResolvedCommerceModel.sourceScope  = PLATFORM
 ResolvedCommerceModel.sourceShopId = null
 ```
@@ -536,7 +657,7 @@ authTag
 keyId
 ```
 
-### R11 — Preserve the existing effective Agent Configuration transaction boundary
+### R11 — Preserve one repeatable-read effective model transaction boundary
 
 `resolveEffectiveConfiguration(...)` must continue to execute model and prompt/instruction reads inside one Prisma `REPEATABLE READ` transaction.
 
@@ -688,12 +809,18 @@ Extend/create the PostgreSQL model test so it proves actual Prisma/schema behavi
 10. Shop selection accepts an entry from that exact Shop Availability.
 11. Shop selection rejects an entry from another Shop Availability.
 12. Shop selection rejects disabled model/availability.
-13. Explicit valid Shop selection resolves even when Platform `modelId` is null.
-14. Shop `modelId = null` inherits the valid Platform model.
-15. Broken explicit Shop selection resolves `UNAVAILABLE` and never falls back.
-16. Reassigning/disabling the selected entry/Availability after selection leaves `modelId` durable but makes the next effective resolution `UNAVAILABLE`.
-17. Platform selection becomes `UNAVAILABLE` when its selected model is no longer Platform-available.
-18. No credential row is required for any availability/selection/resolution scenario.
+13. Explicit valid Shop selection resolves even when Price Plan/Platform selection is missing or broken.
+14. Shop `modelId = null` plus ACTIVE/TRIALING current subscription and Price Plan `commerceModelId` resolves the valid Price Plan model.
+15. Price Plan model must be in enabled Platform Availability; a Shop-availability model is rejected.
+16. Broken explicit Price Plan model resolves `UNAVAILABLE` and never falls back to Platform.
+17. `pendingPlanId`/pending handle does not affect the winner until it becomes current.
+18. Changing current `Subscription.planId` from lower to higher plan changes the next resolution to the higher plan's configured model.
+19. A matching inactive `MerchantPricingPlan` still supplies its model to an existing current subscriber.
+20. No matching MerchantPricingPlan or matching plan with `commerceModelId = NULL` falls through to the valid Platform model.
+21. Broken explicit Shop selection resolves `UNAVAILABLE` and never falls back to Price Plan/Platform.
+22. Reassigning/disabling the selected entry/Availability leaves the durable Agent/Price Plan pointer but makes the next effective resolution `UNAVAILABLE`.
+23. Platform selection becomes `UNAVAILABLE` when its selected model is no longer Platform-available.
+24. No credential row is required for any availability/selection/resolution scenario.
 
 Do not run these cases against a developer/shared database.
 
@@ -735,12 +862,13 @@ Do not reuse an existing non-disposable database target.
 - [ ] Replace local closed provider/environment contract duplication with canonical Shared model contracts.
 - [ ] Add `AvailableCommerceModel`.
 - [ ] Add `model-availability.ts` with the exact three domain functions from R3.
+- [ ] Add `pricing-plan-model.ts` with the exact current-subscription/Price Plan assignment resolver from R6A.
 - [ ] Implement deterministic Platform/effective Shop availability queries.
 - [ ] Add the single write-time `assertModelSelectable(...)` gate.
 - [ ] Harden Platform/Shop model selection mutations with the availability gate inside their write transaction.
-- [ ] Change effective model resolution to explicit-Shop-first / Platform-fallback-only-when-no-override semantics.
+- [ ] Change effective model resolution to exact `SHOP -> PRICING_PLAN -> PLATFORM` semantics, using only current ACTIVE/TRIALING subscription state and ignoring pending plan state.
 - [ ] Validate selected model and Availability on every effective resolution.
-- [ ] Add the R9 effective-model provenance/error contract.
+- [ ] Add the R9 effective-model provenance/error contract including `PRICING_PLAN`, plan ID and plan handle provenance.
 - [ ] Preserve the existing repeatable-read effective Agent Configuration transaction.
 - [ ] Add Platform/effective Shop available-model service methods and Server Actions for COMMERCE-003.
 - [ ] Apply only the R14 legacy Catalogue compatibility changes needed until COMMERCE-003 removes that UI.
@@ -781,11 +909,13 @@ type EffectiveModelUnavailableReason =
   | 'SELECTED_MODEL_NOT_AVAILABLE_FOR_SCOPE';
 
 type EffectiveModel = {
-  source: 'SHOP' | 'PLATFORM' | 'UNAVAILABLE';
-  selectionSource: 'SHOP' | 'PLATFORM';
+  source: 'SHOP' | 'PRICING_PLAN' | 'PLATFORM' | 'UNAVAILABLE';
+  selectionSource: CommerceModelSelectionSource;
   environment: CommerceEnvironment;
-  selectionEditVersion: number;
+  selectionEditVersion: number | null;
   shopId: string | null;
+  merchantPricingPlanId: string | null;
+  shopifyPlanHandle: string | null;
   reason: EffectiveModelUnavailableReason | null;
   availability: CommerceModelAvailability | null;
   model: ResolvedCommerceModel | null;
@@ -822,11 +952,14 @@ No public merchant route is produced.
 - [ ] Platform selection cannot select a Shop-only catalogue entry.
 - [ ] Shop selection may select a Platform entry or exact-Shop entry and cannot select another Shop's entry.
 - [ ] Disabled/invalid model or Availability cannot be newly selected.
-- [ ] A Shop with a valid explicit override uses that model even if Platform has no active model.
-- [ ] A Shop with `modelId = NULL` inherits the valid Platform model.
-- [ ] A broken explicit Shop override returns `UNAVAILABLE` and does not inherit Platform.
+- [ ] A Shop with a valid explicit override uses that model even if Price Plan/Platform configuration is missing or broken.
+- [ ] A Shop with `modelId = NULL` and an explicit current Price Plan model uses the valid Price Plan model before Platform.
+- [ ] A current Price Plan model may reference only enabled Platform Availability; a broken explicit plan model returns `UNAVAILABLE` and does not fall back to Platform.
+- [ ] With no explicit Shop override and no explicit usable Price Plan model, the Shop inherits the valid Platform model.
+- [ ] Pending subscription plans do not affect model selection until current.
+- [ ] A broken explicit Shop override returns `UNAVAILABLE` and does not inspect Price Plan/Platform fallback.
 - [ ] Availability/model changes can invalidate an existing selection without clearing or rewriting the durable `modelId`.
-- [ ] Effective resolution preserves selection provenance separately from catalogue Availability provenance.
+- [ ] Effective resolution preserves `SHOP | PRICING_PLAN | PLATFORM` selection provenance separately from catalogue Availability provenance and includes Price Plan ID/handle only for plan selection.
 - [ ] Effective Agent Configuration still uses one repeatable-read snapshot.
 - [ ] Prompt/Instruction resolution semantics are unchanged by this task.
 - [ ] Model resolution does not query credentials or invoke OpenRouter/LangChain.
@@ -862,6 +995,7 @@ npm run test:arch024-model-resolution:postgres
 
 npx eslint \
   src/commerce/agent-configuration/model-availability.ts \
+  src/commerce/agent-configuration/pricing-plan-model.ts \
   src/commerce/agent-configuration/model-service.ts \
   src/commerce/agent-configuration/effective-configuration.ts \
   src/studio/agent-configuration/model-contracts.ts \
@@ -892,8 +1026,9 @@ Do not begin ARCH-024-COMMERCE-003 or any other enabled/follow-on task.
 
 ## Implementation Notes
 
-- Treat `source`/`selectionSource` as **Agent Configuration selection provenance** and `ResolvedCommerceModel.sourceScope/sourceShopId` as **Catalogue Availability provenance**.
-- Do not make Platform configuration a prerequisite for a valid explicit Shop override. Platform is a fallback only when Shop `modelId` is null/absent.
+- Treat `source`/`selectionSource` as **effective selection provenance** (`SHOP | PRICING_PLAN | PLATFORM`) and `ResolvedCommerceModel.sourceScope/sourceShopId` as **Catalogue Availability provenance**.
+- Do not make lower-precedence configuration a prerequisite for a valid higher-precedence winner. Shop override is highest; Price Plan is considered only when Shop `modelId` is null/absent; Platform is considered only when neither higher tier has an explicit model.
+- Resolve current Price Plan through trusted `Subscription.plan -> BillingPlan.shopifyPlanHandle -> MerchantPricingPlan.shopifyPlanHandle`; never use `pendingPlanId` or browser/provider callback input directly.
 - The bootstrap Platform Availability ID from DATABASE-001 is:
 
 ```text

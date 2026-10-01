@@ -33,11 +33,12 @@ The current platform has a useful CommerceAgent configuration and Studio foundat
 1. `CommerceModelCatalogueEntry.provider` is represented through the closed `OPENAI | GROQ` provider enum and corresponding application unions/validation.
 2. Commerce Studio currently owns Model Catalogue administration even though model catalogue/availability/credential administration is platform administration.
 3. There is no durable distinction between **what model entries exist**, **where those model entries are available**, and **which single model is currently active** for Platform or Shop Agent Configuration.
-4. Preview still contains the older human-facing Tool/Release/Fixture composition workflow and environment-selected Preview provider/model/API-key configuration.
-5. Human Test Conversations do not yet represent the agreed product flow: selected Shop + selected Features, where selecting one Feature means **all direct Capabilities under that Feature**.
-6. Human Test Conversations still have synthetic runtime assumptions such as `preview.myshopify.com` / fixture Tool execution instead of the selected Shop's real server-owned Tool execution context.
-7. Production Background CommerceAgent turns still use the older Groq conversational-model path rather than the same effective model rules and OpenRouter runtime intended for Studio testing.
-8. Ordinary model-provider credential rotation should not require an application restart or deployment.
+4. `MerchantPricingPlan` cannot currently select a Commerce model, so a higher-priced plan cannot deterministically provide a better default model than a lower-priced plan.
+5. Preview still contains the older human-facing Tool/Release/Fixture composition workflow and environment-selected Preview provider/model/API-key configuration.
+6. Human Test Conversations do not yet represent the agreed product flow: selected Shop + selected Features, where selecting one Feature means **all direct Capabilities under that Feature**.
+7. Human Test Conversations still have synthetic runtime assumptions such as `preview.myshopify.com` / fixture Tool execution instead of the selected Shop's real server-owned Tool execution context.
+8. Production Background CommerceAgent turns still use the older Groq conversational-model path rather than the same effective model rules and OpenRouter runtime intended for Studio testing.
+9. Ordinary model-provider credential rotation should not require an application restart or deployment.
 
 ARCH-024 corrects those boundaries without redesigning accepted Feature/Capability/Tool publication mechanics, frozen ARCH-023 instruction semantics or existing Background conversation ordering.
 
@@ -45,9 +46,10 @@ ARCH-024 corrects those boundaries without redesigning accepted Feature/Capabili
 
 - Make Admin the owner of Model Availability, Model Catalogue entries and OpenRouter credential lifecycle.
 - Make Commerce Studio **selection-only** for models: one Platform active model and an optional Shop override.
-- Preserve `CommerceAgentConfiguration.modelId = null` on a Shop configuration as the explicit "Use Platform model" representation.
-- Guarantee exactly one **effective active model** for a Shop when configuration is valid.
-- Fail closed when an explicit Shop model override becomes unavailable, disabled or otherwise invalid; do not silently fall back.
+- Allow every `MerchantPricingPlan` to optionally select one Platform-available Commerce model so pricing tiers can provide progressively better default models without giving merchants a model selector.
+- Preserve `CommerceAgentConfiguration.modelId = null` on a Shop configuration as the explicit **no Shop override** representation. Effective inheritance then resolves the current subscribed Price Plan model when configured, otherwise the Platform model.
+- Guarantee exactly one **effective active model** for a Shop when configuration is valid using the precedence `SHOP override -> PRICING_PLAN -> PLATFORM`.
+- Fail closed when an explicit Shop or Price Plan model selection becomes unavailable, disabled or otherwise invalid; do not silently downgrade to a lower-precedence model.
 - Represent model availability as one global Platform Availability plus zero/one Shop Availability per Shop, with Availability `1 -> many` Catalogue Entries.
 - Keep model identity as dynamic `provider + providerModelId` strings and derive the OpenRouter model slug as `provider + '/' + providerModelId`.
 - Store model runtime configuration as bounded, extensible, direct OpenRouter-style JSON rather than a closed list of model parameters.
@@ -66,6 +68,7 @@ ARCH-024 corrects those boundaries without redesigning accepted Feature/Capabili
 ARCH-024 does not introduce:
 
 - merchant-facing model selection;
+- merchant control over the Price Plan -> model association; the association is Platform Admin product configuration only;
 - merchant-facing Model Catalogue or Model Availability administration;
 - a new Shopify application task;
 - a new public model-management API;
@@ -109,7 +112,7 @@ The current Catalogue provider identity is constrained by the closed `CommerceMo
 
 ### Commerce Studio
 
-Commerce Studio currently contains both Agent model selection and Model Catalogue administration. ARCH-024 moves Catalogue/Availability/Credential administration to Admin and leaves Commerce Studio responsible only for selecting the one active Platform model or one valid Shop override.
+Commerce Studio currently contains both Agent model selection and Model Catalogue administration. ARCH-024 moves Catalogue/Availability/Credential administration and Merchant Pricing Plan -> model product-tier assignment to Admin. Commerce Studio remains responsible only for explicit Platform/Shop Agent Configuration selection; a Shop with no explicit override inherits its current Price Plan model when configured, otherwise Platform.
 
 ### Human Preview/Test Conversations
 
@@ -169,7 +172,7 @@ COMMERCE STUDIO                BACKGROUND
                      `--> host-neutral RunnerTool.execute()
 ```
 
-Merchant-facing Shopify application code does not participate in model administration or selection. A merchant experiences whichever effective active model Commerce Studio has configured for that Shop.
+Merchant-facing Shopify application code does not participate in model administration or selection. A merchant experiences the model resolved from the Shop override, their current subscribed `MerchantPricingPlan`, or the Platform default. The merchant never selects the model directly.
 
 Shared does not own MCP transport. Background retains the existing hardened `CommerceMcpClient` over the official `@modelcontextprotocol/sdk`; Commerce Test Conversations retain their local selected-Shop Tool execution path. Both appear to Shared only as `RunnerTool` implementations.
 
@@ -177,33 +180,52 @@ Shared does not own MCP transport. Background retains the existing hardened `Com
 
 For each environment, Platform Agent Configuration selects one Platform-available Catalogue Entry.
 
+Each `MerchantPricingPlan` may optionally select one Commerce model. That association is global product configuration rather than environment-specific configuration and may reference only a Catalogue Entry in the global Platform Availability. `commerceModelId = null` means that Price Plan has no model override.
+
 A Shop Agent Configuration may either:
 
 ```text
 modelId = null
-    -> explicitly inherit the Platform selected model
+    -> no explicit Shop override
 
 modelId = <catalogue entry>
     -> explicit Shop override
 ```
 
-Effective resolution is:
+Effective resolution for selected Shop `S` and environment `E` is exactly:
 
 ```text
 Shop has explicit modelId?
         |
-        +-- YES -> validate exact entry is enabled and effectively available
+        +-- YES -> validate exact entry for Shop S
         |           |
         |           +-- valid   -> use Shop-selected entry
-        |           +-- invalid -> UNAVAILABLE (no Platform fallback)
+        |           +-- invalid -> UNAVAILABLE
+        |                         DO NOT inspect Price Plan or Platform
         |
-        +-- NO  -> validate Platform selection
+        +-- NO  -> resolve current subscribed MerchantPricingPlan
+                    from Subscription.plan -> BillingPlan.shopifyPlanHandle
+                    -> MerchantPricingPlan.shopifyPlanHandle
                     |
-                    +-- valid   -> use Platform-selected entry
-                    +-- invalid -> UNAVAILABLE
+                    +-- matching plan with commerceModelId != NULL
+                    |       -> validate exact model is enabled and in enabled PLATFORM Availability
+                    |          |
+                    |          +-- valid   -> use Price Plan-selected entry
+                    |          +-- invalid -> UNAVAILABLE
+                    |                        DO NOT fall back to Platform
+                    |
+                    +-- no usable plan assignment
+                            -> validate Platform selection
+                               |
+                               +-- valid   -> use Platform-selected entry
+                               +-- invalid -> UNAVAILABLE
 ```
 
-Absence means inheritance. A broken explicit selection is a configuration error and fails closed.
+Only a current `Subscription.status IN (ACTIVE, TRIALING)` with non-null current `planId` participates in Price Plan model resolution. `pendingPlanId` / `pendingShopifyPlanHandle` are ignored until they become current. A matching `MerchantPricingPlan` remains eligible for an existing subscriber even when `MerchantPricingPlan.isActive = false`; catalogue activation controls sale/selection, not benefits already attached to a current subscription.
+
+If the current operational `BillingPlan.shopifyPlanHandle` has no matching `MerchantPricingPlan`, or the matching Price Plan has `commerceModelId = null`, there is no Price Plan model override and resolution continues to Platform. If a matching Price Plan explicitly names a model but that model is invalid, disabled or no longer Platform-available, resolution fails closed rather than silently downgrading the merchant.
+
+A valid higher-precedence selection does not require lower-precedence configuration to be valid. In particular, a valid Shop override does not require a valid Price Plan or Platform selection, and a valid Price Plan model does not require a valid Platform selection.
 
 ### Effective model availability
 
@@ -218,7 +240,7 @@ EffectiveAvailableModels(S)
       enabled entries in enabled SHOP Availability where shopId = S
 ```
 
-Availability determines **what may be selected**. Agent Configuration determines **what has been selected**.
+Availability determines **what may be selected**. Agent Configuration determines explicit Platform/Shop selection. `MerchantPricingPlan.commerceModelId` determines the optional product-tier selection used only when a Shop has no explicit override.
 
 ## Data Model
 
@@ -321,6 +343,33 @@ anthropic
 google
 ```
 
+### `MerchantPricingPlan.commerceModelId`
+
+ARCH-024 adds one nullable billing-catalogue association:
+
+```text
+billing.MerchantPricingPlan.commerceModelId
+    -> commerce.CommerceModelCatalogueEntry.id
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT
+```
+
+Semantics:
+
+```text
+NULL
+    -> this Price Plan does not override the Platform model
+
+non-NULL
+    -> this Price Plan explicitly selects that Catalogue Entry
+```
+
+The selected entry must be in the enabled global Platform Availability when the Admin creates/changes the association. A Price Plan is multi-tenant product configuration and therefore MUST NOT select a Shop-scoped Availability entry.
+
+The database FK preserves identity only. It deliberately does not prevent the referenced model/Availability from later being disabled or reassigned; as with Agent Configuration, that explicit durable selection then resolves `UNAVAILABLE` until corrected.
+
+The association is stored only on `MerchantPricingPlan`. ARCH-024 MUST NOT add `commerceModelId` to `BillingPlan` and MUST NOT add a physical MerchantPricingPlan/BillingPlan FK. Runtime identity continues to follow accepted ARCH-017 semantics by matching the current `BillingPlan.shopifyPlanHandle` to the unique `MerchantPricingPlan.shopifyPlanHandle`. Existing rows migrate with `commerceModelId = NULL`.
+
 ### Model configuration JSON
 
 `configurationSchemaVersion = 1` versions the Moda envelope/safety contract; it does not enumerate every OpenRouter option.
@@ -390,8 +439,9 @@ ARCH-024 retains the existing environment-scoped Platform/Shop configuration mod
 The durable states remain conceptually:
 
 ```text
-PLATFORM config: modelId = selected Platform entry
-SHOP config:     modelId = explicit override OR null to inherit Platform
+PLATFORM config:       modelId = selected Platform entry
+MerchantPricingPlan:   commerceModelId = optional Platform-available tier model
+SHOP config:           modelId = explicit override OR null for inherited resolution
 ```
 
 ## Shared Contracts and Model Runtime
@@ -423,7 +473,9 @@ Shared owns the versioned validators/types for:
 
 - `CommerceEnvironment`;
 - `CommerceModelAvailabilityScope`;
+- `CommerceModelSelectionSource` (`PLATFORM | PRICING_PLAN | SHOP`);
 - Availability shape;
+- optional `CommercePricingPlanModelAssignment` shape;
 - dynamic provider/providerModelId identity;
 - Catalogue Entry shape;
 - Agent model-selection shape;
@@ -539,6 +591,14 @@ Admin owns create/edit/enable/disable/reassignment of Catalogue Entries. Provide
 
 Admin displays all Platform and Shop catalogue entries. Commerce Studio does not administer them.
 
+### Price Plan model association
+
+Admin extends the existing Merchant Pricing Plan builder with one optional Commerce model field. The selector contains only currently enabled Catalogue Entries from the enabled Platform Availability plus an explicit `Use Platform default` / null choice.
+
+The association is Platform Admin product configuration; merchants do not see a model selector. An existing now-invalid association remains visible as unavailable so an administrator can repair or clear it; it is never silently rewritten.
+
+Changing a Price Plan model affects the next CommerceAgent turn for shops currently subscribed to that plan. It never changes the model halfway through an already-running turn. Pending subscription plan changes do not receive the pending plan model until the pending plan becomes current.
+
 ### OpenRouter credentials
 
 Admin provides credential status plus `SET`, `REPLACE` and `REMOVE` for the current deployment environment. Existing secret plaintext is never returned to the browser.
@@ -562,10 +622,12 @@ Platform Agent Configuration selects one Platform-available active model.
 Shop Agent Configuration presents the effective available model set and allows either:
 
 ```text
-Use Platform model
+Use inherited model
+    -> current Price Plan model when configured
+    -> otherwise Platform model
 ```
 
-or one explicit available override.
+or one explicit available Shop override. The UI must surface whether the current inherited winner comes from `PRICING_PLAN` or `PLATFORM`; it does not mutate the Price Plan association.
 
 Broken durable selections are surfaced as unavailable and remain correctable; they are not silently cleared.
 
@@ -743,11 +805,11 @@ Normal OpenRouter credential rotation is a database operation. Encryption-keyrin
 
 | Repository | Owner | ARCH-024 responsibility |
 |---|---|---|
-| `moda-interact-database` | `moda_database` | Availability, Catalogue evolution, encrypted OpenRouter credential, constraints/migration/audit persistence |
+| `moda-interact-database` | `moda_database` | Availability, Catalogue evolution, optional MerchantPricingPlan -> model association, encrypted OpenRouter credential, constraints/migration/audit persistence |
 | `moda-interact-shared` | `moda_shared` | model contracts/OpenRouter client, modular LangGraph `runCommerceTurn`, Commerce-turn structured logging, publication |
-| `moda-interact-admin` | `moda_admin` | Availability administration, Catalogue administration, OpenRouter credential lifecycle |
-| `moda-interact-commerce` | `moda_commerce` | Preview cleanup, effective model resolution, Studio model selection, Feature-composed Test Conversations, selected-Shop Tool execution, OpenRouter Test Conversation runtime |
-| `moda-interact-background` | `moda_background` | production effective model/OpenRouter integration, canonical runner logger injection, hardened official-SDK MCP client, redundant local graph cleanup |
+| `moda-interact-admin` | `moda_admin` | Availability administration, Catalogue administration, Price Plan -> model product configuration, OpenRouter credential lifecycle |
+| `moda-interact-commerce` | `moda_commerce` | Preview cleanup, Shop -> Price Plan -> Platform effective model resolution, Studio Shop override selection, Feature-composed Test Conversations, selected-Shop Tool execution, OpenRouter Test Conversation runtime |
+| `moda-interact-background` | `moda_background` | production Shop -> Price Plan -> Platform model resolution/OpenRouter integration, canonical runner logger injection, hardened official-SDK MCP client, redundant local graph cleanup |
 | `moda-interact-gateway` | `moda_gateway` | keyring/config-group wiring and obsolete static Preview provider configuration removal |
 | `moda-interact` | `moda_app` | **No ARCH-024 implementation task required**; merchants do not select/administer models |
 | `moda-interact-system-test` | `moda_system_test` | Terminal integrated validation deliberately deferred to a later architecture session |
@@ -803,6 +865,23 @@ The internal LangGraph implementation is not a cross-service contract. Backgroun
 
 `RunCommerceTurnInput.dependencies.logger?: StructuredLogger` is additive. ARCH-024 production/Test Conversation consumers supply their existing service logger even though the field remains optional for package backward compatibility.
 
+### Price Plan model-assignment contract
+
+Owner of durable association: `moda-interact-database` / Admin billing catalogue.
+
+Canonical Shared runtime-safe shape:
+
+```text
+CommercePricingPlanModelAssignment
+    merchantPricingPlanId
+    shopifyPlanHandle
+    modelId nullable
+```
+
+Admin is the only writer. Commerce and Background are readers. Runtime resolution uses the trusted current `Subscription.planId -> BillingPlan.shopifyPlanHandle`, then matches that handle to `MerchantPricingPlan.shopifyPlanHandle`. `pendingPlanId` is not entitlement/model-selection input.
+
+A Price Plan selection may reference only Platform Availability at write time. Shop-specific Availability remains available only to explicit Shop Agent Configuration.
+
 ### Admin -> Commerce model availability contract
 
 Admin writes durable Availability/Catalogue state. Commerce reads only the effective set allowed for the selected Shop. The browser is never authoritative for tenant isolation.
@@ -818,8 +897,9 @@ ARCH-024 does not redefine Platform/Shop Instructions. `ARCH-023-COMMERCE-003` r
 ## Consistency and Transactions
 
 - Admin Availability, Catalogue and credential mutations use explicit CAS (`editVersion`) and transactional audit writes.
-- Catalogue reassignment/disablement does not rewrite existing Agent Configuration selections.
-- Effective model resolution is always recomputed against current durable Availability/Catalogue state.
+- Catalogue reassignment/disablement does not rewrite existing Agent Configuration or MerchantPricingPlan model selections.
+- MerchantPricingPlan model edits do not copy model identity into BillingPlan; accepted ARCH-017 same-handle identity remains authoritative.
+- Effective model resolution is always recomputed against current durable Shop override, current Subscription/BillingPlan, MerchantPricingPlan assignment and Availability/Catalogue state.
 - Conversation Configuration Snapshot is immutable for the running Test Conversation's authored configuration; live operational credentials are not copied into it.
 - OpenRouter credential replacement is an atomic durable state change and is observed by subsequent model invocations without process restart.
 - ARCH-024 does not introduce a Redis/database dual-write transaction for model administration.
@@ -827,7 +907,7 @@ ARCH-024 does not redefine Platform/Shop Instructions. `ARCH-023-COMMERCE-003` r
 ## Ordering
 
 - No global ordering is introduced for model administration.
-- CAS protects concurrent Admin edits to Availability, Catalogue and credential rows.
+- CAS protects concurrent Admin edits to Availability, Catalogue and credential rows; the existing Merchant Pricing Plan transaction/revision fence protects Price Plan model-assignment edits.
 - A Test Conversation retains the composition/model/instruction snapshot established at Start.
 - Production Background preserves existing per-conversation ordering; ARCH-024 does not widen serialization scope.
 
@@ -835,7 +915,8 @@ ARCH-024 does not redefine Platform/Shop Instructions. `ARCH-023-COMMERCE-003` r
 
 Fail closed for:
 
-- no valid Platform active model when inheritance is required;
+- no valid Platform active model when Platform fallback is required;
+- explicit Price Plan model unavailable/disabled/not Platform-available;
 - explicit Shop model unavailable/disabled/out-of-scope;
 - unavailable Model Availability;
 - invalid Catalogue configuration;
@@ -856,7 +937,7 @@ ARCH-024 does not change the fundamental CommerceAgent workload boundary: capaci
 
 Relevant costs are:
 
-- one bounded effective-model lookup at conversation/turn boundaries as specified by the owning task;
+- one bounded effective-model lookup at conversation/turn boundaries, including at most the current Subscription/BillingPlan -> MerchantPricingPlan same-handle lookup required for plan-level selection;
 - one current OpenRouter credential lookup/decryption for model invocation;
 - existing Tool execution/provider costs;
 - existing Redis Preview/conversation storage where retained;
@@ -868,7 +949,7 @@ No new high-cardinality model-catalogue scan is permitted on every token/message
 
 - Admin mutations independently require `SUPER_ADMIN` where specified by the Admin tasks.
 - Shop model availability/selection is enforced server-side using canonical `Shop.id`; client filtering is not a security boundary.
-- Merchants cannot select or administer models.
+- Merchants cannot select or administer models; upgrading/downgrading changes their current billing plan, and the associated model is Platform Admin product configuration.
 - Provider/model configuration cannot inject credentials, headers, arbitrary base URLs, messages, Tools, Tool policy or other reserved runtime capabilities.
 - OpenRouter credential plaintext is never returned by Admin APIs and is never stored in Test Conversation snapshots.
 - Shopify and External Tool credentials remain server-owned and resolved at execution time.
@@ -917,7 +998,7 @@ grantId
 releaseId
 ```
 
-Event data is limited to bounded counts, Tool name/revision identity, model-step/remote-call counters, durations, answer kind and bounded error codes.
+Event data is limited to bounded counts, Tool name/revision identity, model-step/remote-call counters, durations, answer kind, bounded error codes and safe model-selection provenance (`SHOP | PRICING_PLAN | PLATFORM`, optional pricingPlanId).
 
 Never emit:
 
@@ -962,6 +1043,11 @@ DATABASE-001
 Consumer progression:
 
 ```text
+DATABASE-001 + SHARED-004 + ADMIN-001
+    -> ADMIN-002
+       |-> ADMIN-003
+       `-> ADMIN-004 Price Plan model association
+
 DATABASE-001 + SHARED-004 + COMMERCE-001
     -> COMMERCE-002
     -> COMMERCE-003
@@ -1001,6 +1087,7 @@ Individual task YAML is authoritative.
 | `ARCH-024-ADMIN-001` | `moda_admin` | Pending | DATABASE-001, SHARED-004 |
 | `ARCH-024-ADMIN-002` | `moda_admin` | Pending | DATABASE-001, SHARED-004, ADMIN-001 |
 | `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-004, ADMIN-002 |
+| `ARCH-024-ADMIN-004` | `moda_admin` | Pending | DATABASE-001, SHARED-004, ADMIN-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Ready | - |
 | `ARCH-024-COMMERCE-002` | `moda_commerce` | Pending | DATABASE-001, SHARED-004, COMMERCE-001 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
@@ -1047,9 +1134,11 @@ Accepted ARCH-021 work through COMMERCE-104/110 remains baseline functionality a
 The required integrated validation areas are known but task materialisation is deliberately deferred. The later system-test architecture must cover at least:
 
 - Admin visibility of all Catalogue/Availability state versus Shop-effective visibility in Commerce Studio;
-- exactly-one-effective-model selection and Platform inheritance;
+- exactly-one-effective-model precedence `SHOP -> PRICING_PLAN -> PLATFORM`;
+- current subscription plan changes affect the next turn while pending plans do not;
+- higher Price Plan model association is observed without merchant model selection;
 - tenant isolation for Shop Availability and Shop selection;
-- fail-closed broken explicit Shop overrides;
+- fail-closed broken explicit Shop and Price Plan selections;
 - OpenRouter execution through the selected model/configuration;
 - OpenRouter credential replacement taking effect without Commerce/Background restart;
 - Feature selection meaning every direct Capability under each selected Feature;
@@ -1074,11 +1163,14 @@ LangGraph persistence/checkpoints -> no
 runtime-data/ToolMessage authority change -> no
 production MCP replacement -> no; retain Background CommerceMcpClient + official MCP SDK
 runner logging -> canonical Shared StructuredLogger with host identity
+effective model precedence -> SHOP override, then current PRICING_PLAN assignment, then PLATFORM
+pricing-plan model storage -> MerchantPricingPlan.commerceModelId only; never BillingPlan
 ```
 
 The final integrated system-test decomposition across ARCH-023, ARCH-024 and subsequent overlapping work remains deliberately deferred to a later architecture session.
 
 ## Change History
 
+- **2026-10-01** — ARCH-024 amended before implementation to add optional `MerchantPricingPlan.commerceModelId` product-tier model assignment. Effective model precedence is now `SHOP -> PRICING_PLAN -> PLATFORM`; current `Subscription.planId`/`BillingPlan.shopifyPlanHandle` resolves the current MerchantPricingPlan, pending plans are ignored until effective, explicit invalid Price Plan selections fail closed, and Admin owns the Price Plan association without introducing merchant model selection or duplicating model identity onto `BillingPlan`.
 - **2026-10-01** — ARCH-024 amended before implementation: adopted a modular low-level Shared LangGraph `StateGraph` inside `runCommerceTurn`, retained the host-neutral `RunnerTool`/official Background MCP SDK boundary, preserved ARCH-023 runtime-data/Merchant Knowledge trust semantics, added canonical `commerce.turn.*` structured logging, added SHARED-002/003/004 and BACKGROUND-002, and retargeted consumers to the combined SHARED-004 publication.
 - **2026-10-01** — ARCH-024 agreed. Consolidated Admin-owned Model Availability/Catalogue/Credential design, dynamic `provider + providerModelId`, extensible OpenRouter-style model configuration, Shared LangChain/OpenRouter runtime, Commerce Studio selection-only ownership, Feature-composed selected-Shop Test Conversations, production Background parity and Gateway cutover. ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 superseded. ARCH-024 system-test task materialisation deliberately deferred.
