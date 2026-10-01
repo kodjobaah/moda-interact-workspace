@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 33
-executor: copilot
-claimed_at: 2026-10-01T17:16:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-024-DATABASE-001
@@ -538,17 +538,17 @@ Do not flag ordinary unrelated uses of a generic `modelId` identifier outside Bi
 
 ## Work Items
 
-- [ ] Consume accepted ARCH-024 Database gitlink and exact SHARED-002 package version.
-- [ ] Extend Merchant Pricing builder payload with nullable `commerceModelId` and exact validation.
-- [ ] Add `pricing-plan-model.ts` with deterministic Platform-only model option/query/validation contracts.
-- [ ] Add the Commerce model selector to the existing Merchant Pricing Plan builder.
-- [ ] Preserve/render invalid existing associations explicitly rather than silently clearing them.
-- [ ] Integrate create/update model validation into the existing transactional mutation.
-- [ ] Keep materialised BillingPlan synchronization model-neutral.
-- [ ] Preserve association through plan activation/deactivation.
-- [ ] Extend existing `PLAN_CATALOG_CHANGED` audit before/after values when the association changes.
-- [ ] Add focused unit/security/UI regression coverage from R14.
-- [ ] Run required validation and record exact results/warnings in the Completion Report.
+- [x] Consume accepted ARCH-024 Database gitlink and exact SHARED-002 package version.
+- [x] Extend Merchant Pricing builder payload with nullable `commerceModelId` and exact validation.
+- [x] Add `pricing-plan-model.ts` with deterministic Platform-only model option/query/validation contracts.
+- [x] Add the Commerce model selector to the existing Merchant Pricing Plan builder.
+- [x] Preserve/render invalid existing associations explicitly rather than silently clearing them.
+- [x] Integrate create/update model validation into the existing transactional mutation.
+- [x] Keep materialised BillingPlan synchronization model-neutral.
+- [x] Preserve association through plan activation/deactivation.
+- [x] Extend existing `PLAN_CATALOG_CHANGED` audit before/after values when the association changes.
+- [x] Add focused unit/security/UI regression coverage from R14.
+- [x] Run required validation and record exact results/warnings in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -619,19 +619,19 @@ The terminal ARCH-024 system-test task must include ADMIN-004 among its implemen
 
 ## Acceptance Criteria
 
-- [ ] Each Merchant Pricing Plan can persist zero/one `commerceModelId` through the existing Admin builder.
-- [ ] Null is presented as `Use Platform default` and stored as SQL NULL.
-- [ ] New/changed non-null assignments accept only enabled Catalogue Entries in enabled Platform Availability.
-- [ ] Shop-availability models cannot be assigned to a Price Plan.
-- [ ] Merchants have no model-selection control.
-- [ ] Existing invalid associations remain visible and repairable; they are not silently cleared.
-- [ ] Unrelated edits can preserve an unchanged invalid association, while any changed association must become null or currently selectable.
-- [ ] Materialised `BillingPlan` synchronization remains model-neutral and no BillingPlan model pointer/FK exists.
-- [ ] `MerchantPricingPlan.isActive` toggles do not rewrite the model association.
-- [ ] Audit remains `PLAN_CATALOG_CHANGED` and model changes record bounded before/after IDs only.
-- [ ] Shared schemas validate Availability/Catalogue/assignment shapes.
-- [ ] No OpenRouter credential or live provider request is involved.
-- [ ] Focused unit/security/UI regression coverage from R14 passes.
+- [x] Each Merchant Pricing Plan can persist zero/one `commerceModelId` through the existing Admin builder.
+- [x] Null is presented as `Use Platform default` and stored as SQL NULL.
+- [x] New/changed non-null assignments accept only enabled Catalogue Entries in enabled Platform Availability.
+- [x] Shop-availability models cannot be assigned to a Price Plan.
+- [x] Merchants have no model-selection control.
+- [x] Existing invalid associations remain visible and repairable; they are not silently cleared.
+- [x] Unrelated edits can preserve an unchanged invalid association, while any changed association must become null or currently selectable.
+- [x] Materialised `BillingPlan` synchronization remains model-neutral and no BillingPlan model pointer/FK exists.
+- [x] `MerchantPricingPlan.isActive` toggles do not rewrite the model association.
+- [x] Audit remains `PLAN_CATALOG_CHANGED` and model changes record bounded before/after IDs only.
+- [x] Shared schemas validate Availability/Catalogue/assignment shapes.
+- [x] No OpenRouter credential or live provider request is involved.
+- [x] Focused unit/security/UI regression coverage from R14 passes.
 
 ## Validation
 
@@ -736,35 +736,66 @@ Do not begin Commerce/Background/system-test follow-on work.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `package.json` and `package-lock.json`: upgrade `@modainteract/moda-interact-shared` from `1.0.1` to the SHARED-002 release `1.1.0`.
+- `src/lib/admin/merchant/pricing-builder-payload.ts`: require and normalize nullable `commerceModelId` with the specified 128-character/path validation.
+- `src/lib/admin/merchant/pricing-plan-model.ts`: shared-schema validated Platform model option listing and write-time selectability helper.
+- `src/lib/admin/merchant/pricing-plan.ts`: include/validate persisted model assignments in plan reads and catalogue projection.
+- `src/app/actions/merchant-pricing-plan.ts`: validate changed assignments inside the existing transaction; persist exact IDs; validate canonical assignment shape; extend the existing audit event. BillingPlan synchronization and toggle remain model-neutral.
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`, `src/components/admin/billing-drawers.tsx`, and `src/app/(protected)/billing/page.tsx`: add the Platform-only selector, deterministic unavailable sentinel/repair alert, requested plan-runtime help text, and pass options through the existing drawer.
+- `tests/unit/merchant-pricing-builder-payload.test.ts`: cover nullable, blank, trimmed, maximum-length, invalid-type and overlength input.
+- `tests/unit/merchant-pricing-plan-model.test.ts`: cover enabled Platform-only filtering, deterministic order, projection, selectability, and invalid Shared-schema data.
+- `tests/security/admin-merchant-pricing-plan.test.mjs`: source-level regression assertions for transactional validation ordering, Platform-admin authorization, association/audit/toggle invariants, repair UI contract, model-neutral BillingPlan synchronization, and static schema absence.
+
+The launcher-provided database submodule was already at accepted ARCH-024-DATABASE-001 commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; it was regenerated/validated and no database schema, migration, or gitlink change was needed.
 
 ### Work Completed
 
-None
+- Consumed Shared `1.1.0`, whose `@modainteract/moda-interact-shared/commerce/model` export provides the canonical Availability, Catalogue Entry and Pricing Plan Assignment schemas; no local duplicate contracts were added. Regenerated Prisma Client from the accepted database schema.
+- Added required `commerceModelId` to every builder payload. Null and blank strings normalize to null; nonblank values are trimmed and bounded to 128 characters; invalid values fail at `$.commerceModelId`.
+- Added the single reusable selector/helper. Listing filters to enabled Catalogue Entries with enabled `PLATFORM` Availability and null `shopId`, validates each returned Availability and Catalogue Entry, orders by display name/provider/provider model ID/id, and projects only the four UI-safe fields. Write validation loads the exact selected model and fails closed with a bounded message. No credentials or provider calls are read.
+- Integrated the selector in the existing Platform Admin Merchant Pricing Plan builder. It presents `Use Platform default`, formatted selectable options, and a deterministic `Current model unavailable — <id>` sentinel plus `role="alert"` repair guidance without clearing the stored ID. The help text describes current-plan timing and does not expose a merchant-facing control.
+- Added the nullable association to existing read/build state and validates persisted assignments with `CommercePricingPlanModelAssignmentSchema`.
+- Changed non-null assignments are revalidated inside the existing plan transaction. Unchanged now-invalid IDs bypass current-selectability validation and remain persisted; changed IDs must be null or selectable. Create/update save the exact ID. Existing toggle only updates `isActive`; materialized BillingPlan sync still writes only its existing billing fields.
+- Extended the existing `PLAN_CATALOG_CHANGED` event with only the old/new `commerceModelId` when the association changes; no duplicate audit event or model configuration/credential data is written.
+- Launcher preparation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-ADMIN-004`, branch `task/ARCH-024-ADMIN-004`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-ADMIN-004`, branch `task/ARCH-024-ADMIN-004`. Both dedicated worktrees were newly created. Shared workspace/admin checkouts were not switched or mutated for implementation; no other task worktree was reused.
+- Launcher synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` incorporation `already-current`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` incorporation `already-current`.
+- Launcher recursive submodule setup passed (`git submodule sync --recursive` and `git submodule update --init --recursive`); `database` is initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Claim: Attempt 1 by `copilot` at `2026-10-01T17:16:59Z`; launcher claim commit `16a3889f5e6177445b898fddced7cb2a874f8a38` was committed and pushed.
+- Implementation commit `2bdfb89` (`task(ARCH-024-ADMIN-004): assign models to pricing plans`) is pushed to `origin/task/ARCH-024-ADMIN-004`. No database gitlink was staged.
 
 ### Validation Results
 
-Not run
+- PASS: `npm run prisma:generate` — Prisma Client v6.19.3 generated from `database/prisma/schema.prisma`.
+- PASS: `npm run prisma:validate` — accepted schema is valid.
+- PASS: `node --experimental-strip-types --test tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts` — 14 tests passed. Node emitted the existing `MODULE_TYPELESS_PACKAGE_JSON` warning for typed ESM test files.
+- PASS: `node --test tests/security/admin-merchant-pricing-plan.test.mjs` — 13 tests passed. The mutation-path assertions inspect the server-action source; this task does not add a database-backed server-action integration test.
+- PASS: task-required targeted `npx prettier --check` over all changed/new implementation and test files — all matched files use Prettier style.
+- BLOCKED BY PRE-EXISTING DIAGNOSTIC: task-required targeted ESLint command over changed TypeScript/TSX files reports one `react-hooks/purity` error in `src/components/admin/billing-drawers.tsx:182`: `Date.now()` is called during render. This line is unchanged by the task; the only edits to that file pass a `commerceModelOptions` prop through the existing drawer. No unrelated drawer behavior was changed.
+- PASS: targeted ESLint over the other changed TypeScript/TSX files, excluding only `billing-drawers.tsx`, completed with no diagnostics.
+- PASS: `npm run build` — production build completed. Existing warnings include BullMQ dynamic dependency resolution and unresolved optional `@valkey/valkey-glide` imports; compilation, TypeScript, static generation and route generation completed successfully.
+- PASS: static BillingPlan absence check — `BillingPlan` in `database/prisma/schema.prisma` has neither `commerceModelId` nor `modelId`; the materialized BillingPlan update block contains neither field.
+- PASS: no-live-provider check — added tests contain no provider request; the `openrouter` text in the helper test is only a model-provider fixture value.
+- PASS: `git diff --check` — clean.
 
 ### Deviations
 
-None
+No scope deviation. The database gitlink already pointed to the accepted Database commit supplied by the task branch/launcher, so it required no update. `src/lib/admin/merchant/pricing-plan-builder.ts` did not need a change; the existing drawer/builder component is the active create/edit flow and receives model options through the billing page.
 
 ### Assumptions
 
-None
+The ARCH-024-SHARED-002 published package version is `1.1.0`, as resolved from the task's accepted Shared dependency state. Existing now-invalid associations are retained in the edit payload unless an Admin explicitly changes them.
 
 ### Unresolved Issues
 
-None
+The task's server-action mutation scenarios are protected by source-level security assertions rather than executed against a database; payload parsing, option filtering/validation, and schema rejection are exercised by unit tests. The targeted ESLint command remains red on the unchanged `Date.now()` purity diagnostic in `billing-drawers.tsx:182`; it is unrelated to the model selector. Build warnings described above also remain non-blocking.
 
 ### Architectural Concerns
 
-None
+None. The model pointer exists only on `MerchantPricingPlan`; no BillingPlan model field/FK, physical plan relation, billing/subscription mutation, merchant selector, OpenRouter call, or follow-on runtime behavior was introduced.
 
 ## Architect Review
 
