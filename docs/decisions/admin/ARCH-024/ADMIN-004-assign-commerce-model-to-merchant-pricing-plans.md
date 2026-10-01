@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
-  - ARCH-024-SHARED-004
+  - ARCH-024-SHARED-002
   - ARCH-024-ADMIN-002
 enables: []
 created: 2026-10-01
@@ -97,7 +97,7 @@ and already performs one transactional plan mutation with catalogue-revision fen
 
 ARCH-024 must extend that existing workflow. Do not build a second Price Plan editor.
 
-`ARCH-024-SHARED-004` publishes the canonical model contracts including:
+`ARCH-024-SHARED-002` publishes the canonical model contracts including:
 
 ```ts
 CommerceModelAvailabilitySchema
@@ -127,7 +127,7 @@ moda-interact-admin/tests/unit/merchant-pricing-plan-model.test.ts   # NEW
 moda-interact-admin/tests/security/admin-merchant-pricing-plan.test.mjs
 ```
 
-Update `package.json` / lockfile only when mechanically required to consume the exact SHARED-004 version.
+Update `package.json` / lockfile only when mechanically required to consume the exact SHARED-002 version.
 
 Additional files may change only when mechanically required by the existing Merchant Pricing Plan builder flow. Name and justify each additional file in the Completion Report.
 
@@ -157,7 +157,7 @@ Do not edit the database schema/migration in this task.
 This task MUST:
 
 1. update the nested `database/` gitlink to the architect-accepted ARCH-024-DATABASE-001 merged commit;
-2. update `@modainteract/moda-interact-shared` to the exact version published by ARCH-024-SHARED-004;
+2. update `@modainteract/moda-interact-shared` to the exact version published by ARCH-024-SHARED-002;
 3. regenerate Prisma from the accepted nested schema;
 4. use the published Shared model/assignment schemas rather than defining structurally similar local copies.
 
@@ -171,7 +171,7 @@ import {
 } from "@modainteract/moda-interact-shared/commerce/model";
 ```
 
-Use the actual published export path from SHARED-004 if packaging differs; do not duplicate the schemas locally.
+Use the actual published export path from SHARED-002 if packaging differs; do not duplicate the schemas locally.
 
 ### R2 — extend the Merchant Pricing Plan builder payload exactly
 
@@ -539,7 +539,7 @@ Do not flag ordinary unrelated uses of a generic `modelId` identifier outside Bi
 
 ## Work Items
 
-- [ ] Consume accepted ARCH-024 Database gitlink and exact SHARED-004 package version.
+- [ ] Consume accepted ARCH-024 Database gitlink and exact SHARED-002 package version.
 - [ ] Extend Merchant Pricing builder payload with nullable `commerceModelId` and exact validation.
 - [ ] Add `pricing-plan-model.ts` with deterministic Platform-only model option/query/validation contracts.
 - [ ] Add the Commerce model selector to the existing Merchant Pricing Plan builder.
@@ -559,7 +559,7 @@ Task/publication:
 
 ```text
 ARCH-024-SHARED-001
-ARCH-024-SHARED-004
+ARCH-024-SHARED-002
 ```
 
 Package:
@@ -606,7 +606,7 @@ This Admin task must not invent an alternative relationship.
 ## Dependencies
 
 - `ARCH-024-DATABASE-001`
-- `ARCH-024-SHARED-004`
+- `ARCH-024-SHARED-002`
 - `ARCH-024-ADMIN-002`
 
 All dependencies must be architect-accepted Complete before this task becomes Ready.

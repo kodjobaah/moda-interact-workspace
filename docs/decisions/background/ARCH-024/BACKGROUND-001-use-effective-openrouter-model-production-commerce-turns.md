@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
-  - ARCH-024-SHARED-004
+  - ARCH-024-SHARED-002
   - ARCH-024-COMMERCE-002
   - ARCH-024-ADMIN-003
 enables:
@@ -90,7 +90,7 @@ That path conflicts with ARCH-024:
 - Commerce Studio owns the explicit Platform/Shop Agent Configuration selection;
 - Platform Admin may associate a global Platform-available model with a Merchant Pricing Plan;
 - ARCH-024-COMMERCE-002 defines the canonical `SHOP -> PRICING_PLAN -> PLATFORM` effective-model semantics;
-- ARCH-024-SHARED-004 publishes the canonical model contracts and Node-only `OpenRouterModelClient` implementing the existing Shared `CommerceModelInvoker` boundary;
+- ARCH-024-SHARED-002 publishes the canonical model contracts and Node-only `OpenRouterModelClient` implementing the existing Shared `CommerceModelInvoker` boundary;
 - `CommerceOpenRouterCredential` stores one encrypted OpenRouter credential per `CommerceEnvironment`.
 
 Background remains the production CommerceAgent host. It MUST NOT import `moda-interact-commerce` source code. It consumes the same accepted database schema and Shared contracts and implements the production-side read of the canonical ARCH-024 selection rules exactly as specified below.
@@ -152,14 +152,14 @@ Additional files may be changed only when mechanically required by the accepted 
 This task MUST:
 
 1. update the nested `database/` gitlink to the architect-accepted merged ARCH-024-DATABASE-001 database commit;
-2. update `@modainteract/moda-interact-shared` to the **exact version published by ARCH-024-SHARED-004**;
+2. update `@modainteract/moda-interact-shared` to the **exact version published by ARCH-024-SHARED-002**;
 3. update the Background lockfile with the repository's normal package manager;
 4. run Prisma generation from the accepted nested schema;
 5. consume `CommerceModelInvoker`, `ResolvedCommerceModelSchema` and `OpenRouterModelClient` from the published Shared package rather than recreating them locally.
 
 Do not edit the nested database schema in this task.
 
-Do not use a local Shared checkout, `npm link`, `file:` dependency or workspace borrowing in place of the published SHARED-004 package.
+Do not use a local Shared checkout, `npm link`, `file:` dependency or workspace borrowing in place of the published SHARED-002 package.
 
 ## Out of Scope
 
@@ -182,7 +182,7 @@ Do not use a local Shared checkout, `npm link`, `file:` dependency or workspace 
 
 ### R1 — consume the canonical Shared runtime and remove the Background-local model adapter
 
-Import production model runtime contracts from the exact SHARED-004 package.
+Import production model runtime contracts from the exact SHARED-002 package.
 
 At minimum use:
 
@@ -913,7 +913,7 @@ Do not document ARCH-024 Test Conversations as Background runtime behaviour.
 
 ## Work Items
 
-- [ ] Consume the accepted ARCH-024 Database gitlink and exact SHARED-004 package version.
+- [ ] Consume the accepted ARCH-024 Database gitlink and exact SHARED-002 package version.
 - [ ] Add canonical deployment-to-Commerce environment resolution.
 - [ ] Add canonical `shopId` to `RecoveryAgentContext` and populate it from durable ownership.
 - [ ] Implement the exact `SHOP -> PRICING_PLAN -> PLATFORM` production effective-model resolver from R4, including current Subscription/BillingPlan/MerchantPricingPlan lookup.
@@ -935,7 +935,7 @@ Do not document ARCH-024 Test Conversations as Background runtime behaviour.
 
 Task:
 
-`ARCH-024-SHARED-001` / publication `ARCH-024-SHARED-004`
+`ARCH-024-SHARED-001` / publication `ARCH-024-SHARED-002`
 
 Package:
 
@@ -1023,7 +1023,7 @@ No plaintext credential crosses repository boundaries.
 ## Dependencies
 
 - `ARCH-024-DATABASE-001`
-- `ARCH-024-SHARED-004`
+- `ARCH-024-SHARED-002`
 - `ARCH-024-COMMERCE-002`
 - `ARCH-024-ADMIN-003`
 

@@ -499,7 +499,7 @@ LangChain/OpenRouter types do not leak into pure model contracts or public runne
 
 ### Modular Commerce turn runner
 
-SHARED-002 refactors the existing runner without changing its public boundary:
+SHARED-001 refactors the existing runner, after establishing the model contracts/OpenRouter client, without changing its public boundary:
 
 ```text
 runCommerceTurn
@@ -561,7 +561,7 @@ The existing private-MCP envelope (exact endpoint, POST-only, size bounds, conte
 
 ### Structured Commerce-turn logging
 
-SHARED-003 adds semantic `commerce.turn.*` events using the existing `StructuredLogger`. The host creates the logger so actual `service.name` and deployment environment remain intact; Shared adds `component=commerce-turn-runner` and safe turn/grant/release identifiers.
+SHARED-001 also adds semantic `commerce.turn.*` events using the existing `StructuredLogger`. The host creates the logger so actual `service.name` and deployment environment remain intact; Shared adds `component=commerce-turn-runner` and safe turn/grant/release identifiers.
 
 The runner does not log prompt/instruction text, customer content, Tool arguments/results, Merchant Knowledge content, provider bodies, evidence payloads or credentials. Logging failure is best-effort and cannot alter business behaviour.
 
@@ -960,7 +960,7 @@ No new high-cardinality model-catalogue scan is permitted on every token/message
 
 ## Observability
 
-ARCH-024 now includes one bounded Shared observability implementation task: SHARED-003 instruments the Commerce turn state machine using the already-approved Shared `StructuredLogger`. No new generic logger, metrics pipeline, tracing SDK or Grafana-specific application API is introduced.
+ARCH-024 includes Commerce-turn observability inside the single bounded SHARED-001 implementation task using the already-approved Shared `StructuredLogger`. No new generic logger, metrics pipeline, tracing SDK or Grafana-specific application API is introduced.
 
 Stable runner events:
 
@@ -1034,31 +1034,29 @@ Shared publication sequence:
 
 ```text
 DATABASE-001
-    -> SHARED-001 model contracts/OpenRouter client
-    -> SHARED-002 modular LangGraph runner
-    -> SHARED-003 structured runner logging
-    -> SHARED-004 one combined published package revision
+    -> SHARED-001 complete model/OpenRouter + modular LangGraph + structured-logging implementation
+    -> SHARED-002 publication-only gate for the accepted combined package
 ```
 
 Consumer progression:
 
 ```text
-DATABASE-001 + SHARED-004 + ADMIN-001
+DATABASE-001 + SHARED-002 + ADMIN-001
     -> ADMIN-002
        |-> ADMIN-003
        `-> ADMIN-004 Price Plan model association
 
-DATABASE-001 + SHARED-004 + COMMERCE-001
+DATABASE-001 + SHARED-002 + COMMERCE-001
     -> COMMERCE-002
     -> COMMERCE-003
     -> COMMERCE-004
     -> COMMERCE-005
     -> COMMERCE-006
 
-COMMERCE-006 + SHARED-004 + ADMIN-003
+COMMERCE-006 + SHARED-002 + ADMIN-003
     -> COMMERCE-007
 
-DATABASE-001 + SHARED-004 + COMMERCE-002 + ADMIN-003
+DATABASE-001 + SHARED-002 + COMMERCE-002 + ADMIN-003
     -> BACKGROUND-001
     -> BACKGROUND-002
 
@@ -1069,7 +1067,7 @@ BACKGROUND-002
     -> GATEWAY-001
 ```
 
-Admin tasks consume only the exact `ARCH-024-SHARED-004` published package revision. Commerce and Background likewise consume that same combined accepted release; no task uses unpublished Shared task-branch source.
+Admin tasks consume only the exact `ARCH-024-SHARED-002` published package revision. Commerce and Background likewise consume that same combined accepted release; no task uses unpublished Shared task-branch source.
 
 Gateway remains last among runtime cutover tasks so obsolete static Preview inputs are not removed before Commerce/Background/Admin have adopted the database-backed credential/runtime contract and Background's redundant graph dependency is removed.
 
@@ -1082,21 +1080,19 @@ Individual task YAML is authoritative.
 | `ARCH-024-DATABASE-001` | `moda_database` | Ready | - |
 | `ARCH-024-SHARED-001` | `moda_shared` | Pending | DATABASE-001 |
 | `ARCH-024-SHARED-002` | `moda_shared` | Pending | SHARED-001 |
-| `ARCH-024-SHARED-003` | `moda_shared` | Pending | SHARED-002 |
-| `ARCH-024-SHARED-004` | `moda_shared` | Pending | SHARED-001, SHARED-002, SHARED-003 |
-| `ARCH-024-ADMIN-001` | `moda_admin` | Pending | DATABASE-001, SHARED-004 |
-| `ARCH-024-ADMIN-002` | `moda_admin` | Pending | DATABASE-001, SHARED-004, ADMIN-001 |
-| `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-004, ADMIN-002 |
-| `ARCH-024-ADMIN-004` | `moda_admin` | Pending | DATABASE-001, SHARED-004, ADMIN-002 |
+| `ARCH-024-ADMIN-001` | `moda_admin` | Pending | DATABASE-001, SHARED-002 |
+| `ARCH-024-ADMIN-002` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-001 |
+| `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
+| `ARCH-024-ADMIN-004` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Ready | - |
-| `ARCH-024-COMMERCE-002` | `moda_commerce` | Pending | DATABASE-001, SHARED-004, COMMERCE-001 |
+| `ARCH-024-COMMERCE-002` | `moda_commerce` | Pending | DATABASE-001, SHARED-002, COMMERCE-001 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
 | `ARCH-024-COMMERCE-004` | `moda_commerce` | Pending | COMMERCE-003 |
 | `ARCH-024-COMMERCE-005` | `moda_commerce` | Pending | COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |
-| `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-004, ADMIN-003 |
-| `ARCH-024-BACKGROUND-001` | `moda_background` | Pending | DATABASE-001, SHARED-004, COMMERCE-002, ADMIN-003 |
-| `ARCH-024-BACKGROUND-002` | `moda_background` | Pending | BACKGROUND-001, SHARED-004 |
+| `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-002, ADMIN-003 |
+| `ARCH-024-BACKGROUND-001` | `moda_background` | Pending | DATABASE-001, SHARED-002, COMMERCE-002, ADMIN-003 |
+| `ARCH-024-BACKGROUND-002` | `moda_background` | Pending | BACKGROUND-001, SHARED-002 |
 | `ARCH-024-GATEWAY-001` | `moda_gateway` | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-002 |
 
 No ARCH-024 system-test task is materialised in this session. This remains an intentional coordination decision due to overlap with frozen ARCH-023 and upcoming architecture work. Any terminal integrated acceptance work will be defined separately against the final combined architecture.
@@ -1172,5 +1168,5 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 ## Change History
 
 - **2026-10-01** — ARCH-024 amended before implementation to add optional `MerchantPricingPlan.commerceModelId` product-tier model assignment. Effective model precedence is now `SHOP -> PRICING_PLAN -> PLATFORM`; current `Subscription.planId`/`BillingPlan.shopifyPlanHandle` resolves the current MerchantPricingPlan, pending plans are ignored until effective, explicit invalid Price Plan selections fail closed, and Admin owns the Price Plan association without introducing merchant model selection or duplicating model identity onto `BillingPlan`.
-- **2026-10-01** — ARCH-024 amended before implementation: adopted a modular low-level Shared LangGraph `StateGraph` inside `runCommerceTurn`, retained the host-neutral `RunnerTool`/official Background MCP SDK boundary, preserved ARCH-023 runtime-data/Merchant Knowledge trust semantics, added canonical `commerce.turn.*` structured logging, added SHARED-002/003/004 and BACKGROUND-002, and retargeted consumers to the combined SHARED-004 publication.
+- **2026-10-01** — ARCH-024 amended before implementation: adopted a modular low-level Shared LangGraph `StateGraph` inside `runCommerceTurn`, retained the host-neutral `RunnerTool`/official Background MCP SDK boundary, preserved ARCH-023 runtime-data/Merchant Knowledge trust semantics, added canonical `commerce.turn.*` structured logging, collapsed Shared implementation into SHARED-001 plus publication-only SHARED-002, retained BACKGROUND-002, and retargeted all consumers to the SHARED-002 publication gate.
 - **2026-10-01** — ARCH-024 agreed. Consolidated Admin-owned Model Availability/Catalogue/Credential design, dynamic `provider + providerModelId`, extensible OpenRouter-style model configuration, Shared LangChain/OpenRouter runtime, Commerce Studio selection-only ownership, Feature-composed selected-Shop Test Conversations, production Background parity and Gateway cutover. ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 superseded. ARCH-024 system-test task materialisation deliberately deferred.

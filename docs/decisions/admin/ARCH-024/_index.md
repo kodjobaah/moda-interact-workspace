@@ -11,7 +11,7 @@ Coordinator: `moda_architect`.
 Admin owns what models exist, where they are available, the optional Merchant Pricing Plan -> model product-tier association, and the environment OpenRouter credential. Admin does not select a merchant-specific active Agent model.
 
 ```text
-DATABASE-001 + SHARED-004
+DATABASE-001 + SHARED-002
         |
         v
     ADMIN-001
@@ -30,10 +30,10 @@ OpenRouter credential    Price Plan -> model
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [ADMIN-001](ADMIN-001-administer-model-availability.md) | Administer the global Platform Availability and zero/one Shop Availability per Shop | Pending | DATABASE-001, SHARED-004 |
-| [ADMIN-002](ADMIN-002-administer-model-catalogue-entries.md) | Create/edit/enable/disable/reassign Catalogue Entries and validated OpenRouter-style configuration | Pending | DATABASE-001, SHARED-004, ADMIN-001 |
-| [ADMIN-003](ADMIN-003-manage-openrouter-credentials.md) | Set/replace/remove the encrypted OpenRouter credential for the current environment without exposing plaintext | Pending | DATABASE-001, SHARED-004, ADMIN-002 |
-| [ADMIN-004](ADMIN-004-assign-commerce-model-to-merchant-pricing-plans.md) | Assign zero/one enabled Platform-available Commerce model to each Merchant Pricing Plan through the existing billing builder | Pending | DATABASE-001, SHARED-004, ADMIN-002 |
+| [ADMIN-001](ADMIN-001-administer-model-availability.md) | Administer the global Platform Availability and zero/one Shop Availability per Shop | Pending | DATABASE-001, SHARED-002 |
+| [ADMIN-002](ADMIN-002-administer-model-catalogue-entries.md) | Create/edit/enable/disable/reassign Catalogue Entries and validated OpenRouter-style configuration | Pending | DATABASE-001, SHARED-002, ADMIN-001 |
+| [ADMIN-003](ADMIN-003-manage-openrouter-credentials.md) | Set/replace/remove the encrypted OpenRouter credential for the current environment without exposing plaintext | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
+| [ADMIN-004](ADMIN-004-assign-commerce-model-to-merchant-pricing-plans.md) | Assign zero/one enabled Platform-available Commerce model to each Merchant Pricing Plan through the existing billing builder | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
 
 ## Execution frontier
 
