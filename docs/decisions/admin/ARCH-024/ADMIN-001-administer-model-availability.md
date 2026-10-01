@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-024-DATABASE-001
   - ARCH-024-SHARED-002
@@ -53,10 +53,10 @@ PLATFORM availability
     cannot be recreated, deleted, moved or retargeted
 
 SHOP availability
-    zero or one row per existing Shop
-    SUPER_ADMIN may create it for a Shop that does not already have one
-    SUPER_ADMIN may enable / disable it
-    cannot be deleted, moved to another Shop or changed to PLATFORM
+  zero or one row per existing Shop
+  SUPER_ADMIN may create it for a Shop that does not already have one
+  SUPER_ADMIN may enable / disable it
+  cannot be deleted, moved to another Shop or changed to PLATFORM
 ```
 
 This task administers Availability containers only.
@@ -71,9 +71,9 @@ ARCH-024-DATABASE-001 establishes the durable relationship:
 
 ```text
 CommerceModelAvailability
-        1
-        |
-        *
+    1
+    |
+    *
 CommerceModelCatalogueEntry
 ```
 
@@ -936,21 +936,21 @@ The database identity guard remains authoritative and Admin must not attempt to 
 
 ## Work Items
 
-- [ ] Synchronize the Admin database submodule to the architect-accepted `ARCH-024-DATABASE-001` commit.
-- [ ] Consume the exact Shared package version published by `ARCH-024-SHARED-002`.
-- [ ] Run Prisma validate/generate before implementing the Admin model layer.
-- [ ] Add `model-availability-validation.ts` with the exact two input parsers.
-- [ ] Add `model-availability.ts` with the exact read model, Shop candidate search and two mutation kinds.
-- [ ] Add `mutateModelAvailabilityAction()` with independent SUPER_ADMIN authorization and Serializable transaction semantics.
-- [ ] Add `/commerce-models/availability` protected page.
-- [ ] Add `Commerce models -> Availability` sidebar navigation and the `model-availability` AdminShell active key.
-- [ ] Add Platform-first Availability presentation and Shop Availability list.
-- [ ] Add bounded Shop search/create drawer.
-- [ ] Add identity-read-only management drawer with CAS enable/disable action.
-- [ ] Add `useFormStatus()` mutation submit protection.
-- [ ] Add focused parser/service/action/security/navigation regression tests.
-- [ ] Confirm there is no deletion, Catalogue mutation, Agent Configuration mutation or credential mutation in this task.
-- [ ] Complete the task Completion Report and return control to `moda_architect`.
+- [x] Synchronize the Admin database submodule to the architect-accepted `ARCH-024-DATABASE-001` commit.
+- [x] Consume the exact Shared package version published by `ARCH-024-SHARED-002`.
+- [x] Run Prisma validate/generate before implementing the Admin model layer.
+- [x] Add `model-availability-validation.ts` with the exact two input parsers.
+- [x] Add `model-availability.ts` with the exact read model, Shop candidate search and two mutation kinds.
+- [x] Add `mutateModelAvailabilityAction()` with independent SUPER_ADMIN authorization and Serializable transaction semantics.
+- [x] Add `/commerce-models/availability` protected page.
+- [x] Add `Commerce models -> Availability` sidebar navigation and the `model-availability` AdminShell active key.
+- [x] Add Platform-first Availability presentation and Shop Availability list.
+- [x] Add bounded Shop search/create drawer.
+- [x] Add identity-read-only management drawer with CAS enable/disable action.
+- [x] Add `useFormStatus()` mutation submit protection.
+- [x] Add focused parser/service/action/security/navigation regression tests.
+- [x] Confirm there is no deletion, Catalogue mutation, Agent Configuration mutation or credential mutation in this task.
+- [x] Complete the task Completion Report and return control to `moda_architect`.
 
 ## Interfaces / Contracts
 
@@ -1045,25 +1045,25 @@ ADMIN-002 adds Model Catalogue entry administration under the Availability scope
 
 ## Acceptance Criteria
 
-- [ ] `/commerce-models/availability` is protected and readable by authenticated Platform Admins.
-- [ ] All Availability mutations independently require `SUPER_ADMIN`.
-- [ ] Sidebar exposes only the implemented `Commerce models -> Availability` destination from ARCH-024 Admin work.
-- [ ] Exactly one Platform Availability is required by the read model and is never auto-created by Admin runtime code.
-- [ ] Platform Availability can be inspected and enabled/disabled but cannot be recreated, deleted, retargeted or converted to SHOP.
-- [ ] A Shop Availability can be created only for an existing canonical Shop without an existing Availability.
-- [ ] Shop candidate search requires at least 2 characters, returns at most 25 results, and excludes Shops that already have any Availability.
-- [ ] Shop Availability identity cannot be changed after creation.
-- [ ] Availability enable/disable uses `editVersion` CAS and increments it exactly once on success.
-- [ ] A stale enable/disable request is rejected without audit/state mutation.
-- [ ] Create/enable/disable writes the required `CommerceAuditEvent` in the same transaction.
-- [ ] Disabling an Availability does not mutate Catalogue Entries or Agent Configuration selections.
-- [ ] Platform/Shop model counts are informational only and require no Catalogue mutation.
-- [ ] The page clearly distinguishes Availability from active Agent model selection.
-- [ ] No Availability delete operation exists.
-- [ ] No Model Catalogue editor/selector or OpenRouter credential field appears on the Availability page.
-- [ ] Repeated form submissions are visibly disabled while pending and remain server-safe through uniqueness/CAS.
-- [ ] Admin uses the published Shared Availability contract rather than a duplicate local cross-service type.
-- [ ] Focused tests, typecheck/lint, production build and `git diff --check` pass, subject only to documented unchanged baseline conditions.
+- [x] `/commerce-models/availability` is protected and readable by authenticated Platform Admins.
+- [x] All Availability mutations independently require `SUPER_ADMIN`.
+- [x] Sidebar exposes only the implemented `Commerce models -> Availability` destination from ARCH-024 Admin work.
+- [x] Exactly one Platform Availability is required by the read model and is never auto-created by Admin runtime code.
+- [x] Platform Availability can be inspected and enabled/disabled but cannot be recreated, deleted, retargeted or converted to SHOP.
+- [x] A Shop Availability can be created only for an existing canonical Shop without an existing Availability.
+- [x] Shop candidate search requires at least 2 characters, returns at most 25 results, and excludes Shops that already have any Availability.
+- [x] Shop Availability identity cannot be changed after creation.
+- [x] Availability enable/disable uses `editVersion` CAS and increments it exactly once on success.
+- [x] A stale enable/disable request is rejected without audit/state mutation.
+- [x] Create/enable/disable writes the required `CommerceAuditEvent` in the same transaction.
+- [x] Disabling an Availability does not mutate Catalogue Entries or Agent Configuration selections.
+- [x] Platform/Shop model counts are informational only and require no Catalogue mutation.
+- [x] The page clearly distinguishes Availability from active Agent model selection.
+- [x] No Availability delete operation exists.
+- [x] No Model Catalogue editor/selector or OpenRouter credential field appears on the Availability page.
+- [x] Repeated form submissions are visibly disabled while pending and remain server-safe through uniqueness/CAS.
+- [x] Admin uses the published Shared Availability contract rather than a duplicate local cross-service type.
+- [x] Focused tests, typecheck/lint, production build and `git diff --check` pass, subject only to documented unchanged baseline conditions.
 
 ## Validation
 
@@ -1073,19 +1073,19 @@ Inspect `package.json` first and use the scripts actually present in this reposi
 
 Required validation:
 
-- [ ] Prisma schema validates against the accepted ARCH-024 database submodule:
+- [x] Prisma schema validates against the accepted ARCH-024 database submodule:
 
 ```bash
 npm run prisma:validate
 ```
 
-- [ ] Prisma client regenerates:
+- [x] Prisma client regenerates:
 
 ```bash
 npm run prisma:generate
 ```
 
-- [ ] Focused unit tests pass:
+- [x] Focused unit tests pass:
 
 ```bash
 node --experimental-strip-types --test \
@@ -1107,7 +1107,7 @@ required audit action/targets
 no Agent Configuration mutation
 ```
 
-- [ ] Focused Admin security/navigation tests pass:
+- [x] Focused Admin security/navigation tests pass:
 
 ```bash
 node --test \
@@ -1130,32 +1130,30 @@ no Agent Configuration mutation path
 no credential mutation path
 ```
 
-- [ ] TypeScript passes:
+- [x] TypeScript passes:
 
 ```bash
 npx tsc --noEmit --pretty false
 ```
 
-- [ ] Focused ESLint passes for every changed TypeScript/TSX file. Use the repository-declared `lint` script and pass the changed paths; do not invent another lint configuration.
+- [x] Focused ESLint passes for every changed TypeScript/TSX file. Use the repository-declared `lint` script and pass the changed paths; do not invent another lint configuration.
 
-- [ ] Production build passes:
+- [x] Production build passes:
 
 ```bash
 npm run build
 ```
 
-- [ ] Whitespace validation passes:
+- [x] Whitespace validation passes:
 
 ```bash
 git diff --check
 ```
 
 If a validation command encounters a documented unchanged baseline condition, record its baseline ID in the Completion Report. A changed-file regression introduced by this task is not excused by baseline status.
-
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete:
-
 1. set the task Completion Report to `Ready for Review`;
 2. set task status to `review`;
 3. clear no architectural dependency yourself;
@@ -1167,7 +1165,6 @@ Do not begin `ARCH-024-ADMIN-002`, OpenRouter credential administration, Commerc
 ## Implementation Notes
 
 ### Exact ownership distinction
-
 Use these terms consistently in code/UI/tests:
 
 ```text
@@ -1206,59 +1203,156 @@ That is not an Admin database-repair opportunity. `ARCH-024-COMMERCE-002` owns e
 ## Completion Report
 
 ### Status
-
-Not Started
+Ready for Review
 
 ### Files Changed
-
-None
+- `package.json` and `package-lock.json` — consume exact Shared release `1.1.0`.
+- `src/lib/admin/model-availability-validation.ts` — the two bounded mutation input parsers.
+- `src/lib/admin/model-availability.ts` — Shared-schema-validated Availability read/search and the only two allowed mutation kinds.
+- `src/app/actions/model-availability.ts` — SUPER_ADMIN-gated Serializable transaction action.
+- `src/app/(protected)/commerce-models/availability/page.tsx` — protected read page and URL-driven drawer state.
+- `src/components/admin/model-availability/model-availability-catalog.tsx` — Platform-first summary and Shop list.
+- `src/components/admin/model-availability/model-availability-editor.tsx` — Shop creation/search and immutable-identity management drawers.
+- `src/components/admin/model-availability/model-availability-submit-button.tsx` — pending submit protection.
+- `src/components/admin/sidebar.tsx` and `src/components/admin/admin-shell.tsx` — Commerce models navigation and active key.
+- `tests/unit/model-availability-validation.test.ts` and `tests/unit/model-availability-service.test.ts` — parser and transaction mutation coverage.
+- `tests/security/admin-model-availability.test.mjs` and `tests/security/admin-sidebar-navigation.test.mjs` — route/action/read security, prohibited-path and navigation regressions.
+- No additional files changed; the accepted `database/` gitlink remains unchanged at the launcher-prepared commit.
 
 ### Work Completed
-
-None
+- Consumed `@modainteract/moda-interact-shared@1.1.0`, the exact SHARED-002 publication, and generated Prisma from accepted database commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Added a Platform-first Availability read model. It requires exactly one Platform row, validates every Availability through the published Shared schemas before scope partitioning, validates Shop identity, and projects only bounded identity/status/count fields.
+- Added case-insensitive, trimmed, 120-character-bounded Shop search that requires two characters, returns at most 25 Shops without any Availability, and selects only canonical Shop identity/status.
+- Added only `create-shop` and `set-enabled` transaction mutations. Creation fixes SHOP scope, enabled state, version 1 and canonical Shop identity; toggle uses `editVersion` CAS and leaves Catalogue Entries and Agent Configurations untouched.
+- Added same-transaction `CommerceAuditEvent` records for create/enable/disable with the required action/targets and bounded metadata.
+- Added the protected `/commerce-models/availability` page, visible read navigation, SUPER_ADMIN-only creation/state-change forms, read-only identity, required disable warnings, and pending button state.
+- Added deterministic focused parser/service tests and static route/action/navigation safety coverage; no OpenRouter credential, model call, Catalogue mutation, Agent Configuration mutation or delete path was introduced.
+- Implementation commit `22e22d10dd79301e0d3d686df11a9d4db42b2470` (`feat(admin): manage commerce model availability`) is pushed to `origin/task/ARCH-024-ADMIN-001`.
+- Attempt 2 correction: the Platform/Shop scope-specific disable warning now renders only when `availability.enabled` makes `Disable availability` the available transition; the enable path renders no disable warning. Added a source-level regression tying the warning condition to the action label and conditional rendering. Implementation commit `badf437d7f693b1dc4f5cb2fba04930e150bbf38` is pushed to `origin/task/ARCH-024-ADMIN-001`.
+- Attempt 2 launcher evidence: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-ADMIN-001`, branch `task/ARCH-024-ADMIN-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-ADMIN-001`, branch `task/ARCH-024-ADMIN-001`. Both canonical task worktrees were reused; shared workspace/source checkouts were not switched or mutated, and no other task worktree was reused.
+- Attempt 2 start synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` incorporation `already-current`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` incorporation `already-current`.
+- Attempt 2 dependency/submodule gate: passed for `ARCH-024-DATABASE-001` and `ARCH-024-SHARED-002`, both `complete`; recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed. The `database` submodule is initialized at accepted commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Attempt 2 parent task report commit `83623ef4767f009e84763588ec9a067262301943` was pushed to `origin/task/ARCH-024-ADMIN-001`. After publication, both the parent and implementation task worktrees were verified on `task/ARCH-024-ADMIN-001`, up to date with their respective origin task branches, with clean working trees.
 
 ### Validation Results
-
-None
+- `npm run prisma:generate` — passed against the accepted nested schema.
+- `npm run prisma:validate` — passed.
+- `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts tests/unit/model-availability-service.test.ts` — passed, 8/8 tests.
+- `node --test tests/security/admin-model-availability.test.mjs tests/security/admin-sidebar-navigation.test.mjs` — passed, 11/11 tests.
+- `npx tsc --noEmit --pretty false` — passed.
+- `npm run lint -- <all changed TypeScript/TSX paths>` — passed with no errors. Direct ESLint invocation also reported that the two TypeScript unit-test files are ignored by repository configuration; no implementation files were ignored.
+- Targeted `npx prettier --check <all changed source/test paths>` — passed.
+- `npm run build` — passed; Next.js compiled and registered `/commerce-models/availability`. It emitted warnings in existing BullMQ import paths for expression-based dynamic dependency loading and unresolved optional `@valkey/valkey-glide`; these did not prevent compilation or build completion and have no matching documented baseline entry.
+- Static absence checks — passed: accepted `BillingPlan` model has no `commerceModelId`/`modelId`; task-owned Availability source has no Catalogue, Agent Configuration, credential or delete mutations.
+- `git diff --check` — passed.
+- Attempt 2 focused regression: `node --test tests/security/admin-model-availability.test.mjs` — 5/5 passed, including the warning/action relationship regression; `npm run lint -- src/components/admin/model-availability/model-availability-editor.tsx` — passed; `npx prettier --check src/components/admin/model-availability/model-availability-editor.tsx tests/security/admin-model-availability.test.mjs` — passed; `npx tsc --noEmit --pretty false` — passed.
+- Attempt 2 required checks: `npm run prisma:generate` and `npm run prisma:validate` — passed; `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts tests/unit/model-availability-service.test.ts` — 8/8 passed; `node --test tests/security/admin-model-availability.test.mjs tests/security/admin-sidebar-navigation.test.mjs` — 11/11 passed; `npm run build` — passed and registered `/commerce-models/availability`.
+- Attempt 2 build emitted the same non-blocking existing BullMQ expression-based dynamic dependency and optional `@valkey/valkey-glide` resolution warnings recorded in Attempt 1. The focused Node unit tests emitted the same `MODULE_TYPELESS_PACKAGE_JSON` warnings. No new task-owned TypeScript or lint diagnostic was observed.
+- Attempt 2 `git diff --check` passed in both the implementation and parent worktrees. Static source-level prohibitions are covered by the passing 11-test Admin security/navigation suite, including no Catalogue, Agent Configuration, credential or Availability deletion mutation path.
 
 ### Deviations
-
-None
+- No code or schema deviation. The prepared Admin worktree already pointed at accepted database commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; it was verified and left unchanged rather than moving the gitlink.
+- `npm install --save-exact` reported 8 dependency audit findings (2 moderate, 5 high, 1 critical). Dependency remediation is outside this task and no audit fix was applied.
 
 ### Assumptions
-
-None
+- The launcher dependency gate is authoritative for architect acceptance of DATABASE-001 and SHARED-002; both dependencies were complete at preparation.
 
 ### Unresolved Issues
-
-None
+- Non-blocking build warnings remain in the pre-existing BullMQ import paths, including the optional `@valkey/valkey-glide` resolution warning; no matching development-baseline entry was found.
+- Node emitted `MODULE_TYPELESS_PACKAGE_JSON` warnings for the repository's TypeScript unit-test invocation; all required tests passed and no package module-mode change was made.
 
 ### Architectural Concerns
-
-None
+- None identified within ADMIN-001 scope.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
 
-None
+#### Attempt 2 review — Accepted — 2026-10-01
+
+Attempt 2 satisfies both corrections from the prior Architect Review and is accepted.
+
+**A1-R1 is closed.** `model-availability-editor.tsx` now derives the scope-specific disable warning only when `availability.enabled` is true, which is the same state that selects the `Disable availability` action and `Disabling…` pending label. When the Availability is already disabled, the action is `Enable availability` and `warning` is `null`, so no disable warning is rendered. The focused Admin regression ties the exact action-label expression, the `availability.enabled` warning guard and conditional warning render together while retaining both exact Platform/Shop warning strings.
+
+**A1-R2 is closed.** The task-definition `Validation`, `Stop Condition` and `Implementation Notes` sections are restored to clean canonical ADMIN-001 content with completed validation checkboxes, and implementation evidence now lives under `Completion Report`. The Completion Report durably records the launcher-resolved canonical workspace root, dedicated parent and Admin implementation worktrees, matching `task/ARCH-024-ADMIN-001` branches, start-of-attempt synchronization, dependency gates, recursive submodule readiness, accepted database submodule commit, implementation commit/push state, parent report publication evidence and clean/up-to-date final worktree state.
+
+The correction remains bounded to ADMIN-001. No Catalogue Entry editor, credential administration, Agent Configuration mutation, OpenRouter provider execution, Availability deletion or follow-on task was introduced. The Shared dependency remains exactly `@modainteract/moda-interact-shared@1.1.0` with the accepted SHARED-002 integrity.
+
+The resubmission identifies implementation head `badf437d` and final parent task-branch head `dafea3de`. The uploaded review archive contains no usable Git metadata, so those remote heads cannot be independently queried here. The durable Completion Report itself records the implementation commit, a pushed parent report commit and the final clean/remote-aligned state; the later submitted parent head is treated as additional handoff evidence, not as a reason to manufacture another report-only commit.
+
+The existing BullMQ/optional Valkey build warnings, Node `MODULE_TYPELESS_PACKAGE_JSON` warning and npm audit findings remain non-blocking for this task because the submitted Attempt 2 evidence records no changed/worse task-owned condition, matching the Attempt 1 correction contract.
+
+#### Attempt 1 review — Changes Requested — 2026-10-01
+
+Attempt 1 implementation is substantially aligned with ARCH-024 and ADMIN-001. The protected page, Shared `1.1.0` contract consumption, bounded read/search model, SUPER_ADMIN mutation boundary, Serializable transaction, CAS update, same-transaction audit writes, navigation integration and prohibited-mutation boundaries were inspected in the submitted snapshot.
+
+Two corrections are required before acceptance:
+
+**A1-R1 — Render disable warnings only for a disable transition.**
+
+`src/components/admin/model-availability/model-availability-editor.tsx` currently derives the Platform/Shop disable warning from scope alone and renders it for every SUPER_ADMIN state-change form. When an Availability is already disabled, the only permitted action is `Enable availability`, but the drawer still displays text beginning `Disabling ...`. R14 defines these exact warnings for Platform/Shop **disable** operations. Change the UI so the exact scope-specific warning is rendered only when the current Availability is enabled and the pending action is disable. The enable path must not display a disable warning. Add focused regression coverage proving the warning/action relationship.
+
+**A1-R2 — Repair the durable task record and record canonical worktree evidence.**
+
+The submitted task file has Completion Report content spliced into the task-definition `## Validation`, `## Stop Condition` and `## Implementation Notes` sections. In particular, the whitespace-validation code block no longer contains `git diff --check`, the Stop Condition is interleaved with implementation/validation results, and the ownership terminology block is interrupted by Completion Report text. Restore those task-definition sections to their canonical ADMIN-001 wording while preserving the completed checkboxes and keeping implementation results under `## Completion Report`.
+
+The Completion Report must also durably record the launcher-resolved Attempt 2 execution evidence required by the worktree-isolation policy: canonical `workspace_root`, dedicated parent task worktree, dedicated Admin implementation worktree, `task/ARCH-024-ADMIN-001` identity in both repositories, start-of-attempt synchronization evidence, recursive submodule readiness, accepted dependency gate, implementation commit/push state, parent report commit/push state, and clean final worktree state. Chat-only statements that the branches were clean/pushed are not a substitute for the durable report.
+
+No other source correction is requested by this review. The recorded BullMQ build warnings, `MODULE_TYPELESS_PACKAGE_JSON` warning and npm audit findings are non-blocking for ADMIN-001 unless Attempt 2 observes a changed/worse condition caused by task-owned changes.
 
 ### Reviewed Files
 
-None
+- `moda-interact-admin/package.json`
+- `moda-interact-admin/package-lock.json`
+- `moda-interact-admin/database/prisma/schema.prisma`
+- `moda-interact-admin/src/lib/admin/model-availability-validation.ts`
+- `moda-interact-admin/src/lib/admin/model-availability.ts`
+- `moda-interact-admin/src/app/actions/model-availability.ts`
+- `moda-interact-admin/src/app/(protected)/commerce-models/availability/page.tsx`
+- `moda-interact-admin/src/components/admin/model-availability/model-availability-catalog.tsx`
+- `moda-interact-admin/src/components/admin/model-availability/model-availability-editor.tsx`
+- `moda-interact-admin/src/components/admin/model-availability/model-availability-submit-button.tsx`
+- `moda-interact-admin/src/components/admin/sidebar.tsx`
+- `moda-interact-admin/src/components/admin/admin-shell.tsx`
+- `moda-interact-admin/tests/unit/model-availability-validation.test.ts`
+- `moda-interact-admin/tests/unit/model-availability-service.test.ts`
+- `moda-interact-admin/tests/security/admin-model-availability.test.mjs`
+- `moda-interact-admin/tests/security/admin-sidebar-navigation.test.mjs`
+- `docs/decisions/admin/ARCH-024/ADMIN-001-administer-model-availability.md`
+- `docs/decisions/admin/ARCH-024/_index.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 
 ### Validation Reviewed
 
-None
+- Independently reran `node --test tests/security/admin-model-availability.test.mjs tests/security/admin-sidebar-navigation.test.mjs` from the uploaded snapshot: **11/11 passed**, including the A1-R1 warning/action relationship regression.
+- Independently reran `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts`: **4/4 passed**; Node emitted the same module-type warning already recorded by the task.
+- Independently inspected `model-availability-editor.tsx`: `actionLabel`, `pendingLabel` and the scope-specific warning are all derived from `availability.enabled`; the warning is `null` for the enable transition.
+- Independently reparsed the ADMIN-001 YAML and inspected the restored `Validation`, `Stop Condition` and `Implementation Notes` sections; the task record is structurally valid and the Attempt 2 launcher/worktree/synchronization/submodule evidence is under `Completion Report`.
+- Re-checked `package.json` and `package-lock.json`: both pin `@modainteract/moda-interact-shared` exactly to `1.1.0`; the lockfile entry carries the accepted SHARED-002 integrity `sha512-XZMhMbEn8oy9xZfqrAWmbjcbYdOxScUsCE1myCqiywuUgcDPnhGDs1jj2bORyqhFYvOwhFzI4K5vmkSlxqOwiA==`.
+- Re-checked the ADMIN-001 mutation surface for prohibited Catalogue Entry, Agent Configuration, OpenRouter credential and Availability deletion mutations; none are present.
+- Reviewed submitted Attempt 2 evidence for Prisma generation/validation, focused unit suite **8/8**, focused Admin security/navigation suite **11/11**, TypeScript, changed-file lint, Prettier, production build and `git diff --check`; all passed with only the recorded non-blocking existing warnings.
+- The uploaded archive contains no `node_modules` and no Git metadata, so the dependency-backed service tests, Prisma commands, TypeScript, ESLint, production build and remote branch heads were not independently re-executed/queried in this review environment.
 
 ### Architecture Conformance
 
-Pending
+Conforms. ADMIN-001 now satisfies the Availability control-plane contract, SUPER_ADMIN mutation boundary, Shared contract ownership, immutable scope/Shop identity, transactional CAS/audit semantics, Platform-first presentation and bounded Shop creation/search requirements. Attempt 2 closes the only UI correctness defect and workflow/documentation non-conformance from Attempt 1 without broadening repository scope.
+
+The task preserves the ownership boundary: Availability administration does not mutate Catalogue Entries or Agent Configuration, does not manage OpenRouter credentials, and does not select the active CommerceAgent model.
 
 ### Follow-up
 
-None
+`ARCH-024-ADMIN-001` is **Complete / Accepted at Attempt 2**.
+
+Dependency reconciliation promotes exactly:
+
+```text
+ARCH-024-ADMIN-002 -> Ready
+```
+
+No follow-on implementation is started implicitly by this review. `ARCH-024-ADMIN-003` remains Pending behind ADMIN-002.
+
+This isolated ADMIN-001 parent snapshot still contains `ARCH-024-ADMIN-004` as Ready because the separately accepted ADMIN-004 reconciliation lives on its own parent task branch and has not been incorporated into this branch. This acceptance patch does not replay another task's Completion Report or Architect Review. During later parent-branch integration, preserve the already accepted ADMIN-004 state rather than regressing it.
