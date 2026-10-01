@@ -19,7 +19,7 @@ depends_on:
   - ARCH-024-SHARED-002
   - ARCH-024-ADMIN-002
 enables:
-  - ARCH-024-COMMERCE-007
+  - ARCH-024-GATEWAY-001
 created: 2026-10-01
 updated: 2026-10-01
 ---
@@ -70,7 +70,7 @@ No caller may:
     choose a different environment from the UI
 ```
 
-Credential mutation must use the same AES-256-GCM envelope and exact AAD contract consumed later by `ARCH-024-COMMERCE-007`, so a credential written by Admin can be decrypted by Commerce without translation or migration.
+Credential mutation must use the Shared-owned `createCommerceOpenRouterCredentialAad(...)` cross-repository contract published by `ARCH-024-SHARED-002`, so credentials written by Admin can be decrypted independently by Commerce and Background without any application-to-application implementation dependency.
 
 Credential replacement must take effect for the next Commerce model invocation without an Admin or Commerce process restart. This task owns only Admin mutation/status behaviour; runtime use is owned by `ARCH-024-COMMERCE-007` and production Background integration.
 
@@ -125,7 +125,7 @@ REMOVE_OPENROUTER_CREDENTIAL
 
 and these actions target `CommerceAuditEvent.environment`. There is deliberately no credential FK on the audit row because REMOVE deletes the credential row.
 
-The exact cross-repository sealed-secret contract consumed later by `ARCH-024-COMMERCE-007` is:
+The exact cross-repository sealed-secret envelope is defined by the parent architecture and its AAD bytes are constructed by the published Shared `createCommerceOpenRouterCredentialAad(...)` helper:
 
 ```text
 cipher: AES-256-GCM
@@ -141,7 +141,7 @@ AAD: canonical UTF-8 JSON of:
 }
 ```
 
-Canonical JSON MUST be produced by the existing Shared `canonicalJson(...)` implementation, not by `JSON.stringify(...)` or a new local canonicalizer.
+Admin MUST obtain that canonical JSON string by calling the published Shared `createCommerceOpenRouterCredentialAad(...)` helper, not by rebuilding the object locally with `JSON.stringify(...)` or another canonicalizer.
 
 The existing external-connection credential runtime already establishes the architecture-approved keyring environment names:
 
@@ -235,7 +235,7 @@ npm run prisma:generate
 npm run prisma:validate
 ```
 
-Admin MUST reuse Shared `canonicalJson(...)` from the published Shared Commerce entrypoint for the credential AAD. Do not create another canonical JSON implementation.
+Admin MUST import and use published Shared `createCommerceOpenRouterCredentialAad(...)` for credential AAD construction. Do not rebuild the payload with `canonicalJson(...)`, `JSON.stringify(...)` or another local helper.
 
 ### R2 — Manage only the current deployed environment
 
@@ -355,17 +355,16 @@ The function MUST perform these operations in this exact order:
 1. validate `secret` using R5 before any encryption;
 2. require `keyring[activeKeyId]` to exist and be exactly 32 bytes;
 3. generate exactly 12 random nonce bytes with `randomBytes(12)`;
-4. build AAD with Shared `canonicalJson(...)` using exactly:
+4. build the AAD string with the published Shared contract exactly:
 
 ```ts
-canonicalJson({
-  credentialType: 'OPENROUTER',
+createCommerceOpenRouterCredentialAad({
   environment: input.environment,
   keyId: input.activeKeyId,
 })
 ```
 
-5. encode that canonical JSON as UTF-8 bytes;
+5. encode that returned canonical string as UTF-8 bytes;
 6. call `createCipheriv('aes-256-gcm', key, nonce)`;
 7. call `cipher.setAAD(aadBytes)` before encryption;
 8. encrypt the exact UTF-8 secret bytes without trimming or normalizing them;
@@ -885,8 +884,8 @@ Runtime/provider validation belongs to Commerce/System Test.
 
 1. SET sealing creates 12-byte nonce and 16-byte authTag;
 2. ciphertext does not contain the plaintext credential as a UTF-8 substring;
-3. the exact AAD bytes equal UTF-8 Shared `canonicalJson({ credentialType: 'OPENROUTER', environment, keyId })`;
-4. a test-only `createDecipheriv('aes-256-gcm', ...)` using the **C007 contract** decrypts the sealed value to the exact original secret;
+3. the exact AAD bytes equal the UTF-8 encoding of published Shared `createCommerceOpenRouterCredentialAad({ environment, keyId })`;
+4. a test-only `createDecipheriv('aes-256-gcm', ...)` using the **published Shared AAD contract** decrypts the sealed value to the exact original secret;
 5. changing environment causes authentication failure;
 6. changing keyId in AAD causes authentication failure;
 7. changing authTag causes authentication failure;
@@ -931,7 +930,7 @@ The proof MUST run against a disposable PostgreSQL instance/schema with the acce
 3. assert no credential row exists for `TEST`;
 4. using a deterministic 32-byte test key and active key ID `arch024-test-key`, seal `credential-A` with the exact R4 contract;
 5. INSERT credential A with editVersion 1 and matching SET audit in one transaction;
-6. read the stored row and decrypt it **inside the validation script only** using the exact C007 contract; assert exact plaintext `credential-A` without printing it;
+6. read the stored row and decrypt it **inside the validation script only** using the exact published Shared `createCommerceOpenRouterCredentialAad(...)` contract; assert exact plaintext `credential-A` without printing it;
 7. CAS replace v1 with sealed `credential-B`, set editVersion 2, and insert matching REPLACE audit in one transaction;
 8. assert stale v1 replacement affects zero rows / is rejected and does not add another successful mutation audit;
 9. decrypt the current row in-process and assert exact plaintext `credential-B` without printing it;
@@ -1002,29 +1001,25 @@ CommerceOpenRouterCredential
     updatedAt
 ```
 
-### Canonical JSON owner
+### Shared-owned AAD contract
 
-Published Shared package, consumed through the existing Commerce entrypoint:
+Published Shared package:
 
 ```text
-@modainteract/moda-interact-shared/commerce
-    canonicalJson
+@modainteract/moda-interact-shared/commerce/model
+    createCommerceOpenRouterCredentialAad
 ```
 
-Do not duplicate canonicalization locally.
+Do not duplicate canonicalization or AAD object construction locally.
 
 ### Cross-repository sealed-secret contract
 
-Producer:
+Independent writer/consumers:
 
 ```text
-moda-interact-admin / ARCH-024-ADMIN-003
-```
-
-Consumer:
-
-```text
-moda-interact-commerce / ARCH-024-COMMERCE-007
+moda-interact-admin / ARCH-024-ADMIN-003         seal
+moda-interact-commerce / ARCH-024-COMMERCE-007  decrypt
+moda-interact-background / ARCH-024-BACKGROUND-001 decrypt
 ```
 
 Contract:
@@ -1034,14 +1029,11 @@ AES-256-GCM
 key = keyring[keyId] exactly 32 bytes
 nonce = 12 bytes
 authTag = 16 bytes
-AAD = UTF-8 canonicalJson({
-  credentialType: 'OPENROUTER',
-  environment,
-  keyId,
-})
+AAD string = createCommerceOpenRouterCredentialAad({ environment, keyId })
+AAD bytes = UTF-8 encoding of that returned canonical string
 ```
 
-Any implementation conflict with the accepted C007 contract is architectural. Stop and return to `moda_architect`; do not invent another AAD or envelope.
+Any implementation conflict with the published Shared contract is architectural. Stop and return to `moda_architect`; do not invent another AAD or envelope.
 
 ### Server Action inputs
 
@@ -1100,7 +1092,7 @@ No secret/envelope property may be added to that result.
 
 ## Enables
 
-- `ARCH-024-COMMERCE-007`
+- `ARCH-024-GATEWAY-001`
 
 ## Acceptance Criteria
 
@@ -1113,7 +1105,7 @@ No secret/envelope property may be added to that result.
 - [ ] REMOVE uses exact CAS and deletes the credential row.
 - [ ] SET/REPLACE/REMOVE audit and credential mutation are atomic.
 - [ ] Audit target is the current environment and contains no secret/encryption material.
-- [ ] Credential sealing uses AES-256-GCM, 12-byte nonce, 16-byte auth tag and the exact canonical AAD consumed by C007.
+- [ ] Credential sealing uses AES-256-GCM, 12-byte nonce, 16-byte auth tag and the exact AAD returned by published Shared `createCommerceOpenRouterCredentialAad(...)`.
 - [ ] Admin production code has no decrypt/reveal path.
 - [ ] The stored secret is never returned to the browser after SET/REPLACE.
 - [ ] Keyring/environment configuration errors fail SET/REPLACE closed without plaintext fallback.
@@ -1123,7 +1115,7 @@ No secret/envelope property may be added to that result.
 - [ ] Same-tick repeated SET/REPLACE/REMOVE activation dispatches one action only.
 - [ ] The Commerce models sidebar contains Availability, Catalogue and Credentials and no duplicate/dead destinations.
 - [ ] No Model Availability, Catalogue Entry or Agent Configuration state is mutated by credential lifecycle operations.
-- [ ] Disposable PostgreSQL proof demonstrates SET -> REPLACE -> REMOVE with exact C007 decryption compatibility.
+- [ ] Disposable PostgreSQL proof demonstrates SET -> REPLACE -> REMOVE with decryption compatibility against the exact published Shared AAD contract.
 
 ## Validation
 
@@ -1235,7 +1227,7 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 3. return control to `moda_architect`;
 4. STOP.
 
-Do not begin `ARCH-024-COMMERCE-007`, a Gateway task, System Test, or any other follow-on work.
+Do not begin a Gateway task, System Test, Commerce runtime task, or any other follow-on work. COMMERCE-007 is independently gated and does not depend on this task.
 
 ## Implementation Notes
 
@@ -1243,7 +1235,7 @@ Do not begin `ARCH-024-COMMERCE-007`, a Gateway task, System Test, or any other 
 - The Admin instance manages only its current deployed environment. This is intentional because the encryption keyring and deployment trust boundary are environment-specific.
 - Reuse of `COMMERCE_CONNECTION_KEYS_JSON` / `COMMERCE_CONNECTION_ACTIVE_KEY_ID` is deliberate. ARCH-024 does not create an OpenRouter-specific encryption root.
 - Admin owns encryption/mutation only. Commerce owns decryption/runtime use.
-- There is deliberately no production Admin decrypt function. The only decryption in this task is test/validation code proving C007 interoperability.
+- There is deliberately no production Admin decrypt function. The only decryption in this task is test/validation code proving interoperability with the published Shared AAD contract used independently by Commerce and Background.
 - A configured row indicates durable encrypted configuration only; it does not prove OpenRouter network validity.
 - Do not add provider-specific credential fields to the Model Catalogue.
 - Do not cache plaintext credentials in process globals, React state after completion, localStorage, cookies, URLs, telemetry, or audit metadata.
@@ -1283,7 +1275,7 @@ None at definition time.
 
 ### Architectural Concerns
 
-If the accepted Database schema, Shared canonical JSON behaviour, C007 AAD contract, or deployed credential keyring contract differs from this task, stop and return the contradiction to `moda_architect`. Do not silently change the encryption envelope.
+If the accepted Database schema, published Shared `createCommerceOpenRouterCredentialAad(...)` contract, or deployed credential keyring contract differs from this task, stop and return the contradiction to `moda_architect`. Do not silently change the encryption envelope.
 
 ### Git / VCS
 
@@ -1313,4 +1305,4 @@ Awaiting implementation.
 
 ### Follow-up
 
-After acceptance, `ARCH-024-COMMERCE-007` may consume the exact encrypted credential contract. Gateway wiring and terminal system validation remain separate tasks.
+Commerce and Background runtime tasks independently consume the same Database + published Shared credential contract and do not wait for this Admin UI implementation. Gateway wiring still depends on this task because deployment cutover must not occur before the credential writer exists. Terminal system validation remains separate.

@@ -54,11 +54,11 @@ system tests
 
 Blocked: `ARCH-023-GATEWAY-001` at Attempt 1.
 
-Its original declared prerequisites remain Complete / architect-accepted, but R17 exposed one missing Background-owned startup capability:
+Its original prerequisites remain Complete / architect-accepted, but R17 exposed the Background-owned observability prerequisite:
 
 ```text
 ARCH-023-BACKGROUND-005 = Complete — Accepted Attempt 2
-ARCH-023-BACKGROUND-008 = Ready — observability preload correction
+ARCH-023-BACKGROUND-008 = Ready — Attempt 2 evidence correction
 ARCH-023-SHOPIFY-005    = Complete — Accepted Attempt 3
 ARCH-023-COMMERCE-002   = Complete — Accepted Attempt 4
 ```

@@ -17,8 +17,8 @@ attempt: 0
 depends_on:
   - ARCH-024-COMMERCE-006
   - ARCH-024-SHARED-002
-  - ARCH-024-ADMIN-003
-enables: []
+enables:
+  - ARCH-024-GATEWAY-001
 created: 2026-09-30
 updated: 2026-10-01
 ---
@@ -357,11 +357,10 @@ CommerceOpenRouterCredential.environment = environment
 3. require the row to exist;
 4. require `keyring[row.keyId]` to exist and contain exactly 32 bytes;
 5. decrypt with AES-256-GCM using the stored 12-byte nonce and 16-byte auth tag;
-6. use this exact UTF-8 AAD payload:
+6. obtain the exact canonical AAD string from the published Shared contract and UTF-8 encode it before `decipher.setAAD(...)`:
 
 ```ts
-canonicalJson({
-  credentialType: 'OPENROUTER',
+createCommerceOpenRouterCredentialAad({
   environment,
   keyId: row.keyId,
 })
@@ -371,7 +370,7 @@ canonicalJson({
 8. return the exact decrypted string;
 9. map missing row, missing key, malformed envelope, authentication failure, database failure or invalid plaintext to one bounded `UNAVAILABLE` error without leaking detail.
 
-ARCH-024-ADMIN-003 MUST use the exact same AES-256-GCM/AAD contract when sealing credentials. This task consumes that accepted contract; do not invent provider-specific credential formats.
+Use the published Shared `createCommerceOpenRouterCredentialAad(...)` contract for the exact AAD string. ARCH-024-ADMIN-003 and BACKGROUND-001 independently use the same Shared contract; this task MUST NOT consume Admin implementation source or invent provider-specific credential formats.
 
 Do not cache the decrypted secret.
 
@@ -815,7 +814,7 @@ The disposable runner MUST:
 2. apply the integrated database migrations including ARCH-024-DATABASE-001;
 3. create one test PlatformAdmin row required by the credential FK;
 4. create a 32-byte in-memory test keyring key;
-5. seal credential `credential-A` using the exact ADMIN-003/C007 AES-256-GCM/AAD contract;
+5. seal credential `credential-A` using the exact published Shared `createCommerceOpenRouterCredentialAad(...)` contract;
 6. insert one `CommerceOpenRouterCredential` for `DEVELOPMENT`;
 7. resolve and assert exact plaintext `credential-A`;
 8. CAS-style replace the row with sealed `credential-B` without recreating the resolver/service;
@@ -918,6 +917,7 @@ From ARCH-024-SHARED-002:
     CommerceModelConfigurationSchema
     CommerceModelProviderSchema
     CommerceProviderModelIdSchema
+    createCommerceOpenRouterCredentialAad
 
 @modainteract/moda-interact-shared/commerce/model/node
     OpenRouterModelClient
@@ -958,13 +958,16 @@ selected-Shop conversation grant
 real selected-Shop conversation Tool executor
 ```
 
-From ARCH-024-ADMIN-003:
+From ARCH-024-DATABASE-001 + the published ARCH-024-SHARED-002 contract:
 
 ```text
-one encrypted OpenRouter credential per environment
-AES-256-GCM sealing contract
+one encrypted OpenRouter credential row per environment
+AES-256-GCM durable envelope columns
+canonical Shared OpenRouter credential AAD construction
 same Commerce credential keyring
 ```
+
+ARCH-024-ADMIN-003 independently implements the credential writer/UI against the same published Shared AAD contract; Commerce does not consume Admin implementation source.
 
 ### Produces
 
@@ -983,11 +986,14 @@ No new cross-service queue/event contract is created.
 
 - `ARCH-024-COMMERCE-006`
 - `ARCH-024-SHARED-002`
-- `ARCH-024-ADMIN-003`
+
+ADMIN-003 is deliberately not an implementation dependency. Focused/integration validation seeds the accepted `CommerceOpenRouterCredential` database row directly and uses the published Shared AAD contract; Admin owns the independent credential-management control plane.
 
 ## Enables
 
-None defined yet. Later ARCH-024 system-test/deployment tasks will depend on this task.
+- `ARCH-024-GATEWAY-001`
+
+Later ARCH-024 system-test tasks will also depend on this task when materialised.
 
 ## Acceptance Criteria
 
@@ -1083,7 +1089,7 @@ Do not begin Background, Gateway or ARCH-024 system-test work.
 - **Conversation Configuration Snapshot** is owned and fully assembled by C005. C007 consumes it unchanged; it does not include operational credentials.
 - Credential lookup on every model invocation is intentional. Do not optimize it into process-lifetime credential caching in this task.
 - Reusing `COMMERCE_CONNECTION_KEYS_JSON` is intentional. ARCH-024 does not create a second encryption root merely for OpenRouter.
-- The AAD shape in R5 is a cross-repository invariant with ADMIN-003. Any conflict discovered in the accepted Admin implementation is architectural; stop and return it to `moda_architect` rather than silently choosing another AAD.
+- The AAD shape in R5 is a Shared-owned cross-repository contract. Admin, Commerce and Background must all consume `createCommerceOpenRouterCredentialAad(...)`; if any implementation conflicts with the published contract, stop and return the architecture issue rather than silently choosing another AAD.
 - Commerce-local LangGraph remains out of scope. The published Shared `runCommerceTurn` is LangGraph-backed and remains the canonical orchestration boundary; Commerce does not import or configure LangGraph directly.
 - Do not reintroduce an OpenRouter/provider/model selector on Test Conversations. The model is selected in Agent Configuration and captured server-side at Start.
 

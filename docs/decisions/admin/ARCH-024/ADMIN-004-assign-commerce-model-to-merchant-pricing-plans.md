@@ -17,7 +17,6 @@ attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
   - ARCH-024-SHARED-002
-  - ARCH-024-ADMIN-002
 enables: []
 created: 2026-10-01
 updated: 2026-10-01
@@ -146,7 +145,7 @@ Do not edit the database schema/migration in this task.
 - Adding a physical `BillingPlan <-> MerchantPricingPlan` relation.
 - Mutating `Subscription`, current plan or pending plan state.
 - Calling OpenRouter.
-- Changing effective-model runtime precedence; `ARCH-024-COMMERCE-002` owns `SHOP -> PRICING_PLAN -> PLATFORM` resolution.
+- Changing effective-model runtime precedence; the parent ARCH-024 architecture owns `SHOP -> PRICING_PLAN -> PLATFORM`, while Commerce and Background implement that policy in their own runtime boundaries.
 - Clearing a Price Plan association merely because an Admin later disables/reassigns the model/Availability.
 - Preventing an existing subscriber from receiving the current plan association solely because `MerchantPricingPlan.isActive = false`.
 
@@ -607,7 +606,8 @@ This Admin task must not invent an alternative relationship.
 
 - `ARCH-024-DATABASE-001`
 - `ARCH-024-SHARED-002`
-- `ARCH-024-ADMIN-002`
+
+These are the only implementation dependencies. This task reads/writes the accepted database model and published Shared contracts directly; it does not consume `ARCH-024-ADMIN-002` source or UI implementation. Catalogue rows required by focused tests are seeded directly through the accepted database schema.
 
 All dependencies must be architect-accepted Complete before this task becomes Ready.
 

@@ -35,7 +35,7 @@ Publication-only gate
 
 ## Boundary
 
-SHARED-001 is the only ARCH-024 Shared implementation task. It is intentionally deterministic and contains the exact contracts, module decomposition, four-node low-level `StateGraph`, trust/authorization/evidence rules, and `commerce.turn.*` logging contract. It MUST stop at `review` and MUST NOT publish.
+SHARED-001 is the only ARCH-024 Shared implementation task. It is intentionally deterministic and contains the exact model/Price-Plan contracts, Shared-owned OpenRouter credential AAD contract, module decomposition, four-node low-level `StateGraph`, trust/authorization/evidence rules, and `commerce.turn.*` logging contract. It MUST stop at `review` and MUST NOT publish.
 
 SHARED-002 is publication-only. It MUST NOT change implementation source or rerun implementation validation solely to re-prove SHARED-001.
 

@@ -11,6 +11,8 @@ execution_mode: agent
 completion_mode: automatic
 status: blocked
 priority: 70
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-005
@@ -876,9 +878,9 @@ No Gateway implementation files changed. This task stopped before deployment wir
 
 ### Work Completed
 
-Inspected the accepted worker start contract and confirmed that `moda-interact-background/package.json` starts the Merchant Knowledge worker with `node dist/entrypoints/merchant-knowledge.js`. The entrypoint does not initialize observability; it only imports the shutdown helper. Existing Background worker start commands preload worker-specific `observability/*.mjs` modules, but no `observability/merchant-knowledge.mjs` exists.
+Inspected the accepted worker start contract and confirmed that `moda-interact-background/package.json` starts the Merchant Knowledge worker with `node dist/entrypoints/merchant-knowledge.js`. The entrypoint does not initialize observability; it only imports the shutdown helper. Existing Background worker start commands preload worker-specific `observability/*.mjs` modules, but no `observability/merchant-knowledge.mjs` existed at the time of the blocker.
 
-This violates R17, which requires stopping and reporting the missing Background capability rather than editing Background from Gateway. `moda_architect` confirmed the gap and recommended a focused Background corrective task. Gateway remains blocked until that correction is accepted and the dependency is reconciled by the architect.
+This violates R17, which requires stopping and reporting the missing Background capability rather than editing Background from Gateway. `moda_architect` confirmed the gap and materialised BACKGROUND-008. Gateway remains blocked until that correction is accepted and the dependency is reconciled by the architect.
 
 ### Validation Results
 
@@ -898,7 +900,7 @@ Background must provide and validate normal observability initialization for `mo
 
 ### Architectural Concerns
 
-The declared worker readiness/start contract currently omits the observability preload used by sibling Background workers. `moda_architect` should create or assign the Background corrective task and reconcile Gateway's dependency/status after acceptance.
+The declared worker readiness/start contract omitted the observability preload used by sibling Background workers. BACKGROUND-008 owns the correction; Gateway must not compensate in deployment code.
 
 ## Architect Review
 
@@ -908,23 +910,20 @@ Blocked — Attempt 1
 
 ### Review Notes
 
-The R17 stop is valid. The accepted deployment-facing command is `npm run start:merchant-knowledge-worker`, but the current Background package script resolves directly to `node dist/entrypoints/merchant-knowledge.js`. The Merchant Knowledge worker therefore does not preload the repository's accepted shared Node observability runtime before application/Prisma worker imports, unlike the sibling Background worker processes established by ARCH-002.
+The R17 stop is valid. The accepted deployment-facing command was `npm run start:merchant-knowledge-worker`, but at Attempt 1 it resolved directly to `node dist/entrypoints/merchant-knowledge.js`; unlike sibling Background workers, the Merchant Knowledge worker did not preload the repository's accepted shared Node observability runtime before application/Prisma imports.
 
-This is a Background-owned startup capability, not Gateway configuration. Gateway correctly stopped before editing Blueprints or application repositories and must not invent a replacement worker command, telemetry backend, service-local SDK or Gateway-owned preload.
-
-A bounded corrective task, `ARCH-023-BACKGROUND-008`, is materialised to add the missing shared-runtime preload/profile while preserving the existing package-script name and logical service identity `moda-merchant-knowledge-worker`.
+This is a Background-owned startup capability, not Gateway configuration. Gateway correctly stopped before editing Blueprints or application repositories. `ARCH-023-BACKGROUND-008` is the bounded correction and remains not yet architect-accepted because its Attempt 1 review requires an evidence-only revalidation.
 
 ### Reviewed Files
 
 - `docs/decisions/gateway/ARCH-023/GATEWAY-001-wire-merchant-knowledge-deployment.md`
-- `docs/decisions/background/ARCH-002/BACKGROUND-005-adopt-shared-observability-runtime.md`
-- `docs/observability/shared-observability-runtime.md`
-- accepted ARCH-023 Background entrypoint/start-command evidence recorded in `BACKGROUND-004` and `BACKGROUND-005`
-- ARCH-002 reference Background observability preload profiles
+- accepted ARCH-023 Background start-command/entrypoint evidence
+- ARCH-002 Background observability preload pattern
+- `ARCH-023-BACKGROUND-008` current review state
 
 ### Validation Reviewed
 
-Reviewed the durable Gateway blocker evidence and the accepted Background observability architecture. No Gateway Blueprint/deployment validation is required while R17's explicit stop condition is active. No Gateway source change is requested.
+No Gateway Blueprint/deployment validation is required while R17's explicit stop condition is active. No Gateway source change is requested.
 
 ### Architecture Conformance
 
@@ -932,7 +931,7 @@ Conforms. R17 intentionally prevents Gateway from compensating for an applicatio
 
 ### Follow-up
 
-1. `ARCH-023-BACKGROUND-008` is Ready and must add the Merchant Knowledge worker's normal shared observability preload without changing business processing or the Gateway-facing script name.
-2. `ARCH-023-GATEWAY-001` remains Blocked at Attempt 1 with its claim cleared and now depends on BACKGROUND-008 in addition to its already-complete dependencies.
-3. After BACKGROUND-008 is architect-accepted Complete, reconcile this same Gateway task `blocked -> ready`, preserving `attempt: 1`; the next `/moda-task ARCH-023-GATEWAY-001` claim becomes Attempt 2.
+1. Complete and architect-accept `ARCH-023-BACKGROUND-008`.
+2. Keep this Gateway task Blocked at Attempt 1 with its claim cleared until that acceptance occurs.
+3. After BACKGROUND-008 becomes Complete, reconcile this same task `blocked -> ready`, preserving `attempt: 1`; the next `/moda-task ARCH-023-GATEWAY-001` claim becomes Attempt 2.
 4. Gateway Attempt 2 then performs the original Blueprint/deployment work and validation. Do not create a replacement Gateway task.

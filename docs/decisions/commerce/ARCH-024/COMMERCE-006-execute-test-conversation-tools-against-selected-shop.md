@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-024-COMMERCE-007
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Execute Test Conversation Tools against the selected shop

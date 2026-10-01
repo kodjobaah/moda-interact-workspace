@@ -17,10 +17,9 @@ attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
   - ARCH-024-SHARED-002
-  - ARCH-024-COMMERCE-002
-  - ARCH-024-ADMIN-003
 enables:
   - ARCH-024-BACKGROUND-002
+  - ARCH-024-GATEWAY-001
 created: 2026-10-01
 updated: 2026-10-01
 ---
@@ -89,7 +88,7 @@ That path conflicts with ARCH-024:
 - Admin owns Model Catalogue, Model Availability and the environment OpenRouter credential;
 - Commerce Studio owns the explicit Platform/Shop Agent Configuration selection;
 - Platform Admin may associate a global Platform-available model with a Merchant Pricing Plan;
-- ARCH-024-COMMERCE-002 defines the canonical `SHOP -> PRICING_PLAN -> PLATFORM` effective-model semantics;
+- the parent ARCH-024 architecture defines the canonical `SHOP -> PRICING_PLAN -> PLATFORM` effective-model semantics; Commerce and Background implement the same policy independently at their repository boundaries;
 - ARCH-024-SHARED-002 publishes the canonical model contracts and Node-only `OpenRouterModelClient` implementing the existing Shared `CommerceModelInvoker` boundary;
 - `CommerceOpenRouterCredential` stores one encrypted OpenRouter credential per `CommerceEnvironment`.
 
@@ -166,7 +165,7 @@ Do not use a local Shared checkout, `npm link`, `file:` dependency or workspace 
 - Admin Model Catalogue, Availability or credential mutation UI.
 - Commerce Studio model selection UI.
 - Test Conversation/Preview execution; ARCH-024-COMMERCE-007 owns that path.
-- Changing ARCH-024-COMMERCE-002 selection semantics.
+- Changing the parent ARCH-024 `SHOP -> PRICING_PLAN -> PLATFORM` selection semantics.
 - Editing Merchant Pricing Plan model assignments; ARCH-024-ADMIN-004 owns that control-plane surface.
 - Merchant-facing model selection; merchants never select the model.
 - LangGraph topology redesign, checkpointing or durable LangGraph state.
@@ -518,15 +517,16 @@ export function createOpenRouterCredentialResolver(input: {
 4. require `keyring[row.keyId]` to exist and contain exactly 32 bytes;
 5. require the persisted envelope to satisfy DATABASE-001 constraints;
 6. decrypt with AES-256-GCM using stored 12-byte nonce and 16-byte auth tag;
-7. use this exact UTF-8 AAD:
+7. obtain the exact canonical AAD string from the published Shared contract:
 
 ```ts
-canonicalJson({
-  credentialType: "OPENROUTER",
+createCommerceOpenRouterCredentialAad({
   environment,
   keyId: row.keyId,
 })
 ```
+
+and UTF-8 encode that returned canonical string before calling `decipher.setAAD(...)`;
 
 8. require decrypted plaintext to be 1..8192 UTF-8 bytes and contain no `\r`, `\n` or `\0`;
 9. return the exact plaintext credential;
@@ -534,7 +534,7 @@ canonicalJson({
 
 Do not cache the decrypted credential.
 
-This is the same sealed-secret/AAD contract owned by ARCH-024-ADMIN-003 and consumed by ARCH-024-COMMERCE-007.
+This is the Shared-owned sealed-secret AAD contract also consumed independently by ARCH-024-ADMIN-003 and ARCH-024-COMMERCE-007.
 
 ### R8 — create one production model invoker with fixed model configuration and live credential resolution
 
@@ -854,7 +854,7 @@ The proof must:
 14. point the current Price Plan at an invalid/disabled/non-Platform model and prove resolution fails closed rather than silently using Platform;
 15. clear the current Price Plan's `commerceModelId` and restore valid Platform configuration, then prove Platform inheritance;
 16. prove Shop B cannot treat `shop-a-model` as valid;
-17. seal and insert OpenRouter credential `credential-A` with the exact ADMIN-003/C007 AAD/keyring contract;
+17. seal and insert OpenRouter credential `credential-A` with the exact published Shared `createCommerceOpenRouterCredentialAad(...)` contract and existing Commerce keyring;
 18. create the production model invoker with an injected fake Shared client factory and prove model invocation receives `credential-A` plus the expected selected model;
 19. replace the database credential with sealed `credential-B` without recreating the production invoker;
 20. invoke again and prove the fake client receives `credential-B` while the model identity/configuration remains unchanged for that turn;
@@ -918,7 +918,7 @@ Do not document ARCH-024 Test Conversations as Background runtime behaviour.
 - [ ] Add canonical `shopId` to `RecoveryAgentContext` and populate it from durable ownership.
 - [ ] Implement the exact `SHOP -> PRICING_PLAN -> PLATFORM` production effective-model resolver from R4, including current Subscription/BillingPlan/MerchantPricingPlan lookup.
 - [ ] Implement the existing Commerce credential-keyring parser from `COMMERCE_CONNECTION_KEYS_JSON`.
-- [ ] Implement AES-256-GCM OpenRouter credential resolution using the exact ADMIN-003/C007 AAD contract.
+- [ ] Implement AES-256-GCM OpenRouter credential resolution using the exact published Shared `createCommerceOpenRouterCredentialAad(...)` contract.
 - [ ] Implement the per-turn fixed-model/per-invocation-live-credential production model invoker.
 - [ ] Refactor `runCommerceAgent` to use the dynamic OpenRouter production path while retaining explicit test injection.
 - [ ] Refactor `executeCommerceHost` to accept `CommerceModelInvoker` directly and remove the local AI-SDK model adapter.
@@ -985,23 +985,24 @@ commerce.Shop
 
 ### Effective model semantic contract
 
-`ARCH-024-COMMERCE-002` defines the canonical `SHOP -> PRICING_PLAN -> PLATFORM` selection semantics consumed by Studio/Test Conversations.
+The parent ARCH-024 architecture defines the canonical `SHOP -> PRICING_PLAN -> PLATFORM` selection semantics.
 
-Background MUST implement the exact same architect-defined semantics from R4 for production execution because Background is a separate deployable/repository and MUST NOT import private Commerce source code.
+Commerce and Background implement those same architect-defined semantics independently because they are separate deployables/repositories and MUST NOT import one another's private source code.
 
-Any discrepancy discovered between the accepted C002 semantics and this task is an architectural conflict: STOP and return it to `moda_architect`; do not invent another fallback rule.
+Any discrepancy discovered between the parent-architecture acceptance matrix and this task is an architectural conflict: STOP and return it to `moda_architect`; do not invent another fallback rule.
 
 ### Credential sealing contract
 
-Producer/administrator:
+Cross-repository AAD owner:
 
-`ARCH-024-ADMIN-003`
+`ARCH-024-SHARED-001` / published by `ARCH-024-SHARED-002`
 
-Consumers:
+Independent users:
 
 ```text
-ARCH-024-COMMERCE-007
-ARCH-024-BACKGROUND-001
+ARCH-024-ADMIN-003       seals credentials
+ARCH-024-COMMERCE-007    decrypts credentials for Test Conversations
+ARCH-024-BACKGROUND-001  decrypts credentials for production turns
 ```
 
 Exact encryption contract:
@@ -1011,11 +1012,8 @@ AES-256-GCM
 keyring = COMMERCE_CONNECTION_KEYS_JSON
 nonce = persisted 12 bytes
 authTag = persisted 16 bytes
-AAD = canonicalJson({
-  credentialType: "OPENROUTER",
-  environment,
-  keyId,
-})
+AAD string = createCommerceOpenRouterCredentialAad({ environment, keyId })
+AAD bytes  = UTF-8 encoding of that returned canonical string
 ```
 
 No plaintext credential crosses repository boundaries.
@@ -1024,13 +1022,14 @@ No plaintext credential crosses repository boundaries.
 
 - `ARCH-024-DATABASE-001`
 - `ARCH-024-SHARED-002`
-- `ARCH-024-COMMERCE-002`
-- `ARCH-024-ADMIN-003`
+
+These are the only implementation dependencies. Background does not consume Commerce or Admin source: it reads the accepted database schema directly, applies the parent architecture's model-precedence policy, and uses the published Shared model/AAD contracts. Focused/integration validation seeds model-selection and credential rows directly.
 
 All dependencies must be architect-accepted Complete before this task becomes Ready.
 
 ## Enables
 
+- `ARCH-024-BACKGROUND-002`
 - `ARCH-024-GATEWAY-001`
 
 Terminal ARCH-024 system-test tasks may also depend on this task when they are materialised. Do not add a dependency from this implementation task to a system-test task.
@@ -1137,7 +1136,7 @@ Do not begin Gateway or system-test work.
 
 ## Implementation Notes
 
-- The duplicated production-side database read is intentional at this repository boundary: Background cannot import Commerce private source. The semantic contract is architect-owned and must match accepted ARCH-024-COMMERCE-002 exactly. If that proves impractical or drift is discovered, stop and return the architecture issue rather than inventing a third rule.
+- The duplicated production-side database read is intentional at this repository boundary: Background cannot import Commerce private source. The semantic policy is parent-architecture-owned (`SHOP -> PRICING_PLAN -> PLATFORM`) and must satisfy the same acceptance matrix as Commerce without depending on Commerce implementation. If drift is discovered, stop and return the architecture issue rather than inventing a third rule.
 - Model configuration is fixed per production turn; credential state is intentionally live per model invocation.
 - `COMMERCE_CONNECTION_KEYS_JSON` is reused as the encryption root. Do not introduce a provider-specific keyring.
 - `GROQ_API_KEY` remains a valid independent speech-transcription secret after the conversational model moves to OpenRouter.

@@ -15,11 +15,11 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
-  - ARCH-024-COMMERCE-003
+  - ARCH-024-COMMERCE-001
 enables:
   - ARCH-024-COMMERCE-005
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Compose Test Conversations from selected Features
@@ -683,7 +683,9 @@ Consumes existing database relationships only. No new database or Shared contrac
 
 ## Dependencies
 
-- `ARCH-024-COMMERCE-003`
+- `ARCH-024-COMMERCE-001`
+
+This dependency is the UI/runtime ownership handoff: COMMERCE-001 removes the obsolete human Preview composition while deliberately retaining the backend conversation/runtime seams that this task composes from selected Features. COMMERCE-003 model-selection UI is not an implementation dependency.
 
 ## Enables
 

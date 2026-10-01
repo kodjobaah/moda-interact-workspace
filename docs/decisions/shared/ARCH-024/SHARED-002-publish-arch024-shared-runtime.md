@@ -18,10 +18,9 @@ depends_on:
   - ARCH-024-SHARED-001
 enables:
   - ARCH-024-ADMIN-001
+  - ARCH-024-ADMIN-004
   - ARCH-024-COMMERCE-002
-  - ARCH-024-COMMERCE-007
   - ARCH-024-BACKGROUND-001
-  - ARCH-024-BACKGROUND-002
 created: 2026-10-01
 updated: 2026-10-01
 ---
@@ -287,7 +286,7 @@ No new contract is defined by this publication task.
 
 ## Enables
 
-The ARCH-024 Admin/Commerce/Background consumer tasks listed in YAML `enables` depend on this SHARED-002 publication gate and must install the exact version recorded here.
+The direct ARCH-024 frontier tasks listed in YAML `enables` depend on this SHARED-002 publication gate and must install the exact version recorded here. Later consumers such as `ARCH-024-COMMERCE-007` may also declare SHARED-002 as a hard dependency, but are not listed as directly enabled when additional prerequisite tasks still gate their execution.
 
 ## Acceptance Criteria
 

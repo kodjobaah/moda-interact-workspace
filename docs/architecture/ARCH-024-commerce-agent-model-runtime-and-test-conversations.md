@@ -1062,35 +1062,37 @@ DATABASE-001
 Consumer progression:
 
 ```text
-DATABASE-001 + SHARED-002 + ADMIN-001
-    -> ADMIN-002
-       |-> ADMIN-003
-       `-> ADMIN-004 Price Plan model association
+DATABASE-001 + SHARED-002
+    |-> ADMIN-001 -> ADMIN-002 -> ADMIN-003
+    |                 |
+    |                 `-> COMMERCE-003 (ownership cutover only)
+    |-> ADMIN-004 Price Plan model association
+    |-> COMMERCE-002
+    `-> BACKGROUND-001 -> BACKGROUND-002
 
-DATABASE-001 + SHARED-002 + COMMERCE-001
-    -> COMMERCE-002
-    -> COMMERCE-003
-    -> COMMERCE-004
+COMMERCE-001 -> COMMERCE-004
+
+COMMERCE-002 + COMMERCE-004 + ARCH-023-COMMERCE-003
     -> COMMERCE-005
     -> COMMERCE-006
 
-COMMERCE-006 + SHARED-002 + ADMIN-003
+COMMERCE-006 + SHARED-002
     -> COMMERCE-007
-
-DATABASE-001 + SHARED-002 + COMMERCE-002 + ADMIN-003
-    -> BACKGROUND-001
-    -> BACKGROUND-002
 
 ARCH-020-GATEWAY-003
 ADMIN-003
 COMMERCE-007
-BACKGROUND-002
+BACKGROUND-001
     -> GATEWAY-001
 ```
 
-Admin tasks consume only the exact `ARCH-024-SHARED-002` published package revision. Commerce and Background likewise consume that same combined accepted release; no task uses unpublished Shared task-branch source.
+Admin, Commerce and Background consume only the exact `ARCH-024-SHARED-002` published package revision; no task uses unpublished Shared task-branch source. Cross-application implementation dependencies are retained only where there is a real ownership handoff (`ADMIN-002 -> COMMERCE-003`) or deployment cutover (`ADMIN-003`, `COMMERCE-007`, `BACKGROUND-001` -> `GATEWAY-001`). Application tasks do not wait for another application's UI merely to read/write the accepted database contract.
 
-Gateway remains last among runtime cutover tasks so obsolete static Preview inputs are not removed before Commerce/Background/Admin have adopted the database-backed credential/runtime contract and Background's redundant graph dependency is removed.
+The parent architecture owns the canonical `SHOP -> PRICING_PLAN -> PLATFORM` policy. Commerce and Background implement that policy independently at their repository boundaries against the same Database/Shared contracts; neither imports nor depends on the other's implementation.
+
+The OpenRouter AES-256-GCM AAD construction is a Shared-owned cross-repository contract (`createCommerceOpenRouterCredentialAad(...)`). Admin seals and Commerce/Background open credentials independently against that published contract.
+
+Gateway remains last among runtime cutover tasks so obsolete static Preview inputs are not removed before the credential writer and both runtime consumers have adopted the database-backed credential/runtime contract. BACKGROUND-002 is independent cleanup and does not gate deployment cutover.
 
 ## Decisions / Tasks
 
@@ -1104,17 +1106,17 @@ Individual task YAML is authoritative.
 | `ARCH-024-ADMIN-001` | `moda_admin` | Pending | DATABASE-001, SHARED-002 |
 | `ARCH-024-ADMIN-002` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-001 |
 | `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
-| `ARCH-024-ADMIN-004` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
+| `ARCH-024-ADMIN-004` | `moda_admin` | Pending | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Ready | - |
-| `ARCH-024-COMMERCE-002` | `moda_commerce` | Pending | DATABASE-001, SHARED-002, COMMERCE-001 |
+| `ARCH-024-COMMERCE-002` | `moda_commerce` | Pending | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
-| `ARCH-024-COMMERCE-004` | `moda_commerce` | Pending | COMMERCE-003 |
-| `ARCH-024-COMMERCE-005` | `moda_commerce` | Pending | COMMERCE-004, ARCH-023-COMMERCE-003 |
+| `ARCH-024-COMMERCE-004` | `moda_commerce` | Pending | COMMERCE-001 |
+| `ARCH-024-COMMERCE-005` | `moda_commerce` | Pending | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |
-| `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-002, ADMIN-003 |
-| `ARCH-024-BACKGROUND-001` | `moda_background` | Pending | DATABASE-001, SHARED-002, COMMERCE-002, ADMIN-003 |
-| `ARCH-024-BACKGROUND-002` | `moda_background` | Pending | BACKGROUND-001, SHARED-002 |
-| `ARCH-024-GATEWAY-001` | `moda_gateway` | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-002 |
+| `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-002 |
+| `ARCH-024-BACKGROUND-001` | `moda_background` | Pending | DATABASE-001, SHARED-002 |
+| `ARCH-024-BACKGROUND-002` | `moda_background` | Pending | BACKGROUND-001 |
+| `ARCH-024-GATEWAY-001` | `moda_gateway` | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
 
 No ARCH-024 system-test task is materialised in this session. This remains an intentional coordination decision due to overlap with frozen ARCH-023 and upcoming architecture work. Any terminal integrated acceptance work will be defined separately against the final combined architecture.
 
@@ -1187,6 +1189,8 @@ pricing-plan model storage -> MerchantPricingPlan.commerceModelId only; never Bi
 The final integrated system-test decomposition across ARCH-023, ARCH-024 and subsequent overlapping work remains deliberately deferred to a later architecture session.
 
 ## Change History
+
+- **2026-10-01 — dependency cleanup:** removed sequencing-only cross-application dependencies, parallelised independent Commerce/Admin/Background work, made parent ARCH-024 the model-precedence owner, moved OpenRouter credential AAD construction to Shared, and corrected GATEWAY-001 to depend on BACKGROUND-001 rather than the unrelated BACKGROUND-002 cleanup.
 
 - **2026-10-01** — ARCH-024 amended before implementation to add optional `MerchantPricingPlan.commerceModelId` product-tier model assignment. Effective model precedence is now `SHOP -> PRICING_PLAN -> PLATFORM`; current `Subscription.planId`/`BillingPlan.shopifyPlanHandle` resolves the current MerchantPricingPlan, pending plans are ignored until effective, explicit invalid Price Plan selections fail closed, and Admin owns the Price Plan association without introducing merchant model selection or duplicating model identity onto `BillingPlan`.
 - **2026-10-01** — ARCH-024 amended before implementation: adopted a modular low-level Shared LangGraph `StateGraph` inside `runCommerceTurn`, retained the host-neutral `RunnerTool`/official Background MCP SDK boundary, preserved ARCH-023 runtime-data/Merchant Knowledge trust semantics, added canonical `commerce.turn.*` structured logging, collapsed Shared implementation into SHARED-001 plus publication-only SHARED-002, retained BACKGROUND-002, and retargeted all consumers to the SHARED-002 publication gate.

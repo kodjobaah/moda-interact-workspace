@@ -15,12 +15,13 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on:
+  - ARCH-024-COMMERCE-002
   - ARCH-024-COMMERCE-004
   - ARCH-023-COMMERCE-003
 enables:
   - ARCH-024-COMMERCE-006
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Build Feature-composed Test Conversations UI
@@ -98,7 +99,7 @@ EffectiveAgentConfiguration.instructions = {
 };
 ```
 
-ARCH-024-COMMERCE-002/003 establish the one-effective-active-model rule and make Commerce Studio model selection-only. By the time this task executes, `getEffectiveAgentConfiguration(shopId)` is the authoritative read for the selected Shop's effective Model plus ARCH-023 instruction provenance.
+ARCH-024-COMMERCE-002 establishes the one-effective-active-model resolver used by this task. COMMERCE-003 is an independent Studio ownership-cutover UI and is deliberately not a prerequisite. By the time this task executes, `getEffectiveAgentConfiguration(shopId)` from C002 is the authoritative read for the selected Shop's effective Model plus ARCH-023 instruction provenance.
 
 The current Preview UI must not be reconstructed. There is no Tool mode, Release/Draft mode, fixture selector, model-mode selector, Release handoff or Capability selector in the replacement UI.
 
@@ -951,9 +952,11 @@ ARCH-024-COMMERCE-004
   PreviewSelection = { kind: 'FEATURES'; featureIds: string[] }
   Feature-composed manifest/Tool-definition/Feature-Behaviour composition fragment
 
-ARCH-024-COMMERCE-002/003 transitively
+ARCH-024-COMMERCE-002 directly
   one effective active Model for the selected Shop
   SHOP -> PRICING_PLAN -> PLATFORM provenance
+
+ARCH-024-COMMERCE-003 is not consumed by this task; it is a separate Studio control-plane ownership cutover.
 
 ARCH-023-COMMERCE-003
   EffectiveAgentConfiguration.instructions.platform
@@ -994,10 +997,11 @@ No new cross-repository runtime contract is introduced.
 
 ## Dependencies
 
+- `ARCH-024-COMMERCE-002`
 - `ARCH-024-COMMERCE-004`
 - `ARCH-023-COMMERCE-003`
 
-Both must be `complete` before this task becomes executable.
+All must be `complete` before this task becomes executable. C002 supplies effective model/provenance resolution, C004 supplies Feature/Capability/Tool composition, and ARCH-023-COMMERCE-003 supplies the accepted Platform + optional Shop Instruction provenance captured by the authored snapshot.
 
 ## Enables
 

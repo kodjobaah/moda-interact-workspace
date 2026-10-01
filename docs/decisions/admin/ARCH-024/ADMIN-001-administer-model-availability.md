@@ -10,7 +10,7 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 50
+priority: 30
 executor: null
 claimed_at: null
 attempt: 0
