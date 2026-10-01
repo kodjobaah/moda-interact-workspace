@@ -179,7 +179,7 @@ Focused affected Merchant Knowledge tests: 4 files passed, 32 tests passed, 2 li
 
 `npm run typecheck`, targeted ESLint for the new test and runner, Pylance diagnostics for the new files, `node --check` for the runner, and `git diff --check` passed.
 
-Implementation/test commit `72e232a` (`test(commerce): prove merchant knowledge activation in postgres`) was pushed to `task/ARCH-023-COMMERCE-004`. The Attempt 2 parent claim is `b732b9ea`; parent synchronization incorporated `origin/main` at `c047c4feff6e1754b0d06e823a013fd14de0d61b` after resolving the architecture-document merge in favor of upstream's newer history. The recursive database submodule was initialized at `6a8602e67d2308189af81ee0091e5189f1ffd71a`. The implementation worktree is clean after the pushed test commit. Task status is returned to `review`, with executor and claim timestamp cleared, for `moda_architect`.
+Implementation/test commit `72e232a` (`test(commerce): prove merchant knowledge activation in postgres`) was pushed to `task/ARCH-023-COMMERCE-004`. Parent report commit `2fd5519d` records this Attempt 2 evidence. The Attempt 2 parent claim is `b732b9ea`; parent synchronization incorporated `origin/main` at `c047c4feff6e1754b0d06e823a013fd14de0d61b` after resolving the architecture-document merge in favor of upstream's newer history. The recursive database submodule was initialized at `6a8602e67d2308189af81ee0091e5189f1ffd71a`. The implementation worktree is clean after the pushed test commit. Task status is returned to `review`, with executor and claim timestamp cleared, for `moda_architect`.
 
 ## Architect Review
 
