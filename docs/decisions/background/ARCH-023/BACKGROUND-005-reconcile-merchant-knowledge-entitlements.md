@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 33
 executor: null
 claimed_at: null
@@ -433,3 +433,5 @@ The partial Background implementation respects repository ownership by stopping 
 
 ### Follow-up
 Materialise and complete `ARCH-023-DATABASE-006` first. It adds only `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` to `public.BackgroundRuntimeLeaseName` with a forward enum-only migration and disposable PostgreSQL proof. After DATABASE-006 is architect-accepted Complete, return this same BACKGROUND-005 task from Blocked to Ready with Attempt 1 preserved. The next launcher claim becomes Attempt 2. Attempt 2 must then add/prove the exact 300-second lease cadence branch, finish the entrypoint/build/full task validation and return to review. `ARCH-023-GATEWAY-001` remains gated.
+
+Coordination update after DATABASE-006 acceptance: `ARCH-023-DATABASE-006` is now Complete / Accepted Attempt 1, so this same task is returned to Ready with Attempt 1 preserved. No implementation is started implicitly; the next authorized launcher claim is Attempt 2.

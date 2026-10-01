@@ -35,13 +35,8 @@ DATABASE-005 -> BACKGROUND-007
        promote + final entrypoint
                  |
                  v
-          DATABASE-006
-       entitlement lease enum
-                 |
-                 v
-          BACKGROUND-005
-       entitlement reconciliation
-        + 300s lease cadence
+          BACKGROUND-005 <----- DATABASE-006
+       entitlement reconciliation    entitlement lease enum
                  |
                  v
         planned GATEWAY-001
@@ -57,7 +52,7 @@ Individual task YAML is authoritative.
 | [BACKGROUND-006](BACKGROUND-006-respect-merchant-knowledge-activation.md) | Require merchant opt-in in ingestion eligibility and PENDING reconciliation | Complete — Accepted Attempt 1 | BACKGROUND-001, ADMIN-004 |
 | [BACKGROUND-007](BACKGROUND-007-add-merchant-knowledge-runtime-lease-cadences.md) | Add fixed global cadence handling for the two Merchant Knowledge runtime leases | Complete — Accepted Attempt 1 | DATABASE-005 |
 | [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Complete — Accepted Attempt 3 | BACKGROUND-002, BACKGROUND-003, BACKGROUND-006, DATABASE-005, BACKGROUND-007 |
-| [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Blocked — Attempt 1 | BACKGROUND-004, DATABASE-006 |
+| [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Ready — Attempt 1 preserved; next claim Attempt 2 | BACKGROUND-004, DATABASE-006 |
 
 ## Execution frontier
 
@@ -78,11 +73,16 @@ BACKGROUND-007 Complete — Accepted Attempt 1
     v
 BACKGROUND-004 Complete — Accepted Attempt 3
     |
-    v
-BACKGROUND-005 Ready
+    +--------------------+
+                         |
+DATABASE-006 Complete — Accepted Attempt 1
+    |                    |
+    +--------------------+
+                         v
+BACKGROUND-005 Ready — Attempt 1 preserved; next claim Attempt 2
 ```
 
-BACKGROUND-005 is Blocked at Attempt 1 on the database-owned `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` lease identity. `ARCH-023-DATABASE-006` is the executable prerequisite. Gateway deployment must not begin before DATABASE-006 and BACKGROUND-005 are Complete/architect-accepted.
+BACKGROUND-005 is again the executable Background frontier after DATABASE-006 acceptance. Its blocked Attempt 1 implementation checkpoint remains preserved; the next launcher claim becomes Attempt 2. Gateway deployment must not begin before BACKGROUND-005 is Complete/architect-accepted.
 
 ## Merchant opt-in reconciliation
 

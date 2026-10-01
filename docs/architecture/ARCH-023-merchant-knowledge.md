@@ -11,14 +11,12 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-004`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003`, `ARCH-023-COMMERCE-004`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-DATABASE-006`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-004`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003`, `ARCH-023-COMMERCE-004`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 Historical execution state after runtime-lease prerequisites completed and before BACKGROUND-004 Attempt 2:
 The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
-Historical execution frontier after BACKGROUND-004 acceptance: `ARCH-023-BACKGROUND-004` is Complete / Accepted Attempt 3. Its evidence-only Attempt 3 preserved implementation head `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1` and closed the mandatory worktree/synchronization evidence gap. BACKGROUND-005 was then promoted to Ready.
-
-Current execution frontier (2026-10-01) supersedes that historical note: `ARCH-023-BACKGROUND-005` Attempt 1 is Blocked on the missing database-owned `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` lease identity. `ARCH-023-DATABASE-006` is Ready as the single-value enum-only prerequisite. After DATABASE-006 is Complete/architect-accepted, BACKGROUND-005 returns to Ready with Attempt 1 preserved; its Attempt 2 also owns the directly-related 300-second lease cadence branch. Gateway remains gated on BACKGROUND-005 completion.
+Current execution frontier (2026-10-01) supersedes the historical notes above: `ARCH-023-BACKGROUND-004` is Complete / Accepted Attempt 3. BACKGROUND-005 then reached a valid Attempt 1 blocker because its distinct entitlement-reconciliation scheduler lease identity was not representable by the database enum. `ARCH-023-DATABASE-006` is now Complete / Accepted Attempt 1 and supplies exactly that enum identity. `ARCH-023-BACKGROUND-005` therefore returns to Ready with Attempt 1 preserved; its next launcher claim becomes Attempt 2.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3278,22 +3276,17 @@ ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
    +----> BACKGROUND-006 -----------------------+
            PENDING/processing eligibility      |
                                                 v
-        DATABASE-005 -> BACKGROUND-007 -> BACKGROUND-004
-          lease enum      lease cadence       final worker
-                                                |
-                                                v
-                                         DATABASE-006
-                                      entitlement lease enum
-                                                |
-                                                v
-                                         BACKGROUND-005
-                                  entitlement reconciliation + 300s cadence
+        DATABASE-005 -> BACKGROUND-007 -> BACKGROUND-004 -> BACKGROUND-005
+          lease enum      lease cadence       final worker        ^
+                                                                 |
+                                                        DATABASE-006
+                                                   entitlement lease enum
 ```
 
 `COMMERCE-002` is Complete / Accepted Attempt 4 with the final bootstrap activation-mode guard. `COMMERCE-004` owns only the remaining request-time preference gate after ADMIN-004 establishes the final Admin-owned product-policy row.
 
 The initial Merchant Knowledge database persistence remains consolidated in DATABASE-001. The earlier split
-DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard. DATABASE-005 is a second narrow forward migration discovered by BACKGROUND-004 Attempt 1 and adds only the two Merchant Knowledge `BackgroundRuntimeLeaseName` enum values required by that accepted scheduler design. DATABASE-006 is a third narrow enum-only forward migration discovered by BACKGROUND-005 Attempt 1 and adds only `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION`; its fixed 300-second cadence remains Background-owned in BACKGROUND-005.
+DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard. DATABASE-005 is a second narrow forward migration discovered by BACKGROUND-004 Attempt 1 and adds only the two Merchant Knowledge `BackgroundRuntimeLeaseName` enum values required by that scheduler design. DATABASE-006 is a third narrow enum-only forward migration discovered by BACKGROUND-005 Attempt 1 and adds only `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION`; the associated 300-second cadence remains Background-owned.
 
 Commerce-adjacent execution state after COMMERCE-004 Attempt 2 acceptance:
 
@@ -3364,11 +3357,17 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
-### 2026-10-01 — BACKGROUND-005 Attempt 1 blocked on entitlement-reconciliation lease identity
+### 2026-10-01 — DATABASE-006 Attempt 1 accepted
 
-- Confirmed the partial BACKGROUND-005 implementation correctly stops at the database ownership boundary: its scheduler requires the distinct persisted `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` lease identity, which is absent from the database/generated Prisma contract pinned by the task; the existing pending-reconciliation and upload-cleanup leases are not safe substitutes.
-- Materialised `ARCH-023-DATABASE-006` as a single-value enum/migration-only prerequisite. No cadence column, business schema, queue or alternative locking mechanism is introduced.
-- Kept the exact 300-second runtime cadence in BACKGROUND-005 scope because it is directly coupled to BACKGROUND-005's own scheduler. After DATABASE-006 acceptance, BACKGROUND-005 returns from Blocked to Ready with Attempt 1 preserved; its next launcher claim becomes Attempt 2. Gateway remains gated.
+- Accepted the enum-only database prerequisite after verifying the exact one-value `BackgroundRuntimeLeaseName` extension, one-statement additive migration, fixed static validator and full disposable pgvector PostgreSQL migration/runtime proof.
+- Confirmed the Completion Report contains the required launcher-resolved worktree, synchronization, dependency-gate and recursive-submodule evidence.
+- Marked DATABASE-006 Complete and returned BACKGROUND-005 from its valid Attempt 1 blocker to Ready with Attempt 1 preserved. Its next `/moda-task` claim becomes Attempt 2; Gateway remains gated on BACKGROUND-005 completion.
+
+### 2026-10-01 — BACKGROUND-005 Attempt 1 blocked on entitlement-reconciliation lease contract
+
+- Preserved implementation checkpoint `a8b04ee` after focused unit/entrypoint and pgvector-backed PostgreSQL entitlement-reconciliation tests passed but the production build failed because `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` was absent from the database-owned lease enum.
+- Required a separate DATABASE-006 enum-only prerequisite rather than modifying database schema from Background or reusing an unrelated lease.
+- Kept the scheduler's exact 300-second lease cadence in BACKGROUND-005 scope and left Gateway gated.
 
 ### 2026-10-01 — BACKGROUND-004 Attempt 3 accepted
 
