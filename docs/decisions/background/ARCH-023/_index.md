@@ -39,7 +39,11 @@ DATABASE-005 -> BACKGROUND-007
        entitlement reconciliation    entitlement lease enum
                  |
                  v
-        planned GATEWAY-001
+          BACKGROUND-008
+       worker observability preload
+                 |
+                 v
+          blocked GATEWAY-001
 ```
 
 Individual task YAML is authoritative.
@@ -53,6 +57,7 @@ Individual task YAML is authoritative.
 | [BACKGROUND-007](BACKGROUND-007-add-merchant-knowledge-runtime-lease-cadences.md) | Add fixed global cadence handling for the two Merchant Knowledge runtime leases | Complete — Accepted Attempt 1 | DATABASE-005 |
 | [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Complete — Accepted Attempt 3 | BACKGROUND-002, BACKGROUND-003, BACKGROUND-006, DATABASE-005, BACKGROUND-007 |
 | [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Complete — Accepted Attempt 2 | BACKGROUND-004, DATABASE-006 |
+| [BACKGROUND-008](BACKGROUND-008-add-merchant-knowledge-worker-observability.md) | Preload the shared observability runtime for the dedicated Merchant Knowledge worker | Ready | BACKGROUND-005 |
 
 ## Execution frontier
 
@@ -80,9 +85,15 @@ DATABASE-006 Complete — Accepted Attempt 1
     +--------------------+
                          v
 BACKGROUND-005 Complete — Accepted Attempt 2
+    |
+    v
+BACKGROUND-008 Ready
+    |
+    v
+GATEWAY-001 Blocked — Attempt 1
 ```
 
-BACKGROUND-005 is Complete / Accepted Attempt 2. The previously blocked implementation is now fully validated with the accepted DATABASE-006 lease identity and the Background-owned 300-second persisted cadence. All declared GATEWAY-001 prerequisites are Complete/architect-accepted, so Gateway becomes Ready but remains unclaimed until its normal launcher is invoked.
+BACKGROUND-005 is Complete / Accepted Attempt 2. GATEWAY-001 Attempt 1 then exercised R17 and found that the accepted Merchant Knowledge package script loads `dist/entrypoints/merchant-knowledge.js` without the shared worker observability preload used by sibling Background workers. BACKGROUND-008 is therefore Ready to add only that missing startup bootstrap. Gateway remains Blocked at Attempt 1 until BACKGROUND-008 is Complete/architect-accepted; no Gateway implementation work is started implicitly.
 
 ## Merchant opt-in reconciliation
 

@@ -14,6 +14,7 @@ priority: 70
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-005
+  - ARCH-023-BACKGROUND-008
   - ARCH-023-SHOPIFY-005
   - ARCH-023-COMMERCE-002
 enables: []
@@ -790,10 +791,11 @@ No new network interface is created.
 ## Dependencies
 
 - `ARCH-023-BACKGROUND-005`
+- `ARCH-023-BACKGROUND-008`
 - `ARCH-023-SHOPIFY-005`
 - `ARCH-023-COMMERCE-002`
 
-All must be Complete and architect-accepted before this task becomes Ready.
+All must be Complete and architect-accepted before this task becomes Ready. `ARCH-023-BACKGROUND-008` is the bounded Background-owned correction materialised after Attempt 1 exercised the R17 stop condition.
 
 ## Enables
 
@@ -902,24 +904,35 @@ The declared worker readiness/start contract currently omits the observability p
 
 ### Review Status
 
-Pending
+Blocked — Attempt 1
 
 ### Review Notes
 
-Pending.
+The R17 stop is valid. The accepted deployment-facing command is `npm run start:merchant-knowledge-worker`, but the current Background package script resolves directly to `node dist/entrypoints/merchant-knowledge.js`. The Merchant Knowledge worker therefore does not preload the repository's accepted shared Node observability runtime before application/Prisma worker imports, unlike the sibling Background worker processes established by ARCH-002.
+
+This is a Background-owned startup capability, not Gateway configuration. Gateway correctly stopped before editing Blueprints or application repositories and must not invent a replacement worker command, telemetry backend, service-local SDK or Gateway-owned preload.
+
+A bounded corrective task, `ARCH-023-BACKGROUND-008`, is materialised to add the missing shared-runtime preload/profile while preserving the existing package-script name and logical service identity `moda-merchant-knowledge-worker`.
 
 ### Reviewed Files
 
-Pending.
+- `docs/decisions/gateway/ARCH-023/GATEWAY-001-wire-merchant-knowledge-deployment.md`
+- `docs/decisions/background/ARCH-002/BACKGROUND-005-adopt-shared-observability-runtime.md`
+- `docs/observability/shared-observability-runtime.md`
+- accepted ARCH-023 Background entrypoint/start-command evidence recorded in `BACKGROUND-004` and `BACKGROUND-005`
+- ARCH-002 reference Background observability preload profiles
 
 ### Validation Reviewed
 
-Pending.
+Reviewed the durable Gateway blocker evidence and the accepted Background observability architecture. No Gateway Blueprint/deployment validation is required while R17's explicit stop condition is active. No Gateway source change is requested.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. R17 intentionally prevents Gateway from compensating for an application-owned observability omission. Shared observability initialization belongs to `moda_background`; Gateway owns only deployment topology/configuration after the accepted application start contract is deployable.
 
 ### Follow-up
 
-Pending.
+1. `ARCH-023-BACKGROUND-008` is Ready and must add the Merchant Knowledge worker's normal shared observability preload without changing business processing or the Gateway-facing script name.
+2. `ARCH-023-GATEWAY-001` remains Blocked at Attempt 1 with its claim cleared and now depends on BACKGROUND-008 in addition to its already-complete dependencies.
+3. After BACKGROUND-008 is architect-accepted Complete, reconcile this same Gateway task `blocked -> ready`, preserving `attempt: 1`; the next `/moda-task ARCH-023-GATEWAY-001` claim becomes Attempt 2.
+4. Gateway Attempt 2 then performs the original Blueprint/deployment work and validation. Do not create a replacement Gateway task.
