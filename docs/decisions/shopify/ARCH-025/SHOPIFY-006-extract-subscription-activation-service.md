@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
-executor: copilot
-claimed_at: 2026-10-01T23:04:43Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-005
@@ -261,24 +261,49 @@ parent report publication: pushed to origin/task/ARCH-025-SHOPIFY-006 at 8a5795c
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 accepted. The implementation is a move-only extraction of the existing initial Free/Paid activation intent, guarded Free reconciliation scheduling, Free completion and activation-token matching into `SubscriptionActivationService`.
+
+Direct comparison with the pre-task façade confirms the four workflow bodies and `matchesInitialFreeActivationToken(...)` preserve the same plan-resolution calls, transaction boundaries, `ShopSettings -> Subscription` lock order, subscription reads/writes, stale-token no-op behaviour, Partner API retry metadata, Free completion scheduling, error strings and return shapes. `preparePaidActivation(...)` still persists only the pending selection; the special initial Paid durable finalisation remains inside `syncSubscription()` for SHOPIFY-010.
+
+`subscription-locks.ts` is the single owner of the moved `ShopSettings -> Subscription` `FOR UPDATE` SQL and is reused by the still-local hosted/sync paths. `billing-retry-policy.ts` is the single owner of `INITIAL_BILLING_RETRY_DELAY_MS = 60_000`; `billing.service.ts` compatibility re-exports the constant and activation types, so the existing callback route remains unchanged. The extracted collaborator constructor is inert and introduces no provider/database I/O.
+
+Implementation commit reviewed: `e0b5ec0644239d74b44b0f492270440de0dae5f0`.
+
+Completion Report commit reviewed: `8a5795cd03b7858feed178035d085f91d51ac1e7`.
 
 ### Reviewed Files
 
-None.
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/subscription-activation.service.ts`
+- `app/services/billing/subscription-locks.ts`
+- `app/services/billing/billing-retry-policy.ts`
+- `tests/unit/services/billing/subscription-activation.service.test.ts`
+- `app/routes/app/billing/callback/route.tsx` (compatibility import verification)
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-006-extract-subscription-activation-service.md`
+- `docs/development-baseline.md` (`ARCH025-TEST-001`)
 
 ### Validation Reviewed
 
-None.
+- Frozen façade SHA-256 remains exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; the frozen file is unchanged.
+- Focused `subscription-activation.service.test.ts`: 6/6 passed.
+- Frozen façade suite: 195 passed / 18 failed; every failure identifier remains within `ARCH025-TEST-001`.
+- Full suite: 983 passed / 24 failed / 33 skipped; every failure identifier remains within `ARCH025-TEST-001`; no task-only failure was reported.
+- `npm run prisma:generate`: passed.
+- `npm run typecheck`: passed.
+- Targeted ESLint: passed, with only the existing TypeScript parser-support warning.
+- `npm run build`: passed with existing build warnings only.
+- `git diff --check`: passed.
+- Live implementation branch inspection confirms it is one commit ahead of its base and changes only the five authorised files.
+- The uploaded review snapshot contains no cross-task dependency symlink or other evidence contradicting the recorded worktree-isolation attestation.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-025, SHOPIFY-006 task scope, the compatibility-façade invariant, shared lock/retry ownership, activation token fencing/scheduling semantics, SHOPIFY-002 plan-resolution reuse, the SHOPIFY-010 Paid-finalisation boundary, and the durable `ARCH025-TEST-001` no-regression contract.
 
 ### Follow-up
 
-None.
+`ARCH-025-SHOPIFY-007` becomes Ready. No SHOPIFY-006 implementation follow-up is required.

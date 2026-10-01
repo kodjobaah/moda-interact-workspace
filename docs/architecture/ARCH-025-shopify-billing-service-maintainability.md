@@ -4,7 +4,7 @@ title: Shopify BillingService maintainability refactor
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-02
 ---
 
 # ARCH-025: Shopify BillingService maintainability refactor
@@ -21,7 +21,7 @@ moda-interact/
 
 It refactors the current `app/services/billing/billing.service.ts` monolith behind its existing public façade. It does **not** refactor Background billing reconciliation, CheckoutRecovery, Admin pricing-plan authoring, Commerce Studio, Gateway, Shared, Database or System Test.
 
-ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-005` are architect-accepted Complete, and the sequential execution frontier is `ARCH-025-SHOPIFY-006`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
+ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-006` are architect-accepted Complete, and the sequential execution frontier is `ARCH-025-SHOPIFY-007`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
 
 ## Problem
 
@@ -310,8 +310,8 @@ The parent workspace contains the architecture/task coordination files. Reposito
 | ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service | Complete | SHOPIFY-002 |
 | ARCH-025-SHOPIFY-004 | Extract merchant recovery-capacity read service | Complete | SHOPIFY-003 |
 | ARCH-025-SHOPIFY-005 | Extract merchant billing-state read service | Complete | SHOPIFY-004 |
-| ARCH-025-SHOPIFY-006 | Extract initial activation workflow | Ready | SHOPIFY-005 |
-| ARCH-025-SHOPIFY-007 | Extract hosted plan-change verification workflow | Pending | SHOPIFY-006 |
+| ARCH-025-SHOPIFY-006 | Extract initial activation workflow | Complete | SHOPIFY-005 |
+| ARCH-025-SHOPIFY-007 | Extract hosted plan-change verification workflow | Ready | SHOPIFY-006 |
 | ARCH-025-SHOPIFY-008 | Extract recovery-credit purchase request workflow | Pending | SHOPIFY-007 |
 | ARCH-025-SHOPIFY-009 | Extract subscription-ended notification workflow | Pending | SHOPIFY-008 |
 | ARCH-025-SHOPIFY-010 | Extract initial Paid activation finalisation | Pending | SHOPIFY-009 |
@@ -372,3 +372,4 @@ None.
 - 2026-10-01: SHOPIFY-003 Attempt 2 accepted the isolated `SubscriptionReadService` extraction at implementation commit `ba0380e7688930277e9e075610ac915a256eec1d`; task-local dependency installation reproduced only `ARCH025-TEST-001`, and SHOPIFY-004 advanced to Ready.
 - 2026-10-01: SHOPIFY-004 Attempt 1 accepted the move-only `MerchantRecoveryCapacityReadService` extraction at implementation commit `350dedbf61290a01bf3edba642de64cc8482c811`. Capacity precedence, blocker semantics, paid-period integrity and SHOPIFY-002 top-up catalogue reuse are unchanged; all observed failures remain within `ARCH025-TEST-001`, and SHOPIFY-005 advances to Ready.
 - 2026-10-01: SHOPIFY-005 Attempt 1 accepted the move-only `MerchantBillingReadService` extraction at implementation commit `28b7cc065035d8bc0fe81a30208c33d770930b08`. Supplied commercial-state reuse, the single provider-read fallback, exact-cycle/phase eligibility, billing-page composition and SHOPIFY-002 catalogue reuse are unchanged; all observed failures remain within `ARCH025-TEST-001`, and SHOPIFY-006 advances to Ready.
+- 2026-10-02: SHOPIFY-006 Attempt 1 accepted the move-only `SubscriptionActivationService` extraction at implementation commit `e0b5ec0644239d74b44b0f492270440de0dae5f0`. Free/Paid activation intent, guarded Free reconciliation/completion, token fencing, shared lock order and retry timing are unchanged; initial Paid durable finalisation remains in `syncSubscription()`, all observed failures remain within `ARCH025-TEST-001`, and SHOPIFY-007 advances to Ready.
