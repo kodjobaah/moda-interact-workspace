@@ -9,11 +9,11 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-004
 enables:
@@ -105,10 +105,10 @@ Do not route this method through SHOPIFY-003 `SubscriptionReadService` merely be
 
 ## Work Items
 
-- [ ] Create `MerchantBillingReadService` with provider, Prisma and narrow collaborator dependencies.
-- [ ] Move merchant billing-state composition and leave façade delegate, importing SHOPIFY-001 cycle/integer helpers and SHOPIFY-002 catalogue reads directly.
-- [ ] Add focused tests for Free/Paid presentation, exact-cycle phase, provider snapshot reuse, provider failure, offer diagnostics/purchase eligibility and unresolved purchases.
-- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Create `MerchantBillingReadService` with provider, Prisma and narrow collaborator dependencies.
+- [x] Move merchant billing-state composition and leave façade delegate, importing SHOPIFY-001 cycle/integer helpers and SHOPIFY-002 catalogue reads directly.
+- [x] Add focused tests for Free/Paid presentation, exact-cycle phase, provider snapshot reuse, provider failure, offer diagnostics/purchase eligibility and unresolved purchases.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -124,24 +124,24 @@ Repository-internal service. Existing method return shape remains the route-faci
 
 ## Acceptance Criteria
 
-- [ ] Merchant billing-page read model has one owner outside the façade.
-- [ ] Verified commercial state prevents duplicate provider reads exactly as before; absent state performs the same single provider read without extra SHOPIFY-003 mapping queries.
-- [ ] Recovery-credit offer eligibility uses unchanged cycle/phase rules.
-- [ ] No returned field or error/fallback meaning changes.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Merchant billing-page read model has one owner outside the façade.
+- [x] Verified commercial state prevents duplicate provider reads exactly as before; absent state performs the same single provider read without extra SHOPIFY-003 mapping queries.
+- [x] Recovery-credit offer eligibility uses unchanged cycle/phase rules.
+- [x] No returned field or error/fallback meaning changes.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
-- [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
-- [ ] `npm test -- tests/unit/services/billing/merchant-billing-read.service.test.ts` passes the new focused capability tests
-- [ ] `npm test` introduces no new failures
-- [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/merchant-billing-read.service.ts tests/unit/services/billing/merchant-billing-read.service.test.ts`
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate`
+- [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [x] `git diff -- tests/unit/services/billing.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
+- [x] `npm test -- tests/unit/services/billing/merchant-billing-read.service.test.ts` passes the new focused capability tests
+- [x] `npm test` introduces no new failures
+- [x] `npm run typecheck`
+- [x] `npx eslint app/services/billing/billing.service.ts app/services/billing/merchant-billing-read.service.ts tests/unit/services/billing/merchant-billing-read.service.test.ts`
+- [x] `npm run build`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -156,58 +156,131 @@ Keep this a read service. Do not absorb the purchase command simply because both
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/merchant-billing-read.service.ts` (new)
+- `tests/unit/services/billing/merchant-billing-read.service.test.ts` (new)
 
 ### Work Completed
 
-None.
+- Extracted `getMerchantBillingState` into `MerchantBillingReadService` and left the `BillingService` public method as a delegate with the same parameters and inferred result contract.
+- Preserved local reads, return fields, counters/refund holds, purchase history and labels, offer diagnostics, unavailable reasons, exact-cycle phase/integrity checks, verified commercial snapshot reuse, and provider failure handling.
+- Reused the SHOPIFY-001 cycle/integer helpers and SHOPIFY-002 `readMerchantPricingPlan` collaborator. The extracted service does not use SHOPIFY-003 `SubscriptionReadService` or perform plan-mapping reads.
+- Added 6 focused tests covering Free/Paid balances, invalid Paid counters, exact-cycle eligibility, supplied snapshot reuse, the single provider lookup path, provider failures, diagnostics and unresolved purchase presentation.
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:generate`: passed; Prisma Client 6.19.3 generated.
+- Frozen test SHA-256: `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; `git diff -- tests/unit/services/billing.service.test.ts` was empty.
+- `npm test -- tests/unit/services/billing.service.test.ts`: 195 passed, 18 failed; all 18 identifiers match `ARCH025-TEST-001`.
+- `npm test -- tests/unit/services/billing/merchant-billing-read.service.test.ts`: passed, 6/6.
+- `npm test`: 977 passed, 24 failed, 33 skipped across 91 test files; all 24 identifiers match `ARCH025-TEST-001` (18 frozen BillingService failures and 6 documented unrelated failures), with no task-only failing identifier.
+- `npm run typecheck`: passed.
+- `npx eslint app/services/billing/billing.service.ts app/services/billing/merchant-billing-read.service.ts tests/unit/services/billing/merchant-billing-read.service.test.ts`: passed; emitted the existing TypeScript 5.9.3 parser-support warning.
+- `npm run build`: passed; existing dependency annotation, empty-route chunk and large-chunk warnings were emitted.
+- `git diff --check`: passed.
+- Editor diagnostics for all three changed files: no errors.
 
 ### Deviations
 
-None.
+None. Existing failures match `ARCH025-TEST-001` in `docs/development-baseline.md`.
 
 ### Assumptions
 
-None.
+The prepared launcher packet is authoritative for worktree, branch synchronization, dependency gate and recursive submodule readiness evidence.
 
 ### Unresolved Issues
 
-None.
+The 18 frozen BillingService and six unrelated full-suite failures documented by `ARCH025-TEST-001` remain; no new failing identifier was introduced.
 
 ### Architectural Concerns
 
-None.
+None identified.
+
+### Git / VCS
+
+Task branch: `task/ARCH-025-SHOPIFY-005`
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-005`
+- Parent branch: `task/ARCH-025-SHOPIFY-005`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-005`
+- Implementation branch: `task/ARCH-025-SHOPIFY-005`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+Start-of-attempt synchronization:
+- Parent remote task branch fast-forwarded: not-needed.
+- Parent `origin/main` incorporated: already-current.
+- Implementation remote task branch fast-forwarded: not-needed.
+- Implementation `origin/main` incorporated: already-current.
+- Recursive submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; database initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+
+Implementation repository:
+- Repository: `moda-interact`
+- Commit: `28b7cc065035d8bc0fe81a30208c33d770930b08`
+- Remote branch: `origin/task/ARCH-025-SHOPIFY-005`
+- Pushed: yes
+
+Parent workspace:
+- Task file: `docs/decisions/shopify/ARCH-025/SHOPIFY-005-extract-merchant-billing-read-service.md`
+- Report commit: `0343aa445bd2faf06d896544f42cc7443376c897`
+- Remote branch: `origin/task/ARCH-025-SHOPIFY-005`
+- Pushed: yes
+- Submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 accepted. The implementation is a move-only extraction of the existing `getMerchantBillingState(...)` read model into `MerchantBillingReadService`.
+
+Direct comparison with the pre-task façade confirms the existing local read composition, supplied-commercial-state reuse, single-provider-read fallback path, provider failure handling, exact-cycle eligibility, BillingPeriod phase/integrity checks, entitlement/refund arithmetic, offer diagnostics, purchase history mapping and returned fields are preserved. The extracted service reuses SHOPIFY-001 billing-period helpers and SHOPIFY-002 `readMerchantPricingPlan(...)` and does not route through SHOPIFY-003 or add plan-mapping reads.
+
+The façade constructs one inert collaborator from its existing provider/database/plan-resolution dependencies and retains the same public `getMerchantBillingState(...)` signature as a thin delegate. No database write, transaction, provider/API call, route change, public contract change or reverse dependency on `billing.service.ts` was introduced.
+
+Implementation commit reviewed: `28b7cc065035d8bc0fe81a30208c33d770930b08`.
+
+Completion Report commit reviewed: `0343aa445bd2faf06d896544f42cc7443376c897`.
 
 ### Reviewed Files
 
-None.
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/merchant-billing-read.service.ts`
+- `tests/unit/services/billing/merchant-billing-read.service.test.ts`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-005-extract-merchant-billing-read-service.md`
+- `docs/development-baseline.md` (`ARCH025-TEST-001`)
 
 ### Validation Reviewed
 
-None.
+- Frozen façade SHA-256 remains exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; the frozen file is unchanged.
+- Focused `merchant-billing-read.service.test.ts`: 6/6 passed.
+- Frozen façade suite: 195 passed / 18 failed; every failure identifier remains within `ARCH025-TEST-001`.
+- Full suite: 977 passed / 24 failed / 33 skipped; every failure identifier remains within `ARCH025-TEST-001`; no task-only failure was reported.
+- `npm run prisma:generate`: passed.
+- `npm run typecheck`: passed.
+- Targeted ESLint: passed, with only the existing TypeScript parser-support warning.
+- `npm run build`: passed with existing build warnings only.
+- `git diff --check`: passed.
+- Live implementation branch inspection confirms it is one commit ahead of its base and changes only the three authorised files.
+- The uploaded review snapshot contains no cross-task `node_modules` symlink or other evidence contradicting the recorded worktree-isolation attestation.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-025, SHOPIFY-005 task scope, the compatibility-façade invariant, provider/database I/O preservation rules, SHOPIFY-001/002 collaborator ownership, and the durable `ARCH025-TEST-001` no-regression contract.
 
 ### Follow-up
 
-None.
+`ARCH-025-SHOPIFY-006` becomes Ready. No SHOPIFY-005 implementation follow-up is required.
