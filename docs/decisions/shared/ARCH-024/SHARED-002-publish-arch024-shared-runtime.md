@@ -12,39 +12,62 @@ completion_mode: automatic
 status: in_progress
 priority: 21
 executor: copilot
-claimed_at: 2026-10-01T16:54:51Z
+In Progress — npm accepted publication; registry verification pending
 attempt: 1
 depends_on:
   - ARCH-024-SHARED-001
-enables:
+- `moda-interact-shared/package.json` — version `1.0.1` to `1.1.0`
+- `moda-interact-shared/package-lock.json` — root version metadata `1.0.1` to `1.1.0`
   - ARCH-024-ADMIN-001
   - ARCH-024-ADMIN-004
   - ARCH-024-COMMERCE-002
-  - ARCH-024-BACKGROUND-001
+- Confirmed SHARED-001 is `Complete / Accepted — Attempt 2`; accepted source commit `c4627f1` is an ancestor of prepared source head `eaf62bc`. The working tree was clean before release mutation and the implementation-source tree has no diff from the accepted baseline.
+- Recorded synchronized starting version `1.0.1`; computed and applied exactly one minor increment to `1.1.0` using `npm version minor --no-git-tag-version` (no tag created).
+- Installed the exact lockfile dependencies with `npm ci` because the prepared worktree initially lacked `tsup`.
+- `npm pack --dry-run` succeeded after the normal `prepack` build. JSON inventory assertions passed for model/model-node JS and declarations, runner JS/declarations, and existing Commerce/logging JS and declarations.
+- Ran the specified `npm publish --access public --registry=https://registry.npmjs.org/`. npm accepted `@modainteract/moda-interact-shared@1.1.0` and returned success. Publish output shasum: `923e5b71942bd17e2d2537820f884c9edc3cdeaf`.
+- Committed and pushed only release metadata as Shared commit `3480905` on `origin/task/ARCH-024-SHARED-002`.
+- No implementation source, consumer code, or downstream task was changed.
 created: 2026-10-01
 updated: 2026-10-01
 ---
-
+- Prerequisite accepted source/status: passed; SHARED-001 report is `Complete / Accepted — Attempt 2`, source commit `c4627f1` is included in `eaf62bc`.
+- Starting version `1.0.1`; target version `1.1.0`; both package and lockfile root metadata match after versioning.
+- Release diff before commit contained only `package.json` and `package-lock.json`; `git diff --check` passed.
+- `npm pack --dry-run` passed; the required public entrypoint artifact list is present.
+- `npm publish --access public --registry=https://registry.npmjs.org/` returned success and npm reported `+ @modainteract/moda-interact-shared@1.1.0`.
+- Registry verification is currently blocked by npm propagation: `npm view @modainteract/moda-interact-shared@1.1.0 version dist.tarball dist.shasum dist.integrity --json` returned E404 on two attempts; `npm view @modainteract/moda-interact-shared dist-tags --json` still reports `latest: 1.0.1`.
+- Clean external consumer installation of exact `@modainteract/moda-interact-shared@1.1.0` returned `ETARGET` because the registry does not yet expose the version. The disposable directory was removed automatically. Required import verification is therefore pending.
+- `dist.integrity` and registry `dist.tarball` have not yet been obtainable; the publish CLI's integrity display was truncated and is not recorded as registry evidence.
 # Publish ARCH-024 Shared model and Commerce turn runtime
 
 ## Architecture
-
+Registry visibility has not caught up with npm's successful publish response. No second publish attempt will be made for this immutable version.
 Architecture ID:
 
 `ARCH-024`
-
+The successful npm publish response means npm accepted the immutable `1.1.0` version; the subsequent E404/ETARGET responses are temporary registry propagation, consistent with npm's publish output warning that processing may take a few minutes.
 Architecture document:
 
 `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
-
+Await exact-version npm registry metadata and a successful exact-version clean-consumer install/import. Do not retry publication; resume with registry verification only.
 Coordinator:
 
 `moda_architect`
+None. Task remains `in_progress`; do not hand off for review until registry metadata and clean-consumer verification pass.
 
+### Prepared Execution Evidence
+
+- Launcher prepared and claimed Attempt 1 for `copilot`; dependency gate passed because `ARCH-024-SHARED-001` is complete. Claim commit `50c4d1fff1a127c97afe2968faea74c806835ea7` was committed and pushed.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-SHARED-002`, `task/ARCH-024-SHARED-002`; prepared head `fef30bcd29cfbcd01ee9aea512196f688633c30f`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-SHARED-002`, `task/ARCH-024-SHARED-002`; prepared head `eaf62bc2e4f7f2e7833c325345108282da04a2e5`.
+- Parent and implementation task refs did not require fast-forward; `origin/main` was already incorporated. Recursive submodule sync/update passed; the submodule entry list is empty.
+- Release metadata commit `3480905` is pushed to `origin/task/ARCH-024-SHARED-002`. No main merge or consumer changes were made.
 ## Objective
 
 Publish the architect-accepted ARCH-024-SHARED-001 combined implementation as the next backward-compatible minor release of `@modainteract/moda-interact-shared`, verify the exact public package identity and entrypoints, then stop before any consumer integration.
-
+Publication was accepted by npm, but registry metadata and exact-version consumer imports remain unavailable at the time of this report. Keep the task in progress and resume verification; never republish `1.1.0`.
 ## Context
 
 ARCH-024-SHARED-001 contains the accepted model contracts/OpenRouter client, modular LangGraph-backed `runCommerceTurn`, guardrails and canonical structured runner logging. Admin, Commerce and Background must consume one canonical published Shared version; they must not copy these contracts locally or depend on unpublished task-branch source.
