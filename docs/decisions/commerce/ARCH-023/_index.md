@@ -43,7 +43,7 @@ Individual task YAML is authoritative.
 | [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
 | [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Complete — Accepted Attempt 4 | COMMERCE-001, ADMIN-001, DATABASE-004 |
 | [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ADMIN-003 |
-| [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Require request-time Merchant Knowledge opt-in and deny lookup while merchant preference is OFF | Pending | COMMERCE-002, ADMIN-004 |
+| [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Require request-time Merchant Knowledge opt-in and deny lookup while merchant preference is OFF | Complete — Accepted Attempt 2 | COMMERCE-002, ADMIN-004 |
 
 
 ## Execution frontier
@@ -72,6 +72,8 @@ COMMERCE-004 is narrowed to request-time merchant activation enforcement; it no 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 COMMERCE-003 is Complete / Accepted Attempt 2. The evidence-only correction attempt preserved the implementation source, synchronized both canonical task worktrees, reconciled the Completion Report and reran the required focused validation. It remains pinned to `@modainteract/moda-interact-shared@1.0.1`. The required Background host-consumption follow-up remains separate and mandatory before final ARCH-023 system acceptance.
+
+COMMERCE-004 is Complete / Accepted Attempt 2. The validation-only correction proved the production lookup adapter against a task-owned disposable `pgvector/pgvector:pg17` database: missing/false preference denies before embedding/vector work without mutating retained knowledge or creating a preference row, and enabling the same preference retrieves the existing ACTIVE chunk. The accepted COMMERCE-002 bootstrap remains unchanged and preference-neutral.
 
 ## ARCH-021 Policy Operation relationship
 
