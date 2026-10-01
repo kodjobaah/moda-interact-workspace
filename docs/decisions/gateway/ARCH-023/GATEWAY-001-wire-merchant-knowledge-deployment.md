@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -20,7 +20,7 @@ depends_on:
   - ARCH-023-COMMERCE-002
 enables: []
 created: 2026-09-29
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Wire Merchant Knowledge deployment topology
