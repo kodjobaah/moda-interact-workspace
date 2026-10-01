@@ -1020,3 +1020,15 @@ system-test task materialisation is deliberately deferred to a later architectur
 In-progress Shopify-only structural refactor of `moda-interact/app/services/billing/billing.service.ts`. Eleven sequential `moda_app` tasks extract BillingPeriod projection, plan resolution, reads, activation, hosted callback fencing, recovery-credit purchase initiation, subscription-ended notification and finally subscription synchronization behind the unchanged `BillingService` façade. No Database, Shared, Background, Admin, Commerce, Gateway or System Test implementation task is part of ARCH-025. The byte-identical `billing.service.test.ts` asset contains 213 tests; its proven pre-task failure set is recorded as `ARCH025-TEST-001`. SHOPIFY-001 through SHOPIFY-005 are Complete; SHOPIFY-006 is the current Ready frontier.
 
 [Architecture](ARCH-025-shopify-billing-service-maintainability.md)
+
+## ARCH-026 — WooCommerce application foundation (2026-10-01)
+
+Proposed, iterative architecture. `ARCH-026-WOOCOMMERCE-001` is defined Pending to
+establish the installable PHP + React WordPress/WooCommerce extension foundation. The
+new `moda_woocommerce` owner and WOOCOMMERCE launcher route are registered by the
+definition patch; execution remains gated on provisioning/registering the actual
+`moda-interact-woocommerce` repository as a workspace submodule. Hosted Moda API,
+commerce-event, Background/recovery and billing boundaries are intentionally deferred
+until their later tasks are discussed.
+
+[Architecture](ARCH-026-woocommerce-application-foundation.md)

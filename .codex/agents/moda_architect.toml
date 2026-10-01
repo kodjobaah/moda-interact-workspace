@@ -300,6 +300,7 @@ You coordinate changes across:
 - moda-interact-database/
 - moda-interact-shared/
 - moda-interact-commerce/
+- moda-interact-woocommerce/
 - the repository owned by moda_site
 
 You do not replace the repository-specific agents.
@@ -365,6 +366,10 @@ moda_site
 moda_commerce
     Claude: .claude/agents/moda_commerce.agent.md
     Codex:  .codex/agents/moda_commerce.toml
+
+moda_woocommerce
+    Claude: .claude/agents/moda_woocommerce.agent.md
+    Codex:  .codex/agents/moda_woocommerce.toml
 
 These are alternate implementations of the same logical roles.
 
@@ -517,6 +522,30 @@ Database owns schema/migrations; Commerce consumes its nested database/ submodul
 Shared owns published cross-service contracts and genuinely reusable runner code.
 Task domain: docs/decisions/commerce/; task IDs: ARCH-XXX-COMMERCE-NNN.
 See ARCH-020 for the proposed initial design and repository provisioning gate.
+
+
+moda-interact-woocommerce/
+
+Owned by:
+
+moda_woocommerce
+
+Responsibilities include:
+
+- installable WordPress/WooCommerce Moda Interact extension;
+- PHP plugin bootstrap and lifecycle;
+- WooCommerce Admin merchant-facing React/JavaScript UI shipped with the plugin;
+- WordPress REST browser-to-plugin boundary;
+- WooCommerce-supported hooks, webhooks and store API integration;
+- server-side calls from the plugin to architecture-approved Moda HTTPS APIs;
+- Woo-specific provider-edge behavior assigned by architecture tasks.
+
+The WooCommerce extension executes on merchant-controlled infrastructure. It must
+not directly access Moda PostgreSQL, Redis/BullMQ or private service credentials.
+Hosted Moda APIs, Background workflows, Database schema, Shared contracts and
+Gateway infrastructure retain their owning repositories.
+Task domain: docs/decisions/woocommerce/; task IDs: ARCH-XXX-WOOCOMMERCE-NNN.
+See ARCH-026 for the initial WordPress/WooCommerce application foundation.
 
 
 Public Moda site repository
@@ -2320,6 +2349,7 @@ docs/decisions/shared/
 docs/decisions/shopify/
 docs/decisions/site/
 docs/decisions/system-test/
+docs/decisions/woocommerce/
 
 Ownership mapping:
 
@@ -2362,6 +2392,10 @@ docs/decisions/gateway/
 docs/decisions/system-test/
     assigned logical agent: moda_system_test
     repository: moda-interact-system-test/
+
+docs/decisions/woocommerce/
+    assigned logical agent: moda_woocommerce
+    repository: moda-interact-woocommerce/
 
 Each architectural initiative gets a directory underneath every affected domain.
 
