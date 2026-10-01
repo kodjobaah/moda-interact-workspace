@@ -92,16 +92,36 @@ Release composer
 
 `StudioComposerContext` carries Preview-only Tool handoff state and bypasses the normal dirty-navigation guard when navigation targets `/preview` with a Tool/Release handoff.
 
-ARCH-024 deliberately does **not** evolve that human workflow in place. The replacement Test Conversation experience will be built after this task from a clean UI baseline:
+ARCH-024 deliberately does **not** evolve that human workflow in place. The replacement Test Conversation experience is intentionally **not** one serial Commerce chain. This task establishes the clean human-UI/runtime seam required by COMMERCE-004, while database-backed model resolution proceeds independently through DATABASE-001 + SHARED-002:
 
 ```text
 ARCH-024-COMMERCE-001   remove obsolete human Preview composition
-ARCH-024-COMMERCE-002   resolve effective available + active model
-ARCH-024-COMMERCE-003   make Studio model-selection-only
+        |
+        v
 ARCH-024-COMMERCE-004   compose Test Conversations from selected Features
-ARCH-024-COMMERCE-005   build replacement Test Conversations UI
+        |
+        +--------------------------+
+                                   |
+DATABASE-001 + SHARED-002          |
+        |                          |
+        v                          |
+ARCH-024-COMMERCE-002              |
+resolve effective available +      |
+SHOP -> PRICING_PLAN -> PLATFORM    |
+        |                          |
+        +--> ARCH-024-COMMERCE-003 |
+             Studio selection-only |
+             (after ADMIN-002)     |
+                                   |
+ARCH-023-COMMERCE-003 -------------+
+                                   v
+ARCH-024-COMMERCE-005   build Test Conversations UI + complete authored snapshot
+        |
+        v
 ARCH-024-COMMERCE-006   execute Tools against selected real shop
-ARCH-024-COMMERCE-007   execute model through OpenRouter
+        |
+        v
+ARCH-024-COMMERCE-007   execute snapshot model through OpenRouter
 ```
 
 The cleanup must nevertheless preserve reusable backend infrastructure. In particular, the current Code Response production path directly uses:
@@ -623,7 +643,7 @@ This task may be implemented before ARCH-024 database/shared model work because 
 
 ## Enables
 
-- `ARCH-024-COMMERCE-002`
+- `ARCH-024-COMMERCE-004`
 
 ## Acceptance Criteria
 

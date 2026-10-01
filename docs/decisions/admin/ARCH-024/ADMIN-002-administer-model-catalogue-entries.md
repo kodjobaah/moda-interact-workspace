@@ -1142,6 +1142,7 @@ All mutations remain Next.js Server Actions and are not public HTTP APIs.
 ## Enables
 
 - `ARCH-024-COMMERCE-003`
+- `ARCH-024-ADMIN-003`
 
 ## Acceptance Criteria
 

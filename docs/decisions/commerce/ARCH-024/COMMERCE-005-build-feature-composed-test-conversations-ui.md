@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-024-COMMERCE-006
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Build Feature-composed Test Conversations UI

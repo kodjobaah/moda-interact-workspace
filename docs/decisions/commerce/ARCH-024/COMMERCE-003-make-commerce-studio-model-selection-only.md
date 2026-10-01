@@ -19,7 +19,7 @@ depends_on:
   - ARCH-024-ADMIN-002
 enables: []
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Make Commerce Studio model selection-only
