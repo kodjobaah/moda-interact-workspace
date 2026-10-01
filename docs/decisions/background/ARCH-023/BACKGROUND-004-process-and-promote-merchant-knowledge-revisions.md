@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 32
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 3
 depends_on:
   - ARCH-023-BACKGROUND-002
   - ARCH-023-BACKGROUND-003
@@ -575,10 +575,10 @@ terminal retry failure only marks current PROCESSING revision
 - [x] Implement processing state machine and acquisition dispatch.
 - [x] Implement pgvector persistence/promotion transaction.
 - [x] Implement permanent/transient/terminal failure behavior.
-- [ ] Create final dedicated Merchant Knowledge entrypoint. Blocked by missing database-owned lease names and out-of-scope background lease cadence wiring.
-- [ ] Wire PENDING reconciliation and upload cleanup schedules. Blocked by the same lease contract.
+- [x] Create final dedicated Merchant Knowledge entrypoint after DATABASE-005 and BACKGROUND-007 acceptance.
+- [x] Wire PENDING reconciliation and upload cleanup schedules using the accepted lease contracts.
 - [x] Add package start/readiness scripts.
-- [ ] Add focused unit/integration/entrypoint tests. Processing tests are present; dedicated entrypoint test is blocked with its entrypoint.
+- [x] Add focused unit/integration/entrypoint tests, including the dedicated worker entrypoint/readiness contract.
 
 ## Interfaces / Contracts
 
@@ -608,21 +608,21 @@ Produces the deployable Background process required by Gateway.
 
 ## Acceptance Criteria
 
-- [ ] Dedicated Merchant Knowledge entrypoint is operational and independently startable.
+- [x] Dedicated Merchant Knowledge entrypoint is operational and independently startable.
 - [x] Source processing is tenant/current-plan/current-generation scoped.
 - [x] Exact D3 normalization/truncation and D17 chunking are implemented.
 - [x] Vectors/provenance persist correctly with pgvector dimension validation and parameterized writes.
 - [x] Prior ACTIVE revision remains usable until successful replacement.
 - [x] Mid-flight entitlement changes cannot promote stale results.
 - [x] Retry behavior does not corrupt durable lifecycle state.
-- [ ] PENDING queue-loss reconciliation and upload cleanup are scheduled.
+- [x] PENDING queue-loss reconciliation and upload cleanup are scheduled.
 - [x] No automatic URL refresh or entitlement-change revision generation is implemented here.
 
 ## Validation
 
 - [x] all focused normalization/chunking/processing/embedding tests: 36 passed; the database integration case was skipped in this first focused run.
 - [x] pgvector integration test: 1 passed against the disposable `pgvector/pgvector:pg17` fixture after applying all 21 committed database migrations.
-- [ ] final worker entrypoint/readiness test: no entrypoint exists because its required lease contract is missing; the package readiness command itself passed against disposable Redis/PostgreSQL.
+- [x] final worker entrypoint/readiness unit tests: 4 passed, covering dedicated worker isolation, both fixed leased schedules, cleanup, start/readiness scripts and Redis/PostgreSQL readiness requirements. The live readiness command was not rerun in Attempt 2; the earlier disposable Redis/PostgreSQL readiness run passed.
 - [ ] `npm test`: failed. With the disposable database configured, 12 files failed (22 tests), 94 files passed, and 2 files were skipped (1,321 tests passed, 4 skipped). Causes include missing ARCH-020 fixture, existing tests using Prisma fields absent from the pinned schema, unrelated billing/recovery expectation failures, observability timeout/version assertions, Merchant Knowledge reconciliation fixture interference under parallel execution, and upload-cleanup transaction timeout. Serial Merchant Knowledge processing and reconciliation integrations passed; upload cleanup had one test fail after its 5-second transaction expired.
 - [x] `npm run build`
 - [x] `npm run readiness:merchant-knowledge-worker` against disposable Redis/PostgreSQL fixture: ready.
@@ -702,4 +702,180 @@ The repository agent correctly stopped at the ownership boundary. The missing en
 3. BACKGROUND-004 remains Blocked until both tasks are Complete/accepted and their accepted changes are available on its execution baseline. Preserve the current partial implementation. Before reclaim, ensure the task-owned untracked entrypoint draft is durably checkpointed on the implementation task branch or otherwise made clean without stashing, resetting or discarding it.
 4. Then reconcile BACKGROUND-004 `blocked -> ready`; the next launcher claim becomes Attempt 2. Attempt 2 finishes R14 and the remaining entrypoint/full validation only; it must not begin BACKGROUND-005.
 
-Blocker resolution — 2026-10-01: DATABASE-005 is Complete / Accepted Attempt 2 and BACKGROUND-007 is Complete / Accepted Attempt 1. The exact enum identities and fixed 60-second / 3600-second global lease cadences are therefore available. The task is returned to `ready` with Attempt 1 preserved; the next normal claim becomes Attempt 2. Preserve the existing partial implementation and complete only R14 plus the remaining task-defined validation before returning to architect review.
+## Developer Override
+
+### Decision
+Reopened on 2026-10-01 by explicit developer request: `/moda_developer_update ARCH-023-BACKGROUND-004 reopen`.
+
+### Previous Attempt
+No attempt has been accepted. Attempt 1 remains the preserved blocked implementation attempt; this reopen does not increment the attempt number.
+
+### Reason
+The developer explicitly requested reopening after the prerequisite work completed. `ARCH-023-DATABASE-005` is now Complete / Accepted Attempt 2, and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. No additional reason was supplied.
+
+### State Transition
+`blocked -> ready`; `executor` and `claimed_at` remain null; `attempt` remains 1. The next `/moda-task ARCH-023-BACKGROUND-004` claim will be Attempt 2 and must follow the existing Architect Review constraints, preserve the partial implementation, and complete only the dedicated entrypoint, schedules and remaining required validation.
+
+### Dependency Reconciliation
+`ARCH-023-BACKGROUND-005` remains `pending` because it depends on BACKGROUND-004 being Complete. It is unclaimed and requires no regression. No downstream task already in progress, review or complete was changed.
+
+### Blocker Resolution
+DATABASE-005 is Complete / Accepted Attempt 2 and BACKGROUND-007 is Complete / Accepted Attempt 1. The exact enum identities and fixed 60-second / 3600-second global lease cadences are available. The task is `ready` with Attempt 1 preserved; the next normal claim becomes Attempt 2. Preserve the existing partial implementation and complete only R14 plus the remaining task-defined validation before returning to architect review.
+
+## Attempt 2 Completion Report
+
+### Status
+Implementation and task-defined Attempt 2 validation are complete. Returned to `review` for `moda_architect`; this report makes no architect acceptance decision.
+
+### Preparation Evidence
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-004`, branch `task/ARCH-023-BACKGROUND-004`; parent `origin/main` was already incorporated at `7e24ec7c15ac5db94b1e9677fb9477ff9c74682e`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-004`, branch `task/ARCH-023-BACKGROUND-004`; implementation `origin/main` was already incorporated at prepared HEAD `87cc3e03997ef1f7455e47f5241c72be9527e285`.
+- Launcher dependency gate passed for BACKGROUND-002, BACKGROUND-003, BACKGROUND-006, DATABASE-005 and BACKGROUND-007.
+- Recursive submodule sync/update passed; `database` was verified at the exact recorded DATABASE-005 commit `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`.
+- Attempt 2 was claimed by `copilot` at `2026-10-01T10:01:05Z`; parent claim commit `9e4c091284525f9ee7afeb20e7eb0f9bf8ebbdd3` was committed and pushed by the launcher.
+
+### Files Changed
+- `src/entrypoints/merchant-knowledge.ts`
+- `tests/unit/entrypoints/merchant-knowledge.test.ts`
+
+The previously untracked, task-owned entrypoint draft was preserved and checkpointed before preparation in implementation commit `75c8531`. Attempt 2 corrected its WEB_PAGE acquirer import to the existing `MerchantKnowledgeWebPageAcquirer` export.
+
+### Work Completed
+- Completed the dedicated `moda-merchant-knowledge-worker` entrypoint using the existing readiness lifecycle, configuration and lease services, processing worker, upload cleanup, queue telemetry and owned resource shutdown.
+- Added the PENDING reconciliation lease at 60 seconds with immediate execution and page size 100; added upload cleanup at 3600 seconds with immediate execution.
+- Added focused contract coverage for worker isolation, exact lease names/cadences, reconciliation and cleanup calls, queue telemetry, shutdown ownership, package commands and Redis/PostgreSQL readiness requirements.
+
+### Validation Results
+- `npm run test -- tests/unit/entrypoints/merchant-knowledge.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/workers/merchant-knowledge.worker.test.ts`: passed, 18 tests across 3 files.
+- `npm run build`: passed, including Prisma generation against the accepted database pin and TypeScript compilation.
+- Changed-file diagnostics: no errors in either changed file.
+- `git diff --check`: passed.
+- The live readiness CLI was not rerun in Attempt 2 because it performs external Redis/PostgreSQL probes. The focused readiness contract test passed; the prior disposable readiness command passed during Attempt 1 as recorded above.
+- The repository-wide `npm test` is not repeated in Attempt 2. Its mixed failures from Attempt 1 remain recorded in the original Completion Report; they were not represented as caused or fixed by this bounded entrypoint change.
+
+### Deviations and Unresolved Issues
+No implementation scope deviation or new cross-repository requirement. No unresolved implementation blocker remains; the task awaits architect review.
+
+### Architectural Concerns
+None. The entrypoint consumes the accepted DATABASE-005 lease identities and BACKGROUND-007 cadence mappings without changing their ownership or contract.
+
+## Architect Review — Attempt 2
+
+### Review Status
+Changes Requested — evidence-only workflow correction.
+
+### Review Notes
+The implementation is functionally conformant. No production or test-code correction is requested. The previously blocked processing pipeline was reviewed together with the new dedicated entrypoint because Attempt 1 was Blocked rather than partially accepted. The implementation conforms to R1-R17 by inspection and the recorded focused/pgvector validation: exact normalization and code-point truncation, deterministic chunking, bounded embedding configuration/vector checks, activation-aware current-source guards, acquisition dispatch, retry/permanent-failure handling, transactional pgvector promotion that supersedes the prior ACTIVE revision only after candidate persistence, and the final dedicated worker entrypoint with the exact 60-second PENDING reconciliation and 3600-second upload-cleanup leased schedules.
+
+Attempt 2 also consumes the exact accepted DATABASE-005 pin `b34a563436bbc89b6ca3e26b43a0bd03116a1a66` and the accepted BACKGROUND-007 cadence contract without casts, substitute lease names or cross-repository changes. The bounded Attempt 2 validation is sufficient: 18 focused entrypoint/isolation/worker tests, production build, changed-file diagnostics and `git diff --check` passed. The live readiness CLI need not be rerun solely for this review because its Redis/PostgreSQL dependency contract was already proven with disposable infrastructure in Attempt 1 and the accepted DATABASE-005/BACKGROUND-007 work owns the subsequently added lease identities/cadences. The non-clean repository-wide suite remains documented from Attempt 1 and is not attributed to this bounded entrypoint correction.
+
+The review cannot be accepted yet because the Attempt 2 Completion Report does not contain the mandatory physical-isolation/synchronization evidence required by `docs/agent-worktree-isolation-policy.md`. The report records the canonical paths, branches, `origin/main` incorporation, recursive submodule preparation and dependency gate, but it omits:
+
+1. the three required physical-isolation attestations:
+   - `shared workspace checkout switched/mutated for task work: no`;
+   - `shared implementation checkout switched/mutated for task work: no`;
+   - `another task worktree reused: no`;
+2. the two missing explicit remote-task-branch synchronization outcomes, so all four required start-of-attempt values are not durably recorded in the required `yes|not-needed` / `yes|already-current` form;
+3. the final submitted implementation and parent-report heads. The architect handoff identifies implementation `4f2b4ff` and parent report `69c020d7`, but those final heads must be written into the Completion Report rather than existing only in chat.
+
+Branch cleanliness and successful pushes do not substitute for the missing physical-isolation evidence under the governing policy.
+
+### Attempt 3 correction contract
+Attempt 3 is evidence-only unless synchronization or refreshed validation exposes a genuine regression. Preserve the current implementation; do not begin BACKGROUND-005.
+
+1. Reclaim this same task only through `/moda-task ARCH-023-BACKGROUND-004` so the canonical parent and implementation worktrees are reused and synchronized.
+2. Record the complete launcher packet in the Completion Report, including exactly:
+
+```text
+Physical worktree isolation:
+  canonical workspace root: <launcher path>
+  parent worktree: <launcher path>
+  parent branch: task/ARCH-023-BACKGROUND-004
+  implementation worktree: <launcher path>
+  implementation branch: task/ARCH-023-BACKGROUND-004
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: yes|not-needed
+  parent origin/main incorporated: yes|already-current
+  implementation remote task branch fast-forwarded: yes|not-needed
+  implementation origin/main incorporated: yes|already-current
+```
+
+3. Record recursive submodule preparation and the exact DATABASE-005 gitlink, plus the final pushed implementation and parent-report commit IDs.
+4. Rerun the bounded acceptance evidence from the canonical prepared implementation worktree: the 18 focused tests, `npm run build`, changed-file diagnostics and `git diff --check`. The repository-wide suite and live readiness CLI do not need to be repeated solely to manufacture evidence unless the synchronized baseline changes relevant code/contracts or the launcher/task validation policy requires them.
+5. Return the task to `review` with `executor` and `claimed_at` cleared. No implementation-source change is expected.
+
+### Architecture Conformance
+Functionally conforms. The only outstanding issue is workflow evidence. `ARCH-023-BACKGROUND-005` remains gated until BACKGROUND-004 is architect-accepted Complete.
+
+## Attempt 3 Completion Report
+
+### Status
+Evidence-only correction completed as requested by the Attempt 2 Architect Review. No implementation source or test changes were needed. Returned to `review`; this report makes no architect acceptance decision.
+
+### Physical Worktree Isolation
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-004`
+- Parent branch: `task/ARCH-023-BACKGROUND-004`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-004`
+- Implementation branch: `task/ARCH-023-BACKGROUND-004`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+### Start-of-Attempt Synchronization
+- Parent remote task branch fast-forwarded: not-needed
+- Parent `origin/main` incorporated: already-current
+- Implementation remote task branch fast-forwarded: not-needed
+- Implementation `origin/main` incorporated: already-current
+- Parent synchronized HEAD before claim: `e5709a5687e868e282fbb7d2b5722a45998bbc48`
+- Implementation prepared HEAD: `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1`
+- Attempt 3 claim: `copilot`, claimed at `2026-10-01T10:36:41Z`; claim commit `09bb71c3415a82c3bbfca83fa9a2468a3f64d5e0`, committed and pushed by the launcher.
+
+### Recursive Implementation Submodules
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- Recursive submodule verification: ready
+- Recorded database gitlink: `b34a563436bbc89b6ca3e26b43a0bd03116a1a66` (accepted DATABASE-005 revision)
+
+### Final Submitted Heads
+- Implementation branch final submitted head: `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1` (commit `4f2b4ff`)
+- Parent task report final submitted head before this evidence-only correction: `69c020d7c051275d029bac847fc8a8b71e7aaa61` (commit `69c020d7`)
+- Parent synchronization commit incorporated before claim: `e5709a5687e868e282fbb7d2b5722a45998bbc48`
+
+### Validation Results
+- `npm run test -- tests/unit/entrypoints/merchant-knowledge.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/workers/merchant-knowledge.worker.test.ts`: passed, 18 tests across 3 files.
+- `npm run build`: passed, including Prisma generation and TypeScript compilation.
+- Changed-file diagnostics: no errors in the entrypoint or its focused test.
+- `git diff --check`: passed in both implementation and parent task worktrees.
+- No source/test changes were made in Attempt 3. The full repository suite and live readiness CLI were not rerun, as the Attempt 2 review explicitly says they are not required for this evidence-only correction.
+
+### Changes Requested Mapping
+- Physical isolation attestations: recorded above from the canonical launcher-resolved paths and prepared-worktree topology.
+- All four synchronization outcomes: recorded above in the required `not-needed` / `already-current` form.
+- Recursive submodule and final submitted commit evidence: recorded above, including the exact DATABASE-005 gitlink and both Attempt 2 submitted heads.
+- Required bounded validation: rerun and passed above.
+
+### Deviations and Unresolved Issues
+None. No implementation changes or downstream BACKGROUND-005 work were started.
+
+## Architect Review — Attempt 3
+
+### Review Status
+Accepted — Attempt 3
+
+### Review Notes
+Attempt 3 closes the evidence-only correction contract from the Attempt 2 Architect Review without changing implementation or test sources. The Completion Report now records all three mandatory physical-worktree isolation attestations, all four start-of-attempt synchronization outcomes in the required form, successful recursive submodule preparation, the exact accepted DATABASE-005 gitlink `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`, and the previously submitted implementation/report heads.
+
+The implementation remains at `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1`. The bounded Attempt 3 validation passed: 18 focused tests across the dedicated entrypoint/isolation/worker suites, `npm run build`, changed-file diagnostics and `git diff --check`. The repository-wide suite and live readiness CLI were not required to be rerun for this evidence-only correction because the Attempt 2 review explicitly accepted the previously recorded runtime-readiness proof and found no implementation defect.
+
+The complete BACKGROUND-004 outcome is accepted: activation-aware entitlement guards, normalization/truncation, deterministic chunking, embedding validation, pgvector persistence and generation-safe promotion, retry/terminal-failure handling, and the dedicated Merchant Knowledge entrypoint with the accepted 60-second PENDING reconciliation and 3600-second upload-cleanup leased schedules.
+
+`ARCH-023-BACKGROUND-004` is therefore Complete / Accepted at Attempt 3. `ARCH-023-BACKGROUND-005` is promoted from Pending to Ready; it is not started implicitly.
+
+### Architecture Conformance
+Conforms. No implementation-source correction or further BACKGROUND-004 validation is required.

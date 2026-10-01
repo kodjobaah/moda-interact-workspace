@@ -11,9 +11,12 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003`, `ARCH-023-COMMERCE-004`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-004`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003`, `ARCH-023-COMMERCE-004`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
+Historical execution state after runtime-lease prerequisites completed and before BACKGROUND-004 Attempt 2:
 The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
+
+Current execution frontier (2026-10-01) supersedes the historical Attempt 1 note above: `ARCH-023-BACKGROUND-004` is Complete / Accepted Attempt 3. Its evidence-only Attempt 3 preserved implementation head `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1` and closed the mandatory worktree/synchronization evidence gap. `ARCH-023-BACKGROUND-005` is now Ready and is the next Background implementation task.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3350,6 +3353,24 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — BACKGROUND-004 Attempt 3 accepted
+
+- Accepted the complete BACKGROUND-004 outcome at Attempt 3. Attempt 3 was evidence-only: implementation remained at `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1`, and the Completion Report now records all mandatory physical-isolation, synchronization, recursive-submodule and submitted-head evidence.
+- The bounded 18-test entrypoint/isolation/worker suite, production build, changed-file diagnostics and `git diff --check` passed. The previously accepted live readiness evidence and non-clean repository-wide suite inventory did not require rerun solely to manufacture evidence.
+- Promoted `ARCH-023-BACKGROUND-005` from Pending to Ready. No downstream task is started implicitly; Gateway remains gated on BACKGROUND-005 completion.
+
+### 2026-10-01 — BACKGROUND-004 Attempt 2 changes requested (evidence-only)
+
+- Reviewed the complete BACKGROUND-004 outcome, including the previously blocked processing implementation and the Attempt 2 dedicated Merchant Knowledge entrypoint. No production/test-code defect was found; the exact DATABASE-005/BACKGROUND-007 lease contracts are consumed correctly and the bounded Attempt 2 validation is sufficient.
+- Returned the task to Ready with Attempt 2 preserved because the Completion Report omits the mandatory three physical-isolation attestations, two explicit remote-task-branch synchronization outcomes and final submitted heads. Branch cleanliness alone is not sufficient evidence under `docs/agent-worktree-isolation-policy.md`.
+- Attempt 3 is evidence-only unless synchronization/refreshed validation exposes a regression. BACKGROUND-005 remains Pending until BACKGROUND-004 is Complete/architect-accepted.
+
+### 2026-10-01 — BACKGROUND-004 Attempt 1 blocked on runtime lease contract
+
+- Confirmed the partial processing implementation correctly stopped at a cross-repository ownership boundary: the task-owned final entrypoint requires `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`, while the pinned `BackgroundRuntimeLeaseName` enum and shared lease cadence `CASE` contain neither identity.
+- Materialised `ARCH-023-DATABASE-005` as the enum/migration-only prerequisite and `ARCH-023-BACKGROUND-007` as the Background runtime cadence-only prerequisite. The fixed global cadences remain exactly 60 seconds and 3600 seconds; no new `BackgroundRuntimeConfig` columns, queue or locking mechanism are introduced.
+- Returned no acceptance decision on BACKGROUND-004's partial implementation. BACKGROUND-004 remains Blocked at Attempt 1 until both prerequisites are Complete/accepted; BACKGROUND-005 remains Pending.
 
 ### 2026-10-01 — COMMERCE-004 Attempt 2 accepted
 

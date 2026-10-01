@@ -51,8 +51,8 @@ Individual task YAML is authoritative.
 | [BACKGROUND-003](BACKGROUND-003-acquire-merchant-knowledge-uploads.md) | Private R2 CSV/XLSX acquisition/extraction and safe asset cleanup | Complete — Accepted Attempt 2 | BACKGROUND-001 |
 | [BACKGROUND-006](BACKGROUND-006-respect-merchant-knowledge-activation.md) | Require merchant opt-in in ingestion eligibility and PENDING reconciliation | Complete — Accepted Attempt 1 | BACKGROUND-001, ADMIN-004 |
 | [BACKGROUND-007](BACKGROUND-007-add-merchant-knowledge-runtime-lease-cadences.md) | Add fixed global cadence handling for the two Merchant Knowledge runtime leases | Complete — Accepted Attempt 1 | DATABASE-005 |
-| [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Ready — Attempt 1 blocker resolved | BACKGROUND-002, BACKGROUND-003, BACKGROUND-006, DATABASE-005, BACKGROUND-007 |
-| [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Pending | BACKGROUND-004 |
+| [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Complete — Accepted Attempt 3 | BACKGROUND-002, BACKGROUND-003, BACKGROUND-006, DATABASE-005, BACKGROUND-007 |
+| [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Ready | BACKGROUND-004 |
 
 ## Execution frontier
 
@@ -60,7 +60,7 @@ DATABASE-001, SHARED-002 and BACKGROUND-001 are Complete/architect-accepted. Att
 closed the final queue-loss validation gate against a task-local disposable pgvector PostgreSQL
 database without changing runtime infrastructure or shared test helpers.
 
-BACKGROUND-002 is Complete/architect-accepted at Attempt 3, BACKGROUND-003 is Complete/architect-accepted at Attempt 2, and BACKGROUND-006 is Complete/architect-accepted at Attempt 1. BACKGROUND-004 Attempt 1 exposed the runtime-lease contract prerequisite. DATABASE-005 is Complete / Accepted Attempt 2 and BACKGROUND-007 is now Complete / Accepted Attempt 1, so the lease blocker is resolved and BACKGROUND-004 returns to Ready with Attempt 1 preserved.
+BACKGROUND-002 is Complete/architect-accepted at Attempt 3, BACKGROUND-003 is Complete/architect-accepted at Attempt 2, and BACKGROUND-006 is Complete/architect-accepted at Attempt 1. DATABASE-005 is Complete / Accepted Attempt 2 and BACKGROUND-007 is Complete / Accepted Attempt 1. BACKGROUND-004 is now Complete / Accepted Attempt 3 after its evidence-only correction recorded the mandatory worktree/synchronization packet without implementation churn.
 
 Current prerequisite sequence:
 
@@ -71,13 +71,13 @@ DATABASE-005   Complete — Accepted Attempt 2
 BACKGROUND-007 Complete — Accepted Attempt 1
     |
     v
-BACKGROUND-004 Ready — next claim is Attempt 2
+BACKGROUND-004 Complete — Accepted Attempt 3
     |
     v
-BACKGROUND-005 Pending
+BACKGROUND-005 Ready
 ```
 
-BACKGROUND-004 Attempt 2 must preserve the accepted partial implementation, finish the final entrypoint/leased-scheduler work and rerun its remaining task-defined validation. Gateway deployment must not begin before BACKGROUND-005 is Complete/architect-accepted.
+BACKGROUND-005 is now the executable Background frontier. Gateway deployment must not begin before BACKGROUND-005 is Complete/architect-accepted.
 
 ## Merchant opt-in reconciliation
 

@@ -22,4 +22,4 @@ ARCH-023-DATABASE-004   Complete — Accepted Attempt 1
 ARCH-023-DATABASE-005   Complete — Accepted Attempt 2
 ```
 
-DATABASE-005 is Complete / Accepted Attempt 2. Its acceptance satisfies BACKGROUND-007's only dependency, so `ARCH-023-BACKGROUND-007` is Ready. `ARCH-023-BACKGROUND-004` remains Blocked behind BACKGROUND-007, and no Background implementation is started by this review.
+DATABASE-005 is Complete / Accepted Attempt 2, and DATABASE-004 was consumed by the accepted COMMERCE-002 successor-release implementation. DATABASE-005 establishes the two Merchant Knowledge Background scheduler lease identities; BACKGROUND-007 is Complete / Accepted Attempt 1, so BACKGROUND-004 is Ready with Attempt 1 preserved.
