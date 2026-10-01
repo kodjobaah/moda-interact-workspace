@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-01T15:18:07Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -602,7 +602,7 @@ After this task there is exactly one human `/preview` surface: the temporary ARC
 - [x] Re-audit `/api/studio/preview/fixtures`; delete the HTTP route only if no non-test production consumer remains.
 - [x] Leave conversation backend and static Preview model configuration deferred and behaviourally unchanged.
 - [x] Add the replacement shell test and bounded ARCH-024 source/absence guard.
-- [x] Run the required focused and repository validation; record the full Studio workspace suite limitation below.
+- [x] Run the required focused and repository validation.
 - [x] Record every retained legacy-looking Preview seam and its concrete consumer/deferred owner in the Completion Report.
 
 ## Interfaces / Contracts
@@ -661,7 +661,7 @@ This task may be implemented before ARCH-024 database/shared model work because 
 - [x] Code Response sample execution can still POST/read/cancel `/api/studio/preview/tool-tests` with its existing semantics.
 - [x] Conversation backend infrastructure remains available and behaviourally unchanged for later ARCH-024 tasks.
 - [x] Static Preview model/provider/API-key configuration remains available and behaviourally unchanged for the later atomic model-runtime cutover.
-- [x] `/api/studio/preview/fixtures` is deleted because no non-test consumer remains.
+- [x] `/api/studio/preview/fixtures` is either deleted because no non-test consumer remains or explicitly retained with a named production consumer; tests alone are not sufficient reason to retain the HTTP route.
 - [x] No removed human functionality is hidden behind compatibility flags or alternate UI branches.
 - [x] Completion Report contains the required REMOVE/RETAIN/DEFER reference-audit table.
 
@@ -826,24 +826,83 @@ Required final table:
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-None
+#### Attempt 1 review — Changes Requested — 2026-10-01
+
+The implementation is architecturally conformant in substance, but Attempt 1 cannot yet be accepted because the durable Completion Report does not contain the execution evidence required by the governing `moda_architect` protocol. This is an **evidence-only correction**: no implementation source change is requested unless the missing evidence reveals a real discrepancy.
+
+The submitted cleanup reaches the intended intermediate ARCH-024 boundary. `/preview` now authenticates, resolves the selected Studio shop and renders the exact zero-prop `TestConversationsScreen` shell. The obsolete human Preview screen/client, Release -> Preview handoff, PreviewHandoff component, Preview-only Composer Tool state and fixture-catalogue HTTP route are removed. Release `Edit as new release` still uses `composer.setRelease(...)` and remains on the Release cloning path.
+
+Independent comparison with the pre-task session baseline confirms that all explicitly retained backend/runtime seams are unchanged across the submitted snapshot: `app/api/studio/preview/conversations/**`, `src/commerce/preview/**`, `lib/preview/**`, `app/api/studio/preview/tool-tests/**`, `src/commerce/external-preview/**`, `src/studio/code-response/**`, `src/commerce/integration/preview/model-provider.ts` and `lib/server/config.ts` contain no task delta. The retained Tool-test route still has its production Code Response POST/GET/cancel consumer. The deleted fixture HTTP route had no production consumer after removal of the obsolete browser Preview client; `PreviewService.listFixtures()` remains intact as required.
+
+The additional `src/studio/tools/tool-editor.tsx` / `tests/tool-authoring-screen.test.tsx` changes are bounded to removal of the now-deleted `composer.tool` Preview handoff fallback. The normal persisted draft and authoring-session state remain. The submitted full `studio-workspace.test.tsx` run nevertheless reports six legacy Tool-editor failures because those tests look for `Save draft` while the current supported authoring UI is still on the Request step. Static comparison shows that the failing Tool-editor save-control path itself is not changed by COMMERCE-001 and the affected Studio test harness does not seed the removed `composer.tool` handoff, so these failures appear pre-existing and unrelated. Because the task's required focused command includes the whole Studio workspace suite, Attempt 2 must make that non-regression evidence durable rather than relying on the conversational summary.
+
+The Completion Report currently says only that the launcher preparation packet is authoritative. The architect protocol requires the report itself to record the packet's physical-isolation, start-of-attempt synchronization and recursive-submodule evidence. The submitted archive intentionally has no usable Git metadata, so the review environment cannot reconstruct those facts or independently query the submitted remote heads. The user supplied implementation `066948f` and parent report `66ee12f4`; those identifiers and their branch/clean-state evidence must be recorded durably in the task report.
 
 ### Reviewed Files
 
-None
+Implementation repository:
+
+- `app/preview/page.tsx`
+- `src/studio/test-conversations/test-conversations-screen.tsx`
+- deleted `src/studio/preview/preview-screen.tsx`
+- deleted `src/studio/preview/client.ts`
+- `components/studio-workspace.tsx`
+- `components/studio-composer-context.tsx`
+- deleted `components/preview-handoff.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- deleted `app/api/studio/preview/fixtures/route.ts`
+- `tests/test-conversations-screen.test.tsx`
+- `tests/arch024-preview-cleanup.test.ts`
+- `tests/studio-workspace.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+
+Retained boundary audit:
+
+- `app/api/studio/preview/conversations/**`
+- `src/commerce/preview/**`
+- `lib/preview/**`
+- `app/api/studio/preview/tool-tests/**`
+- `src/commerce/external-preview/**`
+- `src/studio/code-response/**`
+- `src/commerce/integration/preview/model-provider.ts`
+- `lib/server/config.ts`
+
+Parent workspace:
+
+- `docs/decisions/commerce/ARCH-024/COMMERCE-001-remove-redundant-human-preview-functionality.md`
+- `docs/decisions/commerce/ARCH-024/_index.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 
 ### Validation Reviewed
 
-None
+- Re-ran the prescribed post-change source audits against the submitted snapshot: obsolete human Preview/handoff strings remain only in bounded negative assertions; no `/api/studio/preview/fixtures` production consumer remains; Code Response still references POST/GET/cancel `/api/studio/preview/tool-tests`.
+- Compared all explicitly retained backend/runtime boundary files with the pre-task session baseline: 30 files compared, 0 changed and 0 missing.
+- Inspected the exact `/preview` page and temporary shell contract: selected-shop resolution and required copy/DOM are present; Tool/Release source loading is absent.
+- Inspected Release cloning: `Edit as new release` still seeds Release composer state and navigates to `/releases?cloneResponseFrom=...`.
+- Inspected the ToolEditor task delta: it removes only the Preview-only `composer.tool` fallback/effect/import; the legacy `Save draft` implementation and the Studio test harness paths implicated by the reported failures are otherwise unchanged by this task.
+- Reviewed the submitted validation record: typecheck, targeted lint, production build, `git diff --check`, the retained Code Response/Preview boundary tests (115 passed), and focused shell/cleanup/Release checks are recorded passing. The full `studio-workspace.test.tsx` run is recorded as 7 passed / 6 failed.
+- The review archive contains no installed `node_modules` and no usable Git metadata, so the Vitest/build commands and remote SHA/worktree assertions cannot be independently re-executed/queried in this review environment.
 
 ### Architecture Conformance
 
-Pending
+Implementation code conforms to the ARCH-024 COMMERCE-001 architectural boundary. No Feature composition, effective-model resolution, selected-Shop Tool execution, OpenRouter execution, database work, Gateway work or speculative Preview backend redesign is introduced. The retained backend/runtime seams remain available for COMMERCE-004..007 and accepted Code Response functionality.
+
+Acceptance is withheld only for missing durable execution/non-regression evidence. `ARCH-024-COMMERCE-004` therefore remains Pending.
 
 ### Follow-up
 
-None
+Return the **same task** for Attempt 2 as an evidence-only correction. Do not change implementation source unless one of the checks below disproves the submitted state.
+
+Attempt 2 must update the Completion Report with:
+
+1. the launcher-resolved `workspace_root`, dedicated parent worktree path and dedicated `moda-interact-commerce` implementation worktree path;
+2. confirmation that both worktrees were on `task/ARCH-024-COMMERCE-001`, with start-of-attempt synchronization evidence from the prepared launcher packet and recursive implementation-submodule materialisation evidence;
+3. implementation commit `066948f`, parent report commit `66ee12f4`, the corresponding pushed remote task branches/heads, and final clean-worktree evidence (or the exact remaining pre-existing untracked item, if any);
+4. the exact names of the six failing `studio-workspace.test.tsx` cases and durable proof that they are pre-existing/non-regressing at the synchronized pre-task parent baseline. Prefer a before/after run of that exact suite when practical; otherwise record deterministic Git/source parity sufficient to show COMMERCE-001 did not create the failure. If the synchronized baseline is green while the submitted implementation is red, this becomes a source/test correction and must not be treated as evidence-only;
+5. the exact successful validation commands already reported for the task, without converting the six failing tests into a pass.
+
+After updating only the task execution/report evidence, set the task back to `review`, clear the claim as normal at handoff and return to `moda_architect`. Preserve Attempt 1 review history. Do not start `ARCH-024-COMMERCE-004`.

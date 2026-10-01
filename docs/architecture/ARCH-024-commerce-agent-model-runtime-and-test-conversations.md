@@ -1191,6 +1191,8 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 
 ## Change History
 
+- **2026-10-01 — COMMERCE-001 Attempt 1 changes requested (evidence-only):** the submitted Preview/Test Conversations cleanup is architecturally conformant in implementation, but the task returned Ready because its Completion Report does not yet durably record the required launcher-resolved worktree/synchronization/submodule/commit evidence and the six reported legacy `studio-workspace.test.tsx` Tool-editor failures still require explicit pre-task baseline parity evidence. No implementation source correction is requested unless that evidence reveals a regression. `ARCH-024-COMMERCE-004` remains Pending.
+
 - **2026-10-01 — DATABASE-001 accepted:** `ARCH-024-DATABASE-001` completed at Attempt 1, establishing the agreed Model Availability/Catalogue/Price-Plan/OpenRouter credential persistence boundary. `ARCH-024-SHARED-001` is promoted Ready; independently executable `ARCH-024-COMMERCE-001` remains Ready.
 
 - **2026-10-01 — dependency cleanup:** removed sequencing-only cross-application dependencies, parallelised independent Commerce/Admin/Background work, made parent ARCH-024 the model-precedence owner, moved OpenRouter credential AAD construction to Shared, and corrected GATEWAY-001 to depend on BACKGROUND-001 rather than the unrelated BACKGROUND-002 cleanup.

@@ -59,8 +59,10 @@ ARCH-023-COMMERCE-003 ------------+
 ## Execution frontier
 
 ```text
-ARCH-024-COMMERCE-001 -> Ready
+ARCH-024-COMMERCE-001 -> Ready / Changes Requested Attempt 1 (evidence-only)
 ```
+
+COMMERCE-001 Attempt 1 is architecturally conformant in implementation but is returned Ready for an evidence-only correction: its Completion Report must durably record launcher/worktree/synchronization/submodule/commit evidence and prove the six reported legacy Studio Tool-editor failures are pre-existing/non-regressing. COMMERCE-004 remains Pending until COMMERCE-001 is Accepted / Complete.
 
 COMMERCE-001 is independent of the new database/shared model stack and may execute in parallel with DATABASE-001. Once DATABASE-001 + SHARED-002 are Complete, COMMERCE-002 may execute regardless of COMMERCE-001 state. COMMERCE-004 waits only for the retained Preview/runtime seam established by COMMERCE-001, not for Studio model-selection UI.
 
