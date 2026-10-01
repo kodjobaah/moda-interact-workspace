@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -648,6 +648,66 @@ The package-wide failures listed above remain for Architect attribution; the Sho
 Production conversation execution remains Background-owned, so these resolved prompts are not consumed by the production runner until the required Background host-integration task is completed. No Background files were edited here.
 
 ## Architect Review
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+Attempt 2 closes the workflow/report-only correction contract from Attempt 1. No implementation-source changes were required after the canonical parent and Commerce task worktrees were synchronized. The submitted heads are:
+
+```text
+parent report:           a0c973b8f991035559cf9eec54e755ab72445fd2
+Commerce implementation: 669e8ffd6c415b67b34d3dea34dd4e43e841f760
+```
+
+The Completion Report now durably records the launcher-resolved worktrees, branch identities, shared-checkout/non-reuse attestations, start-of-attempt synchronization outcomes, recursive submodule preparation, final submitted implementation identity, completed Work Items/Acceptance Criteria/Validation checklists, the corrected lint warning count, and a categorized package-wide failure inventory. Both task worktrees were reported clean and remote-aligned at submission.
+
+The implementation remains the architecture-conformant Attempt 1 source: deterministic additive Platform plus optional Shop Instructions, exact reserved MCP prompt exposure, Preview ordering, independent model-selection semantics, source-template edit provenance, and Commerce Studio retirement of Platform/Shop mutation. No Background files were changed.
+
+### Attempt 2 Reviewed Files
+
+Parent workspace:
+
+```text
+docs/decisions/commerce/ARCH-023/COMMERCE-003-resolve-platform-shop-instructions.md
+docs/decisions/commerce/ARCH-023/_index.md
+docs/architecture/ARCH-023-merchant-knowledge.md
+```
+
+Commerce implementation surfaces remain the task-owned files already reviewed in Attempt 1 for effective instruction resolution, MCP authorization/service prompt exposure, Preview instruction composition, Agent Configuration presentation/mutation retirement, and focused regressions.
+
+### Attempt 2 Validation Reviewed
+
+The refreshed synchronized-worktree evidence records:
+
+```text
+npm run typecheck                                      PASS
+focused task/backend-bootstrap regressions             118 PASS across 19 files
+focused resolver/model UI/MCP/Preview rerun             63 PASS across 5 files
+test:arch021-tool-authoring-common                       84 PASS across 7 files
+npm run lint                                             PASS — 0 errors, 4 warnings
+npm run build                                            PASS
+git diff --check                                         PASS
+changed-file diagnostics                                 PASS
+```
+
+The normal package-wide Vitest run remained non-clean and its failing suites/files are explicitly inventoried in the Completion Report. The task-owned Shop/model UI failures did not reproduce in focused reruns, while several package failures require disposable PostgreSQL/Redis/local-MCP fixtures or belong to unrelated Admin/Studio/runtime surfaces. Those package-wide failures therefore do not overturn the focused task evidence for this implementation.
+
+The Completion Report also preserves the standalone packaged-runtime smoke inconsistency observed after the successful production build. COMMERCE-003 does not change runtime packaging/execution, and the successful full build plus focused task validation is sufficient for this task; the standalone inconsistency remains visible for separate attribution rather than being silently treated as passing.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. Platform and Shop Instructions are resolved independently and composed in fixed Platform-then-Shop order; Platform is mandatory and a present invalid Shop configuration fails closed. Trusted canonical-English text is exported through the fixed Commerce MCP prompt names without creating a second protocol. Commerce Preview uses the same resolved order, model selection remains independent, and Commerce Studio no longer owns Platform/Shop instruction mutation.
+
+The production runner remains Background-owned. The required bounded Background host-consumption task that fetches `commerce/platform-instructions` and optional `commerce/shop-instructions` and appends them to trusted `hostInstructions` remains mandatory before final ARCH-023 system acceptance. That follow-up is not a source correction for COMMERCE-003 and is not materialized by this acceptance.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-023-COMMERCE-003` is **Complete / Accepted Attempt 2** under `completion_mode: automatic`. It declares no downstream task in `enables`, so no implementation task is promoted solely by this acceptance. The Background host-consumption follow-up remains a separate architect coordination item.
+
+#### Historical Attempt 1 — Changes Requested
 
 ### Review Status
 Changes Requested — Attempt 1

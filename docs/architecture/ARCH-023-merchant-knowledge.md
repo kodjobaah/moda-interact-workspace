@@ -3280,7 +3280,7 @@ Commerce-adjacent execution state after COMMERCE-002 Attempt 4 acceptance:
 ARCH-023-DATABASE-004   Complete — Accepted Attempt 1
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-COMMERCE-002   Complete — Accepted Attempt 4
-ARCH-023-COMMERCE-003   Ready
+ARCH-023-COMMERCE-003   Complete — Accepted Attempt 2
 ARCH-023-ADMIN-004      Ready
 ARCH-023-COMMERCE-004   Pending — waits for ADMIN-004
 ARCH-023-GATEWAY-001    Pending — additional prerequisites remain
@@ -3342,6 +3342,12 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — COMMERCE-003 Attempt 2 accepted
+
+- Accepted the evidence-only Attempt 2 after the canonical parent and Commerce task worktrees were synchronized and the required worktree/provenance packet, completed checklists, corrected lint count and categorized full-suite failure inventory were recorded.
+- Confirmed the Commerce implementation remained unchanged: Platform plus optional Shop Instructions are additive, exposed through the fixed reserved MCP prompts, consumed in the same order by Preview, and no Background files were modified.
+- Marked COMMERCE-003 Complete / Accepted Attempt 2. No implementation task is promoted by this acceptance because COMMERCE-003 declares no `enables`; the separate Background host-consumption follow-up remains mandatory before final ARCH-023 system acceptance.
 
 ### 2026-10-01 — BACKGROUND-006 Attempt 1 accepted
 
