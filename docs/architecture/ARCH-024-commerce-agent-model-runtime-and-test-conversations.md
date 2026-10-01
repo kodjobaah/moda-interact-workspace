@@ -15,10 +15,11 @@ Agreed.
 
 ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Preview/Test Conversation work. It keeps accepted ARCH-021 Studio authoring foundations, consumes frozen ARCH-023 Platform/Shop Instruction semantics, and replaces the unstarted ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 plan with a broader Admin-owned model catalogue, scoped availability, database-backed OpenRouter credentials, LangChain/OpenRouter model integration, a modular Shared LangGraph Commerce-turn runtime with canonical structured logging, production Background parity and Feature-composed selected-shop Test Conversations.
 
-Two ARCH-024 implementation tasks have no prerequisites and are the initial Ready frontier:
+ARCH-024 implementation is underway. `ARCH-024-DATABASE-001` is Complete / Accepted at
+Attempt 1. The current Ready frontier is:
 
 ```text
-ARCH-024-DATABASE-001
+ARCH-024-SHARED-001
 ARCH-024-COMMERCE-001
 ```
 
@@ -1044,10 +1045,10 @@ Logging is best-effort and cannot change a Commerce turn result, retry, Tool inv
 
 ARCH-024 implementation order is dependency-driven rather than a single serial chain.
 
-Initial independent Ready frontier remains:
+Current Ready frontier after DATABASE-001 acceptance:
 
 ```text
-ARCH-024-DATABASE-001
+ARCH-024-SHARED-001
 ARCH-024-COMMERCE-001
 ```
 
@@ -1100,8 +1101,8 @@ Individual task YAML is authoritative.
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| `ARCH-024-DATABASE-001` | `moda_database` | Ready | - |
-| `ARCH-024-SHARED-001` | `moda_shared` | Pending | DATABASE-001 |
+| `ARCH-024-DATABASE-001` | `moda_database` | Complete | - |
+| `ARCH-024-SHARED-001` | `moda_shared` | Ready | DATABASE-001 |
 | `ARCH-024-SHARED-002` | `moda_shared` | Pending | SHARED-001 |
 | `ARCH-024-ADMIN-001` | `moda_admin` | Pending | DATABASE-001, SHARED-002 |
 | `ARCH-024-ADMIN-002` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-001 |
@@ -1189,6 +1190,8 @@ pricing-plan model storage -> MerchantPricingPlan.commerceModelId only; never Bi
 The final integrated system-test decomposition across ARCH-023, ARCH-024 and subsequent overlapping work remains deliberately deferred to a later architecture session.
 
 ## Change History
+
+- **2026-10-01 — DATABASE-001 accepted:** `ARCH-024-DATABASE-001` completed at Attempt 1, establishing the agreed Model Availability/Catalogue/Price-Plan/OpenRouter credential persistence boundary. `ARCH-024-SHARED-001` is promoted Ready; independently executable `ARCH-024-COMMERCE-001` remains Ready.
 
 - **2026-10-01 — dependency cleanup:** removed sequencing-only cross-application dependencies, parallelised independent Commerce/Admin/Background work, made parent ARCH-024 the model-precedence owner, moved OpenRouter credential AAD construction to Shared, and corrected GATEWAY-001 to depend on BACKGROUND-001 rather than the unrelated BACKGROUND-002 cleanup.
 
