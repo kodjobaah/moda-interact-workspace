@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-01T16:27:22Z
@@ -2194,13 +2194,16 @@ Ready for Architect Review
 - Pinned `@langchain/openrouter@0.4.15`, `@langchain/core@1.2.13` and `@langchain/langgraph@1.4.15`; the installed dependency tree resolves one Core version.
 - Decomposed the Commerce runner into responsibility modules and a four-node low-level `StateGraph`; node implementations live under `runner/graph/nodes/`, while graph construction contains the topology only.
 - Preserved the runner contract and behavior, and added bounded semantic logging through the canonical `StructuredLogger` with failure isolation.
+- Corrected runner-generated denied/revoked Tool-result rows to include `contractVersion: "commerce.v1"` without relaxing adapter validation. Added an offline composition regression that runs the runner through `createOpenRouterInvoker`, confirms hostile Knowledge-like data cannot authorize a registered-but-ungranted `refundOrder`, confirms the adapter accepts the canonical denial row, and verifies the turn completes only with `REFER_TO_STORE`.
+- Added a negative adapter regression proving externally supplied denial rows without `contractVersion` still fail with `Commerce model unavailable`.
 - No consumer repository was modified; the package was not published and no downstream task was started.
 
 ### Validation Results
 
 - `npm run typecheck` — passed.
-- Focused model tests — 11 passed; focused runner tests — 32 passed.
-- `npm test` — 200 total, 199 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is unset.
+- Focused model tests — 11 passed; focused runner tests — 33 passed.
+- Focused Attempt 2 composition test — passed; strict malformed Tool-result rejection test — passed.
+- `npm test` — 201 total, 200 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is unset.
 - `npm run validate:arch024-model-entrypoints` — passed; browser-safe and Node model entrypoints import cleanly without credentials.
 - `npm run validate:commerce-entrypoints` — passed.
 - `npm run build` — passed as part of the final model-entrypoint validator; declaration and JavaScript outputs were generated.
@@ -2212,7 +2215,7 @@ Ready for Architect Review
 
 ### Deviations
 
-- Runner-focused unit and graph regressions are consolidated in the existing `src/commerce/runner/runner.test.ts` rather than split into the separately listed per-module test files. The existing 20 assertions remain active; the consolidated suite contains 32 passing tests. This test-organization deviation is submitted for Architect Review.
+- Runner-focused unit and graph regressions are consolidated in the existing `src/commerce/runner/runner.test.ts` rather than split into the separately listed per-module test files. The existing 20 assertions remain active; the consolidated suite contains 33 passing tests. This test-organization deviation remains submitted for Architect Review.
 
 ### Assumptions
 
@@ -2229,13 +2232,14 @@ No known runtime or architecture issue remains. Review the test-file consolidati
 
 ### Prepared Execution Evidence
 
-- Launcher prepared and claimed Attempt 1 for `copilot`; dependency gate passed for `ARCH-024-DATABASE-001`. Preparation completed worktree synchronization and recursive submodule initialization before implementation.
+- Launcher prepared and claimed Attempt 2 for `copilot`; dependency gate passed for `ARCH-024-DATABASE-001`. Attempt 1 was preserved and the review correction was required.
 - Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
 - Parent task worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-SHARED-001`, `task/ARCH-024-SHARED-001`.
 - Implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-SHARED-001`, `task/ARCH-024-SHARED-001`.
 - Shared workspace checkout and shared implementation checkout were not switched or mutated for this task; no other task worktree was reused.
-- Start-of-attempt synchronization: the parent task branch was launcher-synchronized with `origin/task/ARCH-024-SHARED-001` and `origin/main` was incorporated before the durable claim. The implementation task ref did not exist at preparation; its dedicated worktree was based on synchronized `origin/main` at `f601e1b` and the task ref was created by the implementation push. Launcher recursive submodule sync/update passed; `git submodule status --recursive` returned no nested implementation submodules.
-- Implementation commit `a9f11ff` is pushed to `origin/task/ARCH-024-SHARED-001`. The parent report commit/push completes this review submission; no main merge, publication, or submodule pointer change is included.
+- Start-of-attempt synchronization: parent worktree reused on `task/ARCH-024-SHARED-001`, remote task fast-forward not needed, `origin/main` incorporated; prepared parent head `35570deba75a6566f0c760aa2a32866efe0c7492`. Implementation worktree reused on `task/ARCH-024-SHARED-001`, remote task fast-forward not needed, `origin/main` already current; prepared implementation head `a9f11ff5187c158668a42e1d5e309bd42f6044a8`.
+- Launcher recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed. Recursive submodule inventory is empty.
+- Claim commit `81af2cf9926890e0b78b61ec2e5a6dfe55aee01d` durably records Attempt 2. Corrective implementation commit `c4627f1` is pushed to `origin/task/ARCH-024-SHARED-001`; the parent report commit/push completes this review submission. No main merge, publication, or submodule pointer change is included.
 
 ### Submission Evidence
 
