@@ -21,7 +21,7 @@ moda-interact/
 
 It refactors the current `app/services/billing/billing.service.ts` monolith behind its existing public façade. It does **not** refactor Background billing reconciliation, CheckoutRecovery, Admin pricing-plan authoring, Commerce Studio, Gateway, Shared, Database or System Test.
 
-ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` and `ARCH-025-SHOPIFY-002` are architect-accepted Complete, and the sequential execution frontier is `ARCH-025-SHOPIFY-003`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
+ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001`, `ARCH-025-SHOPIFY-002` and `ARCH-025-SHOPIFY-003` are architect-accepted Complete, and the sequential execution frontier is `ARCH-025-SHOPIFY-004`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
 
 ## Problem
 
@@ -307,8 +307,8 @@ The parent workspace contains the architecture/task coordination files. Reposito
 |---|---|---|---|
 | ARCH-025-SHOPIFY-001 | Extract current billing-period projection/cycle invariants | Complete | - |
 | ARCH-025-SHOPIFY-002 | Extract operational BillingPlan resolution/catalogue reads | Complete | SHOPIFY-001 |
-| ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service | Ready | SHOPIFY-002 |
-| ARCH-025-SHOPIFY-004 | Extract merchant recovery-capacity read service | Pending | SHOPIFY-003 |
+| ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service | Complete | SHOPIFY-002 |
+| ARCH-025-SHOPIFY-004 | Extract merchant recovery-capacity read service | Ready | SHOPIFY-003 |
 | ARCH-025-SHOPIFY-005 | Extract merchant billing-state read service | Pending | SHOPIFY-004 |
 | ARCH-025-SHOPIFY-006 | Extract initial activation workflow | Pending | SHOPIFY-005 |
 | ARCH-025-SHOPIFY-007 | Extract hosted plan-change verification workflow | Pending | SHOPIFY-006 |
