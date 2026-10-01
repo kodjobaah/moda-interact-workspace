@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 51
 executor: null
 claimed_at: null
@@ -342,6 +342,62 @@ None identified. Commerce retrieval enforcement remains owned by COMMERCE-004; i
 No scope deviations or unresolved issues. No schema, migration, shared contract, Background, Commerce, or SHOPIFY-005 changes were made.
 
 ## Architect Review
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+All three Attempt 1 corrections are closed.
+
+**A1-R1 — delete/reorder current-plan configuration gate is closed.** Both mutations acquire the existing Shop lock and then resolve the current Merchant Knowledge entitlement before any source deletion or position rewrite. A non-entitled/unavailable current plan fails closed with `DENIED`. Merchant opt-in is deliberately not required, and neither operation requires the target source to be inside the current first-N source-count window, preserving OFF-state management and the ability to manage dormant/excess sources under a valid current entitlement.
+
+**A1-R2 — edit/refresh now use the R3 first-N entitlement window.** Under the Shop lock, `requireCurrentlyPlanEntitledSource(...)` loads shop sources in `(position ASC, id ASC)` order, filters to active Purpose/Data Format pairs present in the current C2 `allowedSourceTypes`, applies `maxKnowledgeSources`, and requires the target source to be inside that first-N set. The PostgreSQL regression downgrades two eligible sources to `maxKnowledgeSources: 1`, proves the second source is `SOURCE_COUNT`, proves edit/refresh fail without source/revision/enqueue changes, reorders that source into position 0, then proves refresh succeeds while the displaced source becomes `SOURCE_COUNT`.
+
+**A1-R3 — canonical URL length is validated before persistence.** `parsePublicHttpsUrl(...)` now validates both the raw input and the canonical `url.toString()` against the 2,048-character bound and returns only the validated canonical value. The regression uses a Unicode path whose raw input is below 2,048 characters but whose canonical form exceeds the database limit and proves `INVALID_INPUT` is returned before the database transaction opens.
+
+The submitted Attempt 2 implementation remains within SHOPIFY-004 ownership. No schema/migration, Shared-contract, Background, Commerce, feature-preference redesign, second activation control or SHOPIFY-005 implementation was introduced.
+
+### Attempt 2 Reviewed Files
+
+```text
+moda-interact/app/services/merchant-knowledge/merchant-knowledge.server.ts
+moda-interact/app/services/merchant-knowledge/merchant-knowledge-entitlement.server.ts
+moda-interact/app/services/merchant-knowledge/merchant-knowledge-queue.server.ts
+moda-interact/app/routes/app/merchant-knowledge/{source,reorder,refresh,delete}/route.ts
+moda-interact/app/routes/app/recovery-settings/route.tsx
+moda-interact/app/routes/app/recovery-settings/RecoverySettingsView.tsx
+moda-interact/app/components/settings/MerchantKnowledgeSection.tsx
+moda-interact/tests/unit/merchant-knowledge-{entitlement,actions,queue,read-model,section,url-validation}.test.*
+moda-interact/tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts
+docs/decisions/shopify/ARCH-023/SHOPIFY-004-manage-merchant-knowledge-web-pages.md
+docs/architecture/ARCH-023-merchant-knowledge.md
+```
+
+### Attempt 2 Validation Reviewed
+
+The Completion Report records the canonical prepared Attempt 2 worktrees and dependency/synchronisation evidence and reports:
+
+```text
+focused Merchant Knowledge/activation/Recovery Settings   36 passed, 0 failed across 9 files
+disposable PostgreSQL lifecycle/concurrency                 7 passed, 0 failed
+npm run typecheck                                           passed
+changed-file ESLint                                         passed (existing parser warning only)
+changed-file diagnostics                                    clean
+npm run build                                               passed (warnings only)
+git diff --check                                            passed
+```
+
+The PostgreSQL suite used a task-owned `pgvector/pgvector:pg17` instance through per-command Colima socket settings and removed the owned container afterward. The supplied review archive contains source and durable validation evidence rather than installed `node_modules`/Docker runtime state, so the architect inspected the implementation and authored regressions directly rather than claiming to rerun dependency-backed validation from the archive.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. The current plan remains the configuration-access authority; `ShopFeaturePreference` remains the sole merchant ON/OFF state; OFF remains non-destructive; WEB_PAGE source lifecycle remains revisioned and queue-loss safe; browser input never supplies `shopId`; and the Attempt 1 entitlement/source-count/canonical-URL gaps are closed. `completion_mode: automatic` therefore completes `ARCH-023-SHOPIFY-004`.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-023-SHOPIFY-004` is now Complete / Accepted Attempt 2. Its sole enabled task, `ARCH-023-SHOPIFY-005`, has no remaining dependency and is promoted from Pending to Ready. SHOPIFY-005 is not claimed or started by this reconciliation.
 
 ### Review Status
 Changes Requested
