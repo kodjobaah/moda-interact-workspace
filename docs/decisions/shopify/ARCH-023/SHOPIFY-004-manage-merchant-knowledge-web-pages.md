@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 51
-executor: copilot
-claimed_at: 2026-09-30T22:53:18Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-SHOPIFY-001
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-023-SHOPIFY-005
 created: 2026-09-29
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Activate and manage Merchant Knowledge web-page sources
@@ -312,14 +312,44 @@ None identified. Commerce retrieval enforcement remains owned by COMMERCE-004; i
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested
+
 ### Review Notes
-Pending.
+Attempt 1 is substantially aligned with the Merchant Knowledge control-plane design, including reuse of the existing `ShopFeaturePreference`, OFF-state durability, authenticated shop derivation, revisioned WEB_PAGE lifecycle, queue-loss tolerance and Shop/source locking. Three bounded corrections remain before acceptance.
+
+**A1-R1 — current-plan configuration access is not enforced by delete/reorder.** `deleteMerchantKnowledgeSource(...)` and `reorderMerchantKnowledgeSources(...)` lock the authenticated Shop and validate ownership/set equality, but neither calls `loadCurrentMerchantKnowledgeEntitlement(...)`. A merchant whose current plan no longer entitles `merchant_knowledge` can therefore still mutate stored Merchant Knowledge state through these resource actions whenever Recovery Settings remains reachable for other plan features. R1 and R15 require current-plan entitlement for configuration access; OFF-state permission is not permission to mutate without a current Merchant Knowledge plan mapping.
+
+**A1-R2 — edit/refresh do not enforce the R3 `currentlyPlanEntitled` source-count boundary.** Both operations validate the source Purpose/Data Format pair, but neither verifies that the source is within the first `maxKnowledgeSources` currently allowed sources ordered by `(position ASC, id ASC)`. After a source-count downgrade, a `SOURCE_COUNT`-dormant source can therefore create `URL_CHANGE`/`REFRESH` revisions and, when merchant opt-in is ON, receive an immediate C4 enqueue even though R3 marks it not currently plan-entitled and R7 limits refresh to a currently plan-entitled source. Reorder/delete may still operate on dormant/excess sources under a valid current entitlement.
+
+**A1-R3 — URL length is checked before canonicalisation, not on the value persisted.** `parsePublicHttpsUrl(...)` checks the raw input length and then returns `url.toString()`. Percent-encoding can expand an input below 2,048 characters beyond the `MerchantKnowledgeSourceRevision.requestedUrl VARCHAR(2048)` bound, causing a database failure instead of deterministic `INVALID_INPUT`. The canonical `url.toString()` value must also be `<= 2048` before opening the transaction/persisting it.
+
 ### Reviewed Files
-Pending.
+- `moda-interact/app/services/merchant-knowledge/merchant-knowledge-entitlement.server.ts`
+- `moda-interact/app/services/merchant-knowledge/merchant-knowledge.server.ts`
+- `moda-interact/app/services/merchant-knowledge/merchant-knowledge-queue.server.ts`
+- `moda-interact/app/routes/app/merchant-knowledge/{source,reorder,refresh,delete}/route.ts`
+- `moda-interact/app/routes/app/recovery-settings/route.tsx`
+- `moda-interact/app/routes/app/recovery-settings/RecoverySettingsView.tsx`
+- `moda-interact/app/components/settings/MerchantKnowledgeSection.tsx`
+- `moda-interact/app/services/feature-preferences/{access,feature-preferences}.server.ts`
+- focused Merchant Knowledge unit/integration tests listed in the Completion Report
+- accepted ARCH-023 database schema/migrations relevant to source positions/revisions
+
 ### Validation Reviewed
-Pending.
+The Completion Report records 31/31 focused tests, 5/5 disposable PostgreSQL lifecycle/concurrency cases, typecheck, changed-file lint/diagnostics, build and diff checks as passing. The test suite does not currently exercise the three correction cases above. The review archive does not contain a runnable installed dependency environment, so these dependency-backed commands were inspected from durable evidence rather than independently rerun.
+
 ### Architecture Conformance
-Pending.
+Conformant on merchant opt-in reuse, OFF-state non-destruction, tenant identity, source locking/generation, queue-loss safety, UI ordering and WEB_PAGE ownership boundaries. Not yet conformant on the current-plan configuration gate, R3/R7 source-count eligibility for edit/refresh, and deterministic canonical URL-length validation.
+
 ### Follow-up
-Pending.
+Return the same task through `/moda-task ARCH-023-SHOPIFY-004` for Attempt 2. Preserve the current implementation and make only these bounded corrections:
+
+1. **Gate delete/reorder on current Merchant Knowledge entitlement.** After acquiring the existing Shop lock, call the current-plan entitlement resolver. If it is not `kind: "entitled"`, fail with `DENIED` before deleting or rewriting positions. Do not require `merchantEnabled`; delete/reorder remain allowed while OFF. Do not require the target source itself to be within the current source-count allowance; deletion/reordering must remain available for dormant/excess sources while the shop has a valid current Merchant Knowledge entitlement.
+2. **Enforce `currentlyPlanEntitled` for edit/refresh.** Under the existing Shop lock, compute the ordered currently allowed source set using the same semantics as the R3 read model: active Purpose/Data Format, pair present in current C2 `allowedSourceTypes`, ordered `(position ASC,id ASC)`, then first `maxKnowledgeSources`. The edited/refreshed source must be in that first-N set. Otherwise fail `DENIED` without changing metadata/generation, creating a revision or enqueueing C4. Preserve immutable Purpose/Data Format.
+3. **Keep reorder as the way to move an excess source into/out of the first-N entitlement window.** Add a PostgreSQL regression with at least two currently allowed sources and a downgraded `maxKnowledgeSources: 1`: the second source must read as `SOURCE_COUNT`, edit/refresh must be denied without a new revision/enqueue; after reordering it into position 0 it becomes currently plan-entitled and refresh succeeds, while the displaced source becomes `SOURCE_COUNT`.
+4. **Prove no-plan mutation denial.** Add integration coverage showing that once the current Merchant Knowledge mapping/qualifying plan entitlement is absent, delete and reorder are denied and source rows/positions remain unchanged. Existing OFF-state delete/reorder behavior under a valid entitled plan must continue to pass.
+5. **Validate the canonical URL length.** Parse as today, compute `const canonical = url.toString()`, reject with `INVALID_INPUT` when `canonical.length > 2048`, and persist/compare only the validated canonical value. Add a unit regression using an input shorter than 2,048 characters whose Unicode/path canonicalisation expands beyond 2,048; assert rejection occurs before the database transaction.
+6. Rerun the existing focused Merchant Knowledge unit/component/action suites and disposable PostgreSQL lifecycle/concurrency suite, plus `npm run typecheck`, changed-file lint/diagnostics, `npm run build` and `git diff --check`. Record exact counts/results and normal Attempt 2 launcher/worktree/synchronisation evidence.
+7. Return the task to `review`, clear the claim, leave this Architect Review history intact, and STOP. Do not begin SHOPIFY-005.
+
+No schema/migration, Shared-contract, Background, Commerce, feature-preference redesign, second activation control, or SHOPIFY-005 implementation is authorised by this correction.

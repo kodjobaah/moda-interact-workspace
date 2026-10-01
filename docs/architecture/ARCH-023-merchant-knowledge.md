@@ -3343,6 +3343,14 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
+### 2026-10-01 — SHOPIFY-004 Attempt 1 changes requested
+
+- Reviewed the merchant opt-in control plane, Recovery Settings WEB_PAGE lifecycle, authenticated shop boundary, OFF-state durability, queue-loss handling and PostgreSQL locking/concurrency proof as substantially architecture-conformant.
+- Required current Merchant Knowledge plan entitlement on delete/reorder; OFF-state configurability does not permit source mutation after the current plan stops entitling Merchant Knowledge.
+- Required edit/refresh to enforce the same R3 `currentlyPlanEntitled` first-N source-count window used by the read model, so `SOURCE_COUNT`-dormant sources cannot create/enqueue new revisions until reordered back inside the allowance.
+- Required URL validation to bound the canonical `URL.toString()` value to 2,048 characters before persistence, preventing percent-encoding expansion from surfacing as a database error.
+- Returned SHOPIFY-004 to Ready with Attempt 1 preserved. SHOPIFY-005 remains Pending and no downstream implementation was started.
+
 ### 2026-09-30 — ADMIN-004 Attempt 1 accepted
 
 - Accepted the bounded reconciliation of fixed Feature `merchant_knowledge` from the previously accepted `ALWAYS_ENABLED` policy to `MERCHANT_OPT_IN`.
