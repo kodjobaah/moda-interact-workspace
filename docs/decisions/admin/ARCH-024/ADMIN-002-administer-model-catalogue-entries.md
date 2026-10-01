@@ -9,11 +9,11 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 31
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-024-DATABASE-001
   - ARCH-024-SHARED-002
@@ -1041,25 +1041,25 @@ Do not make a live OpenRouter request in this task.
 
 ## Work Items
 
-- [ ] Synchronize the accepted DATABASE-001 Admin database submodule and published SHARED-002 package.
-- [ ] Regenerate and validate Admin Prisma.
-- [ ] Add `/commerce-models/catalogue` and the `model-catalogue` Admin active key.
-- [ ] Extend the `Commerce models` sidebar group with Catalogue while retaining Availability and no dead Credential link.
-- [ ] Implement the bounded paginated Catalogue read model from R4.
-- [ ] Implement the one canonical Shared-backed form parser from R5.
-- [ ] Implement SUPER_ADMIN-only create semantics and audit from R6.
-- [ ] Make provider/providerModelId immutable in the Edit path per R7.
-- [ ] Implement CAS update and Availability reassignment/audit per R8.
-- [ ] Implement separate CAS enable/disable actions per R9.
-- [ ] Add selection-count warning behaviour from R10.
-- [ ] Add direct OpenRouter-style JSON editor using Shared validation per R11.
-- [ ] Implement the Catalogue table/filter/control-plane UI from R12-R13.
-- [ ] Add same-tick duplicate mutation protection from R14.
-- [ ] Keep audit metadata bounded and secret-safe per R15.
-- [ ] Add exact bounded error mapping from R16.
-- [ ] Add focused validation, service, mutation, UI and security tests from R17.
-- [ ] Run all required Validation below.
-- [ ] Complete the Completion Report, set task to review and STOP.
+- [x] Synchronize the accepted DATABASE-001 Admin database submodule and published SHARED-002 package.
+- [x] Regenerate and validate Admin Prisma.
+- [x] Add `/commerce-models/catalogue` and the `model-catalogue` Admin active key.
+- [x] Extend the `Commerce models` sidebar group with Catalogue while retaining Availability and no dead Credential link.
+- [x] Implement the bounded paginated Catalogue read model from R4.
+- [x] Implement the one canonical Shared-backed form parser from R5.
+- [x] Implement SUPER_ADMIN-only create semantics and audit from R6.
+- [x] Make provider/providerModelId immutable in the Edit path per R7.
+- [x] Implement CAS update and Availability reassignment/audit per R8.
+- [x] Implement separate CAS enable/disable actions per R9.
+- [x] Add selection-count warning behaviour from R10.
+- [x] Add direct OpenRouter-style JSON editor using Shared validation per R11.
+- [x] Implement the Catalogue table/filter/control-plane UI from R12-R13.
+- [x] Add same-tick duplicate mutation protection from R14.
+- [x] Keep audit metadata bounded and secret-safe per R15.
+- [x] Add exact bounded error mapping from R16.
+- [x] Add focused validation, service, mutation, UI and security tests from R17.
+- [x] Run all required Validation below.
+- [x] Complete the Completion Report, set task to review and STOP.
 
 ## Interfaces / Contracts
 
@@ -1146,28 +1146,28 @@ All mutations remain Next.js Server Actions and are not public HTTP APIs.
 
 ## Acceptance Criteria
 
-- [ ] Admin provides `/commerce-models/catalogue` as the authoritative human Model Catalogue administration surface.
-- [ ] Platform Admin readers can inspect all Platform/Shop Catalogue Entries but cannot mutate them.
-- [ ] SUPER_ADMIN can create a Catalogue Entry under any existing Availability.
-- [ ] Create identity is canonical dynamic `provider + providerModelId`; there is no `OPENAI | GROQ` form enum.
-- [ ] `provider` and `providerModelId` are immutable after creation.
-- [ ] Model configuration is direct OpenRouter-style JSON validated by the exact published Shared schema.
-- [ ] Unknown non-reserved OpenRouter options remain valid and are preserved.
-- [ ] Reserved Moda-owned runtime/security fields cannot be persisted through Admin configuration.
-- [ ] No credential, API-key, headers or base-URL field exists on the Catalogue form.
-- [ ] SUPER_ADMIN can update display metadata/configuration and reassign an existing entry to another Availability without changing its ID.
-- [ ] Reassignment is audited and does not modify Agent Configuration.
-- [ ] SUPER_ADMIN can enable/disable an entry under CAS.
-- [ ] Disabling/reassigning a selected model is allowed and does not silently clear selection.
-- [ ] No Catalogue Entry delete path exists.
-- [ ] Scoped duplicate `(availabilityId, provider, providerModelId)` creation/reassignment is rejected cleanly.
-- [ ] Reads are paginated with page size 50 and filtered server-side.
-- [ ] Catalogue read rows and configuration inputs are validated through canonical Shared contracts.
-- [ ] Audit events use target columns and do not copy full configuration or secrets into metadata.
-- [ ] Same-tick repeated mutation activation dispatches one Server Action only.
-- [ ] `Commerce models` navigation contains Availability + Catalogue and no Credential link yet.
-- [ ] Commerce Studio code is not modified by this task.
-- [ ] No live OpenRouter call is required.
+- [x] Admin provides `/commerce-models/catalogue` as the authoritative human Model Catalogue administration surface.
+- [x] Platform Admin readers can inspect all Platform/Shop Catalogue Entries but cannot mutate them.
+- [x] SUPER_ADMIN can create a Catalogue Entry under any existing Availability.
+- [x] Create identity is canonical dynamic `provider + providerModelId`; there is no `OPENAI | GROQ` form enum.
+- [x] `provider` and `providerModelId` are immutable after creation.
+- [x] Model configuration is direct OpenRouter-style JSON validated by the exact published Shared schema.
+- [x] Unknown non-reserved OpenRouter options remain valid and are preserved.
+- [x] Reserved Moda-owned runtime/security fields cannot be persisted through Admin configuration.
+- [x] No credential, API-key, headers or base-URL field exists on the Catalogue form.
+- [x] SUPER_ADMIN can update display metadata/configuration and reassign an existing entry to another Availability without changing its ID.
+- [x] Reassignment is audited and does not modify Agent Configuration.
+- [x] SUPER_ADMIN can enable/disable an entry under CAS.
+- [x] Disabling/reassigning a selected model is allowed and does not silently clear selection.
+- [x] No Catalogue Entry delete path exists.
+- [x] Scoped duplicate `(availabilityId, provider, providerModelId)` creation/reassignment is rejected cleanly.
+- [x] Reads are paginated with page size 50 and filtered server-side.
+- [x] Catalogue read rows and configuration inputs are validated through canonical Shared contracts.
+- [x] Audit events use target columns and do not copy full configuration or secrets into metadata.
+- [x] Same-tick repeated mutation activation dispatches one Server Action only.
+- [x] `Commerce models` navigation contains Availability + Catalogue and no Credential link yet.
+- [x] Commerce Studio code is not modified by this task.
+- [x] No live OpenRouter call is required.
 
 ## Validation
 
@@ -1276,58 +1276,131 @@ Do not begin `ARCH-024-COMMERCE-003`, `ARCH-024-ADMIN-003` or any other follow-o
 
 ### Status
 
-Not Started
+Ready for Architect Review (Attempt 2)
 
 ### Files Changed
 
-None
+`moda-interact-admin`:
+
+- `src/app/(protected)/commerce-models/catalogue/page.tsx`
+- `src/app/actions/model-catalogue.ts`
+- `src/components/admin/admin-shell.tsx`
+- `src/components/admin/model-catalogue/model-catalogue-editor.tsx`
+- `src/components/admin/model-catalogue/model-catalogue-mutation-form.tsx`
+- `src/components/admin/model-catalogue/model-catalogue-table.tsx`
+- `src/components/admin/sidebar.tsx`
+- `src/lib/admin/model-catalogue-validation.ts`
+- `src/lib/admin/model-catalogue.ts`
+- `tests/security/admin-model-catalogue.test.mjs`
+- `tests/security/admin-sidebar-navigation.test.mjs`
+- `tests/unit/model-catalogue-service.test.ts`
+- `tests/unit/model-catalogue-validation.test.ts`
 
 ### Work Completed
 
-None
+Implemented the protected Catalogue control-plane route, read-only Platform Admin views, SUPER_ADMIN create/edit/reassignment/enable-disable controls, canonical Shared-backed parsing, server-side 50-row pagination and filtering, deterministic ordering, optimistic concurrency, audit writes, bounded Server Action results, and synchronous same-tick submit protection. Existing Availability navigation remains. No Credentials destination, delete path, Commerce Studio change, database schema change, or live OpenRouter call was added.
+
+Attempt 2 addressed the sole requested correction, A1-R1: `mutateModelCatalogueAction(...)` now throws exactly `Error("SUPER_ADMIN access is required.")` immediately after mutation authorization and before parsing or transaction work. The security test asserts both the exact throw contract and its ordering. Page/read authorization, transaction guard, Shared validation, CAS, audit, bounded handling of ordinary validation/conflict errors, and same-tick submit protection remain unchanged.
+
+Create input is parsed before opening the transaction. Update identity is loaded server-side and remains immutable. Database ordering is applied before pagination, with case-insensitive deterministic comparison bounded to the returned page. Expected mutation/input errors return bounded results; unexpected failures are rethrown for normal server logging.
+
+Implementation commits `ff3f643d27d10f94ae67b31e9fc9d0d68cd20ff4` (initial implementation) and `f7fa24350d150db182b61faf63ddaee321df6f38` (A1-R1 correction) are pushed to `origin/task/ARCH-024-ADMIN-002`.
 
 ### Validation Results
 
-Not run
+Attempt 2 reran the complete task Validation section from the dedicated Admin implementation worktree; all checks passed:
+
+- `npm run prisma:generate` and `npm run prisma:validate`
+- Unit tests: 13 passed (`model-catalogue-validation` and `model-catalogue-service`)
+- Security/navigation tests: 18 passed (`admin-model-catalogue` and `admin-sidebar-navigation`), including the exact authorization throw and ordering assertion
+- Targeted Prettier check: all 13 task files passed
+- Targeted ESLint: passed
+- `npm run build`: passed; `/commerce-models/catalogue` appears in the route manifest
+- `git diff --check`: passed
+
+The build emitted existing BullMQ warnings for an expression-based critical dependency and unresolved optional `@valkey/valkey-glide` through queue-monitor/merchant-support imports. Node test runs emitted the existing `MODULE_TYPELESS_PACKAGE_JSON` warning for TypeScript test files. Neither warning failed validation.
+
+Attempt 2 launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-ADMIN-002`, branch `task/ARCH-024-ADMIN-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-ADMIN-002`, branch `task/ARCH-024-ADMIN-002`. Neither shared checkout was switched or mutated, and no other task worktree was reused. Dependency gate passed for DATABASE-001, SHARED-002 and ADMIN-001. Parent and implementation remote task branches fast-forwarded `not-needed`; `origin/main` was `already-current` in both. Recursive submodule sync/update passed at Database revision `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; Shared package is `1.1.0`. Durable launcher claim commit `1e62550764bd5b818707683d3965e3669d2df548` was pushed for Attempt 2. The implementation worktree is clean and up to date with its task branch.
 
 ### Deviations
 
-None
+No scope deviation. No package manifest, lockfile, or database schema changes were needed.
 
 ### Assumptions
 
-None
+Consumed accepted Database submodule revision `cfeeb12456b4e05067a96857a8c47837d7e33bbd` and published `@modainteract/moda-interact-shared@1.1.0`; all required dependency tasks were complete before implementation.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None identified. Unrelated BullMQ build warnings are recorded under Validation Results and were not expanded into this task.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+**Attempt 2 — Accepted.**
+
+A1-R1 is closed. `mutateModelCatalogueAction(...)` now enforces the exact R3 hard authorization boundary immediately after `requirePlatformAdminMutation()`:
+
+```ts
+if (principal.role !== "SUPER_ADMIN") {
+  throw new Error("SUPER_ADMIN access is required.");
+}
+```
+
+The throw occurs before `mutationFromForm(formData)` and before any Prisma transaction or write. `tests/security/admin-model-catalogue.test.mjs` now asserts both the exact throw contract and this ordering. Ordinary validation/conflict failures continue to use the bounded form-result path inside the `try` block; the correction does not weaken page/read authorization, transaction guards, Shared validation, CAS, audit behaviour or same-tick submit protection.
+
+The implementation remains otherwise architecturally conformant from Attempt 1: Admin owns Catalogue lifecycle, Platform Admin is read-only, SUPER_ADMIN owns mutations, `provider + providerModelId` remains immutable, reassignment preserves entry identity, scoped uniqueness is enforced, configuration is validated by the published Shared contract, delete is absent, and Agent Configuration is never silently rewritten.
+
+Attempt 2 Completion Report evidence records the launcher-resolved canonical workspace, dedicated parent and implementation task worktrees/branches, dependency gate, synchronized `origin/main` state, recursive submodule materialisation at accepted Database revision `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, exact Shared `1.1.0` consumption, durable Attempt 2 claim commit, pushed implementation correction `f7fa24350d150db182b61faf63ddaee321df6f38`, and final clean task worktrees matching their remote task branches.
+
+**Attempt 1 history.** Attempt 1 was returned for one bounded correction only: the non-SUPER_ADMIN Server Action returned `{ ok: false, message: ... }` instead of throwing the exact R3 authorization error. No broader implementation redesign was requested.
 
 ### Reviewed Files
 
-None
+- `moda-interact-admin/src/app/(protected)/commerce-models/catalogue/page.tsx`
+- `moda-interact-admin/src/app/actions/model-catalogue.ts`
+- `moda-interact-admin/src/lib/admin/model-catalogue.ts`
+- `moda-interact-admin/src/lib/admin/model-catalogue-validation.ts`
+- `moda-interact-admin/src/components/admin/model-catalogue/model-catalogue-table.tsx`
+- `moda-interact-admin/src/components/admin/model-catalogue/model-catalogue-editor.tsx`
+- `moda-interact-admin/src/components/admin/model-catalogue/model-catalogue-mutation-form.tsx`
+- `moda-interact-admin/src/components/admin/sidebar.tsx`
+- `moda-interact-admin/src/components/admin/admin-shell.tsx`
+- `moda-interact-admin/tests/unit/model-catalogue-validation.test.ts`
+- `moda-interact-admin/tests/unit/model-catalogue-service.test.ts`
+- `moda-interact-admin/tests/security/admin-model-catalogue.test.mjs`
+- `moda-interact-admin/tests/security/admin-sidebar-navigation.test.mjs`
+- `moda-interact-admin/package.json`
+- `moda-interact-admin/package-lock.json`
+- `moda-interact-admin/database/prisma/schema.prisma`
+- task Completion Report and ARCH-024 coordination state
 
 ### Validation Reviewed
 
-None
+Independently rerun from the uploaded Attempt 2 review snapshot:
+
+```text
+node --test tests/security/admin-model-catalogue.test.mjs tests/security/admin-sidebar-navigation.test.mjs
+18 passed, 0 failed
+```
+
+Static review independently confirms the exact authorization throw and that it precedes form parsing/transaction work.
+
+The uploaded review archive does not contain installed `node_modules` or usable Git metadata. The dependency-backed unit tests therefore cannot resolve `@modainteract/moda-interact-shared` in this review environment, and Prisma/Prettier/ESLint/build/remote-head checks cannot be independently replayed here. The Attempt 2 Completion Report records successful execution of the complete task Validation section: Prisma generate/validate, 13 focused unit tests, 18 security/navigation tests, targeted Prettier and ESLint, production build, and `git diff --check`. The recorded BullMQ/optional Valkey and `MODULE_TYPELESS_PACKAGE_JSON` warnings are non-blocking and unchanged.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-024, the ADMIN-002 task contract, repository ownership, accepted Database/Shared dependencies, exact R3 authorization semantics, immutable model identity, Shared-backed configuration validation, server-side pagination/filtering, CAS lifecycle/reassignment, bounded audit metadata, Admin/Commerce ownership separation and failure boundaries.
 
 ### Follow-up
 
-None
+`ARCH-024-ADMIN-003` and `ARCH-024-COMMERCE-003` are promoted Ready because all of their declared dependencies are now Complete. `ARCH-024-COMMERCE-005` remains independently Ready. No follow-on task is claimed or started by this acceptance.

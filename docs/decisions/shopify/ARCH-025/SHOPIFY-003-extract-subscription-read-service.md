@@ -1,0 +1,255 @@
+---
+id: ARCH-025-SHOPIFY-003
+architecture_id: ARCH-025
+title: Extract Subscription and Shopify commercial read service
+task_kind: implementation
+domain: shopify
+repository: moda-interact
+assigned_agent: moda_app
+coordinator: moda_architect
+execution_mode: agent
+completion_mode: automatic
+status: complete
+priority: 30
+executor: null
+claimed_at: null
+attempt: 2
+depends_on:
+  - ARCH-025-SHOPIFY-002
+enables:
+  - ARCH-025-SHOPIFY-004
+created: 2026-10-01
+updated: 2026-10-01
+---
+
+# Extract Subscription and Shopify commercial read service
+
+## Architecture
+
+Architecture ID: `ARCH-025`
+
+Architecture document: `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+
+Coordinator: `moda_architect`
+
+## Objective
+
+Extract the read-only local Subscription projection and Shopify commercial/lifecycle mapping methods into one service while retaining identical `BillingService` methods as façade delegates.
+
+## Context
+
+The current façade mixes local subscription reads and provider commercial/lifecycle state mapping with mutation workflows. These four public reads plus `mapMerchantShopifySubscription` form a coherent read owner and can be extracted without touching mutation semantics.
+
+## Scope
+
+Authorised implementation surface:
+
+```text
+app/services/billing/billing.service.ts
+app/services/billing/subscription-read.service.ts              # new
+tests/unit/services/billing/subscription-read.service.test.ts  # new
+```
+
+Existing routes remain unchanged.
+
+## Out of Scope
+
+- Merchant recovery-capacity arithmetic.
+- merchant billing-page state.
+- hosted callback mutations.
+- activation or synchronization.
+- edits to frozen `billing.service.test.ts`.
+
+## Requirements
+
+### Common ARCH-025 invariants
+
+- Preserve `BillingService` constructor compatibility: `new BillingService(provider, database, dispatchTranslation)`.
+- Preserve every existing public `BillingService` method signature and the `billingService` singleton export.
+- Preserve all current public exports from `app/services/billing/billing.service.ts`; moved symbols must be compatibility re-exported from that file.
+- Do not change routes/callers as part of extraction.
+- Extracted modules MUST NOT import `billing.service.ts`; dependency direction is façade/coordinator -> collaborator.
+- Do not change billing rules, error codes/strings, transaction boundaries, lock order, provider call order, retry semantics, idempotency, CAS/fencing, entitlement arithmetic or durable lifecycle state.
+- Do not add provider/API calls or database round trips to the equivalent path solely because code moved.
+- Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
+- This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
+- Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
+- `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`. The proven pre-task failure set is `ARCH025-TEST-001`; the task must introduce no additional failing identifier.
+- Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
+- Full `npm test` must introduce no new failure. An unrelated documented baseline failure may be referenced only if it is unchanged and the current task did not touch its affected area.
+
+### R1 — move exact public read implementations behind façade
+
+The extracted service owns the logic currently backing:
+
+```text
+getSubscription(shopId)
+getSubscriptionProjection(shopId)
+getMerchantShopifySubscriptionState(shopId)
+getMerchantShopifyLifecycleState(shopId)
+mapMerchantShopifySubscription(providerSubscription)
+```
+
+`BillingService` keeps all four public methods with the same signatures/return shapes and delegates.
+
+### R2 — preserve provider read behaviour
+
+Keep the current Shopify provider methods, call counts, lifecycle precedence, plan mapping and Partner failure propagation. Do not add fallback to local Subscription state when the current code fails/returns unresolved provider state.
+
+### R3 — preserve local eligibility semantics
+
+`getSubscription` must continue returning only ACTIVE/TRIALING local subscriptions and `getSubscriptionProjection` must keep its current include graph.
+
+### R4 — no mutation
+
+The extracted read service must not introduce durable writes.
+
+## Work Items
+
+- [x] Create `SubscriptionReadService` with injected provider + Prisma dependencies.
+- [x] Move local/provider read logic and mapper.
+- [x] Keep BillingService method signatures as delegating compatibility methods.
+- [x] Add focused tests for active/no-contract local reads, current/pending Shopify mapping, lifecycle precedence and provider failure.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+
+## Interfaces / Contracts
+
+The service consumes existing repository-local `BillingProvider`, `MerchantShopifySubscriptionState` and `MerchantShopifyLifecycleState` contracts from `billing.types.ts`.
+
+No cross-repository contract is introduced.
+
+## Dependencies
+
+- `ARCH-025-SHOPIFY-002`
+
+## Enables
+
+- `ARCH-025-SHOPIFY-004`
+
+## Acceptance Criteria
+
+- [x] Read-only subscription/provider responsibilities have one owner.
+- [x] BillingService callers require no changes.
+- [x] Provider invocation count and lifecycle precedence match the pre-refactor implementation.
+- [x] Extracted service performs no writes.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+
+## Validation
+
+- [x] `npm run prisma:generate`
+- [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [x] `git diff -- tests/unit/services/billing.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
+- [x] `npm test -- tests/unit/services/billing/subscription-read.service.test.ts` passes the new focused capability tests
+- [x] `npm test` introduces no new failures
+- [x] `npm run typecheck`
+- [x] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-read.service.ts tests/unit/services/billing/subscription-read.service.test.ts`
+- [x] `npm run build`
+- [x] `git diff --check`
+
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
+
+## Implementation Notes
+
+Keep the mapper close to the read service; do not create a generic Shopify billing mapper package. The façade may delegate directly to one collaborator created in its constructor.
+
+
+## Completion Report
+
+### Status
+
+Ready for architect review after evidence-only Attempt 2
+
+### Files Changed
+
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/subscription-read.service.ts`
+- `moda-interact/tests/unit/services/billing/subscription-read.service.test.ts`
+
+### Work Completed
+
+- Added `SubscriptionReadService` with injected provider and Prisma dependencies. It owns both local subscription reads, Shopify commercial state mapping, lifecycle state classification, and the current/pending BillingPlan mapper.
+- Kept all four `BillingService` methods as same-signature delegates. Constructor compatibility, current exports, route callers, provider invocation order, error strings, lifecycle precedence, local eligibility, and read-only behavior are preserved.
+- Added four focused tests covering local active/no-contract selection and include graphs, independent current/pending mappings and ISO dates, frozen precedence over an active contract, and provider failure without local fallback.
+
+### Validation Results
+
+- Removed the SHOPIFY-002 `node_modules` symlink and ran `npm ci` in the dedicated SHOPIFY-003 implementation worktree from its committed `package-lock.json`; 1,153 packages were installed into a physical local `node_modules` directory. No package or lockfile changes resulted. npm reported 32 dependency audit findings during installation.
+- `npm run prisma:generate`: passed using the local install; generated Prisma Client under this worktree's `node_modules/@prisma/client`.
+- Frozen test hash: `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; `git diff -- tests/unit/services/billing.service.test.ts` is empty.
+- Frozen `billing.service.test.ts`, rerun in Attempt 2: 18 failures, all matching documented baseline `ARCH025-TEST-001`; the frozen source is unchanged.
+- Focused `subscription-read.service.test.ts`, rerun in Attempt 2: 4 passed.
+- Full `npm test`, rerun in Attempt 2: 76 passed, 8 skipped, 24 failures; the failure identifiers match documented baseline `ARCH025-TEST-001`, with no additional failure.
+- `npm run typecheck`: passed.
+- Targeted ESLint: passed; emitted only the existing TypeScript-version compatibility warning.
+- `npm run build`: passed using the local install; emitted existing dependency-resolution, annotation, empty-chunk, and chunk-size warnings.
+- `git diff --check`: passed.
+- Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-003`; both on `task/ARCH-025-SHOPIFY-003`. Shared workspace and shared implementation checkouts were not switched or mutated; no other task worktree was reused.
+- Start-of-attempt synchronization from the launcher packet: parent remote task branch fast-forward `not-needed`; parent `origin/main` `already-current`; implementation remote task branch fast-forward `not-needed`; implementation `origin/main` `already-current`.
+- Recursive implementation submodules: `git submodule sync --recursive` and `git submodule update --init --recursive` passed; `database` was initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+
+### Deviations
+
+Attempt 1's validation environment reused a cross-task `node_modules` symlink, as identified in architect review A1-R1. In evidence-only Attempt 2, that symlink was removed and dependencies were installed locally with `npm ci`; all required validation was rerun in the dedicated SHOPIFY-003 implementation worktree. No implementation source/test files or package files were changed, and implementation commit `ba0380e7688930277e9e075610ac915a256eec1d` remains unchanged.
+
+### Assumptions
+
+The documented ARCH-025 baseline `ARCH025-TEST-001` remains the reference for the frozen and full-suite failures.
+
+### Unresolved Issues
+
+The frozen façade and full application suites retain their documented `ARCH025-TEST-001` baseline failures; focused tests and production/type validation pass. `npm ci` reported 32 dependency audit findings; dependency remediation is outside this evidence-only task attempt.
+
+### Architectural Concerns
+
+None identified. The extracted collaborator is read-only and depends only on the existing provider and Prisma contracts.
+
+## Architect Review
+
+### Review Status
+
+Accepted
+
+### Review Notes
+
+#### Attempt 1 — Changes Requested
+
+The implementation itself was source-conformant, but validation was not physically isolated: the submitted `moda-interact/node_modules` resolved through the ARCH-025-SHOPIFY-002 task worktree. A1-R1 required an evidence-only retry from the canonical SHOPIFY-003 implementation worktree with task-local dependencies and no production/test source churn.
+
+#### Attempt 2 — Accepted
+
+A1-R1 is closed. The Completion Report records removal of the cross-task `node_modules` symlink, a clean task-local `npm ci` installation of 1,153 packages into the dedicated SHOPIFY-003 worktree, and rerun of the complete task Validation section from that isolated dependency environment. Implementation commit `ba0380e7688930277e9e075610ac915a256eec1d` is unchanged.
+
+The isolated rerun passed Prisma generation, the 4/4 focused subscription-read tests, typecheck, targeted ESLint, production build and `git diff --check`. The frozen façade test remains byte-identical at SHA-256 `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; its 18 failing identifiers and the full-suite 24 failing identifiers remain entirely within durable baseline `ARCH025-TEST-001`, with no new failure. The 32 `npm ci` audit findings are dependency-maintenance information and do not indicate an ARCH-025-SHOPIFY-003 regression.
+
+### Reviewed Files
+
+- `moda-interact/app/services/billing/subscription-read.service.ts`
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/tests/unit/services/billing/subscription-read.service.test.ts`
+- frozen `moda-interact/tests/unit/services/billing.service.test.ts` identity/evidence
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-003-extract-subscription-read-service.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- implementation commit `ba0380e7688930277e9e075610ac915a256eec1d`
+- Attempt 2 parent report commit `9a2ef98d56c4ded4d4594a0b8e9be6a4e2334a27`
+
+### Validation Reviewed
+
+- Independently confirmed the implementation branch remains one commit ahead of its accepted base and changes only the three authorised implementation/test files.
+- Independently confirmed Attempt 2 parent report commit `9a2ef98d56c4ded4d4594a0b8e9be6a4e2334a27` changes only this task report.
+- Reused the completed Attempt 1 source review: all four moved façade reads plus `mapMerchantShopifySubscription(...)` preserve query shapes, provider invocation order/count, lifecycle precedence, mapping rules, error behaviour and return shapes; the extracted collaborator is read-only and has no reverse dependency on `billing.service.ts`.
+- Attempt 2 task-local dependency evidence: cross-task symlink removed; physical local `node_modules` produced by `npm ci`; no package/lockfile/source changes.
+- Attempt 2 focused `subscription-read.service.test.ts`: 4/4 passed.
+- Attempt 2 frozen suite: 18 failures, all matching `ARCH025-TEST-001`.
+- Attempt 2 full suite: 24 failures, all matching `ARCH025-TEST-001`; no new failing identifier.
+- Attempt 2 Prisma generation, typecheck, targeted ESLint, production build and `git diff --check`: passed.
+
+### Architecture Conformance
+
+Conforms. `SubscriptionReadService` is now the single read-only owner of the bounded local Subscription reads, Shopify commercial/lifecycle state mapping and current/pending BillingPlan mapper, while `BillingService` preserves its existing public façade. Move-only semantics and the ARCH-025 no-regression contract are preserved.
+
+### Follow-up
+
+None for SHOPIFY-003. `ARCH-025-SHOPIFY-004` is now eligible and is promoted to Ready.
