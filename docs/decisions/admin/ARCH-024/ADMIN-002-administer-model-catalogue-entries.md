@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 31
 executor: copilot
 claimed_at: 2026-10-01T20:51:44Z
@@ -1276,7 +1276,7 @@ Do not begin `ARCH-024-COMMERCE-003`, `ARCH-024-ADMIN-003` or any other follow-o
 
 ### Status
 
-Ready for Architect Review
+Ready for Architect Review (Attempt 2)
 
 ### Files Changed
 
@@ -1300,26 +1300,27 @@ Ready for Architect Review
 
 Implemented the protected Catalogue control-plane route, read-only Platform Admin views, SUPER_ADMIN create/edit/reassignment/enable-disable controls, canonical Shared-backed parsing, server-side 50-row pagination and filtering, deterministic ordering, optimistic concurrency, audit writes, bounded Server Action results, and synchronous same-tick submit protection. Existing Availability navigation remains. No Credentials destination, delete path, Commerce Studio change, database schema change, or live OpenRouter call was added.
 
+Attempt 2 addressed the sole requested correction, A1-R1: `mutateModelCatalogueAction(...)` now throws exactly `Error("SUPER_ADMIN access is required.")` immediately after mutation authorization and before parsing or transaction work. The security test asserts both the exact throw contract and its ordering. Page/read authorization, transaction guard, Shared validation, CAS, audit, bounded handling of ordinary validation/conflict errors, and same-tick submit protection remain unchanged.
+
 Create input is parsed before opening the transaction. Update identity is loaded server-side and remains immutable. Database ordering is applied before pagination, with case-insensitive deterministic comparison bounded to the returned page. Expected mutation/input errors return bounded results; unexpected failures are rethrown for normal server logging.
 
-Implementation commit `ff3f643d27d10f94ae67b31e9fc9d0d68cd20ff4` is pushed to `origin/task/ARCH-024-ADMIN-002`.
+Implementation commits `ff3f643d27d10f94ae67b31e9fc9d0d68cd20ff4` (initial implementation) and `f7fa24350d150db182b61faf63ddaee321df6f38` (A1-R1 correction) are pushed to `origin/task/ARCH-024-ADMIN-002`.
 
 ### Validation Results
 
-Passed from the dedicated Admin implementation worktree:
+Attempt 2 reran the complete task Validation section from the dedicated Admin implementation worktree; all checks passed:
 
-- `npm run prisma:generate`
-- `npm run prisma:validate`
+- `npm run prisma:generate` and `npm run prisma:validate`
 - Unit tests: 13 passed (`model-catalogue-validation` and `model-catalogue-service`)
-- Security/navigation tests: 18 passed (`admin-model-catalogue` and `admin-sidebar-navigation`)
+- Security/navigation tests: 18 passed (`admin-model-catalogue` and `admin-sidebar-navigation`), including the exact authorization throw and ordering assertion
 - Targeted Prettier check: all 13 task files passed
 - Targeted ESLint: passed
 - `npm run build`: passed; `/commerce-models/catalogue` appears in the route manifest
-- `git diff --check` and staged `git diff --cached --check`: passed
+- `git diff --check`: passed
 
 The build emitted existing BullMQ warnings for an expression-based critical dependency and unresolved optional `@valkey/valkey-glide` through queue-monitor/merchant-support imports. Node test runs emitted the existing `MODULE_TYPELESS_PACKAGE_JSON` warning for TypeScript test files. Neither warning failed validation.
 
-Launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent task worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-ADMIN-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-ADMIN-002`, both on `task/ARCH-024-ADMIN-002`. Dependency gate passed for DATABASE-001, SHARED-002 and ADMIN-001. Recursive submodule sync/update passed at Database revision `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; Shared package is `1.1.0`. Both task worktrees started current against `origin/main` with remote task fast-forward reported `not-needed`. Launcher claim commit `ab877002f66b9fdecf6a070d04720c96a0e010eb` was pushed. The implementation worktree is clean and up to date with its task branch. No other task worktree or shared/default implementation checkout was reused.
+Attempt 2 launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-ADMIN-002`, branch `task/ARCH-024-ADMIN-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-ADMIN-002`, branch `task/ARCH-024-ADMIN-002`. Neither shared checkout was switched or mutated, and no other task worktree was reused. Dependency gate passed for DATABASE-001, SHARED-002 and ADMIN-001. Parent and implementation remote task branches fast-forwarded `not-needed`; `origin/main` was `already-current` in both. Recursive submodule sync/update passed at Database revision `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; Shared package is `1.1.0`. Durable launcher claim commit `1e62550764bd5b818707683d3965e3669d2df548` was pushed for Attempt 2. The implementation worktree is clean and up to date with its task branch.
 
 ### Deviations
 
