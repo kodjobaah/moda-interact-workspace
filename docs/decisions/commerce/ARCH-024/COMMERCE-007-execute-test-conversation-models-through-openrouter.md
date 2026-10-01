@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-COMMERCE-006
-  - ARCH-024-SHARED-004
+  - ARCH-024-SHARED-002
   - ARCH-024-ADMIN-003
 enables: []
 created: 2026-09-30
@@ -107,7 +107,7 @@ and a conversation mode switch between a scripted fixture model and the HTTP pro
 ARCH-024 changes that architecture before this task executes:
 
 - DATABASE-001 persists dynamic `provider + providerModelId`, bounded model `configuration`, Availability and one encrypted `CommerceOpenRouterCredential` per environment.
-- SHARED-001 defines the browser-safe model contracts plus Node-only `OpenRouterModelClient`; SHARED-002/003 refactor and instrument the runner; SHARED-004 publishes the combined accepted package implementing the existing `CommerceModelInvoker` / `ModelRequest` / `ModelStep` runner boundary.
+- SHARED-001 defines the model contracts/OpenRouter client and implements/instruments the modular LangGraph runner; SHARED-002 publishes the combined accepted package implementing the existing `CommerceModelInvoker` / `ModelRequest` / `ModelStep` runner boundary.
 - COMMERCE-002 resolves exactly one effective active model for the selected Shop.
 - COMMERCE-004/005 create a Feature-composed Test Conversation and selected-Shop Conversation Configuration Snapshot boundary.
 - COMMERCE-006 installs real selected-Shop Tool execution while deliberately leaving human model turns disabled.
@@ -161,7 +161,7 @@ scripts/run-preview-openrouter-disposable.mjs             CREATE
 
 If an accepted C001-C006 implementation has moved/renamed an equivalent Preview file, modify that accepted equivalent instead of creating compatibility aliases. Record every such substitution in the Completion Report.
 
-Additional Commerce files may be changed only when mechanically required to consume the exact SHARED-004 package or to reuse the existing credential keyring parser. Name and justify each additional file in the Completion Report.
+Additional Commerce files may be changed only when mechanically required to consume the exact SHARED-002 package or to reuse the existing credential keyring parser. Name and justify each additional file in the Completion Report.
 
 ## Out of Scope
 
@@ -188,7 +188,7 @@ Additional Commerce files may be changed only when mechanically required to cons
 
 ### R1 — consume exactly the published ARCH-024 Shared runtime
 
-After ARCH-024-SHARED-004 is architect-accepted, read its Completion Report and update:
+After ARCH-024-SHARED-002 is architect-accepted, read its Completion Report and update:
 
 ```text
 @modainteract/moda-interact-shared
@@ -962,7 +962,7 @@ retained fixture Tool-test executor remains referenced
 
 ## Work Items
 
-- [ ] Update Commerce to the exact SHARED-004 published package version.
+- [ ] Update Commerce to the exact SHARED-002 published package version.
 - [ ] Remove the bespoke Preview HTTP model provider and obsolete provider tests.
 - [ ] Extend the existing conversation snapshot with exact model + additive instruction state.
 - [ ] Capture effective model/instructions server-side when Start Conversation commits.
@@ -992,7 +992,7 @@ commerce.CommerceModelCatalogueEntry
 commerce.CommerceAgentConfiguration
 ```
 
-From ARCH-024-SHARED-004:
+From ARCH-024-SHARED-002:
 
 ```text
 @modainteract/moda-interact-shared/commerce/model
@@ -1060,7 +1060,7 @@ No new cross-service queue/event contract is created.
 ## Dependencies
 
 - `ARCH-024-COMMERCE-006`
-- `ARCH-024-SHARED-004`
+- `ARCH-024-SHARED-002`
 - `ARCH-024-ADMIN-003`
 
 ## Enables

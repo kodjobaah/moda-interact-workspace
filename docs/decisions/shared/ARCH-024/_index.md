@@ -1,53 +1,42 @@
-# ARCH-024 shared tasks
+# ARCH-024 Shared Tasks
 
-Architecture: [`ARCH-024`](../../../architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md).
+Architecture:
 
-Assigned agent: `moda_shared`.
+`docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 
-Repository: `moda-interact-shared`.
+Assigned Agent:
 
-Coordinator: `moda_architect`.
+`moda_shared`
 
-The Shared sequence deliberately separates provider integration, orchestration refactor, semantic logging and publication so each capability is independently reviewable.
+Coordinator:
+
+`moda_architect`
+
+## Execution Order
 
 ```text
-DATABASE-001
-    |
-    v
-SHARED-001
-model contracts + thin ChatOpenRouter client
-    |
-    v
-SHARED-002
-modular runCommerceTurn + LangGraph StateGraph
-    |
-    v
-SHARED-003
-canonical structured Commerce-turn logging
-    |
-    v
-SHARED-004
-publish exact accepted combined revision
+ARCH-024-DATABASE-001
+        |
+        v
+ARCH-024-SHARED-001
+Complete Shared implementation:
+model contracts + OpenRouterModelClient + modular LangGraph runner +
+runner guardrails + canonical structured logging
+        |
+        v
+ARCH-024-SHARED-002
+Publication-only gate
 ```
 
-| Task | Outcome | Status | Depends on |
+| Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SHARED-001](SHARED-001-implement-model-contracts-openrouter-runtime.md) | Implement canonical Availability/Catalogue/configuration contracts and Node-only `OpenRouterModelClient` over `ChatOpenRouter` | Pending | DATABASE-001 |
-| [SHARED-002](SHARED-002-refactor-commerce-turn-runner-to-modular-langgraph.md) | Decompose the monolithic runner and express the existing model/Tool/final state machine as a four-node LangGraph `StateGraph` without changing public behaviour | Pending | SHARED-001 |
-| [SHARED-003](SHARED-003-add-structured-commerce-turn-runtime-logging.md) | Add bounded `commerce.turn.*` semantic logging through the existing Shared `StructuredLogger` without logging runtime content | Pending | SHARED-002 |
-| [SHARED-004](SHARED-004-publish-arch024-shared-runtime.md) | Publish the architect-accepted combined model/OpenRouter/LangGraph/logging Shared runtime | Pending | SHARED-001, SHARED-002, SHARED-003 |
+| [SHARED-001](SHARED-001-implement-model-contracts-openrouter-runtime.md) | Implement the complete unpublished Shared ARCH-024 Commerce runtime: model contracts/OpenRouter client, modular LangGraph runner, deterministic guardrails and canonical structured logging | Pending | DATABASE-001 |
+| [SHARED-002](SHARED-002-publish-arch024-shared-runtime.md) | Publish the exact architect-accepted SHARED-001 implementation as one backward-compatible Shared package release | Pending | SHARED-001 |
 
-## Execution frontier
+## Boundary
 
-No Shared task is Ready until `ARCH-024-DATABASE-001` is architect-accepted Complete.
+SHARED-001 is the only ARCH-024 Shared implementation task. It is intentionally deterministic and contains the exact contracts, module decomposition, four-node low-level `StateGraph`, trust/authorization/evidence rules, and `commerce.turn.*` logging contract. It MUST stop at `review` and MUST NOT publish.
 
-The architectural decisions are fixed for ARCH-024:
+SHARED-002 is publication-only. It MUST NOT change implementation source or rerun implementation validation solely to re-prove SHARED-001.
 
-```text
-LangGraph orchestration: low-level StateGraph in Shared
-stock createAgent/ToolNode: not used
-LangGraph persistence/checkpoints: not used
-production MCP transport: retained in Background CommerceMcpClient over official MCP SDK
-Tool abstraction at Shared boundary: RunnerTool
-runtime data authority: zero-authority data, preserving ARCH-023 Merchant Knowledge semantics
-```
+All Admin, Commerce and Background consumers use the exact version published by SHARED-002. No consumer may depend on unpublished Shared task-branch source.
