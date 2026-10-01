@@ -20,7 +20,7 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [GATEWAY-001](GATEWAY-001-wire-merchant-knowledge-deployment.md) | Deploy the dedicated Merchant Knowledge worker and wire private R2, upload limits, embeddings and Commerce bootstrap configuration | Blocked — Attempt 1 | BACKGROUND-005, BACKGROUND-008, SHOPIFY-005, COMMERCE-002 |
+| [GATEWAY-001](GATEWAY-001-wire-merchant-knowledge-deployment.md) | Deploy the dedicated Merchant Knowledge worker and wire private R2, upload limits, embeddings and Commerce bootstrap configuration | Ready — next claim Attempt 2 | BACKGROUND-005, BACKGROUND-008, SHOPIFY-005, COMMERCE-002 |
 
 ## Deployment boundary
 
@@ -52,18 +52,18 @@ system tests
 
 ## Execution frontier
 
-Blocked: `ARCH-023-GATEWAY-001` at Attempt 1.
+Ready: `ARCH-023-GATEWAY-001` with Attempt 1 preserved; the next launcher claim becomes Attempt 2.
 
 Its original prerequisites remain Complete / architect-accepted, but R17 exposed the Background-owned observability prerequisite:
 
 ```text
 ARCH-023-BACKGROUND-005 = Complete — Accepted Attempt 2
-ARCH-023-BACKGROUND-008 = Ready — Attempt 2 evidence correction
+ARCH-023-BACKGROUND-008 = Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-005    = Complete — Accepted Attempt 3
 ARCH-023-COMMERCE-002   = Complete — Accepted Attempt 4
 ```
 
-Do not reclaim Gateway until BACKGROUND-008 is Complete / architect-accepted. Then moda_architect returns the same GATEWAY-001 task to Ready with Attempt 1 preserved; the next launcher claim becomes Attempt 2.
+All declared Gateway prerequisites are now Complete / architect-accepted. GATEWAY-001 is Ready with Attempt 1 preserved; invoke its normal launcher to claim Attempt 2. Do not start Gateway implicitly from this reconciliation.
 
 ## No new HTTP service
 
