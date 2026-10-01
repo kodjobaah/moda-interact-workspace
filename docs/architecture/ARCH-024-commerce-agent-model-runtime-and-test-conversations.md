@@ -18,18 +18,21 @@ ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Previe
 ARCH-024 implementation is underway. `ARCH-024-DATABASE-001` is Complete / Accepted at
 Attempt 1, `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2,
 `ARCH-024-COMMERCE-004` is Complete / Accepted at Attempt 1,
-`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2, and the publication-only
+`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2, the publication-only
 `ARCH-024-SHARED-002` is Complete / Accepted at Attempt 1 with canonical release
-`@modainteract/moda-interact-shared@1.1.0`. The current Ready frontier is:
+`@modainteract/moda-interact-shared@1.1.0`, `ARCH-024-ADMIN-004` is Complete / Accepted at
+Attempt 1, and `ARCH-024-COMMERCE-002` is Complete / Accepted at Attempt 2. In this isolated
+COMMERCE-002 parent branch the current Ready frontier is:
 
 ```text
 ARCH-024-ADMIN-001
-ARCH-024-ADMIN-004
-ARCH-024-COMMERCE-002
+ARCH-024-COMMERCE-005
 ARCH-024-BACKGROUND-001
 ```
 
-All other ARCH-024 tasks remain Pending behind their declared dependencies.
+All other ARCH-024 tasks remain Pending behind their declared dependencies. The separately
+accepted ADMIN-001 reconciliation remains on its sibling parent task branch and must be
+preserved during later parent-branch integration.
 
 Integrated system-test tasks are **deliberately not materialised in this architecture session** because final acceptance overlaps frozen ARCH-023 completion and upcoming architecture work. Any terminal integrated validation will be defined separately against the final combined architecture.
 
@@ -1120,10 +1123,10 @@ Individual task YAML is authoritative.
 | `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
 | `ARCH-024-ADMIN-004` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
-| `ARCH-024-COMMERCE-002` | `moda_commerce` | Ready | DATABASE-001, SHARED-002 |
+| `ARCH-024-COMMERCE-002` | `moda_commerce` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
 | `ARCH-024-COMMERCE-004` | `moda_commerce` | Complete | COMMERCE-001 |
-| `ARCH-024-COMMERCE-005` | `moda_commerce` | Pending | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
+| `ARCH-024-COMMERCE-005` | `moda_commerce` | Ready | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |
 | `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-002 |
 | `ARCH-024-BACKGROUND-001` | `moda_background` | Ready | DATABASE-001, SHARED-002 |
@@ -1202,6 +1205,8 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 
 ## Change History
 
+- **2026-10-01 — COMMERCE-002 accepted at Attempt 2:** the bounded correction preserves the migration-owned deterministic Platform Availability: the legacy Catalogue bridge reads and validates it but cannot create, upsert or repair it; a missing row fails boundedly and the disposable PostgreSQL fixture seeds it only as test state. Attempt 2 also restores the required launcher/worktree/synchronization/submodule evidence. The effective model resolver remains fail-closed `SHOP -> PRICING_PLAN -> PLATFORM` with one repeatable-read snapshot and no credential/runtime-provider dependency. `ARCH-024-COMMERCE-005` is promoted Ready because COMMERCE-002, COMMERCE-004 and frozen ARCH-023-COMMERCE-003 are Complete; COMMERCE-003 remains Pending behind ADMIN-002. This isolated parent branch has not incorporated the separately accepted ADMIN-001 reconciliation, which must be preserved during later integration.
+- **2026-10-01 — ADMIN-004 accepted at Attempt 1:** the existing Admin Merchant Pricing Plan builder now persists an optional Platform-available Commerce model product-tier assignment using the published Shared `1.1.0` schemas. New/changed non-null selections are validated inside the existing plan transaction, unchanged now-invalid associations remain visible/repairable, BillingPlan synchronization and activation toggles remain model-neutral, and bounded model-ID changes reuse `PLAN_CATALOG_CHANGED`. The source-level server-action coverage is recorded as a non-blocking limitation after direct architect inspection of the mutation path. ADMIN-004 directly enables no dependant; the Ready frontier remains ADMIN-001, COMMERCE-002 and BACKGROUND-001.
 - **2026-10-01 — ADMIN-001 accepted at Attempt 2:** the bounded correction renders the exact Platform/Shop disable warning only for the enabled-to-disabled transition and restores the canonical task-definition sections plus durable launcher/worktree/synchronization/submodule evidence. The Availability control-plane implementation otherwise remains unchanged and conformant. `ARCH-024-ADMIN-002` is promoted Ready; no follow-on task is started. This isolated parent branch has not incorporated the separately accepted ADMIN-004 reconciliation, which must be preserved during later parent-branch integration.
 - **2026-10-01 — SHARED-002 accepted at Attempt 1:** publication-only validation confirms the architect-accepted SHARED-001 source was released without implementation drift as exactly `@modainteract/moda-interact-shared@1.1.0`; package/lock changes are version metadata only, registry identity and integrity are recorded, and a clean external exact-version consumer imported the required model/model-node/runner/logging entrypoints. `ARCH-024-ADMIN-001`, `ARCH-024-ADMIN-004`, `ARCH-024-COMMERCE-002` and `ARCH-024-BACKGROUND-001` are promoted Ready; no consumer is claimed or started by this acceptance.
 - **2026-10-01 — COMMERCE-004 accepted at Attempt 1:** selected ordered Feature IDs now resolve server-side to every direct Capability, current published Tool revision and one Feature Behaviour per selected Feature; the Preview adapter builds the deterministic synthetic manifest identity and freezes the exact composition fragment for the conversation. Retained saved Release/Draft lookups remain available for non-conversation Tool-test consumers. `ARCH-024-COMMERCE-005` remains Pending because `ARCH-024-COMMERCE-002` is not yet Complete.

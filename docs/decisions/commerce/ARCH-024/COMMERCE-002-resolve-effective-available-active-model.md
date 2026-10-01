@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 40
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-024-DATABASE-001
   - ARCH-024-SHARED-002
@@ -857,25 +857,25 @@ Do not reuse an existing non-disposable database target.
 
 ## Work Items
 
-- [ ] Consume the architect-accepted ARCH-024 database gitlink without editing nested schema.
-- [ ] Consume the exact SHARED-002 published package version and synchronized lockfile.
-- [ ] Replace local closed provider/environment contract duplication with canonical Shared model contracts.
-- [ ] Add `AvailableCommerceModel`.
-- [ ] Add `model-availability.ts` with the exact three domain functions from R3.
-- [ ] Add `pricing-plan-model.ts` with the exact current-subscription/Price Plan assignment resolver from R6A.
-- [ ] Implement deterministic Platform/effective Shop availability queries.
-- [ ] Add the single write-time `assertModelSelectable(...)` gate.
-- [ ] Harden Platform/Shop model selection mutations with the availability gate inside their write transaction.
-- [ ] Change effective model resolution to exact `SHOP -> PRICING_PLAN -> PLATFORM` semantics, using only current ACTIVE/TRIALING subscription state and ignoring pending plan state.
-- [ ] Validate selected model and Availability on every effective resolution.
-- [ ] Add the R9 effective-model provenance/error contract including `PRICING_PLAN`, plan ID and plan handle provenance.
-- [ ] Preserve the existing repeatable-read effective Agent Configuration transaction.
-- [ ] Add Platform/effective Shop available-model service methods and Server Actions for COMMERCE-003.
-- [ ] Apply only the R14 legacy Catalogue compatibility changes needed until COMMERCE-003 removes that UI.
-- [ ] Add/update focused unit tests.
-- [ ] Add/update focused PostgreSQL tests.
-- [ ] Add the disposable PostgreSQL runner and package script.
-- [ ] Run all required Validation and record exact results.
+- [x] Consume the architect-accepted ARCH-024 database gitlink without editing nested schema.
+- [x] Consume the exact SHARED-002 published package version and synchronized lockfile.
+- [x] Replace local closed provider/environment contract duplication with canonical Shared model contracts.
+- [x] Add `AvailableCommerceModel`.
+- [x] Add `model-availability.ts` with the exact three domain functions from R3.
+- [x] Add `pricing-plan-model.ts` with the exact current-subscription/Price Plan assignment resolver from R6A.
+- [x] Implement deterministic Platform/effective Shop availability queries.
+- [x] Add the single write-time `assertModelSelectable(...)` gate.
+- [x] Harden Platform/Shop model selection mutations with the availability gate inside their write transaction.
+- [x] Change effective model resolution to exact `SHOP -> PRICING_PLAN -> PLATFORM` semantics, using only current ACTIVE/TRIALING subscription state and ignoring pending plan state.
+- [x] Validate selected model and Availability on every effective resolution.
+- [x] Add the R9 effective-model provenance/error contract including `PRICING_PLAN`, plan ID and plan handle provenance.
+- [x] Preserve the existing repeatable-read effective Agent Configuration transaction.
+- [x] Add Platform/effective Shop available-model service methods and Server Actions for COMMERCE-003.
+- [x] Apply only the R14 legacy Catalogue compatibility changes needed until COMMERCE-003 removes that UI.
+- [x] Add/update focused unit tests.
+- [x] Add/update focused PostgreSQL tests.
+- [x] Add the disposable PostgreSQL runner and package script.
+- [x] Run all required Validation and record exact results.
 
 ## Interfaces / Contracts
 
@@ -945,30 +945,30 @@ COMMERCE-001 is intentionally **not** a dependency. It owns subtractive human Pr
 
 ## Acceptance Criteria
 
-- [ ] Commerce consumes the accepted ARCH-024 database schema through its nested database gitlink.
-- [ ] Commerce consumes the exact published SHARED-002 package version rather than a local Shared checkout.
-- [ ] No Commerce-local `OPENAI | GROQ` provider union remains in the model-selection/resolution boundary.
-- [ ] Platform available-model reads return only valid enabled Platform entries from enabled Platform Availability.
-- [ ] Effective Shop available-model reads equal Platform entries plus exact-Shop entries and exclude every other Shop.
-- [ ] Effective available-model reads never deduplicate two distinct catalogue IDs.
-- [ ] Platform selection cannot select a Shop-only catalogue entry.
-- [ ] Shop selection may select a Platform entry or exact-Shop entry and cannot select another Shop's entry.
-- [ ] Disabled/invalid model or Availability cannot be newly selected.
-- [ ] A Shop with a valid explicit override uses that model even if Price Plan/Platform configuration is missing or broken.
-- [ ] A Shop with `modelId = NULL` and an explicit current Price Plan model uses the valid Price Plan model before Platform.
-- [ ] A current Price Plan model may reference only enabled Platform Availability; a broken explicit plan model returns `UNAVAILABLE` and does not fall back to Platform.
-- [ ] With no explicit Shop override and no explicit usable Price Plan model, the Shop inherits the valid Platform model.
-- [ ] Pending subscription plans do not affect model selection until current.
-- [ ] A broken explicit Shop override returns `UNAVAILABLE` and does not inspect Price Plan/Platform fallback.
-- [ ] Availability/model changes can invalidate an existing selection without clearing or rewriting the durable `modelId`.
-- [ ] Effective resolution preserves `SHOP | PRICING_PLAN | PLATFORM` selection provenance separately from catalogue Availability provenance and includes Price Plan ID/handle only for plan selection.
-- [ ] Effective Agent Configuration still uses one repeatable-read snapshot.
-- [ ] Prompt/Instruction resolution semantics are unchanged by this task.
-- [ ] Model resolution does not query credentials or invoke OpenRouter/LangChain.
-- [ ] The temporary legacy Catalogue compatibility path does not add Shop Availability/configuration authoring to Commerce Studio.
-- [ ] Focused unit tests pass.
-- [ ] Focused disposable PostgreSQL proof passes and cleans up all owned Docker resources.
-- [ ] Changed-file diagnostics, lint/typecheck and `git diff --check` pass.
+- [x] Commerce consumes the accepted ARCH-024 database schema through its nested database gitlink.
+- [x] Commerce consumes the exact published SHARED-002 package version rather than a local Shared checkout.
+- [x] No Commerce-local `OPENAI | GROQ` provider union remains in the model-selection/resolution boundary.
+- [x] Platform available-model reads return only valid enabled Platform entries from enabled Platform Availability.
+- [x] Effective Shop available-model reads equal Platform entries plus exact-Shop entries and exclude every other Shop.
+- [x] Effective available-model reads never deduplicate two distinct catalogue IDs.
+- [x] Platform selection cannot select a Shop-only catalogue entry.
+- [x] Shop selection may select a Platform entry or exact-Shop entry and cannot select another Shop's entry.
+- [x] Disabled/invalid model or Availability cannot be newly selected.
+- [x] A Shop with a valid explicit override uses that model even if Price Plan/Platform configuration is missing or broken.
+- [x] A Shop with `modelId = NULL` and an explicit current Price Plan model uses the valid Price Plan model before Platform.
+- [x] A current Price Plan model may reference only enabled Platform Availability; a broken explicit plan model returns `UNAVAILABLE` and does not fall back to Platform.
+- [x] With no explicit Shop override and no explicit usable Price Plan model, the Shop inherits the valid Platform model.
+- [x] Pending subscription plans do not affect model selection until current.
+- [x] A broken explicit Shop override returns `UNAVAILABLE` and does not inspect Price Plan/Platform fallback.
+- [x] Availability/model changes can invalidate an existing selection without clearing or rewriting the durable `modelId`.
+- [x] Effective resolution preserves `SHOP | PRICING_PLAN | PLATFORM` selection provenance separately from catalogue Availability provenance and includes Price Plan ID/handle only for plan selection.
+- [x] Effective Agent Configuration still uses one repeatable-read snapshot.
+- [x] Prompt/Instruction resolution semantics are unchanged by this task.
+- [x] Model resolution does not query credentials or invoke OpenRouter/LangChain.
+- [x] The temporary legacy Catalogue compatibility path does not add Shop Availability/configuration authoring to Commerce Studio.
+- [x] Focused unit tests pass.
+- [x] Focused disposable PostgreSQL proof passes and cleans up all owned Docker resources.
+- [x] Changed-file diagnostics, lint/typecheck and `git diff --check` pass.
 
 ## Validation
 
@@ -1044,27 +1044,63 @@ and may be used only for the temporary R14 legacy create compatibility path. Nor
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+- `database/` nested gitlink advanced to accepted schema commit `cfeeb12`; nested schema was not edited.
+- `package.json`, `package-lock.json`: consume Shared `1.1.0` and register the focused disposable PostgreSQL script.
+- `src/commerce/agent-configuration/model-availability.ts` (new): Shared-validated Availability queries, database ordering, and the single selection gate.
+- `src/commerce/agent-configuration/pricing-plan-model.ts` (new): trusted current ACTIVE/TRIALING subscription-to-Price-Plan resolution.
+- `src/commerce/agent-configuration/effective-configuration.ts`: Shop, Price Plan, Platform precedence and model/Availability provenance in the existing repeatable-read transaction; prompt resolution is unchanged.
+- `src/commerce/agent-configuration/model-service.ts`: transactional selection gate, available-model reads, Shared-schema catalogue compatibility, nullable selection reads, and bounded database-failure logging.
+- `src/studio/agent-configuration/model-contracts.ts`, `effective-contracts.ts`, `model-server-actions.ts`: canonical model contracts, effective provenance, and authorized read actions.
+- `tests/agent-configuration-model-availability.test.ts` (new), `agent-configuration-effective.test.ts`, `agent-configuration-reduced.test.ts`, `agent-configuration-model.test.ts`: focused behavior and regression coverage.
+- `tests/agent-configuration-model-postgres.test.ts`: real Prisma proof for Availability, exact scopes, precedence, pending/current plans, durable invalid pointers, and credential independence.
+- `scripts/run-arch024-model-resolution-disposable.mjs` (new): isolated, labeled, loopback-only PostgreSQL provisioning and verified cleanup.
+- Attempt 2 A1-R1 changes: `src/commerce/agent-configuration/model-service.ts`, `tests/agent-configuration-model.test.ts`, and `tests/agent-configuration-model-postgres.test.ts`.
 
 ### Work Completed
 
-None.
+- Implementation committed and pushed on `task/ARCH-024-COMMERCE-002` at `1f9a462`.
+- Implemented Platform and exact-Shop Availability reads with strict Shared-schema projection and database-side ordering; distinct catalogue IDs remain distinct even when provider identities match.
+- Enforced Platform/Shop selectability within the same mutation transaction as configuration writes and audit receipts.
+- Resolved current subscription benefits from `Subscription.plan -> BillingPlan.shopifyPlanHandle -> MerchantPricingPlan`, ignoring pending plans and allowing inactive plans for existing eligible subscribers.
+- Implemented fail-closed effective model precedence `SHOP -> PRICING_PLAN -> PLATFORM` while preserving one `RepeatableRead` transaction and frozen prompt behavior.
+- Added effective selection and Availability provenance, authorized Platform/Shop model-read service methods, and their Server Actions.
+- Added the temporary deterministic Platform Availability catalogue-create bridge using canonical Shared provider/configuration contracts.
+- Added a task-owned PostgreSQL runner using `postgres:16.4-alpine`, unique ownership labels, a dedicated network, ephemeral loopback publishing, tmpfs storage, redaction, and cleanup verification.
+- A1-R1 correction: legacy `createCatalogueEntry(...)` now reads only the migration-owned `arch024-platform-model-availability`, validates the complete row with the published Shared schema and requires `PLATFORM` scope with null `shopId`. Missing or invalid bootstrap availability fails through the bounded retryable `DATABASE_UNAVAILABLE` result and cannot be recreated by production Commerce code. Added a unit regression asserting the row remains absent and no Catalogue/audit write occurs; the real-PostgreSQL fixture now seeds the migration-owned Availability explicitly after schema setup, as test-only fixture state.
+- Attempt 2 implementation commit `f7cf6deb0e108bc5d70a055db6283441503d7dc7` (`fix(commerce): preserve migration-owned availability`) was pushed to `origin/task/ARCH-024-COMMERCE-002`.
+- Attempt 2 launcher evidence: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-002`, branch `task/ARCH-024-COMMERCE-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-002`, branch `task/ARCH-024-COMMERCE-002`. Both canonical task worktrees were reused; the shared workspace and implementation source checkouts were not switched or mutated for task work, and no other task worktree was reused.
+- Attempt 2 start synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` incorporation `yes`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` incorporation `already-current`.
+- Attempt 2 launcher claim: Attempt 2, executor `copilot`, claimed at `2026-10-01T18:33:40Z`; durable parent claim commit `3334f66aa1684b612b1ce0b3291e3bc9ff44d783` was pushed. Dependency gate passed for `ARCH-024-DATABASE-001` and `ARCH-024-SHARED-002`, both `complete`.
+- Attempt 2 recursive submodules: `git submodule sync --recursive` and `git submodule update --init --recursive` passed; recursive status `ready`; accepted `database/` commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd` initialized.
+- Attempt 2 parent Completion Report commit `c155b6c7493312fbdada66231418f8f191ea1a3b` was pushed to `origin/task/ARCH-024-COMMERCE-002`. After publication, both parent and implementation worktrees were verified on `task/ARCH-024-COMMERCE-002`, up to date with their respective origin task branches, with clean working trees.
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:generate`: PASS; Prisma Client v6.19.3 generated from the accepted schema.
+- Required focused Vitest set (Availability, effective resolution, reduced mode, model UI, Server Actions): PASS, 5 files / 36 tests.
+- `npx vitest run tests/agent-configuration-model.test.ts`: PASS, 1 file / 5 tests.
+- `npm run test:arch024-model-resolution:postgres`: PASS; Prisma `db push` passed, all 7 PostgreSQL tests passed, and runner verified zero owned containers/networks remained.
+- Targeted ESLint over all changed JS/TS files, including the additional model-service test: PASS.
+- `npm run typecheck`: PASS.
+- VS Code diagnostics for changed model service and Availability test: no errors.
+- `git diff --check`: PASS.
+- Attempt 2: `npx vitest run tests/agent-configuration-model.test.ts`: PASS, 6 tests, including missing-bootstrap non-recreation and bounded failure.
+- Attempt 2 focused ARCH-024 Vitest set plus `tests/agent-configuration-model.test.ts`: PASS, 6 files / 42 tests.
+- Attempt 2 `npm run test:arch024-model-resolution:postgres`: PASS, all 7 PostgreSQL tests; disposable runner verified no task-owned containers or networks remained.
+- Attempt 2 targeted ESLint and `npm run typecheck`: PASS. `npx prisma generate --schema database/prisma/schema.prisma`: PASS. `git diff --check`: PASS.
+- A1-R1 review: production legacy create path contains no Availability create/upsert/repair; only the PostgreSQL fixture seeds the deterministic row. No OpenRouter or live provider call was made.
 
 ### Deviations
 
-None.
+- The required base image does not ship pgvector, while the accepted schema contains an existing PostgreSQL `vector` column. The disposable runner builds pinned pgvector `v0.8.0` inside its task-owned `postgres:16.4-alpine` container and enables the extension before `db push`; no schema or required base-image change was made.
 
 ### Assumptions
 
-None.
+- Existing Commerce Agent Configuration and prompt semantics remain authoritative outside the requested model-resolution branch; no prompt behavior or credential/runtime behavior was changed.
 
 ### Unresolved Issues
 
@@ -1072,30 +1108,93 @@ None.
 
 ### Architectural Concerns
 
-None.
+None identified. Implementation is ready for `moda_architect` review; no follow-on task was started.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
 
-Pending implementation.
+#### Attempt 2 review — Accepted — 2026-10-01
+
+Attempt 2 closes both corrections from the prior Architect Review and is accepted.
+
+**A1-R1 is closed.** `ModelConfigurationService.createCatalogueEntry(...)` now performs a read-only `findUnique(...)` of the deterministic `arch024-platform-model-availability` row, projects it through the published `CommerceModelAvailabilitySchema`, requires `scope = PLATFORM` with `shopId = null`, and fails boundedly as retryable `DATABASE_UNAVAILABLE` when the bootstrap row is missing or structurally invalid. Direct inspection of production `src/` finds no `CommerceModelAvailability` create/upsert/update/delete operation. The missing-row unit regression proves the operation does not recreate the Availability and leaves Catalogue/audit state untouched. The disposable PostgreSQL test fixture seeds the migration-owned row explicitly as test-only state before legacy Catalogue creation; that seeding is not reachable from production Commerce code.
+
+**A1-R2 is closed.** The Completion Report now records the launcher-resolved canonical workspace root, dedicated parent and Commerce implementation worktrees, matching `task/ARCH-024-COMMERCE-002` branches, start-of-attempt synchronization, dependency gates, recursive submodule materialisation, accepted `database/` gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, Attempt 2 implementation commit `f7cf6deb0e108bc5d70a055db6283441503d7dc7`, a pushed parent report commit, and final clean/remote-aligned evidence for both worktrees.
+
+The resubmission identifies implementation head `f7cf6deb` and final parent task-branch head `886dd95c`. The uploaded review archive contains no usable Git metadata, so those remote heads cannot be independently queried here. The durable Completion Report itself records the implementation commit, pushed parent report evidence and final clean/local-equals-remote state; the later submitted parent head is treated as additional handoff evidence, not as a reason to manufacture another report-only commit.
+
+The correction remains bounded to the prior A1-R1 contract. The rest of Attempt 1's already-conformant effective Availability, Price Plan and fail-closed `SHOP -> PRICING_PLAN -> PLATFORM` resolution remains unchanged in architectural ownership and behavior.
+
+#### Attempt 1 review — Changes Requested — 2026-10-01
+
+Attempt 1 is substantially architecture-conformant across the new model-resolution boundary, but two corrections are required before acceptance.
+
+**A1-R1 — Preserve the migration-owned Platform Availability boundary.**
+
+`ModelConfigurationService.createCatalogueEntry(...)` currently calls `commerceModelAvailability.upsert(...)` for `arch024-platform-model-availability`. The accepted ARCH-024 architecture establishes that deterministic Platform Availability in the database migration and makes it non-recreatable; Availability authoring is not owned by Commerce. The legacy Catalogue compatibility bridge may create a Catalogue Entry *inside* that row, but must not create/recreate the Availability itself.
+
+Correct the production path so it only reads the deterministic Platform Availability (for example, `findUnique`) and fails closed with the existing bounded database-unavailable error if the row is absent or structurally not the expected `PLATFORM` / `shopId = null` row. Do not create, upsert or repair the Availability from Commerce application code.
+
+Because the required disposable PostgreSQL runner uses Prisma `db push`, which creates schema but does not execute the migration's deterministic data insert, seed `arch024-platform-model-availability` explicitly as **test fixture state only** after `db push` (or in the focused PostgreSQL fixture) before exercising legacy Catalogue creation. This fixture seeding must not be reachable from production Commerce service code.
+
+Add a focused regression proving that a missing bootstrap Platform Availability is not recreated by `createCatalogueEntry(...)`; the operation must fail boundedly and leave the Availability absent.
+
+**A1-R2 — Record deterministic task-launch evidence in the Completion Report.**
+
+The submitted Completion Report records the implementation commit and validation but does not preserve the launcher-resolved physical-isolation/synchronization packet required for repository-task review. Attempt 2 must record the canonical workspace root, dedicated parent task worktree, dedicated Commerce implementation worktree, matching `task/ARCH-024-COMMERCE-002` branches, start-of-attempt synchronization evidence, recursive submodule materialisation evidence, accepted `database/` gitlink identity (`cfeeb12` or the exact accepted equivalent present at preparation), and final clean/local-equals-remote evidence for both worktrees.
+
+The implementation commit `1f9a462` and parent report commit `5184a5c1` are accepted as the submitted Attempt 1 heads; do not create source churn outside A1-R1 merely to manufacture another implementation change.
 
 ### Reviewed Files
 
-Pending implementation.
+- `src/commerce/agent-configuration/model-availability.ts`
+- `src/commerce/agent-configuration/pricing-plan-model.ts`
+- `src/commerce/agent-configuration/effective-configuration.ts`
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/effective-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `tests/agent-configuration-model-availability.test.ts`
+- `tests/agent-configuration-effective.test.ts`
+- `tests/agent-configuration-reduced.test.ts`
+- `tests/agent-configuration-model.test.ts`
+- `tests/agent-configuration-model-postgres.test.ts`
+- `scripts/run-arch024-model-resolution-disposable.mjs`
+- `package.json`
+- `package-lock.json`
+- accepted nested `database/prisma/schema.prisma` and ARCH-024 migration
+- this task's Completion Report
+- parent `ARCH-024` architecture and Commerce task index
 
 ### Validation Reviewed
 
-Pending implementation.
+- Independently inspected `src/commerce/agent-configuration/model-service.ts`: the legacy Catalogue create bridge now reads only the deterministic bootstrap Availability and contains no Availability mutation/repair path.
+- Independently inspected `tests/agent-configuration-model.test.ts`: the missing-bootstrap regression expects retryable `DATABASE_UNAVAILABLE`, confirms the Availability remains absent, and confirms no Catalogue or audit row is written.
+- Independently inspected `tests/agent-configuration-model-postgres.test.ts`: the deterministic Platform Availability is seeded explicitly in test fixture setup before legacy Catalogue creation.
+- Re-checked production `src/` for `commerceModelAvailability.create/upsert/update/delete` operations: none are present.
+- Re-checked Commerce dependency consumption: `@modainteract/moda-interact-shared` is exactly `1.1.0`, and the lockfile carries the accepted SHARED-002 integrity.
+- Reviewed submitted Attempt 2 evidence for the six-file focused Vitest set (**42 tests**), disposable PostgreSQL proof (**7 tests**) with owned-resource cleanup, targeted ESLint, typecheck, Prisma generation and `git diff --check`; all are recorded PASS.
+- The uploaded archive contains no installed `node_modules` and no usable Git metadata, so the dependency-backed Vitest/PostgreSQL/Prisma/ESLint/typecheck commands and remote branch heads were not independently re-executed/queried in this review environment.
 
 ### Architecture Conformance
 
-Pending implementation.
+Conforms. Attempt 2 restores the migration-owned Platform Availability boundary without weakening the already-conformant ARCH-024 model-resolution design. Commerce reads but does not author/recreate the bootstrap Availability; legacy Catalogue creation remains bounded to that deterministic Platform row; Platform/Shop write selection continues through the canonical availability gate; current Price Plan resolution remains trusted and pending-plan independent; explicit invalid Shop/Price-Plan selections remain fail-closed; effective resolution retains one repeatable-read snapshot; and no credential/OpenRouter runtime dependency enters this task.
 
 ### Follow-up
 
-Pending implementation.
+`ARCH-024-COMMERCE-002` is **Complete / Accepted at Attempt 2**.
+
+Dependency reconciliation promotes exactly:
+
+```text
+ARCH-024-COMMERCE-005 -> Ready
+```
+
+`ARCH-024-COMMERCE-003` remains Pending because its ownership-migration dependency `ARCH-024-ADMIN-002` is not Complete in this isolated parent snapshot. No follow-on implementation is started implicitly by this review.
+
+This isolated COMMERCE-002 parent snapshot has not incorporated the separately accepted ADMIN-001 reconciliation from its sibling parent task branch. This acceptance patch does not replay another task's Completion Report or Architect Review. During later parent-branch integration, preserve ADMIN-001 as Complete and ADMIN-002 as Ready rather than regressing that accepted state.
