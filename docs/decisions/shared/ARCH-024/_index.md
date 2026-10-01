@@ -31,14 +31,17 @@ Publication-only gate
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
 | [SHARED-001](SHARED-001-implement-model-contracts-openrouter-runtime.md) | Implement the complete unpublished Shared ARCH-024 Commerce runtime: model contracts/OpenRouter client, modular LangGraph runner, deterministic guardrails and canonical structured logging | Complete | DATABASE-001 |
-| [SHARED-002](SHARED-002-publish-arch024-shared-runtime.md) | Publish the exact architect-accepted SHARED-001 implementation as one backward-compatible Shared package release | Ready | SHARED-001 |
+| [SHARED-002](SHARED-002-publish-arch024-shared-runtime.md) | Publish the exact architect-accepted SHARED-001 implementation as one backward-compatible Shared package release | Complete | SHARED-001 |
 
 ## Current frontier
 
 ```text
 ARCH-024-DATABASE-001 -> Complete
 ARCH-024-SHARED-001   -> Complete
-ARCH-024-SHARED-002   -> Ready
+ARCH-024-SHARED-002   -> Complete
+
+Published revision: @modainteract/moda-interact-shared@1.1.0
+No Shared task remains Ready.
 ```
 
 ## Boundary
@@ -47,4 +50,4 @@ SHARED-001 is the only ARCH-024 Shared implementation task. It is intentionally 
 
 SHARED-002 is publication-only. It MUST NOT change implementation source or rerun implementation validation solely to re-prove SHARED-001.
 
-All Admin, Commerce and Background consumers use the exact version published by SHARED-002. No consumer may depend on unpublished Shared task-branch source.
+All Admin, Commerce and Background consumers use exactly `@modainteract/moda-interact-shared@1.1.0`, the architect-accepted SHARED-002 publication. No consumer may depend on unpublished Shared task-branch source.
