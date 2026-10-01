@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
-executor: copilot
-claimed_at: 2026-10-01T18:33:40Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-DATABASE-001
@@ -1058,6 +1058,7 @@ Ready for Architect Review
 - `tests/agent-configuration-model-availability.test.ts` (new), `agent-configuration-effective.test.ts`, `agent-configuration-reduced.test.ts`, `agent-configuration-model.test.ts`: focused behavior and regression coverage.
 - `tests/agent-configuration-model-postgres.test.ts`: real Prisma proof for Availability, exact scopes, precedence, pending/current plans, durable invalid pointers, and credential independence.
 - `scripts/run-arch024-model-resolution-disposable.mjs` (new): isolated, labeled, loopback-only PostgreSQL provisioning and verified cleanup.
+- Attempt 2 A1-R1 changes: `src/commerce/agent-configuration/model-service.ts`, `tests/agent-configuration-model.test.ts`, and `tests/agent-configuration-model-postgres.test.ts`.
 
 ### Work Completed
 
@@ -1069,6 +1070,12 @@ Ready for Architect Review
 - Added effective selection and Availability provenance, authorized Platform/Shop model-read service methods, and their Server Actions.
 - Added the temporary deterministic Platform Availability catalogue-create bridge using canonical Shared provider/configuration contracts.
 - Added a task-owned PostgreSQL runner using `postgres:16.4-alpine`, unique ownership labels, a dedicated network, ephemeral loopback publishing, tmpfs storage, redaction, and cleanup verification.
+- A1-R1 correction: legacy `createCatalogueEntry(...)` now reads only the migration-owned `arch024-platform-model-availability`, validates the complete row with the published Shared schema and requires `PLATFORM` scope with null `shopId`. Missing or invalid bootstrap availability fails through the bounded retryable `DATABASE_UNAVAILABLE` result and cannot be recreated by production Commerce code. Added a unit regression asserting the row remains absent and no Catalogue/audit write occurs; the real-PostgreSQL fixture now seeds the migration-owned Availability explicitly after schema setup, as test-only fixture state.
+- Attempt 2 implementation commit `f7cf6deb0e108bc5d70a055db6283441503d7dc7` (`fix(commerce): preserve migration-owned availability`) was pushed to `origin/task/ARCH-024-COMMERCE-002`.
+- Attempt 2 launcher evidence: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-002`, branch `task/ARCH-024-COMMERCE-002`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-002`, branch `task/ARCH-024-COMMERCE-002`. Both canonical task worktrees were reused; the shared workspace and implementation source checkouts were not switched or mutated for task work, and no other task worktree was reused.
+- Attempt 2 start synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` incorporation `yes`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` incorporation `already-current`.
+- Attempt 2 launcher claim: Attempt 2, executor `copilot`, claimed at `2026-10-01T18:33:40Z`; durable parent claim commit `3334f66aa1684b612b1ce0b3291e3bc9ff44d783` was pushed. Dependency gate passed for `ARCH-024-DATABASE-001` and `ARCH-024-SHARED-002`, both `complete`.
+- Attempt 2 recursive submodules: `git submodule sync --recursive` and `git submodule update --init --recursive` passed; recursive status `ready`; accepted `database/` commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd` initialized.
 
 ### Validation Results
 
@@ -1080,6 +1087,11 @@ Ready for Architect Review
 - `npm run typecheck`: PASS.
 - VS Code diagnostics for changed model service and Availability test: no errors.
 - `git diff --check`: PASS.
+- Attempt 2: `npx vitest run tests/agent-configuration-model.test.ts`: PASS, 6 tests, including missing-bootstrap non-recreation and bounded failure.
+- Attempt 2 focused ARCH-024 Vitest set plus `tests/agent-configuration-model.test.ts`: PASS, 6 files / 42 tests.
+- Attempt 2 `npm run test:arch024-model-resolution:postgres`: PASS, all 7 PostgreSQL tests; disposable runner verified no task-owned containers or networks remained.
+- Attempt 2 targeted ESLint and `npm run typecheck`: PASS. `npx prisma generate --schema database/prisma/schema.prisma`: PASS. `git diff --check`: PASS.
+- A1-R1 review: production legacy create path contains no Availability create/upsert/repair; only the PostgreSQL fixture seeds the deterministic row. No OpenRouter or live provider call was made.
 
 ### Deviations
 
