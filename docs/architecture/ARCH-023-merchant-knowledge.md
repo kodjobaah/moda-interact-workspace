@@ -11,12 +11,12 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003`, `ARCH-023-COMMERCE-004`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-004`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003`, `ARCH-023-COMMERCE-004`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 Historical execution state after runtime-lease prerequisites completed and before BACKGROUND-004 Attempt 2:
 The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
-Current execution frontier (2026-10-01) supersedes the historical Attempt 1 note above: BACKGROUND-004 Attempt 2 completed the final entrypoint and is functionally conformant, but Architect Review returned Changes Requested for missing mandatory worktree/synchronization evidence. `ARCH-023-BACKGROUND-004` is Ready with Attempt 2 preserved so its next launcher claim becomes Attempt 3; no implementation-source change is requested unless refreshed validation exposes a regression. `BACKGROUND-005` remains Pending on BACKGROUND-004.
+Current execution frontier (2026-10-01) supersedes the historical Attempt 1 note above: `ARCH-023-BACKGROUND-004` is Complete / Accepted Attempt 3. Its evidence-only Attempt 3 preserved implementation head `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1` and closed the mandatory worktree/synchronization evidence gap. `ARCH-023-BACKGROUND-005` is now Ready and is the next Background implementation task.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3353,6 +3353,12 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — BACKGROUND-004 Attempt 3 accepted
+
+- Accepted the complete BACKGROUND-004 outcome at Attempt 3. Attempt 3 was evidence-only: implementation remained at `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1`, and the Completion Report now records all mandatory physical-isolation, synchronization, recursive-submodule and submitted-head evidence.
+- The bounded 18-test entrypoint/isolation/worker suite, production build, changed-file diagnostics and `git diff --check` passed. The previously accepted live readiness evidence and non-clean repository-wide suite inventory did not require rerun solely to manufacture evidence.
+- Promoted `ARCH-023-BACKGROUND-005` from Pending to Ready. No downstream task is started implicitly; Gateway remains gated on BACKGROUND-005 completion.
 
 ### 2026-10-01 — BACKGROUND-004 Attempt 2 changes requested (evidence-only)
 

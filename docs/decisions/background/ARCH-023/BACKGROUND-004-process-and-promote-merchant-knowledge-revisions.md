@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 32
 executor: null
 claimed_at: null
@@ -862,3 +862,20 @@ Evidence-only correction completed as requested by the Attempt 2 Architect Revie
 
 ### Deviations and Unresolved Issues
 None. No implementation changes or downstream BACKGROUND-005 work were started.
+
+## Architect Review — Attempt 3
+
+### Review Status
+Accepted — Attempt 3
+
+### Review Notes
+Attempt 3 closes the evidence-only correction contract from the Attempt 2 Architect Review without changing implementation or test sources. The Completion Report now records all three mandatory physical-worktree isolation attestations, all four start-of-attempt synchronization outcomes in the required form, successful recursive submodule preparation, the exact accepted DATABASE-005 gitlink `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`, and the previously submitted implementation/report heads.
+
+The implementation remains at `4f2b4fffafa9b9b5bd802d9e9014d30635ff52e1`. The bounded Attempt 3 validation passed: 18 focused tests across the dedicated entrypoint/isolation/worker suites, `npm run build`, changed-file diagnostics and `git diff --check`. The repository-wide suite and live readiness CLI were not required to be rerun for this evidence-only correction because the Attempt 2 review explicitly accepted the previously recorded runtime-readiness proof and found no implementation defect.
+
+The complete BACKGROUND-004 outcome is accepted: activation-aware entitlement guards, normalization/truncation, deterministic chunking, embedding validation, pgvector persistence and generation-safe promotion, retry/terminal-failure handling, and the dedicated Merchant Knowledge entrypoint with the accepted 60-second PENDING reconciliation and 3600-second upload-cleanup leased schedules.
+
+`ARCH-023-BACKGROUND-004` is therefore Complete / Accepted at Attempt 3. `ARCH-023-BACKGROUND-005` is promoted from Pending to Ready; it is not started implicitly.
+
+### Architecture Conformance
+Conforms. No implementation-source correction or further BACKGROUND-004 validation is required.
