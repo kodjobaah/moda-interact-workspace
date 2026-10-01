@@ -9,10 +9,8 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 70
-executor: copilot
-claimed_at: 2026-10-01T12:17:15Z
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-005
@@ -868,35 +866,37 @@ The Gateway repository does not currently contain a Cloudflare provisioning tool
 
 ### Status
 
-Not Started
+Blocked pending the Background-owned Merchant Knowledge observability bootstrap required by R17.
 
 ### Files Changed
 
-None.
+No Gateway implementation files changed. This task stopped before deployment wiring.
 
 ### Work Completed
 
-None.
+Inspected the accepted worker start contract and confirmed that `moda-interact-background/package.json` starts the Merchant Knowledge worker with `node dist/entrypoints/merchant-knowledge.js`. The entrypoint does not initialize observability; it only imports the shutdown helper. Existing Background worker start commands preload worker-specific `observability/*.mjs` modules, but no `observability/merchant-knowledge.mjs` exists.
+
+This violates R17, which requires stopping and reporting the missing Background capability rather than editing Background from Gateway. `moda_architect` confirmed the gap and recommended a focused Background corrective task. Gateway remains blocked until that correction is accepted and the dependency is reconciled by the architect.
 
 ### Validation Results
 
-None.
+No Blueprint or deployment validation was run because R17 blocks implementation. The required deployed-origin R2 CORS/presigned-PUT check and `bash tests/run-tests.sh` remain developer-owned validations after implementation; neither was run.
 
 ### Deviations
 
-None.
+Stopped before all Gateway work items by design, as required by R17. No Blueprint, validator, or deployment documentation files were modified.
 
 ### Assumptions
 
-None.
+The Gateway task must remain blocked until the Background worker initializes the repository's normal observability bootstrap.
 
 ### Unresolved Issues
 
-None.
+Background must provide and validate normal observability initialization for `moda-merchant-knowledge-worker` before Gateway deployment topology can be safely wired.
 
 ### Architectural Concerns
 
-None.
+The declared worker readiness/start contract currently omits the observability preload used by sibling Background workers. `moda_architect` should create or assign the Background corrective task and reconcile Gateway's dependency/status after acceptance.
 
 ## Architect Review
 
