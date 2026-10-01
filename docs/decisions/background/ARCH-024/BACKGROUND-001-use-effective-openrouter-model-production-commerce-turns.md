@@ -1180,7 +1180,8 @@ Task packet worktree: only this task definition's status and Completion Report w
 - Recursive implementation submodules: `git submodule sync --recursive` and `git submodule update --init --recursive` passed; `database` initialized at accepted commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 - Exact Shared dependency: `@modainteract/moda-interact-shared@1.1.0`; implementation lockfile and generated Prisma client validated.
 - Implementation commit: `9304da2599800c63b2b649dd7a414286859faeac` (`feat(background): resolve production CommerceAgent models`). It is unchanged in Attempt 2 and was verified equal to `origin/task/ARCH-024-BACKGROUND-001` after push.
-- Attempt 2 parent claim commit: `6058b35e5e33330b351fcc6b0c2c97420e208971` (launcher-created, committed and pushed). The report reconciliation commit and final remote-head equality are recorded by the task branch history after this report update.
+- Attempt 2 parent claim commit: `6058b35e5e33330b351fcc6b0c2c97420e208971` (launcher-created, committed and pushed).
+- Attempt 2 Completion Report/checklist reconciliation commit: `8526b2ff` (`docs(task): reconcile BACKGROUND-001 review evidence`). A following report-evidence addendum records this identity; final parent remote-head equality is verified after push.
 - Before Attempt 2 report reconciliation, both worktrees were clean. Final cleanliness and remote equality are verified after commit/push.
 
 ### Work Completed
