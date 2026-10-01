@@ -27,13 +27,13 @@ local graph wrapper
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-use-effective-openrouter-model-production-commerce-turns.md) | Replace conversational Groq model path with parent-architecture `SHOP -> current PRICING_PLAN -> PLATFORM` resolution + current OpenRouter credential + published Shared model/LangGraph runner; inject canonical logger; retain hardened MCP client | Pending | DATABASE-001, SHARED-002 |
+| [BACKGROUND-001](BACKGROUND-001-use-effective-openrouter-model-production-commerce-turns.md) | Replace conversational Groq model path with parent-architecture `SHOP -> current PRICING_PLAN -> PLATFORM` resolution + current OpenRouter credential + published Shared model/LangGraph runner; inject canonical logger; retain hardened MCP client | Ready | DATABASE-001, SHARED-002 |
 | [BACKGROUND-002](BACKGROUND-002-retire-redundant-commerce-agent-langgraph-wrapper.md) | Delete the unused one-node Background LangGraph wrapper and direct dependency while preserving the official MCP SDK client | Pending | BACKGROUND-001 |
 
 ## Execution frontier
 
-Ready: none.
+Ready: `ARCH-024-BACKGROUND-001`.
 
-Background does not wait for Commerce or Admin application implementation. It consumes the accepted Database schema plus published Shared runtime/contracts, implements the parent architecture's model-precedence policy locally, and uses the Shared-owned OpenRouter credential AAD contract.
+BACKGROUND-001 consumes the accepted Database schema plus exactly `@modainteract/moda-interact-shared@1.1.0`, implements the parent architecture's model-precedence policy locally, and uses the Shared-owned OpenRouter credential AAD contract. BACKGROUND-002 remains Pending until BACKGROUND-001 is Complete.
 
 Production conversation ordering, admission, leases, history and stale-turn semantics remain Background-owned. The hardened `CommerceMcpClient` over official `@modelcontextprotocol/sdk` is retained; `@langchain/mcp-adapters` is not adopted.

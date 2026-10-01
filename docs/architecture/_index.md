@@ -998,12 +998,13 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
-Agreed architecture. Current task state after DATABASE-001, COMMERCE-001 and SHARED-001 acceptance:
-**Complete 3, Ready 2, Pending 12**. Current frontier: `SHARED-002` and `COMMERCE-004`.
-Model Catalogue/Availability/OpenRouter credential administration is Admin-owned; Commerce
-Studio selects one effective active model and composes Test Conversations from selected
-Features; Background adopts the same OpenRouter runtime for production CommerceAgent turns.
-No Shopify task is required.
+Agreed architecture. Current task state after DATABASE-001, COMMERCE-001, COMMERCE-004,
+SHARED-001 and SHARED-002 acceptance: **Complete 5, Ready 4, Pending 8**. Current frontier:
+`ADMIN-001`, `ADMIN-004`, `COMMERCE-002`, `BACKGROUND-001`. The canonical published Shared
+revision is `@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter
+credential administration is Admin-owned; Commerce Studio selects one effective active model
+and composes Test Conversations from selected Features; Background adopts the same OpenRouter
+runtime for production CommerceAgent turns. No Shopify task is required.
 
 ARCH-021 COMMERCE-105..109, GATEWAY-002 and SYSTEM-TEST-004 are superseded. ARCH-023
 remains frozen and is consumed as an external instruction dependency. ARCH-024 terminal

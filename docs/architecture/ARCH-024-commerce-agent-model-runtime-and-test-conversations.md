@@ -16,12 +16,17 @@ Agreed.
 ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Preview/Test Conversation work. It keeps accepted ARCH-021 Studio authoring foundations, consumes frozen ARCH-023 Platform/Shop Instruction semantics, and replaces the unstarted ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 plan with a broader Admin-owned model catalogue, scoped availability, database-backed OpenRouter credentials, LangChain/OpenRouter model integration, a modular Shared LangGraph Commerce-turn runtime with canonical structured logging, production Background parity and Feature-composed selected-shop Test Conversations.
 
 ARCH-024 implementation is underway. `ARCH-024-DATABASE-001` is Complete / Accepted at
-Attempt 1, `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2, and
-`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2. The current Ready frontier is:
+Attempt 1, `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2,
+`ARCH-024-COMMERCE-004` is Complete / Accepted at Attempt 1,
+`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2, and the publication-only
+`ARCH-024-SHARED-002` is Complete / Accepted at Attempt 1 with canonical release
+`@modainteract/moda-interact-shared@1.1.0`. The current Ready frontier is:
 
 ```text
-ARCH-024-SHARED-002
-ARCH-024-COMMERCE-004
+ARCH-024-ADMIN-001
+ARCH-024-ADMIN-004
+ARCH-024-COMMERCE-002
+ARCH-024-BACKGROUND-001
 ```
 
 All other ARCH-024 tasks remain Pending behind their declared dependencies.
@@ -1046,25 +1051,24 @@ Logging is best-effort and cannot change a Commerce turn result, retry, Tool inv
 
 ARCH-024 implementation order is dependency-driven rather than a single serial chain.
 
-Current Ready frontier after DATABASE-001, COMMERCE-001 and COMMERCE-004 acceptance:
+Current Ready frontier after SHARED-002 publication acceptance:
 
 ```text
-ARCH-024-SHARED-001
-Current Ready frontier after DATABASE-001, COMMERCE-001 and SHARED-001 acceptance:
-
-```text
-ARCH-024-SHARED-002
-ARCH-024-COMMERCE-004
+ARCH-024-ADMIN-001
+ARCH-024-ADMIN-004
+ARCH-024-COMMERCE-002
+ARCH-024-BACKGROUND-001
 ```
 
-COMMERCE-004 is Complete. Its acceptance does not yet promote COMMERCE-005 because COMMERCE-002 remains incomplete.
+COMMERCE-004 is already Complete. COMMERCE-005 remains Pending until COMMERCE-002 is also Complete.
 
 Shared publication sequence:
 
 ```text
 DATABASE-001
     -> SHARED-001 complete model/OpenRouter + modular LangGraph + structured-logging implementation
-    -> SHARED-002 publication-only gate for the accepted combined package
+    -> SHARED-002 publication-only gate
+    -> @modainteract/moda-interact-shared@1.1.0 (accepted canonical consumer revision)
 ```
 
 Consumer progression:
@@ -1110,19 +1114,19 @@ Individual task YAML is authoritative.
 |---|---|---|---|
 | `ARCH-024-DATABASE-001` | `moda_database` | Complete | - |
 | `ARCH-024-SHARED-001` | `moda_shared` | Complete | DATABASE-001 |
-| `ARCH-024-SHARED-002` | `moda_shared` | Ready | SHARED-001 |
-| `ARCH-024-ADMIN-001` | `moda_admin` | Pending | DATABASE-001, SHARED-002 |
+| `ARCH-024-SHARED-002` | `moda_shared` | Complete | SHARED-001 |
+| `ARCH-024-ADMIN-001` | `moda_admin` | Ready | DATABASE-001, SHARED-002 |
 | `ARCH-024-ADMIN-002` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-001 |
 | `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
-| `ARCH-024-ADMIN-004` | `moda_admin` | Pending | DATABASE-001, SHARED-002 |
+| `ARCH-024-ADMIN-004` | `moda_admin` | Ready | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
-| `ARCH-024-COMMERCE-002` | `moda_commerce` | Pending | DATABASE-001, SHARED-002 |
+| `ARCH-024-COMMERCE-002` | `moda_commerce` | Ready | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
 | `ARCH-024-COMMERCE-004` | `moda_commerce` | Complete | COMMERCE-001 |
 | `ARCH-024-COMMERCE-005` | `moda_commerce` | Pending | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |
 | `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-002 |
-| `ARCH-024-BACKGROUND-001` | `moda_background` | Pending | DATABASE-001, SHARED-002 |
+| `ARCH-024-BACKGROUND-001` | `moda_background` | Ready | DATABASE-001, SHARED-002 |
 | `ARCH-024-BACKGROUND-002` | `moda_background` | Pending | BACKGROUND-001 |
 | `ARCH-024-GATEWAY-001` | `moda_gateway` | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
 
@@ -1198,6 +1202,7 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 
 ## Change History
 
+- **2026-10-01 — SHARED-002 accepted at Attempt 1:** publication-only validation confirms the architect-accepted SHARED-001 source was released without implementation drift as exactly `@modainteract/moda-interact-shared@1.1.0`; package/lock changes are version metadata only, registry identity and integrity are recorded, and a clean external exact-version consumer imported the required model/model-node/runner/logging entrypoints. `ARCH-024-ADMIN-001`, `ARCH-024-ADMIN-004`, `ARCH-024-COMMERCE-002` and `ARCH-024-BACKGROUND-001` are promoted Ready; no consumer is claimed or started by this acceptance.
 - **2026-10-01 — COMMERCE-004 accepted at Attempt 1:** selected ordered Feature IDs now resolve server-side to every direct Capability, current published Tool revision and one Feature Behaviour per selected Feature; the Preview adapter builds the deterministic synthetic manifest identity and freezes the exact composition fragment for the conversation. Retained saved Release/Draft lookups remain available for non-conversation Tool-test consumers. `ARCH-024-COMMERCE-005` remains Pending because `ARCH-024-COMMERCE-002` is not yet Complete.
 - **2026-10-01 — SHARED-001 accepted at Attempt 2:** the bounded correction closes the Attempt 1 runner-to-OpenRouter schema mismatch by making synthetic denied/revoked Tool rows canonical `commerce.v1` `CommerceToolResult` errors while retaining strict adapter validation. The new offline runner-plus-adapter regression proves hostile runtime data cannot authorize an ungranted Tool and that the denial path reaches the required `REFER_TO_STORE` outcome. SHARED-001 is Complete and the publication-only `ARCH-024-SHARED-002` gate is promoted Ready; no package publication or consumer task is started by this review.
 
