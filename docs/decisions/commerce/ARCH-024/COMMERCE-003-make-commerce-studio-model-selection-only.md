@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-10-01T21:18:00Z
@@ -597,21 +597,21 @@ This is a Studio ownership/selection task only.
 
 ## Work Items
 
-- [ ] Replace Platform global-catalogue loading with `listPlatformAvailableModels()` + `getPlatformAgentConfiguration()`.
-- [ ] Remove Platform Model Catalogue create/edit/enable/disable UI.
-- [ ] Implement valid, unavailable and empty Platform selection states exactly as specified.
-- [ ] Replace Shop global-catalogue loading with `listEffectiveAvailableModels(shopId)`.
-- [ ] Render deterministic Platform/Shop availability provenance in Shop options.
-- [ ] Render the COMMERCE-002 inherited winner and `PRICING_PLAN | PLATFORM` provenance whenever Shop `modelId = NULL`; do not add separate inheritance controls.
-- [ ] Implement broken explicit Shop selection recovery without auto-clear.
-- [ ] Remove Commerce Studio global Catalogue Server Actions and mutation contracts.
-- [ ] Remove now-dead Catalogue service methods/compatibility aliases after reference audit.
-- [ ] Preserve authoritative COMMERCE-002 write-time availability validation.
-- [ ] Preserve single-flight/CAS/UNCONFIRMED/reconciliation semantics.
-- [ ] Update top-level Agent Configuration wording to selection-only ownership.
-- [ ] Remove only now-unused Catalogue UI styles/components.
-- [ ] Update focused Platform/Shop/server-action tests to the R17 matrix.
-- [ ] Run required Validation and record exact results.
+- [x] Replace Platform global-catalogue loading with `listPlatformAvailableModels()` + `getPlatformAgentConfiguration()`.
+- [x] Remove Platform Model Catalogue create/edit/enable/disable UI.
+- [x] Implement valid, unavailable and empty Platform selection states exactly as specified.
+- [x] Replace Shop global-catalogue loading with `listEffectiveAvailableModels(shopId)`.
+- [x] Render deterministic Platform/Shop availability provenance in Shop options.
+- [x] Render the COMMERCE-002 inherited winner and `PRICING_PLAN | PLATFORM` provenance whenever Shop `modelId = NULL`; do not add separate inheritance controls.
+- [x] Implement broken explicit Shop selection recovery without auto-clear.
+- [x] Remove Commerce Studio global Catalogue Server Actions and mutation contracts.
+- [x] Remove now-dead Catalogue service methods/compatibility aliases after reference audit.
+- [x] Preserve authoritative COMMERCE-002 write-time availability validation.
+- [x] Preserve single-flight/CAS/UNCONFIRMED reconciliation semantics.
+- [x] Update top-level Agent Configuration wording to selection-only ownership.
+- [x] Remove only now-unused Catalogue UI styles/components.
+- [x] Update focused Platform/Shop/server-action tests to the R17 matrix.
+- [x] Run required Validation and record exact results.
 
 ## Interfaces / Contracts
 
@@ -702,24 +702,24 @@ None directly. COMMERCE-004 is independently gated by COMMERCE-001; Test Convers
 
 ## Acceptance Criteria
 
-- [ ] Commerce Studio contains no Model Catalogue create/edit/enable/disable UI.
-- [ ] Commerce Studio contains no Availability or OpenRouter credential administration UI.
-- [ ] Commerce Studio has no global `listModelCatalogue()` read boundary.
-- [ ] Catalogue mutation Server Actions/types/service methods used only by Commerce Studio are removed.
-- [ ] Platform selector receives only Platform-available models from COMMERCE-002.
-- [ ] Shop selector receives only Platform + exact-Shop available models from COMMERCE-002.
-- [ ] Platform Agent Configuration selects one Platform-available model using current CAS state.
-- [ ] Shop Agent Configuration selects one explicit effective model or clears to `modelId = NULL`; null renders the deterministic Price Plan -> Platform inherited winner from COMMERCE-002.
-- [ ] Platform and Shop invalid durable selections remain visible, fail closed, and are repairable without automatic clearing.
-- [ ] Shop dropdown distinguishes Platform vs Shop Availability provenance, while inherited status separately distinguishes `PRICING_PLAN` vs `PLATFORM` selection provenance.
-- [ ] Distinct Catalogue Entry IDs are never deduplicated by provider/model identity.
-- [ ] Forged/stale model IDs remain rejected server-side through `assertModelSelectable(...)`.
-- [ ] Existing `ADMIN` read-only / `SUPER_ADMIN` mutation authorization remains intact.
-- [ ] Existing single-flight, CAS and UNKNOWN-operation reconciliation semantics remain intact.
-- [ ] ARCH-023 Prompt/Instruction UI and semantics are unchanged.
-- [ ] No OpenRouter credential/runtime code is introduced.
-- [ ] Focused UI/server-action regressions pass.
-- [ ] Targeted lint/typecheck and `git diff --check` pass.
+- [x] Commerce Studio contains no Model Catalogue create/edit/enable/disable UI.
+- [x] Commerce Studio contains no Availability or OpenRouter credential administration UI.
+- [x] Commerce Studio has no global `listModelCatalogue()` read boundary.
+- [x] Catalogue mutation Server Actions/types/service methods used only by Commerce Studio are removed.
+- [x] Platform selector receives only Platform-available models from COMMERCE-002.
+- [x] Shop selector receives only Platform + exact-Shop available models from COMMERCE-002.
+- [x] Platform Agent Configuration selects one Platform-available model using current CAS state.
+- [x] Shop Agent Configuration selects one explicit effective model or clears to `modelId = NULL`; null renders the deterministic Price Plan -> Platform inherited winner from COMMERCE-002.
+- [x] Platform and Shop invalid durable selections remain visible, fail closed, and are repairable without automatic clearing.
+- [x] Shop dropdown distinguishes Platform vs Shop Availability provenance, while inherited status separately distinguishes `PRICING_PLAN` vs `PLATFORM` selection provenance.
+- [x] Distinct Catalogue Entry IDs are never deduplicated by provider/model identity.
+- [x] Forged/stale model IDs remain rejected server-side through `assertModelSelectable(...)`.
+- [x] Existing `ADMIN` read-only / `SUPER_ADMIN` mutation authorization remains intact.
+- [x] Existing single-flight, CAS and UNKNOWN-operation reconciliation semantics remain intact.
+- [x] ARCH-023 Prompt/Instruction UI and semantics are unchanged.
+- [x] No OpenRouter credential/runtime code is introduced.
+- [x] Focused UI/server-action regressions pass.
+- [x] Targeted lint/typecheck and `git diff --check` pass.
 
 ## Validation
 
@@ -831,27 +831,56 @@ The same distinction applies to a broken Platform selected model versus no Platf
 
 ### Status
 
-Not Started
+Ready for Architect Review (Attempt 1)
 
 ### Files Changed
 
-None
+`moda-interact-commerce`:
+
+- `app/styles.css`
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/studio/agent-configuration/agent-configuration-screen.tsx`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `src/studio/agent-configuration/platform-model-configuration.tsx`
+- `src/studio/agent-configuration/shop-agent-configuration.tsx`
+- `tests/agent-configuration-model-postgres.test.ts`
+- `tests/agent-configuration-model-ui.test.tsx`
+- `tests/agent-configuration-model.test.ts`
+- `tests/agent-configuration-production.test.tsx`
+- `tests/agent-configuration-server-actions.test.ts`
+- `tests/agent-configuration-shop-ui.test.tsx`
 
 ### Work Completed
 
-None
+Removed Commerce Studio's global Catalogue read, Catalogue create/update/enable Server Actions, their mutation contracts, and service/port methods that existed only for Catalogue administration. Platform configuration now loads only Platform-available models plus durable Agent Configuration state; Catalogue authoring UI and its unused styles are removed. The selector displays dynamic `provider/providerModelId` identity, preserves and warns on unavailable durable IDs, and exposes explicit empty-availability state.
+
+Shop configuration now loads effective Shop-available models for the exact validated Shop ID and renders Platform/Shop availability provenance without deduplicating distinct Catalogue Entry IDs. Clearing the override preserves the COMMERCE-002 inherited Price Plan-then-Platform result and displays its `PRICING_PLAN` or `PLATFORM` provenance; broken explicit selections remain durable and repairable. Selection mutations continue through COMMERCE-002 validation with current edit versions and existing single-flight/UNCONFIRMED reconciliation behaviour. Agent Configuration copy now describes Admin-owned availability/catalogue and the inherited selection rule. Prompt/Instruction semantics, schema, Shared package version, and provider/runtime integrations were not changed.
+
+Implementation commit `6a7e863` (`feat(commerce): make model studio selection-only`) is pushed to `origin/task/ARCH-024-COMMERCE-003`.
 
 ### Validation Results
 
-Not run.
+Passed from the dedicated Commerce implementation worktree:
+
+- Required focused Vitest matrix: 4 files passed, 26 tests passed (`agent-configuration-model-ui`, `agent-configuration-shop-ui`, `agent-configuration-server-actions`, `agent-configuration-production`).
+- Supplemental model-service regression: 1 file passed, 6 tests passed (`agent-configuration-model.test.ts`).
+- Required targeted ESLint command: passed.
+- `npm run typecheck` (`next typegen && tsc --noEmit`): passed.
+- `git diff --check`: passed.
+- Required bounded `rg` source audit over `src app`: no references to removed Catalogue operations/types.
+
+The modified PostgreSQL proof test `tests/agent-configuration-model-postgres.test.ts` was not run because it requires an explicitly configured disposable `COMMERCE_TEST_DATABASE_URL`; the task's required Validation minimum does not require that database-backed test. The four-file UI/server-action matrix, service unit test, lint, and typecheck passed.
+
+Launcher evidence for Attempt 1: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-003`, branch `task/ARCH-024-COMMERCE-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-003`, branch `task/ARCH-024-COMMERCE-003`. Shared workspace and shared implementation checkouts were not switched or mutated; no other task worktree was reused. Parent and implementation remote task branches were fast-forwarded `not-needed`; `origin/main` was `already-current` in both. Dependency gate passed for COMMERCE-002 and ADMIN-002. `git submodule sync --recursive` and `git submodule update --init --recursive` passed; nested Database was initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. Durable parent claim commit `792ad2c2108d782090db3a27fcea808538bc5dc1` was pushed. Implementation commit `6a7e863` was pushed to its task branch.
 
 ### Deviations
 
-None
+No scope deviations. PostgreSQL-backed proof was not run because its required explicit disposable database URL was unavailable; this was not part of the task's required minimum validation.
 
 ### Assumptions
 
-None
+Used the architect-accepted COMMERCE-002 effective model result as the authoritative source for inherited model identity and provenance; no local Price Plan/Platform resolution logic was added.
 
 ### Unresolved Issues
 
