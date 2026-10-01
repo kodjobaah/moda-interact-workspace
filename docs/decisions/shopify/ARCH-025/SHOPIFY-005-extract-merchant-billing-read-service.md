@@ -229,9 +229,9 @@ Implementation repository:
 
 Parent workspace:
 - Task file: `docs/decisions/shopify/ARCH-025/SHOPIFY-005-extract-merchant-billing-read-service.md`
-- Report commit: to be recorded after task-file commit.
+- Report commit: `0343aa445bd2faf06d896544f42cc7443376c897`
 - Remote branch: `origin/task/ARCH-025-SHOPIFY-005`
-- Pushed: pending
+- Pushed: yes
 - Submodule gitlink staged: no
 
 Merged to implementation main: no
