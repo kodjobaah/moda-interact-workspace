@@ -26,12 +26,12 @@ Attempt 2, `ARCH-024-ADMIN-004` is Complete / Accepted at Attempt 1,
 `ARCH-024-BACKGROUND-001` / `ARCH-024-BACKGROUND-002` are Complete / Accepted at
 Attempt 2, `ARCH-024-ADMIN-002` is Complete / Accepted at Attempt 2 after
 closing its bounded R3 Server Action authorization correction, and
-`ARCH-024-ADMIN-003` is Complete / Accepted at Attempt 2 after its evidence-only
-prepared-launch reconciliation. After reconciling the accepted task branches, the
-current Ready frontier is:
+`ARCH-024-COMMERCE-003` is Complete / Accepted at Attempt 2 after closing the
+Platform non-selectable-placeholder correction. After reconciling the accepted
+task branches, the current Ready frontier is:
 
 ```text
-ARCH-024-COMMERCE-003
+ARCH-024-ADMIN-003
 ARCH-024-COMMERCE-005
 ```
 
@@ -1067,6 +1067,12 @@ ARCH-024-COMMERCE-005
 
 ADMIN-001, ADMIN-002, ADMIN-003 and ADMIN-004 are Complete; no ARCH-024 Admin task remains Ready.
 COMMERCE-002 and ADMIN-002 are Complete, so the ownership-cutover COMMERCE-003 is Ready.
+ARCH-024-ADMIN-003
+ARCH-024-COMMERCE-005
+```
+
+ADMIN-001, ADMIN-002 and ADMIN-004 are Complete, so ADMIN-003 is Ready.
+COMMERCE-003 is Complete / Accepted at Attempt 2 after the selection-only ownership cutover.
 COMMERCE-002 and COMMERCE-004 are Complete, and ARCH-023-COMMERCE-003 satisfies
 the remaining prerequisite, so COMMERCE-005 remains Ready. BACKGROUND-001 and
 BACKGROUND-002 are Complete; no ARCH-024 Background task remains Ready.
@@ -1130,7 +1136,7 @@ Individual task YAML is authoritative.
 | `ARCH-024-ADMIN-004` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
 | `ARCH-024-COMMERCE-002` | `moda_commerce` | Complete | DATABASE-001, SHARED-002 |
-| `ARCH-024-COMMERCE-003` | `moda_commerce` | Ready | COMMERCE-002, ADMIN-002 |
+| `ARCH-024-COMMERCE-003` | `moda_commerce` | Complete | COMMERCE-002, ADMIN-002 |
 | `ARCH-024-COMMERCE-004` | `moda_commerce` | Complete | COMMERCE-001 |
 | `ARCH-024-COMMERCE-005` | `moda_commerce` | Ready | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |

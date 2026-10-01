@@ -50,7 +50,7 @@ ARCH-023-COMMERCE-003 ------------+
 |---|---|---|---|
 | [COMMERCE-001](COMMERCE-001-remove-redundant-human-preview-functionality.md) | Remove obsolete human-facing Tool/Release/Fixture Preview composition while retaining referenced internal runtime seams | Complete | - |
 | [COMMERCE-002](COMMERCE-002-resolve-effective-available-active-model.md) | Resolve effective Shop availability and exactly one model with fail-closed `SHOP -> current PRICING_PLAN -> PLATFORM` precedence | Complete | DATABASE-001, SHARED-002 |
-| [COMMERCE-003](COMMERCE-003-make-commerce-studio-model-selection-only.md) | Retire Catalogue administration from Studio; retain explicit Platform/Shop selection and surface inherited `PRICING_PLAN` vs `PLATFORM` provenance | Ready | COMMERCE-002, ADMIN-002 |
+| [COMMERCE-003](COMMERCE-003-make-commerce-studio-model-selection-only.md) | Retire Catalogue administration from Studio; retain explicit Platform/Shop selection and surface inherited `PRICING_PLAN` vs `PLATFORM` provenance | Complete | COMMERCE-002, ADMIN-002 |
 | [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Complete | COMMERCE-001 |
 | [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create the complete authored Conversation Configuration Snapshot | Ready | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | [COMMERCE-006](COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md) | Execute exact snapshot Tool revisions through production execution against the real selected Shop | Pending | COMMERCE-005 |
@@ -59,7 +59,6 @@ ARCH-023-COMMERCE-003 ------------+
 ## Execution frontier
 
 ```text
-ARCH-024-COMMERCE-003 -> Ready
 ARCH-024-COMMERCE-005 -> Ready
 ```
 
@@ -67,7 +66,7 @@ COMMERCE-002 is Complete / Accepted at Attempt 2 and consumes the accepted Datab
 
 COMMERCE-005 is now Ready because COMMERCE-002, COMMERCE-004 and frozen `ARCH-023-COMMERCE-003` are all Complete. Studio model-selection UI does not gate Feature composition.
 
-COMMERCE-003 is now Ready because COMMERCE-002 and the Admin-owned replacement control plane in ADMIN-002 are both Complete. Its cross-application dependency is an ownership-migration dependency, not a source-code dependency.
+COMMERCE-003 is Complete / Accepted at Attempt 2. Commerce Studio is selection-only for models and no longer owns Catalogue administration. The task has no dependent ARCH-024 task to promote.
 
 COMMERCE-005 intentionally joins C002 effective model resolution, C004 Feature composition and frozen `ARCH-023-COMMERCE-003` Platform + optional Shop Instructions to create the complete authored snapshot.
 
