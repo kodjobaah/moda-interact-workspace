@@ -9,10 +9,8 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 64
-executor: copilot
-claimed_at: 2026-10-01T11:39:18Z
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-005
@@ -155,11 +153,11 @@ Clean up task-owned test rows and the disposable database/container afterward. D
 
 ## Work Items
 
-- [ ] Extend `BackgroundRuntimeLeaseName` with the exact entitlement-reconciliation value.
-- [ ] Add the fixed forward-only enum migration.
-- [ ] Add focused static validation.
-- [ ] Add disposable PostgreSQL migration/runtime proof.
-- [ ] Regenerate schema documentation if required by the repository's normal schema workflow.
+- [x] Extend `BackgroundRuntimeLeaseName` with the exact entitlement-reconciliation value.
+- [x] Add the fixed forward-only enum migration.
+- [x] Add focused static validation.
+- [x] Add disposable PostgreSQL migration/runtime proof.
+- [x] Regenerate schema documentation if required by the repository's normal schema workflow.
 
 ## Interfaces / Contracts
 
@@ -181,24 +179,24 @@ No cross-service payload contract changes.
 
 ## Acceptance Criteria
 
-- [ ] `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` is a valid Prisma/PostgreSQL `BackgroundRuntimeLeaseName` value.
-- [ ] Every existing lease name remains unchanged.
-- [ ] Migration is additive and enum-only.
-- [ ] `FeatureActivationMode` remains unchanged.
-- [ ] No cadence/runtime/business-state schema is introduced.
-- [ ] Disposable PostgreSQL proof passes and owned infrastructure is removed.
+- [x] `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` is a valid Prisma/PostgreSQL `BackgroundRuntimeLeaseName` value.
+- [x] Every existing lease name remains unchanged.
+- [x] Migration is additive and enum-only.
+- [x] `FeatureActivationMode` remains unchanged.
+- [x] No cadence/runtime/business-state schema is introduced.
+- [x] Disposable PostgreSQL proof passes and owned infrastructure is removed.
 
 ## Validation
 
-- [ ] repository format command
-- [ ] Prisma validate
-- [ ] Prisma generate
-- [ ] focused ARCH-023 entitlement-reconciliation lease validator
-- [ ] disposable PostgreSQL migration/runtime proof
-- [ ] generated ERD validation where required by the normal schema workflow
-- [ ] task script syntax checks
-- [ ] changed-file diagnostics
-- [ ] `git diff --check`
+- [x] repository format command
+- [x] Prisma validate
+- [x] Prisma generate
+- [x] focused ARCH-023 entitlement-reconciliation lease validator
+- [x] disposable PostgreSQL migration/runtime proof
+- [x] generated ERD validation where required by the normal schema workflow
+- [x] task script syntax checks
+- [x] changed-file diagnostics (scripts and package manifest clean; editor reports the pre-existing `datasource.url` Prisma 7 compatibility diagnostic, while repository Prisma 6 validation passes)
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -213,28 +211,31 @@ Do not copy unrelated Prisma drift into this migration. If Prisma migration gene
 ## Completion Report
 
 ### Status
-Not Started
+Complete; submitted for architect review.
 
 ### Files Changed
-None
+`moda-interact-database/prisma/schema.prisma`; `moda-interact-database/prisma/migrations/20261001120000_arch023_merchant_knowledge_entitlement_reconciliation_lease/migration.sql`; `moda-interact-database/scripts/validate-arch023-merchant-knowledge-entitlement-reconciliation-lease.mjs`; `moda-interact-database/scripts/test-arch023-merchant-knowledge-entitlement-reconciliation-lease-postgres.mjs`; `moda-interact-database/package.json`; `moda-interact-database/docs/generated/prisma-erd.puml`; `moda-interact-database/docs/generated/erd.png`.
 
 ### Work Completed
-None
+Added the single `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` label to `BackgroundRuntimeLeaseName` and an additive migration containing only the requested `ALTER TYPE ... ADD VALUE IF NOT EXISTS`. Added a focused static validator that pins the complete lease-label list, unchanged `FeatureActivationMode` values, fixed migration directory and exact one-statement migration. Added a network-isolated disposable `pgvector/pgvector:pg17` proof that applies the complete migration chain, inserts and verifies all three Merchant Knowledge lease labels as `BackgroundRuntimeLease.name`, removes its test rows, and removes its invocation-owned container. Added ARCH-023 package commands and regenerated the ERD through the repository's normal workflow. No cadence, runtime lease SQL, configuration columns or business schema were changed.
 
 ### Validation Results
-None
+Passed: `npm run format`; `npm run prisma:validate`; `npm run prisma:generate`; `npm run test:arch023-merchant-knowledge-entitlement-reconciliation-lease`; `npm run test:arch023-merchant-knowledge-entitlement-reconciliation-lease:postgres`; `npm run erd`; `node --check` for both new scripts; and `git diff --check`. The PostgreSQL proof applied migrations through `20261001120000_arch023_merchant_knowledge_entitlement_reconciliation_lease`, verified all three lease labels, and logged cleanup of the owned container. Changed-file diagnostics report no issues in either script or `package.json`; the Prisma schema diagnostic flags the existing `datasource.url` as unsupported under Prisma 7 guidance, while the repository-locked Prisma 6.19.3 validation succeeds. The diagnostic is on the pre-existing datasource declaration, not the changed enum.
+
+### Launcher Evidence
+Prepared execution was true; dependency gate passed (`ARCH-023-DATABASE-005` complete); Attempt 1 was claimed by `copilot` at `2026-10-01T11:39:18Z`; durable parent claim commit `5f183d0a0ff8f12e97eb028f99650f073ff88786` was pushed. Implementation commit `ea94fab614564bece714c57540aef55b664e5b4e` is pushed to `task/ARCH-023-DATABASE-006`. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-DATABASE-006`, `task/ARCH-023-DATABASE-006`. Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-DATABASE-006`, `task/ARCH-023-DATABASE-006`. Both worktrees were newly created; parent and implementation task branches did not require remote fast-forward, and both already incorporated `origin/main`. Shared workspace and shared implementation checkout were not switched or mutated; no other task worktree was reused. Recursive submodule sync and update both passed; there were no submodule entries.
 
 ### Deviations
-None
+The initial PostgreSQL readiness probe emitted expected connection/startup messages while the disposable container booted; the retry loop then completed successfully. No task scope or migration deviation.
 
 ### Assumptions
-None
+The repository's generated ERD files are included because `npm run erd` changed them when run after the schema update.
 
 ### Unresolved Issues
-None
+None. The separate Background-owned 300-second cadence and scheduler remain for `ARCH-023-BACKGROUND-005`; this database task does not introduce either.
 
 ### Architectural Concerns
-None
+None. This adds only the persisted enum identity required by the dependent Background scheduler.
 
 ## Architect Review
 
