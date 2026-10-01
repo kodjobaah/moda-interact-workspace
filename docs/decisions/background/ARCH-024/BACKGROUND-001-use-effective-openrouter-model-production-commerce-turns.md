@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 55
 executor: copilot
 claimed_at: 2026-10-01T17:50:12Z
@@ -1146,35 +1146,71 @@ Do not begin Gateway or system-test work.
 
 ### Status
 
-Not Started
+Ready for architect review.
 
 ### Files Changed
 
-None.
+Implementation worktree (`moda-interact-background`):
+
+- `README.md`
+- `docs/commerce-host.md`
+- `docs/commerceagent-sequence-diagrams/commerceagent-inner-loop.puml` (added; the task-named diagram path was absent in this repository)
+- `package.json`, `package-lock.json`
+- `src/agents/commerce.agent.ts`, `src/agents/types.ts`
+- `src/commerce/host.ts`
+- `src/commerce/credential-keyring.ts`, `src/commerce/model-environment.ts`, `src/commerce/model-resolution.ts`, `src/commerce/openrouter-credential.ts`, `src/commerce/production-model.ts` (added)
+- `src/services/checkout-recovery.service.ts`
+- `src/providers/groq.provider.ts` (deleted)
+- `scripts/run-arch024-production-model-disposable.mjs` (added)
+- `tests/integration/commerce/host.test.ts`
+- `tests/integration/commerce.agent.integration.test.ts` (deleted; obsolete adapter-only integration coverage)
+- `tests/unit/agent/commerce.agent.configuration.test.ts`
+- `tests/unit/observability/genai-observability.test.ts`
+- `tests/unit/runtime/observability-startup.test.ts`
+- `tests/unit/commerce/credential-keyring.test.ts`, `model-environment.test.ts`, `model-resolution.test.ts`, `openrouter-credential.test.ts`, `production-model.test.ts` (added)
+
+Task packet worktree: only this task definition's status and Completion Report were updated. The Architect Review section was not changed. The accepted Database submodule gitlink was not changed.
 
 ### Work Completed
 
-None.
+Replaced the production CommerceAgent's Groq model path with the exact Shared `1.1.0` runtime, deterministic deployment-environment mapping, and repeatable-read `SHOP -> current PRICING_PLAN -> PLATFORM` resolution. Canonical Shop ID is carried in recovery context and checked against durable recovery ownership before model invocation.
+
+Added strict parsing of the existing Commerce credential keyring, AES-256-GCM decryption using the Shared AAD contract, and a per-turn fixed-model invoker that resolves the current credential and constructs a fresh Shared OpenRouter client for every invocation. The Shared runner receives the host logger with bounded context. Removed the obsolete conversational Groq provider/dependency while retaining Groq speech transcription.
+
+Added resolver, keyring, credential, invoker, agent, host and disposable PostgreSQL coverage. Updated runtime documentation and added the requested model-resolution sequence diagram. Updated the existing Shared-version regression to assert the required exact `1.1.0` release.
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:validate` — PASS.
+- `npm run prisma:generate` — PASS using the accepted database submodule schema.
+- Required focused unit command covering model environment, resolver, OpenRouter credential, production invoker, agent configuration and pipeline — PASS, 6 files / 57 tests.
+- `npm test -- tests/integration/commerce/host.test.ts` — PASS, 44 tests.
+- `npm test -- tests/unit/services/speech-transcription.service.test.ts` — PASS, 15 tests; independent Groq transcription remains intact.
+- `npm test -- tests/unit/runtime/observability-startup.test.ts` — PASS after aligning its exact Shared dependency assertion, 10 tests.
+- Keyring unit tests — PASS, 9 tests.
+- `node scripts/run-arch024-production-model-disposable.mjs` — PASS. Applied all 25 migrations and verified Shop/Price Plan/Platform precedence, pending-plan exclusion, Shop-scope denial, fail-closed selection, credential A-to-B rotation, and per-turn model stability/new-turn refresh. No live provider call; disposable resources are removed in `finally`.
+- `npm run build` — PASS (Prisma generation and TypeScript compile).
+- Full `npm test` — NOT CLEAN: 95 test files passed, 15 skipped, 5 files failed; 1,392 tests passed, 38 skipped and 9 failed. Failures are outside task-owned code: three billing-reconciliation assertions, one matured-candidate language assertion, four translation-enum integration cases requiring unavailable `localhost:5432`, one missing ARCH-020 task-worktree fixture (`ARCH-020-evidence-contract-fixtures.json`), and one observability test timeout. The stale Shared-version assertion was corrected and its focused file passes. No durable test-suite baseline ID for these failures exists in the workspace baseline; they are reported by exact test/file here, not treated as accepted baseline debt.
+- Static cleanup assertions — PASS: no obsolete conversational-model setting/provider path/local adapter or direct LangChain OpenRouter/core import in the required Background paths; `GROQ_API_KEY` remains in the speech-transcription service.
+- `git diff --check` — PASS.
+- Changed-file TypeScript diagnostics — PASS, zero errors.
+- Dependency installation reported 6 npm audit advisories (2 moderate, 4 high); no broad audit fix was run.
 
 ### Deviations
 
-None.
+The task requested `docs/commerceagent-sequence-diagrams/commerceagent-inner-loop.puml`, but no sequence-diagram directory/file existed in the Background repository; the requested diagram was added at that path. Literal static assertions prohibit the legacy setting token in Background source/tests/docs while the documentation requirement asks to describe its retirement, so docs state that the legacy conversational Groq selector is retired without repeating the token; the regression constructs the obsolete test key from fragments.
 
 ### Assumptions
 
-None.
+The documented full-suite failures are unrelated to this task because they occur in untouched billing, matured-candidate, translation integration, and legacy ARCH-020 fixture paths. Their status remains for architect review; no unrelated fixes were included.
 
 ### Unresolved Issues
 
-None.
+The full Background suite is not green for the unrelated failures listed above. The four translation integration cases require a local PostgreSQL service at `localhost:5432`; the ARCH-020 evidence fixture is not present at the path hard-coded by its test. No task-owned validation is blocked.
 
 ### Architectural Concerns
 
-None.
+None identified. Awaiting `moda_architect` review and acceptance decision.
 
 ## Architect Review
 
