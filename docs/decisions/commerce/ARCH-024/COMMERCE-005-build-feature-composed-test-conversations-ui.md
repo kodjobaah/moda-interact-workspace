@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-10-01T22:26:21Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-COMMERCE-002
@@ -1248,61 +1248,23 @@ The implementation task branch was fast-forward-pushed to the launcher-prepared 
 
 ### Review Status
 
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
 
-Re-review of the newer uploaded ARCH-024-COMMERCE-005 parent snapshot does not close the prior evidence-first correction contract. The C005 task file and the complete `moda-interact-commerce/` tree are byte-for-byte unchanged from the previously reviewed submission: implementation remains at the recorded commits `9f395d1aca723c5ffe99bdae0c4fcbc929aec664` / `7bf981db210de46ccda3d66fd21c0d194944b062`, the task is still Attempt 1, and no Attempt 2 launcher/baseline evidence has been added to the Completion Report.
+Attempt 2 closes both evidence-only corrections from Attempt 1. No C005-owned implementation source/test file changed during the retry; direct comparison with the previously reviewed C005 submission confirms the Feature-only Test Conversations implementation remains unchanged while the prepared implementation branch incorporates later accepted `origin/main` work.
 
-The implementation itself remains architecture-conformant on source inspection. The Feature-only Test Conversations surface, selected-Shop browser contract, server-side Shop revalidation, complete immutable authored snapshot, trusted-data browser boundary, same-tick start fencing, uncertain-start replay, post-start authoring lock, disabled conversation execution, independent Tool-test boundary, and no-business-mutation rules remain aligned with C005.
+**A1-R1 — closed: paired full-suite non-regression evidence is sufficient.** The same `npx vitest run` command was executed under the same Node/npm/Vitest/dependency/database-submodule/integration-test environment on synchronized pre-task Commerce commit `1318596b523190a8c422cf0fb9ddfeae06847e63` and submitted prepared head `4a38f092d3a360e19c0bae8432961109cdd78917`. The baseline recorded 23 failing files / 60 failed tests plus five collection failures; the submitted tree recorded 19 failing files / 29 failed tests with the same five collection failures. Twenty-eight failed test identifiers are common, 32 failures are baseline-only, and the sole submitted-only failure is `tests/shopify-admin-tools-ui.test.tsx` / `saves, publishes through the canonical action, and reopens the exact Policy binding read-only`, which is outside C005 ownership and passed in isolated rerun (`1 passed, 42 skipped`). No Test Conversations or Preview test failed in the submitted run. The evidence therefore demonstrates no new or worsened C005-owned regression without incorrectly claiming literal failure-for-failure baseline equivalence.
 
-Acceptance is withheld for the two previously identified evidence requirements.
+**A1-R2 — closed: deterministic prepared-execution evidence is durable.** The Completion Report records the canonical workspace root; dedicated parent and Commerce implementation worktrees; matching `task/ARCH-024-COMMERCE-005` branches; no shared/default or prior-task worktree edits; parent/implementation `origin/main` incorporation; dependency gate; recursive submodule sync/materialisation; database gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; Attempt 2 claim metadata and durable claim commit `228902dcc41ce6ea2d8f55f6f849050a429879bb`; prepared implementation head `4a38f092d3a360e19c0bae8432961109cdd78917`; and final clean, remote-aligned task-branch evidence. The developer handoff identifies final parent report commit `22af5c0b` and confirms both task worktrees are clean and match their remote refs.
 
-**A1-R1 — deterministically classify the package-wide full-suite failures.**
-
-The submitted full Commerce run remains recorded as 160 files with 19 failing files / 29 failing tests. Focused C005 and retained Tool-test/Code Response suites are green, but the task still does not prove whether the broader failing set is pre-existing or introduced/worsened by C005.
-
-Attempt 2 MUST run the same full-suite command against the launcher-recorded synchronized pre-task Commerce commit and the submitted C005 implementation head under the same Node/npm/dependency/database-submodule/integration-test environment. Record the exact failing test identifiers/outcomes for both trees and state whether every current failure is baseline-equivalent. If the submitted tree has no new or worsened failure, no C005 source change is required. If a new/worsened failure is C005-owned, correct only that regression and rerun the comparison.
-
-The newer workspace `docs/development-baseline.md` does not contain an accepted C005/Commerce full-suite baseline. Older ARCH-023 Commerce package-wide failure evidence is from a different implementation revision/environment and does not substitute for the required same-attempt pre-task comparison.
-
-**A1-R2 — durably record deterministic prepared-execution evidence.**
-
-The Completion Report still lacks the launcher-resolved start-of-attempt packet required by the worktree-isolation policy. Attempt 2 MUST record, from the actual prepared launcher evidence:
-
-```text
-canonical workspace_root
-dedicated parent task worktree + task/ARCH-024-COMMERCE-005 branch
-dedicated Commerce implementation worktree + task/ARCH-024-COMMERCE-005 branch
-shared/default checkout not used for edits
-previous task worktree not reused
-
-parent remote task synchronization result
-parent origin/main incorporation result
-implementation remote task synchronization result
-implementation origin/main incorporation result
-
-dependency-gate result
-git submodule sync --recursive result
-git submodule update --init --recursive result
-database submodule/gitlink identity
-
-Attempt 2 claim metadata + durable claim commit
-submitted implementation head + remote task head
-submitted parent report head + remote task head
-final clean status for both task worktrees
-final local head == remote task head for both task branches
-```
-
-No implementation churn is required merely to satisfy A1-R2.
-
-The same task must be reclaimed for Attempt 2. Do not start COMMERCE-006 while C005 remains unaccepted.
+The implementation conclusions from Attempt 1 therefore stand. The selected-Shop browser contract is strict and server-revalidated; the browser receives no trusted instruction/model configuration/Feature Behaviour payloads; C005 owns one complete immutable authored snapshot; Feature selection order and limits are deterministic; Start is same-tick single-flight safe; uncertain outcomes replay the exact original identity/payload; successful Start freezes authoring controls; message execution remains disabled for C006/C007; retained Tool-test/Code Response APIs remain separate; and no authoring/business state outside Preview conversation state is mutated.
 
 ### Reviewed Files
 
 Implementation/review evidence:
 
-- complete prior C005 snapshot -> current uploaded snapshot comparison; no file delta under `moda-interact-commerce/`
+- Attempt 1 C005 submission -> Attempt 2 prepared-head comparison for all C005-owned implementation/test files
 - `moda-interact-commerce/app/preview/page.tsx`
 - `moda-interact-commerce/components/studio-screen.tsx`
 - `moda-interact-commerce/src/commerce/integration/preview/adapters.ts`
@@ -1314,30 +1276,28 @@ Implementation/review evidence:
 - `moda-interact-commerce/src/studio/test-conversations/test-conversations-screen.tsx`
 - focused C005 Preview/UI/snapshot/adapter tests
 - retained Tool-test / Code Response tests
-- `docs/development-baseline.md`
-- `docs/decisions/commerce/ARCH-023/COMMERCE-003-resolve-platform-shop-instructions.md`
+- Attempt 2 paired full-suite failure-identifier evidence
 
 Parent coordination:
 
 - `docs/decisions/commerce/ARCH-024/COMMERCE-005-build-feature-composed-test-conversations-ui.md`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md`
 - `docs/decisions/commerce/ARCH-024/_index.md`
 - `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 - `docs/architecture/_index.md`
 
 ### Validation Reviewed
 
-- Direct current-source reinspection confirms the exact strict conversation start body, server-owned selected-Shop/effective-configuration assembly, complete `PreviewConversationSnapshot`, browser-safe projection, Feature ordering/limit semantics, synchronous same-tick start gate, exact unknown-outcome replay and disabled message execution remain present.
-- Independent archive comparison confirms there is no C005 implementation/test delta between the prior reviewed submission and this uploaded snapshot.
-- The submitted focused validation remains recorded as 63 C005 tests plus 28 retained Tool-test/Code Response tests, with typecheck, build, targeted ESLint and `git diff --check` passing.
-- The submitted full-suite result remains 19 failing files / 29 failing tests and is still unclassified against the synchronized pre-task tree.
-- The current `docs/development-baseline.md` has no accepted Commerce/C005 full-suite baseline entry.
-- The current Completion Report still does not contain the launcher-resolved physical-isolation/start-of-attempt synchronization packet required for acceptance.
-- The uploaded archive contains no installed dependency tree or usable Git metadata, so Node commands and remote-head equality cannot be independently replayed in the review environment.
+- Submitted required/focused validation remains green: 63 focused C005 tests and 28 retained Tool-test/Code Response tests, targeted ESLint, `npm run typecheck`, production build and `git diff --check`.
+- Paired full-suite comparison: synchronized baseline `1318596b523190a8c422cf0fb9ddfeae06847e63` = 23 failing files / 60 failed tests; submitted `4a38f092d3a360e19c0bae8432961109cdd78917` = 19 failing files / 29 failed tests; 28 failed test identifiers plus five collection failures common; 32 baseline-only; one unrelated submitted-only timeout passes in isolation.
+- Direct archive comparison confirms C005-owned implementation/test files are unchanged from the previously reviewed submission; Attempt 2 is evidence-only.
+- Completion Report records the launcher-resolved physical-isolation, synchronization, recursive-submodule, claim/publication and final clean-worktree evidence required by the architect protocol.
+- The uploaded archive contains no installed dependency tree or usable Git metadata, so the reviewer could not independently replay Node commands or query remote refs; acceptance relies on direct source/report inspection plus the durable paired-run/launcher evidence.
 
 ### Architecture Conformance
 
-The inspected C005 implementation conforms to the parent ARCH-024 runtime/ownership design. The task is not accepted because required execution/non-regression evidence remains incomplete, not because a new product-code architecture defect was found.
+Conforms. C005 owns only the selected-Shop Feature-composed Test Conversations authoring/start boundary and complete authored Conversation Configuration Snapshot. Real selected-Shop Tool execution remains C006; OpenRouter conversation execution remains C007. Repository ownership, trusted-data boundaries, snapshot immutability, Tool-test separation and no-business-mutation constraints are preserved.
 
 ### Follow-up
 
-Return the same task to `ready`, clear the active claim and preserve `attempt: 1`. Reclaim through the normal `/moda-task ARCH-024-COMMERCE-005` path so the launcher creates Attempt 2 and supplies the canonical prepared-execution packet. Attempt 2 is evidence-first: do not change implementation source unless the required full-suite baseline comparison proves a C005-owned regression. `ARCH-024-COMMERCE-006` remains Pending.
+`ARCH-024-COMMERCE-006` becomes Ready because its sole dependency, C005, is now Complete. Do not start C007 until C006 is architect-accepted Complete. No follow-on task is claimed or started by this review.

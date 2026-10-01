@@ -52,24 +52,22 @@ ARCH-023-COMMERCE-003 ------------+
 | [COMMERCE-002](COMMERCE-002-resolve-effective-available-active-model.md) | Resolve effective Shop availability and exactly one model with fail-closed `SHOP -> current PRICING_PLAN -> PLATFORM` precedence | Complete | DATABASE-001, SHARED-002 |
 | [COMMERCE-003](COMMERCE-003-make-commerce-studio-model-selection-only.md) | Retire Catalogue administration from Studio; retain explicit Platform/Shop selection and surface inherited `PRICING_PLAN` vs `PLATFORM` provenance | Complete | COMMERCE-002, ADMIN-002 |
 | [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Complete | COMMERCE-001 |
-| [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create the complete authored Conversation Configuration Snapshot | Ready | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
-| [COMMERCE-006](COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md) | Execute exact snapshot Tool revisions through production execution against the real selected Shop | Pending | COMMERCE-005 |
+| [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create the complete authored Conversation Configuration Snapshot | Complete | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
+| [COMMERCE-006](COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md) | Execute exact snapshot Tool revisions through production execution against the real selected Shop | Ready | COMMERCE-005 |
 | [COMMERCE-007](COMMERCE-007-execute-test-conversation-models-through-openrouter.md) | Execute the snapshot active model through Shared OpenRouter runtime using the current environment credential per invocation | Pending | COMMERCE-006, SHARED-002 |
 
 ## Execution frontier
 
 ```text
-ARCH-024-COMMERCE-005 -> Ready
+ARCH-024-COMMERCE-006 -> Ready
 ```
 
-COMMERCE-002 is Complete / Accepted at Attempt 2 and consumes the accepted Database contract plus exactly `@modainteract/moda-interact-shared@1.1.0`. COMMERCE-004 is already Complete / Accepted at Attempt 1.
+COMMERCE-002 is Complete / Accepted at Attempt 2 and consumes the accepted Database contract plus exactly `@modainteract/moda-interact-shared@1.1.0`. COMMERCE-004 is Complete / Accepted at Attempt 1.
 
-COMMERCE-005 is now Ready because COMMERCE-002, COMMERCE-004 and frozen `ARCH-023-COMMERCE-003` are all Complete. Studio model-selection UI does not gate Feature composition.
+COMMERCE-003 is Complete / Accepted at Attempt 2. Commerce Studio is selection-only for models and no longer owns Catalogue administration.
 
-COMMERCE-003 is Complete / Accepted at Attempt 2. Commerce Studio is selection-only for models and no longer owns Catalogue administration. The task has no dependent ARCH-024 task to promote.
+COMMERCE-005 is Complete / Accepted at Attempt 2. Its evidence-only retry proves the package-wide suite is non-regressing for C005: the synchronized pre-task baseline had 60 failed tests versus 29 on the submitted tree, all persistent C005-relevant failures were classified, and the sole submitted-only timeout is outside C005 ownership and passes in isolation. The launcher/worktree/synchronization/submodule packet is durably recorded.
 
-COMMERCE-005 intentionally joins C002 effective model resolution, C004 Feature composition and frozen `ARCH-023-COMMERCE-003` Platform + optional Shop Instructions to create the complete authored snapshot.
-
-COMMERCE-007 reads the durable credential row directly and consumes the Shared-owned AAD contract; it does not wait for the Admin credential-management UI.
+COMMERCE-006 is now Ready because COMMERCE-005 is Complete. It owns real selected-Shop Tool execution against the immutable C005 snapshot. COMMERCE-007 remains Pending until COMMERCE-006 is architect-accepted Complete.
 
 Shared `runCommerceTurn` is internally LangGraph-backed after SHARED-002. Commerce remains a consumer only: no direct LangGraph or MCP-client dependency is introduced. COMMERCE-007 passes its existing `StructuredLogger` into the runner.
