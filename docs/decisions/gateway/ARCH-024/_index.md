@@ -12,7 +12,17 @@ ARCH-024 requires one infrastructure/deployment task after the application runti
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [GATEWAY-001](GATEWAY-001-wire-database-backed-openrouter-runtime.md) | Share the accepted credential keyring with authorized runtimes and remove obsolete static Preview provider/model/API-key configuration | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-002 |
+| [GATEWAY-001](GATEWAY-001-wire-database-backed-openrouter-runtime.md) | Share the accepted credential keyring with authorized runtimes and remove obsolete static Preview provider/model/API-key configuration | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
+
+## Dependency rationale
+
+These cross-application dependencies are intentional **deployment-cutover** gates, not source-code dependencies:
+
+- ADMIN-003 proves the credential writer uses the accepted keyring/AAD contract;
+- COMMERCE-007 proves Commerce consumes the database-backed OpenRouter credential and no longer reads obsolete Preview provider/model/API-key variables;
+- BACKGROUND-001 proves the production worker consumes the same database-backed credential/runtime contract.
+
+BACKGROUND-002 is not required for deployment/keyring cutover; deleting the unused local one-node LangGraph wrapper is independent cleanup.
 
 ## Deployment boundary
 

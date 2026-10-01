@@ -8,41 +8,53 @@ Repository: `moda-interact-commerce`.
 
 Coordinator: `moda_architect`.
 
-The Commerce sequence intentionally removes the obsolete human Preview composition first and builds the replacement flow on the cleaned surface.
+The Commerce graph is intentionally **not** one serial chain. Human Preview cleanup and database-backed model resolution can progress independently; the authored Test Conversation snapshot joins the model-resolution, Feature-composition and ARCH-023 Instruction prerequisites only when all three are actually required.
 
 ```text
-COMMERCE-001  cleanup old human Preview UI
+COMMERCE-001 cleanup old human Preview UI
        |
        v
-COMMERCE-002  effective available + SHOP -> PRICING_PLAN -> PLATFORM model
+COMMERCE-004 Feature -> all Capabilities composition
        |
-       v
-COMMERCE-003  Studio model selection-only
+       +--------------------------+
+                                  |
+DATABASE-001 + SHARED-002         |
+       |                          |
+       v                          |
+COMMERCE-002 effective available + SHOP -> PRICING_PLAN -> PLATFORM model
+       |\                         |
+       | \                        |
+       |  \-> COMMERCE-003 Studio model selection-only
+       |          ^
+       |          |
+       |      ADMIN-002 ownership replacement
        |
-       v
-COMMERCE-004  Feature -> all Capabilities composition
-       |
-       v
-COMMERCE-005  new Test Conversations UI
-       |
-       v
-COMMERCE-006  real selected-Shop Tool execution
-       |
-       v
-COMMERCE-007  OpenRouter model execution
+       +--------------------------+
+                                  |
+ARCH-023-COMMERCE-003 ------------+
+                                  v
+                           COMMERCE-005
+                         Test Conversations UI +
+                       complete authored snapshot
+                                  |
+                                  v
+                           COMMERCE-006
+                       real selected-Shop Tools
+                                  |
+                                  v
+                           COMMERCE-007
+                         OpenRouter model execution
 ```
-
-Additional dependencies from Database/Shared/Admin/ARCH-023 are shown below.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [COMMERCE-001](COMMERCE-001-remove-redundant-human-preview-functionality.md) | Remove obsolete human-facing Tool/Release/Fixture Preview composition while retaining referenced internal runtime seams | Ready | - |
-| [COMMERCE-002](COMMERCE-002-resolve-effective-available-active-model.md) | Resolve effective Shop availability and exactly one model with fail-closed `SHOP -> current PRICING_PLAN -> PLATFORM` precedence | Pending | DATABASE-001, SHARED-002, COMMERCE-001 |
+| [COMMERCE-002](COMMERCE-002-resolve-effective-available-active-model.md) | Resolve effective Shop availability and exactly one model with fail-closed `SHOP -> current PRICING_PLAN -> PLATFORM` precedence | Pending | DATABASE-001, SHARED-002 |
 | [COMMERCE-003](COMMERCE-003-make-commerce-studio-model-selection-only.md) | Retire Catalogue administration from Studio; retain explicit Platform/Shop selection and surface inherited `PRICING_PLAN` vs `PLATFORM` provenance | Pending | COMMERCE-002, ADMIN-002 |
-| [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Pending | COMMERCE-003 |
-| [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create Conversation Configuration Snapshots | Pending | COMMERCE-004, ARCH-023-COMMERCE-003 |
+| [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Pending | COMMERCE-001 |
+| [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create the complete authored Conversation Configuration Snapshot | Pending | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | [COMMERCE-006](COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md) | Execute exact snapshot Tool revisions through production execution against the real selected Shop | Pending | COMMERCE-005 |
-| [COMMERCE-007](COMMERCE-007-execute-test-conversation-models-through-openrouter.md) | Execute the snapshot active model through Shared OpenRouter runtime using the current environment credential per invocation | Pending | COMMERCE-006, SHARED-002, ADMIN-003 |
+| [COMMERCE-007](COMMERCE-007-execute-test-conversation-models-through-openrouter.md) | Execute the snapshot active model through Shared OpenRouter runtime using the current environment credential per invocation | Pending | COMMERCE-006, SHARED-002 |
 
 ## Execution frontier
 
@@ -50,8 +62,12 @@ Additional dependencies from Database/Shared/Admin/ARCH-023 are shown below.
 ARCH-024-COMMERCE-001 -> Ready
 ```
 
-COMMERCE-001 is independent of the new database/shared/admin model stack and may execute in parallel with DATABASE-001.
+COMMERCE-001 is independent of the new database/shared model stack and may execute in parallel with DATABASE-001. Once DATABASE-001 + SHARED-002 are Complete, COMMERCE-002 may execute regardless of COMMERCE-001 state. COMMERCE-004 waits only for the retained Preview/runtime seam established by COMMERCE-001, not for Studio model-selection UI.
 
-COMMERCE-005 intentionally depends on frozen `ARCH-023-COMMERCE-003` for additive trusted Platform + optional Shop Instructions. ARCH-024 does not redefine that contract.
+COMMERCE-003 retains one deliberate cross-application dependency on ADMIN-002 because it removes Commerce-owned Catalogue administration only after the Admin-owned replacement control plane exists. That is an ownership-migration dependency, not a source-code dependency.
 
-Shared `runCommerceTurn` is now internally LangGraph-backed after SHARED-002. Commerce remains a consumer only: no direct LangGraph or MCP-client dependency is introduced. COMMERCE-007 passes its existing `StructuredLogger` into the runner.
+COMMERCE-005 intentionally joins C002 effective model resolution, C004 Feature composition and frozen `ARCH-023-COMMERCE-003` Platform + optional Shop Instructions to create the complete authored snapshot.
+
+COMMERCE-007 reads the durable credential row directly and consumes the Shared-owned AAD contract; it does not wait for the Admin credential-management UI.
+
+Shared `runCommerceTurn` is internally LangGraph-backed after SHARED-002. Commerce remains a consumer only: no direct LangGraph or MCP-client dependency is introduced. COMMERCE-007 passes its existing `StructuredLogger` into the runner.

@@ -690,6 +690,40 @@ export type ResolvedCommerceModel =
 
 This contract contains no credential.
 
+### R7A — Export the canonical OpenRouter credential AAD contract
+
+The OpenRouter encrypted credential envelope is consumed across Admin, Commerce and Background. Shared MUST own the pure cross-repository AAD construction contract so no application depends on another application's implementation merely to agree on authenticated-encryption bytes.
+
+Export from the browser-safe model entrypoint exactly:
+
+```ts
+export const COMMERCE_OPENROUTER_CREDENTIAL_TYPE = "OPENROUTER" as const;
+
+export const CommerceOpenRouterCredentialAadInputSchema = z.strictObject({
+  environment: CommerceEnvironmentSchema,
+  keyId: z.string().trim().min(1).max(64),
+});
+
+export type CommerceOpenRouterCredentialAadInput =
+  z.infer<typeof CommerceOpenRouterCredentialAadInputSchema>;
+
+export function createCommerceOpenRouterCredentialAad(
+  input: CommerceOpenRouterCredentialAadInput,
+): string;
+```
+
+`createCommerceOpenRouterCredentialAad(...)` MUST validate the input and return `canonicalJson(...)` of exactly:
+
+```ts
+{
+  credentialType: COMMERCE_OPENROUTER_CREDENTIAL_TYPE,
+  environment: input.environment,
+  keyId: input.keyId,
+}
+```
+
+The function returns the canonical **string**, not Node `Buffer`/crypto types, so the public model contract remains runtime-safe. Admin/Commerce/Background UTF-8 encode that string locally before AES-256-GCM `setAAD(...)`. Shared MUST NOT encrypt, decrypt, read keyrings or read `CommerceOpenRouterCredential` rows.
+
 ### R8 — Name the existing Commerce runner model dependency without changing its behaviour
 
 In `src/commerce/runner/index.ts`, export exactly:
@@ -899,7 +933,7 @@ Pass the caller `AbortSignal` through LangChain's invocation options. Do not cre
 
 No logging introduced by this task may contain the credential or complete conversation payload.
 
-### R16 — LangChain remains an implementation detail; do not introduce LangGraph
+### R16 — LangChain model-adapter semantics remain an implementation detail; do not introduce a second agent loop
 
 The runtime layering for this task is:
 
@@ -911,10 +945,9 @@ runCommerceTurn / existing Moda runner
         -> OpenRouter
 ```
 
-Do NOT introduce:
+Do NOT introduce in the **model adapter**:
 
 ```text
-LangGraph
 createAgent
 LangChain memory/checkpoints
 LangChain durable threads
@@ -952,7 +985,8 @@ Tests must prove at minimum:
 21. output token usage maps exactly from `usage_metadata.output_tokens`;
 22. malformed Tool calls or usage fail closed;
 23. provider errors are redacted to `Commerce model unavailable`;
-24. no test makes a live OpenRouter network request.
+24. `createCommerceOpenRouterCredentialAad(...)` returns identical canonical strings for equivalent validated inputs, rejects blank/overlong key IDs, and changes deterministically when environment or keyId changes;
+25. no test makes a live OpenRouter network request.
 
 ### R18 — Clean public-entrypoint validation is mandatory
 
@@ -1766,7 +1800,7 @@ Complete all work items from all three implementation facets before returning th
 ### Model/OpenRouter work items
 
 
-- [ ] Add the exact `./commerce/model` pure schemas/types/helpers from R3-R7.
+- [ ] Add the exact `./commerce/model` pure schemas/types/helpers from R3-R7A, including the Shared-owned OpenRouter credential AAD contract.
 - [ ] Add the `CommerceModelInvoker` named runner type without changing runner semantics.
 - [ ] Add exact pinned LangChain/OpenRouter dependencies and core override from R2.
 - [ ] Add the Node-only `OpenRouterModelClient` from R9-R16.
@@ -1839,6 +1873,10 @@ CommerceAgentModelSelectionSchema
 CommerceAgentModelSelection
 ResolvedCommerceModelSchema
 ResolvedCommerceModel
+COMMERCE_OPENROUTER_CREDENTIAL_TYPE
+CommerceOpenRouterCredentialAadInputSchema
+CommerceOpenRouterCredentialAadInput
+createCommerceOpenRouterCredentialAad
 createOpenRouterModelId
 ```
 

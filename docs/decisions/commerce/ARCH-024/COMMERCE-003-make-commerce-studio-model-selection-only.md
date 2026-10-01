@@ -17,8 +17,7 @@ attempt: 0
 depends_on:
   - ARCH-024-COMMERCE-002
   - ARCH-024-ADMIN-002
-enables:
-  - ARCH-024-COMMERCE-004
+enables: []
 created: 2026-09-30
 updated: 2026-09-30
 ---
@@ -699,7 +698,7 @@ Catalogue/Availability authoring is owned by `moda_admin`.
 
 ## Enables
 
-- `ARCH-024-COMMERCE-004`
+None directly. COMMERCE-004 is independently gated by COMMERCE-001; Test Conversation composition does not depend on the Studio ownership-cutover UI.
 
 ## Acceptance Criteria
 
@@ -780,7 +779,7 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 3. return control to `moda_architect`;
 4. STOP.
 
-Do not begin `ARCH-024-COMMERCE-004` or any Admin/Test Conversation/OpenRouter work.
+Do not begin any other ARCH-024 task. COMMERCE-004 has its own independent dependency on COMMERCE-001 and may already be executing separately.
 
 ## Implementation Notes
 

@@ -16,9 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-BACKGROUND-001
-  - ARCH-024-SHARED-002
-enables:
-  - ARCH-024-GATEWAY-001
+enables: []
 created: 2026-10-01
 updated: 2026-10-01
 ---
@@ -203,11 +201,12 @@ No new cross-service contract.
 ## Dependencies
 
 - ARCH-024-BACKGROUND-001
-- ARCH-024-SHARED-002
+
+SHARED-002 is already consumed by BACKGROUND-001 and is therefore not repeated as a direct dependency. This cleanup task only removes the now-redundant local wrapper/dependency after the production host has moved to the published Shared runner.
 
 ## Enables
 
-- ARCH-024-GATEWAY-001
+None directly. Gateway depends on BACKGROUND-001 because deployment/keyring cutover does not require deletion of the unused local graph wrapper.
 
 ## Acceptance Criteria
 

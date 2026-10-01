@@ -17,9 +17,9 @@ attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
   - ARCH-024-SHARED-002
-  - ARCH-024-COMMERCE-001
 enables:
   - ARCH-024-COMMERCE-003
+  - ARCH-024-COMMERCE-005
 created: 2026-09-30
 updated: 2026-10-01
 ---
@@ -935,11 +935,13 @@ No public merchant route is produced.
 
 - `ARCH-024-DATABASE-001`
 - `ARCH-024-SHARED-002`
-- `ARCH-024-COMMERCE-001`
+
+COMMERCE-001 is intentionally **not** a dependency. It owns subtractive human Preview/Test-Conversations UI cleanup, while this task owns database-backed model resolution and can execute independently once Database + Shared are published.
 
 ## Enables
 
 - `ARCH-024-COMMERCE-003`
+- `ARCH-024-COMMERCE-005`
 
 ## Acceptance Criteria
 

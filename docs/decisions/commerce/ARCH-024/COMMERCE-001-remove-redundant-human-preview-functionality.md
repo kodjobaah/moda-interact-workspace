@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on: []
 enables:
-  - ARCH-024-COMMERCE-002
+  - ARCH-024-COMMERCE-004
 created: 2026-09-30
 updated: 2026-10-01
 ---
@@ -724,7 +724,7 @@ After the defined Work Items, Acceptance Criteria and required Validation are co
 4. return control to `moda_architect`;
 5. STOP.
 
-Do not begin `ARCH-024-COMMERCE-002` or any other ARCH-024 task.
+Do not begin `ARCH-024-COMMERCE-004` or any other ARCH-024 task. COMMERCE-002 is independently gated by Database + Shared publication and may execute in parallel once those dependencies are Complete.
 
 ## Implementation Notes
 
