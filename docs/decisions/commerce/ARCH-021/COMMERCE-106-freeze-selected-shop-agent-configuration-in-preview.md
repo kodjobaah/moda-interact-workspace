@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-COMMERCE-106
 architecture_id: ARCH-021
-title: Freeze selected-shop CommerceAgent configuration in Preview
+title: Superseded - selected-shop Preview configuration
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -9,22 +9,22 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 101
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-021-COMMERCE-010
-  - ARCH-021-COMMERCE-105
-enables:
-  - ARCH-021-COMMERCE-107
-  - ARCH-021-COMMERCE-108
+depends_on: []
+enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-10-01
+superseded_by: ARCH-024-COMMERCE-007
 ---
 
 # Freeze selected-shop CommerceAgent configuration in Preview
+
+> **Superseded 2026-10-01. Do not execute.** ARCH-024 splits this unstarted task across effective-model resolution and the final Test Conversation OpenRouter/snapshot runtime; ARCH-024-COMMERCE-007 is the terminal replacement in that chain.
+> The remaining content is retained as historical design context only.
 
 ## Architecture
 

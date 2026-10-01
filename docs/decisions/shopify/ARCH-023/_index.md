@@ -51,8 +51,8 @@ Individual task YAML is authoritative.
 | [SHOPIFY-001](SHOPIFY-001-materialise-merchant-knowledge-feature-configuration.md) | Extend existing BillingPlan materialiser to copy generic Feature configuration | Complete | DATABASE-001, SHARED-002 |
 | [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Complete | DATABASE-001, SHARED-002 |
 | [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Initial Store Category/Shop prompt activation only after durable ACTIVE/TRIALING subscription state | Complete — Accepted Attempt 3 | SHOPIFY-001, SHOPIFY-002 |
-| [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Merchant opt-in control plane plus current-plan WEB_PAGE source management | Ready | SHOPIFY-001, SHARED-002, ADMIN-004 |
-| [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Pending | SHOPIFY-004 |
+| [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Merchant opt-in control plane plus current-plan WEB_PAGE source management | Complete — Accepted Attempt 2 | SHOPIFY-001, SHARED-002, ADMIN-004 |
+| [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Ready | SHOPIFY-004 |
 
 ## Execution frontier
 
@@ -62,25 +62,29 @@ DATABASE-001 and SHARED-002 are Complete/accepted. SHOPIFY-001 is now Complete /
 SHOPIFY-001 -> Complete — Accepted Attempt 2
 SHOPIFY-002 -> Complete — Accepted Attempt 2
 SHOPIFY-003 -> Complete — Accepted Attempt 3
-SHOPIFY-004 -> Ready (ADMIN-004 is Complete — Accepted Attempt 1)
-SHOPIFY-005 -> Pending (still gated on SHOPIFY-004)
+SHOPIFY-004 -> Complete — Accepted Attempt 2
+SHOPIFY-005 -> Ready
 ```
 
-SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 is Complete / Accepted Attempt 3. ADMIN-004 is now Complete / Accepted Attempt 1, so SHOPIFY-004 is Ready; it remains unclaimed until its normal launcher is invoked.
+SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 is Complete / Accepted Attempt 3. ADMIN-004 is Complete / Accepted Attempt 1 and SHOPIFY-004 is now Complete / Accepted Attempt 2. SHOPIFY-005 is therefore Ready and remains unclaimed until its normal launcher is invoked.
 
 SHOPIFY-003 Attempt 3 is accepted. Activation treats `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance, publishes the exact pinned DRAFT even after a later category `defaultTemplateId` reassignment, and retains the passing disposable PostgreSQL activation/rollback/idempotency proof. Acceptance promotes no new Shopify task; the separate Background missed-callback activation hook remains required before final ARCH-023 system acceptance.
 
-After SHOPIFY-004:
-
-```text
-SHOPIFY-005 -> Ready
-```
+SHOPIFY-004 Attempt 2 acceptance satisfies SHOPIFY-005's only dependency; SHOPIFY-005 is Ready but is not claimed or started by the architect reconciliation.
 
 ## Cross-domain follow-up required
 
 ARCH-023 also requires the **existing Background subscription reconciler** to perform the same initial pending Store Category activation when the Shopify billing callback is missed.
 
 SHOPIFY-003 implements the Shopify-repository activation path only after authoritative durable ACTIVE/TRIALING subscription state. A bounded Background reconciliation hook must be defined before final ARCH-023 system acceptance; it must not be hidden inside the new Merchant Knowledge worker.
+
+## SHOPIFY-004 Attempt 2 acceptance
+
+Attempt 2 is Accepted. Delete/reorder now require current Merchant Knowledge plan entitlement while remaining available when merchant opt-in is OFF and for dormant/excess sources. Edit/refresh now use the exact R3 first-N current-plan entitlement window under the Shop lock; the PostgreSQL downgrade/reorder regression proves denied mutations are side-effect free and reorder can move an excess source back into eligibility. Canonical URL length is validated after `URL.toString()` before any transaction/persistence. SHOPIFY-004 is Complete / Accepted Attempt 2 and SHOPIFY-005 is promoted to Ready; SHOPIFY-005 is not started implicitly.
+
+## SHOPIFY-004 Attempt 1 review
+
+Attempt 1 is returned to Ready for a bounded Attempt 2 correction. The existing merchant opt-in/UI/WEB_PAGE lifecycle implementation is retained. Attempt 2 must close three server-boundary gaps: require current Merchant Knowledge plan entitlement for delete/reorder, enforce the R3 first-N `currentlyPlanEntitled` source-count window for edit/refresh, and validate the canonical `URL.toString()` length before persistence. SHOPIFY-005 remains Pending and must not start.
 
 ## Merchant opt-in reconciliation
 

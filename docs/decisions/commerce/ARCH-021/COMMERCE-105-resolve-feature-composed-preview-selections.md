@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-COMMERCE-105
 architecture_id: ARCH-021
-title: Resolve Feature-composed Preview selections
+title: Superseded - Feature-composed Preview selections
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -9,20 +9,22 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: superseded
 priority: 100
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-021-COMMERCE-092
-enables:
-  - ARCH-021-COMMERCE-106
+depends_on: []
+enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-10-01
+superseded_by: ARCH-024-COMMERCE-004
 ---
 
 # Resolve Feature-composed Preview selections
+
+> **Superseded 2026-10-01. Do not execute.** ARCH-024-COMMERCE-004 replaces this unstarted Feature-composition task.
+> The remaining content is retained as historical design context only.
 
 ## Architecture
 
