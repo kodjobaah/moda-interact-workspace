@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-01T21:18:52Z
@@ -106,11 +106,11 @@ The extracted read service must not introduce durable writes.
 
 ## Work Items
 
-- [ ] Create `SubscriptionReadService` with injected provider + Prisma dependencies.
-- [ ] Move local/provider read logic and mapper.
-- [ ] Keep BillingService method signatures as delegating compatibility methods.
-- [ ] Add focused tests for active/no-contract local reads, current/pending Shopify mapping, lifecycle precedence and provider failure.
-- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Create `SubscriptionReadService` with injected provider + Prisma dependencies.
+- [x] Move local/provider read logic and mapper.
+- [x] Keep BillingService method signatures as delegating compatibility methods.
+- [x] Add focused tests for active/no-contract local reads, current/pending Shopify mapping, lifecycle precedence and provider failure.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -128,24 +128,24 @@ No cross-repository contract is introduced.
 
 ## Acceptance Criteria
 
-- [ ] Read-only subscription/provider responsibilities have one owner.
-- [ ] BillingService callers require no changes.
-- [ ] Provider invocation count and lifecycle precedence match the pre-refactor implementation.
-- [ ] Extracted service performs no writes.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Read-only subscription/provider responsibilities have one owner.
+- [x] BillingService callers require no changes.
+- [x] Provider invocation count and lifecycle precedence match the pre-refactor implementation.
+- [x] Extracted service performs no writes.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
-- [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
-- [ ] `npm test -- tests/unit/services/billing/subscription-read.service.test.ts` passes the new focused capability tests
-- [ ] `npm test` introduces no new failures
-- [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-read.service.ts tests/unit/services/billing/subscription-read.service.test.ts`
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate`
+- [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [x] `git diff -- tests/unit/services/billing.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
+- [x] `npm test -- tests/unit/services/billing/subscription-read.service.test.ts` passes the new focused capability tests
+- [x] `npm test` introduces no new failures
+- [x] `npm run typecheck`
+- [x] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-read.service.ts tests/unit/services/billing/subscription-read.service.test.ts`
+- [x] `npm run build`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -160,35 +160,50 @@ Keep the mapper close to the read service; do not create a generic Shopify billi
 
 ### Status
 
-Not Started
+Ready for architect review
 
 ### Files Changed
 
-None.
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/subscription-read.service.ts`
+- `moda-interact/tests/unit/services/billing/subscription-read.service.test.ts`
 
 ### Work Completed
 
-None.
+- Added `SubscriptionReadService` with injected provider and Prisma dependencies. It owns both local subscription reads, Shopify commercial state mapping, lifecycle state classification, and the current/pending BillingPlan mapper.
+- Kept all four `BillingService` methods as same-signature delegates. Constructor compatibility, current exports, route callers, provider invocation order, error strings, lifecycle precedence, local eligibility, and read-only behavior are preserved.
+- Added four focused tests covering local active/no-contract selection and include graphs, independent current/pending mappings and ISO dates, frozen precedence over an active contract, and provider failure without local fallback.
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:generate`: passed.
+- Frozen test hash: `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; `git diff -- tests/unit/services/billing.service.test.ts` is empty.
+- Frozen `billing.service.test.ts`: 18 failures, all documented under `ARCH025-TEST-001`; the frozen source is unchanged.
+- Focused `subscription-read.service.test.ts`: 4 passed.
+- Full `npm test`: 76 passed, 8 skipped, 24 failures; the failure set matches documented baseline `ARCH025-TEST-001` and includes no new failure identifier.
+- `npm run typecheck`: passed.
+- Targeted ESLint: passed; emitted only the existing TypeScript-version compatibility warning.
+- `npm run build`: passed; emitted existing dependency and chunk-size warnings.
+- `git diff --check`: passed.
+- Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-003`; both on `task/ARCH-025-SHOPIFY-003`. Shared workspace and shared implementation checkouts were not switched or mutated; no other task worktree was reused.
+- Start-of-attempt synchronization from the launcher packet: parent remote task branch fast-forward `not-needed`; parent `origin/main` `already-current`; implementation remote task branch fast-forward `not-needed`; implementation `origin/main` `already-current`.
+- Recursive implementation submodules: `git submodule sync --recursive` and `git submodule update --init --recursive` passed; `database` was initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 
 ### Deviations
 
-None.
+None. The fresh implementation worktree reused the already-installed SHOPIFY-002 `node_modules` tree through a local symlink for validation; no dependencies were installed or package files changed.
 
 ### Assumptions
 
-None.
+The documented ARCH-025 baseline `ARCH025-TEST-001` remains the reference for the frozen and full-suite failures.
 
 ### Unresolved Issues
 
-None.
+The frozen façade and full application suites retain their documented `ARCH025-TEST-001` baseline failures; focused tests and production/type validation pass.
 
 ### Architectural Concerns
 
-None.
+None identified. The extracted collaborator is read-only and depends only on the existing provider and Prisma contracts.
 
 ## Architect Review
 
