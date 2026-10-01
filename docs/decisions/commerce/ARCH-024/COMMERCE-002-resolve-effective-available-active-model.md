@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
 executor: null
 claimed_at: null
@@ -1114,9 +1114,23 @@ None identified. Implementation is ready for `moda_architect` review; no follow-
 
 ### Review Status
 
-Changes Requested
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-10-01
+
+Attempt 2 closes both corrections from the prior Architect Review and is accepted.
+
+**A1-R1 is closed.** `ModelConfigurationService.createCatalogueEntry(...)` now performs a read-only `findUnique(...)` of the deterministic `arch024-platform-model-availability` row, projects it through the published `CommerceModelAvailabilitySchema`, requires `scope = PLATFORM` with `shopId = null`, and fails boundedly as retryable `DATABASE_UNAVAILABLE` when the bootstrap row is missing or structurally invalid. Direct inspection of production `src/` finds no `CommerceModelAvailability` create/upsert/update/delete operation. The missing-row unit regression proves the operation does not recreate the Availability and leaves Catalogue/audit state untouched. The disposable PostgreSQL test fixture seeds the migration-owned row explicitly as test-only state before legacy Catalogue creation; that seeding is not reachable from production Commerce code.
+
+**A1-R2 is closed.** The Completion Report now records the launcher-resolved canonical workspace root, dedicated parent and Commerce implementation worktrees, matching `task/ARCH-024-COMMERCE-002` branches, start-of-attempt synchronization, dependency gates, recursive submodule materialisation, accepted `database/` gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, Attempt 2 implementation commit `f7cf6deb0e108bc5d70a055db6283441503d7dc7`, a pushed parent report commit, and final clean/remote-aligned evidence for both worktrees.
+
+The resubmission identifies implementation head `f7cf6deb` and final parent task-branch head `886dd95c`. The uploaded review archive contains no usable Git metadata, so those remote heads cannot be independently queried here. The durable Completion Report itself records the implementation commit, pushed parent report evidence and final clean/local-equals-remote state; the later submitted parent head is treated as additional handoff evidence, not as a reason to manufacture another report-only commit.
+
+The correction remains bounded to the prior A1-R1 contract. The rest of Attempt 1's already-conformant effective Availability, Price Plan and fail-closed `SHOP -> PRICING_PLAN -> PLATFORM` resolution remains unchanged in architectural ownership and behavior.
+
+#### Attempt 1 review — Changes Requested — 2026-10-01
 
 Attempt 1 is substantially architecture-conformant across the new model-resolution boundary, but two corrections are required before acceptance.
 
@@ -1159,30 +1173,28 @@ The implementation commit `1f9a462` and parent report commit `5184a5c1` are acce
 
 ### Validation Reviewed
 
-Submitted Attempt 1 evidence records PASS for Prisma generation; the required focused five-suite Vitest set (36 tests); model-service tests (5 tests); disposable PostgreSQL proof (7 tests) with zero owned Docker resources remaining; targeted ESLint; typecheck; editor diagnostics; and `git diff --check`.
-
-The uploaded snapshot does not contain installed `node_modules`, so those Node/Docker checks were inspected from the durable Completion Report rather than independently rerun in this review environment. Attempt 2 must rerun the task-required validation after A1-R1 because production source/test fixture code changes are required.
+- Independently inspected `src/commerce/agent-configuration/model-service.ts`: the legacy Catalogue create bridge now reads only the deterministic bootstrap Availability and contains no Availability mutation/repair path.
+- Independently inspected `tests/agent-configuration-model.test.ts`: the missing-bootstrap regression expects retryable `DATABASE_UNAVAILABLE`, confirms the Availability remains absent, and confirms no Catalogue or audit row is written.
+- Independently inspected `tests/agent-configuration-model-postgres.test.ts`: the deterministic Platform Availability is seeded explicitly in test fixture setup before legacy Catalogue creation.
+- Re-checked production `src/` for `commerceModelAvailability.create/upsert/update/delete` operations: none are present.
+- Re-checked Commerce dependency consumption: `@modainteract/moda-interact-shared` is exactly `1.1.0`, and the lockfile carries the accepted SHARED-002 integrity.
+- Reviewed submitted Attempt 2 evidence for the six-file focused Vitest set (**42 tests**), disposable PostgreSQL proof (**7 tests**) with owned-resource cleanup, targeted ESLint, typecheck, Prisma generation and `git diff --check`; all are recorded PASS.
+- The uploaded archive contains no installed `node_modules` and no usable Git metadata, so the dependency-backed Vitest/PostgreSQL/Prisma/ESLint/typecheck commands and remote branch heads were not independently re-executed/queried in this review environment.
 
 ### Architecture Conformance
 
-Conforms:
-
-- canonical Shared `@modainteract/moda-interact-shared@1.1.0` model contracts are consumed;
-- Platform and exact-Shop Availability reads are bounded, Shared-validated and deterministically ordered;
-- Platform/Shop selection writes use the single `assertModelSelectable(...)` gate inside the mutation transaction;
-- current ACTIVE/TRIALING subscription state resolves through current `BillingPlan.shopifyPlanHandle` to `MerchantPricingPlan`, ignoring pending plan state;
-- effective model precedence is fail-closed `SHOP -> PRICING_PLAN -> PLATFORM`;
-- Price Plan models are constrained to Platform Availability;
-- selected model/Availability state is revalidated inside the existing repeatable-read effective-configuration transaction;
-- effective selection provenance remains distinct from Availability provenance;
-- no credential/OpenRouter runtime dependency enters model resolution;
-- focused real-PostgreSQL coverage exercises the required resolution scenarios.
-
-Correction required:
-
-- the temporary legacy Catalogue compatibility bridge must not recreate the migration-owned Platform Availability;
-- the Completion Report must retain the required prepared-launch/worktree evidence.
+Conforms. Attempt 2 restores the migration-owned Platform Availability boundary without weakening the already-conformant ARCH-024 model-resolution design. Commerce reads but does not author/recreate the bootstrap Availability; legacy Catalogue creation remains bounded to that deterministic Platform row; Platform/Shop write selection continues through the canonical availability gate; current Price Plan resolution remains trusted and pending-plan independent; explicit invalid Shop/Price-Plan selections remain fail-closed; effective resolution retains one repeatable-read snapshot; and no credential/OpenRouter runtime dependency enters this task.
 
 ### Follow-up
 
-Return the same task through `/moda-task ARCH-024-COMMERCE-002` for Attempt 2. Implement only A1-R1, add the regression, record A1-R2 evidence, rerun the required task validation, set the task back to `review`, and STOP. `ARCH-024-COMMERCE-003` and `ARCH-024-COMMERCE-005` remain gated until COMMERCE-002 is Accepted and Complete.
+`ARCH-024-COMMERCE-002` is **Complete / Accepted at Attempt 2**.
+
+Dependency reconciliation promotes exactly:
+
+```text
+ARCH-024-COMMERCE-005 -> Ready
+```
+
+`ARCH-024-COMMERCE-003` remains Pending because its ownership-migration dependency `ARCH-024-ADMIN-002` is not Complete in this isolated parent snapshot. No follow-on implementation is started implicitly by this review.
+
+This isolated COMMERCE-002 parent snapshot has not incorporated the separately accepted ADMIN-001 reconciliation from its sibling parent task branch. This acceptance patch does not replay another task's Completion Report or Architect Review. During later parent-branch integration, preserve ADMIN-001 as Complete and ADMIN-002 as Ready rather than regressing that accepted state.
