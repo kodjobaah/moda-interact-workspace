@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 40
-executor: copilot
-claimed_at: 2026-10-01T22:07:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-003
@@ -230,7 +230,8 @@ Implementation repository:
 
 Parent workspace:
 - Task file: `docs/decisions/shopify/ARCH-025/SHOPIFY-004-extract-recovery-capacity-read-service.md`
-- Report commit: `5091aa4bf646a86f721f0bdf798bf2a9047868be`
+- Initial completion-report commit: `5091aa4bf646a86f721f0bdf798bf2a9047868be`
+- Final parent task branch tip reviewed: `dde129983d7a62d808c8cddfc14b87ab637abba7`
 - Remote branch: `origin/task/ARCH-025-SHOPIFY-004`
 - Pushed: yes
 - Submodule gitlink staged: no
@@ -242,24 +243,40 @@ Merged to workspace main: no
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 is accepted. `MerchantRecoveryCapacityReadService` is a move-only extraction of the pre-task `BillingService.getMerchantRecoveryCapacityState(...)` implementation. The four existing reads, entitlement arithmetic, promotion target/window validation, paid BillingPeriod/counter integrity checks, blocker ordering, recovery-capacity precedence and `canStartRecovery` semantics are preserved. `BillingService` constructs one collaborator from its existing Prisma dependency and the SHOPIFY-002 `BillingPlanResolutionService`, and the public façade method is a thin delegate.
+
+The implementation branch changes only the three authorised files and implementation commit `350dedbf61290a01bf3edba642de64cc8482c811` is one commit ahead of the recorded implementation base. No route, provider protocol, schema, transaction, write path or public contract changed.
+
+The frozen regression asset remains byte-identical at SHA-256 `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`. The reported 18 frozen-suite failures and 24 full-suite failures contain no identifier outside durable baseline `ARCH025-TEST-001`.
 
 ### Reviewed Files
 
-None.
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/merchant-recovery-capacity-read.service.ts`
+- `tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-004-extract-recovery-capacity-read-service.md`
+- `docs/decisions/shopify/ARCH-025/_index.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- `docs/development-baseline.md` (`ARCH025-TEST-001`)
 
 ### Validation Reviewed
 
-None.
+- Prisma Client generation reported passed.
+- Focused recovery-capacity suite reported `9/9` passed.
+- Frozen façade SHA and zero-diff checks reported passed.
+- Frozen façade run reported `195 passed / 18 failed`, with all failures inside `ARCH025-TEST-001`.
+- Full suite reported `971 passed / 24 failed / 33 skipped`, with all failing identifiers inside `ARCH025-TEST-001`.
+- Typecheck, targeted ESLint, production build and `git diff --check` reported passed.
+- Source comparison against pre-task implementation confirmed the extracted method body is semantically unchanged and introduces no new database write or provider call.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-025, task scope, repository ownership, the SHOPIFY-002 catalogue-read boundary, read-only recovery-capacity ownership, façade compatibility, and the durable no-regression baseline.
 
 ### Follow-up
 
-None.
+`ARCH-025-SHOPIFY-005` becomes Ready. Do not begin later tasks until SHOPIFY-005 is architect-accepted Complete.
