@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 56
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-BACKGROUND-001
@@ -319,51 +319,59 @@ None identified. The implementation removes only the redundant Background wrappe
 
 ### Review Status
 
-Changes Requested
+Accepted — Attempt 2
 
 ### Review Notes
 
-Attempt 1 implementation is architecturally conformant in the inspected task-owned source. Against the accepted BACKGROUND-001 implementation baseline, the only repository changes are deletion of `src/agents/commerce.agent.pipeline.ts`, deletion of `tests/unit/agent/commerce.agent.pipeline.test.ts`, and removal of the direct `@langchain/langgraph` dependency from `package.json` / the root dependency map in `package-lock.json`. The deleted wrapper is exactly the documented one-node `START -> commerceAgent -> END` graph and the pre-task baseline references it only from its own focused test. Post-task source/test/package scans contain no direct Background LangGraph reference. LangGraph remains transitively supplied by published Shared `1.1.0`, which is expected.
+#### Attempt 2 review — Accepted — 2026-10-01
 
-The retained production boundary is unchanged: `src/commerce/host.ts` and `src/commerce/mcp-client.ts` are byte-identical to the accepted BACKGROUND-001 baseline; `@modelcontextprotocol/sdk@1.30.0`, `CommerceMcpClient`, `StreamableHTTPClientTransport` and `Client.callTool(...)` remain in place; no `@langchain/mcp-adapters` dependency is introduced. No source redesign is requested by this review.
+Reviewed implementation `ed12296fe11669f48eda50066163aef50aa7fa8d` and the submitted Attempt 2 evidence against the ARCH-024 BACKGROUND-002 task contract, parent architecture, accepted BACKGROUND-001 boundary and the Attempt 1 correction contract. Attempt 2 is accepted.
 
-Acceptance is withheld for durable execution/validation evidence only.
+The implementation remains exactly the bounded cleanup accepted in the source review: the unused one-node `commerce.agent.pipeline` wrapper and its focused unit test are deleted; Background no longer directly depends on `@langchain/langgraph`; the package lock removes only the direct root dependency; published Shared `1.1.0` may still supply LangGraph transitively; and the production `runCommerceAgent -> executeCommerceHost -> Shared runCommerceTurn -> RunnerTool -> CommerceMcpClient` path remains unchanged. `src/commerce/host.ts` and `src/commerce/mcp-client.ts` remain unchanged from the accepted BACKGROUND-001 baseline, the official `@modelcontextprotocol/sdk@1.30.0` boundary is retained, and no `@langchain/mcp-adapters` dependency is introduced.
 
-**A1-R1 — Record the prepared-launch/worktree evidence in the Completion Report.** Add the launcher-resolved canonical workspace root, dedicated parent task worktree, dedicated `moda-interact-background` implementation worktree, exact `task/ARCH-024-BACKGROUND-002` branches, start-of-attempt synchronization evidence, recursive implementation-submodule materialisation evidence, accepted database gitlink identity, exact Shared `1.1.0` consumption, implementation commit `ed12296fe11669f48eda50066163aef50aa7fa8d`, parent report commit identities, remote-head equality and final clean-worktree evidence. The prepared launcher packet is valid evidence, but the Completion Report must preserve it durably.
+Attempt 2 closes both evidence requirements without implementation churn. The Completion Report now durably records the canonical workspace, dedicated parent and implementation worktrees, matching task branches, start-of-attempt synchronization, recursive submodule materialisation, database gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, exact Shared `1.1.0` consumption, prior report/claim publication identities, implementation SHA and final clean/remote-equality evidence. Independent archive comparison confirms there is no file delta under `moda-interact-background/` between Attempt 1 and Attempt 2.
 
-**A1-R2 — Prove the non-clean full suite is non-regressing against the synchronized BACKGROUND-002 pre-task baseline.** The accepted BACKGROUND-001 final run recorded eight persistent baseline-equivalent failing tests plus the missing external ARCH-020 evidence fixture, with observability tests passing on its final rerun. This submission reports twelve failing tests and specifically adds four observability timeouts. Because this task changes installed dependency metadata, do not classify those extra failures as unrelated without comparison evidence. Run the same `npm test` command against the synchronized pre-task implementation baseline and the submitted implementation under equivalent Node/npm/Vitest/database-gitlink/environment conditions; record exact failing files/test names/outcomes for both. Re-run the focused observability file when needed to determine whether the four timeouts are transient. If the submitted state is baseline-equivalent or better and task-owned focused validation remains green, no source churn is required. If any current failure is new or worsened, correct only that regression in this same task and rerun the required validation.
+The full-suite non-regression proof is sufficient. Under equivalent Node `v24.21.0`, npm `11.19.0`, Vitest `4.1.11`, database gitlink and integration-test environment, synchronized pre-task baseline `0b629d4365d857eb21127f55a701d63635a201c5` and submitted implementation `ed12296fe11669f48eda50066163aef50aa7fa8d` both produce the same eight failing tests and the same missing ARCH-020 evidence-fixture suite. The submitted tree has exactly one fewer passing file/test because the intentionally deleted wrapper test no longer exists. No new or worsened failure is present. The focused observability slice passes 5 files / 27 tests on both trees, establishing that the four Attempt 1 observability timeouts were transient rather than a dependency-cleanup regression.
 
-No new task is required. This is evidence/reconciliation work unless A1-R2 proves an implementation regression.
+The task-focused production-path suite remains green at 4 files / 93 tests; the production build, source/MCP scans and `git diff --check` also pass. `npm run typecheck` is not declared by this repository; the declared build performs TypeScript compilation and passes.
+
+#### Attempt 1 review — Changes Requested — 2026-10-01
+
+Attempt 1 found the implementation architecturally conformant but withheld acceptance for durable execution evidence and deterministic full-suite baseline comparison. The correction contract required launcher/worktree/synchronization/submodule/publication evidence and proof that the reported twelve-test full-suite failure set did not represent a regression, with source changes only if the comparison exposed one. Attempt 2 satisfies that contract without source/test changes.
 
 ### Reviewed Files
 
-- `src/agents/commerce.agent.pipeline.ts` from the accepted BACKGROUND-001 baseline (deleted by this task)
-- `tests/unit/agent/commerce.agent.pipeline.test.ts` from the accepted BACKGROUND-001 baseline (deleted by this task)
+Implementation/review evidence:
+
+- complete `moda-interact-background/` Attempt 1 -> Attempt 2 tree comparison (no changes)
+- deleted baseline `src/agents/commerce.agent.pipeline.ts`
+- deleted baseline `tests/unit/agent/commerce.agent.pipeline.test.ts`
 - `package.json`
 - `package-lock.json`
 - `src/commerce/host.ts`
 - `src/commerce/mcp-client.ts`
+
+Parent workspace:
+
 - `docs/decisions/background/ARCH-024/BACKGROUND-002-retire-redundant-commerce-agent-langgraph-wrapper.md`
 - `docs/decisions/background/ARCH-024/_index.md`
 - `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 
 ### Validation Reviewed
 
-- Independently compared the submitted `moda-interact-background` tree with the accepted BACKGROUND-001 implementation snapshot: task delta is limited to the two required deletions plus direct dependency metadata removal.
-- Confirmed the pre-task baseline references `createCommerceAgentPipeline` / `commerce.agent.pipeline` only from the deleted wrapper and its dedicated test.
-- Confirmed the submitted `src`, `tests` and `package.json` contain no `@langchain/langgraph`, `createCommerceAgentPipeline`, `commerce.agent.pipeline` or `@langchain/mcp-adapters` reference.
-- Confirmed `package-lock.json` removes only the root direct LangGraph dependency while published Shared `1.1.0` continues to depend transitively on `@langchain/langgraph@1.4.15`.
-- Confirmed `src/commerce/host.ts` and `src/commerce/mcp-client.ts` are byte-identical to the accepted BACKGROUND-001 baseline.
-- Reviewed submitted focused-test evidence: 4 files / 93 tests passed.
-- Reviewed submitted `npm run build` and `git diff --check` PASS results.
-- Repository-wide `npm test` is not yet accepted as non-regressing because A1-R2 baseline-parity evidence is missing.
+- Confirmed Attempt 1 and Attempt 2 `moda-interact-background/` trees are byte-identical.
+- Reviewed prepared launcher/worktree, branch, synchronization, recursive-submodule, database-gitlink, Shared-version, implementation/report publication and clean/remote-equality evidence.
+- Reviewed exact full-suite parity: baseline and submitted trees have the same eight failing tests and same missing-fixture suite; no current failure is new or worsened.
+- Reviewed focused observability parity: 5 files / 27 tests pass on both trees.
+- Reviewed focused production-path validation: 4 files / 93 tests pass.
+- Reviewed build, LangGraph-removal scan, official-MCP-boundary scan and `git diff --check` PASS results.
+- Confirmed the wrapper deletion accounts exactly for the one fewer passing file/test in the submitted full-suite result.
+- The uploaded review archive contains no usable Git remote metadata or installed dependency tree, so remote heads and Node commands were not independently rerun in this review environment; the durable prepared-execution/validation evidence and unchanged Attempt 2 implementation satisfy the correction contract.
 
 ### Architecture Conformance
 
-Implementation design: conformant.
-
-Task lifecycle/evidence: not yet conformant because the Completion Report does not durably preserve the prepared launcher/worktree/synchronization/submodule evidence and the twelve-test repository-suite failure set has not been compared deterministically with this task's synchronized pre-task baseline.
+Conforms. BACKGROUND-002 removes only the redundant local one-node graph and direct LangGraph dependency. Shared remains the owner of the actual Commerce-turn graph; Background retains conversation lifecycle and the hardened official MCP SDK client. No runtime, queue, ordering, lease, history, Tool authorization or transport boundary changes are introduced.
 
 ### Follow-up
 
-Reclaim `ARCH-024-BACKGROUND-002` for Attempt 2. Treat A1-R1 as report/evidence reconciliation and A1-R2 as evidence-only unless the comparison demonstrates a new or worsened regression. Do not begin any follow-on work.
+`ARCH-024-BACKGROUND-002` is **Complete / Accepted at Attempt 2**. It enables no further Background task. `ARCH-024-GATEWAY-001` remains independent of BACKGROUND-002 and continues to depend on `ARCH-020-GATEWAY-003`, `ARCH-024-ADMIN-003`, `ARCH-024-COMMERCE-007` and `ARCH-024-BACKGROUND-001`. No downstream implementation is started implicitly by this review.
