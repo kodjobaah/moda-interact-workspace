@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-SYSTEM-TEST-004
 architecture_id: ARCH-021
-title: Validate Feature-composed selected-shop Test Conversations
+title: Superseded - Feature-composed selected-shop Test Conversations validation
 task_kind: implementation
 domain: system-test
 repository: moda-interact-system-test
@@ -9,24 +9,21 @@ assigned_agent: moda_system_test
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 130
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-021-COMMERCE-105
-  - ARCH-021-COMMERCE-106
-  - ARCH-021-COMMERCE-107
-  - ARCH-021-COMMERCE-108
-  - ARCH-021-COMMERCE-109
-  - ARCH-021-GATEWAY-002
+depends_on: []
 enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-10-01
 ---
 
 # Validate Feature-composed selected-shop Test Conversations
+
+> **Superseded 2026-10-01. Do not execute.** Its ARCH-021 Phase-6 implementation dependencies were superseded by ARCH-024. ARCH-024 terminal integrated system-test task materialisation is deliberately deferred to a later architecture session because final validation overlaps frozen ARCH-023 and upcoming architecture work.
+> The remaining content is retained as historical design context only.
 
 ## Architecture
 

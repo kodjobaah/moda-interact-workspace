@@ -104,7 +104,7 @@ Manual validation exposed COMMERCE-104: Tool and Review must become directly cli
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SYSTEM-TEST-004](SYSTEM-TEST-004-validate-feature-composed-selected-shop-test-conversations.md) | Validate all-Capabilities-per-Feature composition, selected-shop effective Model/Prompt freeze, real Tool execution, multi-turn state and removal of redundant human Preview controls | Pending | COMMERCE-105..109, GATEWAY-002 |
+| [SYSTEM-TEST-004](SYSTEM-TEST-004-validate-feature-composed-selected-shop-test-conversations.md) | Historical ARCH-021 Phase-6 integrated validation | Superseded; future ARCH-024 integrated validation deferred | - |
 
 SYSTEM-TEST-004 is terminal architecture validation. It becomes Ready only after all Phase-6 implementation and Gateway dependencies are architect-accepted Complete. No implementation/publication/Gateway task depends on it.
 Manual validation exposed COMMERCE-104: Tool and Review must become directly clickable as soon as their current first-entry predicates are satisfied, without requiring `Next`, while the existing monotonic unlock frontier and current-candidate Create gate remain intact.
@@ -116,3 +116,8 @@ COMMERCE-104 Attempt 1 is now architect-accepted Complete. Every SYSTEM-TEST-003
 Manual validation after C104 showed that Add Capability still renders its phases as a numbered ordered list. COMMERCE-110 owns the bounded semantic/presentation correction to a real `Capability / Tool / Review` tablist while preserving C104 navigation behaviour.
 
 COMMERCE-110 is now architect-accepted Complete. SYSTEM-TEST-003's C110 dependency is satisfied and terminal Feature/Capability validation is **Ready**.
+
+
+## 2026-10-01 Phase-6 supersession
+
+`ARCH-021-SYSTEM-TEST-004` is superseded because its implementation dependencies were replaced by ARCH-024. No ARCH-024 system-test task is materialised in this architecture session; terminal integrated validation will be decomposed later against the final overlapping architecture set.

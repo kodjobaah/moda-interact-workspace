@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-COMMERCE-107
 architecture_id: ARCH-021
-title: Build Feature-composed Test Conversations UI
+title: Superseded - Feature-composed Test Conversations UI
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -9,21 +9,22 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 102
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-021-COMMERCE-105
-  - ARCH-021-COMMERCE-106
-enables:
-  - ARCH-021-COMMERCE-109
+depends_on: []
+enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-10-01
+superseded_by: ARCH-024-COMMERCE-005
 ---
 
 # Build Feature-composed Test Conversations UI
+
+> **Superseded 2026-10-01. Do not execute.** ARCH-024-COMMERCE-005 replaces this unstarted UI task.
+> The remaining content is retained as historical design context only.
 
 ## Architecture
 
