@@ -1118,7 +1118,7 @@ Individual task YAML is authoritative.
 | `ARCH-024-ADMIN-001` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-ADMIN-002` | `moda_admin` | Ready | DATABASE-001, SHARED-002, ADMIN-001 |
 | `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
-| `ARCH-024-ADMIN-004` | `moda_admin` | Ready | DATABASE-001, SHARED-002 |
+| `ARCH-024-ADMIN-004` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
 | `ARCH-024-COMMERCE-002` | `moda_commerce` | Ready | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
