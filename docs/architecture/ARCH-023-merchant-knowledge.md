@@ -3280,7 +3280,7 @@ Commerce-adjacent execution state after COMMERCE-002 Attempt 4 acceptance:
 ARCH-023-DATABASE-004   Complete — Accepted Attempt 1
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-COMMERCE-002   Complete — Accepted Attempt 4
-ARCH-023-COMMERCE-003   Ready
+ARCH-023-COMMERCE-003   Complete — Accepted Attempt 2
 ARCH-023-ADMIN-004      Ready
 ARCH-023-COMMERCE-004   Pending — waits for ADMIN-004
 ARCH-023-GATEWAY-001    Pending — additional prerequisites remain
@@ -3315,24 +3315,24 @@ ARCH-023-BACKGROUND-002 Ready
 ARCH-023-BACKGROUND-003 Ready
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-003    Ready
-ARCH-023-SHOPIFY-004    Ready
-ARCH-023-SHOPIFY-005    Pending — still depends on SHOPIFY-004
+ARCH-023-SHOPIFY-004    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-005    Ready
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
 SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
-Current Shopify frontier after SHOPIFY-003 Attempt 3 acceptance:
+Current Shopify frontier after SHOPIFY-004 Attempt 2 acceptance:
 
 ```text
 ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-003    Complete — Accepted Attempt 3
-ARCH-023-SHOPIFY-004    Pending — requires ADMIN-004
-ARCH-023-SHOPIFY-005    Pending — requires SHOPIFY-004
+ARCH-023-SHOPIFY-004    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-005    Ready
 ```
 
-SHOPIFY-003 Attempt 3 is accepted. Initial activation now publishes the exact already-pinned pending DRAFT even if Admin later reassigns the category's current `defaultTemplateId`; the Template-A -> Template-B regression passes in both focused and disposable-PostgreSQL coverage, and the existing activation/rollback/replay proof remains green. This acceptance promotes no new task. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
+SHOPIFY-003 remains Complete / Accepted Attempt 3. SHOPIFY-004 is now Complete / Accepted Attempt 2: current-plan configuration gates cover every source mutation, edit/refresh share the R3 first-N entitlement window, OFF remains non-destructive, and canonical URL length is validated before persistence. SHOPIFY-004 acceptance satisfies SHOPIFY-005's only dependency, so SHOPIFY-005 is Ready but not started implicitly. The separately required Background billing-reconciliation activation hook remains outside these tasks and must be materialised before final ARCH-023 system acceptance.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3342,6 +3342,19 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — COMMERCE-003 Attempt 2 accepted
+
+- Accepted the evidence-only Attempt 2 after the canonical parent and Commerce task worktrees were synchronized and the required worktree/provenance packet, completed checklists, corrected lint count and categorized full-suite failure inventory were recorded.
+- Confirmed the Commerce implementation remained unchanged: Platform plus optional Shop Instructions are additive, exposed through the fixed reserved MCP prompts, consumed in the same order by Preview, and no Background files were modified.
+- Marked COMMERCE-003 Complete / Accepted Attempt 2. No implementation task is promoted by this acceptance because COMMERCE-003 declares no `enables`; the separate Background host-consumption follow-up remains mandatory before final ARCH-023 system acceptance.
+### 2026-10-01 — SHOPIFY-004 Attempt 2 accepted
+
+- Accepted the Merchant Knowledge Recovery Settings control plane and WEB_PAGE lifecycle after closing all three Attempt 1 server-boundary findings.
+- Confirmed delete/reorder require current Merchant Knowledge plan entitlement without requiring merchant opt-in or first-N source eligibility; edit/refresh use the same ordered active allowed-source first-N window as the R3 read model.
+- Accepted the disposable PostgreSQL regressions proving a source-count downgrade blocks edit/refresh without state/enqueue changes, reorder can move the dormant source back into eligibility, and delete/reorder fail without current entitlement while preserving rows/positions.
+- Confirmed raw and canonical HTTPS URL lengths are both bounded before persistence; the Unicode expansion regression fails before transaction entry.
+- Marked SHOPIFY-004 Complete / Accepted Attempt 2 and promoted SHOPIFY-005 to Ready. SHOPIFY-005 is not claimed or started by this reconciliation.
 
 ### 2026-10-01 — BACKGROUND-006 Attempt 1 accepted
 
