@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 56
-executor: copilot
-claimed_at: 2026-10-01T19:13:52Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-024-BACKGROUND-001
@@ -174,12 +174,12 @@ No queue/lease/history/ordering/stale-turn behaviour changes are authorised.
 
 ## Work Items
 
-- [ ] Prove the one-node pipeline is unreferenced by production code.
-- [ ] Delete the wrapper and focused wrapper test.
-- [ ] Prove no remaining Background source/test imports LangGraph.
-- [ ] Remove the direct LangGraph package dependency and update lockfile normally.
-- [ ] Verify `CommerceMcpClient` and official MCP SDK dependencies are unchanged.
-- [ ] Run focused/full Background validation required below.
+- [x] Prove the one-node pipeline is unreferenced by production code.
+- [x] Delete the wrapper and focused wrapper test.
+- [x] Prove no remaining Background source/test imports LangGraph.
+- [x] Remove the direct LangGraph package dependency and update lockfile normally.
+- [x] Verify `CommerceMcpClient` and official MCP SDK dependencies are unchanged.
+- [x] Run focused/full Background validation required below.
 
 ## Interfaces / Contracts
 
@@ -210,13 +210,13 @@ None directly. Gateway depends on BACKGROUND-001 because deployment/keyring cuto
 
 ## Acceptance Criteria
 
-- [ ] The redundant one-node Background graph and its unit test are deleted.
-- [ ] Background production code has no direct `@langchain/langgraph` import.
-- [ ] Background package metadata no longer directly depends on `@langchain/langgraph`.
-- [ ] Production WhatsApp -> CommerceAgent call path is unchanged.
-- [ ] `CommerceMcpClient` still uses the official MCP SDK and retains the hardened transport invariants.
-- [ ] No `@langchain/mcp-adapters` dependency is introduced.
-- [ ] Existing Commerce host/MCP/conversation-turn tests remain passing.
+- [x] The redundant one-node Background graph and its unit test are deleted.
+- [x] Background production code has no direct `@langchain/langgraph` import.
+- [x] Background package metadata no longer directly depends on `@langchain/langgraph`.
+- [x] Production WhatsApp -> CommerceAgent call path is unchanged.
+- [x] `CommerceMcpClient` still uses the official MCP SDK and retains the hardened transport invariants.
+- [x] No `@langchain/mcp-adapters` dependency is introduced.
+- [x] Existing Commerce host/MCP/conversation-turn tests remain passing.
 
 ## Validation
 
@@ -245,23 +245,36 @@ This task removes only a redundant wrapper. Shared now owns the real Commerce tu
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+- `src/agents/commerce.agent.pipeline.ts`: deleted unused one-node LangGraph wrapper.
+- `tests/unit/agent/commerce.agent.pipeline.test.ts`: deleted its isolated wrapper test.
+- `package.json`, `package-lock.json`: removed the direct `@langchain/langgraph` dependency using npm.
 
 ### Work Completed
 
-None.
+- Static R1 search before deletion found references only in the wrapper and its focused test. The production WhatsApp worker calls `runCommerceAgent` through `ConversationTurnProcessor`/admission and does not route through the wrapper.
+- Deleted the wrapper and test; post-deletion `rg` returned no matches for `@langchain/langgraph`, `createCommerceAgentPipeline` or `commerce.agent.pipeline` in `src`, `tests` or `package.json`.
+- Removed the direct LangGraph dependency; `npm ls --depth=0` reports it absent from root dependencies. It remains installed transitively through the published Shared package.
+- Preserved `@modelcontextprotocol/sdk@1.30.0` and the official `CommerceMcpClient` / `StreamableHTTPClientTransport` / `Client.callTool` implementation unchanged. No `@langchain/mcp-adapters` dependency was added.
+- Implementation committed and pushed on `task/ARCH-024-BACKGROUND-002` at `ed12296`.
 
 ### Validation Results
 
-Not run.
+- Pre-deletion `rg -n '@langchain/langgraph|createCommerceAgentPipeline|commerce\.agent\.pipeline' src tests`: PASS; only wrapper and dedicated test matched.
+- Post-deletion `rg -n '@langchain/langgraph|createCommerceAgentPipeline|commerce\.agent\.pipeline' src tests package.json`: PASS; no matches.
+- MCP boundary scan: PASS; official SDK, `CommerceMcpClient`, `StreamableHTTPClientTransport` and `callTool` remain in place; no MCP adapter package found.
+- Focused host/conversation/worker/CommerceAgent tests: PASS, 4 files / 93 tests.
+- `npm run build`: PASS; generated Prisma Client v6.19.3 and completed `tsc`.
+- `npm run typecheck`: not declared in this repository's `package.json`; the declared build's TypeScript compilation passed.
+- Final `npm test`: 93 files passed, 15 skipped, 6 failed; 1,388 tests passed, 38 skipped, 12 failed. Failures were in PostgreSQL integration tests requiring unavailable `localhost:5432`, a Commerce evidence fixture path pointing to a missing ARCH-020 parent task worktree, three unrelated billing-reconciliation assertions, one matured-candidate language assertion, and four observability timeouts. These failures are outside the changed files and are not classified as documented baseline debt.
+- `git diff --check`: PASS.
 
 ### Deviations
 
-None.
+- Full `npm test` is not green for the unrelated failures listed above. The task-specific host, worker, conversation-turn and CommerceAgent test slice passes. Repository-wide `typecheck` is not a declared script; `npm run build` supplies the repository's declared Prisma generation plus `tsc` validation.
 
 ### Assumptions
 
@@ -269,11 +282,11 @@ None.
 
 ### Unresolved Issues
 
-None.
+The full-suite failures listed in Validation Results remain for Architect triage; no unrelated source or test failures were modified.
 
 ### Architectural Concerns
 
-None.
+None identified. The implementation removes only the redundant Background wrapper/dependency and leaves the approved Shared runner and official MCP transport boundaries intact.
 
 ## Architect Review
 
