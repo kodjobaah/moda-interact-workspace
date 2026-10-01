@@ -1013,3 +1013,8 @@ remains frozen and is consumed as an external instruction dependency. ARCH-024 t
 system-test task materialisation is deliberately deferred to a later architecture session.
 
 [Architecture](ARCH-024-commerce-agent-model-runtime-and-test-conversations.md)
+## ARCH-025 — Shopify BillingService maintainability refactor (2026-10-01)
+
+Agreed Shopify-only structural refactor of `moda-interact/app/services/billing/billing.service.ts`. Eleven sequential `moda_app` tasks extract BillingPeriod projection, plan resolution, reads, activation, hosted callback fencing, recovery-credit purchase initiation, subscription-ended notification and finally subscription synchronization behind the unchanged `BillingService` façade. No Database, Shared, Background, Admin, Commerce, Gateway or System Test implementation task is part of ARCH-025. The existing 127-test `billing.service.test.ts` is frozen byte-for-byte as a regression gate for every task.
+
+[Architecture](ARCH-025-shopify-billing-service-maintainability.md)
