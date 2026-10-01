@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
 executor: copilot
 claimed_at: 2026-10-01T08:21:36Z
@@ -535,21 +535,45 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Not Started
+Review requested; architect decision required on immutable upload contract.
 ### Files Changed
-None.
+Implementation repository (`moda-interact`):
+
+- R2 config/client, upload lifecycle, queue outcome and Merchant Knowledge read model services.
+- Authenticated upload-intent, upload-finalize and Reprocess routes; existing source route and route registry.
+- Recovery Settings Merchant Knowledge upload form/section and all 20 Shopify locale catalogues.
+- Focused upload, queue, action, UI and PostgreSQL integration tests.
+- `package.json` and `package-lock.json` for the required AWS S3 SDK packages.
+
+Parent workspace: this task file only. Architect Review remains unchanged.
 ### Work Completed
-None.
+- Added R2 configuration validation, S3-compatible signed PUT and HeadObject client, authenticated intent/finalization/Reprocess actions, and revisioned file replacement lifecycle.
+- Added direct browser PUT, Web Crypto SHA-256, file validation, file metadata editing, Reprocess and localized upload/action/progress labels.
+- Reprocess explicitly resolves the revision at `source.currentGeneration`.
+- Queue publication now reports its outcome so the UI distinguishes enqueued work from durable PENDING work awaiting activation or queue recovery.
+- The implementation does not yet guarantee immutable object bytes after finalization: see Architectural Concerns and Unresolved Issues.
 ### Validation Results
-None.
+- `npm run typecheck`: passed.
+- Focused upload/queue/action/UI suite: 25 passed; 4 PostgreSQL integration cases skipped in default mode.
+- `tests/unit/merchant-i18n.test.ts`: 12 passed; locale key parity and ICU validation passed for all 20 locales.
+- Changed-file ESLint: passed; only warning is repository TypeScript 5.9.3 being outside `@typescript-eslint/typescript-estree`'s declared `<5.4.0` support range.
+- Changed-file diagnostics: no errors in the edited upload service, queue service, upload form or section.
+- `npm run build`: passed for client and SSR bundles; existing non-blocking large-chunk/dependency annotation warnings remain.
+- `git diff --check`: passed.
+- Disposable PostgreSQL integration attempt with `MODA_DISPOSABLE_INTEGRATION=1`: blocked before assertions because Testcontainers could not find a working container runtime.
+- Full `npm run lint`: 17 errors in unrelated existing files; changed-file lint is clean.
 ### Deviations
-None.
+- The task’s exact upload contract exposes only `Content-Type` in `requiredHeaders`, while an immutable R2 object requires conditional `PutObject` (`If-None-Match: *`) or another approved protection. Implementing the conditional header also requires updating the browser header contract and Gateway bucket CORS contract. This was not silently changed; the task is submitted for architect direction.
+- `npm ci` reported 32 dependency audit findings (4 moderate, 28 high); dependency remediation was not part of this task.
 ### Assumptions
-None.
+- Cloudflare R2's published S3 compatibility table marks `PutObject` conditional `If-None-Match` as supported. The AWS SDK presigner encodes it as a signed request header, which a browser must send and the exact-origin R2 CORS policy must allow.
+- The launcher prepared the dedicated parent and implementation worktrees and initialized the recursive database submodule at `2eb17ee910491e8f9df82736fc0a843844415947`.
 ### Unresolved Issues
-None.
+- The 600-second unconditional signed PUT remains valid after finalization and can overwrite the persisted object key, violating the immutable-original-bytes requirement.
+- PostgreSQL transaction integration assertions remain unexecuted until a container runtime is available.
 ### Architectural Concerns
-None.
+- `If-None-Match: *` is the narrow R2-compatible protection identified, but it conflicts with R5's exact `requiredHeaders` shape and requires Gateway CORS to allow `If-None-Match`. Request an explicit decision/amendment to both contracts before changing the upload API.
+- At task start, the launcher had prepared `task/ARCH-023-SHOPIFY-005` in both dedicated worktrees and the dependency gate passed; claim commit `d11ecceb3041b4b45ea68ba47cf3c7af3c1176da` was pushed. The canonical/shared checkouts were not used for implementation and no other task worktree was reused. `origin/main` advanced during this attempt; the implementation branch is now four commits behind it. No mainline merge/rebase was performed.
 
 ## Architect Review
 
