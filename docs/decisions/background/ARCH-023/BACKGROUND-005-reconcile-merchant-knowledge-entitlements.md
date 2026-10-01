@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 33
 executor: null
 claimed_at: null
-attempt: 1
+attempt: 2
 depends_on:
   - ARCH-023-BACKGROUND-004
   - ARCH-023-DATABASE-006
@@ -323,13 +323,13 @@ re-entitlement alone does not trigger processing
 
 ## Work Items
 
-- [ ] Implement bounded current-entitlement reconciliation.
-- [ ] Implement idempotent ENTITLEMENT_CHANGE transaction.
-- [ ] Enqueue after commit with deterministic job id.
-- [ ] Integrate leased scheduler into existing Merchant Knowledge entrypoint.
-- [ ] Add the exact 300-second entitlement-reconciliation lease cadence branch and regression.
-- [ ] Add downgrade/increase/re-entitlement concurrency/integration tests.
-- [ ] Preserve all non-destructive dormancy semantics.
+- [x] Implement bounded current-entitlement reconciliation.
+- [x] Implement idempotent ENTITLEMENT_CHANGE transaction.
+- [x] Enqueue after commit with deterministic job id.
+- [x] Integrate leased scheduler into existing Merchant Knowledge entrypoint.
+- [x] Add the exact 300-second entitlement-reconciliation lease cadence branch and regression.
+- [x] Add downgrade/increase/re-entitlement concurrency/integration tests.
+- [x] Preserve all non-destructive dormancy semantics.
 
 ## Interfaces / Contracts
 
@@ -358,27 +358,27 @@ Gateway may deploy the dedicated worker only after this task is architect-accept
 
 ## Acceptance Criteria
 
-- [ ] Source-type downgrades are derived/non-destructive.
-- [ ] Source-count downgrades are derived/non-destructive.
-- [ ] Only content-limit decreases create ENTITLEMENT_CHANGE.
-- [ ] Replacement creation is idempotent/concurrency-safe.
-- [ ] Prior ACTIVE remains available while replacement is PENDING/PROCESSING.
-- [ ] Missed enqueue is recoverable by B1 reconciliation.
-- [ ] Pending future plan is ignored.
-- [ ] Increases/re-entitlement do not cause automatic reprocessing.
-- [ ] Dedicated worker now contains all Background ARCH-023 runtime behavior required before deployment.
-- [ ] Entitlement reconciliation uses its own persisted lease identity with an exact 300-second global cadence; existing leases/cadences remain unchanged.
+- [x] Source-type downgrades are derived/non-destructive.
+- [x] Source-count downgrades are derived/non-destructive.
+- [x] Only content-limit decreases create ENTITLEMENT_CHANGE.
+- [x] Replacement creation is idempotent/concurrency-safe.
+- [x] Prior ACTIVE remains available while replacement is PENDING/PROCESSING.
+- [x] Missed enqueue is recoverable by B1 reconciliation.
+- [x] Pending future plan is ignored.
+- [x] Increases/re-entitlement do not cause automatic reprocessing.
+- [x] Dedicated worker now contains all Background ARCH-023 runtime behavior required before deployment.
+- [x] Entitlement reconciliation uses its own persisted lease identity with an exact 300-second global cadence; existing leases/cadences remain unchanged.
 
 ## Validation
 
-- [ ] focused unit tests
-- [ ] database concurrency/integration tests
-- [ ] Merchant Knowledge entrypoint regression test
-- [ ] entitlement-reconciliation lease cadence unit/PostgreSQL regression
-- [ ] `npm test`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused unit tests
+- [x] database concurrency/integration tests
+- [x] Merchant Knowledge entrypoint regression test
+- [x] entitlement-reconciliation lease cadence unit/PostgreSQL regression
+- [x] `npm test` (run; unrelated existing failures recorded below)
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -389,21 +389,28 @@ Do not start Gateway deployment.
 ## Completion Report
 
 ### Status
-In Progress (blocked on a database-owned lease prerequisite; implementation checkpoint `a8b04ee` is on `task/ARCH-023-BACKGROUND-005`).
+Attempt 2 complete; submitted for architect review. Attempt 1's database prerequisite was accepted by ARCH-023-DATABASE-006.
 ### Files Changed
-`moda-interact-background/src/services/merchant-knowledge-entitlement-reconciliation.service.ts`; `moda-interact-background/src/entrypoints/merchant-knowledge.ts`; `moda-interact-background/tests/unit/services/merchant-knowledge-entitlement-reconciliation.service.test.ts`; `moda-interact-background/tests/unit/entrypoints/merchant-knowledge.test.ts`; `moda-interact-background/tests/integration/merchant-knowledge-entitlement-reconciliation.integration.test.ts`.
+`moda-interact-background/src/services/merchant-knowledge-entitlement-reconciliation.service.ts`; `moda-interact-background/src/entrypoints/merchant-knowledge.ts`; `moda-interact-background/src/runtime/background-runtime-lease.ts`; `moda-interact-background/tests/unit/services/merchant-knowledge-entitlement-reconciliation.service.test.ts`; `moda-interact-background/tests/unit/entrypoints/merchant-knowledge.test.ts`; `moda-interact-background/tests/integration/merchant-knowledge-entitlement-reconciliation.integration.test.ts`; `moda-interact-background/tests/unit/runtime/background-runtime-lease.test.ts`; `moda-interact-background/tests/integration/background-runtime-lease-cadence.concurrency.integration.test.ts`.
 ### Work Completed
-Implemented bounded, keyset-paged current-subscription reconciliation filtered by an enabled Merchant Knowledge preference; uses the existing activation-aware eligibility service and source-lock transaction to create idempotent `ENTITLEMENT_CHANGE` revisions only for content-limit decreases. Added deterministic post-commit queue publication, non-destructive dormant-source counts, the requested scheduler draft, and focused unit/entrypoint/PostgreSQL integration tests. The requested scheduler lease name is absent from the generated Prisma enum and PostgreSQL enum, so this checkpoint cannot compile until the database contract is extended.
+Preserved the Attempt 1 reconciliation implementation and resolved its database-owned enum prerequisite through accepted `ARCH-023-DATABASE-006`. Added the exact `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION -> 300` seconds cadence branch to the existing PostgreSQL-time lease `CASE`, without changing other lease mappings, generation/owner fencing, or runtime configuration. The existing dedicated scheduler uses its distinct lease at 300,000 ms; unit and PostgreSQL concurrency regressions now verify the cadence boundary. The entitlement service and integration coverage retain the bounded preference-filtered scan, activation-aware eligibility, source-lock idempotency, locator-only replacement, queue recovery, and non-destructive downgrade/increase/re-entitlement behavior.
 ### Validation Results
-Focused unit and entrypoint tests: 15 passed. PostgreSQL integration: 8 passed using the shared disposable infrastructure helper with `pgvector/pgvector:pg17`. `npm run prisma:validate`: passed. Changed-file diagnostics: clean. `git diff --check`: passed. `npm run build`: blocked by TS2820 because `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` is not a `BackgroundRuntimeLeaseName`. `npm test`: failed in unrelated existing suites (billing reconciliation expectations, ARCH-020 fixture path, runtime shared-package version assertion, and PostgreSQL enum tests without a database at `localhost:5432`).
+Focused reconciliation/lease/entrypoint unit tests: 20 passed. Disposable pgvector PostgreSQL suites: 12 passed across entitlement reconciliation and lease-cadence concurrency. `npm run build` (including Prisma generation): passed. Changed-file diagnostics: clean. `git diff --check`: passed. `npm test` was run; it still reports unrelated existing failures: one ARCH-020 fixture suite cannot find `ARCH-020-evidence-contract-fixtures.json`, four translation enum integration tests cannot reach `localhost:5432`, three billing reconciliation expectations fail, one matured-candidate test fails, and one observability test expects shared package `0.12.1` while this branch declares `1.0.1`.
 ### Deviations
-The repository's standard integration wrapper selected plain `postgres:17.6-alpine`, which lacks the required `vector` extension; the focused suite was rerun successfully with the shared helper's supported pgvector image override. No wrapper or global Docker configuration was changed.
+The standard Background integration wrapper selects plain `postgres:17.6-alpine`, which lacks the `vector` extension. Both task-specific PostgreSQL suites were run through the shared disposable infrastructure helper with its supported `pgvector/pgvector:pg17` image option; no wrapper or global Docker configuration was changed. The first cadence integration attempt used the stale generated Prisma client from before DATABASE-006; regenerating Prisma Client fixed the mismatch and the same suites then passed.
 ### Assumptions
-The task's no-database-schema/migration boundary remains binding. Reusing either existing Merchant Knowledge lease is not safe: the pending-reconciliation lease conflicts with its existing scheduler and the upload-cleanup lease has a different purpose/cadence.
+The accepted DATABASE-006 enum contract is materialized in this Background worktree's recorded database submodule commit `15859f16a7b9a889df8f70e1ecc29b27df8e31de`. Cadence remains Background-owned as specified by the updated task.
 ### Unresolved Issues
-The new lease requires a database-owned `BackgroundRuntimeLeaseName` enum value and a generated Prisma client contract before this Background branch can build. `moda_architect` confirmed this is a separate prerequisite and recommended defining `ARCH-023-DATABASE-006`, making this task depend on it, then resuming after acceptance. This task remains blocked; no architect review/acceptance is claimed.
+The full repository `npm test` command remains non-green for the unrelated failures listed above. The task-specific focused unit, PostgreSQL integration, build, diagnostics, and diff checks pass; no task-specific implementation blocker remains.
 ### Architectural Concerns
-The task requires a distinct persisted lease identity and a 300-second cadence but currently authorizes only Background files. The Background lease service also has a SQL cadence mapping keyed by the database enum. Adding the value here would cross the database ownership boundary; substituting another lease would break mutual exclusion or cadence semantics.
+None. The database-owned enum is consumed without modifying the database gitlink; the fixed cadence remains in the Background-owned lease service.
+
+### Attempt 1 Review Follow-up
+- Database-owned enum prerequisite: resolved by accepted `ARCH-023-DATABASE-006`; the generated Prisma client and Background build now accept the lease value.
+- Exact 300-second lease cadence: implemented in `src/runtime/background-runtime-lease.ts`; asserted by `tests/unit/runtime/background-runtime-lease.test.ts` and `tests/integration/background-runtime-lease-cadence.concurrency.integration.test.ts`, both included in the passing focused validations.
+
+### Attempt 2 Launcher Evidence
+Prepared execution succeeded with dependency gate passed (`ARCH-023-BACKGROUND-004` and `ARCH-023-DATABASE-006` complete). Attempt 2 was claimed by `copilot` at `2026-10-01T12:01:08Z`; durable parent claim commit `beaee882bb8f20a8454a0417ae13b9bb4224dedb` was pushed. Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-005`, `task/ARCH-023-BACKGROUND-005`, head `e32cc9fa57d282695ddf1dfd225525038567b789`. Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-005`, `task/ARCH-023-BACKGROUND-005`, start head `26fa9cebc624473e79a56e228951bb24dfe520d7`; final implementation commit `99ef48f2db6e014bd155561732ad7f05b580f06f` pushed. Parent and implementation task branches required no remote task fast-forward and already incorporated `origin/main`. Both dedicated worktrees were reused; shared workspace and shared implementation checkout were not switched or mutated; no other task worktree was reused. Recursive submodule sync/update passed; database submodule was initialized at the recorded `15859f16a7b9a889df8f70e1ecc29b27df8e31de` commit.
 
 ## Architect Review
 
@@ -435,3 +442,40 @@ The partial Background implementation respects repository ownership by stopping 
 Materialise and complete `ARCH-023-DATABASE-006` first. It adds only `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` to `public.BackgroundRuntimeLeaseName` with a forward enum-only migration and disposable PostgreSQL proof. After DATABASE-006 is architect-accepted Complete, return this same BACKGROUND-005 task from Blocked to Ready with Attempt 1 preserved. The next launcher claim becomes Attempt 2. Attempt 2 must then add/prove the exact 300-second lease cadence branch, finish the entrypoint/build/full task validation and return to review. `ARCH-023-GATEWAY-001` remains gated.
 
 Coordination update after DATABASE-006 acceptance: `ARCH-023-DATABASE-006` is now Complete / Accepted Attempt 1, so this same task is returned to Ready with Attempt 1 preserved. No implementation is started implicitly; the next authorized launcher claim is Attempt 2.
+
+## Architect Review — Attempt 2
+
+### Review Status
+Accepted — Attempt 2
+
+### Review Notes
+Accepted. Attempt 2 resolves the database-owned lease prerequisite without broadening repository ownership and completes the bounded entitlement-reconciliation runtime. The implementation reviewed at `99ef48f2db6e014bd155561732ad7f05b580f06f` uses the accepted `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` enum identity and adds exactly the required 300-second branch to the existing PostgreSQL-time `BackgroundRuntimeLeaseService.tryAcquire()` cadence `CASE`; every pre-existing lease branch, generation increment, owner-token fencing and runtime-configuration surface remains unchanged.
+
+The reconciliation path is architecture-conformant by inspection. It scans only current `ACTIVE`/`TRIALING` subscriptions with an active `merchant_knowledge` plan feature and explicit enabled merchant preference, ignores pending next-cycle plans, reuses `MerchantKnowledgeEntitlementService` for source eligibility, and keeps source-type/source-count downgrades non-destructive. For an entitled source whose current ACTIVE revision exceeds the current content-unit limit, the transaction locks the source row, re-resolves eligibility, rejects newer PENDING/PROCESSING work or stale generations, advances exactly one generation and creates one locator-only `ENTITLEMENT_CHANGE` PENDING revision while leaving the previous ACTIVE revision intact. Queue publication occurs only after commit; a failed enqueue leaves the durable PENDING revision for the existing BACKGROUND-001 reconciliation path.
+
+The exact fixed scheduler/lease pairing is now coherent: the dedicated Merchant Knowledge entrypoint runs entitlement reconciliation every `300_000` ms and the persisted lease cadence is 300 seconds. The disposable PostgreSQL concurrency proof demonstrates in-cadence suppression, a single generation-2 winner after the cadence elapses and stale-owner heartbeat/release rejection for the new lease identity.
+
+The Attempt 2 Completion Report contains the required launcher-resolved parent and implementation worktrees, branch synchronization results, dependency gate, recursive submodule state and final implementation head. No workflow/evidence correction remains.
+
+### Reviewed Files
+- `moda-interact-background/src/services/merchant-knowledge-entitlement-reconciliation.service.ts`
+- `moda-interact-background/src/services/merchant-knowledge-entitlement.service.ts`
+- `moda-interact-background/src/entrypoints/merchant-knowledge.ts`
+- `moda-interact-background/src/runtime/background-runtime-lease.ts`
+- `moda-interact-background/tests/unit/services/merchant-knowledge-entitlement-reconciliation.service.test.ts`
+- `moda-interact-background/tests/integration/merchant-knowledge-entitlement-reconciliation.integration.test.ts`
+- `moda-interact-background/tests/unit/entrypoints/merchant-knowledge.test.ts`
+- `moda-interact-background/tests/unit/runtime/background-runtime-lease.test.ts`
+- `moda-interact-background/tests/integration/background-runtime-lease-cadence.concurrency.integration.test.ts`
+- `docs/decisions/background/ARCH-023/BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md`
+
+### Validation Reviewed
+Accepted the recorded canonical-worktree validation: 20 focused reconciliation/lease/entrypoint unit tests passed; 12 disposable `pgvector/pgvector:pg17` PostgreSQL tests passed across entitlement reconciliation and lease-cadence concurrency; the production build (including Prisma generation), changed-file diagnostics and `git diff --check` passed.
+
+The repository-wide `npm test` remains non-green for the separately recorded ARCH-020 fixture absence, local-PostgreSQL-dependent translation-enum tests, billing/matured-candidate expectations and a stale shared-package-version assertion. None is in the BACKGROUND-005 changed surface or contradicted by the focused/live proofs, so those failures do not block this bounded task.
+
+### Architecture Conformance
+Conforms. DATABASE-006 owns only the persisted lease identity; BACKGROUND-005 owns its scheduler, fixed 300-second runtime cadence and entitlement-reconciliation behavior. The implementation reuses the accepted merchant opt-in/entitlement service and existing C4/B1 contracts, introduces no new queue or worker process, preserves durable ACTIVE knowledge during replacement processing, and does not mutate source configuration for plan downgrades.
+
+### Follow-up
+`ARCH-023-BACKGROUND-005` is Complete / Accepted at Attempt 2. All three declared prerequisites of `ARCH-023-GATEWAY-001` (`BACKGROUND-005`, `SHOPIFY-005`, `COMMERCE-002`) are now Complete/architect-accepted, so GATEWAY-001 becomes Ready with Attempt 0 preserved. Do not start Gateway work implicitly; its normal `/moda-task ARCH-023-GATEWAY-001` launcher must claim it. Terminal system-test tasks remain Pending until their complete implementation/deployment dependency sets are satisfied. The separately recorded Background billing-reconciliation activation hook remains a required follow-up before final ARCH-023 system acceptance and is not folded into this task.

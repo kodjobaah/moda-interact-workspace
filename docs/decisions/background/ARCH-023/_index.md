@@ -52,7 +52,7 @@ Individual task YAML is authoritative.
 | [BACKGROUND-006](BACKGROUND-006-respect-merchant-knowledge-activation.md) | Require merchant opt-in in ingestion eligibility and PENDING reconciliation | Complete — Accepted Attempt 1 | BACKGROUND-001, ADMIN-004 |
 | [BACKGROUND-007](BACKGROUND-007-add-merchant-knowledge-runtime-lease-cadences.md) | Add fixed global cadence handling for the two Merchant Knowledge runtime leases | Complete — Accepted Attempt 1 | DATABASE-005 |
 | [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Complete — Accepted Attempt 3 | BACKGROUND-002, BACKGROUND-003, BACKGROUND-006, DATABASE-005, BACKGROUND-007 |
-| [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Ready — Attempt 1 preserved; next claim Attempt 2 | BACKGROUND-004, DATABASE-006 |
+| [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Complete — Accepted Attempt 2 | BACKGROUND-004, DATABASE-006 |
 
 ## Execution frontier
 
@@ -79,10 +79,10 @@ DATABASE-006 Complete — Accepted Attempt 1
     |                    |
     +--------------------+
                          v
-BACKGROUND-005 Ready — Attempt 1 preserved; next claim Attempt 2
+BACKGROUND-005 Complete — Accepted Attempt 2
 ```
 
-BACKGROUND-005 is again the executable Background frontier after DATABASE-006 acceptance. Its blocked Attempt 1 implementation checkpoint remains preserved; the next launcher claim becomes Attempt 2. Gateway deployment must not begin before BACKGROUND-005 is Complete/architect-accepted.
+BACKGROUND-005 is Complete / Accepted Attempt 2. The previously blocked implementation is now fully validated with the accepted DATABASE-006 lease identity and the Background-owned 300-second persisted cadence. All declared GATEWAY-001 prerequisites are Complete/architect-accepted, so Gateway becomes Ready but remains unclaimed until its normal launcher is invoked.
 
 ## Merchant opt-in reconciliation
 
