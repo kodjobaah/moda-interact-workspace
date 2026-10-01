@@ -16,11 +16,11 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-COMMERCE-006
-  - ARCH-024-SHARED-002
+  - ARCH-024-SHARED-004
   - ARCH-024-ADMIN-003
 enables: []
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Execute Test Conversation models through OpenRouter
@@ -107,7 +107,7 @@ and a conversation mode switch between a scripted fixture model and the HTTP pro
 ARCH-024 changes that architecture before this task executes:
 
 - DATABASE-001 persists dynamic `provider + providerModelId`, bounded model `configuration`, Availability and one encrypted `CommerceOpenRouterCredential` per environment.
-- SHARED-001/002 publish the browser-safe model contracts plus Node-only `OpenRouterModelClient` implementing the existing Shared `CommerceModelInvoker` / `ModelRequest` / `ModelStep` runner boundary.
+- SHARED-001 defines the browser-safe model contracts plus Node-only `OpenRouterModelClient`; SHARED-002/003 refactor and instrument the runner; SHARED-004 publishes the combined accepted package implementing the existing `CommerceModelInvoker` / `ModelRequest` / `ModelStep` runner boundary.
 - COMMERCE-002 resolves exactly one effective active model for the selected Shop.
 - COMMERCE-004/005 create a Feature-composed Test Conversation and selected-Shop Conversation Configuration Snapshot boundary.
 - COMMERCE-006 installs real selected-Shop Tool execution while deliberately leaving human model turns disabled.
@@ -161,7 +161,7 @@ scripts/run-preview-openrouter-disposable.mjs             CREATE
 
 If an accepted C001-C006 implementation has moved/renamed an equivalent Preview file, modify that accepted equivalent instead of creating compatibility aliases. Record every such substitution in the Completion Report.
 
-Additional Commerce files may be changed only when mechanically required to consume the exact SHARED-002 package or to reuse the existing credential keyring parser. Name and justify each additional file in the Completion Report.
+Additional Commerce files may be changed only when mechanically required to consume the exact SHARED-004 package or to reuse the existing credential keyring parser. Name and justify each additional file in the Completion Report.
 
 ## Out of Scope
 
@@ -173,7 +173,7 @@ Additional Commerce files may be changed only when mechanically required to cons
 - Shared contract/runtime changes.
 - Background/production CommerceAgent OpenRouter adoption.
 - Gateway/Render environment-variable removal; GATEWAY-001 owns deployment cleanup.
-- LangGraph adoption.
+- Commerce-local LangGraph/agent orchestration. The published Shared `runCommerceTurn` owns the ARCH-024 LangGraph graph; Commerce MUST NOT add a direct `@langchain/langgraph` dependency or local graph.
 - New model-provider SDKs in `moda-interact-commerce`.
 - Direct `@langchain/openrouter` or `@langchain/core` imports in Commerce.
 - Model fallback lists.
@@ -188,7 +188,7 @@ Additional Commerce files may be changed only when mechanically required to cons
 
 ### R1 — consume exactly the published ARCH-024 Shared runtime
 
-After ARCH-024-SHARED-002 is architect-accepted, read its Completion Report and update:
+After ARCH-024-SHARED-004 is architect-accepted, read its Completion Report and update:
 
 ```text
 @modainteract/moda-interact-shared
@@ -235,7 +235,7 @@ and delete its obsolete direct-HTTP provider tests:
 tests/preview-model-provider.test.ts
 ```
 
-Static validation MUST prove Commerce has no direct LangChain/OpenRouter package import outside the Shared package import above.
+Static validation MUST prove Commerce has no direct LangChain/OpenRouter/LangGraph package import outside the published Shared package imports above.
 
 ### R2 — extend the existing Preview snapshot; do not create a second persisted conversation snapshot
 
@@ -657,6 +657,29 @@ outputTokens = 400
 
 Do not raise those budgets in this task.
 
+### R9A — pass the existing Commerce StructuredLogger into the Shared runner
+
+`PreviewService` already owns a canonical `StructuredLogger`. When invoking `runCommerceTurn`, pass a child of that existing logger:
+
+```ts
+dependencies: {
+  model,
+  tools,
+  now: this.now,
+  digest,
+  logger: this.logger.child({
+    purpose: "preview",
+    previewRunId: run.id,
+  }),
+}
+```
+
+Do not create a second logger for the runner. Do not change `service.name=moda-interact-commerce` or the resolved deployment environment.
+
+The host child MUST NOT contain the user message, prompt/instruction text, Tool arguments/results, Merchant Knowledge content, provider body or credentials. Shared adds the `commerce-turn-runner` component and safe turn/grant/release identifiers.
+
+Focused tests must prove Test Conversation runs pass the injected logger and that the same successful/failed result is returned if logging fails.
+
 ### R10 — `COMMERCE_PREVIEW_ENABLED` remains the only Commerce Preview model kill switch
 
 In `lib/server/config.ts`, replace the old model/provider Preview configuration with exactly:
@@ -919,13 +942,14 @@ Static search MUST also prove:
 ```text
 no direct @langchain/openrouter import in Commerce
 no direct @langchain/core import in Commerce
+no direct @langchain/langgraph import in Commerce
 /api/studio/preview/tool-tests remains present
 retained fixture Tool-test executor remains referenced
 ```
 
 ## Work Items
 
-- [ ] Update Commerce to the exact SHARED-002 published package version.
+- [ ] Update Commerce to the exact SHARED-004 published package version.
 - [ ] Remove the bespoke Preview HTTP model provider and obsolete provider tests.
 - [ ] Extend the existing conversation snapshot with exact model + additive instruction state.
 - [ ] Capture effective model/instructions server-side when Start Conversation commits.
@@ -935,6 +959,7 @@ retained fixture Tool-test executor remains referenced
 - [ ] Remove human conversation FIXTURE/MODEL mode state and scripted fixture model execution.
 - [ ] Make model-run quota unconditional for human conversation runs in both stores.
 - [ ] Wire exact host instruction order and selected-Shop context into `runCommerceTurn`.
+- [ ] Pass the existing Commerce `StructuredLogger` child (`purpose=preview`, `previewRunId`) into `runCommerceTurn`; do not create a second logger.
 - [ ] Reduce Commerce Preview config to `COMMERCE_PREVIEW_ENABLED` only.
 - [ ] Enable Test Conversation message Send/reconcile/cancel behaviour with same-tick single-flight protection.
 - [ ] Add focused runtime tests.
@@ -954,7 +979,7 @@ commerce.CommerceModelCatalogueEntry
 commerce.CommerceAgentConfiguration
 ```
 
-From ARCH-024-SHARED-002:
+From ARCH-024-SHARED-004:
 
 ```text
 @modainteract/moda-interact-shared/commerce/model
@@ -1022,7 +1047,7 @@ No new cross-service queue/event contract is created.
 ## Dependencies
 
 - `ARCH-024-COMMERCE-006`
-- `ARCH-024-SHARED-002`
+- `ARCH-024-SHARED-004`
 - `ARCH-024-ADMIN-003`
 
 ## Enables
@@ -1039,7 +1064,8 @@ None defined yet. Later ARCH-024 system-test/deployment tasks will depend on thi
 - [ ] Replacing the credential takes effect on the next model invocation without Commerce restart or new conversation.
 - [ ] Removing/misconfiguring the credential fails bounded `UNAVAILABLE` without leaking secret material.
 - [ ] The decrypted credential is never persisted in Preview state or browser data.
-- [ ] Commerce uses the published Shared `OpenRouterModelClient`; there is no direct LangChain/OpenRouter SDK dependency.
+- [ ] Commerce uses the published Shared `OpenRouterModelClient`/`runCommerceTurn`; there is no direct LangChain/OpenRouter/LangGraph SDK dependency.
+- [ ] The existing Commerce `StructuredLogger` is passed into `runCommerceTurn` with safe preview context, and logging failure does not change the run result.
 - [ ] The old bespoke Preview provider implementation is removed.
 - [ ] `COMMERCE_PREVIEW_PROVIDER`, `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY` are no longer read by Commerce application/runtime code.
 - [ ] `COMMERCE_PREVIEW_ENABLED` remains the only Preview model-execution kill switch.
@@ -1123,7 +1149,7 @@ Do not begin Background, Gateway or ARCH-024 system-test work.
 - Credential lookup on every model invocation is intentional. Do not optimize it into process-lifetime credential caching in this task.
 - Reusing `COMMERCE_CONNECTION_KEYS_JSON` is intentional. ARCH-024 does not create a second encryption root merely for OpenRouter.
 - The AAD shape in R5 is a cross-repository invariant with ADMIN-003. Any conflict discovered in the accepted Admin implementation is architectural; stop and return it to `moda_architect` rather than silently choosing another AAD.
-- LangGraph remains out of scope. The accepted Shared `runCommerceTurn` orchestration remains canonical for ARCH-024.
+- Commerce-local LangGraph remains out of scope. The published Shared `runCommerceTurn` is LangGraph-backed and remains the canonical orchestration boundary; Commerce does not import or configure LangGraph directly.
 - Do not reintroduce an OpenRouter/provider/model selector on Test Conversations. The model is selected in Agent Configuration and captured server-side at Start.
 
 ## Completion Report

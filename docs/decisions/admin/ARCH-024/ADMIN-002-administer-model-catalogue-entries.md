@@ -16,12 +16,12 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
-  - ARCH-024-SHARED-002
+  - ARCH-024-SHARED-004
   - ARCH-024-ADMIN-001
 enables:
   - ARCH-024-COMMERCE-003
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Administer Commerce model catalogue entries
@@ -124,7 +124,7 @@ UNIQUE(availabilityId, provider, providerModelId)
 
 Therefore the same OpenRouter model identity may intentionally exist as separately configured Catalogue Entries under different Availability scopes, but it may occur only once within a single Availability.
 
-`ARCH-024-SHARED-001/002` publishes the canonical model contracts from:
+`ARCH-024-SHARED-001` defines the canonical model contracts and `ARCH-024-SHARED-004` publishes the combined accepted package from:
 
 ```text
 @modainteract/moda-interact-shared/commerce/model
@@ -239,7 +239,7 @@ Do not modify the database schema/migration inside this task.
 Before implementation:
 
 1. synchronize the nested `database/` submodule to the architect-accepted `ARCH-024-DATABASE-001` implementation;
-2. update `@modainteract/moda-interact-shared` to the exact version published and architect-accepted by `ARCH-024-SHARED-002`;
+2. update `@modainteract/moda-interact-shared` to the exact version published and architect-accepted by `ARCH-024-SHARED-004`;
 3. confirm `ARCH-024-ADMIN-001` is architect-accepted Complete and retain its `/commerce-models/availability` route and navigation behaviour;
 4. regenerate Prisma using the repository command:
 
@@ -1039,7 +1039,7 @@ Do not make a live OpenRouter request in this task.
 
 ## Work Items
 
-- [ ] Synchronize the accepted DATABASE-001 Admin database submodule and published SHARED-002 package.
+- [ ] Synchronize the accepted DATABASE-001 Admin database submodule and published SHARED-004 package.
 - [ ] Regenerate and validate Admin Prisma.
 - [ ] Add `/commerce-models/catalogue` and the `model-catalogue` Admin active key.
 - [ ] Extend the `Commerce models` sidebar group with Catalogue while retaining Availability and no dead Credential link.
@@ -1096,7 +1096,7 @@ Owner:
 
 Published by:
 
-`ARCH-024-SHARED-002`
+`ARCH-024-SHARED-004`
 
 Package entrypoint:
 
@@ -1134,7 +1134,7 @@ All mutations remain Next.js Server Actions and are not public HTTP APIs.
 ## Dependencies
 
 - `ARCH-024-DATABASE-001`
-- `ARCH-024-SHARED-002`
+- `ARCH-024-SHARED-004`
 - `ARCH-024-ADMIN-001`
 
 ## Enables

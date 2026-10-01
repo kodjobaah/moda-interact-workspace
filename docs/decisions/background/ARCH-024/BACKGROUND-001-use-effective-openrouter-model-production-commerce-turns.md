@@ -16,11 +16,11 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
-  - ARCH-024-SHARED-002
+  - ARCH-024-SHARED-004
   - ARCH-024-COMMERCE-002
   - ARCH-024-ADMIN-003
 enables:
-  - ARCH-024-GATEWAY-001
+  - ARCH-024-BACKGROUND-002
 created: 2026-10-01
 updated: 2026-10-01
 ---
@@ -43,7 +43,7 @@ Coordinator:
 
 ## Objective
 
-Replace the production CommerceAgent's static Groq model selection with the ARCH-024 effective active model and the published Shared OpenRouter runtime, while preserving the existing Background-owned conversation ordering, admission, host execution, MCP Tool flow and LangGraph wrapper.
+Replace the production CommerceAgent's static Groq model selection with the ARCH-024 effective active model and the published Shared OpenRouter runtime, while preserving Background-owned conversation ordering, admission, host execution and MCP Tool flow; the dependent BACKGROUND-002 task removes the redundant one-node Background LangGraph wrapper after Shared owns the actual graph.
 
 For each production CommerceAgent **turn**:
 
@@ -89,7 +89,7 @@ That path conflicts with ARCH-024:
 - Admin owns Model Catalogue, Model Availability and the environment OpenRouter credential;
 - Commerce Studio owns the one active model selection;
 - ARCH-024-COMMERCE-002 defines the canonical Platform/Shop effective-model semantics;
-- ARCH-024-SHARED-002 publishes the canonical model contracts and Node-only `OpenRouterModelClient` implementing the existing Shared `CommerceModelInvoker` boundary;
+- ARCH-024-SHARED-004 publishes the canonical model contracts and Node-only `OpenRouterModelClient` implementing the existing Shared `CommerceModelInvoker` boundary;
 - `CommerceOpenRouterCredential` stores one encrypted OpenRouter credential per `CommerceEnvironment`.
 
 Background remains the production CommerceAgent host. It MUST NOT import `moda-interact-commerce` source code. It consumes the same accepted database schema and Shared contracts and implements the production-side read of the canonical ARCH-024 selection rules exactly as specified below.
@@ -100,7 +100,7 @@ The current repository already contains a LangGraph wrapper in:
 src/agents/commerce.agent.pipeline.ts
 ```
 
-That wrapper delegates to `runCommerceAgent`. ARCH-024 does not redesign that graph. LangGraph orchestration refactoring is out of scope.
+That wrapper delegates to `runCommerceAgent` and is not the production worker entry path. Shared `runCommerceTurn` now owns the agreed Commerce-turn LangGraph refactor; dependent BACKGROUND-002 removes this redundant local wrapper after BACKGROUND-001 is accepted.
 
 `GROQ_API_KEY` is also used by the independent WhatsApp speech-transcription path. This task MUST NOT remove or reinterpret that speech-transcription configuration merely because CommerceAgent model execution moves to OpenRouter.
 
@@ -151,14 +151,14 @@ Additional files may be changed only when mechanically required by the accepted 
 This task MUST:
 
 1. update the nested `database/` gitlink to the architect-accepted merged ARCH-024-DATABASE-001 database commit;
-2. update `@modainteract/moda-interact-shared` to the **exact version published by ARCH-024-SHARED-002**;
+2. update `@modainteract/moda-interact-shared` to the **exact version published by ARCH-024-SHARED-004**;
 3. update the Background lockfile with the repository's normal package manager;
 4. run Prisma generation from the accepted nested schema;
 5. consume `CommerceModelInvoker`, `ResolvedCommerceModelSchema` and `OpenRouterModelClient` from the published Shared package rather than recreating them locally.
 
 Do not edit the nested database schema in this task.
 
-Do not use a local Shared checkout, `npm link`, `file:` dependency or workspace borrowing in place of the published SHARED-002 package.
+Do not use a local Shared checkout, `npm link`, `file:` dependency or workspace borrowing in place of the published SHARED-004 package.
 
 ## Out of Scope
 
@@ -180,7 +180,7 @@ Do not use a local Shared checkout, `npm link`, `file:` dependency or workspace 
 
 ### R1 — consume the canonical Shared runtime and remove the Background-local model adapter
 
-Import production model runtime contracts from the exact SHARED-002 package.
+Import production model runtime contracts from the exact SHARED-004 package.
 
 At minimum use:
 
@@ -574,25 +574,17 @@ where they remain part of the independent speech-transcription service.
 
 Do not opportunistically migrate speech transcription to OpenRouter.
 
-### R11 — preserve the existing LangGraph and production worker topology
+### R11 — preserve production worker topology; Shared now owns Commerce-turn LangGraph
 
-`createCommerceAgentPipeline(...)` remains an optional one-node wrapper around `runCommerceAgent` unless a mechanical type update is required.
+The WhatsApp worker continues to invoke the production CommerceAgent through the current conversation-turn/admission path. The published Shared `runCommerceTurn` now owns the actual low-level LangGraph state machine.
 
-Do not add:
+Do not add Background-local graph nodes, checkpoints, memory, durable threads, new worker queues or new conversation-ordering semantics.
 
-```text
-LangGraph checkpoint persistence
-new graph nodes
-new graph state ownership
-new worker queues
-new conversation ordering semantics
-```
-
-The WhatsApp worker continues to invoke the production CommerceAgent through the current conversation-turn/admission path.
+The pre-existing one-node `createCommerceAgentPipeline(...)` wrapper is not production orchestration and is removed by dependent `ARCH-024-BACKGROUND-002` after this task is accepted. This task may make only mechanical typing changes required to keep it compiling until that cleanup executes.
 
 ### R12 — preserve current host/MCP and trusted-instruction behaviour
 
-This task changes only the model dependency passed into `runCommerceTurn`.
+This task changes the model dependency passed into `runCommerceTurn` and wires the existing host `StructuredLogger` into the new optional runner logger dependency. It does not change Tool/MCP business semantics.
 
 Do not change:
 
@@ -647,7 +639,44 @@ It MUST NOT add/import:
 
 in Background production source.
 
-The only LangGraph dependency retained is the already-existing `@langchain/langgraph` orchestration wrapper, which is unrelated to provider execution.
+Background production source MUST NOT add any new LangGraph usage. The pre-existing wrapper/dependency is removed by ARCH-024-BACKGROUND-002 after this migration is accepted.
+
+### R14A — retain `CommerceMcpClient` and inject the canonical Shared logger into `runCommerceTurn`
+
+The MCP decision is closed for ARCH-024. Retain:
+
+```text
+src/commerce/mcp-client.ts
+CommerceMcpClient
+@modelcontextprotocol/sdk
+```
+
+Do not add `@langchain/mcp-adapters` and do not move MCP transport into Shared.
+
+Background must use the canonical Shared logging API:
+
+```ts
+import {
+  createLogger,
+  type StructuredLogger,
+} from "@modainteract/moda-interact-shared/logging";
+```
+
+Extend bounded test injection as needed so `runCommerceAgent`/`executeCommerceHost` can receive a `StructuredLogger`. The production default must preserve the actual executing service identity (currently the messaging worker path), not create a `moda-interact-shared` identity.
+
+When invoking `runCommerceTurn`, pass a child logger containing only safe host context, for example:
+
+```ts
+logger: hostLogger.child({
+  component: "commerce-agent-host",
+  recoveryId: recovery.id,
+  conversationId: current.id,
+})
+```
+
+The Shared runner will add its own `component: "commerce-turn-runner"` child context. Do not include customer name/message content, Tool arguments/results, Merchant Knowledge content, provider payloads or credentials in the host logger.
+
+Add regression coverage proving Background passes a logger to the runner and MCP/runner failures remain bounded without logging sensitive content.
 
 ### R15 — focused model-resolution tests are mandatory
 
@@ -697,8 +726,9 @@ Tests MUST prove:
 2. production path no longer reads `GROQ_COMMERCE_MODEL`;
 3. host accepts `CommerceModelInvoker` directly and no local `LanguageModel` adapter remains;
 4. current turn Shop ID/domain mismatch is denied before model invocation;
-5. the existing LangGraph pipeline still delegates to `runCommerceAgent`;
-6. existing Commerce host MCP/grant/tool/final-response tests continue to pass.
+5. the production WhatsApp/conversation-turn path still delegates to `runCommerceAgent` without using the optional one-node wrapper;
+6. `runCommerceTurn` receives a host-created `StructuredLogger` preserving `service.name=moda-messaging-worker` (or the canonical executing process identity) plus safe host context;
+7. existing Commerce host MCP/grant/tool/final-response tests continue to pass.
 
 ### R18 — a disposable PostgreSQL proof is mandatory
 
@@ -781,7 +811,7 @@ Do not document ARCH-024 Test Conversations as Background runtime behaviour.
 
 ## Work Items
 
-- [ ] Consume the accepted ARCH-024 Database gitlink and exact SHARED-002 package version.
+- [ ] Consume the accepted ARCH-024 Database gitlink and exact SHARED-004 package version.
 - [ ] Add canonical deployment-to-Commerce environment resolution.
 - [ ] Add canonical `shopId` to `RecoveryAgentContext` and populate it from durable ownership.
 - [ ] Implement the exact production effective-model resolver from R4.
@@ -803,7 +833,7 @@ Do not document ARCH-024 Test Conversations as Background runtime behaviour.
 
 Task:
 
-`ARCH-024-SHARED-001` / publication `ARCH-024-SHARED-002`
+`ARCH-024-SHARED-001` / publication `ARCH-024-SHARED-004`
 
 Package:
 
@@ -886,7 +916,7 @@ No plaintext credential crosses repository boundaries.
 ## Dependencies
 
 - `ARCH-024-DATABASE-001`
-- `ARCH-024-SHARED-002`
+- `ARCH-024-SHARED-004`
 - `ARCH-024-COMMERCE-002`
 - `ARCH-024-ADMIN-003`
 
@@ -911,7 +941,7 @@ Terminal ARCH-024 system-test tasks may also depend on this task when they are m
 - [ ] Background uses the published Shared `OpenRouterModelClient`/`CommerceModelInvoker` boundary and has no direct `@langchain/openrouter` or `@langchain/core` production dependency.
 - [ ] `executeCommerceHost` no longer contains the Background-local `LanguageModel -> ModelStep` adapter.
 - [ ] `RecoveryAgentContext` carries canonical Shop ID and host validation rejects Shop ID/domain mismatch before model invocation.
-- [ ] Existing LangGraph pipeline topology is unchanged except any mechanical typing adjustment.
+- [ ] Production worker/admission topology is unchanged; Shared owns Commerce-turn LangGraph and BACKGROUND-002 owns deletion of the redundant local wrapper.
 - [ ] Existing MCP grant/Tool/response-contract/turn-staleness semantics remain unchanged.
 - [ ] `GROQ_API_KEY` speech-transcription behaviour remains intact and is not conflated with CommerceAgent OpenRouter authentication.
 - [ ] Missing/malformed model configuration or credential fails through a bounded non-secret error path.
