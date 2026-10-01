@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 56
-executor: copilot
-claimed_at: 2026-10-01T19:39:59Z
+executor:
+claimed_at:
 attempt: 2
 depends_on:
   - ARCH-024-BACKGROUND-001
@@ -252,6 +252,7 @@ Ready for Architect Review
 - `src/agents/commerce.agent.pipeline.ts`: deleted unused one-node LangGraph wrapper.
 - `tests/unit/agent/commerce.agent.pipeline.test.ts`: deleted its isolated wrapper test.
 - `package.json`, `package-lock.json`: removed the direct `@langchain/langgraph` dependency using npm.
+- `docs/decisions/background/ARCH-024/BACKGROUND-002-retire-redundant-commerce-agent-langgraph-wrapper.md`: Attempt 2 lifecycle and A1-R1/A1-R2 evidence update; the Architect Review section is unchanged.
 
 ### Work Completed
 
@@ -259,22 +260,47 @@ Ready for Architect Review
 - Deleted the wrapper and test; post-deletion `rg` returned no matches for `@langchain/langgraph`, `createCommerceAgentPipeline` or `commerce.agent.pipeline` in `src`, `tests` or `package.json`.
 - Removed the direct LangGraph dependency; `npm ls --depth=0` reports it absent from root dependencies. It remains installed transitively through the published Shared package.
 - Preserved `@modelcontextprotocol/sdk@1.30.0` and the official `CommerceMcpClient` / `StreamableHTTPClientTransport` / `Client.callTool` implementation unchanged. No `@langchain/mcp-adapters` dependency was added.
-- Implementation committed and pushed on `task/ARCH-024-BACKGROUND-002` at `ed12296`.
+- Attempt 1 implementation commit `ed12296fe11669f48eda50066163aef50aa7fa8d` remains the only implementation commit; Attempt 2 required evidence reconciliation only, so no implementation source/test files changed.
+
+Architect Review rework dispositions:
+
+- **A1-R1 — implemented.** This task Completion Report now records the canonical workspace, dedicated parent/implementation worktrees and branches, start synchronization, recursive submodule result and database gitlink, Shared version, Attempt 1 implementation SHA, prior parent report/claim commit identities, and final clean/remote synchronization evidence. The only file changed for this item is this task document.
+- **A1-R2 — implemented.** Ran plain `npm test` at the exact pre-task commit `0b629d4365d857eb21127f55a701d63635a201c5` and the submitted `ed12296fe11669f48eda50066163aef50aa7fa8d` tree under Node `v24.21.0`, npm `11.19.0`, Vitest `4.1.11`, database gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, the same `localhost:5432` integration-test environment, and lockfile-installed dependencies. Both runs produced the same 8 failed tests and the same missing-fixture suite; the submitted tree has exactly one fewer passing test because the wrapper's isolated test was intentionally deleted. No new or worsened failure was found, so no implementation changes were required. The focused observability slice passed on both trees (5 files / 27 tests each), confirming the four Attempt 1 observability timeouts were transient. The only file changed for this item is this task document.
+
+Attempt 2 launcher evidence:
+
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-BACKGROUND-002`, branch `task/ARCH-024-BACKGROUND-002`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-BACKGROUND-002`, branch `task/ARCH-024-BACKGROUND-002`.
+- Shared/default workspace checkout switched or mutated: no. Shared/default implementation checkout switched or mutated: no. Another task worktree reused: no.
+- Parent start sync: remote task fast-forward `not-needed`; `origin/main` incorporated `yes`.
+- Implementation start sync: remote task fast-forward `not-needed`; `origin/main` incorporated `already-current`.
+- Recursive submodule sync and update/init: both passed. Database gitlink: `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Published Shared package: `@modainteract/moda-interact-shared@1.1.0`.
+- Attempt 1 parent report commit: `deb53a18beca5f0763d2dc4c7ad4835553620fc4`. Attempt 2 parent pre-claim head: `033eeed04b9e7bb8ca619b03a095950c30d88c18`; durable launcher claim commit: `9051412935dcf3a45ed4360b1c4a97171aef381d` (pushed).
+- Implementation final verification: worktree clean; local `HEAD` and `origin/task/ARCH-024-BACKGROUND-002` both equal `ed12296fe11669f48eda50066163aef50aa7fa8d`.
 
 ### Validation Results
 
-- Pre-deletion `rg -n '@langchain/langgraph|createCommerceAgentPipeline|commerce\.agent\.pipeline' src tests`: PASS; only wrapper and dedicated test matched.
+- Exact pre-task baseline `0b629d4365d857eb21127f55a701d63635a201c5` and submitted `ed12296fe11669f48eda50066163aef50aa7fa8d` both ran plain `npm test` with Node `v24.21.0`, npm `11.19.0`, Vitest `4.1.11`, database gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, and integration tests targeting unavailable `localhost:5432`.
+- Baseline result: 4 failed files, 96 passed files, 15 skipped files (115 total); 8 failed tests, 1,393 passed tests, 38 skipped tests (1,439 total).
+- Submitted result: 4 failed files, 95 passed files, 15 skipped files (114 total); 8 failed tests, 1,392 passed tests, 38 skipped tests (1,438 total). The one-file/one-test reduction is exactly the deleted wrapper test; the failure set is unchanged.
+- Identical failures in both runs:
+  - `tests/unit/commerce/evidence.test.ts`: suite collection fails with `ENOENT` for the missing `/moda-interact-workspace-task-ARCH-020-BACKGROUND-002/docs/architecture/ARCH-020-evidence-contract-fixtures.json` fixture.
+  - `tests/integration/translation-enum-bindings.integration.test.ts`: `persists submission failure statuses through the real enum column`, `persists terminal poll Batch and translation statuses through real enum columns`, `persists failed provider results through the real translation enum column`, and `persists SUBMISSION_UNKNOWN correlation adoption through the real Batch enum column`; each cannot connect to `localhost:5432`.
+  - `tests/unit/services/billing-reconciliation.service.test.ts`: `persists rotating provider-cycle lag and enqueues the existing +60 second job`, `repairs a missing Paid cycle schedule during rotating provider-cycle lag`, and `repairs a missing pack-enabled Free cycle schedule during rotating provider-cycle lag`.
+  - `tests/unit/services/matured-candidate.materialization.test.ts`: `creates a recovery from current Shopify data when the lookup is found and recoverable`.
+- Focused observability rerun on baseline and submitted trees: both passed 5 files / 27 tests; the four Attempt 1 observability timeouts were transient.
+- Focused host/conversation/worker/CommerceAgent slice: passed 4 files / 93 tests.
 - Post-deletion `rg -n '@langchain/langgraph|createCommerceAgentPipeline|commerce\.agent\.pipeline' src tests package.json`: PASS; no matches.
-- MCP boundary scan: PASS; official SDK, `CommerceMcpClient`, `StreamableHTTPClientTransport` and `callTool` remain in place; no MCP adapter package found.
-- Focused host/conversation/worker/CommerceAgent tests: PASS, 4 files / 93 tests.
+- MCP boundary scan: PASS; official SDK, `CommerceMcpClient`, `StreamableHTTPClientTransport` and `callTool` remain; `@langchain/mcp-adapters` is absent. `src/commerce/host.ts` and `src/commerce/mcp-client.ts` are unchanged from the pre-task baseline.
 - `npm run build`: PASS; generated Prisma Client v6.19.3 and completed `tsc`.
-- `npm run typecheck`: not declared in this repository's `package.json`; the declared build's TypeScript compilation passed.
-- Final `npm test`: 93 files passed, 15 skipped, 6 failed; 1,388 tests passed, 38 skipped, 12 failed. Failures were in PostgreSQL integration tests requiring unavailable `localhost:5432`, a Commerce evidence fixture path pointing to a missing ARCH-020 parent task worktree, three unrelated billing-reconciliation assertions, one matured-candidate language assertion, and four observability timeouts. These failures are outside the changed files and are not classified as documented baseline debt.
-- `git diff --check`: PASS.
+- `npm run typecheck`: unavailable; this script is not declared in `package.json`. The declared build runs TypeScript compilation and passed.
+- `git diff --check`: PASS. Implementation tree contains only the previously published task delta; no Attempt 2 implementation changes were made.
 
 ### Deviations
 
-- Full `npm test` is not green for the unrelated failures listed above. The task-specific host, worker, conversation-turn and CommerceAgent test slice passes. Repository-wide `typecheck` is not a declared script; `npm run build` supplies the repository's declared Prisma generation plus `tsc` validation.
+- Full `npm test` is non-green but baseline-equivalent for the exact same failure set above; the prior four observability timeouts did not recur. The task-focused 4-file/93-test slice passes. Standalone `typecheck` is not a declared script; `npm run build` is the declared Prisma-generation plus TypeScript gate.
 
 ### Assumptions
 
@@ -282,7 +308,7 @@ None.
 
 ### Unresolved Issues
 
-The full-suite failures listed in Validation Results remain for Architect triage; no unrelated source or test failures were modified.
+The identical baseline full-suite failures listed in Validation Results remain for Architect triage; the ARCH-020 fixture and PostgreSQL service were unavailable in this environment. No unrelated source or test failures were modified.
 
 ### Architectural Concerns
 
