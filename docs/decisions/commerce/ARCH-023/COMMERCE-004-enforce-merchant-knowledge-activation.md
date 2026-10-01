@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 62
 executor: null
 claimed_at: null
@@ -171,14 +171,73 @@ None. The check remains operation-level and independent of the eligible Capabili
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested
+
 ### Review Notes
-Pending.
+Attempt 1 production behavior is architecture-conformant on the reviewed Merchant Knowledge activation paths. The operation resolves current ACTIVE/TRIALING plan entitlement, obtains the exact current `merchant_knowledge` Feature id, requires an explicit enabled `ShopFeaturePreference` for the authenticated shop, denies missing/false preference before embedding/source/vector work, maps preference-read failures to bounded retryable `UNAVAILABLE`, and leaves the accepted COMMERCE-002 bootstrap preference-neutral. No production-source correction is requested at this review stage.
+
+Acceptance is withheld because the task's required live PostgreSQL/pgvector validation remains unchecked. The accepted COMMERCE-001 live proof calls `retrieveMerchantKnowledge()` directly and therefore does not exercise the new COMMERCE-004 operation-level preference gate. The focused mocked test proves call ordering but does not prove the changed authority path against the real migrated billing/commerce schema.
+
+The adjacent embedding-config fixture failure is unrelated to COMMERCE-004 and does not need correction in this task.
+
 ### Reviewed Files
-Pending.
+- `src/commerce/merchant-knowledge/entitlement.ts`
+- `src/commerce/merchant-knowledge/operation.ts`
+- `src/commerce/merchant-knowledge/retrieval.ts`
+- `tests/merchant-knowledge-entitlement.test.ts`
+- `tests/merchant-knowledge-policy.test.ts`
+- `tests/merchant-knowledge-policy-postgres.test.ts`
+- `tests/merchant-knowledge-bootstrap.test.ts`
+- `docs/decisions/commerce/ARCH-023/COMMERCE-004-enforce-merchant-knowledge-activation.md`
+
 ### Validation Reviewed
-Pending.
+- submitted focused entitlement/policy/bootstrap suite: 27 tests passed
+- submitted extended Merchant Knowledge suite: 36 tests passed
+- submitted targeted ESLint: passed
+- submitted `npm run typecheck`: passed
+- submitted `npm run build`: passed with the recorded existing Nunjucks warning
+- submitted `git diff --check`: passed
+- live PostgreSQL/pgvector operation-level activation proof: **required and outstanding**
+
 ### Architecture Conformance
-Pending.
+Conformant except for the outstanding required live validation. The implementation preserves `retrievable = planEntitled && merchantEnabled`, derives `shopId` only from trusted turn context, performs no preference mutation, preserves OFF as non-destructive, and does not modify the accepted bootstrap or retrieval SQL.
+
 ### Follow-up
-Pending.
+Return the **same task** through its normal `/moda-task ARCH-023-COMMERCE-004` path for Attempt 2. Attempt 2 is a validation correction, not a production redesign.
+
+Required Attempt 2 contract:
+
+1. Preserve the current production implementation unless the live proof exposes a real defect. Do not modify the COMMERCE-002 bootstrap, schema/migrations, generic capability selection, embedding implementation or pgvector retrieval SQL merely to manufacture a new implementation commit.
+2. Add a real migrated-PostgreSQL/pgvector regression for the production `createMerchantKnowledgeLookupAdapter()` path. Prefer extending `tests/merchant-knowledge-policy-postgres.test.ts` or adding one adjacent task-owned PostgreSQL test; do not replace the accepted COMMERCE-001 retrieval proof.
+3. The live fixture must use the real ARCH-023 schema and create one authenticated shop with:
+   - an ACTIVE or TRIALING current Subscription;
+   - an enabled `BillingPlanFeature` mapping to the active `merchant_knowledge` Feature with valid C2 configuration;
+   - one retained currently eligible source with an ACTIVE revision and at least one matching-provenance pgvector chunk.
+4. Exercise this exact transition through the production adapter with a deterministic local embed stub and trusted turn context whose eligible capability set may contain a non-Merchant-Knowledge capability:
+
+```text
+no ShopFeaturePreference row
+    -> DENIED
+    -> embed not called
+    -> retained source/revision/chunk unchanged
+    -> preference row count remains zero
+
+explicit preference enabled=false
+    -> DENIED
+    -> embed not called
+    -> retained knowledge unchanged
+
+update the same preference to enabled=true
+    -> same adapter call returns OK
+    -> production pgvector retrieval returns the already-retained ACTIVE chunk
+    -> no re-ingestion/revision/chunk replacement is required
+```
+
+5. The test must prove Commerce itself did not create the missing preference: after the first denied call, the shop/Feature preference count remains zero. The fixture may then explicitly create the false row and explicitly update it to true as test setup.
+6. Use a task-local disposable Docker PostgreSQL environment with `pgvector/pgvector:pg17`, an ephemeral IPv4 loopback port, a disposable database name containing `test`, and a temporary data filesystem/volume. Apply the repository's real Prisma migrations before the test. `DATABASE_URL` and `COMMERCE_TEST_DATABASE_URL` for the migration/test process must both point at that disposable database. Never use the configured/deployment database.
+7. The Docker proof must clean up the task-owned container/volume after success or failure and verify that no owned test container remains. If Docker/Colima is temporarily unavailable, return the task blocked with the exact environment failure; do not substitute the remote database.
+8. Run the new live proof, rerun the focused Merchant Knowledge suites affected by the added test, `npm run typecheck`, targeted changed-file ESLint/diagnostics and `git diff --check`. A full unrelated suite rerun is not required solely for this validation correction.
+9. Record exact Docker image, migration result, live test result, teardown evidence, implementation/test commit, parent report commit, canonical worktree synchronization and any source changes in the Completion Report.
+10. Set the task to `review`, clear `executor`/`claimed_at`, preserve the historical Attempt 1 Architect Review, return to `moda_architect` and STOP. Do not begin any follow-on task.
+
+No production change is requested unless the required live proof exposes one.

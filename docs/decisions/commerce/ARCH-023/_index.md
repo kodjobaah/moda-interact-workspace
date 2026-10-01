@@ -43,7 +43,7 @@ Individual task YAML is authoritative.
 | [COMMERCE-001](COMMERCE-001-implement-merchant-knowledge-policy-operation.md) | Register/execute `merchantKnowledge.lookup@1.0.0` with operation-level entitlement and exact pgvector retrieval | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ARCH-021-COMMERCE-096 |
 | [COMMERCE-002](COMMERCE-002-bootstrap-merchant-knowledge-publication.md) | Convergent canonical Tool/Capability/release bootstrap and fixed-identity guards | Complete — Accepted Attempt 4 | COMMERCE-001, ADMIN-001, DATABASE-004 |
 | [COMMERCE-003](COMMERCE-003-resolve-platform-shop-instructions.md) | Additive Platform/Shop instruction resolution, reserved MCP prompts and Studio authoring retirement | Complete — Accepted Attempt 2 | DATABASE-001, SHARED-002, ADMIN-003 |
-| [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Require request-time Merchant Knowledge opt-in and deny lookup while merchant preference is OFF | Pending | COMMERCE-002, ADMIN-004 |
+| [COMMERCE-004](COMMERCE-004-enforce-merchant-knowledge-activation.md) | Require request-time Merchant Knowledge opt-in and deny lookup while merchant preference is OFF | Ready — Attempt 2 validation correction | COMMERCE-002, ADMIN-004 |
 
 
 ## Execution frontier
@@ -72,6 +72,8 @@ COMMERCE-004 is narrowed to request-time merchant activation enforcement; it no 
 COMMERCE-001 must consume exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 COMMERCE-003 is Complete / Accepted Attempt 2. The evidence-only correction attempt preserved the implementation source, synchronized both canonical task worktrees, reconciled the Completion Report and reran the required focused validation. It remains pinned to `@modainteract/moda-interact-shared@1.0.1`. The required Background host-consumption follow-up remains separate and mandatory before final ARCH-023 system acceptance.
+
+COMMERCE-004 Attempt 1 is Changes Requested only for the outstanding live migrated PostgreSQL/pgvector operation-level activation proof. The reviewed production preference gate is otherwise conformant. The next claim is Attempt 2 and is validation-focused: prove missing/false preference denial and OFF-to-ON retrieval of the same retained ACTIVE knowledge through the production lookup adapter using a task-local disposable `pgvector/pgvector:pg17` database.
 
 ## ARCH-021 Policy Operation relationship
 

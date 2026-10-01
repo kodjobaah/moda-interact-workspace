@@ -3281,8 +3281,8 @@ ARCH-023-DATABASE-004   Complete — Accepted Attempt 1
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-COMMERCE-002   Complete — Accepted Attempt 4
 ARCH-023-COMMERCE-003   Complete — Accepted Attempt 2
-ARCH-023-ADMIN-004      Ready
-ARCH-023-COMMERCE-004   Pending — waits for ADMIN-004
+ARCH-023-ADMIN-004      Complete — Accepted Attempt 1
+ARCH-023-COMMERCE-004   Ready — Attempt 2 validation correction
 ARCH-023-GATEWAY-001    Pending — additional prerequisites remain
 ARCH-023-SYSTEM-TEST-002 Pending — terminal dependencies remain
 ```
@@ -3342,6 +3342,12 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — COMMERCE-004 Attempt 1 changes requested
+
+- Reviewed the request-time Merchant Knowledge activation gate as production-code conformant: current plan entitlement resolves the exact active Feature id, explicit missing/false `ShopFeaturePreference` denies before embedding/retrieval, true preference preserves the accepted lookup path, and bootstrap remains preference-neutral.
+- Withheld acceptance only because the task-owned live PostgreSQL/pgvector validation is still unchecked. The accepted COMMERCE-001 proof exercises `retrieveMerchantKnowledge()` directly and therefore does not validate the new operation-level preference authority path.
+- Returned COMMERCE-004 to Ready with Attempt 1 preserved. Attempt 2 is validation-focused and must use a task-local disposable `pgvector/pgvector:pg17` database with real migrations to prove missing/false denial and OFF-to-ON retrieval of retained ACTIVE knowledge through the production lookup adapter. No downstream task is started.
 
 ### 2026-10-01 — COMMERCE-003 Attempt 2 accepted
 
