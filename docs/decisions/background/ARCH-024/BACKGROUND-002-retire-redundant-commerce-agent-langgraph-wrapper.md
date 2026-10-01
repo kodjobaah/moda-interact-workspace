@@ -278,6 +278,7 @@ Attempt 2 launcher evidence:
 - Recursive submodule sync and update/init: both passed. Database gitlink: `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 - Published Shared package: `@modainteract/moda-interact-shared@1.1.0`.
 - Attempt 1 parent report commit: `deb53a18beca5f0763d2dc4c7ad4835553620fc4`. Attempt 2 parent pre-claim head: `033eeed04b9e7bb8ca619b03a095950c30d88c18`; durable launcher claim commit: `9051412935dcf3a45ed4360b1c4a97171aef381d` (pushed).
+- Attempt 2 evidence-report publication `f98728bee52e9b58ed2b810909567e654e41107d` was pushed; at final verification its parent local `HEAD` equaled `origin/task/ARCH-024-BACKGROUND-002` and the parent worktree was clean.
 - Implementation final verification: worktree clean; local `HEAD` and `origin/task/ARCH-024-BACKGROUND-002` both equal `ed12296fe11669f48eda50066163aef50aa7fa8d`.
 
 ### Validation Results
