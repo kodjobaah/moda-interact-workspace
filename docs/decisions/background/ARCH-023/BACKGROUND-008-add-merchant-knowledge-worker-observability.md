@@ -9,8 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 32
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-005
@@ -285,24 +287,43 @@ None. The worker now initializes the shared runtime through the established sibl
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-Pending.
+The implementation is substantively architecture-conformant. The production command now preloads `observability/merchant-knowledge.mjs` before the compiled Merchant Knowledge entrypoint, the preload uses only `@modainteract/moda-interact-shared/observability/node`, and the exact logical identity is `moda-merchant-knowledge-worker` / `moda-interact` with the established HTTP/fetch/Prisma worker instrumentation profile. No service-local SDK/provider/exporter stack, duplicate BullMQ instrumentation or GenAI instrumentation was introduced.
+
+The existing entrypoint already closes shared observability both through its owned-resource shutdown list and on readiness failure. The existing Dockerfile copies the complete `observability` directory, so the new preload is included without a packaging redesign. The focused startup/identity/singleton/isolation tests and disabled-runtime production-command probe support the required runtime behaviour; the excluded `0.12.1` shared-package assertion is a pre-existing stale version expectation against the repository's current `1.0.1` manifest and is not a BACKGROUND-008 implementation defect.
+
+No production or test source correction is requested. Acceptance is blocked only because the durable Completion Report does not record the mandatory launcher-resolved parent/implementation worktree paths and branches, start-of-attempt synchronization evidence, or recursive submodule-preparation evidence. A conversational handoff that both worktrees are clean does not substitute for that durable prepared-execution packet.
 
 ### Reviewed Files
 
-Pending.
+- `moda-interact-background/package.json`
+- `moda-interact-background/observability/merchant-knowledge.mjs`
+- `moda-interact-background/src/entrypoints/merchant-knowledge.ts`
+- `moda-interact-background/src/runtime/observability.ts`
+- `moda-interact-background/Dockerfile`
+- `moda-interact-background/tests/unit/runtime/observability-startup.test.ts`
+- `moda-interact-background/tests/unit/runtime/entrypoint-isolation.test.ts`
+- `moda-interact-background/tests/unit/entrypoints/merchant-knowledge.test.ts`
+- this Completion Report and the ARCH-023 / ARCH-002 observability contracts
 
 ### Validation Reviewed
 
-Pending.
+- 23 focused tests passed; one pre-existing shared-version assertion was excluded because it expects `0.12.1` while the accepted manifest declares `1.0.1`.
+- The exact production command was probed with `OTEL_SDK_DISABLED=true` and an unreachable Redis URL; it reached the existing `moda-merchant-knowledge-worker readiness failed: redis unavailable` path without hosted telemetry export configuration.
+- `npm run build` passed.
+- Changed-file diagnostics passed.
+- `git diff --check` passed.
 
 ### Architecture Conformance
 
-Pending.
+The implementation conforms to the bounded BACKGROUND-008 architecture and preserves repository ownership: Background owns worker observability startup, the shared package remains the SDK/provider/exporter owner, and Gateway remains responsible only for deployment topology after the accepted start command is deployable. The only non-conformance is incomplete durable execution provenance in the task report.
 
 ### Follow-up
 
-Pending.
+1. Return the same task to `ready`, preserve `attempt: 1`, and keep `executor` / `claimed_at` cleared.
+2. Reclaim it through `/moda-task ARCH-023-BACKGROUND-008`; the launcher must create Attempt 2 and the Completion Report must record the exact prepared parent and implementation worktrees/branches, start-of-attempt synchronization, dependency gate and recursive submodule evidence.
+3. No implementation-source change is requested unless refreshed bounded validation after synchronization exposes a regression. Rerun the task-defined focused tests/probe/build/diagnostics/whitespace checks and record the results.
+4. Keep `ARCH-023-GATEWAY-001` Blocked at Attempt 1 until BACKGROUND-008 is architect-accepted Complete. Do not resume Gateway early.

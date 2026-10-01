@@ -39,7 +39,11 @@ DATABASE-005 -> BACKGROUND-007
        entitlement reconciliation    entitlement lease enum
                  |
                  v
-        planned GATEWAY-001
+          BACKGROUND-008
+       worker observability preload
+                 |
+                 v
+       GATEWAY-001 Blocked
 ```
 
 Individual task YAML is authoritative.
@@ -53,6 +57,7 @@ Individual task YAML is authoritative.
 | [BACKGROUND-007](BACKGROUND-007-add-merchant-knowledge-runtime-lease-cadences.md) | Add fixed global cadence handling for the two Merchant Knowledge runtime leases | Complete — Accepted Attempt 1 | DATABASE-005 |
 | [BACKGROUND-004](BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md) | Common normalization/chunk/embed/promote pipeline and final dedicated entrypoint | Complete — Accepted Attempt 3 | BACKGROUND-002, BACKGROUND-003, BACKGROUND-006, DATABASE-005, BACKGROUND-007 |
 | [BACKGROUND-005](BACKGROUND-005-reconcile-merchant-knowledge-entitlements.md) | Non-destructive plan entitlement/content-limit reconciliation | Complete — Accepted Attempt 2 | BACKGROUND-004, DATABASE-006 |
+| [BACKGROUND-008](BACKGROUND-008-add-merchant-knowledge-worker-observability.md) | Preload the shared observability runtime for the dedicated Merchant Knowledge worker | Ready — Attempt 2 evidence correction | BACKGROUND-005 |
 
 ## Execution frontier
 
@@ -80,9 +85,15 @@ DATABASE-006 Complete — Accepted Attempt 1
     +--------------------+
                          v
 BACKGROUND-005 Complete — Accepted Attempt 2
+    |
+    v
+BACKGROUND-008 Ready — Attempt 2 evidence correction
+    |
+    v
+GATEWAY-001 Blocked — Attempt 1
 ```
 
-BACKGROUND-005 is Complete / Accepted Attempt 2. The previously blocked implementation is now fully validated with the accepted DATABASE-006 lease identity and the Background-owned 300-second persisted cadence. All declared GATEWAY-001 prerequisites are Complete/architect-accepted, so Gateway becomes Ready but remains unclaimed until its normal launcher is invoked.
+BACKGROUND-005 is Complete / Accepted Attempt 2. GATEWAY-001 Attempt 1 then exercised R17 and exposed the missing Merchant Knowledge worker observability preload. BACKGROUND-008 Attempt 1 implemented the correct shared-runtime preload and passed its bounded code/runtime validation, but architect review requires one evidence-only Attempt 2 because the Completion Report omitted the mandatory launcher-resolved worktree, synchronization and recursive-submodule packet. Gateway remains Blocked at Attempt 1 until BACKGROUND-008 is Complete/architect-accepted.
 
 ## Merchant opt-in reconciliation
 
