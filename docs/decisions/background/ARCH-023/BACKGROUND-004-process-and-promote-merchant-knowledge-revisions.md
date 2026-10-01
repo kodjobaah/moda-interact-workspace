@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -701,3 +701,20 @@ The repository agent correctly stopped at the ownership boundary. The missing en
 2. After DATABASE-005 is Complete/accepted, `ARCH-023-BACKGROUND-007` pins that database revision and adds the two fixed global cadence mappings (`60` and `3600` seconds) with focused/runtime PostgreSQL proof.
 3. BACKGROUND-004 remains Blocked until both tasks are Complete/accepted and their accepted changes are available on its execution baseline. Preserve the current partial implementation. Before reclaim, ensure the task-owned untracked entrypoint draft is durably checkpointed on the implementation task branch or otherwise made clean without stashing, resetting or discarding it.
 4. Then reconcile BACKGROUND-004 `blocked -> ready`; the next launcher claim becomes Attempt 2. Attempt 2 finishes R14 and the remaining entrypoint/full validation only; it must not begin BACKGROUND-005.
+
+## Developer Override
+
+### Decision
+Reopened on 2026-10-01 by explicit developer request: `/moda_developer_update ARCH-023-BACKGROUND-004 reopen`.
+
+### Previous Attempt
+No attempt has been accepted. Attempt 1 remains the preserved blocked implementation attempt; this reopen does not increment the attempt number.
+
+### Reason
+The developer explicitly requested reopening after the prerequisite work completed. `ARCH-023-DATABASE-005` is now Complete / Accepted Attempt 2, and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. No additional reason was supplied.
+
+### State Transition
+`blocked -> ready`; `executor` and `claimed_at` remain null; `attempt` remains 1. The next `/moda-task ARCH-023-BACKGROUND-004` claim will be Attempt 2 and must follow the existing Architect Review constraints, preserve the partial implementation, and complete only the dedicated entrypoint, schedules and remaining required validation.
+
+### Dependency Reconciliation
+`ARCH-023-BACKGROUND-005` remains `pending` because it depends on BACKGROUND-004 being Complete. It is unclaimed and requires no regression. No downstream task already in progress, review or complete was changed.
