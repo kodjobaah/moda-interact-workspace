@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-10-01T21:54:55Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-COMMERCE-002
@@ -897,23 +897,27 @@ None
 
 ### Review Status
 
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
 
-The implementation is otherwise architecture-conformant: Commerce Studio now consumes only scoped Platform/effective Shop availability, removes Catalogue administration APIs/UI, preserves broken durable selections for repair, displays inherited `PRICING_PLAN` / `PLATFORM` provenance, preserves COMMERCE-002 server-side selection validation and retains existing CAS/UNCONFIRMED reconciliation semantics. The recorded PostgreSQL proof-test skip is non-blocking because that test is supplemental and is not part of this task's required minimum Validation contract.
+Accepted at Attempt 2. The sole Attempt 1 correction, A1-R1, is closed without broadening task scope.
 
-A1-R1 — Platform's `Select a model` placeholder is selectable, contrary to R6. `PlatformModelConfiguration` currently renders `<option value="">Select a model</option>` without `disabled`, while the select remains enabled for `SUPER_ADMIN`. A configured user can therefore select the blank value and invoke `setPlatformModelSelection(...)` with `modelId: ""`. R6 explicitly requires a non-selectable placeholder and states that this task must not introduce a Platform clear operation. The service rejects the empty model ID, but the UI still exposes a forbidden/invalid mutation path.
+Attempt 1 found that the Platform `Select a model` placeholder was selectable even though R6 requires a non-selectable placeholder and forbids a Platform clear operation. Attempt 2 changes the placeholder to `<option value="" disabled>Select a model</option>` and adds a defensive empty-value guard in the Platform selector change handler before local selection state or `setPlatformModelSelection(...)` can be invoked.
+
+The focused regression now proves the blank placeholder is disabled when a durable Platform selection exists, remains disabled when Platform availability is empty and there is no selection, and a synthetic empty change event cannot dispatch `setPlatformModelSelection(...)`. No Platform clear Server Action or service operation was added.
+
+The remainder of the implementation remains architecture-conformant: Commerce Studio consumes only scoped Platform/effective Shop availability, removes Catalogue administration APIs/UI, preserves broken durable selections for repair, displays inherited `PRICING_PLAN` / `PLATFORM` provenance, preserves COMMERCE-002 server-side selection validation, and retains existing CAS/UNCONFIRMED reconciliation semantics. The PostgreSQL proof-test skip remains non-blocking because that test is supplemental, the Attempt 2 correction is UI-only, and the task's required Validation minimum passed.
 
 ### Reviewed Files
 
 - `moda-interact-commerce/src/studio/agent-configuration/platform-model-configuration.tsx`
+- `moda-interact-commerce/tests/agent-configuration-model-ui.test.tsx`
 - `moda-interact-commerce/src/studio/agent-configuration/shop-agent-configuration.tsx`
 - `moda-interact-commerce/src/studio/agent-configuration/agent-configuration-screen.tsx`
 - `moda-interact-commerce/src/studio/agent-configuration/model-contracts.ts`
 - `moda-interact-commerce/src/studio/agent-configuration/model-server-actions.ts`
 - `moda-interact-commerce/src/commerce/agent-configuration/model-service.ts`
-- `moda-interact-commerce/tests/agent-configuration-model-ui.test.tsx`
 - `moda-interact-commerce/tests/agent-configuration-shop-ui.test.tsx`
 - `moda-interact-commerce/tests/agent-configuration-server-actions.test.ts`
 - `moda-interact-commerce/tests/agent-configuration-production.test.tsx`
@@ -922,25 +926,21 @@ A1-R1 — Platform's `Select a model` placeholder is selectable, contrary to R6.
 
 ### Validation Reviewed
 
-- Submitted focused matrix: 26 tests across the four required UI/Server Action files — passed.
-- Submitted supplemental model-service suite: 6 tests — passed.
+- Attempt 2 required focused matrix: 27 tests across the four required UI/Server Action files — passed.
+- Attempt 2 focused Platform regression: 9 tests — passed.
+- Attempt 2 supplemental model-service regression: 6 tests — passed.
 - Submitted targeted ESLint, `npm run typecheck`, `git diff --check` and obsolete Catalogue/API source audit — passed.
-- Independent source audit confirms no runtime `listModelCatalogue`, Catalogue mutation action/type, Catalogue-only service method, model-provider credential, or OpenRouter runtime dependency remains in this Studio boundary.
+- Direct source inspection confirms the Platform placeholder is disabled and the `onChange` handler returns before mutation when `event.target.value` is empty.
+- Direct test inspection confirms configured and empty-availability placeholder states plus an empty change event are covered.
 - `@modainteract/moda-interact-shared` remains pinned to accepted `1.1.0`.
 - The uploaded review archive contains no installed dependency tree, so dependency-backed Vitest/typecheck/lint commands were not independently rerun in the review environment.
-- `tests/agent-configuration-model-postgres.test.ts` was not executed by the implementer because no explicit disposable `COMMERCE_TEST_DATABASE_URL` was available; this is not a required minimum validation item for COMMERCE-003.
+- `tests/agent-configuration-model-postgres.test.ts` was not executed by the implementer because no explicit disposable `COMMERCE_TEST_DATABASE_URL` was available; this is not a required minimum validation item for COMMERCE-003 and the correction does not change database-backed behaviour.
+- Attempt 2 Completion Report records launcher-resolved dedicated parent and implementation worktrees, start-of-attempt synchronization/dependency gating, recursive submodule materialisation at accepted Database revision `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, durable claim evidence, pushed implementation commits through `71a6906`, and final clean task worktrees matching their remote task branches.
 
 ### Architecture Conformance
 
-Changes requested only for R6's Platform placeholder/non-clear invariant. No change is requested to COMMERCE-002 effective availability/resolution, Shop inheritance, Catalogue ownership, Prompt/Instruction semantics, database schema, Shared package version, or provider/runtime integration.
+Conforms to the parent ARCH-024 ownership boundary and COMMERCE-003 scope. Studio is selection-only; Admin remains the Catalogue/Availability owner; COMMERCE-002 remains authoritative for effective availability and server-side model-selectability validation; Shop inheritance and broken-selection fail-closed semantics are unchanged; no database, Shared, Admin, Background, credential or provider-runtime boundary was broadened.
 
 ### Follow-up
 
-A1-R1 correction contract for Attempt 2:
-
-1. Make the Platform `Select a model` placeholder non-selectable (for example, a disabled `value=""` option) so the Platform selector cannot initiate an empty-model mutation.
-2. Do not add a Platform clear Server Action, service operation, or alternate clear path.
-3. Add focused regression coverage proving the placeholder is disabled/non-selectable and that the UI cannot call `setPlatformModelSelection(...)` with `modelId: ""`. Cover the configured Platform state and the empty-availability/no-selection state sufficiently to preserve the placeholder semantics.
-4. Preserve all currently conformant Platform/Shop availability, inherited provenance, broken-selection repair, authorization, CAS and reconciliation behaviour.
-5. Rerun the task's required Validation and return this same task to `review`. The supplemental PostgreSQL proof remains optional unless the correction changes database-backed behaviour.
-6. Do not start a follow-on ARCH-024 task.
+None. `ARCH-024-COMMERCE-003` is Complete. It declares no enabled/dependent ARCH-024 task, so this acceptance does not promote or start follow-on work. `ARCH-024-ADMIN-003` and `ARCH-024-COMMERCE-005` remain the Ready frontier on this reconciled parent branch.
