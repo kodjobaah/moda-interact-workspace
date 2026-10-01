@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-10-01T14:29:54Z
@@ -721,25 +721,25 @@ The Completion Report must record that ARCH-024 intentionally uses a breaking de
 
 ## Work Items
 
-- [ ] Add `CommerceModelAvailabilityScope`.
-- [ ] Add `CommerceModelAvailability` with exact Platform/Shop scope constraints, FKs, partial uniqueness and immutable identity guard.
-- [ ] Bootstrap the single Platform Availability with deterministic ID.
-- [ ] Add required Prisma inverse relations on `Shop`, `PlatformAdmin` and `CommerceModelCatalogueEntry`.
-- [ ] Add nullable `MerchantPricingPlan.commerceModelId` FK/index exactly as R6A and leave all existing Price Plans at NULL.
-- [ ] Establish the target non-null `availabilityId` relationship on `CommerceModelCatalogueEntry`; no pre-ARCH-024 development-data ID/backfill preservation is required.
-- [ ] Replace `CommerceModelCatalogueEntry.provider` enum storage with canonical lower-case `VARCHAR(64)` and remove `CommerceModelProvider`; development rows may be reset rather than preserved.
-- [ ] Add `configurationSchemaVersion` and `configuration JSONB` with database structural checks.
-- [ ] Replace global model uniqueness with Availability-scoped uniqueness.
-- [ ] Replace the ARCH-021 model catalogue guard with the ARCH-024 guard and preserve provider/model identity immutability.
-- [ ] Add `CommerceOpenRouterCredential` with one-row-per-environment uniqueness and encrypted-envelope constraints.
-- [ ] Extend `CommerceAuditEvent` with `modelAvailabilityId` and the new audit actions/target rules.
-- [ ] Preserve the `CommerceAgentConfiguration` schema and uniqueness rules; pre-ARCH-024 development `modelId` values may be cleared/reset if required by the breaking migration.
-- [ ] Prove no `BillingPlan` model column/FK and no MerchantPricingPlan/BillingPlan FK is introduced.
-- [ ] Add focused schema validation.
-- [ ] Add fresh PostgreSQL migration rehearsal.
-- [ ] Add a current-schema -> ARCH-024 development-upgrade rehearsal proving the breaking migration reaches the target schema without requiring data preservation.
-- [ ] Update package scripts for the focused ARCH-024 validators.
-- [ ] Regenerate ERD artifacts if required by repository workflow.
+- [x] Add `CommerceModelAvailabilityScope`.
+- [x] Add `CommerceModelAvailability` with exact Platform/Shop scope constraints, FKs, partial uniqueness and immutable identity guard.
+- [x] Bootstrap the single Platform Availability with deterministic ID.
+- [x] Add required Prisma inverse relations on `Shop`, `PlatformAdmin` and `CommerceModelCatalogueEntry`.
+- [x] Add nullable `MerchantPricingPlan.commerceModelId` FK/index exactly as R6A and leave all existing Price Plans at NULL.
+- [x] Establish the target non-null `availabilityId` relationship on `CommerceModelCatalogueEntry`; no pre-ARCH-024 development-data ID/backfill preservation is required.
+- [x] Replace `CommerceModelCatalogueEntry.provider` enum storage with canonical lower-case `VARCHAR(64)` and remove `CommerceModelProvider`; development rows may be reset rather than preserved.
+- [x] Add `configurationSchemaVersion` and `configuration JSONB` with database structural checks.
+- [x] Replace global model uniqueness with Availability-scoped uniqueness.
+- [x] Replace the ARCH-021 model catalogue guard with the ARCH-024 guard and preserve provider/model identity immutability.
+- [x] Add `CommerceOpenRouterCredential` with one-row-per-environment uniqueness and encrypted-envelope constraints.
+- [x] Extend `CommerceAuditEvent` with `modelAvailabilityId` and the new audit actions/target rules.
+- [x] Preserve the `CommerceAgentConfiguration` schema and uniqueness rules; pre-ARCH-024 development `modelId` values may be cleared/reset if required by the breaking migration.
+- [x] Prove no `BillingPlan` model column/FK and no MerchantPricingPlan/BillingPlan FK is introduced.
+- [x] Add focused schema validation.
+- [x] Add fresh PostgreSQL migration rehearsal.
+- [x] Add a current-schema -> ARCH-024 development-upgrade rehearsal proving the breaking migration reaches the target schema without requiring data preservation.
+- [x] Update package scripts for the focused ARCH-024 validators.
+- [x] Regenerate ERD artifacts if required by repository workflow.
 
 ## Interfaces / Contracts
 
@@ -795,44 +795,44 @@ None.
 
 ## Acceptance Criteria
 
-- [ ] `MerchantPricingPlan.commerceModelId` is nullable, indexed and FK-constrained to `CommerceModelCatalogueEntry` with `ON DELETE/UPDATE RESTRICT`.
-- [ ] Existing Price Plans migrate with `commerceModelId = NULL`; no model assignment is inferred.
-- [ ] `BillingPlan` remains physically independent of the Commerce model association and gains no model field/FK.
-- [ ] Disabling/reassigning a referenced Catalogue Entry does not rewrite the Price Plan association at database level.
+- [x] `MerchantPricingPlan.commerceModelId` is nullable, indexed and FK-constrained to `CommerceModelCatalogueEntry` with `ON DELETE/UPDATE RESTRICT`.
+- [x] Existing Price Plans migrate with `commerceModelId = NULL`; no model assignment is inferred.
+- [x] `BillingPlan` remains physically independent of the Commerce model association and gains no model field/FK.
+- [x] Disabling/reassigning a referenced Catalogue Entry does not rewrite the Price Plan association at database level.
 
-- [ ] Exactly one bootstrap Platform Model Availability exists after migration.
-- [ ] Database constraints prevent a second Platform Availability.
-- [ ] A Shop can have at most one Shop Availability.
-- [ ] PLATFORM Availability cannot carry a `shopId`, and SHOP Availability cannot omit one.
-- [ ] Availability IDs/scope/shop identity cannot be changed or deleted after creation.
-- [ ] Every `CommerceModelCatalogueEntry` has exactly one non-null `availabilityId`.
-- [ ] No migration requirement exists to preserve or backfill pre-ARCH-024 development catalogue IDs.
-- [ ] Persisted ARCH-024 provider values use the canonical lower-case string format; no closed provider enum remains.
-- [ ] The PostgreSQL/Prisma `CommerceModelProvider` enum no longer exists.
-- [ ] New provider strings satisfying the canonical provider check can be stored without another database migration.
-- [ ] `provider` and `providerModelId` remain immutable catalogue identity fields.
-- [ ] `availabilityId` can be reassigned atomically without changing catalogue entry ID.
-- [ ] Duplicate `(availabilityId, provider, providerModelId)` is rejected.
-- [ ] The same `(provider, providerModelId)` may exist in two different Availabilities.
-- [ ] `configuration` is non-null JSONB and only JSON objects are accepted.
-- [ ] `configurationSchemaVersion <= 0` is rejected.
-- [ ] New/retained ARCH-024 catalogue rows have `configurationSchemaVersion > 0` and object-valued `configuration`.
-- [ ] `CommerceAgentConfiguration` schema and Platform/Shop uniqueness semantics remain intact; pre-ARCH-024 development model selections need not be preserved.
-- [ ] `CommerceAgentConfiguration` remains capable of representing Shop inheritance with `modelId = NULL`.
-- [ ] No database trigger silently falls back, clears or rewrites an Agent Configuration because model availability changes.
-- [ ] At most one `CommerceOpenRouterCredential` can exist for each environment.
-- [ ] A valid OpenRouter credential envelope requires 12-byte nonce, 16-byte auth tag, 1..8192-byte ciphertext, nonblank key ID and positive editVersion.
-- [ ] No OpenRouter credential is seeded by the migration.
-- [ ] Removing a credential row does not delete or mutate any catalogue entry or Agent Configuration.
-- [ ] New Availability and credential audit actions satisfy the extended audit-target CHECK, while all pre-existing audit actions remain valid.
-- [ ] Prisma validation/generation passes.
-- [ ] Fresh and current-schema development-upgrade PostgreSQL rehearsals pass.
-- [ ] Development-upgrade rehearsal proves unrelated schema outside the explicitly breaking model-catalogue/model-selection boundary remains structurally valid.
+- [x] Exactly one bootstrap Platform Model Availability exists after migration.
+- [x] Database constraints prevent a second Platform Availability.
+- [x] A Shop can have at most one Shop Availability.
+- [x] PLATFORM Availability cannot carry a `shopId`, and SHOP Availability cannot omit one.
+- [x] Availability IDs/scope/shop identity cannot be changed or deleted after creation.
+- [x] Every `CommerceModelCatalogueEntry` has exactly one non-null `availabilityId`.
+- [x] No migration requirement exists to preserve or backfill pre-ARCH-024 development catalogue IDs.
+- [x] Persisted ARCH-024 provider values use the canonical lower-case string format; no closed provider enum remains.
+- [x] The PostgreSQL/Prisma `CommerceModelProvider` enum no longer exists.
+- [x] New provider strings satisfying the canonical provider check can be stored without another database migration.
+- [x] `provider` and `providerModelId` remain immutable catalogue identity fields.
+- [x] `availabilityId` can be reassigned atomically without changing catalogue entry ID.
+- [x] Duplicate `(availabilityId, provider, providerModelId)` is rejected.
+- [x] The same `(provider, providerModelId)` may exist in two different Availabilities.
+- [x] `configuration` is non-null JSONB and only JSON objects are accepted.
+- [x] `configurationSchemaVersion <= 0` is rejected.
+- [x] New/retained ARCH-024 catalogue rows have `configurationSchemaVersion > 0` and object-valued `configuration`.
+- [x] `CommerceAgentConfiguration` schema and Platform/Shop uniqueness semantics remain intact; pre-ARCH-024 development model selections need not be preserved.
+- [x] `CommerceAgentConfiguration` remains capable of representing Shop inheritance with `modelId = NULL`.
+- [x] No database trigger silently falls back, clears or rewrites an Agent Configuration because model availability changes.
+- [x] At most one `CommerceOpenRouterCredential` can exist for each environment.
+- [x] A valid OpenRouter credential envelope requires 12-byte nonce, 16-byte auth tag, 1..8192-byte ciphertext, nonblank key ID and positive editVersion.
+- [x] No OpenRouter credential is seeded by the migration.
+- [x] Removing a credential row does not delete or mutate any catalogue entry or Agent Configuration.
+- [x] New Availability and credential audit actions satisfy the extended audit-target CHECK, while all pre-existing audit actions remain valid.
+- [x] Prisma validation/generation passes.
+- [x] Fresh and current-schema development-upgrade PostgreSQL rehearsals pass.
+- [x] Development-upgrade rehearsal proves unrelated schema outside the explicitly breaking model-catalogue/model-selection boundary remains structurally valid.
 
 ## Validation
 
-- [ ] Static schema/migration validation proves the exact Price Plan model FK/index and absence of any `BillingPlan` model association.
-- [ ] Disposable PostgreSQL proof creates a Price Plan with null model, assigns a Catalogue Entry, leaves the Price Plan FK unchanged when the model/Availability is later disabled/reassigned, and proves no automatic model inference/backfill occurs.
+- [x] Static schema/migration validation proves the exact Price Plan model FK/index and absence of any `BillingPlan` model association.
+- [x] Disposable PostgreSQL proof creates a Price Plan with null model, assigns a Catalogue Entry, leaves the Price Plan FK unchanged when the model/Availability is later disabled/reassigned, and proves no automatic model inference/backfill occurs.
 
 The implementing agent must add these package scripts:
 
@@ -843,11 +843,11 @@ The implementing agent must add these package scripts:
 
 Required validation:
 
-- [ ] `npm run prisma:validate`
-- [ ] `npm run prisma:generate`
-- [ ] `npm run test:arch024-model-availability-schema`
-- [ ] `npm run test:arch024-model-availability-migration`
-- [ ] `git diff --check`
+- [x] `npm run prisma:validate`
+- [x] `npm run prisma:generate`
+- [x] `npm run test:arch024-model-availability-schema`
+- [x] `npm run test:arch024-model-availability-migration`
+- [x] `git diff --check`
 
 The migration validator must perform both a **fresh** and a **current-schema development-upgrade** PostgreSQL rehearsal.
 
@@ -896,23 +896,44 @@ Do not begin ARCH-024 Shared, Admin, Commerce, Background, Gateway or System-Tes
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `prisma/schema.prisma`: added Model Availability, versioned model configuration, optional Price Plan model association, OpenRouter credentials and extended audit contract; removed the provider enum.
+- `prisma/migrations/20260930120000_arch024_model_availability_openrouter/migration.sql`: implemented the pre-production breaking migration, deterministic Platform bootstrap, constraints, FKs, indexes, guards and audit target reconciliation.
+- `scripts/validate-arch024-model-availability-schema.mjs`: added static schema, migration and ERD contract checks.
+- `scripts/validate-arch024-model-availability-migration.mjs`: added safe fresh and development-upgrade PostgreSQL rehearsals and behavior cases.
+- `package.json`: added the two required ARCH-024 validation scripts.
+- `docs/generated/prisma-erd.puml`: regenerated the database ERD.
 
 ### Work Completed
 
-None.
+- Implemented the exact ARCH-024 database boundary, retaining explicit Agent Configuration selections and existing uniqueness semantics while allowing Availability reassignment.
+- Added the optional nullable Price Plan association without modifying `BillingPlan` or inferring assignments. Rehearsal confirms existing Price Plans remain NULL until explicitly assigned and stay assigned across Catalogue disablement/reassignment.
+- Added one encrypted OpenRouter credential per environment with envelope checks, and extended audit targets while retaining prior branches.
+- ARCH-024 intentionally uses a pre-production breaking development migration; no legacy provider-enum compatibility or model-selection preservation machinery was added.
+- Implementation commit `6ef1ea2` is pushed to `task/ARCH-024-DATABASE-001`.
+- No Admin, Commerce, Background, Gateway, Shopify, Shared or System-Test implementation was started.
+
+Launcher-prepared evidence:
+- Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-DATABASE-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-DATABASE-001`; both branches `task/ARCH-024-DATABASE-001`.
+- Parent and implementation worktrees were newly created and not reused. Shared workspace and shared implementation source checkouts were not switched or mutated for task work; another task worktree was not reused.
+- Start synchronization: parent and implementation remote task branches were `not-needed` for fast-forward; `origin/main` was `already-current` in both worktrees. Parent claim commit `c4db25e6cced38dd947e60f854834406b236af0f` was committed and pushed by the launcher; claim executor `copilot`, Attempt 1, claimed `2026-10-01T14:29:54Z`.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; status `ready`, with no submodule entries.
 
 ### Validation Results
 
-Not run.
+- Passed `npm run prisma:validate` and `npm run prisma:generate` with Prisma 6.19.3.
+- Passed `npm run test:arch024-model-availability-schema`.
+- Passed `npm run test:arch024-model-availability-migration` in both modes against isolated local `pgvector/pgvector:pg16` PostgreSQL databases on `127.0.0.1:55439`.
+- Fresh rehearsal applied the complete 25-migration history and passed the behavior matrix. Upgrade rehearsal applied the 21-migration predecessor set, verified unrelated schema and billing fixtures, applied ARCH-024, passed the behavior matrix, then applied the three later migrations.
+- The behavior matrix verified availability cardinality/scope/identity guards; catalogue non-null/FK/scoped uniqueness, cross-availability duplicate identity, mutable assignment and immutable provider identity; JSON/version checks; Agent Configuration uniqueness; Price Plan NULL/no-inference and stable pointer semantics; credential envelope rejection, uniqueness, INSERT/CAS UPDATE/DELETE isolation; all new audit target branches and an existing audit branch; and absence of the PostgreSQL provider enum.
+- Passed `node --check scripts/validate-arch024-model-availability-migration.mjs` and `git diff --check`.
 
 ### Deviations
 
-None.
+None. The migration retains existing ARCH-021 display-name, description-length and edit-version constraints rather than adding duplicate constraints; the static validator verifies the predecessor definitions.
 
 ### Assumptions
 
@@ -921,11 +942,11 @@ None.
 
 ### Unresolved Issues
 
-None.
+None. PostgreSQL rehearsals require a local PostgreSQL instance with the `vector` extension; validation used the isolated `pgvector/pgvector:pg16` container.
 
 ### Architectural Concerns
 
-None.
+None. Task is submitted at `review` for `moda_architect`; no main branch was updated and the Architect Review section was not edited.
 
 ## Architect Review
 
