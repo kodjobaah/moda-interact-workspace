@@ -23,7 +23,7 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [GATEWAY-001](GATEWAY-001-wire-merchant-knowledge-deployment.md) | Deploy the dedicated Merchant Knowledge worker and wire private R2, upload limits, embeddings and Commerce bootstrap configuration | Pending | BACKGROUND-005, SHOPIFY-005, COMMERCE-002 |
+| [GATEWAY-001](GATEWAY-001-wire-merchant-knowledge-deployment.md) | Deploy the dedicated Merchant Knowledge worker and wire private R2, upload limits, embeddings and Commerce bootstrap configuration | Ready | BACKGROUND-005, SHOPIFY-005, COMMERCE-002 |
 
 ## Deployment boundary
 
@@ -55,15 +55,17 @@ system tests
 
 ## Execution frontier
 
-Ready: none.
+Ready: `ARCH-023-GATEWAY-001`.
 
-GATEWAY-001 becomes Ready only after:
+All declared prerequisites are now Complete / architect-accepted:
 
 ```text
-ARCH-023-BACKGROUND-005 = Complete / architect-accepted
-ARCH-023-SHOPIFY-005    = Complete / architect-accepted
-ARCH-023-COMMERCE-002   = Complete / architect-accepted
+ARCH-023-BACKGROUND-005 = Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-005    = Complete — Accepted Attempt 3
+ARCH-023-COMMERCE-002   = Complete — Accepted Attempt 4
 ```
+
+The task remains unclaimed. Start it only through the normal `/moda-task ARCH-023-GATEWAY-001` launcher.
 
 ## No new HTTP service
 
