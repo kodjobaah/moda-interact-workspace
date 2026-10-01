@@ -18,18 +18,21 @@ ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Previe
 ARCH-024 implementation is underway. `ARCH-024-DATABASE-001` is Complete / Accepted at
 Attempt 1, `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2,
 `ARCH-024-COMMERCE-004` is Complete / Accepted at Attempt 1,
-`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2, and the publication-only
+`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2, the publication-only
 `ARCH-024-SHARED-002` is Complete / Accepted at Attempt 1 with canonical release
-`@modainteract/moda-interact-shared@1.1.0`. The current Ready frontier is:
+`@modainteract/moda-interact-shared@1.1.0`, `ARCH-024-ADMIN-004` is Complete / Accepted at
+Attempt 1, and `ARCH-024-COMMERCE-002` is Complete / Accepted at Attempt 2. In this isolated
+COMMERCE-002 parent branch the current Ready frontier is:
 
 ```text
 ARCH-024-ADMIN-001
-ARCH-024-ADMIN-004
-ARCH-024-COMMERCE-002
+ARCH-024-COMMERCE-005
 ARCH-024-BACKGROUND-001
 ```
 
-All other ARCH-024 tasks remain Pending behind their declared dependencies.
+All other ARCH-024 tasks remain Pending behind their declared dependencies. The separately
+accepted ADMIN-001 reconciliation remains on its sibling parent task branch and must be
+preserved during later parent-branch integration.
 
 Integrated system-test tasks are **deliberately not materialised in this architecture session** because final acceptance overlaps frozen ARCH-023 completion and upcoming architecture work. Any terminal integrated validation will be defined separately against the final combined architecture.
 
@@ -1119,10 +1122,10 @@ Individual task YAML is authoritative.
 | `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
 | `ARCH-024-ADMIN-004` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
-| `ARCH-024-COMMERCE-002` | `moda_commerce` | Ready | DATABASE-001, SHARED-002 |
+| `ARCH-024-COMMERCE-002` | `moda_commerce` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
 | `ARCH-024-COMMERCE-004` | `moda_commerce` | Complete | COMMERCE-001 |
-| `ARCH-024-COMMERCE-005` | `moda_commerce` | Pending | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
+| `ARCH-024-COMMERCE-005` | `moda_commerce` | Ready | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |
 | `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-002 |
 | `ARCH-024-BACKGROUND-001` | `moda_background` | Complete | DATABASE-001, SHARED-002 |
