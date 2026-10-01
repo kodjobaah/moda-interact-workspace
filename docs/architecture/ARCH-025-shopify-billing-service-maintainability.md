@@ -128,6 +128,7 @@ BillingService                     compatibility façade
         +--> MerchantRecoveryCapacityReadService
         +--> MerchantBillingReadService
         +--> SubscriptionActivationService
+        +--> subscription-locks.ts / billing-retry-policy.ts   shared internal mechanics
         +--> HostedPlanChangeService
         +--> RecoveryCreditPurchaseRequestService
         +--> SubscriptionEndedNotificationService
@@ -135,8 +136,11 @@ BillingService                     compatibility façade
 ```
 
 `BillingService` must create/wire these collaborators from the same constructor dependencies already supplied today. No global service locator or new DI framework is permitted.
+All collaborator constructors are inert wiring only: they must not perform provider/database I/O, environment discovery or eager Prisma-model access. This is required because the existing regression suite constructs `BillingService` with partial provider/database test doubles tailored to individual methods.
 
 Extracted modules must not import `billing.service.ts`. Dependency direction is one-way from the façade/coordinator into collaborators. Public symbols moved out of the façade file must be re-exported from `billing.service.ts` so existing imports remain valid.
+
+Two tiny repository-internal support modules are deliberate rather than generic frameworks: `subscription-locks.ts` owns the lock SQL shared by activation/hosted/sync, and `billing-retry-policy.ts` owns the existing `INITIAL_BILLING_RETRY_DELAY_MS` constant. They preserve one implementation of mechanics already shared by multiple workflows.
 
 ### Compatibility façade invariant
 
@@ -167,6 +171,8 @@ HostedPlanChangeReturnResult
 HostedPlanVerificationFence
 renderSubscriptionEndedMessage
 ```
+
+In addition, the frozen regression suite currently invokes the runtime-private method name `resolveOrMaterializeBillingPlan(...)` through a TypeScript cast. ARCH-025 therefore preserves that private method name as a **thin compatibility delegate** to `BillingPlanResolutionService`; it is not a public API, but removing it during this initiative would violate the byte-identical regression contract.
 
 ## Regression Baseline
 
@@ -219,14 +225,17 @@ Extracted collaborator APIs are repository-internal implementation contracts onl
 
 Structural extraction must preserve the exact transaction model currently expressed by `BillingService`:
 
+- this is move-only: do not remove, coalesce, reorder or otherwise optimise existing provider/database reads, writes, locks or transactions as incidental cleanup;
 - caller-owned transaction helpers stay caller-owned;
 - provider/network calls that currently occur before a transaction remain before it;
 - provider/network calls must not be moved into Prisma transactions;
-- `SELECT ... FOR UPDATE` lock targets and ordering must not change;
+- `SELECT ... FOR UPDATE` lock targets and ordering must not change; the shared subscription lock remains `ShopSettings -> Subscription`, and initial Paid finalisation retains the full `ShopSettings -> Subscription -> Shop` order;
 - callback/provider fencing compares the same durable facts;
-- BillingPeriod projection remains conflict-preserving rather than destructive;
+- BillingPeriod projection remains conflict-preserving rather than destructive, including the existing compatible-row update (which currently advances `BillingPeriod.updatedAt`);
 - duplicate/replay behaviour remains idempotent;
-- notification/translation side effects remain isolated from already committed billing state where they are isolated today.
+- initial Paid finalisation remains a participant in the caller-owned `syncSubscription` transaction rather than opening a nested/second transaction;
+- normal mapped BillingPeriods use the mapped projection helper, while the existing raw `billingPeriod.upsert` path for UNMAPPED/SYNC_ERROR cycles remains separate;
+- notification/translation side effects remain isolated from already committed billing state where they are isolated today; missing durable lifecycle identity still propagates while other notification/dispatch failures remain best-effort.
 
 ## Ordering
 
@@ -252,7 +261,7 @@ and all current recovery-credit purchase error/admission semantics.
 
 ## Scalability
 
-This is a structural refactor only. It must not add provider calls, Prisma round trips, transaction duration, queue work or per-request durable writes relative to the current equivalent path.
+This is a structural refactor only. It must not add provider calls, Prisma round trips, transaction duration, queue work or per-request durable writes relative to the current equivalent path. Existing deliberate rereads/fences (for example the recovery-credit purchase provider and catalogue revalidation reads) must not be coalesced away.
 
 A task that accidentally multiplies Shopify Partner API reads or database work is a behavioural regression.
 
@@ -356,3 +365,4 @@ None.
 ## Change History
 
 - 2026-10-01: Initial agreed Shopify-only BillingService maintainability architecture and eleven-task deterministic extraction sequence defined from the supplied current snapshot.
+- 2026-10-01: Meticulous source/task reconciliation tightened hidden helper ownership, preserved the frozen-suite private resolution delegate, introduced single owners for shared lock/retry mechanics, corrected initial-Paid finalisation to remain inside the caller-owned sync transaction, fixed notification/no-contract semantics, preserved deliberate provider/catalogue rereads and raw UNMAPPED/SYNC_ERROR BillingPeriod projection, added explicit Stop Conditions, and made hash validation cross-platform.

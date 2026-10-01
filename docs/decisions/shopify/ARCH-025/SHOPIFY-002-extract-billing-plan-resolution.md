@@ -71,6 +71,8 @@ No route or merchant-pricing module changes are authorised.
 - Extracted modules MUST NOT import `billing.service.ts`; dependency direction is façade/coordinator -> collaborator.
 - Do not change billing rules, error codes/strings, transaction boundaries, lock order, provider call order, retry semantics, idempotency, CAS/fencing, entitlement arithmetic or durable lifecycle state.
 - Do not add provider/API calls or database round trips to the equivalent path solely because code moved.
+- Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
+- This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
 - `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
@@ -78,7 +80,7 @@ No route or merchant-pricing module changes are authorised.
 
 ### R1 — one operational plan owner
 
-Create `BillingPlanResolutionService` (name may be exact) receiving the existing Prisma dependency and owning the logic equivalent to:
+Create `BillingPlanResolutionService` (name may be exact) receiving the existing Prisma dependency and owning `OperationalBillingPlanResolution` plus the logic equivalent to:
 
 ```text
 resolveOrMaterializeBillingPlan(planHandle)
@@ -115,11 +117,16 @@ Keep current checkout-recovery feature, plan kind, usage-meter, included-credit 
 
 No new public route-facing API is introduced. Existing BillingService methods continue behaving identically and call the extracted owner where they currently use these helpers.
 
+### R6 — preserve frozen-suite private runtime seam
+
+The frozen regression suite intentionally reaches the runtime-private method named `resolveOrMaterializeBillingPlan(...)` by casting `BillingService`. Therefore this task MUST retain a thin private method with that exact name on `BillingService`; it delegates to `BillingPlanResolutionService` and contains no resolution/materialisation implementation. Do not remove or rename this delegate during ARCH-025 while `billing.service.test.ts` remains frozen.
+
 ## Work Items
 
 - [ ] Create `BillingPlanResolutionService` with injected Prisma dependency.
 - [ ] Move the three catalogue/resolution responsibilities without semantic changes.
 - [ ] Wire `BillingService` to one collaborator instance; do not duplicate validation.
+- [ ] Retain `BillingService.resolveOrMaterializeBillingPlan(...)` as a thin private compatibility delegate for the frozen regression suite.
 - [ ] Add focused tests for reuse, materialisation, invalid catalogue, Merchant Knowledge validation, unique race, top-up configuration and provider-read fallback.
 - [ ] Prove frozen façade regression suite remains byte-identical and green.
 
@@ -143,12 +150,13 @@ The service returns the same operational resolution union and merchant-pricing/t
 - [ ] Merchant Knowledge compatibility validation exists in one resolution path, not duplicated.
 - [ ] Unique BillingPlan race recovery and `materializedAt` behaviour are unchanged.
 - [ ] No additional provider/database calls occur for equivalent branches.
+- [ ] The runtime-private `BillingService.resolveOrMaterializeBillingPlan(...)` name remains present as a thin delegate and its two existing frozen-suite calls still pass unchanged.
 - [ ] Frozen 127-test façade suite passes unchanged.
 
 ## Validation
 
 - [ ] `npm run prisma:generate`
-- [ ] `sha256sum tests/unit/services/billing.service.test.ts` returns exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
 - [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
 - [ ] `npm test -- tests/unit/services/billing/billing-plan-resolution.service.test.ts` passes the new focused capability tests
@@ -158,11 +166,14 @@ The service returns the same operational resolution union and merchant-pricing/t
 - [ ] `npm run build`
 - [ ] `git diff --check`
 
-## Implementation Notes
-
-Do not create a repository-wide catalogue abstraction. This service is Shopify billing-specific. A small local Prisma unique-constraint predicate may live with the service; do not create a generic utility package solely for that check.
+## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
+
+## Implementation Notes
+
+Do not create a repository-wide catalogue abstraction. This service is Shopify billing-specific. A small local Prisma unique-constraint predicate may live with the service; do not create a generic utility package solely for that check. The existing purchase workflow still needs its own P2002 detection until SHOPIFY-008; do not couple that workflow back to the plan-resolution service merely to share this tiny predicate.
+
 
 ## Completion Report
 

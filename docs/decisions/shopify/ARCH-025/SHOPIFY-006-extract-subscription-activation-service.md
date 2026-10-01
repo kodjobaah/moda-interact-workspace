@@ -47,6 +47,8 @@ Authorised implementation surface:
 ```text
 app/services/billing/billing.service.ts
 app/services/billing/subscription-activation.service.ts              # new
+app/services/billing/subscription-locks.ts                           # new shared internal lock owner
+app/services/billing/billing-retry-policy.ts                         # new shared internal retry constant owner
 tests/unit/services/billing/subscription-activation.service.test.ts  # new
 ```
 
@@ -71,6 +73,8 @@ Consume SHOPIFY-002 BillingPlan resolution/top-up configuration.
 - Extracted modules MUST NOT import `billing.service.ts`; dependency direction is façade/coordinator -> collaborator.
 - Do not change billing rules, error codes/strings, transaction boundaries, lock order, provider call order, retry semantics, idempotency, CAS/fencing, entitlement arithmetic or durable lifecycle state.
 - Do not add provider/API calls or database round trips to the equivalent path solely because code moved.
+- Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
+- This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
 - `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
@@ -87,9 +91,11 @@ scheduleInitialFreeReconciliationIfCurrent
 completeFreeActivation
 ```
 
-plus token matching and current `ShopSettings -> Subscription` activation lock helper.
+plus token matching. Move the current `ShopSettings -> Subscription` lock helper into `subscription-locks.ts` because the same lock is also required by hosted callback and subscription sync; the activation service consumes that shared internal lock owner rather than owning it exclusively.
 
-### R2 — preserve public compatibility symbols
+### R2 — preserve public compatibility symbols and shared retry ownership
+
+Move `INITIAL_BILLING_RETRY_DELAY_MS` with its exact `60_000` value into `billing-retry-policy.ts`, and compatibility re-export it from `billing.service.ts`. The activation service, later hosted callback service, later sync service and existing callback route must all resolve the same internal constant without route migration.
 
 The following remain exported from `billing.service.ts` with the same shapes/values through re-export if moved:
 
@@ -101,16 +107,16 @@ FreeActivationResult
 CompletedFreeActivation
 ```
 
-### R3 — preserve locking/CAS
+### R3 — preserve locking/CAS through one shared lock owner
 
-Keep exact lock order:
+`subscription-locks.ts` owns the existing helper logic (prefer retaining the current function name `lockInitialFreeActivationState` during this structural phase). Keep exact lock order:
 
 ```text
 ShopSettings FOR UPDATE
 Subscription FOR UPDATE
 ```
 
-and the exact activation-token identity fields. A stale token remains a no-op.
+and the exact activation-token identity fields. A stale token remains a no-op. Do not duplicate this SQL in activation, hosted-plan-change or sync services.
 
 ### R4 — preserve plan resolution and completion schedule
 
@@ -120,9 +126,15 @@ Use SHOPIFY-002 resolution rather than duplicating plan validation. Preserve cur
 
 `preparePaidActivation` still only establishes the durable pending selection. SHOPIFY-010 later owns the special `syncSubscription()` Paid finalisation branch.
 
+### R6 — stable repository-internal token matcher
+
+`matchesInitialFreeActivationToken` (name may remain exact) must move with activation ownership and remain a repository-internal export usable by the still-unextracted sync path and later `SubscriptionSyncService`. Do not duplicate token comparison logic in sync.
+
 ## Work Items
 
-- [ ] Create `SubscriptionActivationService` and move four public workflow implementations + token/lock helpers.
+- [ ] Create `SubscriptionActivationService` and move four public workflow implementations + token matching.
+- [ ] Create `subscription-locks.ts` and move the existing `ShopSettings -> Subscription` lock helper without changing SQL or ordering.
+- [ ] Create `billing-retry-policy.ts` and move the exact `INITIAL_BILLING_RETRY_DELAY_MS = 60_000` constant; re-export it from the façade.
 - [ ] Re-export moved compatibility types/constants from `billing.service.ts`.
 - [ ] Leave façade methods as same-signature delegates.
 - [ ] Add focused tests for initial/replay Free, initial Paid intent, stale-token no-op, guarded Partner-error retry, lock order and Free completion scheduling.
@@ -130,7 +142,7 @@ Use SHOPIFY-002 resolution rather than duplicating plan validation. Preserve cur
 
 ## Interfaces / Contracts
 
-Internal service consumes `BillingPlanResolutionService` and Prisma. Public activation types/constants stay available from the compatibility façade module.
+Internal service consumes `BillingPlanResolutionService`, Prisma, `subscription-locks.ts` and `billing-retry-policy.ts`. `matchesInitialFreeActivationToken` remains a repository-internal activation export for sync. Public activation types/constants and `INITIAL_BILLING_RETRY_DELAY_MS` stay available from the compatibility façade module.
 
 ## Dependencies
 
@@ -143,7 +155,8 @@ Internal service consumes `BillingPlanResolutionService` and Prisma. Public acti
 ## Acceptance Criteria
 
 - [ ] Four activation public methods delegate to `SubscriptionActivationService`.
-- [ ] Current activation lock order/token fencing and scheduling are unchanged.
+- [ ] Current activation lock order/token fencing and scheduling are unchanged and the shared lock SQL exists in only one module.
+- [ ] `INITIAL_BILLING_RETRY_DELAY_MS` has one internal owner and remains publicly importable from `billing.service.ts` without changing the callback route.
 - [ ] Initial Paid final durable commit remains in `syncSubscription()` after this task.
 - [ ] Existing callback imports require no migration.
 - [ ] Frozen 127-test façade suite passes unchanged.
@@ -151,21 +164,24 @@ Internal service consumes `BillingPlanResolutionService` and Prisma. Public acti
 ## Validation
 
 - [ ] `npm run prisma:generate`
-- [ ] `sha256sum tests/unit/services/billing.service.test.ts` returns exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
 - [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
 - [ ] `npm test -- tests/unit/services/billing/subscription-activation.service.test.ts` passes the new focused capability tests
 - [ ] `npm test` introduces no new failures
 - [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-activation.service.ts tests/unit/services/billing/subscription-activation.service.test.ts`
+- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-activation.service.ts app/services/billing/subscription-locks.ts app/services/billing/billing-retry-policy.ts tests/unit/services/billing/subscription-activation.service.test.ts`
 - [ ] `npm run build`
 - [ ] `git diff --check`
+
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
 
 ## Implementation Notes
 
 Do not rename public activation methods. Avoid designing a generic state-machine framework; this is extraction of the current pending-selection lifecycle.
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
 
 ## Completion Report
 

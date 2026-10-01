@@ -69,6 +69,8 @@ No other production or test file is authorised.
 - Extracted modules MUST NOT import `billing.service.ts`; dependency direction is façade/coordinator -> collaborator.
 - Do not change billing rules, error codes/strings, transaction boundaries, lock order, provider call order, retry semantics, idempotency, CAS/fencing, entitlement arithmetic or durable lifecycle state.
 - Do not add provider/API calls or database round trips to the equivalent path solely because code moved.
+- Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
+- This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
 - `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
@@ -79,6 +81,7 @@ No other production or test file is authorised.
 Move the current logic equivalent to:
 
 ```text
+DurableBillingCycle
 CurrentBillingPeriodPlan
 CurrentBillingPeriodProjectionConflictReason
 CurrentBillingPeriodProjectionResult
@@ -86,6 +89,7 @@ hasDurableBillingPeriod
 hasMatchingBillingCycle
 ensureMappedCurrentBillingPeriodProjection
 deriveBillingPeriodPhase
+isSafeNonNegativeInteger   # repository-internal helper required by projection and SHOPIFY-005
 ```
 
 into `billing-period-projection.ts`.
@@ -102,15 +106,18 @@ missing exact period -> create complete OPEN mapped period
 PAID create -> create INCLUDED_RECOVERY_CREDITS counter
 closed/mismatched existing durable facts -> CONFLICT, no overwrite
 compatible null mapping -> repair exact existing row in place
+compatible existing-period path retains the current BillingPeriod update call; do not optimise it away (the row has `updatedAt @updatedAt`)
 FREE + included counter -> conflict
 PAID counter arithmetic/grant mismatch -> conflict
 missing PAID included counter -> create once
 READY returns exact billingPeriodId + repaired flag
 ```
 
-### R3 — preserve public export
+### R3 — preserve public and repository-internal exports
 
 `deriveBillingPeriodPhase` must remain importable from `app/services/billing/billing.service.ts` through a compatibility re-export. Existing callers/tests must not migrate.
+
+The new projection module must also export `hasDurableBillingPeriod`, `hasMatchingBillingCycle` and `isSafeNonNegativeInteger` as repository-internal helpers for later ARCH-025 tasks. They are **not** new public route contracts and need not be re-exported from the façade unless already public.
 
 ### R4 — no I/O expansion
 
@@ -118,14 +125,14 @@ The extracted helper performs exactly the existing Prisma operations for the sam
 
 ## Work Items
 
-- [ ] Create `billing-period-projection.ts` and move the bounded projection/cycle logic.
+- [ ] Create `billing-period-projection.ts` and move the bounded projection/cycle logic, including `isSafeNonNegativeInteger`.
 - [ ] Replace in-file implementations with imports/re-export wiring from `billing.service.ts`.
 - [ ] Add focused unit tests for READY create, compatible repair, FREE/PAID counter rules, conflict/no-overwrite and phase/cycle helpers.
 - [ ] Prove the frozen façade suite is byte-identical and green.
 
 ## Interfaces / Contracts
 
-Internal module contract only. `ensureMappedCurrentBillingPeriodProjection` continues accepting an existing `Prisma.TransactionClient`; transaction ownership stays with the caller.
+Internal module contract only. `DurableBillingCycle` moves with the cycle helpers. `ensureMappedCurrentBillingPeriodProjection` continues accepting an existing `Prisma.TransactionClient`; transaction ownership stays with the caller. `hasDurableBillingPeriod`, `hasMatchingBillingCycle` and `isSafeNonNegativeInteger` are stable repository-internal exports for later ARCH-025 collaborators.
 
 Public compatibility contract: `deriveBillingPeriodPhase` continues to be exported by `billing.service.ts`.
 
@@ -141,14 +148,14 @@ None
 
 - [ ] BillingPeriod projection/cycle logic has one owner in `billing-period-projection.ts`.
 - [ ] No equivalent implementation remains duplicated in `billing.service.ts`.
-- [ ] Existing conflict reasons, writes, counter semantics and returned results are unchanged.
+- [ ] Existing conflict reasons, reads/writes (including the compatible-row update), counter semantics and returned results are unchanged.
 - [ ] `deriveBillingPeriodPhase` remains publicly available from `billing.service.ts`.
 - [ ] Frozen 127-test façade suite passes unchanged.
 
 ## Validation
 
 - [ ] `npm run prisma:generate`
-- [ ] `sha256sum tests/unit/services/billing.service.test.ts` returns exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
 - [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
 - [ ] `npm test -- tests/unit/services/billing/billing-period-projection.test.ts` passes the new focused capability tests
@@ -158,11 +165,14 @@ None
 - [ ] `npm run build`
 - [ ] `git diff --check`
 
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
+
 ## Implementation Notes
 
 Prefer direct function exports from the internal module rather than a class; this capability has no owned mutable state. Do not create a generic billing utility module. The extracted names may remain unchanged where practical so the diff is mechanically reviewable.
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
 
 ## Completion Report
 

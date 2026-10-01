@@ -71,6 +71,8 @@ Existing routes remain unchanged.
 - Extracted modules MUST NOT import `billing.service.ts`; dependency direction is façade/coordinator -> collaborator.
 - Do not change billing rules, error codes/strings, transaction boundaries, lock order, provider call order, retry semantics, idempotency, CAS/fencing, entitlement arithmetic or durable lifecycle state.
 - Do not add provider/API calls or database round trips to the equivalent path solely because code moved.
+- Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
+- This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
 - `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
@@ -135,7 +137,7 @@ No cross-repository contract is introduced.
 ## Validation
 
 - [ ] `npm run prisma:generate`
-- [ ] `sha256sum tests/unit/services/billing.service.test.ts` returns exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
 - [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
 - [ ] `npm test -- tests/unit/services/billing/subscription-read.service.test.ts` passes the new focused capability tests
@@ -145,11 +147,14 @@ No cross-repository contract is introduced.
 - [ ] `npm run build`
 - [ ] `git diff --check`
 
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
+
 ## Implementation Notes
 
 Keep the mapper close to the read service; do not create a generic Shopify billing mapper package. The façade may delegate directly to one collaborator created in its constructor.
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
 
 ## Completion Report
 

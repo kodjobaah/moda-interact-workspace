@@ -47,6 +47,7 @@ Authorised implementation surface:
 ```text
 app/services/billing/billing.service.ts
 app/services/billing/subscription-activation.service.ts
+app/services/billing/subscription-locks.ts
 tests/unit/services/billing/subscription-activation.service.test.ts
 ```
 
@@ -70,18 +71,30 @@ No new service file is required unless implementation demonstrates a concrete cy
 - Extracted modules MUST NOT import `billing.service.ts`; dependency direction is façade/coordinator -> collaborator.
 - Do not change billing rules, error codes/strings, transaction boundaries, lock order, provider call order, retry semantics, idempotency, CAS/fencing, entitlement arithmetic or durable lifecycle state.
 - Do not add provider/API calls or database round trips to the equivalent path solely because code moved.
+- Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
+- This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
 - `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
 - Full `npm test` must introduce no new failure. An unrelated documented baseline failure may be referenced only if it is unchanged and the current task did not touch its affected area.
 
-### R1 — exact branch boundary
+### R1 — exact branch boundary inside the caller-owned sync transaction
 
-Move the branch currently selected when an `expectedInitialSelection` for `PAID_METERED` matches the provider result and the durable pending initial intent. The remaining `syncSubscription()` detects/dispatches; activation service owns the transaction.
+Move only the body of the branch currently selected when an `expectedInitialSelection` for `PAID_METERED` matches the provider result and the durable pending initial intent. The remaining `syncSubscription()` must still open the existing outer transaction, acquire the shared `ShopSettings -> Subscription` lock, reread `existingSubscription`, reject a stale expected token, and determine whether the initial-Paid branch applies.
 
-### R2 — preserve Shop lock and durable reread
+The activation finalisation method MUST accept the existing `Prisma.TransactionClient` and execute inside that **same already-open transaction**. It MUST NOT call `database.$transaction(...)`, create a nested/second transaction, move branch detection outside the lock, or commit independently.
 
-Keep the existing `shopify.Shop FOR UPDATE` lock before accepting initial Paid status and retain all current durable rereads/identity checks.
+### R2 — preserve full lock order and durable reread
+
+Move `lockShopForInitialPaidActivation` into the shared `subscription-locks.ts` owner created by SHOPIFY-006, retaining its exact SQL. For this branch the effective lock order must remain:
+
+```text
+ShopSettings FOR UPDATE
+Subscription FOR UPDATE
+Shop FOR UPDATE
+```
+
+The first two locks are already held by the caller before finalisation is invoked. The finaliser acquires the Shop lock and retains all current durable rereads/identity checks. Do not duplicate lock SQL in the activation service.
 
 ### R3 — preserve fail-closed validations
 
@@ -99,27 +112,32 @@ included counter conflicts
 invalid lifetime-Free policy
 ```
 
-The same current `SYNC_ERROR`/`lastSyncErrorCode` results and no-write/conflict semantics must remain.
+The same current `SYNC_ERROR`/`lastSyncErrorCode` results and no-write/conflict semantics must remain. Preserve the current error-selection order exactly: missing/unexposed usage meter -> `MISSING_USAGE_METER`; supported meter plus unsupported Paid trial -> `UNSUPPORTED_PAID_TRIAL`; other invalid configuration/conflict -> `INVALID_PAID_PLAN_CONFIGURATION`. Do not strengthen existing counter/lifetime validation beyond what this branch currently checks.
 
 ### R4 — preserve atomic success commit
 
 Successful finalisation must still atomically create/reuse the exact BillingPeriod, included counter and lifetime-Free counter as currently required, clear the pending selection, set ACTIVE projection fields and set the exact drain-window `nextReconcileAt`.
 
-### R5 — no provider work inside activation transaction
+### R5 — no provider work and no generic-projection substitution
 
-The service receives already obtained provider subscription evidence; it must not perform a new Shopify call.
+The service receives already obtained provider subscription evidence; it must not perform a new Shopify call. Do not replace the initial-Paid branch with SHOPIFY-001 `ensureMappedCurrentBillingPeriodProjection`: the current initial-Paid branch has intentionally different validation/conflict semantics and must remain exact.
+
+### R6 — preserve stale-token and replay boundary
+
+A stale `expectedInitialSelection` remains a no-op before the finaliser runs. Existing BillingPeriod/counter/lifetime rows are reused or rejected using the current branch-specific predicates; do not add arithmetic checks to the existing included counter or new validation of an existing lifetime counter as incidental cleanup.
 
 ## Work Items
 
-- [ ] Extend `SubscriptionActivationService` with one bounded initial-Paid finalisation method.
-- [ ] Move only the identified transaction branch from `syncSubscription()` and delegate to it.
+- [ ] Extend `SubscriptionActivationService` with one bounded initial-Paid finalisation method that accepts the caller-owned `Prisma.TransactionClient`.
+- [ ] Move `lockShopForInitialPaidActivation` into `subscription-locks.ts` and preserve full `ShopSettings -> Subscription -> Shop` lock order.
+- [ ] Move only the identified branch body from `syncSubscription()`; keep outer transaction, stale-token fencing, existing-subscription reread and branch detection in sync.
 - [ ] Extend focused activation tests for exact successful period/counters, Shop lock, all fail-closed cases, replay preservation and drain-window schedule.
 - [ ] Prove no additional provider/database work was introduced around the branch.
 - [ ] Prove frozen façade regression suite remains byte-identical and green.
 
 ## Interfaces / Contracts
 
-Internal activation method accepts the already resolved provider Subscription evidence plus the expected activation token/current plan dependencies necessary to execute the existing transaction. Do not expose it to routes.
+Internal activation method accepts the caller-owned `Prisma.TransactionClient`, already obtained provider Subscription evidence, expected activation token, existing locked Subscription facts and `now`/other exact inputs needed by the current branch. It does not own or open a transaction and is not exposed to routes.
 
 ## Dependencies
 
@@ -131,8 +149,8 @@ Internal activation method accepts the already resolved provider Subscription ev
 
 ## Acceptance Criteria
 
-- [ ] Initial Paid finalisation no longer lives as a full transaction implementation inside `syncSubscription()`.
-- [ ] All strict initial Paid validation/lock/entitlement semantics are unchanged.
+- [ ] Initial Paid branch body no longer lives in `syncSubscription()`, but the existing sync transaction remains the owner and no nested/second transaction is introduced.
+- [ ] Full `ShopSettings -> Subscription -> Shop` lock order and all strict initial Paid validation/entitlement semantics are unchanged.
 - [ ] Activation service performs no provider call.
 - [ ] `syncSubscription()` still exposes exactly the same public behaviour.
 - [ ] Frozen 127-test façade suite passes unchanged.
@@ -140,21 +158,24 @@ Internal activation method accepts the already resolved provider Subscription ev
 ## Validation
 
 - [ ] `npm run prisma:generate`
-- [ ] `sha256sum tests/unit/services/billing.service.test.ts` returns exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
 - [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
 - [ ] `npm test -- tests/unit/services/billing/subscription-activation.service.test.ts` passes the new focused capability tests
 - [ ] `npm test` introduces no new failures
 - [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-activation.service.ts tests/unit/services/billing/subscription-activation.service.test.ts`
+- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-activation.service.ts app/services/billing/subscription-locks.ts tests/unit/services/billing/subscription-activation.service.test.ts`
 - [ ] `npm run build`
 - [ ] `git diff --check`
 
-## Implementation Notes
-
-Do not use SHOPIFY-001 generic BillingPeriod projection to weaken the stricter initial-Paid acceptance rules. Reuse lower-level helpers only when they preserve the existing exact validation and lock semantics.
+## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
+
+## Implementation Notes
+
+Do not use SHOPIFY-001 generic BillingPeriod projection to replace this branch. The finaliser is a transaction-participant, not a transaction owner. Preserve exact validation ordering and existing branch-specific permissiveness as well as strictness; “cleaning up” the predicates is a behaviour change.
+
 
 ## Completion Report
 

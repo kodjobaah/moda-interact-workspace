@@ -20,6 +20,8 @@ SHOPIFY-001 -> SHOPIFY-002 -> SHOPIFY-003 -> SHOPIFY-004 -> SHOPIFY-005
 
 The frozen regression asset is `moda-interact/tests/unit/services/billing.service.test.ts`: 127 tests, SHA-256 `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`. Every task must leave that file byte-for-byte unchanged and make all 127 tests pass.
 
+Source/task reconciliation additionally fixes two shared internal mechanics: SHOPIFY-006 establishes `subscription-locks.ts` and `billing-retry-policy.ts` for later hosted/sync reuse; SHOPIFY-010 remains a participant in the caller-owned sync transaction rather than becoming a transaction owner. SHOPIFY-002 retains the thin runtime-private `resolveOrMaterializeBillingPlan(...)` delegate required by the frozen regression suite.
+
 Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |

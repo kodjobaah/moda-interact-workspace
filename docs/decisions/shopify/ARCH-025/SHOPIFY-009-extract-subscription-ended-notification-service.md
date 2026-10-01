@@ -71,16 +71,19 @@ Merchant-support service code is not modified.
 - Extracted modules MUST NOT import `billing.service.ts`; dependency direction is façade/coordinator -> collaborator.
 - Do not change billing rules, error codes/strings, transaction boundaries, lock order, provider call order, retry semantics, idempotency, CAS/fencing, entitlement arithmetic or durable lifecycle state.
 - Do not add provider/API calls or database round trips to the equivalent path solely because code moved.
+- Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
+- This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
 - `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
 - Full `npm test` must introduce no new failure. An unrelated documented baseline failure may be referenced only if it is unchanged and the current task did not touch its affected area.
 
-### R1 — move exact notification capability
+### R1 — move exact notification capability without moving sync classification
 
 Move logic equivalent to:
 
 ```text
+TranslationDispatch
 SubscriptionLifecycle
 SubscriptionIdentityFacts
 deriveLifecycleIdentity
@@ -88,7 +91,7 @@ persistSubscriptionEndedNotification
 renderSubscriptionEndedMessage
 ```
 
-into the notification service/module.
+into the notification service/module. The sync transaction must continue deciding whether the **previous** Subscription was ACTIVE/TRIALING and constructing the immutable lifecycle facts; this task does not move no-contract classification or the billing Subscription update into the notification service.
 
 ### R2 — preserve public helper export
 
@@ -98,25 +101,27 @@ into the notification service/module.
 
 Keep the same lifecycle identity derivation, source-key format/version, system message code, language selection, upsert/duplicate behaviour and translation request creation rules.
 
-### R4 — preserve failure isolation
+### R4 — preserve failure isolation and exact error propagation
 
 Do not move notification/translation work into the transaction that commits billing Subscription state. Notification or translation dispatch failure must not roll back an already committed billing projection.
 
-### R5 — preserve dispatch injection
+After the billing transaction commits, preserve the current error rule exactly: failure with message `Unable to derive a durable subscription lifecycle identity.` is rethrown; all other notification-persistence or translation-dispatch failures are best-effort and do not fail `syncSubscription()`. Keep the missing-identity constant as a repository-internal export if needed so the caller does not duplicate/change the string.
 
-The existing `BillingService` third constructor dependency (`dispatchTranslation`) remains supported and is passed to the extracted notification owner.
+### R5 — preserve dispatch injection and timing
+
+The existing `BillingService` third constructor dependency (`dispatchTranslation`) remains supported and is passed to the extracted notification owner. Move/define the repository-internal `TranslationDispatch = (translationId: string) => Promise<void>` type with this owner and import the type into the façade rather than making the notification module depend on `billing.service.ts`. The owner may persist then dispatch using that injected function, but dispatch must occur only after the notification persistence transaction has committed and only when a translation ID was newly returned, exactly as today.
 
 ## Work Items
 
-- [ ] Create `SubscriptionEndedNotificationService` and move lifecycle identity/render/persistence/translation logic.
+- [ ] Create `SubscriptionEndedNotificationService` and move lifecycle identity/render/persistence/translation logic while leaving ended-state classification in sync.
 - [ ] Preserve compatibility re-export of `renderSubscriptionEndedMessage`.
 - [ ] Wire façade/sync path to the collaborator without changing side-effect timing.
-- [ ] Add focused tests for lifecycle identity, source-key replay/idempotency, language/translation decisions and dispatch failure isolation.
+- [ ] Add focused tests for provider-ID/cycle fallback lifecycle identity, missing-identity rethrow, source-key replay/idempotency, language/translation decisions, post-commit dispatch and best-effort non-identity failure isolation.
 - [ ] Prove frozen façade regression suite remains byte-identical and green.
 
 ## Interfaces / Contracts
 
-Consumes existing merchant-support functions and Shared merchant-communication constants. No new event/queue/shared contract.
+Consumes existing merchant-support functions and Shared merchant-communication constants. Repository-internal lifecycle identity derivation may be imported by the still-unextracted sync path. No new event/queue/shared contract.
 
 ## Dependencies
 
@@ -130,14 +135,14 @@ Consumes existing merchant-support functions and Shared merchant-communication c
 
 - [ ] Subscription-ended support side effect has one owner.
 - [ ] Message identity/code/language and translation semantics are unchanged.
-- [ ] Already committed billing state remains isolated from notification/dispatch failure.
+- [ ] Already committed billing state remains isolated from notification/dispatch failure; missing durable lifecycle identity still propagates while all other notification/dispatch failures remain best-effort.
 - [ ] `renderSubscriptionEndedMessage` compatibility export remains.
 - [ ] Frozen 127-test façade suite passes unchanged.
 
 ## Validation
 
 - [ ] `npm run prisma:generate`
-- [ ] `sha256sum tests/unit/services/billing.service.test.ts` returns exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
 - [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
 - [ ] `npm test -- tests/unit/services/billing/subscription-ended-notification.service.test.ts` passes the new focused capability tests
@@ -147,11 +152,14 @@ Consumes existing merchant-support functions and Shared merchant-communication c
 - [ ] `npm run build`
 - [ ] `git diff --check`
 
+## Stop Condition
+
+After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
+
 ## Implementation Notes
 
 The service may own its internal database transaction for support-message persistence exactly as today. Do not combine it with generic merchant-support ownership.
 
-After the defined Work Items, Acceptance Criteria and required Validation are complete, set the task to `review`, complete the Completion Report, return control to `moda_architect` and STOP. Do not begin the enabled task.
 
 ## Completion Report
 
