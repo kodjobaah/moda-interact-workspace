@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 63
 executor: null
 claimed_at: null
@@ -254,14 +254,16 @@ None. No runtime cadence or business-state schema was introduced.
 ## Architect Review
 
 ### Review Status
-Changes Requested — Attempt 1
+Accepted — Attempt 2
 
 ### Review Notes
-The database implementation is substantively architecture-conformant and no source/schema correction is requested. The Prisma enum adds exactly `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`; `FeatureActivationMode` remains unchanged; and the migration contains only the two additive `ALTER TYPE ... ADD VALUE IF NOT EXISTS` statements required by this task. The focused static validator and disposable PostgreSQL proof are appropriately bounded to the accepted enum-only contract.
+Attempt 2 closes the only remaining workflow/evidence finding from Attempt 1. The database implementation remains unchanged at `b34a563436bbc89b6ca3e26b43a0bd03116a1a66` and continues to conform exactly to the bounded enum-only contract: the Prisma enum adds only `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`, `FeatureActivationMode` remains unchanged, and migration `20261001010000_arch023_merchant_knowledge_runtime_leases` contains only the two additive `ALTER TYPE ... ADD VALUE IF NOT EXISTS` statements.
 
-Acceptance is withheld only because the durable Completion Report does not record the mandatory launcher/preparation provenance required for repository-task review. The report must contain the launcher-resolved parent and implementation worktree paths and branches, start-of-attempt synchronization evidence for both worktrees, and recursive submodule preparation/status evidence. A conversational handoff that the branches are clean and pushed does not substitute for this durable evidence.
+The Completion Report now records the launcher-resolved canonical parent and implementation worktrees/branches, dependency gate, start-of-attempt synchronization state, recursive submodule preparation, clean implementation HEAD/upstream identity, and the fact that no artificial implementation commit was created for this evidence-only retry. This satisfies the Attempt 1 rework contract.
 
-Attempt 2 is therefore an evidence/workflow correction. Do not change database implementation source merely to manufacture a new implementation commit. Reclaim the same task through `/moda-task ARCH-023-DATABASE-005`, record the prepared execution packet in the Completion Report, rerun the task-defined validation from the canonical prepared implementation worktree, and return the task to review. Source changes are authorised only if the refreshed baseline/validation exposes a real regression.
+The refreshed validation rerun passed formatting, Prisma validate/generate, the focused static validator, disposable pgvector PostgreSQL migration/runtime proof, ERD generation, both script syntax checks, changed-file diagnostics, and `git diff --check`; the invocation-owned PostgreSQL container and fixture rows were removed. No cadence/runtime/business-state schema was introduced.
+
+The parent-report identity submitted for this review is `a767c5a5`; the implementation remains clean and unchanged at `b34a5634`.
 
 ### Reviewed Files
 - `moda-interact-database/prisma/schema.prisma`
@@ -269,14 +271,30 @@ Attempt 2 is therefore an evidence/workflow correction. Do not change database i
 - `moda-interact-database/scripts/validate-arch023-merchant-knowledge-runtime-leases.mjs`
 - `moda-interact-database/scripts/test-arch023-merchant-knowledge-runtime-leases-postgres.mjs`
 - `moda-interact-database/package.json`
-- `moda-interact-database/docs/generated/prisma-erd.puml`
 - `docs/decisions/database/ARCH-023/DATABASE-005-add-merchant-knowledge-runtime-lease-names.md`
+- relevant ARCH-023 Database/Background indexes and parent execution frontier
 
 ### Validation Reviewed
-Reviewed the recorded passing format, Prisma validate/generate, focused static validator, disposable `pgvector/pgvector:pg17` migration/runtime proof, ERD generation, script syntax checks, changed-file diagnostics and `git diff --check`. The review archive confirms the exact schema/migration/test implementation but does not carry the developer's live Git/Docker execution environment, so these commands were not redundantly rerun by the architect.
+Accepted the recorded canonical-worktree rerun:
+
+- `npm run format` — passed with no residual implementation diff.
+- `npm run validate` — passed.
+- `npm run prisma:generate` — passed.
+- `npm run test:arch023-merchant-knowledge-runtime-leases` — passed.
+- `npm run test:arch023-merchant-knowledge-runtime-leases:postgres` — passed against invocation-owned `pgvector/pgvector:pg17`, including fixture cleanup and container removal.
+- `npm run erd` — passed and left the implementation worktree clean.
+- both task script `node --check` validations — passed.
+- changed-file diagnostics — clean.
+- `git diff --check` — passed.
+
+Architect-side inspection additionally reran the focused static validator and Node syntax checks against the submitted snapshot; all passed. The review environment did not independently rerun Docker-backed PostgreSQL execution.
 
 ### Architecture Conformance
-Implementation semantics conform to the ARCH-023 ownership boundary: Database owns only the two representable lease identities; no cadence mapping, `BackgroundRuntimeConfig` field, business table, index or constraint is introduced. `ARCH-023-BACKGROUND-007` remains the owner of the 60-second / 3600-second runtime cadence mapping. Workflow acceptance remains open solely for the missing durable preparation evidence.
+Conforms. Database owns only representability of the two lease identities. The change does not add cadence fields, alter `BackgroundRuntimeLease`, introduce business schema, or absorb Background runtime scheduling ownership. `ARCH-023-BACKGROUND-007` remains the sole owner of the fixed 60-second / 3600-second global cadence mappings.
 
 ### Follow-up
-Return this same task to `ready` with `attempt: 1` preserved and the claim cleared. Attempt 2 must record exact launcher-resolved worktree/branch, synchronization and recursive-submodule evidence, rerun the task-defined validation from that prepared implementation worktree, then return to `review`. `ARCH-023-BACKGROUND-007` remains Pending and `ARCH-023-BACKGROUND-004` remains Blocked until DATABASE-005 is architect-accepted Complete.
+`ARCH-023-DATABASE-005` is Complete / Accepted at Attempt 2. Promote exactly `ARCH-023-BACKGROUND-007` from Pending to Ready. `ARCH-023-BACKGROUND-004` remains Blocked until BACKGROUND-007 is Complete/architect-accepted; `ARCH-023-BACKGROUND-005` remains Pending behind BACKGROUND-004. No Background implementation is started by this acceptance.
+
+#### Historical Attempt 1 — Changes Requested
+
+Attempt 1 was source-conformant but withheld solely because the durable Completion Report omitted the mandatory launcher-resolved worktree/branch, synchronization and recursive-submodule preparation evidence. No source/schema correction was requested. Attempt 2 was explicitly limited to recording that provenance and rerunning the task-defined validation from the canonical prepared implementation worktree.
