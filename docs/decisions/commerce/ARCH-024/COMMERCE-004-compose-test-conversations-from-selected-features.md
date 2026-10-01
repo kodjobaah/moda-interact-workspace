@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
 executor: null
 claimed_at: null
@@ -842,24 +842,53 @@ None. The implementation stays within `moda-interact-commerce`; no Shared contra
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Accepted at Attempt 1. The implementation conforms to the ARCH-024 Feature-composed Test Conversation boundary. The conversation-facing selector is strict `FEATURES + featureIds`; the separate saved Release/Draft boundary remains available only to retained non-conversation consumers.
+
+`createPrismaFeatureComposition()` uses the existing staff authorization before the Feature read, reconstructs selected Feature order explicitly, performs one bounded Feature-graph read, includes every direct Capability without active/enabled/entitlement/Release filtering, orders Capabilities deterministically, fails closed for missing/empty/oversized composition, resolves the current published Tool revision, validates Tool definitions, deduplicates exact revisions, preserves one Behaviour per selected Feature, and uses the canonical empty response contract/hash.
+
+The Preview adapter consumes only `featureComposition` for conversation composition, builds the required deterministic `preview-features-<sha256>` identity, validates the complete Commerce manifest, orders grants by first Capability use, and freezes the resolved Tool definitions plus non-empty Feature Behaviour prompts into the existing snapshot. The retained Tool-test executor continues to use the saved DRAFT lookup boundary. No Model/OpenRouter, real selected-Shop Tool execution, database, Shared-package, Admin, Background or Gateway behaviour was introduced.
+
+The two additional changed test files (`preview-store.test.ts` and `preview-redis-lua.test.ts`) are mechanically required fixture migrations for the strict Feature selection shape and remain within task scope.
 
 ### Reviewed Files
 
-None
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
+- `moda-interact-commerce/src/commerce/integration/preview/adapters.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/tests/feature-preview-composition.test.ts`
+- `moda-interact-commerce/tests/backend-integration.test.ts`
+- `moda-interact-commerce/tests/preview-integration.test.ts`
+- `moda-interact-commerce/tests/preview-routes.test.ts`
+- `moda-interact-commerce/tests/preview-service.test.ts`
+- `moda-interact-commerce/tests/preview-store.test.ts`
+- `moda-interact-commerce/tests/preview-redis-lua.test.ts`
+- `moda-interact-commerce/database/prisma/schema.prisma` (relationship verification only; unchanged by task)
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-004-compose-test-conversations-from-selected-features.md`
 
 ### Validation Reviewed
 
-None
+Submitted evidence records:
+
+- required focused Vitest command: 5 files / 52 tests passed;
+- extended Preview/store/Redis set: 7 files / 65 tests passed;
+- `npm run typecheck` passed;
+- targeted ESLint over every changed TypeScript source/test file passed;
+- `npm run build` passed with the pre-existing Nunjucks dynamic-dependency warnings only;
+- `git diff --check` passed;
+- implementation commit `9834f4694f216dac082d7620f349712d2f1d4763` and parent report commit `81bc7ce8` were reported pushed with both task worktrees clean and remote-aligned.
+
+The submitted snapshot does not include installed `node_modules`, so the architect did not rerun the Node validation locally; the changed source and focused tests were inspected directly against the task contract and the recorded validation evidence.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. COMMERCE-004 establishes the server-authoritative Feature-composition fragment required by ARCH-024 without crossing into COMMERCE-005 UI/model/instruction snapshot completion, COMMERCE-006 selected-Shop execution, or COMMERCE-007 OpenRouter execution.
 
 ### Follow-up
 
-None
+No correction required. `ARCH-024-COMMERCE-005` remains Pending because `ARCH-024-COMMERCE-002` is not yet Complete; acceptance of COMMERCE-004 alone does not satisfy the full COMMERCE-005 dependency set.
