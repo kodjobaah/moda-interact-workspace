@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -249,24 +249,47 @@ None identified. The extracted collaborator is Shopify-billing-specific, has a s
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 is accepted. `BillingPlanResolutionService` is the single owner of operational BillingPlan resolution/materialisation plus the two MerchantPricingPlan catalogue reads defined by this task. The extraction is mechanically faithful to the pre-task façade implementation: the transaction boundary, resolution-kind ordering, validation reason strings, Merchant Knowledge active-pair compatibility check, BillingPlan creation shape, `materializedAt` repair/update behaviour and P2002 winner recovery are unchanged.
+
+`BillingService` constructs one collaborator from its existing Prisma dependency and retains the exact runtime-private `resolveOrMaterializeBillingPlan(...)` name as a thin delegate for the frozen regression seam. The moved top-up and provider-facing catalogue reads now route through the collaborator without adding database/provider operations. The collaborator constructor is side-effect-free and does not import the façade.
+
+The submitted implementation commit `804894cc598d394c7d1f61bc2828c61743d1145f` is one commit ahead of implementation `main` at review time and changes only the three authorised files. The frozen façade file remains byte-identical at SHA-256 `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`. The reported frozen/full-suite failures contain no identifier outside durable baseline `ARCH025-TEST-001`; focused service tests, the two frozen private-seam cases, Prisma generation, typecheck, targeted ESLint, build and whitespace validation all passed.
+
+No implementation correction or follow-up task is required for SHOPIFY-002.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/billing/billing-plan-resolution.service.ts`
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/tests/unit/services/billing/billing-plan-resolution.service.test.ts`
+- frozen `moda-interact/tests/unit/services/billing.service.test.ts` identity/evidence
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-002-extract-billing-plan-resolution.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- `docs/development-baseline.md` baseline `ARCH025-TEST-001`
+- implementation commit `804894cc598d394c7d1f61bc2828c61743d1145f`
+- parent report commit `8e809936f66aae8cc7e9899ea127ac795b131699`
 
 ### Validation Reviewed
 
-None.
+- Independently confirmed the implementation branch changes only the three authorised files.
+- Independently compared the moved resolution/materialisation and catalogue-read logic with the pre-task façade and found the relevant branch order, reads/writes, validation strings and retry semantics unchanged.
+- Independently confirmed exactly one `BillingPlanResolutionService` collaborator instance is wired in `BillingService`, the runtime-private delegate is retained, and the extracted collaborator has no reverse import of `billing.service.ts`.
+- Independently confirmed frozen `billing.service.test.ts` SHA-256 is the exact required value.
+- Submitted focused `billing-plan-resolution.service.test.ts`: 7/7 passed.
+- Submitted frozen private resolver seam: 2/2 selected cases passed unchanged.
+- Submitted frozen suite: 18 failures / 195 passed / 213 total; all failures match `ARCH025-TEST-001`.
+- Submitted full suite: 24 failures / 958 passed / 33 skipped / 1015 total; all failure identifiers match `ARCH025-TEST-001`.
+- Submitted `npm run prisma:generate`, `npm run typecheck`, targeted ESLint, production build and `git diff --check`: passed.
+- Physical worktree isolation, start-of-attempt synchronization, recursive submodule and clean/pushed evidence are recorded in the Completion Report.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-025, the authorised Shopify repository/file boundary, move-only semantics, public façade compatibility, one-owner plan-resolution boundary, transaction/I/O preservation requirements and durable no-regression baseline `ARCH025-TEST-001`.
 
 ### Follow-up
 
-None.
+`ARCH-025-SHOPIFY-003` is now Ready. Later ARCH-025 tasks remain Pending behind the sequential dependency chain. Do not begin SHOPIFY-004 or later work until the immediately preceding task is architect-accepted Complete.
