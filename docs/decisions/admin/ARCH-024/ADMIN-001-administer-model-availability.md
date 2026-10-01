@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 30
-executor: copilot
-claimed_at: 2026-10-01T17:17:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-024-DATABASE-001
@@ -1291,24 +1291,61 @@ Ready for Review
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 implementation is substantially aligned with ARCH-024 and ADMIN-001. The protected page, Shared `1.1.0` contract consumption, bounded read/search model, SUPER_ADMIN mutation boundary, Serializable transaction, CAS update, same-transaction audit writes, navigation integration and prohibited-mutation boundaries were inspected in the submitted snapshot.
+
+Two corrections are required before acceptance:
+
+**A1-R1 — Render disable warnings only for a disable transition.**
+
+`src/components/admin/model-availability/model-availability-editor.tsx` currently derives the Platform/Shop disable warning from scope alone and renders it for every SUPER_ADMIN state-change form. When an Availability is already disabled, the only permitted action is `Enable availability`, but the drawer still displays text beginning `Disabling ...`. R14 defines these exact warnings for Platform/Shop **disable** operations. Change the UI so the exact scope-specific warning is rendered only when the current Availability is enabled and the pending action is disable. The enable path must not display a disable warning. Add focused regression coverage proving the warning/action relationship.
+
+**A1-R2 — Repair the durable task record and record canonical worktree evidence.**
+
+The submitted task file has Completion Report content spliced into the task-definition `## Validation`, `## Stop Condition` and `## Implementation Notes` sections. In particular, the whitespace-validation code block no longer contains `git diff --check`, the Stop Condition is interleaved with implementation/validation results, and the ownership terminology block is interrupted by Completion Report text. Restore those task-definition sections to their canonical ADMIN-001 wording while preserving the completed checkboxes and keeping implementation results under `## Completion Report`.
+
+The Completion Report must also durably record the launcher-resolved Attempt 2 execution evidence required by the worktree-isolation policy: canonical `workspace_root`, dedicated parent task worktree, dedicated Admin implementation worktree, `task/ARCH-024-ADMIN-001` identity in both repositories, start-of-attempt synchronization evidence, recursive submodule readiness, accepted dependency gate, implementation commit/push state, parent report commit/push state, and clean final worktree state. Chat-only statements that the branches were clean/pushed are not a substitute for the durable report.
+
+No other source correction is requested by this review. The recorded BullMQ build warnings, `MODULE_TYPELESS_PACKAGE_JSON` warning and npm audit findings are non-blocking for ADMIN-001 unless Attempt 2 observes a changed/worse condition caused by task-owned changes.
 
 ### Reviewed Files
 
-None
+- `moda-interact-admin/package.json`
+- `moda-interact-admin/package-lock.json`
+- `moda-interact-admin/database/prisma/schema.prisma`
+- `moda-interact-admin/src/lib/admin/model-availability-validation.ts`
+- `moda-interact-admin/src/lib/admin/model-availability.ts`
+- `moda-interact-admin/src/app/actions/model-availability.ts`
+- `moda-interact-admin/src/app/(protected)/commerce-models/availability/page.tsx`
+- `moda-interact-admin/src/components/admin/model-availability/model-availability-catalog.tsx`
+- `moda-interact-admin/src/components/admin/model-availability/model-availability-editor.tsx`
+- `moda-interact-admin/src/components/admin/model-availability/model-availability-submit-button.tsx`
+- `moda-interact-admin/src/components/admin/sidebar.tsx`
+- `moda-interact-admin/src/components/admin/admin-shell.tsx`
+- `moda-interact-admin/tests/unit/model-availability-validation.test.ts`
+- `moda-interact-admin/tests/unit/model-availability-service.test.ts`
+- `moda-interact-admin/tests/security/admin-model-availability.test.mjs`
+- `moda-interact-admin/tests/security/admin-sidebar-navigation.test.mjs`
+- `docs/decisions/admin/ARCH-024/ADMIN-001-administer-model-availability.md`
+- `docs/decisions/admin/ARCH-024/_index.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 
 ### Validation Reviewed
 
-None
+- Re-ran `node --test tests/security/admin-model-availability.test.mjs tests/security/admin-sidebar-navigation.test.mjs`: **11/11 passed**.
+- Re-ran `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts`: **4/4 passed**; Node emitted the same module-type warning recorded by the submission.
+- Re-checked the exact `@modainteract/moda-interact-shared@1.1.0` package/lockfile pin and registry integrity entry.
+- Re-checked source absence of Catalogue Entry, Agent Configuration, OpenRouter credential and Availability deletion mutations in the ADMIN-001 implementation surface.
+- Inspected the focused service tests covering create, missing/existing Shop rejection, enable/disable CAS, stale/same-state/race rejection and audit targets.
+- The submitted archive contains no `node_modules` and no Git metadata, so this review environment did not independently rerun the dependency-backed service test, Prisma commands, TypeScript, ESLint or production build, nor independently verify the reported remote branch SHAs. Attempt 2 must rerun the task-required validation from the canonical launcher-resolved implementation worktree because the required physical-isolation/start-of-attempt evidence is not durably present in the submitted task record.
 
 ### Architecture Conformance
 
-Pending
+Changes required. The core Availability control-plane design, authorization boundary, Shared contract ownership, transaction/CAS/audit semantics and repository scope conform to ARCH-024. A1-R1 is a bounded ADMIN-001 UI correctness defect. A1-R2 is workflow/documentation non-conformance that prevents architect acceptance until the canonical task definition and physical execution evidence are restored.
 
 ### Follow-up
 
-None
+Return the same task through `/moda-task ARCH-024-ADMIN-001` for Attempt 2. Make only the bounded A1-R1 source/test correction plus the A1-R2 task-report/evidence repair, rerun all ADMIN-001 required validation in the launcher-resolved dedicated implementation worktree, set the task back to `review`, and STOP. Do not begin `ARCH-024-ADMIN-002` or any other follow-on work.
