@@ -16,10 +16,11 @@ Agreed.
 ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Preview/Test Conversation work. It keeps accepted ARCH-021 Studio authoring foundations, consumes frozen ARCH-023 Platform/Shop Instruction semantics, and replaces the unstarted ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 plan with a broader Admin-owned model catalogue, scoped availability, database-backed OpenRouter credentials, LangChain/OpenRouter model integration, a modular Shared LangGraph Commerce-turn runtime with canonical structured logging, production Background parity and Feature-composed selected-shop Test Conversations.
 
 ARCH-024 implementation is underway. `ARCH-024-DATABASE-001` is Complete / Accepted at
-Attempt 1 and `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2. The current Ready frontier is:
+Attempt 1, `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2, and
+`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2. The current Ready frontier is:
 
 ```text
-ARCH-024-SHARED-001
+ARCH-024-SHARED-002
 ARCH-024-COMMERCE-004
 ```
 
@@ -1049,6 +1050,11 @@ Current Ready frontier after DATABASE-001, COMMERCE-001 and COMMERCE-004 accepta
 
 ```text
 ARCH-024-SHARED-001
+Current Ready frontier after DATABASE-001, COMMERCE-001 and SHARED-001 acceptance:
+
+```text
+ARCH-024-SHARED-002
+ARCH-024-COMMERCE-004
 ```
 
 COMMERCE-004 is Complete. Its acceptance does not yet promote COMMERCE-005 because COMMERCE-002 remains incomplete.
@@ -1103,8 +1109,8 @@ Individual task YAML is authoritative.
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | `ARCH-024-DATABASE-001` | `moda_database` | Complete | - |
-| `ARCH-024-SHARED-001` | `moda_shared` | Ready | DATABASE-001 |
-| `ARCH-024-SHARED-002` | `moda_shared` | Pending | SHARED-001 |
+| `ARCH-024-SHARED-001` | `moda_shared` | Complete | DATABASE-001 |
+| `ARCH-024-SHARED-002` | `moda_shared` | Ready | SHARED-001 |
 | `ARCH-024-ADMIN-001` | `moda_admin` | Pending | DATABASE-001, SHARED-002 |
 | `ARCH-024-ADMIN-002` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-001 |
 | `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
@@ -1193,6 +1199,7 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 ## Change History
 
 - **2026-10-01 — COMMERCE-004 accepted at Attempt 1:** selected ordered Feature IDs now resolve server-side to every direct Capability, current published Tool revision and one Feature Behaviour per selected Feature; the Preview adapter builds the deterministic synthetic manifest identity and freezes the exact composition fragment for the conversation. Retained saved Release/Draft lookups remain available for non-conversation Tool-test consumers. `ARCH-024-COMMERCE-005` remains Pending because `ARCH-024-COMMERCE-002` is not yet Complete.
+- **2026-10-01 — SHARED-001 accepted at Attempt 2:** the bounded correction closes the Attempt 1 runner-to-OpenRouter schema mismatch by making synthetic denied/revoked Tool rows canonical `commerce.v1` `CommerceToolResult` errors while retaining strict adapter validation. The new offline runner-plus-adapter regression proves hostile runtime data cannot authorize an ungranted Tool and that the denial path reaches the required `REFER_TO_STORE` outcome. SHARED-001 is Complete and the publication-only `ARCH-024-SHARED-002` gate is promoted Ready; no package publication or consumer task is started by this review.
 
 - **2026-10-01 — COMMERCE-001 accepted at Attempt 2:** the evidence-only correction durably records launcher/worktree/synchronization/submodule/publication evidence and proves the six remaining `studio-workspace.test.tsx` failures are shared with the synchronized pre-task baseline. Attempt 2 made no Commerce source/test changes; the current suite has 7 passed / 6 failed versus baseline 5 passed / 7 failed, with the stale Release fixture failure corrected by COMMERCE-001. `ARCH-024-COMMERCE-001` is Complete and `ARCH-024-COMMERCE-004` is promoted Ready.
 
