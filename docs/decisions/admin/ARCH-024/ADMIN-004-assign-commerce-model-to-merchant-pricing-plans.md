@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 33
 executor: null
 claimed_at: null
@@ -801,24 +801,57 @@ None. The model pointer exists only on `MerchantPricingPlan`; no BillingPlan mod
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Accepted at Attempt 1. The implementation conforms to the ARCH-024 Merchant Pricing Plan product-tier model-assignment boundary. `commerceModelId` remains nullable durable state owned only by `MerchantPricingPlan`; the implementation does not add or copy a model pointer onto `BillingPlan`, does not create a physical MerchantPricingPlan/BillingPlan relationship, and does not expose merchant model selection.
+
+The existing Admin builder now carries an explicit nullable `commerceModelId`. The reusable model-option helper queries enabled Catalogue Entries only through enabled global Platform Availability, validates both persisted Availability and Catalogue shapes through the published Shared `1.1.0` contracts, orders options deterministically, projects only the four UI-safe fields and fails closed for missing/disabled/non-Platform selections. No OpenRouter credential or provider execution is involved.
+
+Create and changed update assignments are validated inside the existing catalogue-fenced `prisma.$transaction`; an unchanged now-invalid stored assignment remains preserved so unrelated plan edits can proceed and the builder renders the deterministic unavailable sentinel plus repair alert. Materialised BillingPlan synchronization remains limited to its existing billing-owned fields, plan activation/deactivation does not rewrite `commerceModelId`, and the existing `PLAN_CATALOG_CHANGED` row receives bounded before/after model IDs only when the association changes.
+
+The submitted action-mutation coverage is source-level rather than database-backed. That is a non-blocking coverage limitation for this task: the task's prescribed Admin security suite uses this existing source-assertion style, the payload/model helpers are exercised as executable unit tests, and Architect Review independently inspected the transaction ordering and mutation branches against R6/R9-R13. No additional implementation or publication work is required.
 
 ### Reviewed Files
 
-None
+- `moda-interact-admin/package.json`
+- `moda-interact-admin/package-lock.json`
+- `moda-interact-admin/database/prisma/schema.prisma` (accepted DATABASE-001 contract / BillingPlan absence verification)
+- `moda-interact-admin/src/lib/admin/merchant/pricing-builder-payload.ts`
+- `moda-interact-admin/src/lib/admin/merchant/pricing-plan-model.ts`
+- `moda-interact-admin/src/lib/admin/merchant/pricing-plan.ts`
+- `moda-interact-admin/src/app/actions/merchant-pricing-plan.ts`
+- `moda-interact-admin/src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `moda-interact-admin/src/components/admin/billing-drawers.tsx`
+- `moda-interact-admin/src/app/(protected)/billing/page.tsx`
+- `moda-interact-admin/tests/unit/merchant-pricing-builder-payload.test.ts`
+- `moda-interact-admin/tests/unit/merchant-pricing-plan-model.test.ts`
+- `moda-interact-admin/tests/security/admin-merchant-pricing-plan.test.mjs`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
+- `docs/decisions/admin/ARCH-024/ADMIN-004-assign-commerce-model-to-merchant-pricing-plans.md`
 
 ### Validation Reviewed
 
-None
+Submitted evidence records:
+
+- `npm run prisma:generate` passed against the accepted ARCH-024 database submodule;
+- `npm run prisma:validate` passed;
+- focused payload/model unit suite: 14 tests passed;
+- `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: 13 tests passed;
+- targeted Prettier passed over all task-owned changed/new files;
+- targeted ESLint passed for the changed TypeScript/TSX files other than the unchanged `Date.now()` `react-hooks/purity` diagnostic in `billing-drawers.tsx`;
+- production build passed with the reported non-blocking BullMQ/optional Valkey warnings;
+- static BillingPlan model-pointer absence check passed;
+- `git diff --check` passed;
+- implementation commit `2bdfb89` and parent Completion Report commit `002a1304` were reported pushed with both dedicated task worktrees clean and remote-aligned.
+
+Architect-side review of the uploaded snapshot additionally reran the 13 Admin security regressions successfully, verified the exact `@modainteract/moda-interact-shared@1.1.0` package/lock resolution and SHARED-002 integrity, confirmed the reported `Date.now()` lint line is unchanged from the supplied pre-task baseline, and inspected the BillingPlan schema/update block for prohibited model fields. The uploaded snapshot does not contain installed `node_modules`, so Prisma generation, the TypeScript unit suite, ESLint and the production build were not rerun in the review environment.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. ADMIN-004 implements only the Platform-owned Merchant Pricing Plan -> Commerce model product-tier association and preserves the accepted `SHOP -> PRICING_PLAN -> PLATFORM` runtime boundary. It does not implement Availability/Catalogue/Credential administration, effective-model resolution, Background behaviour, Gateway deployment or merchant-facing model controls.
 
 ### Follow-up
 
-None
+No correction required. ADMIN-004 directly enables no other implementation task, so acceptance does not promote a dependant. The ARCH-024 Ready frontier remains `ARCH-024-ADMIN-001`, `ARCH-024-COMMERCE-002` and `ARCH-024-BACKGROUND-001`.

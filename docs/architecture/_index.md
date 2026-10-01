@@ -999,8 +999,8 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
 Agreed architecture. Current task state after DATABASE-001, COMMERCE-001, COMMERCE-004,
-SHARED-001 and SHARED-002 acceptance: **Complete 5, Ready 4, Pending 8**. Current frontier:
-`ADMIN-001`, `ADMIN-004`, `COMMERCE-002`, `BACKGROUND-001`. The canonical published Shared
+SHARED-001, SHARED-002 and ADMIN-004 acceptance: **Complete 6, Ready 3, Pending 8**. Current
+frontier: `ADMIN-001`, `COMMERCE-002`, `BACKGROUND-001`. The canonical published Shared
 revision is `@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter
 credential administration is Admin-owned; Commerce Studio selects one effective active model
 and composes Test Conversations from selected Features; Background adopts the same OpenRouter
