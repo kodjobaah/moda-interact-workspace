@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-10-01T21:54:55Z
@@ -831,7 +831,7 @@ The same distinction applies to a broken Platform selected model versus no Platf
 
 ### Status
 
-Ready for Architect Review (Attempt 1)
+Ready for Architect Review (Attempt 2)
 
 ### Files Changed
 
@@ -857,13 +857,16 @@ Removed Commerce Studio's global Catalogue read, Catalogue create/update/enable 
 
 Shop configuration now loads effective Shop-available models for the exact validated Shop ID and renders Platform/Shop availability provenance without deduplicating distinct Catalogue Entry IDs. Clearing the override preserves the COMMERCE-002 inherited Price Plan-then-Platform result and displays its `PRICING_PLAN` or `PLATFORM` provenance; broken explicit selections remain durable and repairable. Selection mutations continue through COMMERCE-002 validation with current edit versions and existing single-flight/UNCONFIRMED reconciliation behaviour. Agent Configuration copy now describes Admin-owned availability/catalogue and the inherited selection rule. Prompt/Instruction semantics, schema, Shared package version, and provider/runtime integrations were not changed.
 
-Implementation commit `6a7e863` (`feat(commerce): make model studio selection-only`) is pushed to `origin/task/ARCH-024-COMMERCE-003`.
+Attempt 2 addressed the sole requested correction, A1-R1: the Platform `Select a model` placeholder is now disabled, and the change handler ignores an empty model ID defensively. Regression coverage verifies the placeholder is disabled with an existing selection and with no available models, and that an empty change event cannot call `setPlatformModelSelection(...)`.
+
+Implementation commits `6a7e863` (`feat(commerce): make model studio selection-only`) and `71a6906` (`fix(commerce): disable empty platform model selection`) are pushed to `origin/task/ARCH-024-COMMERCE-003`.
 
 ### Validation Results
 
-Passed from the dedicated Commerce implementation worktree:
+Attempt 2 reran the complete task Validation minimum from the dedicated Commerce implementation worktree; all required checks passed:
 
-- Required focused Vitest matrix: 4 files passed, 26 tests passed (`agent-configuration-model-ui`, `agent-configuration-shop-ui`, `agent-configuration-server-actions`, `agent-configuration-production`).
+- Required focused Vitest matrix: 4 files passed, 27 tests passed (`agent-configuration-model-ui`, `agent-configuration-shop-ui`, `agent-configuration-server-actions`, `agent-configuration-production`).
+- Focused Platform regression after the correction: 1 file passed, 9 tests passed.
 - Supplemental model-service regression: 1 file passed, 6 tests passed (`agent-configuration-model.test.ts`).
 - Required targeted ESLint command: passed.
 - `npm run typecheck` (`next typegen && tsc --noEmit`): passed.
@@ -872,7 +875,7 @@ Passed from the dedicated Commerce implementation worktree:
 
 The modified PostgreSQL proof test `tests/agent-configuration-model-postgres.test.ts` was not run because it requires an explicitly configured disposable `COMMERCE_TEST_DATABASE_URL`; the task's required Validation minimum does not require that database-backed test. The four-file UI/server-action matrix, service unit test, lint, and typecheck passed.
 
-Launcher evidence for Attempt 1: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-003`, branch `task/ARCH-024-COMMERCE-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-003`, branch `task/ARCH-024-COMMERCE-003`. Shared workspace and shared implementation checkouts were not switched or mutated; no other task worktree was reused. Parent and implementation remote task branches were fast-forwarded `not-needed`; `origin/main` was `already-current` in both. Dependency gate passed for COMMERCE-002 and ADMIN-002. `git submodule sync --recursive` and `git submodule update --init --recursive` passed; nested Database was initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. Durable parent claim commit `792ad2c2108d782090db3a27fcea808538bc5dc1` was pushed. Implementation commit `6a7e863` was pushed to its task branch.
+Launcher evidence for Attempt 2: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-003`, branch `task/ARCH-024-COMMERCE-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-003`, branch `task/ARCH-024-COMMERCE-003`. Shared workspace and shared implementation checkouts were not switched or mutated; no other task worktree was reused. Parent and implementation remote task branches fast-forwarded `not-needed`; `origin/main` was `already-current` in both. Dependency gate passed for COMMERCE-002 and ADMIN-002. `git submodule sync --recursive` and `git submodule update --init --recursive` passed; nested Database was initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. Durable Attempt 2 parent claim commit `a6435ba62e69fbc0d37bb383ee9ebb16b2ea6582` was pushed. Implementation commits `6a7e863` and `71a6906` were pushed to the implementation task branch.
 
 ### Deviations
 
