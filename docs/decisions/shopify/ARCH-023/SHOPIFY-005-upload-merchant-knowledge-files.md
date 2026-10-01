@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
-executor: copilot
-claimed_at: 2026-10-01T09:31:32Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-SHOPIFY-004
@@ -491,13 +491,13 @@ browser never receives credentials/objectKey field
 
 ## Work Items
 
-- [ ] Add R2 server configuration/client/presigner.
-- [ ] Implement upload-intent transaction.
-- [ ] Implement browser direct PUT + SHA-256.
-- [ ] Implement HeadObject-backed finalization.
-- [ ] Implement create/replace/reprocess source lifecycle.
-- [ ] Extend Merchant Knowledge UI for uploads.
-- [ ] Add security/lifecycle tests.
+- [x] Add R2 server configuration/client/presigner.
+- [x] Implement upload-intent transaction.
+- [x] Implement browser direct PUT + SHA-256.
+- [x] Implement HeadObject-backed finalization.
+- [x] Implement create/replace/reprocess source lifecycle.
+- [x] Extend Merchant Knowledge UI for uploads.
+- [x] Add security/lifecycle tests.
 
 ## Interfaces / Contracts
 
@@ -519,25 +519,25 @@ Gateway wiring may be finalized after both Shopify upload and Background worker 
 
 ## Acceptance Criteria
 
-- [ ] Browser uploads directly to private R2 with short-lived create-only signed PUT requiring `If-None-Match: *`.
-- [ ] Server credentials never reach browser.
-- [ ] Source slot is allocated only at successful finalization.
-- [ ] Current plan entitlement is rechecked at intent and finalization; merchant OFF does not block configuration.
-- [ ] A presigned upload cannot overwrite an already-created object key; file replacement is immutable/revisioned through a new asset/key.
-- [ ] Reprocess reuses existing immutable asset.
-- [ ] Merchant OFF leaves PENDING work durable without ingestion; merchant ON permits processing, with queue loss recoverable through durable PENDING state.
-- [ ] No file bytes are stored in PostgreSQL.
+- [x] Browser uploads directly to private R2 with short-lived create-only signed PUT requiring `If-None-Match: *`.
+- [x] Server credentials never reach browser.
+- [x] Source slot is allocated only at successful finalization.
+- [x] Current plan entitlement is rechecked at intent and finalization; merchant OFF does not block configuration.
+- [x] A presigned upload cannot overwrite an already-created object key; file replacement is immutable/revisioned through a new asset/key.
+- [x] Reprocess reuses existing immutable asset.
+- [x] Merchant OFF leaves PENDING work durable without ingestion; merchant ON permits processing, with queue loss recoverable through durable PENDING state.
+- [x] No file bytes are stored in PostgreSQL.
 
 ## Validation
 
-- [ ] focused upload/presign/finalization tests
-- [ ] database transaction integration tests
-- [ ] browser component tests with mocked PUT
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run build`
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] focused upload/presign/finalization tests
+- [x] database transaction integration tests
+- [x] browser component tests with mocked PUT
+- [x] `npm run typecheck`
+- [ ] `npm run lint` (run; existing unrelated repository errors remain)
+- [x] `npm run build`
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -546,45 +546,41 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Review requested; architect decision required on immutable upload contract.
+Ready for Review.
 ### Files Changed
-Implementation repository (`moda-interact`):
+Attempt 2 implementation changes in `moda-interact`:
 
-- R2 config/client, upload lifecycle, queue outcome and Merchant Knowledge read model services.
-- Authenticated upload-intent, upload-finalize and Reprocess routes; existing source route and route registry.
-- Recovery Settings Merchant Knowledge upload form/section and all 20 Shopify locale catalogues.
-- Focused upload, queue, action, UI and PostgreSQL integration tests.
-- `package.json` and `package-lock.json` for the required AWS S3 SDK packages.
+- `app/services/merchant-knowledge/r2-client.server.ts`
+- `app/services/merchant-knowledge/upload.server.ts`
+- `tests/unit/merchant-knowledge-upload.test.ts`
+- `tests/unit/merchant-knowledge-upload-form.test.tsx`
+- `tests/integration/merchant-knowledge-upload.integration.test.ts`
 
-Parent workspace: this task file only. Architect Review remains unchanged.
+Earlier task implementation on the same task branch remains unchanged, including the R2 configuration and upload lifecycle services/routes, Merchant Knowledge settings UI/locales, related focused tests, and AWS SDK dependency files. Parent workspace change: this task file only. No Gateway code/configuration, database schema/source changes, task index, architecture document, or submodule gitlink changes were made. Architect Review is preserved verbatim.
 ### Work Completed
-- Added R2 configuration validation, S3-compatible signed PUT and HeadObject client, authenticated intent/finalization/Reprocess actions, and revisioned file replacement lifecycle.
-- Added direct browser PUT, Web Crypto SHA-256, file validation, file metadata editing, Reprocess and localized upload/action/progress labels.
-- Reprocess explicitly resolves the revision at `source.currentGeneration`.
-- Queue publication now reports its outcome so the UI distinguishes enqueued work from durable PENDING work awaiting activation or queue recovery.
-- The implementation does not yet guarantee immutable object bytes after finalization: see Architectural Concerns and Unresolved Issues.
+- A1-R1: Added `IfNoneMatch: "*"` to the signed `PutObjectCommand`; the R2 client requires the literal conditional value, and upload intent returns exactly `{ "Content-Type": validatedContentType, "If-None-Match": "*" }`. The browser already forwarded generic `requiredHeaders` unchanged; its mocked PUT assertion now proves both values arrive unchanged. Presigner coverage inspects `X-Amz-SignedHeaders` and verifies lowercase `if-none-match`. Existing asset creation, finalization, replacement, and Reprocess lifecycle remains unchanged.
+- Deployed CORS/preflight and live replay validation remain owned by amended GATEWAY-001/SYSTEM-TEST-002; no Gateway implementation was added here.
+- A1-R3: Made the PostgreSQL integration fixture create the opt-in Feature row when absent from the accepted migration state, matching the neighboring Merchant Knowledge lifecycle fixture; the existing purpose/format catalogue remains migration-backed. The prior ACTIVE revision fixture now satisfies the database content metadata constraint.
 ### Validation Results
+- Focused upload service/presigner and browser component tests: 14 passed across `tests/unit/merchant-knowledge-upload.test.ts` and `tests/unit/merchant-knowledge-upload-form.test.tsx`.
+- Disposable PostgreSQL transaction integration: 4 passed, 0 skipped, using `MODA_DISPOSABLE_INTEGRATION=1` and the per-command Colima socket settings. Testcontainers started PostgreSQL, deployed the accepted migrations, and executed intent/source-slot, cross-shop rejection, create/replace/reprocess immutability, and OFF/queue-failure transaction cases.
 - `npm run typecheck`: passed.
-- Focused upload/queue/action/UI suite: 25 passed; 4 PostgreSQL integration cases skipped in default mode.
-- `tests/unit/merchant-i18n.test.ts`: 12 passed; locale key parity and ICU validation passed for all 20 locales.
-- Changed-file ESLint: passed; only warning is repository TypeScript 5.9.3 being outside `@typescript-eslint/typescript-estree`'s declared `<5.4.0` support range.
-- Changed-file diagnostics: no errors in the edited upload service, queue service, upload form or section.
-- `npm run build`: passed for client and SSR bundles; existing non-blocking large-chunk/dependency annotation warnings remain.
+- Changed-file ESLint: passed for all five Attempt 2 files; the existing TypeScript 5.9.3 versus parser `<5.4.0` support warning remains.
+- Changed-file diagnostics: no errors in all five Attempt 2 files.
+- `npm run build`: passed for client and SSR bundles; existing dependency annotation and large-chunk warnings remain.
 - `git diff --check`: passed.
-- Disposable PostgreSQL integration attempt with `MODA_DISPOSABLE_INTEGRATION=1`: blocked before assertions because Testcontainers could not find a working container runtime.
-- Full `npm run lint`: 17 errors in unrelated existing files; changed-file lint is clean.
+- Full `npm run lint`: run; reports the same 17 unrelated repository lint errors documented in Attempt 1. No changed file is among those errors; changed-file ESLint is clean.
 ### Deviations
-- The task’s exact upload contract exposes only `Content-Type` in `requiredHeaders`, while an immutable R2 object requires conditional `PutObject` (`If-None-Match: *`) or another approved protection. Implementing the conditional header also requires updating the browser header contract and Gateway bucket CORS contract. This was not silently changed; the task is submitted for architect direction.
-- `npm ci` reported 32 dependency audit findings (4 moderate, 28 high); dependency remediation was not part of this task.
+- None for implementation scope. Required `If-None-Match: *` was implemented as directed by A1-R1. Audit findings from the earlier dependency installation remain outside this task's scope.
 ### Assumptions
-- Cloudflare R2's published S3 compatibility table marks `PutObject` conditional `If-None-Match` as supported. The AWS SDK presigner encodes it as a signed request header, which a browser must send and the exact-origin R2 CORS policy must allow.
-- The launcher prepared the dedicated parent and implementation worktrees and initialized the recursive database submodule at `2eb17ee910491e8f9df82736fc0a843844415947`.
+- `If-None-Match: *` is signed by the AWS SDK S3 presigner as the lowercase `if-none-match` request header. Attempt 2 presigner coverage confirms that header is listed in `X-Amz-SignedHeaders`; browser component coverage confirms the required header is forwarded unchanged.
+- Gateway CORS allowance and deployed replay rejection are validated by GATEWAY-001/SYSTEM-TEST-002, not this task.
 ### Unresolved Issues
-- The 600-second unconditional signed PUT remains valid after finalization and can overwrite the persisted object key, violating the immutable-original-bytes requirement.
-- PostgreSQL transaction integration assertions remain unexecuted until a container runtime is available.
+- None blocking this review submission. Full repository lint retains 17 unrelated baseline errors; Gateway deployment/replay evidence remains assigned to its owning tasks.
 ### Architectural Concerns
-- `If-None-Match: *` is the narrow R2-compatible protection identified, but it conflicts with R5's exact `requiredHeaders` shape and requires Gateway CORS to allow `If-None-Match`. Request an explicit decision/amendment to both contracts before changing the upload API.
-- At task start, the launcher had prepared `task/ARCH-023-SHOPIFY-005` in both dedicated worktrees and the dependency gate passed; claim commit `d11ecceb3041b4b45ea68ba47cf3c7af3c1176da` was pushed. The canonical/shared checkouts were not used for implementation and no other task worktree was reused. `origin/main` advanced during this attempt; the implementation branch is now four commits behind it. No mainline merge/rebase was performed.
+- None newly identified. A1-R1, A1-R2, and A1-R3 are implemented with the evidence above.
+- Attempt 2 launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-005`, branch `task/ARCH-023-SHOPIFY-005`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-005`, branch `task/ARCH-023-SHOPIFY-005`. At the start boundary, parent and implementation task-remote fast-forwards were both not needed; parent and implementation already contained current `origin/main`. Launcher-synchronized parent HEAD was `ef949a7a797bec37ad6f602bf52b27585be63b82`, followed by pushed Attempt 2 claim commit `79bbde8554d7ae5c260b86664810276b3b29caa0`; implementation prepared HEAD was `7c97d90cc9ae0eeacd4aa6121ef7801342437d7f`. Recursive submodule sync/update passed; `database` was clean at `a5e633a6ed1631e64510b936b2b19e8e50c7a5de`. Dependency ARCH-023-SHOPIFY-004 was complete. Claim: executor `copilot`, Attempt 2, claimed at `2026-10-01T09:31:32Z`.
+- Submitted implementation HEAD: `244f3f60035c3651168571869234ab23654854d3`, pushed to `origin/task/ARCH-023-SHOPIFY-005`. Parent report is being submitted on the same task branch from claim HEAD `79bbde8554d7ae5c260b86664810276b3b29caa0`; its report commit will be the pushed parent branch HEAD at submission.
 
 ## Architect Review
 
