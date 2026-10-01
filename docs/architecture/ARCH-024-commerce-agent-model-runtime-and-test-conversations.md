@@ -18,18 +18,22 @@ ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Previe
 ARCH-024 implementation is underway. `ARCH-024-DATABASE-001` is Complete / Accepted at
 Attempt 1, `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2,
 `ARCH-024-COMMERCE-004` is Complete / Accepted at Attempt 1,
-`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2, and the publication-only
+`ARCH-024-SHARED-001` is Complete / Accepted at Attempt 2, the publication-only
 `ARCH-024-SHARED-002` is Complete / Accepted at Attempt 1 with canonical release
-`@modainteract/moda-interact-shared@1.1.0`. The current Ready frontier is:
+`@modainteract/moda-interact-shared@1.1.0`, `ARCH-024-ADMIN-001` is Complete / Accepted at
+Attempt 2, and `ARCH-024-ADMIN-004` is Complete / Accepted at Attempt 1. ADMIN-002 returned
+to Ready after Architect Review Attempt 1 requested one bounded Server Action authorization
+correction. The current Ready frontier in this isolated parent branch is:
 
 ```text
-ARCH-024-ADMIN-001
-ARCH-024-ADMIN-004
+ARCH-024-ADMIN-002
 ARCH-024-COMMERCE-002
 ARCH-024-BACKGROUND-001
 ```
 
-All other ARCH-024 tasks remain Pending behind their declared dependencies.
+All other ARCH-024 tasks remain Pending behind their declared dependencies. This branch has
+not incorporated the separately accepted COMMERCE-002 reconciliation; preserve that accepted
+state during later parent-branch integration.
 
 Integrated system-test tasks are **deliberately not materialised in this architecture session** because final acceptance overlaps frozen ARCH-023 completion and upcoming architecture work. Any terminal integrated validation will be defined separately against the final combined architecture.
 
@@ -1051,16 +1055,15 @@ Logging is best-effort and cannot change a Commerce turn result, retry, Tool inv
 
 ARCH-024 implementation order is dependency-driven rather than a single serial chain.
 
-Current Ready frontier after SHARED-002 publication acceptance:
+Current Ready frontier on this isolated ADMIN-002 parent branch after Architect Review Attempt 1:
 
 ```text
-ARCH-024-ADMIN-001
-ARCH-024-ADMIN-004
+ARCH-024-ADMIN-002
 ARCH-024-COMMERCE-002
 ARCH-024-BACKGROUND-001
 ```
 
-COMMERCE-004 is already Complete. COMMERCE-005 remains Pending until COMMERCE-002 is also Complete.
+ADMIN-001 and ADMIN-004 are Complete. ADMIN-003 remains Pending behind ADMIN-002. COMMERCE-004 is already Complete; COMMERCE-005 remains Pending until COMMERCE-002 is also Complete. The separately accepted COMMERCE-002 reconciliation is not replayed onto this branch and must be preserved during later integration.
 
 Shared publication sequence:
 
@@ -1202,6 +1205,7 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 
 ## Change History
 
+- **2026-10-01 — ADMIN-002 Attempt 1 changes requested:** the Catalogue implementation is otherwise conformant, including Shared-backed validation, server-side pagination, immutable model identity, CAS lifecycle/reassignment, bounded audit metadata and same-tick submit protection. One bounded source/test correction is required: R3 mandates that a non-SUPER_ADMIN Server Action call throw exactly `SUPER_ADMIN access is required.`; the submitted action returns a form result instead and its source-level security regression asserts that deviation. ADMIN-002 returns Ready at Attempt 1; ADMIN-003 and COMMERCE-003 remain gated.
 - **2026-10-01 — ADMIN-001 accepted at Attempt 2:** the bounded correction renders the exact Platform/Shop disable warning only for the enabled-to-disabled transition and restores the canonical task-definition sections plus durable launcher/worktree/synchronization/submodule evidence. The Availability control-plane implementation otherwise remains unchanged and conformant. `ARCH-024-ADMIN-002` is promoted Ready; no follow-on task is started. This isolated parent branch has not incorporated the separately accepted ADMIN-004 reconciliation, which must be preserved during later parent-branch integration.
 - **2026-10-01 — SHARED-002 accepted at Attempt 1:** publication-only validation confirms the architect-accepted SHARED-001 source was released without implementation drift as exactly `@modainteract/moda-interact-shared@1.1.0`; package/lock changes are version metadata only, registry identity and integrity are recorded, and a clean external exact-version consumer imported the required model/model-node/runner/logging entrypoints. `ARCH-024-ADMIN-001`, `ARCH-024-ADMIN-004`, `ARCH-024-COMMERCE-002` and `ARCH-024-BACKGROUND-001` are promoted Ready; no consumer is claimed or started by this acceptance.
 - **2026-10-01 — COMMERCE-004 accepted at Attempt 1:** selected ordered Feature IDs now resolve server-side to every direct Capability, current published Tool revision and one Feature Behaviour per selected Feature; the Preview adapter builds the deterministic synthetic manifest identity and freezes the exact composition fragment for the conversation. Retained saved Release/Draft lookups remain available for non-conversation Tool-test consumers. `ARCH-024-COMMERCE-005` remains Pending because `ARCH-024-COMMERCE-002` is not yet Complete.

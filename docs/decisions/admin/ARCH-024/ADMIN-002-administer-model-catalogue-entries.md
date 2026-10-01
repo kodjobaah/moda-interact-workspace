@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 31
-executor:
-claimed_at:
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-024-DATABASE-001
@@ -1341,24 +1341,88 @@ None identified. Unrelated BullMQ build warnings are recorded under Validation R
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 is otherwise architecturally conformant, but one in-scope correction is required before acceptance.
+
+**A1-R1 — restore the exact SUPER_ADMIN Server Action authorization contract from R3.**
+
+`src/app/actions/model-catalogue.ts` currently handles a non-SUPER_ADMIN principal by returning:
+
+```ts
+return { ok: false, message: "SUPER_ADMIN access is required." };
+```
+
+R3 explicitly requires the mutation Server Action to enforce this boundary as:
+
+```ts
+const principal = await requirePlatformAdminMutation();
+if (principal.role !== "SUPER_ADMIN") {
+  throw new Error("SUPER_ADMIN access is required.");
+}
+```
+
+This is not a request to redesign the mutation form or error model. The request is limited to restoring the already-defined hard authorization contract at the Server Action boundary. The current source-level security regression was changed to assert the return-result behaviour and therefore currently validates the implementation deviation instead of the task contract.
+
+Required correction:
+
+1. change the non-SUPER_ADMIN branch in `mutateModelCatalogueAction(...)` to throw exactly `Error("SUPER_ADMIN access is required.")` before mutation parsing or transaction work;
+2. update `tests/security/admin-model-catalogue.test.mjs` so the authorization assertion requires that exact throw contract rather than the current `{ ok: false, ... }` return;
+3. keep the existing page/read authorization, SUPER_ADMIN transaction guard, Shared validation, CAS, audit, bounded form-result handling for ordinary validation/conflict errors, and same-tick submit protection unchanged;
+4. rerun the complete task Validation section and record Attempt 2 evidence in the Completion Report.
+
+No schema, Shared, Commerce, Background or Gateway change is requested. Do not start ADMIN-003 or COMMERCE-003.
 
 ### Reviewed Files
 
-None
+- `moda-interact-admin/src/app/(protected)/commerce-models/catalogue/page.tsx`
+- `moda-interact-admin/src/app/actions/model-catalogue.ts`
+- `moda-interact-admin/src/lib/admin/model-catalogue.ts`
+- `moda-interact-admin/src/lib/admin/model-catalogue-validation.ts`
+- `moda-interact-admin/src/components/admin/model-catalogue/model-catalogue-table.tsx`
+- `moda-interact-admin/src/components/admin/model-catalogue/model-catalogue-editor.tsx`
+- `moda-interact-admin/src/components/admin/model-catalogue/model-catalogue-mutation-form.tsx`
+- `moda-interact-admin/src/components/admin/sidebar.tsx`
+- `moda-interact-admin/src/components/admin/admin-shell.tsx`
+- `moda-interact-admin/tests/unit/model-catalogue-validation.test.ts`
+- `moda-interact-admin/tests/unit/model-catalogue-service.test.ts`
+- `moda-interact-admin/tests/security/admin-model-catalogue.test.mjs`
+- `moda-interact-admin/tests/security/admin-sidebar-navigation.test.mjs`
+- `moda-interact-admin/package.json`
+- `moda-interact-admin/package-lock.json`
+- `moda-interact-admin/database/prisma/schema.prisma`
+- task Completion Report and ARCH-024 coordination state
 
 ### Validation Reviewed
 
-None
+Independently rerun from the uploaded review snapshot:
+
+```text
+node --test tests/security/admin-model-catalogue.test.mjs tests/security/admin-sidebar-navigation.test.mjs
+18 passed, 0 failed
+```
+
+The uploaded snapshot does not contain installed `node_modules` or usable Git metadata, so the dependency-backed unit tests, Prisma commands, ESLint, Prettier, production build and remote-head assertions could not be independently rerun in this review environment. Their successful results and clean-worktree/remote evidence are recorded in the Completion Report.
+
+Static review additionally confirmed:
+
+- exact `@modainteract/moda-interact-shared@1.1.0` consumption;
+- canonical Shared Availability/Catalogue/configuration validation;
+- server-side 50-row filtering/pagination and bounded post-sort;
+- immutable `provider + providerModelId` on update;
+- CAS update and enable/disable semantics;
+- bounded audit metadata with target columns and no full configuration;
+- no Catalogue delete path;
+- no Agent Configuration mutation;
+- no live OpenRouter request;
+- no Credentials navigation introduced by this task.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-024, repository ownership, accepted Database/Shared contracts, model identity/configuration boundaries, CAS/audit requirements and Admin/Commerce ownership separation **except for A1-R1**, where the Server Action authorization failure semantics differ from the exact R3 contract.
 
 ### Follow-up
 
-None
+Return the same task through the normal `moda_admin` execution path for Attempt 2. Correct A1-R1 only, rerun the defined validation, update the Completion Report, set the task back to `review`, and STOP. No dependent task becomes Ready until ADMIN-002 is architect-accepted Complete.

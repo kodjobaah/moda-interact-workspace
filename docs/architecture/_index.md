@@ -998,15 +998,16 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
-Agreed architecture. Current state in this isolated ADMIN-001 parent branch after DATABASE-001,
-COMMERCE-001, COMMERCE-004, SHARED-001, SHARED-002 and ADMIN-001 acceptance: **Complete 6,
-Ready 4, Pending 7**. Current frontier: `ADMIN-002`, `ADMIN-004`, `COMMERCE-002`,
-`BACKGROUND-001`. The separately accepted ADMIN-004 reconciliation remains on its own parent
-task branch and must be preserved during later integration. The canonical published Shared
-revision is `@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter
-credential administration is Admin-owned; Commerce Studio selects one effective active model
-and composes Test Conversations from selected Features; Background adopts the same OpenRouter
-runtime for production CommerceAgent turns. No Shopify task is required.
+Agreed architecture. Current state in this isolated ADMIN-002 parent branch after DATABASE-001,
+COMMERCE-001, COMMERCE-004, SHARED-001, SHARED-002, ADMIN-001 and ADMIN-004 acceptance, with
+ADMIN-002 returned Ready by Architect Review Attempt 1: **Complete 7, Ready 3, Pending 7**.
+Current frontier: `ADMIN-002`, `COMMERCE-002`, `BACKGROUND-001`. This branch has not incorporated
+the separately accepted COMMERCE-002 reconciliation; preserve that accepted state during later
+integration. The canonical published Shared revision is
+`@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter credential
+administration is Admin-owned; Commerce Studio selects one effective active model and composes
+Test Conversations from selected Features; Background adopts the same OpenRouter runtime for
+production CommerceAgent turns. No Shopify task is required.
 
 ARCH-021 COMMERCE-105..109, GATEWAY-002 and SYSTEM-TEST-004 are superseded. ARCH-023
 remains frozen and is consumed as an external instruction dependency. ARCH-024 terminal
