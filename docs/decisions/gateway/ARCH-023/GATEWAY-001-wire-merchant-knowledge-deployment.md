@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 70
-executor: copilot
-claimed_at: 2026-10-01T13:36:09Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-BACKGROUND-005
@@ -755,18 +755,18 @@ to link/reference this contract rather than duplicating conflicting instructions
 
 ## Work Items
 
-- [ ] Add five Merchant Knowledge env groups to test Blueprint.
-- [ ] Add five Merchant Knowledge env groups to production Blueprint.
-- [ ] Add dedicated test Merchant Knowledge worker.
-- [ ] Add dedicated production Merchant Knowledge worker.
-- [ ] Attach exact R2 groups to Shopify.
-- [ ] Attach exact R2/embedding groups to Merchant Knowledge worker.
-- [ ] Attach exact embedding group/bootstrap-admin key to Commerce.
-- [ ] Preserve all existing service topology/routing.
-- [ ] Extend positive Blueprint validation.
-- [ ] Extend negative Blueprint validation.
-- [ ] Add Merchant Knowledge deployment contract, including exact-origin R2 browser create-only PUT CORS prerequisite/replay verification.
-- [ ] Update topology/prerequisite docs.
+- [x] Add five Merchant Knowledge env groups to test Blueprint.
+- [x] Add five Merchant Knowledge env groups to production Blueprint.
+- [x] Add dedicated test Merchant Knowledge worker.
+- [x] Add dedicated production Merchant Knowledge worker.
+- [x] Attach exact R2 groups to Shopify.
+- [x] Attach exact R2/embedding groups to Merchant Knowledge worker.
+- [x] Attach exact embedding group/bootstrap-admin key to Commerce.
+- [x] Preserve all existing service topology/routing.
+- [x] Extend positive Blueprint validation.
+- [x] Extend negative Blueprint validation.
+- [x] Add Merchant Knowledge deployment contract, including exact-origin R2 browser create-only PUT CORS prerequisite/replay verification.
+- [x] Update topology/prerequisite docs.
 - [ ] Run all required Gateway validation.
 
 ## Interfaces / Contracts
@@ -807,24 +807,24 @@ After Gateway acceptance, ARCH-023 developer/manual validation and final system 
 
 ## Acceptance Criteria
 
-- [ ] Dedicated Merchant Knowledge worker exists in both Render Blueprints.
-- [ ] Worker uses exact accepted Background start command.
-- [ ] Worker has Redis/PostgreSQL/common observability wiring.
-- [ ] Test/production worker topology is environment-isolated.
-- [ ] Shopify and Background use separate R2 credentials.
+- [x] Dedicated Merchant Knowledge worker exists in both Render Blueprints.
+- [x] Worker uses exact accepted Background start command.
+- [x] Worker has Redis/PostgreSQL/common observability wiring.
+- [x] Test/production worker topology is environment-isolated.
+- [x] Shopify and Background use separate R2 credentials.
 - [ ] Private R2 bucket CORS permits only exact deployed Shopify-app origin(s) for browser PUT with `Content-Type` and `If-None-Match`, and creates no public read/list surface.
 - [ ] A deployed-origin create-only presigned PUT succeeds once and replay to the same key is rejected without replacing the object.
-- [ ] R2 endpoint/bucket configuration is shared only between Shopify and Merchant Knowledge worker.
-- [ ] R2 credentials are never attached to Commerce.
-- [ ] Shopify does not receive embedding credentials.
-- [ ] Background and Commerce consume one identical embedding group per environment.
-- [ ] `EMBEDDING_PROVIDER` is exactly `openai`.
-- [ ] No embedding/R2 secret value is committed.
-- [ ] Commerce receives `COMMERCE_BOOTSTRAP_ADMIN_EMAIL` as deployment-entered configuration.
-- [ ] No new Merchant Knowledge HTTP service/Gateway route exists.
-- [ ] Current PostgreSQL/Redis services are reused.
-- [ ] Deployment and rollback sequencing are documented.
-- [ ] Positive and required negative Blueprint validations pass.
+- [x] R2 endpoint/bucket configuration is shared only between Shopify and Merchant Knowledge worker.
+- [x] R2 credentials are never attached to Commerce.
+- [x] Shopify does not receive embedding credentials.
+- [x] Background and Commerce consume one identical embedding group per environment.
+- [x] `EMBEDDING_PROVIDER` is exactly `openai`.
+- [x] No embedding/R2 secret value is committed.
+- [x] Commerce receives `COMMERCE_BOOTSTRAP_ADMIN_EMAIL` as deployment-entered configuration.
+- [x] No new Merchant Knowledge HTTP service/Gateway route exists.
+- [x] Current PostgreSQL/Redis services are reused.
+- [x] Deployment and rollback sequencing are documented.
+- [x] Positive and required negative Blueprint validations pass.
 
 ## Validation
 
@@ -870,37 +870,51 @@ The Gateway repository does not currently contain a Cloudflare provisioning tool
 
 ### Status
 
-Blocked pending the Background-owned Merchant Knowledge observability bootstrap required by R17.
+Ready for architect review — Attempt 2. Implementation is committed as `9aca146` (`feat(gateway): wire Merchant Knowledge Render topology`) and pushed to `task/ARCH-023-GATEWAY-001`. The active claim is cleared. Architect acceptance and developer-owned live Render/R2 validation remain outstanding.
 
 ### Files Changed
 
-No Gateway implementation files changed. This task stopped before deployment wiring.
+- `render.test.yaml`
+- `render.production.yaml`
+- `tests/validate-render-blueprints.sh`
+- `tests/validate-render-blueprints-negative.sh`
+- `docs/merchant-knowledge-deployment.md`
+- `docs/render-topology.md`
+- `docs/deployment-prerequisites.md`
 
 ### Work Completed
 
-Inspected the accepted worker start contract and confirmed that `moda-interact-background/package.json` starts the Merchant Knowledge worker with `node dist/entrypoints/merchant-knowledge.js`. The entrypoint does not initialize observability; it only imports the shutdown helper. Existing Background worker start commands preload worker-specific `observability/*.mjs` modules, but no `observability/merchant-knowledge.mjs` existed at the time of the blocker.
+Added the five exact environment-scoped Merchant Knowledge groups to both canonical Render Blueprints, the dedicated private Background worker with existing PostgreSQL/Redis/common observability wiring, exact Shopify and Commerce group boundaries, and Commerce's service-level bootstrap administrator input. Existing services, databases, and Redis resources remain in place; no Gateway route or Merchant Knowledge HTTP service was added.
 
-This violates R17, which requires stopping and reporting the missing Background capability rather than editing Background from Gateway. `moda_architect` confirmed the gap and materialised BACKGROUND-008. Gateway remains blocked until that correction is accepted and the dependency is reconciled by the architect.
+Extended the positive Psych validator for exact groups, service settings, database/environment isolation, secret hygiene, service ownership, privacy, and forbidden network surface. Added required negative mutations for worker wiring, credential leakage, environment crossover, committed secrets, service-level embedding values, and public-service/Gateway-upstream additions. Added the authoritative Merchant Knowledge deployment contract, including bucket-scoped R2 credentials, exact-origin browser PUT CORS and create-only replay verification, pgvector and Commerce bootstrap prerequisites, rollout, rollback, and developer validation ownership. Existing topology/prerequisite documents link to this contract.
 
 ### Validation Results
 
-No Blueprint or deployment validation was run because R17 blocks implementation. The required deployed-origin R2 CORS/presigned-PUT check and `bash tests/run-tests.sh` remain developer-owned validations after implementation; neither was run.
+- `bash tests/validate-render-blueprints.sh` — passed.
+- `bash tests/validate-render-blueprints-negative.sh` — passed, including all Merchant Knowledge required mutations.
+- `bash tests/validate-observability-config.sh` — passed.
+- Ruby/Psych parse of `render.test.yaml` and `render.production.yaml` — passed.
+- `git diff --check` — passed.
+- Live Render Blueprint deployment and deployed-origin R2 preflight/create-only signed PUT/replay validation — not run; requires developer-controlled deployed origins, bucket access, and the accepted Shopify upload flow. Follow the exact checks in `docs/merchant-knowledge-deployment.md`: preflight must allow only the exact origin, `PUT`, `Content-Type`, and `If-None-Match`; first `If-None-Match: *` PUT must succeed; replay to the same key must fail without replacing the object; public read/list must remain unavailable.
+- `scripts/developer-validation.sh` and terminal system tests — not run. The wrapper requires an explicit command; no developer authorization was provided to launch the developer-owned long/system validation. Static agent-owned checks above were run directly.
 
-### Deviations
+### Deviations and Outstanding Validation
 
-Stopped before all Gateway work items by design, as required by R17. No Blueprint, validator, or deployment documentation files were modified.
+The deployed-origin R2 acceptance check is documented but remains an external validation handoff, not a claimed pass. The task is returned to `review` for architect inspection; do not treat this report as architect acceptance or as evidence that live R2/Render prerequisites have been exercised.
 
-### Assumptions
+### Worktree and Launcher Evidence
 
-The Gateway task must remain blocked until the Background worker initializes the repository's normal observability bootstrap.
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-GATEWAY-001`, branch `task/ARCH-023-GATEWAY-001`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-GATEWAY-001`, branch `task/ARCH-023-GATEWAY-001`.
+- Shared workspace checkout switched or mutated for task work: no. Shared implementation checkout switched or mutated for task work: no. Another task worktree reused: no.
+- Parent task branch was synchronized by the launcher; its synchronized head before claim was `07c8a32ad577106913cd872db56e84adb7a4b702`. The architect-resolved parent conflict merge is `1e16b803844be5269cf2861c59b71cf48e5f9c4b`.
+- Implementation worktree was synchronized to the task branch/mainline base `901e784b192c8b691c67ca19361257c2950a8282` before implementation. Recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed; no submodule entries were present.
+- Implementation commit: `9aca146`; pushed to `origin/task/ARCH-023-GATEWAY-001`.
 
-### Unresolved Issues
+### Attempt 1 Historical Note
 
-Background must provide and validate normal observability initialization for `moda-merchant-knowledge-worker` before Gateway deployment topology can be safely wired.
-
-### Architectural Concerns
-
-The declared worker readiness/start contract omitted the observability preload used by sibling Background workers. BACKGROUND-008 owns the correction; Gateway must not compensate in deployment code.
+Attempt 1 correctly stopped at R17 because the accepted Merchant Knowledge worker command lacked the Background observability preload. `ARCH-023-BACKGROUND-008` was subsequently completed and accepted, clearing that blocker for Attempt 2. The historical Attempt 1 architect review below is retained unchanged.
 
 ## Architect Review
 
