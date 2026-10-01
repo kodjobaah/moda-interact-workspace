@@ -11,7 +11,7 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002`, `ARCH-023-SHOPIFY-003` and `ARCH-023-SHOPIFY-005`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
@@ -3330,17 +3330,17 @@ all other ARCH-023 implementation tasks remain gated by their declared dependenc
 
 SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
-Current Shopify frontier after SHOPIFY-004 Attempt 2 acceptance:
+Current Shopify frontier after SHOPIFY-005 Attempt 3 acceptance:
 
 ```text
 ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-003    Complete — Accepted Attempt 3
 ARCH-023-SHOPIFY-004    Complete — Accepted Attempt 2
-ARCH-023-SHOPIFY-005    Ready
+ARCH-023-SHOPIFY-005    Complete — Accepted Attempt 3
 ```
 
-SHOPIFY-003 remains Complete / Accepted Attempt 3. SHOPIFY-004 is now Complete / Accepted Attempt 2: current-plan configuration gates cover every source mutation, edit/refresh share the R3 first-N entitlement window, OFF remains non-destructive, and canonical URL length is validated before persistence. SHOPIFY-004 acceptance satisfies SHOPIFY-005's only dependency, so SHOPIFY-005 is Ready but not started implicitly. The separately required Background billing-reconciliation activation hook remains outside these tasks and must be materialised before final ARCH-023 system acceptance.
+SHOPIFY-005 is Complete / Accepted Attempt 3 after an evidence-only revalidation: the create-only signed PUT and immutable upload lifecycle remain unchanged, all three mandatory physical-isolation attestations are now durable, and the focused/upload PostgreSQL validation was refreshed without code churn. `ARCH-023-GATEWAY-001` remains Pending because `ARCH-023-BACKGROUND-005` is still incomplete; `ARCH-023-COMMERCE-002` is already Complete. The separately required Background billing-reconciliation activation hook remains outside these tasks and must be materialised before final ARCH-023 system acceptance.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3350,6 +3350,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — SHOPIFY-005 Attempt 3 accepted
+
+- Accepted the evidence-only Attempt 3 with the implementation unchanged at `244f3f60035c3651168571869234ab23654854d3`.
+- Confirmed the Completion Report now records all three required physical-isolation attestations, canonical parent/implementation worktrees, four start-of-attempt synchronization outcomes, recursive submodule state, dependency gate and final submitted heads.
+- Accepted refreshed validation: 14/14 focused upload/presigner/browser tests, 4/4 disposable PostgreSQL integration tests with 0 skipped, typecheck, build, changed-file diagnostics and whitespace validation; full lint still reports only the documented 17 unrelated existing errors.
+- Marked SHOPIFY-005 Complete / Accepted Attempt 3. GATEWAY-001 remains Pending because BACKGROUND-005 is still incomplete; no downstream task is started implicitly.
 
 ### 2026-10-01 — BACKGROUND-007 Attempt 1 accepted
 

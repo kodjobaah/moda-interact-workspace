@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 52
 executor: null
 claimed_at: null
@@ -601,6 +601,53 @@ Earlier task implementation on the same task branch remains unchanged, including
 - Parent task report is the only Attempt 3 change and will be published on `task/ARCH-023-SHOPIFY-005`; no implementation commit was created. Deployed R2 CORS/preflight and live replay validation remain assigned to GATEWAY-001 / SYSTEM-TEST-002.
 
 ## Architect Review
+
+### Attempt 3 Review Status
+
+Accepted — Attempt 3
+
+### Attempt 3 Review Notes
+
+Attempt 3 closes the sole remaining workflow-evidence finding from Attempt 2. No implementation source or test changed: the accepted upload implementation remains exactly at `244f3f60035c3651168571869234ab23654854d3`. The Completion Report now records the three mandatory physical-isolation attestations verbatim, the canonical launcher-resolved parent and implementation worktrees/branches, all four start-of-attempt synchronization outcomes, recursive submodule state, dependency gate and final submitted implementation head.
+
+The refreshed task-required validation also closes the evidence-only correction without manufacturing code churn. The create-only private-R2 upload contract remains unchanged: `IfNoneMatch: "*"` is signed on the PUT, the browser receives and forwards exact `Content-Type` plus `If-None-Match: *`, finalization remains HeadObject-backed and transactionally allocates source/revision state, replacement uses a new immutable asset/key, Reprocess reuses the existing immutable asset, and merchant OFF leaves durable PENDING work without enqueue. Deployed Cloudflare CORS/preflight and live same-key replay rejection remain correctly owned by GATEWAY-001 / SYSTEM-TEST-002.
+
+### Attempt 3 Reviewed Files
+
+```text
+docs/decisions/shopify/ARCH-023/SHOPIFY-005-upload-merchant-knowledge-files.md
+moda-interact/app/services/merchant-knowledge/r2-client.server.ts
+moda-interact/app/services/merchant-knowledge/upload.server.ts
+moda-interact/app/components/settings/MerchantKnowledgeUploadForm.tsx
+moda-interact/tests/unit/merchant-knowledge-upload.test.ts
+moda-interact/tests/unit/merchant-knowledge-upload-form.test.tsx
+moda-interact/tests/integration/merchant-knowledge-upload.integration.test.ts
+docs/agent-worktree-isolation-policy.md
+```
+
+### Attempt 3 Validation Reviewed
+
+The refreshed Completion Report records:
+
+```text
+focused upload/presigner/browser tests        14 passed
+disposable PostgreSQL integration              4 passed, 0 skipped
+npm run typecheck                              passed
+npm run lint                                   run; 17 unrelated existing errors
+npm run build                                  passed with existing warnings
+changed-file diagnostics                       clean
+git diff --check                               passed
+```
+
+The PostgreSQL proof used the task-owned disposable environment with the accepted migrations and removed its owned container afterward. The supplied review archive contains source and durable evidence rather than the developer's installed dependency/Docker state, so the architect inspected the implementation/test paths and recorded execution evidence rather than claiming to rerun those dependency-backed commands from the archive.
+
+### Attempt 3 Architecture Conformance
+
+Accepted. The implementation was already architecture-conformant at Attempt 2; Attempt 3 supplies the missing physical-isolation evidence required by the review protocol and refreshes every task-required validation without changing implementation source. `completion_mode: automatic` therefore completes `ARCH-023-SHOPIFY-005`.
+
+### Attempt 3 Dependency Reconciliation
+
+`ARCH-023-SHOPIFY-005` is now Complete / Accepted Attempt 3. Its enabled `ARCH-023-GATEWAY-001` does **not** become Ready yet because `ARCH-023-BACKGROUND-005` remains Pending on BACKGROUND-004; `ARCH-023-COMMERCE-002` is already Complete. No downstream task is started or claimed by this acceptance.
 
 ### Review Status
 Changes Requested — Attempt 2
