@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 62
-executor: copilot
-claimed_at: 2026-10-01T09:49:30Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-COMMERCE-002
@@ -115,7 +115,7 @@ no ShopFeaturePreference row is created by Commerce
 ## Validation
 
 - [x] focused Merchant Knowledge entitlement/operation tests
-- [ ] live PostgreSQL/pgvector proof where existing COMMERCE-001 test contract requires it
+- [x] live PostgreSQL/pgvector proof where existing COMMERCE-001 test contract requires it
 - [x] `npm run typecheck`
 - [x] targeted lint/diagnostics
 - [x] `npm run build`
@@ -128,7 +128,7 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Ready for Review — Attempt 1
+Ready for Review — Attempt 2
 ### Files Changed
 `src/commerce/merchant-knowledge/entitlement.ts`, `src/commerce/merchant-knowledge/operation.ts`, `tests/merchant-knowledge-entitlement.test.ts`, `tests/merchant-knowledge-policy.test.ts`, and `tests/merchant-knowledge-bootstrap.test.ts`.
 ### Work Completed
@@ -158,15 +158,28 @@ implementation commit: ea88b43cbdf676ee9963b88a7bbae5a6676a66ec (pushed to task/
 
 Focused entitlement/policy/bootstrap tests: 3 files passed, 27 tests passed. Extended Merchant Knowledge tests (entitlement, policy, bootstrap, bootstrap startup, retrieval and contract): 6 files passed, 36 tests passed. Targeted ESLint on all five changed files passed with no output. `npm run typecheck` passed. `npm run build` passed, including manual/runtime package smoke checks, Prisma generation and Next.js production compilation; it emitted the existing Nunjucks dynamic-dependency warning. `git diff --check` passed.
 
-The adjacent `tests/merchant-knowledge-embedding.test.ts` was also tried; one existing config-contract test fails because its `readConfig(base)` fixture omits the required `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`. This task does not change that fixture or configuration contract. Live PostgreSQL/pgvector validation was not run: the guarded test requires an explicit safe loopback disposable `COMMERCE_TEST_DATABASE_URL`, which is not configured in this environment. No deployment database was used.
+The adjacent `tests/merchant-knowledge-embedding.test.ts` was also tried; one existing config-contract test fails because its `readConfig(base)` fixture omits the required `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`. Architect confirmed this is unrelated and does not need correction.
 ### Deviations
-Live PostgreSQL/pgvector proof remains unrun because no safe disposable test URL is configured. The unrelated embedding-config fixture failure is recorded above and is not changed in this bounded task.
+Attempt 1 did not run the live PostgreSQL/pgvector proof because no disposable database target was configured. Attempt 2 supplied a task-local disposable Docker environment and completed the required proof; no deployment database was used. The unrelated embedding-config fixture failure remains unchanged.
 ### Assumptions
 The current active plan Feature relation is the source of truth for the `merchant_knowledge` Feature ID; `ShopFeaturePreference` absence is equivalent to opted out, consistent with the model's `enabled` default and opt-in activation mode.
 ### Unresolved Issues
 Architect attribution is requested for the adjacent embedding-config test fixture failure and the unavailable disposable PostgreSQL/pgvector target.
 ### Architectural Concerns
 None. The check remains operation-level and independent of the eligible Capability set; bootstrap and pgvector retrieval design are unchanged.
+
+### Attempt 2 Validation Correction
+No production-source changes were made. Added `tests/merchant-knowledge-activation-postgres.test.ts`, which invokes `createMerchantKnowledgeLookupAdapter()` against the real migrated schema and exercises missing preference, explicit disabled preference, and enabling that same preference. The test asserts the missing row remains absent after denial, neither OFF call invokes embedding, retained source/revision/chunk snapshots remain unchanged, and the enabled call returns the existing matching-provenance ACTIVE chunk without replacing retained knowledge. Trusted turn context contains only `another-capability`.
+
+Added `scripts/run-merchant-knowledge-activation-postgres.mjs` and the `test:arch023-merchant-knowledge-activation:postgres` package script. The runner rejects checkouts containing dotenv files and non-local Docker contexts, uses image `pgvector/pgvector:pg17`, an ephemeral IPv4 loopback port, a uniquely named `commerce_arch023_activation_test_*` database, and a tmpfs PostgreSQL data directory. It passed all 22 repository Prisma migrations before launching the test with `DATABASE_URL` and `COMMERCE_TEST_DATABASE_URL` set to the same disposable target. Teardown removed the owned container and verified that no container with this invocation's label remained.
+
+Live proof result: **passed**, 1 test. Docker server: `29.5.2`. The successful run used database `commerce_arch023_activation_test_bc9f2dd2ca63` at `127.0.0.1:32793`; these were ephemeral and have been removed. The initial harness run correctly cleaned up its container but exposed an erroneous test guard that rejected the required identical URLs; that guard was corrected before the passing run.
+
+Focused affected Merchant Knowledge tests: 4 files passed, 32 tests passed, 2 live-only tests skipped because those tests require the guarded runner environment. The wider `tests/merchant-knowledge-*.test.ts` run had 44 passing tests and 3 live-only skips, with one known unrelated failure in `tests/merchant-knowledge-embedding.test.ts` because its configuration fixture omits required `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`. Architect confirmed that failure is outside this task; it was not changed.
+
+`npm run typecheck`, targeted ESLint for the new test and runner, Pylance diagnostics for the new files, `node --check` for the runner, and `git diff --check` passed.
+
+Implementation/test commit `72e232a` (`test(commerce): prove merchant knowledge activation in postgres`) was pushed to `task/ARCH-023-COMMERCE-004`. The Attempt 2 parent claim is `b732b9ea`; parent synchronization incorporated `origin/main` at `c047c4feff6e1754b0d06e823a013fd14de0d61b` after resolving the architecture-document merge in favor of upstream's newer history. The recursive database submodule was initialized at `6a8602e67d2308189af81ee0091e5189f1ffd71a`. The implementation worktree is clean after the pushed test commit. Task status is returned to `review`, with executor and claim timestamp cleared, for `moda_architect`.
 
 ## Architect Review
 
