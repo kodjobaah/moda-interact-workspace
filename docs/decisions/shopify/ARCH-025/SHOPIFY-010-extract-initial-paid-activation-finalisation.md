@@ -74,7 +74,7 @@ No new service file is required unless implementation demonstrates a concrete cy
 - Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
 - This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
-- `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
+- `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`. The proven pre-task failure set is `ARCH025-TEST-001`; the task must introduce no additional failing identifier.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
 - Full `npm test` must introduce no new failure. An unrelated documented baseline failure may be referenced only if it is unchanged and the current task did not touch its affected area.
 
@@ -133,7 +133,7 @@ A stale `expectedInitialSelection` remains a no-op before the finaliser runs. Ex
 - [ ] Move only the identified branch body from `syncSubscription()`; keep outer transaction, stale-token fencing, existing-subscription reread and branch detection in sync.
 - [ ] Extend focused activation tests for exact successful period/counters, Shop lock, all fail-closed cases, replay preservation and drain-window schedule.
 - [ ] Prove no additional provider/database work was introduced around the branch.
-- [ ] Prove frozen façade regression suite remains byte-identical and green.
+- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -153,14 +153,14 @@ Internal activation method accepts the caller-owned `Prisma.TransactionClient`, 
 - [ ] Full `ShopSettings -> Subscription -> Shop` lock order and all strict initial Paid validation/entitlement semantics are unchanged.
 - [ ] Activation service performs no provider call.
 - [ ] `syncSubscription()` still exposes exactly the same public behaviour.
-- [ ] Frozen 127-test façade suite passes unchanged.
+- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
 - [ ] `npm run prisma:generate`
 - [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
+- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
 - [ ] `npm test -- tests/unit/services/billing/subscription-activation.service.test.ts` passes the new focused capability tests
 - [ ] `npm test` introduces no new failures
 - [ ] `npm run typecheck`

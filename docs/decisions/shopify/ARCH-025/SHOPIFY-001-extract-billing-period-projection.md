@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
 executor: null
 claimed_at: null
@@ -72,7 +72,7 @@ No other production or test file is authorised.
 - Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
 - This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
-- `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
+- `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`. The proven pre-task failure set is `ARCH025-TEST-001`; the task must introduce no additional failing identifier.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
 - Full `npm test` must introduce no new failure. An unrelated documented baseline failure may be referenced only if it is unchanged and the current task did not touch its affected area.
 
@@ -128,7 +128,7 @@ The extracted helper performs exactly the existing Prisma operations for the sam
 - [x] Create `billing-period-projection.ts` and move the bounded projection/cycle logic, including `isSafeNonNegativeInteger`.
 - [x] Replace in-file implementations with imports/re-export wiring from `billing.service.ts`.
 - [x] Add focused unit tests for READY create, compatible repair, FREE/PAID counter rules, conflict/no-overwrite and phase/cycle helpers.
-- [ ] Prove the frozen façade suite is byte-identical and green. Attempt 2 proves its 18 failures are identical on the exact pre-task baseline; the suite is not green on either commit, as documented below.
+- [x] Prove the frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`. Attempt 2 proved the same 18 failing identifiers on the exact pre-task and submitted commits.
 
 ## Interfaces / Contracts
 
@@ -150,14 +150,14 @@ None
 - [x] No equivalent implementation remains duplicated in `billing.service.ts`.
 - [x] Existing conflict reasons, reads/writes (including the compatible-row update), counter semantics and returned results are unchanged.
 - [x] `deriveBillingPeriodPhase` remains publicly available from `billing.service.ts`.
-- [ ] Frozen 127-test façade suite passes unchanged. The file hash is unchanged; the actual suite contains 213 tests and the same 18 failures on both the pre-task baseline and submitted commit against the 2026-10-01 runtime date.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`; Attempt 2 proved the same 18 failures across all 213 tests on the exact pre-task and submitted commits.
 
 ## Validation
 
 - [x] `npm run prisma:generate` (Prisma Client 6.19.3 generated successfully)
 - [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [x] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests. Actual suite: 18 failed / 195 passed / 213 total on both pre-task and submitted commits; frozen file hash remains exact.
+- [x] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`: 18 failed / 195 passed / 213 total on both exact comparison commits; frozen file hash remains exact.
 - [x] `npm test -- tests/unit/services/billing/billing-period-projection.test.ts` passes the new focused capability tests (11 tests)
 - [x] `npm test` introduces no new failures. Attempt 2 differential: identical 24 failing test identifiers on pre-task and submitted commits; submitted adds the 11 passing focused projection tests. Exact counts and identifiers are recorded below.
 - [x] `npm run typecheck`
@@ -289,70 +289,47 @@ None identified in the bounded extraction. No provider calls, transaction owners
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 implementation is source-conformant, but acceptance is blocked on regression-baseline evidence rather than code correction.
+Attempt 2 closes A1-R1 and ARCH-025-SHOPIFY-001 is accepted. The implementation remained unchanged at `ed1e4ebe00f29e16e4acb1d799784a6b60b23531`; no production or test source change was required after Attempt 1.
 
-Independent review established that implementation commit `ed1e4ebe00f29e16e4acb1d799784a6b60b23531` is exactly one commit ahead of pre-task `moda-interact` baseline `b6d1fd6d362f2a6a302a735e0a54abd8ee677782` and changes only the three authorised files. The extracted billing-period projection/cycle bodies preserve the pre-task Prisma operations, branch ordering, transaction-caller ownership, conflict reasons, counter arithmetic and default-time phase semantics. `billing.service.ts` retains the compatibility export for `deriveBillingPeriodPhase`, and no equivalent helper implementation remains duplicated there.
+The same-environment differential compared exact pre-task commit `b6d1fd6d362f2a6a302a735e0a54abd8ee677782` with the submitted implementation commit. The frozen `billing.service.test.ts` SHA-256 is identical on both. Each frozen-suite run produced the same 18 failing identifiers and 195 passing tests across 213 total tests. Each full-suite run produced the same 24 failing identifiers; the submitted tree differs only by the 11 additional passing focused projection tests. Therefore no failure was introduced by this extraction.
 
-The frozen `tests/unit/services/billing.service.test.ts` SHA-256 is the required `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`, and the implementation commit does not modify that file. Focused projection tests, typecheck, targeted lint, build and `git diff --check` are reported passing.
+The implementation itself remains source-conformant: the projection/cycle logic has one owner, the move preserves the pre-task branch/order/Prisma/transaction semantics, `deriveBillingPeriodPhase` remains compatibility-exported by `billing.service.ts`, and the implementation commit changes only the three authorised files.
 
-However, two required validation gates remain unproven:
-
-1. the frozen façade suite currently reports 18 failures / 213 tests even though the architecture/task text says 127 tests; and
-2. the full suite reports 24 failures, including six outside the frozen façade suite.
-
-The Completion Report gives a credible fixed-date explanation for the 18 façade failures, but `docs/development-baseline.md` contains no matching baseline entry and Attempt 1 did not execute the same suites on the exact pre-task commit. The six other full-suite failures likewise have no durable baseline evidence. Under the ARCH-025 no-regression contract, those failures cannot be treated as pre-existing solely from explanation or unchanged-file scope.
-
-No production or test source change is requested at this point. Attempt 2 is an evidence-only differential validation attempt unless it demonstrates a task-introduced regression.
+The prior `127 tests must pass` wording was factually incorrect and impossible on the exact pre-task baseline. Architect reconciliation corrects the frozen asset count to 213 and records the proven pre-task failures as durable development baseline `ARCH025-TEST-001`. This does not waive regressions: later ARCH-025 tasks must keep the frozen file byte-identical and introduce no failing identifier outside that baseline.
 
 ### Reviewed Files
 
 - `moda-interact/app/services/billing/billing.service.ts`
 - `moda-interact/app/services/billing/billing-period-projection.ts`
 - `moda-interact/tests/unit/services/billing/billing-period-projection.test.ts`
-- `moda-interact/tests/unit/services/billing.service.test.ts`
-- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- frozen `moda-interact/tests/unit/services/billing.service.test.ts` identity/evidence
 - `docs/decisions/shopify/ARCH-025/SHOPIFY-001-extract-billing-period-projection.md`
-- `docs/decisions/shopify/ARCH-025/_index.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
 - `docs/development-baseline.md`
-- implementation commit `ed1e4ebe00f29e16e4acb1d799784a6b60b23531` and its pre-task merge base `b6d1fd6d362f2a6a302a735e0a54abd8ee677782`
+- implementation commit `ed1e4ebe00f29e16e4acb1d799784a6b60b23531`
+- pre-task commit `b6d1fd6d362f2a6a302a735e0a54abd8ee677782`
+- Attempt 2 report commit `7d36c295f7f65abef8753bf671cffd4009521059`
 
 ### Validation Reviewed
 
-- GitHub comparison: pre-task `b6d1fd6d362f2a6a302a735e0a54abd8ee677782` -> submitted `ed1e4ebe00f29e16e4acb1d799784a6b60b23531` is one commit with only the three authorised files changed.
-- Frozen façade source SHA-256: exact required value; implementation commit does not change the frozen test file.
-- Focused extracted-owner suite: reported 11/11 passing.
-- `npm run typecheck`: reported passing.
-- required targeted ESLint: reported passing.
-- `npm run build`: reported passing.
-- `git diff --check`: reported passing.
-- Frozen façade suite: 18 failures / 213 tests; not yet proven identical on the pre-task baseline.
-- Full `npm test`: 24 failures; not yet proven identical on the pre-task baseline.
+- Frozen SHA-256 identical on both comparison trees.
+- Frozen suite: identical 18 failed / 195 passed / 213 total on both trees.
+- Full suite: identical 24 failing identifiers on both trees; submitted tree adds only 11 passing focused tests.
+- Focused `billing-period-projection.test.ts`: 11/11 passed on submitted tree.
+- `npm run typecheck`: passed on submitted tree.
+- required targeted ESLint: passed on submitted tree.
+- `npm run build`: passed on submitted tree.
+- `git diff --check`: passed on submitted tree.
+- physical worktree, synchronization, recursive-submodule and clean/pushed evidence recorded for Attempt 2.
 
 ### Architecture Conformance
 
-The implementation conforms to the ARCH-025 move-only extraction boundary, authorised file scope, façade compatibility, projection/CAS semantics, transaction ownership, I/O-preservation requirement and repository ownership. Acceptance is withheld only because the architecture's regression gate requires proof that the observed failing tests are not task regressions.
+Conforms to ARCH-025, the authorised Shopify repository/file boundary, move-only semantics, public façade compatibility, transaction ownership, I/O-preservation requirements and no-regression contract as corrected by durable baseline `ARCH025-TEST-001`.
 
 ### Follow-up
 
-**A1-R1 — Evidence-only baseline differential; no source/test edits requested.**
-
-Reclaim this same task for Attempt 2 through the canonical launcher and keep the existing implementation commit unchanged unless the differential validation identifies a genuine regression.
-
-Using the same Node/dependency state and database submodule revision for both comparisons:
-
-1. preserve the submitted implementation worktree at `ed1e4ebe00f29e16e4acb1d799784a6b60b23531`;
-2. create a disposable detached validation checkout/worktree at exact pre-task commit `b6d1fd6d362f2a6a302a735e0a54abd8ee677782` (validation only; it is not a replacement implementation worktree);
-3. in both baseline and submitted trees verify the frozen file SHA-256;
-4. run `npm test -- tests/unit/services/billing.service.test.ts` in both trees and record the exact failing test names/counts;
-5. run full `npm test` in both trees and record the exact failing file/test names/counts;
-6. demonstrate that the submitted commit has no failure absent from the pre-task baseline. If failure sets are identical, do not modify production code or the frozen test file;
-7. rerun the focused projection suite plus the task-required typecheck, targeted lint, build and `git diff --check` on the submitted implementation tree;
-8. update only the Completion Report/execution evidence, return the task to `review`, clear the claim and STOP.
-
-If the submitted commit has any task-only failure, correct it only if it belongs to this task's authorised scope; otherwise return the dependency/scope issue to `moda_architect`. Do not edit the frozen façade test, do not weaken assertions, and do not start `ARCH-025-SHOPIFY-002`.
-
-The architect will reconcile the erroneous `127` test-count wording and create any durable development-baseline entry only after the baseline differential is proven.
+`ARCH-025-SHOPIFY-002` is now Ready. Later tasks remain Pending behind the sequential dependency chain. No further SHOPIFY-001 implementation work is required.
