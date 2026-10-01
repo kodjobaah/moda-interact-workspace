@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 52
-executor: copilot
-claimed_at: 2026-10-01T08:21:36Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-SHOPIFY-004
@@ -196,14 +196,19 @@ Do not return `objectKey` as a separate response field.
 
 ### R5 — signed PUT
 
-Presign exactly one:
+Presign exactly one **create-only** PUT:
 
 ```text
 PutObjectCommand
 Bucket = MERCHANT_KNOWLEDGE_R2_BUCKET
 Key = persisted objectKey
 ContentType = validated contentType
+IfNoneMatch = "*"
 ```
+
+`IfNoneMatch = "*"` is mandatory. The signed request MUST fail rather than overwrite when
+the generated object key already exists. The 600-second presigned URL therefore cannot be
+replayed after the first successful PUT to replace the immutable original bytes.
 
 Expiration:
 
@@ -220,10 +225,13 @@ Return exactly:
   expiresAt: string;
   requiredHeaders: {
     "Content-Type": string;
+    "If-None-Match": "*";
   };
   maxUploadBytes: number;
 }
 ```
+
+Both headers are part of the signed request contract and the browser MUST send them unchanged.
 
 No credentials.
 
@@ -236,6 +244,7 @@ The UI:
 1. validates size/type/extension before requesting intent;
 2. requests R3 intent;
 3. uses browser `fetch(uploadUrl,{method:"PUT",body:file,headers:requiredHeaders})`;
+   `requiredHeaders` MUST contain the signed `Content-Type` and `If-None-Match: *` values from R5;
 4. does not send Shopify cookies/auth headers to R2 beyond presigned URL semantics;
 5. computes lowercase SHA-256 of exact file bytes using Web Crypto;
 6. calls finalization only after PUT succeeds.
@@ -464,6 +473,8 @@ disallowed current plan pair rejects intent/finalize
 intent does not consume source slot
 object key shape exact/server-generated
 signed URL expires 600s and is PUT-only
+presigned request requires signed `Content-Type` and `If-None-Match: *` headers
+reusing the same object key cannot overwrite an already-created object; live R2 replay proof is owned by GATEWAY-001/SYSTEM-TEST-002
 oversized file rejects
 extension/contentType mismatch rejects
 HeadObject missing/size mismatch rejects
@@ -508,11 +519,11 @@ Gateway wiring may be finalized after both Shopify upload and Background worker 
 
 ## Acceptance Criteria
 
-- [ ] Browser uploads directly to private R2 with short-lived signed PUT.
+- [ ] Browser uploads directly to private R2 with short-lived create-only signed PUT requiring `If-None-Match: *`.
 - [ ] Server credentials never reach browser.
 - [ ] Source slot is allocated only at successful finalization.
 - [ ] Current plan entitlement is rechecked at intent and finalization; merchant OFF does not block configuration.
-- [ ] File replacement is immutable/revisioned.
+- [ ] A presigned upload cannot overwrite an already-created object key; file replacement is immutable/revisioned through a new asset/key.
 - [ ] Reprocess reuses existing immutable asset.
 - [ ] Merchant OFF leaves PENDING work durable without ingestion; merchant ON permits processing, with queue loss recoverable through durable PENDING state.
 - [ ] No file bytes are stored in PostgreSQL.
@@ -578,14 +589,41 @@ Parent workspace: this task file only. Architect Review remains unchanged.
 ## Architect Review
 
 ### Review Status
-Pending
+Changes Requested — Attempt 1
+
 ### Review Notes
-Pending.
+
+The upload implementation is substantially architecture-conformant, but Attempt 1 cannot be accepted because the exact R5 signed-PUT contract contradicts D23's immutable-original requirement.
+
+**A1-R1 — make every presigned upload create-only.** The current `PutObjectCommand` signs only `Content-Type`. Because the URL remains valid for 600 seconds, the same signed PUT can be replayed against the same generated key after finalization and replace the bytes behind an `AVAILABLE` asset. Attempt 2 MUST:
+
+1. add `IfNoneMatch: "*"` to the signed `PutObjectCommand`;
+2. return exact required browser headers `{ "Content-Type": <validated>, "If-None-Match": "*" }`;
+3. keep the browser generic `requiredHeaders` forwarding and prove both signed headers are sent unchanged;
+4. add focused presigner/contract regressions proving `if-none-match` is a signed request header and the required-header response is exact;
+5. preserve the current asset/source/finalization lifecycle otherwise; and
+6. leave deployed Cloudflare CORS/replay validation to the amended `GATEWAY-001` / `SYSTEM-TEST-002` contracts.
+
+Do not solve this by shortening the URL lifetime, deleting/replacing the object during finalization, changing object keys after PUT, proxying bytes through Moda, or trusting `HeadObject`/SHA metadata as an overwrite guard.
+
+**A1-R2 — durable launcher/worktree evidence is incomplete.** The Completion Report states that the launcher prepared dedicated worktrees and that no shared checkout was reused, but it does not record the exact launcher-resolved parent/implementation physical paths and the four start-of-attempt synchronization outcomes required by `docs/agent-worktree-isolation-policy.md`. Attempt 2 MUST be reclaimed through `/moda-task ARCH-023-SHOPIFY-005` and record those exact values, recursive submodule status and final submitted heads. A later advance of `origin/main` is not itself a defect; the report must prove synchronization at the Attempt 2 start boundary.
+
+**A1-R3 — run the required PostgreSQL transaction proof.** The four database integration cases were skipped because no container runtime was available. Attempt 2 MUST execute the task-owned disposable PostgreSQL cases against the accepted migrations before returning to review. If a safe disposable runtime is still unavailable, return the task blocked rather than treating skipped transaction coverage as acceptance evidence.
+
+No other implementation-source correction is requested unless synchronization or refreshed validation exposes a regression. The repository-wide lint baseline and npm audit findings are not blockers for this task because changed-file validation is clean and dependency remediation is out of scope.
+
 ### Reviewed Files
-Pending.
+
+Reviewed the SHOPIFY-005 task/report, R2 client/presigner, upload intent/finalization service, browser upload form, focused upload/action/UI tests, canonical ARCH-023 D23 upload contract, and GATEWAY-001 R2/CORS deployment contract.
+
 ### Validation Reviewed
-Pending.
+
+Accepted as supporting evidence: task-recorded typecheck, production build, changed-file ESLint/diagnostics, locale validation, 25 focused passing tests and `git diff --check`. The four skipped PostgreSQL cases remain required for Attempt 2.
+
 ### Architecture Conformance
-Pending.
+
+Changes Requested. The current unconditional presigned PUT does not preserve immutable original bytes for the lifetime of the URL. The corrected contract uses R2/S3 conditional `If-None-Match: *` on `PutObject`, with matching exact-origin CORS allowance and deployed replay proof.
+
 ### Follow-up
-Pending.
+
+Return the same task to Ready at Attempt 1 with claim cleared. Reclaim normally as Attempt 2. `GATEWAY-001` and `SYSTEM-TEST-002` are amended by this architect reconciliation to require `If-None-Match` CORS/preflight and live replay rejection. GATEWAY-001 remains Pending behind SHOPIFY-005 and its other prerequisites.

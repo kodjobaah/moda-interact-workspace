@@ -295,7 +295,8 @@ Do not attach either credential group to Commerce, Admin, Gateway, Messaging or 
 6. use Cloudflare R2 `Object Read & Write` bucket-scoped credentials, because the accepted Shopify/Background implementations require S3-compatible object operations;
 7. never use account-wide/Admin R2 credentials;
 8. never reuse test credentials in production or production credentials in test;
-9. configure bucket CORS so browser uploads are allowed only from the exact deployed Moda Shopify application origin(s), with `PUT` and `Content-Type`; do not use `*` origins and do not create public GET/LIST access.
+9. configure bucket CORS so browser uploads are allowed only from the exact deployed Moda Shopify application origin(s), with `PUT` and both `Content-Type` and `If-None-Match`; do not use `*` origins and do not create public GET/LIST access;
+10. verify the accepted Shopify create-only signed PUT contract: the first PUT to a fresh generated key succeeds with `If-None-Match: *`, while replaying the same signed PUT/key after object creation fails with HTTP `412 PreconditionFailed` (or the equivalent non-success response) and cannot replace the existing object.
 
 R2 CORS is a Cloudflare bucket prerequisite, not a Render Blueprint object. Document the exact operator step and verification; do not add a new Cloudflare Terraform/provider toolchain solely for this task.
 
@@ -541,7 +542,7 @@ Document this exact environment rollout order:
 3. Verify private R2 bucket + separate Shopify/Background credentials.
 4. Deploy accepted Admin revision and reconcile/verify `merchant_knowledge` as `MERCHANT_OPT_IN`; verify explicit plan configurations.
 5. Deploy dedicated Merchant Knowledge Background worker and verify Redis/PostgreSQL/R2/embedding configuration.
-6. Verify private R2 bucket CORS allows preflight/PUT from the exact deployed Shopify application origin and no public read/list exposure.
+6. Verify private R2 bucket CORS allows preflight/PUT from the exact deployed Shopify application origin with `Content-Type` and `If-None-Match`, then prove first create-only PUT succeeds and replay to the same key is rejected without replacement; verify no public read/list exposure.
 7. Deploy accepted Shopify revision with Merchant Knowledge configuration/R2 upload support.
 8. Verify COMMERCE_BOOTSTRAP_ADMIN_EMAIL identifies an active SUPER_ADMIN.
 9. Deploy/restart accepted Commerce revisions including the post-COMMERCE-002 activation follow-up.
@@ -734,7 +735,7 @@ It must contain:
 2. exact test/production env-group names;
 3. exact variable names;
 4. which values are secret/deployment-entered;
-5. R2 bucket/credential/CORS requirements from R5, including exact-origin browser PUT preflight verification;
+5. R2 bucket/credential/CORS requirements from R5, including exact-origin browser PUT preflight, `If-None-Match` allowance and create-only replay rejection verification;
 6. upload-limit consistency rule;
 7. embedding identity rule;
 8. Commerce bootstrap prerequisites;
@@ -763,7 +764,7 @@ to link/reference this contract rather than duplicating conflicting instructions
 - [ ] Preserve all existing service topology/routing.
 - [ ] Extend positive Blueprint validation.
 - [ ] Extend negative Blueprint validation.
-- [ ] Add Merchant Knowledge deployment contract, including exact-origin R2 browser PUT CORS prerequisite/verification.
+- [ ] Add Merchant Knowledge deployment contract, including exact-origin R2 browser create-only PUT CORS prerequisite/replay verification.
 - [ ] Update topology/prerequisite docs.
 - [ ] Run all required Gateway validation.
 
@@ -809,7 +810,8 @@ After Gateway acceptance, ARCH-023 developer/manual validation and final system 
 - [ ] Worker has Redis/PostgreSQL/common observability wiring.
 - [ ] Test/production worker topology is environment-isolated.
 - [ ] Shopify and Background use separate R2 credentials.
-- [ ] Private R2 bucket CORS permits only exact deployed Shopify-app origin(s) for browser PUT/Content-Type and creates no public read/list surface.
+- [ ] Private R2 bucket CORS permits only exact deployed Shopify-app origin(s) for browser PUT with `Content-Type` and `If-None-Match`, and creates no public read/list surface.
+- [ ] A deployed-origin create-only presigned PUT succeeds once and replay to the same key is rejected without replacing the object.
 - [ ] R2 endpoint/bucket configuration is shared only between Shopify and Merchant Knowledge worker.
 - [ ] R2 credentials are never attached to Commerce.
 - [ ] Shopify does not receive embedding credentials.
@@ -836,7 +838,7 @@ git diff --check
 
 Also parse both Blueprint YAML files with the repository's existing YAML validation mechanism.
 
-Also perform/document one deployed-origin R2 preflight + presigned PUT validation using the accepted Shopify upload flow.
+Also perform/document one deployed-origin R2 preflight + presigned PUT validation using the accepted Shopify upload flow. The validation MUST send the accepted `Content-Type` and `If-None-Match: *` headers, prove the first PUT succeeds, and prove replaying the same signed PUT/key is rejected without replacing the object.
 
 If application task outputs differ from the exact dependency contracts recorded above, STOP and return the mismatch to `moda_architect`; do not silently alter application commands/env names in Gateway.
 

@@ -132,7 +132,9 @@ Re-enable without refetch/reupload. Previously retained valid ACTIVE knowledge m
 
 Validate one CSV or XLSX direct-to-private-R2 source through signed browser PUT, finalisation, Background hash/format verification and ACTIVE promotion while Merchant Knowledge is ON.
 
-Validate bucket CORS permits the real deployed application origin PUT/preflight and does not provide public read/list access.
+Validate bucket CORS permits the real deployed application origin PUT/preflight with both `Content-Type` and `If-None-Match` and does not provide public read/list access.
+
+Using one fresh generated upload key, prove the create-only contract end to end: the first signed PUT with `If-None-Match: *` succeeds; replaying the same signed PUT/key is rejected (expected `412 PreconditionFailed` or equivalent non-success); and the originally uploaded object remains the bytes consumed by finalization/Background hash verification.
 
 ### R7 — entitlement/downgrade behaviour
 
@@ -155,7 +157,7 @@ Simulate initial enqueue loss for an ON merchant. Durable PENDING reconciliation
 
 - [ ] Add activation OFF -> configure -> ON -> process -> OFF -> deny -> ON scenario.
 - [ ] Add WEB_PAGE and upload fixtures.
-- [ ] Add real private-R2 CORS/presigned-PUT deployment evidence.
+- [ ] Add real private-R2 CORS/create-only presigned-PUT and replay-rejection deployment evidence.
 - [ ] Add tenant/language/security/downgrade/queue-repair cases.
 - [ ] Capture bounded evidence and cleanup.
 
@@ -181,14 +183,14 @@ Simulate initial enqueue loss for an ON merchant. Durable PENDING reconciliation
 - [ ] WEB_PAGE and private-R2 CSV/XLSX paths both work.
 - [ ] Cross-shop, entitlement, multilingual and runtime-data-authority boundaries hold.
 - [ ] Queue loss is repaired by durable PENDING reconciliation.
-- [ ] R2 browser PUT CORS is validated from the deployed application origin.
+- [ ] R2 browser PUT CORS is validated from the deployed application origin, including `If-None-Match`, and same-key signed-PUT replay cannot overwrite the original object.
 
 ## Validation
 
 - [ ] Integrated system scenario against architecture-approved test topology.
 - [ ] Database evidence for preference/source/revision/chunk/provenance lifecycle.
 - [ ] Queue reconciliation evidence after simulated enqueue loss.
-- [ ] R2 preflight/PUT evidence and no public read/list exposure.
+- [ ] R2 preflight/create-only PUT/replay-rejection evidence and no public read/list exposure.
 - [ ] `git diff --check`.
 
 ## Stop Condition
