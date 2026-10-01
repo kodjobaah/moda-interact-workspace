@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
 executor: copilot
 claimed_at: 2026-10-01T23:04:43Z
@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-025-SHOPIFY-007
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-02
 ---
 
 # Extract initial subscription activation workflow
@@ -132,13 +132,13 @@ Use SHOPIFY-002 resolution rather than duplicating plan validation. Preserve cur
 
 ## Work Items
 
-- [ ] Create `SubscriptionActivationService` and move four public workflow implementations + token matching.
-- [ ] Create `subscription-locks.ts` and move the existing `ShopSettings -> Subscription` lock helper without changing SQL or ordering.
-- [ ] Create `billing-retry-policy.ts` and move the exact `INITIAL_BILLING_RETRY_DELAY_MS = 60_000` constant; re-export it from the façade.
-- [ ] Re-export moved compatibility types/constants from `billing.service.ts`.
-- [ ] Leave façade methods as same-signature delegates.
-- [ ] Add focused tests for initial/replay Free, initial Paid intent, stale-token no-op, guarded Partner-error retry, lock order and Free completion scheduling.
-- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Create `SubscriptionActivationService` and move four public workflow implementations + token matching.
+- [x] Create `subscription-locks.ts` and move the existing `ShopSettings -> Subscription` lock helper without changing SQL or ordering.
+- [x] Create `billing-retry-policy.ts` and move the exact `INITIAL_BILLING_RETRY_DELAY_MS = 60_000` constant; re-export it from the façade.
+- [x] Re-export moved compatibility types/constants from `billing.service.ts`.
+- [x] Leave façade methods as same-signature delegates.
+- [x] Add focused tests for initial/replay Free, initial Paid intent, stale-token no-op, guarded Partner-error retry, lock order and Free completion scheduling.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -154,25 +154,25 @@ Internal service consumes `BillingPlanResolutionService`, Prisma, `subscription-
 
 ## Acceptance Criteria
 
-- [ ] Four activation public methods delegate to `SubscriptionActivationService`.
-- [ ] Current activation lock order/token fencing and scheduling are unchanged and the shared lock SQL exists in only one module.
-- [ ] `INITIAL_BILLING_RETRY_DELAY_MS` has one internal owner and remains publicly importable from `billing.service.ts` without changing the callback route.
-- [ ] Initial Paid final durable commit remains in `syncSubscription()` after this task.
-- [ ] Existing callback imports require no migration.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Four activation public methods delegate to `SubscriptionActivationService`.
+- [x] Current activation lock order/token fencing and scheduling are unchanged and the shared lock SQL exists in only one module.
+- [x] `INITIAL_BILLING_RETRY_DELAY_MS` has one internal owner and remains publicly importable from `billing.service.ts` without changing the callback route.
+- [x] Initial Paid final durable commit remains in `syncSubscription()` after this task.
+- [x] Existing callback imports require no migration.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
-- [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
-- [ ] `npm test -- tests/unit/services/billing/subscription-activation.service.test.ts` passes the new focused capability tests
-- [ ] `npm test` introduces no new failures
-- [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-activation.service.ts app/services/billing/subscription-locks.ts app/services/billing/billing-retry-policy.ts tests/unit/services/billing/subscription-activation.service.test.ts`
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate` passed.
+- [x] Frozen test SHA-256 is `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`.
+- [x] `git diff -- tests/unit/services/billing.service.test.ts` is empty.
+- [x] Frozen façade suite: 195 passed, 18 failed; every failing identifier matches `ARCH025-TEST-001`.
+- [x] Focused activation suite: 6 passed.
+- [x] Full suite: 983 passed, 24 failed, 33 skipped across 92 files; all 24 failing identifiers match `ARCH025-TEST-001`.
+- [x] `npm run typecheck` passed.
+- [x] Targeted ESLint passed (existing TypeScript parser-version warning only).
+- [x] `npm run build` passed (existing bundler and chunk-size warnings only).
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -187,19 +187,35 @@ Do not rename public activation methods. Avoid designing a generic state-machine
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+Implementation repository (`moda-interact`):
+
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/subscription-activation.service.ts` (new)
+- `app/services/billing/subscription-locks.ts` (new)
+- `app/services/billing/billing-retry-policy.ts` (new)
+- `tests/unit/services/billing/subscription-activation.service.test.ts` (new)
+
+Parent workspace: this task report only.
 
 ### Work Completed
 
-None.
+- Moved Free/Paid activation preparation, guarded Free retry scheduling, Free completion, and activation-token matching into `SubscriptionActivationService`; the four façade methods retain their signatures and delegate.
+- Moved the single `ShopSettings -> Subscription` lock implementation into `subscription-locks.ts`; the still-local hosted and sync paths reuse it.
+- Moved the exact 60,000 ms retry constant into `billing-retry-policy.ts` and re-exported it with the activation compatibility types from `billing.service.ts`.
+- Left initial Paid durable finalisation in `syncSubscription()` and made no route or frozen-test changes.
+- Added six focused tests covering initial/replay Free, Paid intent only, stale-token no-op, guarded Partner-error retry, lock order, and drain-window completion scheduling.
 
 ### Validation Results
 
-Not run.
+Passed: Prisma client generation, focused activation suite (6/6), typecheck, targeted ESLint, production build, frozen test SHA/diff verification, and `git diff --check`.
+
+The frozen façade suite ran 213 tests: 195 passed and 18 failed. Its exact failing identifiers match the frozen-suite list in `ARCH025-TEST-001`. Full `npm test` ran 1,040 tests across 92 files: 983 passed, 24 failed, and 33 skipped. All 24 failures match the 18 frozen plus six unrelated full-suite identifiers recorded in `ARCH025-TEST-001`; no new failing identifier was observed.
+
+Build emitted the existing Zod/Rollup annotation, external Prisma browser entry, and large-chunk warnings. Targeted ESLint emitted the existing TypeScript parser compatibility warning; lint passed.
 
 ### Deviations
 
@@ -211,11 +227,34 @@ None.
 
 ### Unresolved Issues
 
-None.
+None. The unchanged `ARCH025-TEST-001` baseline failures remain documented and are not task-introduced.
 
 ### Architectural Concerns
 
-None.
+None identified. The shared retry constant and lock SQL each have a single internal owner; initial Paid durable finalisation remains in `syncSubscription()` for SHOPIFY-010.
+
+### Launcher and VCS Evidence
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-006
+parent branch: task/ARCH-025-SHOPIFY-006
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-006
+implementation branch: task/ARCH-025-SHOPIFY-006
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded database submodule commit: cfeeb12456b4e05067a96857a8c47837d7e33bbd
+launcher claim commit: 895e0b4fb4c4bb5e5403a4baf8f269d60e3e0e52
+implementation commit: e0b5ec0644239d74b44b0f492270440de0dae5f0 (pushed to origin/task/ARCH-025-SHOPIFY-006)
+parent report commit: pending
+```
 
 ## Architect Review
 
