@@ -601,7 +601,7 @@ Focused task tests plus synchronized backend-bootstrap regressions: 19 files pas
 
 `npm run lint`: passed with 0 errors and 4 warnings (two React Hook dependency warnings in `src/studio/code-response/code-response-panel.tsx`; two unused declarations in `tests/agent-configuration-model.test.ts`).
 
-`npm run build`: passed on retry, including manual/runtime packaging smoke steps, Prisma generation and Next production compilation. The build emitted the existing Nunjucks dynamic-dependency warning. Standalone runtime smoke invocations were intermittent under concurrent test/process load; this task does not change the runtime, and the complete build sequence passed.
+`npm run build`: passed on retry, including manual/runtime packaging smoke steps, Prisma generation and Next production compilation. The build emitted the existing Nunjucks dynamic-dependency warning. Subsequent standalone `npm run code-runtime:smoke` invocations failed different runtime assertions (transform output, forbidden capability, and compile-only behavior), while the smoke step passed within the successful full build. This task does not change runtime packaging or execution; these inconsistent standalone results remain visible for Architect attribution.
 
 `git diff --check`: passed. Changed-file diagnostics: no errors. Implementation worktree was clean after validation; recursive database submodule remained at the launcher-recorded commit.
 
@@ -636,13 +636,14 @@ tests/studio-services-errors.test.ts
 tests/studio-workspace.test.tsx
 ```
 
-The structured reporter counted 47 failed suite results, 40 failed assertions, 1,298 passed assertions and 8 pending; its suite/assertion accounting differs from Vitest's terminal summary. Setup/collection failures include the PostgreSQL, C20 and local external-MCP integration suites. Remaining reported failures span Admin Explore, unrelated tool/release authoring, health/readiness, response/runtime, discount, discovery, and Studio workflows. `agent-configuration-model-ui.test.tsx` and `agent-configuration-shop-ui.test.tsx` appeared in the package run but passed in the focused reruns (including the 63-test rerun); no task-owned assertion failure reproduced in focused validation. The package-wide failures are retained for Architect attribution, not silently treated as passing.
+
+A diagnostic `npm test -- --maxWorkers=1 --no-file-parallelism --isolate=false` run exited nonzero and reported 77 failed suite results / 147 failed assertions with further cross-file state contamination; it is not used as the package-wide result. Setup/collection failures in the normal full run include PostgreSQL, C20 and local external-MCP integration suites. Remaining reported failures span Admin Explore, unrelated tool/release authoring, health/readiness, response/runtime, discount, discovery, and Studio workflows. `agent-configuration-model-ui.test.tsx` and `agent-configuration-shop-ui.test.tsx` appeared in the package run but passed in the focused reruns (including the 63-test rerun); no task-owned assertion failure reproduced in focused validation. The package-wide failures are retained for Architect attribution, not silently treated as passing.
 ### Deviations
 No implementation-source changes were needed for Attempt 2. Work remained within Commerce and did not modify Background. C20/PostgreSQL integration validation was limited by the unavailable disposable test targets.
 ### Assumptions
 The reserved MCP prompts are the production-facing Commerce contract; a separate bounded Background task must fetch them and append Platform then Shop after true host-owned Level-2 instructions before invoking `runCommerceTurn`.
 ### Unresolved Issues
-The package-wide failures listed above remain for Architect attribution; the Shop/model UI failures did not reproduce in focused reruns. C20/PostgreSQL integration requires configured disposable database and Redis targets. Standalone packaged-runtime smoke results were intermittent, although the complete production build passed.
+The package-wide failures listed above remain for Architect attribution; the Shop/model UI failures did not reproduce in focused reruns. C20/PostgreSQL integration requires configured disposable database and Redis targets. The full production build passed, but standalone packaged-runtime smoke reruns failed inconsistently and require separate attribution.
 ### Architectural Concerns
 Production conversation execution remains Background-owned, so these resolved prompts are not consumed by the production runner until the required Background host-integration task is completed. No Background files were edited here.
 
