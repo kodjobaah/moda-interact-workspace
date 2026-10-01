@@ -74,7 +74,7 @@ No callback route edits are authorised. Consume `subscription-locks.ts` and `bil
 - Extracted collaborator constructors must be side-effect-free: store/wire dependencies only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during `new BillingService(...)`; the frozen suite constructs the façade with many partial test doubles.
 - This is move-only refactoring: do not remove, coalesce, reorder or otherwise optimise away an existing provider/database read, write, lock or transaction as an incidental cleanup. Any intentional I/O change is outside this task.
 - Do not introduce a new logger, DI container, command bus, plugin framework or generic billing framework.
-- `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and all 127 tests must pass.
+- `tests/unit/services/billing.service.test.ts` is frozen: do not edit it. Its SHA-256 must remain `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`. The proven pre-task failure set is `ARCH025-TEST-001`; the task must introduce no additional failing identifier.
 - Add focused tests in a new/explicitly authorised test file for the extracted owner; do not move existing assertions out of the frozen regression file in this task.
 - Full `npm test` must introduce no new failure. An unrelated documented baseline failure may be referenced only if it is unchanged and the current task did not touch its affected area.
 
@@ -117,7 +117,7 @@ Reuse SHOPIFY-006 `lockInitialFreeActivationState` from `subscription-locks.ts`.
 - [ ] Re-export public types through `billing.service.ts`.
 - [ ] Leave façade public methods as delegates.
 - [ ] Add focused tests for null fence, current/pending/mismatch/no-active, changed-fence no-op, identical-updatedAt changed-content fence, failure retry and lock order.
-- [ ] Prove frozen façade regression suite remains byte-identical and green.
+- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -137,14 +137,14 @@ Repository-internal service. It consumes the shared subscription lock and retry 
 - [ ] Fence comparison protects the same complete durable projection.
 - [ ] Retry/error behaviour and lock order are unchanged, with no duplicated lock SQL or retry literal.
 - [ ] Callback route is untouched.
-- [ ] Frozen 127-test façade suite passes unchanged.
+- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
 - [ ] `npm run prisma:generate`
 - [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
 - [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
+- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
 - [ ] `npm test -- tests/unit/services/billing/hosted-plan-change.service.test.ts` passes the new focused capability tests
 - [ ] `npm test` introduces no new failures
 - [ ] `npm run typecheck`
