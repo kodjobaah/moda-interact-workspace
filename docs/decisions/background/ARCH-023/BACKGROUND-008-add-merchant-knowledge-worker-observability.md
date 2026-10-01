@@ -9,8 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 32
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-BACKGROUND-005
@@ -337,3 +339,46 @@ The implementation conforms to the bounded BACKGROUND-008 architecture and prese
 2. Reclaim it through `/moda-task ARCH-023-BACKGROUND-008`; the launcher must create Attempt 2 and the Completion Report must record the exact prepared parent and implementation worktrees/branches, start-of-attempt synchronization, dependency gate and recursive submodule evidence.
 3. No implementation-source change is requested unless refreshed bounded validation after synchronization exposes a regression. Rerun the task-defined focused tests/probe/build/diagnostics/whitespace checks and record the results.
 4. Keep `ARCH-023-GATEWAY-001` Blocked at Attempt 1 until BACKGROUND-008 is architect-accepted Complete. Do not resume Gateway early.
+
+## Architect Review — Attempt 2
+
+### Review Status
+
+Accepted — Attempt 2
+
+### Review Notes
+
+Accepted. Attempt 2 closes the evidence-only finding from Attempt 1 without source churn. The implementation remains on the synchronized task branch at `9658c14697fd719583c4394351d12876cd4a7fc9`: `start:merchant-knowledge-worker` preloads `observability/merchant-knowledge.mjs` before the compiled entrypoint, the preload uses only `@modainteract/moda-interact-shared/observability/node`, and the exact logical identity remains `moda-merchant-knowledge-worker` / `moda-interact` with the established HTTP/fetch/Prisma worker instrumentation profile.
+
+The Completion Report now records the deterministic launcher's canonical workspace, exact parent and implementation worktrees/branches, both start-of-attempt synchronization outcomes, the satisfied `ARCH-023-BACKGROUND-005` dependency gate, recursive submodule synchronization/initialization and the implementation database-submodule commit. No implementation-source change was requested or made during Attempt 2.
+
+The refreshed focused validation preserves the accepted runtime behaviour. The production-command probe with `OTEL_SDK_DISABLED=true` again reached the existing Redis readiness-failure path without requiring hosted telemetry configuration. The lingering Redis retry handles after that failure predate this observability task and do not invalidate the R17 startup contract.
+
+### Reviewed Files
+
+- `moda-interact-background/package.json`
+- `moda-interact-background/observability/merchant-knowledge.mjs`
+- `moda-interact-background/src/entrypoints/merchant-knowledge.ts`
+- `moda-interact-background/src/runtime/observability.ts`
+- `moda-interact-background/Dockerfile`
+- `moda-interact-background/tests/unit/runtime/observability-startup.test.ts`
+- `moda-interact-background/tests/unit/runtime/entrypoint-isolation.test.ts`
+- `moda-interact-background/tests/unit/entrypoints/merchant-knowledge.test.ts`
+- this Attempt 2 Completion Report and prepared-execution evidence
+
+### Validation Reviewed
+
+- 23 focused startup/identity/isolation tests passed; the one pre-existing assertion expecting shared package `0.12.1` remained intentionally excluded because the accepted manifest declares `1.0.1`.
+- The exact `npm run start:merchant-knowledge-worker` production command with `OTEL_SDK_DISABLED=true` reached the expected `moda-merchant-knowledge-worker readiness failed: redis unavailable` path; the probe was terminated after that evidence because existing Redis retry handles kept the process alive.
+- `npm run build` passed.
+- Changed-file diagnostics passed.
+- `git diff --check` passed.
+- The Attempt 2 report records clean canonical task worktrees and the synchronized implementation head.
+
+### Architecture Conformance
+
+Conforms. Background owns initialization and shutdown of the dedicated worker's shared observability runtime; the shared package remains the SDK/provider/exporter owner; the accepted Gateway-facing command is unchanged; no duplicate BullMQ/GenAI instrumentation, new telemetry backend, business-processing change or deployment-topology change was introduced.
+
+### Follow-up
+
+`ARCH-023-BACKGROUND-008` is Complete / Accepted at Attempt 2. Its acceptance satisfies the final outstanding dependency of `ARCH-023-GATEWAY-001`; return that same Gateway task from Blocked to Ready with `attempt: 1` preserved and its claim cleared. Do not start Gateway implicitly. The next authorized `/moda-task ARCH-023-GATEWAY-001` claim becomes Attempt 2.

@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 70
 executor: null
 claimed_at: null
@@ -935,3 +935,5 @@ Conforms. R17 intentionally prevents Gateway from compensating for an applicatio
 2. Keep this Gateway task Blocked at Attempt 1 with its claim cleared until that acceptance occurs.
 3. After BACKGROUND-008 becomes Complete, reconcile this same task `blocked -> ready`, preserving `attempt: 1`; the next `/moda-task ARCH-023-GATEWAY-001` claim becomes Attempt 2.
 4. Gateway Attempt 2 then performs the original Blueprint/deployment work and validation. Do not create a replacement Gateway task.
+
+Coordination update after BACKGROUND-008 acceptance: `ARCH-023-BACKGROUND-008` is Complete / Accepted Attempt 2. All declared Gateway dependencies are now Complete/architect-accepted, so this same task is returned to Ready with Attempt 1 preserved and no active claim. The next `/moda-task ARCH-023-GATEWAY-001` claim becomes Attempt 2; no Gateway implementation is started by this reconciliation.
