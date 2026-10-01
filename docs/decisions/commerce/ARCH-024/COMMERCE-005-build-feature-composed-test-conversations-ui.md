@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-10-01T22:26:21Z
@@ -1085,7 +1085,7 @@ Do not begin ARCH-024-COMMERCE-006 or any follow-on task.
 
 ### Status
 
-Ready for Architect review. Implementation commits `9f395d1aca723c5ffe99bdae0c4fcbc929aec664` and `7bf981db210de46ccda3d66fd21c0d194944b062` are pushed to `task/ARCH-024-COMMERCE-005` in `moda-interact-commerce`.
+Ready for Architect review after Attempt 2 evidence-only rework. Implementation commits `9f395d1aca723c5ffe99bdae0c4fcbc929aec664` and `7bf981db210de46ccda3d66fd21c0d194944b062` contain the C005 implementation. Attempt 2 made no implementation-source changes.
 
 ### Files Changed
 
@@ -1145,6 +1145,104 @@ The full Commerce Vitest suite is not green (19 failing files / 29 failing tests
 ### Architectural Concerns
 
 None. Message execution remains disabled for C006/C007, and the complete authored snapshot is persisted once without live operational credentials.
+
+### Attempt 2 — Full-suite baseline comparison and prepared-execution evidence
+
+#### Prepared execution
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent task worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-005
+parent branch: task/ARCH-024-COMMERCE-005
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-005
+implementation branch: task/ARCH-024-COMMERCE-005
+shared/default workspace checkout used for task edits: no
+shared implementation checkout used for task edits: no
+another task worktree reused: no
+
+parent remote task synchronization at preparation: not-needed
+parent origin/main incorporated at preparation: yes
+implementation remote task synchronization at preparation: not-needed
+implementation origin/main incorporated at preparation: yes
+parent preparation head: a555444c8c3dd1a963329cba58824c5f7ec003ed
+implementation prepared head: 4a38f092d3a360e19c0bae8432961109cdd78917
+
+dependency gate: passed
+  ARCH-024-COMMERCE-002: complete
+  ARCH-024-COMMERCE-004: complete
+  ARCH-023-COMMERCE-003: complete
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recursive implementation submodule: database at cfeeb12456b4e05067a96857a8c47837d7e33bbd (initialized)
+
+Attempt 2 claim: executor copilot; claimed_at 2026-10-01T22:26:21Z
+claim transition: ready / attempt 1 -> in_progress / attempt 2
+durable claim commit: 228902dcc41ce6ea2d8f55f6f849050a429879bb (committed and pushed)
+final parent preparation sync: remote task fast-forward not-needed; origin/main already-current
+```
+
+#### Paired full-suite comparison
+
+The same `npx vitest run` command was executed on the synchronized pre-task Commerce commit `1318596b523190a8c422cf0fb9ddfeae06847e63` and prepared C005 implementation head `4a38f092d3a360e19c0bae8432961109cdd78917`. Both runs used Node `v24.19.0`, npm `11.17.0`, Vitest `5.0.1`, the same installed dependency tree/package-lock, database submodule `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, and the same local integration-test environment.
+
+```text
+Baseline 1318596b523190a8c422cf0fb9ddfeae06847e63:
+  157 files: 23 failed, 129 passed, 5 skipped
+  1,348 tests: 60 failed, 1,279 passed, 9 skipped
+
+Submitted 4a38f092d3a360e19c0bae8432961109cdd78917:
+  160 files: 19 failed, 136 passed, 5 skipped
+  1,363 tests: 29 failed, 1,325 passed, 9 skipped
+
+Failure comparison:
+  28 individual failed test identifiers are common to both runs.
+  Five collection/setup failures are common to both runs.
+  32 individual failures occur only on the baseline.
+  One individual failure occurs only on the submitted run; it is an unrelated
+  Shopify Admin UI timeout and passes when run alone (1 passed, 42 skipped).
+```
+
+Common individual failing test identifiers:
+
+- `tests/admin-explorer.test.tsx`: `builds and validates a representable selection before merging query fields into an existing draft`; `cancel returns to the validated origin without merging temporary Explorer state`; `keeps Validate available when the visual candidate cannot yet be built and reports the blocking reason`; `keeps exact raw text for an unchanged literal mapping and drops stale buffers`; `offers a return action beside validation without applying temporary Explorer state`; `preserves a valid manual query that is not representable and returns it unchanged`; `round-trips a newly visual-authored string literal through the New Tool Request editor`; `shows validation progress while the Shopify Admin validation request is in flight`; `validates Request query while preserving malformed unrelated editor buffers`; `validates a restored visual selection even when the selected root field is outside the loaded schema page`.
+- `tests/agent-configuration-retained-read.test.ts`: `tracks model and prompt CAS versions on one retained row across clear operations`.
+- `tests/agent-contract-validation.test.ts`: `rejects unknown scalar paths and non-list items paths`.
+- `tests/auth-entrypoints.test.ts`: `keeps NextAuth and health public while the MCP route remains private`.
+- `tests/backend-postgres-rehearsal.test.ts`: `publishes once, replays durably, rejects stale CAS, races across connections, and rolls back injected failure`.
+- `tests/discount-evaluator.test.ts`: `retains preview purpose, environment, and trace correlation in eligibility telemetry`.
+- `tests/discovery-limits.test.ts`: `allows 60 sequential requests and rejects the 61st in the rolling window`.
+- `tests/health.test.ts`: `bounds hanging dependencies under two seconds and aborts Redis`; `readiness checks required dependencies and has no release-publication dependency`.
+- `tests/merchant-knowledge-embedding.test.ts`: `validates the exact OpenAI provenance environment contract`.
+- `tests/policy-operation-authoring-server-actions.test.ts`: `returns UNAVAILABLE for invalid or unregistered operation identities without fallback`.
+- `tests/policy-operation-result-template.test.ts`: `reports whether each currently registered operation result is template-compatible`.
+- `tests/preview-model-provider.test.ts`: `defaults disabled without provider settings and validates both providers`.
+- `tests/studio-workspace.test.tsx`: `authors a reusable tool without publishing and navigates to its returned ID`; `exposes the failure class when a named Studio action rejects unexpectedly`; `keeps newer edits dirty when an earlier save completes`; `resets editor state when a mounted detail changes to another record`; `retains editor input after stale CAS`; `retains incremental invalid JSON and saves only the complete canonical tool definition`.
+
+Common collection/setup failure identifiers:
+
+- `tests/agent-configuration-model-postgres.test.ts` (0 tests collected).
+- `tests/agent-configuration-prompts-postgres.test.ts` (0 tests collected).
+- `tests/c20-integration-fixture.test.ts` (0 tests collected).
+- `tests/local-external-mcp-diagnostic.test.ts` (0 tests collected).
+- `tests/studio-integration-c20.test.ts` (0 tests collected).
+
+Baseline-only failing test identifiers:
+
+- `tests/code-request-processor.test.ts`: `does not expose network or host capabilities`; `rejects unsafe args, oversized input, missing entrypoints, and cancellation`; `rejects unsafe output through the Commerce descriptor schema`; `rejects unsafe request output values through the processor`; `returns a deterministic canonical descriptor`.
+- `tests/code-response-processor.test.ts`: `keeps simultaneous inputs isolated`; `leaves result-schema enforcement at the Shared validation boundary`; `maps syntax, deadline, cancellation, and output-limit failures`; `rejects malformed responses and non-object output roots`; `runs v2 with Moda helpers and keeps unsupported versions unavailable`; `transforms JSON through the accepted kernel`; `transforms TEXT without attempting JSON parsing`.
+- `tests/code-runtime-proof.test.ts`: `cancels and cleans up workers`; `compiles valid code and rejects syntax without running it`; `executes the deterministic text transform with exact output`; `keeps concurrent inputs isolated and throttles the fifth active run`; `keeps expected guest syntax diagnostics out of operational error logs`; `keeps validation intrinsics outside guest mutation`; `proves supervisor termination after a built-in operation starts`; `rejects enumerable and non-enumerable custom serialization hooks`; `rejects forbidden host capabilities and invalid output shapes`; `retains capacity until cancelled workers terminate`; `terminates infinite loops and recovers the process`.
+- `tests/external-preview.test.ts`: `rejects a selected non external conversation fixture before persistence`; `rejects foreign conversation fixtures before persistence`; `reuses the same JavaScript fixture processor for tool-test and conversation execution`; `runs JavaScript sample through the accepted code processor and receipt lifecycle`; `runs a frozen conversation external fixture without live provider or credential access`; `uses developmentBypass as the complete authorization signal regardless of role or staff state`; `validates canonical code content hashes and rejects stale source`.
+- `tests/external-tool-authoring-validation.test.ts`: `rejects an unsafe JavaScript request descriptor during preview`; `resolves the same explicit structured and literal bindings before real QuickJS preview`.
+
+Submitted-only failing test identifier:
+
+- `tests/shopify-admin-tools-ui.test.tsx`: `saves, publishes through the canonical action, and reopens the exact Policy binding read-only` timed out during the full suite; isolated rerun passed (1 passed, 42 skipped). It is outside C005 ownership and is not represented as baseline-equivalent.
+
+No Test Conversations or Preview test failed in the submitted run. The submitted tree has fewer failed tests/files overall; the only submitted-only failure is the unrelated, non-reproducing isolated timeout above. Therefore the comparison identifies no new or worsened C005-owned failure, and no implementation-source correction was warranted. The full suite is not literally failure-for-failure baseline-equivalent because of that one submitted-only timeout; it is classified here explicitly rather than hidden under an aggregate claim.
+
+#### Final task-branch publication evidence
+
+The implementation task branch was fast-forward-pushed to the launcher-prepared head `4a38f092d3a360e19c0bae8432961109cdd78917`, which contains the remote C005 implementation commits and launcher-incorporated `origin/main`; its remote task ref now equals that head. The implementation worktree is clean and local head equals remote. Before this report commit, the parent worktree was clean at the pushed Attempt 2 claim commit `228902dcc41ce6ea2d8f55f6f849050a429879bb`, matching its remote. This report is the only parent task file change; after it is committed and pushed, the parent worktree will be verified clean with local head equal to its remote task ref.
 
 ## Architect Review
 
