@@ -253,7 +253,8 @@ git submodule update --init --recursive: passed
 recorded database submodule commit: cfeeb12456b4e05067a96857a8c47837d7e33bbd
 launcher claim commit: 895e0b4fb4c4bb5e5403a4baf8f269d60e3e0e52
 implementation commit: e0b5ec0644239d74b44b0f492270440de0dae5f0 (pushed to origin/task/ARCH-025-SHOPIFY-006)
-parent report commit: pending
+parent report commit: 8a5795cd03b7858feed178035d085f91d51ac1e7
+parent report publication: pushed to origin/task/ARCH-025-SHOPIFY-006 at 8a5795cd03b7858feed178035d085f91d51ac1e7
 ```
 
 ## Architect Review
