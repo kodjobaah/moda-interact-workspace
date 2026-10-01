@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 32
-executor: copilot
-claimed_at: 2026-10-01T21:18:03Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-024-DATABASE-001
@@ -1304,24 +1304,44 @@ Both worktrees use `task/ARCH-024-ADMIN-003`. The parent task branch began at cl
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Definition only; implementation not yet reviewed.
+Attempt 1 implementation is architecturally conformant. The current-environment resolver, accepted connection-keyring reuse, AES-256-GCM envelope, published Shared `createCommerceOpenRouterCredentialAad(...)` construction and explicit UTF-8 encoding, secret-free status contract, independent SUPER_ADMIN Server Action boundary, insert-only SET, CAS REPLACE/REMOVE, serializable credential-plus-audit transactions, secret-free UI, synchronous single-flight controls and disposable PostgreSQL lifecycle/interoperability proof all match the task and parent architecture.
+
+The reported absence of a direct `server-only` marker package is not a source correction: no new dependency is authorised by this task, the sensitive modules have server-side runtime call sites only, the client imports the status contract as a type only, and the production build passed. The source-level security regressions are also acceptable when combined with direct inspection of the action/service/UI boundaries and the successful build.
+
+The remaining deficiency is durable execution evidence only. The Completion Report names the prepared worktrees and implementation commits, but does not record the complete prepared-launch synchronization/recursive-submodule evidence or the exact final parent report commit and final local/remote/clean identities. Those facts must be durable in the task file rather than exist only in the conversational handoff. No implementation source or test change is requested unless the evidence contradicts the submitted state.
 
 ### Reviewed Files
 
-Not applicable.
+- `moda-interact-admin/src/lib/admin/openrouter-credential-environment.ts`
+- `moda-interact-admin/src/lib/admin/openrouter-credential-keyring.ts`
+- `moda-interact-admin/src/lib/admin/openrouter-credential-crypto.ts`
+- `moda-interact-admin/src/lib/admin/openrouter-credential-validation.ts`
+- `moda-interact-admin/src/lib/admin/openrouter-credential.ts`
+- `moda-interact-admin/src/app/actions/openrouter-credential.ts`
+- `moda-interact-admin/src/app/(protected)/commerce-models/credentials/page.tsx`
+- `moda-interact-admin/src/components/admin/openrouter-credential/openrouter-credential-panel.tsx`
+- `moda-interact-admin/src/components/admin/openrouter-credential/openrouter-credential-form.tsx`
+- `moda-interact-admin/src/components/admin/openrouter-credential/openrouter-credential-submit-button.tsx`
+- `moda-interact-admin/src/components/admin/sidebar.tsx`
+- `moda-interact-admin/src/components/admin/admin-shell.tsx`
+- focused unit/security/navigation tests
+- `moda-interact-admin/scripts/validate-arch024-openrouter-credential-admin.mjs`
+- this task Completion Report and parent ARCH-024 architecture
 
 ### Validation Reviewed
 
-Not applicable.
+Reviewed the submitted evidence for Prisma generation/validation, 13 focused unit tests, the 2-test Shared-AAD/UTF-8 crypto contract rerun, 12 focused security/navigation tests, targeted ESLint and Prettier, production build, disposable PostgreSQL SET -> REPLACE -> stale-CAS -> REMOVE/interoperability/rollback proof, cleanup evidence and `git diff --check`. The uploaded review snapshot has no `node_modules`, so these Node/PostgreSQL commands were not independently rerun in the architect environment.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Implementation conforms to ARCH-024, ADMIN-003 scope, the accepted Database contract and published Shared 1.1.0 AAD contract. Secret plaintext/envelope material is not exposed through the status or action result contracts, ordinary Platform ADMIN mutation is rejected before form parsing, REMOVE does not depend on the keyring, and no OpenRouter provider call or production Admin decrypt path was introduced. Acceptance is withheld only for the missing durable preparation/publication evidence.
 
 ### Follow-up
 
-Commerce and Background runtime tasks independently consume the same Database + published Shared credential contract and do not wait for this Admin UI implementation. Gateway wiring still depends on this task because deployment cutover must not occur before the credential writer exists. Terminal system validation remains separate.
+**A1-R1 — evidence only; no source/test changes requested.** Reclaim the same task for Attempt 2 and update only the Completion Report/checklist metadata needed to record the launcher-prepared execution packet completely: canonical `workspace_root`; dedicated parent and Admin implementation worktree paths; both `task/ARCH-024-ADMIN-003` branches; start-of-attempt synchronization/base identities; recursive `database/` submodule materialisation at accepted `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; exact Shared `1.1.0` consumption; implementation head `b0a894d65878b81bf533212fab98a48296b34fcf`; final parent report head `3b692a6cd12cc23780e12f4196c14de9316b551a`; proof that each local task head equals its corresponding `origin/task/ARCH-024-ADMIN-003` head; and final clean-worktree evidence for both worktrees. Preserve the Attempt 1 Architect Review unchanged when returning for re-review.
+
+Existing successful implementation validation may be referenced; do not rerun the expensive PostgreSQL/build/test gates solely for this evidence-only correction unless the recorded repository state has changed or the evidence exposes a discrepancy. `git diff --check` and the task-report consistency checks should remain clean. Gateway remains gated until ADMIN-003 is actually Complete and its other dependencies are satisfied.
