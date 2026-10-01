@@ -11,7 +11,7 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003`, `ARCH-023-COMMERCE-004`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
 The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
@@ -3260,7 +3260,7 @@ ADMIN-001 (accepted historical ALWAYS_ENABLED product rule)
 ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
    |  \
    |   +-----------------> COMMERCE-004 (after COMMERCE-002 completes)
-   |                         bootstrap guard + lookup preference gate
+   |                         request-time lookup preference gate
    |
    +----> SHOPIFY-004 -> SHOPIFY-005
    |       existing FeaturePreferences is canonical merchant ON/OFF
@@ -3277,20 +3277,20 @@ ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
 The initial Merchant Knowledge database persistence remains consolidated in DATABASE-001. The earlier split
 DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard. DATABASE-005 is a second narrow forward migration discovered by BACKGROUND-004 Attempt 1 and adds only the two Merchant Knowledge `BackgroundRuntimeLeaseName` enum values required by the accepted scheduler design.
 
-Commerce-adjacent execution state after COMMERCE-002 Attempt 4 acceptance:
+Commerce-adjacent execution state after COMMERCE-004 Attempt 2 acceptance:
 
 ```text
 ARCH-023-DATABASE-004   Complete — Accepted Attempt 1
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-COMMERCE-002   Complete — Accepted Attempt 4
 ARCH-023-COMMERCE-003   Complete — Accepted Attempt 2
-ARCH-023-ADMIN-004      Ready
-ARCH-023-COMMERCE-004   Pending — waits for ADMIN-004
+ARCH-023-ADMIN-004      Complete — Accepted Attempt 1
+ARCH-023-COMMERCE-004   Complete — Accepted Attempt 2
 ARCH-023-GATEWAY-001    Pending — additional prerequisites remain
 ARCH-023-SYSTEM-TEST-002 Pending — terminal dependencies remain
 ```
 
-Individual task YAML remains authoritative for other domain state. No downstream task is promoted solely by COMMERCE-002 acceptance.
+Individual task YAML remains authoritative for other domain state. No downstream task is promoted solely by COMMERCE-004 acceptance; SYSTEM-TEST-002 retains other unmet terminal prerequisites.
 
 Canonical published Shared revision for ARCH-023 consumers:
 
@@ -3345,6 +3345,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — COMMERCE-004 Attempt 2 accepted
+
+- Accepted the request-time Merchant Knowledge merchant-activation gate after the validation-only Attempt 2 completed the required production-adapter PostgreSQL/pgvector proof; no production-source change was required in Attempt 2.
+- Confirmed missing or disabled `ShopFeaturePreference` returns non-retryable `DENIED` before embedding or pgvector retrieval, leaves retained source/revision/chunk state unchanged and does not create a preference row; enabling the same preference immediately retrieves the retained matching ACTIVE chunk.
+- Accepted the task-owned `pgvector/pgvector:pg17` runner with all 22 Prisma migrations, loopback-only ephemeral database exposure and verified teardown, plus 32 focused tests, typecheck, targeted lint/diagnostics, runner syntax and whitespace validation.
+- Marked COMMERCE-004 Complete / Accepted Attempt 2. It declares no `enables`; SYSTEM-TEST-002 remains Pending on its other implementation/infrastructure prerequisites.
 
 ### 2026-10-01 — BACKGROUND-007 Attempt 1 accepted
 

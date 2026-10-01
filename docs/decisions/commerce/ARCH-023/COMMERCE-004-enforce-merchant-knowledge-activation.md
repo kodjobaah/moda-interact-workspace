@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 62
 executor: null
 claimed_at: null
@@ -182,6 +182,90 @@ Focused affected Merchant Knowledge tests: 4 files passed, 32 tests passed, 2 li
 Implementation/test commit `72e232a` (`test(commerce): prove merchant knowledge activation in postgres`) was pushed to `task/ARCH-023-COMMERCE-004`. Parent report commit `2fd5519d` records this Attempt 2 evidence. The Attempt 2 parent claim is `b732b9ea`; parent synchronization incorporated `origin/main` at `c047c4feff6e1754b0d06e823a013fd14de0d61b` after resolving the architecture-document merge in favor of upstream's newer history. The recursive database submodule was initialized at `6a8602e67d2308189af81ee0091e5189f1ffd71a`. The implementation worktree is clean after the pushed test commit. Task status is returned to `review`, with executor and claim timestamp cleared, for `moda_architect`.
 
 ## Architect Review
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+Attempt 2 closes the only outstanding finding from Attempt 1. No production-source
+change was required. The submitted PostgreSQL/pgvector regression exercises the
+production `createMerchantKnowledgeLookupAdapter()` authority path against the real
+migrated schema and proves the final request-time invariant:
+
+```text
+retrievable = planEntitled && merchantEnabled
+```
+
+The live proof demonstrates that a missing `ShopFeaturePreference` and an explicit
+`enabled=false` preference both return non-retryable `DENIED` before query embedding or
+pgvector retrieval, preserve the retained Merchant Knowledge source/revision/chunk
+state exactly, and do not cause Commerce to create a preference row. Updating the same
+preference to `enabled=true` immediately retrieves the already-retained matching ACTIVE
+chunk through the production retrieval path without re-ingestion or replacement.
+
+The reviewed production implementation remains the conformant Attempt 1 source:
+current ACTIVE/TRIALING plan entitlement is resolved first; the exact current
+`merchant_knowledge` Feature id is used for the shop/Feature preference lookup;
+preference-read failure maps to retryable `UNAVAILABLE`; missing/false preference fails
+closed; and trusted `turn.shopId`, not model/browser input, remains the tenant authority.
+The accepted COMMERCE-002 bootstrap remains preference-neutral.
+
+### Attempt 2 Reviewed Files
+
+- `src/commerce/merchant-knowledge/entitlement.ts`
+- `src/commerce/merchant-knowledge/operation.ts`
+- `tests/merchant-knowledge-activation-postgres.test.ts`
+- `scripts/run-merchant-knowledge-activation-postgres.mjs`
+- `package.json`
+- `docs/decisions/commerce/ARCH-023/COMMERCE-004-enforce-merchant-knowledge-activation.md`
+
+### Attempt 2 Validation Reviewed
+
+The submitted evidence records:
+
+```text
+disposable pgvector PostgreSQL activation proof        PASS — 1 live test
+focused affected Merchant Knowledge suite              PASS — 32 tests
+live-only tests outside guarded runner                 SKIP — 2
+npm run typecheck                                      PASS
+targeted ESLint                                        PASS
+changed-file diagnostics                               PASS
+runner node --check                                    PASS
+git diff --check                                       PASS
+```
+
+The runner uses `pgvector/pgvector:pg17`, an invocation-owned container, an ephemeral
+IPv4 loopback port, a uniquely named disposable test database, a tmpfs PostgreSQL data
+directory, and applies all 22 repository Prisma migrations before executing the proof.
+`DATABASE_URL` and `COMMERCE_TEST_DATABASE_URL` are both constrained to that disposable
+target for the child process. Teardown removes the owned container and verifies zero
+owned containers remain.
+
+The broader Merchant Knowledge glob still contains the previously attributed
+`merchant-knowledge-embedding.test.ts` configuration-fixture failure because that fixture
+omits required `COMMERCE_BOOTSTRAP_ADMIN_EMAIL`. It is outside the COMMERCE-004 changed
+surface and does not overturn the focused/live evidence.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. Request-time Merchant Knowledge retrieval now independently requires both
+current plan entitlement and explicit merchant activation. OFF is fail-closed and
+non-destructive, another eligible Capability cannot bypass the operation-level gate,
+Commerce performs no preference mutation, and re-enable reuses retained ACTIVE
+knowledge. The COMMERCE-002 bootstrap, schema/migrations, generic capability-selection
+contract, embedding implementation and pgvector retrieval SQL remain outside this task
+and unchanged.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-023-COMMERCE-004` is **Complete / Accepted Attempt 2** under
+`completion_mode: automatic`. It declares no `enables` tasks. `ARCH-023-SYSTEM-TEST-002`
+remains Pending because its other implementation/infrastructure prerequisites are not
+yet Complete.
+
+#### Historical Attempt 1 — Changes Requested
 
 ### Review Status
 Changes Requested
