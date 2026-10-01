@@ -31,8 +31,8 @@ Individual task YAML is authoritative.
 | [SHOPIFY-003](SHOPIFY-003-extract-subscription-read-service.md) | Extract local/provider Subscription read model | Complete | SHOPIFY-002 |
 | [SHOPIFY-004](SHOPIFY-004-extract-recovery-capacity-read-service.md) | Extract merchant recovery-capacity read model | Complete | SHOPIFY-003 |
 | [SHOPIFY-005](SHOPIFY-005-extract-merchant-billing-read-service.md) | Extract merchant billing-page read model | Complete | SHOPIFY-004 |
-| [SHOPIFY-006](SHOPIFY-006-extract-subscription-activation-service.md) | Extract initial Free/Paid activation intent workflow | Ready | SHOPIFY-005 |
-| [SHOPIFY-007](SHOPIFY-007-extract-hosted-plan-change-service.md) | Extract hosted plan-change callback fencing | Pending | SHOPIFY-006 |
+| [SHOPIFY-006](SHOPIFY-006-extract-subscription-activation-service.md) | Extract initial Free/Paid activation intent workflow | Complete | SHOPIFY-005 |
+| [SHOPIFY-007](SHOPIFY-007-extract-hosted-plan-change-service.md) | Extract hosted plan-change callback fencing | Ready | SHOPIFY-006 |
 | [SHOPIFY-008](SHOPIFY-008-extract-recovery-credit-purchase-request-service.md) | Extract recovery-credit purchase initiation | Pending | SHOPIFY-007 |
 | [SHOPIFY-009](SHOPIFY-009-extract-subscription-ended-notification-service.md) | Extract subscription-ended support notification | Pending | SHOPIFY-008 |
 | [SHOPIFY-010](SHOPIFY-010-extract-initial-paid-activation-finalisation.md) | Extract initial Paid activation durable finalisation from sync | Pending | SHOPIFY-009 |
@@ -40,4 +40,4 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-SHOPIFY-001` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-002` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-003` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-004` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-005` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-006` is Ready. All later tasks remain Pending and must not be started until their immediately preceding task is architect-accepted Complete.
+`ARCH-025-SHOPIFY-001` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-002` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-003` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-004` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-005` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-006` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-007` is Ready. All later tasks remain Pending and must not be started until their immediately preceding task is architect-accepted Complete.
