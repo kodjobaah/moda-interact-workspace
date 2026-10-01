@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
 executor: copilot
 claimed_at: 2026-10-01T21:49:37Z
@@ -160,7 +160,7 @@ Keep the mapper close to the read service; do not create a generic Shopify billi
 
 ### Status
 
-Ready for architect review
+Ready for architect review after evidence-only Attempt 2
 
 ### Files Changed
 
@@ -176,14 +176,15 @@ Ready for architect review
 
 ### Validation Results
 
-- `npm run prisma:generate`: passed.
+- Removed the SHOPIFY-002 `node_modules` symlink and ran `npm ci` in the dedicated SHOPIFY-003 implementation worktree from its committed `package-lock.json`; 1,153 packages were installed into a physical local `node_modules` directory. No package or lockfile changes resulted. npm reported 32 dependency audit findings during installation.
+- `npm run prisma:generate`: passed using the local install; generated Prisma Client under this worktree's `node_modules/@prisma/client`.
 - Frozen test hash: `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; `git diff -- tests/unit/services/billing.service.test.ts` is empty.
-- Frozen `billing.service.test.ts`: 18 failures, all documented under `ARCH025-TEST-001`; the frozen source is unchanged.
-- Focused `subscription-read.service.test.ts`: 4 passed.
-- Full `npm test`: 76 passed, 8 skipped, 24 failures; the failure set matches documented baseline `ARCH025-TEST-001` and includes no new failure identifier.
+- Frozen `billing.service.test.ts`, rerun in Attempt 2: 18 failures, all matching documented baseline `ARCH025-TEST-001`; the frozen source is unchanged.
+- Focused `subscription-read.service.test.ts`, rerun in Attempt 2: 4 passed.
+- Full `npm test`, rerun in Attempt 2: 76 passed, 8 skipped, 24 failures; the failure identifiers match documented baseline `ARCH025-TEST-001`, with no additional failure.
 - `npm run typecheck`: passed.
 - Targeted ESLint: passed; emitted only the existing TypeScript-version compatibility warning.
-- `npm run build`: passed; emitted existing dependency and chunk-size warnings.
+- `npm run build`: passed using the local install; emitted existing dependency-resolution, annotation, empty-chunk, and chunk-size warnings.
 - `git diff --check`: passed.
 - Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-003`; both on `task/ARCH-025-SHOPIFY-003`. Shared workspace and shared implementation checkouts were not switched or mutated; no other task worktree was reused.
 - Start-of-attempt synchronization from the launcher packet: parent remote task branch fast-forward `not-needed`; parent `origin/main` `already-current`; implementation remote task branch fast-forward `not-needed`; implementation `origin/main` `already-current`.
@@ -191,7 +192,7 @@ Ready for architect review
 
 ### Deviations
 
-None. The fresh implementation worktree reused the already-installed SHOPIFY-002 `node_modules` tree through a local symlink for validation; no dependencies were installed or package files changed.
+Attempt 1's validation environment reused a cross-task `node_modules` symlink, as identified in architect review A1-R1. In evidence-only Attempt 2, that symlink was removed and dependencies were installed locally with `npm ci`; all required validation was rerun in the dedicated SHOPIFY-003 implementation worktree. No implementation source/test files or package files were changed, and implementation commit `ba0380e7688930277e9e075610ac915a256eec1d` remains unchanged.
 
 ### Assumptions
 
@@ -199,7 +200,7 @@ The documented ARCH-025 baseline `ARCH025-TEST-001` remains the reference for th
 
 ### Unresolved Issues
 
-The frozen façade and full application suites retain their documented `ARCH025-TEST-001` baseline failures; focused tests and production/type validation pass.
+The frozen façade and full application suites retain their documented `ARCH025-TEST-001` baseline failures; focused tests and production/type validation pass. `npm ci` reported 32 dependency audit findings; dependency remediation is outside this evidence-only task attempt.
 
 ### Architectural Concerns
 
