@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 40
 executor: copilot
 claimed_at: 2026-10-01T22:07:10Z
@@ -108,10 +108,10 @@ No new writes or provider calls are permitted.
 
 ## Work Items
 
-- [ ] Create `MerchantRecoveryCapacityReadService` with Prisma + narrow billing-plan-resolution dependency.
-- [ ] Move exact capacity read logic and leave façade delegate.
-- [ ] Add focused tests covering all capacity sources, precedence, promotional validity, refund holds, FROZEN/NO_CONTRACT and invalid paid-period state.
-- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Create `MerchantRecoveryCapacityReadService` with Prisma + narrow billing-plan-resolution dependency.
+- [x] Move exact capacity read logic and leave façade delegate.
+- [x] Add focused tests covering all capacity sources, precedence, promotional validity, refund holds, FROZEN/NO_CONTRACT and invalid paid-period state.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -127,11 +127,11 @@ Consumes `MerchantRecoveryCapacityState` from existing `billing.types.ts` and th
 
 ## Acceptance Criteria
 
-- [ ] Capacity read responsibility is removed from the façade implementation.
-- [ ] Capacity precedence and all current availability states are unchanged.
-- [ ] No database write or Shopify provider call is introduced.
-- [ ] Top-up configuration has one catalogue owner.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Capacity read responsibility is removed from the façade implementation.
+- [x] Capacity precedence and all current availability states are unchanged.
+- [x] No database write or Shopify provider call is introduced.
+- [x] Top-up configuration has one catalogue owner.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
@@ -159,35 +159,84 @@ Do not combine this with `MerchantBillingReadService`; recovery admission/capaci
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/merchant-recovery-capacity-read.service.ts` (new)
+- `tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts` (new)
 
 ### Work Completed
 
-None.
+- Extracted the recovery-capacity read model into `MerchantRecoveryCapacityReadService`; `BillingService` constructs it with the existing database and `BillingPlanResolutionService`, then delegates without changing its public signature.
+- Preserved the four parallel reads, counter arithmetic, promotion target/window checks, paid BillingPeriod integrity checks, top-up configuration reuse, blocker ordering, and capacity precedence.
+- Added 9 focused tests covering source precedence/fallbacks, promotion eligibility and rejection cases, refund holds, NO_CONTRACT/FROZEN behavior, invalid paid-period projections, query shape, collaborator reuse, and absence of writes.
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:generate`: passed; generated Prisma Client 6.19.3.
+- Frozen test SHA-256: `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; `git diff -- tests/unit/services/billing.service.test.ts` was empty.
+- `npm test -- tests/unit/services/billing.service.test.ts`: 195 passed, 18 failed; all 18 failing identifiers are the documented `ARCH025-TEST-001` date-sensitive baseline.
+- `npm test -- tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts`: passed, 9/9.
+- `npm test`: 971 passed, 24 failed, 33 skipped across 90 test files; all 24 failing identifiers match `ARCH025-TEST-001` (18 frozen-suite failures and its six documented unrelated failures); no task-only failing identifier.
+- `npm run typecheck`: passed.
+- `npx eslint app/services/billing/billing.service.ts app/services/billing/merchant-recovery-capacity-read.service.ts tests/unit/services/billing/merchant-recovery-capacity-read.service.test.ts`: passed; ESLint emitted the repository's existing TypeScript 5.9.3 parser-support warning.
+- `npm run build`: passed; existing Vite dependency/chunk warnings were emitted.
+- `git diff --check`: passed.
+- Editor diagnostics for all three changed files: no errors.
 
 ### Deviations
 
-None.
+None. Existing test failures were compared with and found unchanged from `ARCH025-TEST-001` in `docs/development-baseline.md`.
 
 ### Assumptions
 
-None.
+The SHOPIFY-004 attempt was claimed with both task worktrees synchronized. Parent `origin/main` advanced during validation; its new commit was merged into the parent task branch before report submission.
 
 ### Unresolved Issues
 
-None.
+The 18 frozen-suite and six unrelated full-suite failures documented by `ARCH025-TEST-001` remain; none is introduced by this task.
 
 ### Architectural Concerns
 
-None.
+None identified.
+
+### Git / VCS
+
+Task branch: `task/ARCH-025-SHOPIFY-004`
+
+Physical worktree isolation:
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-004`
+- Parent branch: `task/ARCH-025-SHOPIFY-004`
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-004`
+- Implementation branch: `task/ARCH-025-SHOPIFY-004`
+- Shared workspace checkout switched/mutated for task work: no
+- Shared implementation checkout switched/mutated for task work: no
+- Another task worktree reused: no
+
+Start-of-attempt synchronization:
+- Parent remote task branch fast-forwarded: not needed; launcher found it synchronized at claim.
+- Parent `origin/main` incorporated: already current at claim; later commit `99f8c59e` arrived during validation and was merged into the task branch before report submission.
+- Implementation remote task branch fast-forwarded: not needed; no remote task ref existed when the prepared implementation worktree was established.
+- Implementation `origin/main` incorporated: yes, already current at `1630c0e10b9c88e6bbb568d597b3b19c8a36d2ec`.
+
+Implementation repository:
+- Repository: `moda-interact`
+- Commit: `350dedbf61290a01bf3edba642de64cc8482c811`
+- Remote branch: `origin/task/ARCH-025-SHOPIFY-004`
+- Pushed: yes
+
+Parent workspace:
+- Task file: `docs/decisions/shopify/ARCH-025/SHOPIFY-004-extract-recovery-capacity-read-service.md`
+- Report commit: to be recorded after task-file commit.
+- Remote branch: `origin/task/ARCH-025-SHOPIFY-004`
+- Pushed: pending
+- Submodule gitlink staged: no
+
+Merged to implementation main: no
+Merged to workspace main: no
 
 ## Architect Review
 
