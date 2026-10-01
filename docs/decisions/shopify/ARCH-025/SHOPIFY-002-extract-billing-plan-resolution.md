@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-10-01T20:56:19Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-001
@@ -123,12 +123,12 @@ The frozen regression suite intentionally reaches the runtime-private method nam
 
 ## Work Items
 
-- [ ] Create `BillingPlanResolutionService` with injected Prisma dependency.
-- [ ] Move the three catalogue/resolution responsibilities without semantic changes.
-- [ ] Wire `BillingService` to one collaborator instance; do not duplicate validation.
-- [ ] Retain `BillingService.resolveOrMaterializeBillingPlan(...)` as a thin private compatibility delegate for the frozen regression suite.
-- [ ] Add focused tests for reuse, materialisation, invalid catalogue, Merchant Knowledge validation, unique race, top-up configuration and provider-read fallback.
-- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Create `BillingPlanResolutionService` with injected Prisma dependency.
+- [x] Move the three catalogue/resolution responsibilities without semantic changes.
+- [x] Wire `BillingService` to one collaborator instance; do not duplicate validation.
+- [x] Retain `BillingService.resolveOrMaterializeBillingPlan(...)` as a thin private compatibility delegate for the frozen regression suite.
+- [x] Add focused tests for reuse, materialisation, invalid catalogue, Merchant Knowledge validation, unique race, top-up configuration and provider-read fallback.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -146,25 +146,24 @@ The service returns the same operational resolution union and merchant-pricing/t
 
 ## Acceptance Criteria
 
-- [ ] Operational BillingPlan materialisation/catalogue validation has one owner.
-- [ ] Merchant Knowledge compatibility validation exists in one resolution path, not duplicated.
-- [ ] Unique BillingPlan race recovery and `materializedAt` behaviour are unchanged.
-- [ ] No additional provider/database calls occur for equivalent branches.
-- [ ] The runtime-private `BillingService.resolveOrMaterializeBillingPlan(...)` name remains present as a thin delegate and its two existing frozen-suite calls still pass unchanged.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Operational BillingPlan materialisation/catalogue validation has one owner.
+- [x] Merchant Knowledge compatibility validation exists in one resolution path, not duplicated.
+- [x] Unique BillingPlan race recovery and `materializedAt` behaviour are unchanged.
+- [x] No additional provider/database calls occur for equivalent branches.
+- [x] The runtime-private `BillingService.resolveOrMaterializeBillingPlan(...)` name remains present as a thin delegate and its two existing frozen-suite calls still pass unchanged.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
-- [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
-- [ ] `npm test -- tests/unit/services/billing/billing-plan-resolution.service.test.ts` passes the new focused capability tests
-- [ ] `npm test` introduces no new failures
-- [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/billing-plan-resolution.service.ts tests/unit/services/billing/billing-plan-resolution.service.test.ts`
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate` (passed; Prisma Client 6.19.3 generated).
+- [x] Frozen test SHA-256 is `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4` and `git diff -- tests/unit/services/billing.service.test.ts` is empty.
+- [x] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001` (18 failures / 195 passed / 213 total; all 18 are documented).
+- [x] `npm test -- tests/unit/services/billing/billing-plan-resolution.service.test.ts` passes (7 tests).
+- [x] `npm test` introduces no new failures (24 failures / 958 passed / 33 skipped / 1015 total; all 24 identifiers are documented by `ARCH025-TEST-001`).
+- [x] `npm run typecheck` passed.
+- [x] Required three-file ESLint command passed.
+- [x] `npm run build` passed.
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -179,35 +178,72 @@ Do not create a repository-wide catalogue abstraction. This service is Shopify b
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/billing-plan-resolution.service.ts` (new)
+- `tests/unit/services/billing/billing-plan-resolution.service.test.ts` (new)
 
 ### Work Completed
 
-None.
+- Added `BillingPlanResolutionService`, injected with the existing Prisma client, and moved operational BillingPlan resolution/materialisation, recovery-credit top-up configuration reads, and MerchantPricingPlan catalogue reads into that single owner.
+- Preserved the original transaction boundaries, resolution variants/reasons, catalogue validation, Merchant Knowledge active-pair validation, BillingPlan creation fields, unique-handle race recovery, and each `materializedAt` repair/update path without adding provider or database operations.
+- Wired one collaborator instance in the `BillingService` constructor without changing its constructor signature. Kept `BillingService.resolveOrMaterializeBillingPlan(...)` as a thin private delegate for the frozen runtime-private test seam; all top-up and merchant-pricing read call sites now use the collaborator.
+- Preserved database-first MerchantPricingPlan reads and provider fallback when the injected database shape lacks the model method.
+- Added seven focused tests covering operational-plan reuse, catalogue materialisation, unknown/inactive results, Merchant Knowledge compatibility rejection, unique-race recovery, top-up configuration projection, database catalogue projection and provider fallback.
+- Did not edit the frozen `tests/unit/services/billing.service.test.ts`.
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-002`
+  parent branch: `task/ARCH-025-SHOPIFY-002`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-002`
+  implementation branch: `task/ARCH-025-SHOPIFY-002`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent `origin/main` incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation `origin/main` incorporated: already-current
+
+Recursive implementation submodules:
+  `git submodule sync --recursive`: passed
+  `git submodule update --init --recursive`: passed
+  recorded submodule commits: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
+  preparation claim: Attempt 1, executor `copilot`, claim commit `daf233e0de951213489f224a8ddfa58b48a1a898`, pushed
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:generate`: passed; Prisma Client 6.19.3 generated.
+- Focused new service suite: passed, 1 file / 7 tests.
+- Frozen private resolver seam: the two parameterized Merchant Knowledge rejection cases passed unchanged (2 passed, 211 skipped), directly exercising `BillingService.resolveOrMaterializeBillingPlan(...)`.
+- Frozen `billing.service.test.ts`: 18 failed / 195 passed / 213 total. Every failing identifier is included in `ARCH025-TEST-001`; the frozen file hash is the exact required SHA-256 and its diff is empty.
+- Full `npm test`: 5 failed files / 75 passed / 8 skipped; 24 failed / 958 passed / 33 skipped / 1015 total. All 18 frozen failures and six additional failures match `ARCH025-TEST-001`; a mechanical identifier comparison found zero new failures.
+- `npm run typecheck`: passed.
+- Required three-file ESLint command: passed.
+- `npm run build`: passed (existing bundler warnings only).
+- `git diff --check`: passed. Editor diagnostics reported no errors in the three authorized files.
 
 ### Deviations
 
-None.
+None. The documented baseline failures remain visible in the test results and were not changed or suppressed.
 
 ### Assumptions
 
-None.
+The existing `ARCH025-TEST-001` failure identifiers remain the accepted pre-task baseline for this ARCH-025 task; the current frozen and full-suite runs introduced no additional failing identifier.
 
 ### Unresolved Issues
 
-None.
+None within this task's authorized scope.
 
 ### Architectural Concerns
 
-None.
+None identified. The extracted collaborator is Shopify-billing-specific, has a side-effect-free constructor, and depends on the existing provider catalogue fallback rather than the façade.
 
 ## Architect Review
 
