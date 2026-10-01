@@ -4,16 +4,16 @@ title: Merchant knowledge, store profiles and CommerceAgent instructions
 status: agreed
 coordinator: moda_architect
 created: 2026-09-28
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # ARCH-023: Merchant knowledge, store profiles and CommerceAgent instructions
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current executable frontier is `ARCH-023-BACKGROUND-006`, `ARCH-023-COMMERCE-002`, `ARCH-023-COMMERCE-003` and `ARCH-023-SHOPIFY-004`. `BACKGROUND-004` remains Pending until BACKGROUND-006 completes, `SHOPIFY-005` remains Pending until SHOPIFY-004 completes, and `COMMERCE-004` remains Pending until COMMERCE-002 completes. Ready tasks remain unclaimed until their normal task launcher is invoked.
+The current Background executable frontier is `ARCH-023-BACKGROUND-004`; its acquisition and merchant-activation prerequisites are Complete. `BACKGROUND-005` remains Pending until BACKGROUND-004 completes. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3343,13 +3343,12 @@ through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
 
-### 2026-10-01 — SHOPIFY-004 Attempt 1 changes requested
+### 2026-10-01 — BACKGROUND-006 Attempt 1 accepted
 
-- Reviewed the merchant opt-in control plane, Recovery Settings WEB_PAGE lifecycle, authenticated shop boundary, OFF-state durability, queue-loss handling and PostgreSQL locking/concurrency proof as substantially architecture-conformant.
-- Required current Merchant Knowledge plan entitlement on delete/reorder; OFF-state configurability does not permit source mutation after the current plan stops entitling Merchant Knowledge.
-- Required edit/refresh to enforce the same R3 `currentlyPlanEntitled` first-N source-count window used by the read model, so `SOURCE_COUNT`-dormant sources cannot create/enqueue new revisions until reordered back inside the allowance.
-- Required URL validation to bound the canonical `URL.toString()` value to 2,048 characters before persistence, preventing percent-encoding expansion from surfacing as a database error.
-- Returned SHOPIFY-004 to Ready with Attempt 1 preserved. SHOPIFY-005 remains Pending and no downstream implementation was started.
+- Accepted the merchant-activation extension to BACKGROUND-001 eligibility: current plan entitlement remains unchanged, while effective processing additionally requires active `merchant_knowledge`, `MERCHANT_OPT_IN`, and an explicit enabled `ShopFeaturePreference`; missing/false preference fails closed.
+- Confirmed OFF is non-destructive and leaves PENDING work dormant without creating preference rows; the disposable PostgreSQL transition proof showed OFF-to-ON reconciliation reuses the existing deterministic C4 job identity.
+- Confirmed BACKGROUND-004 owns the required re-check of this same activation-aware eligibility before acquisition and before promotion.
+- Marked BACKGROUND-006 Complete / Accepted Attempt 1 and promoted BACKGROUND-004 to Ready. BACKGROUND-005 remains Pending on BACKGROUND-004; no downstream task was started.
 
 ### 2026-09-30 — ADMIN-004 Attempt 1 accepted
 
