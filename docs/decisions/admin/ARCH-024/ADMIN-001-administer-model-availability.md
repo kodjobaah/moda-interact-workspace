@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-10-01T18:02:55Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-DATABASE-001
@@ -53,10 +53,10 @@ PLATFORM availability
     cannot be recreated, deleted, moved or retargeted
 
 SHOP availability
-    zero or one row per existing Shop
-    SUPER_ADMIN may create it for a Shop that does not already have one
-    SUPER_ADMIN may enable / disable it
-    cannot be deleted, moved to another Shop or changed to PLATFORM
+  zero or one row per existing Shop
+  SUPER_ADMIN may create it for a Shop that does not already have one
+  SUPER_ADMIN may enable / disable it
+  cannot be deleted, moved to another Shop or changed to PLATFORM
 ```
 
 This task administers Availability containers only.
@@ -71,9 +71,9 @@ ARCH-024-DATABASE-001 establishes the durable relationship:
 
 ```text
 CommerceModelAvailability
-        1
-        |
-        *
+    1
+    |
+    *
 CommerceModelCatalogueEntry
 ```
 
@@ -1147,64 +1147,32 @@ npm run build
 - [x] Whitespace validation passes:
 
 ```bash
-Ready for Review
+git diff --check
 ```
 
 If a validation command encounters a documented unchanged baseline condition, record its baseline ID in the Completion Report. A changed-file regression introduced by this task is not excused by baseline status.
-- `package.json` and `package-lock.json` — consume exact Shared release `1.1.0`.
-- `src/lib/admin/model-availability-validation.ts` — the two bounded mutation input parsers.
-- `src/lib/admin/model-availability.ts` — Shared-schema-validated Availability read/search and the only two allowed mutation kinds.
-- `src/app/actions/model-availability.ts` — SUPER_ADMIN-gated Serializable transaction action.
-- `src/app/(protected)/commerce-models/availability/page.tsx` — protected read page and URL-driven drawer state.
-- `src/components/admin/model-availability/model-availability-catalog.tsx` — Platform-first summary and Shop list.
-- `src/components/admin/model-availability/model-availability-editor.tsx` — Shop creation/search and immutable-identity management drawers.
-- `src/components/admin/model-availability/model-availability-submit-button.tsx` — pending submit protection.
-- `src/components/admin/sidebar.tsx` and `src/components/admin/admin-shell.tsx` — Commerce models navigation and active key.
-- `tests/unit/model-availability-validation.test.ts` and `tests/unit/model-availability-service.test.ts` — parser and transaction mutation coverage.
-- `tests/security/admin-model-availability.test.mjs` and `tests/security/admin-sidebar-navigation.test.mjs` — route/action/read security, prohibited-path and navigation regressions.
-- No additional files changed; the accepted `database/` gitlink remains unchanged at the launcher-prepared commit.
 ## Stop Condition
 
 After the defined Work Items, Acceptance Criteria and required Validation are complete:
-- Consumed `@modainteract/moda-interact-shared@1.1.0`, the exact SHARED-002 publication, and generated Prisma from accepted database commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
-- Added a Platform-first Availability read model. It requires exactly one Platform row, validates every Availability through the published Shared schemas before scope partitioning, validates Shop identity, and projects only bounded identity/status/count fields.
-- Added case-insensitive, trimmed, 120-character-bounded Shop search that requires two characters, returns at most 25 Shops without any Availability, and selects only canonical Shop identity/status.
-- Added only `create-shop` and `set-enabled` transaction mutations. Creation fixes SHOP scope, enabled state, version 1 and canonical Shop identity; toggle uses `editVersion` CAS and leaves catalogue entries and Agent Configurations untouched.
-- Added same-transaction `CommerceAuditEvent` records for create/enable/disable with the required action/targets and bounded metadata.
-- Added the protected `/commerce-models/availability` page, visible read navigation, SUPER_ADMIN-only creation/state-change forms, read-only identity, required disable warnings, and pending button state.
-- Added deterministic focused parser/service tests and static route/action/navigation safety coverage; no OpenRouter credential, model call, Catalogue mutation, Agent Configuration mutation or delete path was introduced.
-- Implementation commit `22e22d1` (`feat(admin): manage commerce model availability`) is pushed to `origin/task/ARCH-024-ADMIN-001`.
 1. set the task Completion Report to `Ready for Review`;
 2. set task status to `review`;
 3. clear no architectural dependency yourself;
-- `npm run prisma:generate` — passed against the accepted nested schema.
-- `npm run prisma:validate` — passed.
-- `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts tests/unit/model-availability-service.test.ts` — passed, 8/8 tests.
-- `node --test tests/security/admin-model-availability.test.mjs tests/security/admin-sidebar-navigation.test.mjs` — passed, 11/11 tests.
-- `npx tsc --noEmit --pretty false` — passed.
-- `npm run lint -- <all changed TypeScript/TSX paths>` — passed with no errors. Direct ESLint invocation also reported that the two TypeScript unit-test files are ignored by repository configuration; no implementation files were ignored.
-- Targeted `npx prettier --check <all changed source/test paths>` — passed.
-- `npm run build` — passed; Next.js compiled and registered `/commerce-models/availability`. It emitted existing BullMQ warnings for an expression-based dynamic dependency and unresolved optional `@valkey/valkey-glide`; these did not prevent compilation or build completion and have no matching documented baseline entry.
-- Static absence checks — passed: accepted `BillingPlan` model has no `commerceModelId`/`modelId`; task-owned Availability source has no Catalogue, Agent Configuration, credential or delete mutations.
-- `git diff --check` — passed.
+4. return the implementation and evidence to `moda_architect`;
 5. **STOP**.
 
 Do not begin `ARCH-024-ADMIN-002`, OpenRouter credential administration, Commerce Studio changes or any other follow-on task.
-- No code or schema deviation. The prepared Admin worktree already pointed at accepted database commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; it was verified and left unchanged rather than moving the gitlink.
-- `npm install --save-exact` reported 8 dependency audit findings (2 moderate, 5 high, 1 critical). Dependency remediation is outside this task and no audit fix was applied.
+
 ## Implementation Notes
 
 ### Exact ownership distinction
-- The launcher dependency gate is authoritative for architect acceptance of DATABASE-001 and SHARED-002; their statuses were complete at preparation.
 Use these terms consistently in code/UI/tests:
 
 ```text
-- Non-blocking build warnings remain in the pre-existing BullMQ import paths, including the optional `@valkey/valkey-glide` resolution warning; no matching development-baseline entry was found.
-- Node emitted `MODULE_TYPELESS_PACKAGE_JSON` warnings for the repository's TypeScript unit-test invocation; all required tests passed and no package module-mode change was made.
+Availability
     which catalogue models may be selected for Platform or one Shop
 
 Catalogue Entry
-- None identified within ADMIN-001 scope.
+    one configured model definition inside exactly one Availability
 
 Agent Configuration
     which one available model is selected for a runtime environment
@@ -1260,6 +1228,10 @@ Ready for Review
 - Added the protected `/commerce-models/availability` page, visible read navigation, SUPER_ADMIN-only creation/state-change forms, read-only identity, required disable warnings, and pending button state.
 - Added deterministic focused parser/service tests and static route/action/navigation safety coverage; no OpenRouter credential, model call, Catalogue mutation, Agent Configuration mutation or delete path was introduced.
 - Implementation commit `22e22d10dd79301e0d3d686df11a9d4db42b2470` (`feat(admin): manage commerce model availability`) is pushed to `origin/task/ARCH-024-ADMIN-001`.
+- Attempt 2 correction: the Platform/Shop scope-specific disable warning now renders only when `availability.enabled` makes `Disable availability` the available transition; the enable path renders no disable warning. Added a source-level regression tying the warning condition to the action label and conditional rendering. Implementation commit `badf437d7f693b1dc4f5cb2fba04930e150bbf38` is pushed to `origin/task/ARCH-024-ADMIN-001`.
+- Attempt 2 launcher evidence: canonical workspace root `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-ADMIN-001`, branch `task/ARCH-024-ADMIN-001`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-ADMIN-001`, branch `task/ARCH-024-ADMIN-001`. Both canonical task worktrees were reused; shared workspace/source checkouts were not switched or mutated, and no other task worktree was reused.
+- Attempt 2 start synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` incorporation `already-current`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` incorporation `already-current`.
+- Attempt 2 dependency/submodule gate: passed for `ARCH-024-DATABASE-001` and `ARCH-024-SHARED-002`, both `complete`; recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed. The `database` submodule is initialized at accepted commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 
 ### Validation Results
 - `npm run prisma:generate` — passed against the accepted nested schema.
@@ -1272,6 +1244,10 @@ Ready for Review
 - `npm run build` — passed; Next.js compiled and registered `/commerce-models/availability`. It emitted warnings in existing BullMQ import paths for expression-based dynamic dependency loading and unresolved optional `@valkey/valkey-glide`; these did not prevent compilation or build completion and have no matching documented baseline entry.
 - Static absence checks — passed: accepted `BillingPlan` model has no `commerceModelId`/`modelId`; task-owned Availability source has no Catalogue, Agent Configuration, credential or delete mutations.
 - `git diff --check` — passed.
+- Attempt 2 focused regression: `node --test tests/security/admin-model-availability.test.mjs` — 5/5 passed, including the warning/action relationship regression; `npm run lint -- src/components/admin/model-availability/model-availability-editor.tsx` — passed; `npx prettier --check src/components/admin/model-availability/model-availability-editor.tsx tests/security/admin-model-availability.test.mjs` — passed; `npx tsc --noEmit --pretty false` — passed.
+- Attempt 2 required checks: `npm run prisma:generate` and `npm run prisma:validate` — passed; `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts tests/unit/model-availability-service.test.ts` — 8/8 passed; `node --test tests/security/admin-model-availability.test.mjs tests/security/admin-sidebar-navigation.test.mjs` — 11/11 passed; `npm run build` — passed and registered `/commerce-models/availability`.
+- Attempt 2 build emitted the same non-blocking existing BullMQ expression-based dynamic dependency and optional `@valkey/valkey-glide` resolution warnings recorded in Attempt 1. The focused Node unit tests emitted the same `MODULE_TYPELESS_PACKAGE_JSON` warnings. No new task-owned TypeScript or lint diagnostic was observed.
+- Attempt 2 `git diff --check` passed in both the implementation and parent worktrees. Static source-level prohibitions are covered by the passing 11-test Admin security/navigation suite, including no Catalogue, Agent Configuration, credential or Availability deletion mutation path.
 
 ### Deviations
 - No code or schema deviation. The prepared Admin worktree already pointed at accepted database commit `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; it was verified and left unchanged rather than moving the gitlink.
