@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-10-01T15:50:56Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -775,6 +775,34 @@ Ready for Review
 - Kept the conversation API/service/store/runtime, Code Response Tool-test routes and service semantics, and static Preview model/provider/key configuration unchanged.
 - Added the exact shell DOM test, a bounded source regression guard, Release handoff absence coverage, and Release clone state/navigation coverage. Updated the existing Release creation fixture expectation to the current `Custom store advice` / `cap_01FEATURE` UI contract.
 
+### Attempt 2 — Architect Review Corrections
+
+This attempt was evidence-only. No implementation source or tests were changed. All four Attempt 1 review requests are addressed below.
+
+1. **Implemented — launcher worktree and start-of-attempt evidence.** The deterministic launcher prepared Attempt 2 at `2026-10-01T15:50:56Z` with executor `copilot`, claim commit `e7a5f63cda88d9e931a3ca4fb59210fb94f0ec78` pushed to the parent task branch. Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-001`, branch `task/ARCH-024-COMMERCE-001`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-001`, branch `task/ARCH-024-COMMERCE-001`. Both dedicated worktrees were reused at their canonical paths; neither shared workspace checkout nor another task worktree was switched or reused. For both task branches, launcher synchronization reported remote task branch fast-forward `not-needed` and `origin/main` incorporation `already-current`. Implementation `git submodule sync --recursive` and `git submodule update --init --recursive` both passed; recursive submodule status was `ready`, with `database` at recorded commit `15859f16a7b9a889df8f70e1ecc29b27df8e31de`.
+2. **Implemented — commit, remote and clean-worktree evidence.** Implementation commit `066948f8e04cc989c8eab3f8a5cd34bb409f1d6f` (`Remove obsolete human Preview workflow`) is present locally and at `origin/task/ARCH-024-COMMERCE-001`. The prior parent report commit `66ee12f4` was pushed to the same named parent task branch before Attempt 2; the launcher then added claim commit `e7a5f63cda88d9e931a3ca4fb59210fb94f0ec78` on that branch. Before this evidence update, implementation worktree status was clean at `066948f8e04cc989c8eab3f8a5cd34bb409f1d6f`; parent worktree status was clean at the pushed claim commit. Final report commit and remote head are recorded after publication in the task branch history; no implementation submodule gitlink was staged or changed.
+3. **Implemented — durable full-suite non-regression evidence.** Re-ran the complete suite in the implementation worktree with `npm test -- --run tests/studio-workspace.test.tsx --reporter=json --outputFile=/tmp/arch024-commerce-001-studio-workspace-attempt2.json`: 7 passed, 6 failed. Reproduced the same suite against an isolated `git archive` snapshot of launcher-recorded pre-task implementation commit `caa34f8718423ea8b1692da05d73de63a35c518a`, using the installed dependency tree via a `node_modules` symlink: `git archive caa34f8718423ea8b1692da05d73de63a35c518a | tar -x -C "$BASELINE_DIR"`, then `./node_modules/.bin/vitest run tests/studio-workspace.test.tsx --reporter=json --outputFile=/tmp/arch024-commerce-001-studio-workspace-baseline.json` from that snapshot: 5 passed, 7 failed. All six Attempt 2 failures are the identical baseline failures listed here:
+
+  - `exposes the failure class when a named Studio action rejects unexpectedly` — cannot find `Immutable MCP name`.
+  - `authors a reusable tool without publishing and navigates to its returned ID` — cannot find `Immutable MCP name`.
+  - `retains incremental invalid JSON and saves only the complete canonical tool definition` — cannot find `Save draft`.
+  - `resets editor state when a mounted detail changes to another record` — cannot find `Save draft`.
+  - `keeps newer edits dirty when an earlier save completes` — cannot find `Save draft`.
+  - `retains editor input after stale CAS` — cannot find `Save draft`.
+
+  Baseline had one additional failure, `composes exact published members and a response contract before release creation`, because it queried the obsolete `Conversation core` / `cap_01CORE` fixture. The current task test uses the present `Custom store advice` / `cap_01FEATURE` fixture and passes. Source comparison from baseline `caa34f8` confirms `src/studio/tools/tool-editor.tsx` changes only remove the Preview-only Composer Tool fallback and its dirty-state effect; it does not change the Tool editor controls implicated by the six failures. The changed Studio workspace test code updates the stale Release fixture expectation and replaces the old Preview handoff test with handoff-absence and Release-clone assertions. Therefore Attempt 2 introduces no new failing test; the six existing failures remain failures and are not counted as passing.
+4. **Implemented — exact successful validation record.** The following commands passed during Attempt 1 and were not invalidated by this evidence-only Attempt 2:
+
+  - `npm test -- --run tests/test-conversations-screen.test.tsx tests/arch024-preview-cleanup.test.ts tests/studio-workspace.test.tsx -t 'TestConversationsScreen|obsolete Preview UI cleanup|does not expose a Release Composer Preview handoff|keeps Release edit-as-new composer cloning|composes exact published members'` — 3 files, 5 passed.
+  - `npm test -- --run tests/test-conversations-screen.test.tsx tests/arch024-preview-cleanup.test.tsx tests/studio-workspace.test.tsx tests/tool-authoring-screen.test.tsx -t 'TestConversationsScreen|obsolete Preview UI cleanup|does not expose a Release Composer Preview handoff|keeps Release edit-as-new composer cloning|composes exact published members|Tool authoring screen|restores|authoring session'` — 4 files, 8 passed.
+  - `npm run code-runtime:package && npm test -- --run tests/preview-routes.test.ts tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/external-preview.test.ts tests/external-wiring.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/tool-authoring-screen.test.tsx` — 8 files, 115 passed.
+  - `npm run typecheck` — passed.
+  - `npm run lint -- app/preview/page.tsx components/studio-workspace.tsx components/studio-composer-context.tsx src/studio/tools/tool-editor.tsx src/studio/test-conversations/test-conversations-screen.tsx tests/test-conversations-screen.test.tsx tests/arch024-preview-cleanup.test.ts tests/studio-workspace.test.tsx tests/tool-authoring-screen.test.tsx` — zero errors; four warnings remain in unrelated files.
+  - `npm run build` — passed; existing Nunjucks dynamic-dependency warnings only.
+  - `git diff --check` — passed.
+
+  The required unfiltered `tests/studio-workspace.test.tsx` command is explicitly not green: current 7 passed / 6 baseline failures versus pre-task 5 passed / 7 failures. No failed case is represented as passing.
+
 ### Validation Results
 
 - PASS: focused shell/cleanup/Release/Tool Authoring selection: 4 test files, 8 tests passed (remaining tests intentionally skipped by the focused name filter).
@@ -786,7 +814,7 @@ Ready for Review
 - PASS: post-change UI/source audit: no obsolete handoff controls remain in human Preview/Release/Composer UI; the only old-term matches are the new absence assertions, Test Conversations shell/nav copy, and Tool Authoring's unrelated local `setTool` state.
 - PASS: fixture endpoint audit: no `/api/studio/preview/fixtures` consumer remains; `src/commerce/preview/service.ts:listFixtures()` remains as backend-owned code.
 - PASS: retained Tool-test route audit confirms `src/studio/code-response/production-port.ts` calls POST, GET, and cancel; the route tests remain.
-- BLOCKED: full `npm test -- --run tests/studio-workspace.test.tsx`: 7 passed, 6 failed. The failing legacy Tool-editor cases cannot find a `Save draft` button at the Request step (reported at the unchanged test call sites around lines 194 and 232); the Release-specific tests pass. This task does not change Tool editor draft controls. The required Release create/validate, handoff-removal, clone, dirty-navigation-focused checks pass.
+- BLOCKED / BASELINE-VERIFIED: full `npm test -- --run tests/studio-workspace.test.tsx --reporter=json --outputFile=/tmp/arch024-commerce-001-studio-workspace-attempt2.json`: 7 passed, 6 failed with the exact names and errors recorded under Attempt 2 above. The isolated pre-task `caa34f8718423ea8b1692da05d73de63a35c518a` run had the same six failures plus the now-corrected stale Release fixture failure (5 passed, 7 failed). No new failure was introduced.
 
 ### Reference Audit
 
@@ -809,6 +837,7 @@ Required final table:
 
 - `src/studio/tools/tool-editor.tsx` and `tests/tool-authoring-screen.test.tsx` were additional task-owned changes discovered by typecheck and reference tracing: ToolEditor still consumed the removed Preview-only Composer Tool handoff. Only that handoff override/dirty effect was removed; persisted draft and authoring-session behavior were preserved.
 - The full Studio workspace suite has the six Save draft selector failures documented above. They are outside the removed Preview handoff path; no Tool editor control redesign was attempted.
+- Attempt 2 made no source/test change: Architect Review requested durable execution and baseline non-regression evidence only, and the synchronized baseline comparison confirmed no task-introduced regression.
 
 ### Assumptions
 
@@ -816,7 +845,7 @@ Required final table:
 
 ### Unresolved Issues
 
-- The six full `studio-workspace.test.tsx` failures need separate Tool-editor test/UI triage; they do not fail the focused cleanup/Release checks or retained Code Response boundary suites.
+- The six baseline `studio-workspace.test.tsx` failures still need separate Tool-editor/test-fixture triage. They do not fail the focused cleanup/Release checks or retained Code Response boundary suites and are unchanged from the pre-task implementation baseline.
 
 ### Architectural Concerns
 
