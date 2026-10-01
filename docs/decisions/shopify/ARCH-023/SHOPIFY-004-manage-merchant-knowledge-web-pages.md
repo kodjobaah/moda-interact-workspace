@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 51
 executor: copilot
 claimed_at: 2026-09-30T22:53:18Z
@@ -222,11 +222,11 @@ shopId cannot be supplied by browser
 
 ## Work Items
 
-- [ ] Implement current commercial entitlement + merchant activation read model.
-- [ ] Reuse existing FeaturePreferences as the sole Merchant Knowledge activation control.
-- [ ] Implement activation-aware WEB_PAGE source lifecycle and queue decision.
-- [ ] Add Recovery Settings Merchant Knowledge section.
-- [ ] Add tenant/authentication/concurrency tests.
+- [x] Implement current commercial entitlement + merchant activation read model.
+- [x] Reuse existing FeaturePreferences as the sole Merchant Knowledge activation control.
+- [x] Implement activation-aware WEB_PAGE source lifecycle and queue decision.
+- [x] Add Recovery Settings Merchant Knowledge section.
+- [x] Add tenant/authentication/concurrency tests.
 
 ## Dependencies
 
@@ -242,22 +242,22 @@ Resolved Shared release: `@modainteract/moda-interact-shared@1.0.1`.
 
 ## Acceptance Criteria
 
-- [ ] Subscription/current plan grants configuration access but does not activate Merchant Knowledge.
-- [ ] Existing ShopFeaturePreference is the sole merchant activation state.
-- [ ] OFF permits non-destructive source configuration but no immediate processing.
-- [ ] ON permits Background ingestion; Commerce enforcement remains independently owned by COMMERCE-004.
-- [ ] WEB_PAGE lifecycle remains revisioned and queue-loss safe.
-- [ ] No duplicate preference/toggle mechanism exists.
+- [x] Subscription/current plan grants configuration access but does not activate Merchant Knowledge.
+- [x] Existing ShopFeaturePreference is the sole merchant activation state.
+- [x] OFF permits non-destructive source configuration but no immediate processing.
+- [x] ON permits Background ingestion; Commerce enforcement remains independently owned by COMMERCE-004.
+- [x] WEB_PAGE lifecycle remains revisioned and queue-loss safe.
+- [x] No duplicate preference/toggle mechanism exists.
 
 ## Validation
 
-- [ ] focused entitlement/activation/action tests
-- [ ] DB concurrency integration tests
-- [ ] Recovery Settings component/route tests
-- [ ] `npm run typecheck`
-- [ ] changed-file lint/diagnostics
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] focused entitlement/activation/action tests
+- [x] DB concurrency integration tests
+- [x] Recovery Settings component/route tests
+- [x] `npm run typecheck`
+- [x] changed-file lint/diagnostics
+- [x] `npm run build`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -266,21 +266,48 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Not Started
+Implemented for Attempt 1 and submitted to `moda_architect` for review. This is not an architect acceptance decision.
 ### Files Changed
-None.
+- `app/routes.ts`
+- `app/routes/app/recovery-settings/route.tsx`
+- `app/routes/app/recovery-settings/RecoverySettingsView.tsx`
+- `app/components/settings/MerchantKnowledgeSection.tsx`
+- `app/routes/app/merchant-knowledge/{source,reorder,refresh,delete}/route.ts`
+- `app/services/merchant-knowledge/merchant-knowledge-entitlement.server.ts`
+- `app/services/merchant-knowledge/merchant-knowledge.server.ts`
+- `app/services/merchant-knowledge/merchant-knowledge-queue.server.ts`
+- `tests/unit/merchant-knowledge-{entitlement,actions,queue,read-model,section,url-validation}.test.*`
+- `tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts`
 ### Work Completed
-None.
+- Added current-subscription/current-plan entitlement resolution using the Shared C2 schema and `MERCHANT_OPT_IN` Feature state; plan entitlement grants configuration access independently from the merchant preference.
+- Read the canonical `ShopFeaturePreference` and expose plan, activation and effective state. Recovery Settings reuses its existing `FeaturePreferences` checkbox as the only activation control and presents Store Profile, Merchant Knowledge, then existing recovery controls in the required order.
+- Added WEB_PAGE source create/edit/refresh/delete/reorder actions and metadata read model. Operations use the authenticated `settingsAccess` shop, Shop/source row locks, exact ownership checks, current allowed source types, supported language tags, HTTPS syntax validation, revision generations, and collision-safe position rewrites.
+- OFF-state create/edit/refresh leaves durable PENDING revisions and does not enqueue; ON-state revisions use the existing Shared C4 job contract. Queue construction/publication failures are contained after commit. Preference changes do not enumerate sources or enqueue work.
+- The UI remains configurable while OFF, shows plan/source/dormancy and revision/active usage state, and does not expose extracted content or embeddings.
+- Implementation commits: `d2815f8b22a9f906276c45fce64e4a8abea9cd58` and `a33dc681d8e26adefd9b0ce5b759016d5baed5ce`.
+### Launcher Evidence
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-004`, branch `task/ARCH-023-SHOPIFY-004`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-004`, branch `task/ARCH-023-SHOPIFY-004`.
+- Both worktrees were newly created for this task; no other task worktree was reused. Shared workspace/source checkouts were not switched or mutated for task implementation.
+- Start-of-attempt synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` `already-current`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` `already-current`.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` initialized at `2eb17ee910491e8f9df82736fc0a843844415947`.
 ### Validation Results
-None.
+- Focused Merchant Knowledge plus existing feature-preference/Recovery Settings tests: 9 files, 31 tests passed.
+- Disposable PostgreSQL lifecycle/concurrency proof: `tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts`, 5/5 passed. It verified OFF/ON queue behavior, non-destructive opt-out, OFF-state refresh remaining PENDING/un-enqueued, ownership isolation, plan/source validation, concurrent source-cap enforcement and serialized generation increments. Testcontainers used one owned `pgvector/pgvector:pg17` instance, deployed migrations, and removed the container. Colima required per-command `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock` and `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`; no global Docker configuration was changed.
+- `npm run typecheck` — passed after the final implementation/test changes.
+- Changed-file ESLint — passed. ESLint emitted its existing warning that the installed TypeScript 5.9.3 is newer than the parser's declared supported range; no lint findings were reported.
+- `npm run build` — passed. Build emitted dependency annotation/externalization and large-chunk warnings, with no build errors.
+- Changed-file diagnostics — no errors. `git diff --check HEAD~2 HEAD` — passed.
+- Implementation task branch `task/ARCH-023-SHOPIFY-004` was pushed and verified at `a33dc681d8e26adefd9b0ce5b759016d5baed5ce`; implementation worktree is clean.
 ### Deviations
-None.
+The integration proof needed explicit per-command Colima socket settings for Testcontainers. No product-scope or architecture deviations were made.
 ### Assumptions
-None.
+Durable OFF-state PENDING revisions are activated by the existing Background periodic reconciliation after merchant opt-in; Shopify does not add an enqueue-on-enable path, as required by R10.
 ### Unresolved Issues
-None.
+None within this task's scope.
 ### Architectural Concerns
-None.
+None identified. Commerce retrieval enforcement remains owned by COMMERCE-004; ingestion remains Background-owned.
 
 ## Architect Review
 
