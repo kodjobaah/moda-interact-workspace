@@ -9,17 +9,17 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: in_progress
 priority: 70
-executor: null
-claimed_at: null
-attempt: 0
+executor: copilot
+claimed_at: 2026-10-01T23:36:30Z
+attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-006
 enables:
   - ARCH-025-SHOPIFY-008
 created: 2026-10-01
-updated: 2026-10-02
+updated: 2026-10-01
 ---
 
 # Extract hosted plan-change verification workflow
