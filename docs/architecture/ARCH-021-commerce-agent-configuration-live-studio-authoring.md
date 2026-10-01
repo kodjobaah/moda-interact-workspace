@@ -4,12 +4,17 @@ title: CommerceAgent configuration and live Studio authoring
 status: agreed
 coordinator: moda_architect
 created: 2026-09-23
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # ARCH-021: CommerceAgent configuration and live Studio authoring
 
 ## Status
+
+**ARCH-024 supersession note (2026-10-01):** the unstarted ARCH-021 Phase-6
+Feature-composed Preview tasks COMMERCE-105..109, GATEWAY-002 and SYSTEM-TEST-004
+are superseded by ARCH-024. Any older Phase-6 wording elsewhere in this document is
+historical context only.
 
 Agreed — Phase 1, Phase 2, the pre-Phase-3 simplification implementation and the core Phase 3 implementation through COMMERCE-039 are architect-accepted Complete. The terminal simplification system test remains Ready and is intentionally deferred by the developer until the implementation phases are finished; it does not gate implementation. Developer manual validation now has bounded External HTTP follow-up workstreams: Request COMMERCE-040..042 and Response COMMERCE-043..050 are architect-accepted Complete; the shared secure provider-observation primitive COMMERCE-051, Visual inference COMMERCE-052, Automatic Response generation COMMERCE-053 and live-Test backend COMMERCE-054 are Complete; frontend live Test COMMERCE-055 is Ready; and the independent Agent-contract validation/clarity follow-up COMMERCE-056 is Ready. The Test work consumes the already-accepted Request/Response contracts and does not depend on the earlier Request/Response UI task chains or on Automatic generation. None of these follow-ups introduces Phase 2 tab gating. Manual Automatic testing additionally exposed provider-decode diagnostic information loss and stale underlying Response disclosure while Automatic is active; COMMERCE-057 and COMMERCE-058 are now architect-accepted Complete.
 
@@ -1138,13 +1143,13 @@ Implementation tasks:
 | ARCH-021-COMMERCE-103 | moda_commerce | Complete | ARCH-021-COMMERCE-095, ARCH-021-COMMERCE-099 |
 | ARCH-021-COMMERCE-104 | moda_commerce | Complete | ARCH-021-COMMERCE-091 |
 | ARCH-021-COMMERCE-110 | moda_commerce | Complete | ARCH-021-COMMERCE-104 |
-| ARCH-021-COMMERCE-105 | moda_commerce | Complete | ARCH-021-COMMERCE-092 |
-| ARCH-021-COMMERCE-106 | moda_commerce | Pending | ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-105 |
-| ARCH-021-COMMERCE-107 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
-| ARCH-021-COMMERCE-108 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
-| ARCH-021-COMMERCE-109 | moda_commerce | Pending | ARCH-021-COMMERCE-107, ARCH-021-COMMERCE-108 |
-| ARCH-021-GATEWAY-002 | moda_gateway | Pending | ARCH-021-COMMERCE-106, ARCH-021-COMMERCE-109 |
-| ARCH-021-SYSTEM-TEST-004 | moda_system_test | Pending | ARCH-021-COMMERCE-105..109, ARCH-021-GATEWAY-002 |
+| ARCH-021-COMMERCE-105 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-004 |
+| ARCH-021-COMMERCE-106 | moda_commerce | Superseded | Replaced across ARCH-024-COMMERCE-002/007 |
+| ARCH-021-COMMERCE-107 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-005 |
+| ARCH-021-COMMERCE-108 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-006 |
+| ARCH-021-COMMERCE-109 | moda_commerce | Superseded | Replaced by ARCH-024-COMMERCE-001 |
+| ARCH-021-GATEWAY-002 | moda_gateway | Superseded | Replaced by ARCH-024-GATEWAY-001 |
+| ARCH-021-SYSTEM-TEST-004 | moda_system_test | Superseded | ARCH-024 integrated validation deferred |
 | ARCH-021-DATABASE-003 | moda_database | Complete | ARCH-021-DATABASE-002 |
 | ARCH-021-SHARED-001 | moda_shared | Complete | ARCH-020-SHARED-001 |
 | ARCH-021-SHARED-002 | moda_shared | Complete | ARCH-021-SHARED-001 |
@@ -3155,61 +3160,29 @@ Direct phase click and `Next` must share that same admission path. First direct 
 
 COMMERCE-104 is independent of COMMERCE-102/103. SYSTEM-TEST-003 is re-gated behind C104 and remains terminal Feature/Capability validation; no Commerce implementation task depends on the system-test task.
 
-### Phase 6 Feature-composed selected-shop Test Conversations refinement — 2026-09-29
+### Phase 6 superseded by ARCH-024 — 2026-10-01
 
-organised around the older Tool/Release/fixture Preview model. The agreed product
-behaviour is now explicit: the author selects a shop and a set of Features; every direct
-Capability under each selected Feature is part of the test composition. The browser does
-not select Capability IDs, Tool revisions, Model/provider, Prompt revision or credentials.
+The unstarted ARCH-021 Phase-6 Preview/Test Conversation plan is superseded by
+`ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`. The replacement
+architecture broadens the work to Admin-owned Model Availability/Catalogue/Credential
+management, dynamic OpenRouter/LangChain model execution, production Background parity,
+and Feature-composed selected-Shop Test Conversations.
 
-Server composition freezes the exact Feature order, Feature Behaviour, Capabilities and
-current published Tool revisions. Conversation creation independently freezes the
-selected shop's effective Model and published Prompt. Real Tool calls use the same
-production DefinitionExecutor against that selected shop. A running conversation never
-floats to later Feature/Tool/model/prompt changes.
-
-The redundant human-facing Preview paths are removed only after the replacement UI and
-real execution path are both accepted. Deterministic fixture/tool-test backend seams are
-retained only when a concrete automated/internal consumer (including External Code
-Response where applicable) still uses them.
+The following tasks are retained only as historical definitions and MUST NOT execute:
 
 ```text
-COMMERCE-105 (Feature composition) [Ready]
-        |
-        v
-COMMERCE-106 (shop + effective model/prompt freeze)
-        |
-        +---------------------+
-        |                     |
-        v                     v
-COMMERCE-107 (Feature UI)  COMMERCE-108 (real Tool execution)
-        |                     |
-        +----------+----------+
-                   |
-                   v
-COMMERCE-109 (remove redundant human Preview paths)
-                   |
-                   v
-GATEWAY-002 (provider credential wiring / old env removal)
-                   |
-                   v
-SYSTEM-TEST-004 (terminal integrated validation)
+ARCH-021-COMMERCE-105
+ARCH-021-COMMERCE-106
+ARCH-021-COMMERCE-107
+ARCH-021-COMMERCE-108
+ARCH-021-COMMERCE-109
+ARCH-021-GATEWAY-002
+ARCH-021-SYSTEM-TEST-004
 ```
 
-| Task | Owner | Status | Depends On |
-|---|---|---|---|
-| ARCH-021-COMMERCE-105 | moda_commerce | Ready | ARCH-021-COMMERCE-092 |
-| ARCH-021-COMMERCE-106 | moda_commerce | Pending | ARCH-021-COMMERCE-010, ARCH-021-COMMERCE-105 |
-| ARCH-021-COMMERCE-107 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
-| ARCH-021-COMMERCE-108 | moda_commerce | Pending | ARCH-021-COMMERCE-105, ARCH-021-COMMERCE-106 |
-| ARCH-021-COMMERCE-109 | moda_commerce | Pending | ARCH-021-COMMERCE-107, ARCH-021-COMMERCE-108 |
-| ARCH-021-GATEWAY-002 | moda_gateway | Pending | ARCH-021-COMMERCE-106, ARCH-021-COMMERCE-109 |
-| ARCH-021-SYSTEM-TEST-004 | moda_system_test | Pending | ARCH-021-COMMERCE-105..109, ARCH-021-GATEWAY-002 |
-
-COMMERCE-105 is the initial Phase-6 executable frontier. COMMERCE-107 and COMMERCE-108
-may execute in parallel only after COMMERCE-106 is architect-accepted Complete. The
-system-test task is terminal and gates no implementation task.
-COMMERCE-104 is independent of COMMERCE-102/103.
+Accepted ARCH-021 work through COMMERCE-104/110 remains baseline functionality.
+ARCH-024 system-test task materialisation is intentionally deferred to a later architect
+session because final integrated validation overlaps frozen ARCH-023 and upcoming work.
 
 ### COMMERCE-104 Attempt 1 accepted — 2026-09-29
 

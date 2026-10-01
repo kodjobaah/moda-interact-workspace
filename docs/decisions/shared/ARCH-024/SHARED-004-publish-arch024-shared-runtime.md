@@ -1,7 +1,7 @@
 ---
-id: ARCH-024-SHARED-002
+id: ARCH-024-SHARED-004
 architecture_id: ARCH-024
-title: Publish model contracts and OpenRouter runtime
+title: Publish ARCH-024 Shared model and Commerce turn runtime
 task_kind: publication
 domain: shared
 repository: moda-interact-shared
@@ -10,18 +10,25 @@ coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
 status: pending
-priority: 30
+priority: 23
 executor: null
 claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-SHARED-001
-enables: []
-created: 2026-09-30
-updated: 2026-09-30
+  - ARCH-024-SHARED-002
+  - ARCH-024-SHARED-003
+enables:
+  - ARCH-024-ADMIN-001
+  - ARCH-024-COMMERCE-002
+  - ARCH-024-COMMERCE-007
+  - ARCH-024-BACKGROUND-001
+  - ARCH-024-BACKGROUND-002
+created: 2026-10-01
+updated: 2026-10-01
 ---
 
-# Publish model contracts and OpenRouter runtime
+# Publish ARCH-024 Shared model and Commerce turn runtime
 
 ## Architecture
 
@@ -39,13 +46,13 @@ Coordinator:
 
 ## Objective
 
-Publish the architect-accepted ARCH-024-SHARED-001 implementation as the next backward-compatible minor release of `@modainteract/moda-interact-shared`, verify the exact public package identity and entrypoints, then stop before any consumer integration.
+Publish the architect-accepted ARCH-024-SHARED-001, ARCH-024-SHARED-002 and ARCH-024-SHARED-003 implementation set as the next backward-compatible minor release of `@modainteract/moda-interact-shared`, verify the exact public package identity and entrypoints, then stop before any consumer integration.
 
 ## Context
 
-ARCH-024-SHARED-001 adds new public model contracts and a Node-only LangChain/OpenRouter runtime entrypoint. Admin, Commerce and Background must consume one canonical published Shared version; they must not copy these contracts locally or depend on unpublished task-branch source.
+ARCH-024-SHARED-001 adds the model contracts/OpenRouter client, SHARED-002 modularises `runCommerceTurn` around the agreed LangGraph `StateGraph`, and SHARED-003 adds canonical structured runner logging. Admin, Commerce and Background must consume one canonical published Shared version; they must not copy these contracts locally or depend on unpublished task-branch source.
 
-This is a publication gate only. Implementation correctness is established by SHARED-001 and its Architect Review.
+This is a publication gate only. Implementation correctness is established by SHARED-001/002/003 and their Architect Reviews.
 
 At the time this task was authored, `moda-interact-shared/package.json` is `1.0.1`. Adding new backward-compatible public entrypoints/capabilities is a **minor** SemVer change under the repository README. If no intervening Shared release occurs, the target is therefore `1.1.0`.
 
@@ -53,7 +60,7 @@ If the package version has legitimately advanced before this publication task is
 
 ## Scope
 
-- Verify ARCH-024-SHARED-001 is `complete` with an Accepted Architect Review.
+- Verify ARCH-024-SHARED-001, ARCH-024-SHARED-002 and ARCH-024-SHARED-003 are each `complete` with an Accepted Architect Review.
 - Confirm the prepared Shared task branch contains exactly the architect-accepted implementation.
 - Determine the synchronized starting package version.
 - Apply exactly one SemVer **minor** version increment.
@@ -61,7 +68,7 @@ If the package version has legitimately advanced before this publication task is
 - Inspect the publish artifact.
 - Publish the package to the public npm registry.
 - Verify the exact published package version and integrity metadata.
-- Verify the two new public entrypoints from a clean external consumer directory using the exact published version.
+- Verify the model, model/node, runner and logging public entrypoints from a clean external consumer directory using the exact published version.
 - Record the published version for later ARCH-024 consumer tasks.
 
 ## Out of Scope
@@ -71,7 +78,7 @@ If the package version has legitimately advanced before this publication task is
 - LangChain/OpenRouter dependency changes except release metadata already accepted in SHARED-001.
 - Unit/integration test reruns.
 - Typecheck reruns.
-- Production-build reruns solely to revalidate SHARED-001. The package's normal `prepack` build is allowed because it is part of publication mechanics.
+- Production-build reruns solely to revalidate SHARED-001/002/003. The package's normal `prepack` build is allowed because it is part of publication mechanics.
 - Database changes.
 - Admin, Commerce, Background or Gateway dependency updates.
 - Consumer integration.
@@ -86,6 +93,10 @@ Before any version or publication mutation, verify all of the following:
 ```text
 ARCH-024-SHARED-001 status: complete
 ARCH-024-SHARED-001 Architect Review: Accepted
+ARCH-024-SHARED-002 status: complete
+ARCH-024-SHARED-002 Architect Review: Accepted
+ARCH-024-SHARED-003 status: complete
+ARCH-024-SHARED-003 Architect Review: Accepted
 Shared task branch contains the accepted source
 working tree contains no unrelated changes
 ```
@@ -128,7 +139,7 @@ Do not create a Git tag in this task.
 
 ### R3 — Release diff is metadata only
 
-After versioning and before publication, the implementation-source tree must remain identical to the accepted SHARED-001 source.
+After versioning and before publication, the implementation-source tree must remain identical to the accepted SHARED-001/002/003 source.
 
 Normally the only changed release files are:
 
@@ -137,7 +148,7 @@ package.json
 package-lock.json
 ```
 
-If any `src/**`, `scripts/**`, build-config or documentation file changes after the accepted implementation baseline, stop and return the publication problem to `moda_architect`.
+If any `src/**`, `scripts/**`, build-config or documentation file changes after the accepted SHARED-003 implementation baseline, stop and return the publication problem to `moda_architect`.
 
 ### R4 — Inspect the exact publish artifact before publishing
 
@@ -147,18 +158,20 @@ Run:
 npm pack --dry-run
 ```
 
-The artifact must contain JavaScript and declarations for:
+The artifact must contain JavaScript and declarations for the model runtime and modular Commerce runner:
 
 ```text
 dist/commerce/model/index.js
 dist/commerce/model/index.d.ts
 dist/commerce/model/node.js
 dist/commerce/model/node.d.ts
+dist/commerce/runner/index.js
+dist/commerce/runner/index.d.ts
 ```
 
-and existing published Commerce entrypoints must remain present.
+and existing published Commerce/logging entrypoints must remain present.
 
-Do not publish if either ARCH-024 entrypoint is absent.
+Do not publish if either model entrypoint or the Commerce runner entrypoint is absent.
 
 ### R5 — Publish once to the intended public registry
 
@@ -168,7 +181,7 @@ Use exactly:
 npm publish --access public --registry=https://registry.npmjs.org/
 ```
 
-The package's normal `prepack` script may build as part of this command. Do not separately rerun SHARED-001 validation merely because `prepack` builds the package.
+The package's normal `prepack` script may build as part of this command. Do not separately rerun SHARED-001/002/003 validation merely because `prepack` builds the package.
 
 If publication fails before npm accepts the package, correct only an environment/release-mechanics problem that does not require implementation-source changes and retry the same intended version where npm permits it.
 
@@ -208,6 +221,8 @@ Then run a Node ESM process that imports:
 ```text
 @modainteract/moda-interact-shared/commerce/model
 @modainteract/moda-interact-shared/commerce/model/node
+@modainteract/moda-interact-shared/commerce/runner
+@modainteract/moda-interact-shared/logging
 ```
 
 The check must prove at minimum:
@@ -217,6 +232,9 @@ CommerceModelCatalogueEntrySchema is present
 CommerceModelConfigurationSchema is present
 createOpenRouterModelId is present
 OpenRouterModelClient is present
+runCommerceTurn is present
+runnerVersion is present
+createLogger is present
 ```
 
 Do not invoke OpenRouter and do not require an OpenRouter credential for this import test.
@@ -239,14 +257,14 @@ unpublished task branch
 
 ## Work Items
 
-- [ ] Verify SHARED-001 is Complete/Accepted and source is clean.
+- [ ] Verify SHARED-001/002/003 are Complete/Accepted and source is clean.
 - [ ] Read and record the synchronized starting package version.
 - [ ] Compute/apply exactly one minor SemVer increment.
 - [ ] Confirm the release diff contains release metadata only.
-- [ ] Run `npm pack --dry-run` and verify both ARCH-024 public entrypoints/declarations.
+- [ ] Run `npm pack --dry-run` and verify the ARCH-024 model and runner public entrypoints/declarations.
 - [ ] Publish once to the public npm registry.
 - [ ] Verify exact registry version, tarball, shasum, integrity and `latest` tag.
-- [ ] Install the exact published version in a clean disposable consumer and import both new entrypoints.
+- [ ] Install the exact published version in a clean disposable consumer and import model, model/node, runner and logging entrypoints.
 - [ ] Record the exact published version for downstream tasks.
 - [ ] Clean the disposable consumer directory and set the task to review.
 
@@ -258,12 +276,13 @@ Publishes:
 @modainteract/moda-interact-shared
 ```
 
-including the accepted SHARED-001 public paths:
+including the accepted ARCH-024 public paths:
 
 ```text
 @modainteract/moda-interact-shared/commerce/model
 @modainteract/moda-interact-shared/commerce/model/node
 @modainteract/moda-interact-shared/commerce/runner
+@modainteract/moda-interact-shared/logging
 ```
 
 No new contract is defined by this publication task.
@@ -271,21 +290,23 @@ No new contract is defined by this publication task.
 ## Dependencies
 
 - ARCH-024-SHARED-001
+- ARCH-024-SHARED-002
+- ARCH-024-SHARED-003
 
 ## Enables
 
-None currently. Later ARCH-024 consumer tasks must depend on SHARED-002 once those task definitions are materialised.
+None currently. ARCH-024 Admin/Commerce/Background consumer tasks depend on this SHARED-004 publication gate and must install the exact version recorded here.
 
 ## Acceptance Criteria
 
-- [ ] SHARED-001 was Complete and Accepted before any release mutation.
+- [ ] SHARED-001, SHARED-002 and SHARED-003 were each Complete and Accepted before any release mutation.
 - [ ] The package version advanced by exactly one minor SemVer increment from the synchronized starting version.
-- [ ] Only authorised release metadata changed after the accepted implementation baseline.
-- [ ] `npm pack --dry-run` contains both model entrypoints and declarations.
+- [ ] Only authorised release metadata changed after the accepted SHARED-003 implementation baseline.
+- [ ] `npm pack --dry-run` contains model, model/node and runner JavaScript/declarations and retains the existing logging entrypoint.
 - [ ] Publication to the public npm registry succeeded.
 - [ ] The exact published version is visible in registry metadata.
 - [ ] `dist.tarball`, `dist.shasum` and `dist.integrity` are recorded.
-- [ ] A clean external consumer installed the exact published version and successfully imported both new entrypoints.
+- [ ] A clean external consumer installed the exact published version and successfully imported model, model/node, runner and logging entrypoints.
 - [ ] No implementation source, Admin, Commerce or Background consumer code was changed by this publication task.
 - [ ] The exact version required by later ARCH-024 consumers is recorded in the Completion Report.
 
@@ -309,11 +330,11 @@ git diff --check
 
 Also perform the R7 clean-consumer exact-version import test.
 
-Do **not** rerun SHARED-001's unit tests, typecheck or explicit production build as publication validation.
+Do **not** rerun SHARED-001/002/003 unit tests, typecheck or explicit production build as publication validation.
 
 Required publication evidence:
 
-- [ ] SHARED-001 prerequisite acceptance confirmed
+- [ ] SHARED-001/002/003 prerequisite acceptance confirmed
 - [ ] starting version recorded
 - [ ] exact minor target version recorded
 - [ ] publish artifact inspected
@@ -331,7 +352,7 @@ Do not update Admin, Commerce, Background, Gateway or any other consumer depende
 
 ## Implementation Notes
 
-This task is intentionally release-only. If publication reveals that SHARED-001 source must change, do not fix it here. Stop and return the implementation issue to `moda_architect` so SHARED-001 can be reopened/corrected under the normal review protocol.
+This task is intentionally release-only. If publication reveals that accepted SHARED-001/002/003 source must change, do not fix it here. Stop and return the implementation issue to `moda_architect` so the owning implementation task (SHARED-001, SHARED-002 or SHARED-003) can be reopened/corrected under the normal review protocol.
 
 ## Completion Report
 

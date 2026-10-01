@@ -16,12 +16,12 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
-  - ARCH-024-SHARED-002
+  - ARCH-024-SHARED-004
   - ARCH-024-COMMERCE-001
 enables:
   - ARCH-024-COMMERCE-003
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Resolve effective available and active Commerce model
@@ -170,13 +170,13 @@ Additional files may be changed only when required to consume the accepted Datab
 This task MUST:
 
 1. update the nested `database/` gitlink to the architect-accepted, merged ARCH-024-DATABASE-001 database commit through the normal repository-task workflow;
-2. update `@modainteract/moda-interact-shared` to the **exact version published by ARCH-024-SHARED-002**;
+2. update `@modainteract/moda-interact-shared` to the **exact version published by ARCH-024-SHARED-004**;
 3. update the Commerce lockfile using the normal package manager;
 4. run Prisma generation from the accepted nested database schema.
 
 Do not edit the nested database schema in this task.
 
-Do not use a local Shared checkout, npm link, file dependency or workspace borrowing in place of the published SHARED-002 package.
+Do not use a local Shared checkout, npm link, file dependency or workspace borrowing in place of the published SHARED-004 package.
 
 ## Out of Scope
 
@@ -731,7 +731,7 @@ Do not reuse an existing non-disposable database target.
 ## Work Items
 
 - [ ] Consume the architect-accepted ARCH-024 database gitlink without editing nested schema.
-- [ ] Consume the exact SHARED-002 published package version and synchronized lockfile.
+- [ ] Consume the exact SHARED-004 published package version and synchronized lockfile.
 - [ ] Replace local closed provider/environment contract duplication with canonical Shared model contracts.
 - [ ] Add `AvailableCommerceModel`.
 - [ ] Add `model-availability.ts` with the exact three domain functions from R3.
@@ -757,7 +757,7 @@ Do not reuse an existing non-disposable database target.
 @modainteract/moda-interact-shared/commerce/model
 ```
 
-The exact package version is the version recorded as successfully published by `ARCH-024-SHARED-002`.
+The exact package version is the version recorded as successfully published by `ARCH-024-SHARED-004`.
 
 ### Commerce-local available model
 
@@ -804,7 +804,7 @@ No public merchant route is produced.
 ## Dependencies
 
 - `ARCH-024-DATABASE-001`
-- `ARCH-024-SHARED-002`
+- `ARCH-024-SHARED-004`
 - `ARCH-024-COMMERCE-001`
 
 ## Enables
@@ -814,7 +814,7 @@ No public merchant route is produced.
 ## Acceptance Criteria
 
 - [ ] Commerce consumes the accepted ARCH-024 database schema through its nested database gitlink.
-- [ ] Commerce consumes the exact published SHARED-002 package version rather than a local Shared checkout.
+- [ ] Commerce consumes the exact published SHARED-004 package version rather than a local Shared checkout.
 - [ ] No Commerce-local `OPENAI | GROQ` provider union remains in the model-selection/resolution boundary.
 - [ ] Platform available-model reads return only valid enabled Platform entries from enabled Platform Availability.
 - [ ] Effective Shop available-model reads equal Platform entries plus exact-Shop entries and exclude every other Shop.

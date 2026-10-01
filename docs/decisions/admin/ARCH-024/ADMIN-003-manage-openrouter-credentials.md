@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
-  - ARCH-024-SHARED-002
+  - ARCH-024-SHARED-004
   - ARCH-024-ADMIN-002
 enables:
   - ARCH-024-COMMERCE-007
@@ -221,7 +221,7 @@ Do not modify the database schema/migration inside this task.
 Before implementation:
 
 1. synchronize the nested `database/` submodule to the architect-accepted `ARCH-024-DATABASE-001` implementation;
-2. retain the exact `@modainteract/moda-interact-shared` version already adopted through `ARCH-024-SHARED-002` / `ARCH-024-ADMIN-002`;
+2. retain the exact `@modainteract/moda-interact-shared` version already adopted through `ARCH-024-SHARED-004` / `ARCH-024-ADMIN-002`;
 3. confirm `ARCH-024-ADMIN-002` is architect-accepted Complete and retain the existing Availability + Catalogue routes/navigation;
 4. regenerate Prisma:
 
@@ -1095,7 +1095,7 @@ No secret/envelope property may be added to that result.
 ## Dependencies
 
 - `ARCH-024-DATABASE-001`
-- `ARCH-024-SHARED-002`
+- `ARCH-024-SHARED-004`
 - `ARCH-024-ADMIN-002`
 
 ## Enables
@@ -1273,7 +1273,7 @@ None.
 ### Assumptions
 
 - `ARCH-024-DATABASE-001` supplies `CommerceOpenRouterCredential` and required credential audit actions.
-- `ARCH-024-SHARED-002` supplies the accepted Shared Commerce package, including canonical JSON support.
+- `ARCH-024-SHARED-004` supplies the accepted Shared Commerce package, including canonical JSON support.
 - `ARCH-024-ADMIN-002` has already established the `Commerce models` Admin navigation group.
 - A later Gateway task will wire the existing Commerce credential keyring variables to the Admin runtime; source implementation must fail closed until that configuration exists.
 

@@ -1349,46 +1349,20 @@ Every SYSTEM-TEST-003 dependency is now Complete, so SYSTEM-TEST-003 is **Ready*
 
 ## Phase 6 — Feature-composed selected-shop Test Conversations — 2026-09-29
 
-Product decision: Test Conversations is Feature-composed. Selecting a Feature means **all direct Capabilities under that Feature**; there is no per-Capability exclusion. The browser submits Feature IDs and selected shop ID only. Commerce resolves Capabilities/Tool revisions and effective Agent Configuration server-side and freezes them when the conversation starts.
+Historical ARCH-021 Phase-6 product plan (now superseded by ARCH-024): Test Conversations would have been Feature-composed with all direct Capabilities under each selected Feature. Do not execute COMMERCE-105..109.
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [COMMERCE-105](COMMERCE-105-resolve-feature-composed-preview-selections.md) | Resolve ordered selected Features to every direct Capability, exact current published Tool revisions and one Feature Behaviour entry per Feature | Ready | COMMERCE-092 |
-| [COMMERCE-106](COMMERCE-106-freeze-selected-shop-agent-configuration-in-preview.md) | Require the selected shop and freeze its effective Model/Prompt into the Preview conversation | Pending | COMMERCE-010, COMMERCE-105 |
-| [COMMERCE-107](COMMERCE-107-build-feature-composed-test-conversations-ui.md) | Replace Release/fixture composition controls with selected-shop multi-Feature Test Conversations UI | Pending | COMMERCE-105, COMMERCE-106 |
-| [COMMERCE-108](COMMERCE-108-execute-feature-preview-tools-against-selected-shop.md) | Execute frozen Feature Tools through the production DefinitionExecutor against the selected shop | Pending | COMMERCE-105, COMMERCE-106 |
-| [COMMERCE-109](COMMERCE-109-remove-redundant-human-facing-preview-functionality.md) | Delete obsolete Tool/Release/Fixture human Preview paths while retaining fixture seams with concrete internal/test consumers | Pending | COMMERCE-107, COMMERCE-108 |
+| [COMMERCE-105](COMMERCE-105-resolve-feature-composed-preview-selections.md) | Historical ARCH-021 Phase-6 Feature composition | Superseded by ARCH-024-COMMERCE-004 | - |
+| [COMMERCE-106](COMMERCE-106-freeze-selected-shop-agent-configuration-in-preview.md) | Historical selected-shop Model/Prompt Preview configuration | Superseded by ARCH-024 | - |
+| [COMMERCE-107](COMMERCE-107-build-feature-composed-test-conversations-ui.md) | Historical Feature-composed Test Conversations UI | Superseded by ARCH-024-COMMERCE-005 | - |
+| [COMMERCE-108](COMMERCE-108-execute-feature-preview-tools-against-selected-shop.md) | Historical selected-shop Preview Tool execution | Superseded by ARCH-024-COMMERCE-006 | - |
+| [COMMERCE-109](COMMERCE-109-remove-redundant-human-facing-preview-functionality.md) | Historical human Preview cleanup | Superseded by ARCH-024-COMMERCE-001 | - |
 
-Execution graph:
+Execution state:
 
 ```text
-COMMERCE-105
-     |
-     v
-COMMERCE-106
-     |
-     +----------+
-     |          |
-     v          v
-COMMERCE-107  COMMERCE-108
-     |          |
-     +----+-----+
-          |
-          v
-COMMERCE-109
-          |
-          v
-GATEWAY-002
-          |
-          v
-SYSTEM-TEST-004
+COMMERCE-105..109 -> Superseded
 ```
 
-COMMERCE-105 is **Ready** because COMMERCE-092 is architect-accepted Complete. The remaining Phase-6 Commerce tasks stay Pending until their declared dependencies are Complete. C107/C108 are intentionally parallel after C106. C109 is the explicit cleanup/subtractive gate requested during manual validation; obsolete UI is deleted rather than hidden behind a mode flag.
-`ARCH-021-SYSTEM-TEST-003` was re-gated on COMMERCE-104 so terminal Feature/Capability validation would run only after this direct-phase correction was architect-accepted.
-
-### COMMERCE-104 Attempt 1 accepted — 2026-09-29
-
-COMMERCE-104 is **Complete / Accepted, Attempt 1**. Tool and Review now become directly clickable from current first-entry readiness, direct click and Next share the same admission path, historical unlock remains monotonic, and final Create stays gated by the current candidate. Navigation remains browser-local and zero-write.
-
-All SYSTEM-TEST-003 dependencies are now Complete, so SYSTEM-TEST-003 is **Ready** for terminal validation.
+Do not execute these tasks. ARCH-024 owns the replacement model/runtime/Test Conversation architecture.

@@ -19,7 +19,7 @@ depends_on:
 enables:
   - ARCH-024-SHARED-002
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Implement model contracts and OpenRouter LangChain runtime
@@ -40,7 +40,7 @@ Coordinator:
 
 ## Objective
 
-Publish one bounded Shared implementation that defines the canonical ARCH-024 model/availability/configuration contracts and provides a thin Node-only LangChain `ChatOpenRouter` integration that satisfies the existing Commerce runner model interface without introducing a second agent orchestration framework.
+Publish one bounded Shared implementation that defines the canonical ARCH-024 model/availability/configuration contracts and provides a thin Node-only LangChain `ChatOpenRouter` integration that satisfies the existing Commerce runner model interface without changing Commerce turn orchestration in this task. The dependent SHARED-002 task owns the LangGraph orchestration refactor.
 
 ## Context
 
@@ -70,7 +70,7 @@ export type ModelStep = {
 };
 ```
 
-Do not replace that contract with LangChain types. LangChain provides the standard chat-model implementation underneath this boundary; `runCommerceTurn` remains the CommerceAgent orchestration loop for ARCH-024. LangGraph is explicitly not introduced by this task.
+Do not replace that contract with LangChain types. LangChain provides the standard chat-model implementation underneath this boundary. This task MUST leave the existing `runCommerceTurn` orchestration behaviour intact so ARCH-024-SHARED-002 can refactor that already-tested boundary to LangGraph independently.
 
 OpenRouter's durable model identity is the string:
 
@@ -115,7 +115,7 @@ This task owns all of the following in `moda-interact-shared`:
 - Test Conversation composition.
 - Tool execution.
 - Platform/Shop Instructions.
-- LangGraph, LangChain agents, checkpoints, memory or durable orchestration.
+- LangGraph orchestration, LangChain agents, checkpoints, memory or durable orchestration. ARCH-024-SHARED-002 owns the separate LangGraph runner refactor after this task is architect-accepted.
 - OpenRouter model discovery/catalogue synchronization.
 - Live OpenRouter integration tests.
 - Arbitrary endpoint/base-URL configuration.
@@ -709,7 +709,7 @@ LangChain durable threads
 another agent/model loop
 ```
 
-A future architecture may decide whether to replace `runCommerceTurn` orchestration with LangGraph. ARCH-024-SHARED-001 does not make that decision implicitly.
+ARCH-024-SHARED-002 owns the agreed low-level LangGraph `StateGraph` refactor. This task MUST NOT pre-empt that work or change runner behaviour while introducing the model client.
 
 ### R17 — Tests use an internal factory seam; no live provider calls
 
@@ -865,7 +865,7 @@ DATABASE-001 establishes the durable provider/providerModelId, configuration env
 
 - ARCH-024-SHARED-002
 
-Consumer tasks are intentionally not listed here until their ARCH-024 task definitions are materialised. They must consume SHARED-002's published package, not unpublished local Shared source.
+Consumer tasks are intentionally not listed here until their ARCH-024 task definitions are materialised. They must consume the combined package published by ARCH-024-SHARED-004, not unpublished local Shared source.
 
 ## Acceptance Criteria
 
@@ -882,7 +882,7 @@ Consumer tasks are intentionally not listed here until their ARCH-024 task defin
 - [ ] Credential, model identity, messages, Tools, Tool policy, token budget and cancellation remain runtime authoritative.
 - [ ] Tool results remain data-only and do not become trusted instructions.
 - [ ] LangChain/OpenRouter types do not leak into `./commerce/model` or existing runner contracts.
-- [ ] LangGraph is not introduced.
+- [ ] LangGraph is not introduced by SHARED-001; runner orchestration remains unchanged for the dependent SHARED-002 task.
 - [ ] Provider/runtime errors are bounded and do not reveal credentials or full conversation payloads.
 - [ ] Focused tests cover every item in R17 with no live provider call.
 - [ ] Clean-entrypoint validation passes.

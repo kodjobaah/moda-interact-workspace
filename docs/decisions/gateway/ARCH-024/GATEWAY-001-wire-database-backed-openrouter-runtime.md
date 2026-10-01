@@ -18,10 +18,8 @@ depends_on:
   - ARCH-020-GATEWAY-003
   - ARCH-024-ADMIN-003
   - ARCH-024-COMMERCE-007
-  - ARCH-024-BACKGROUND-001
-enables:
-  - ARCH-024-SYSTEM-TEST-002
-  - ARCH-024-SYSTEM-TEST-003
+  - ARCH-024-BACKGROUND-002
+enables: []
 created: 2026-10-01
 updated: 2026-10-01
 ---
@@ -804,8 +802,7 @@ Application repositories own normalization from deployment environment name to `
 
 ## Enables
 
-- `ARCH-024-SYSTEM-TEST-002`
-- `ARCH-024-SYSTEM-TEST-003`
+None in this architecture session. Terminal ARCH-024 integrated system-test task materialisation is deliberately deferred to a later architecture session.
 
 ## Acceptance Criteria
 
@@ -911,7 +908,7 @@ Do not:
 - deploy/sync the Blueprint to Render;
 - populate real Render secret values;
 - create an OpenRouter credential row;
-- start SYSTEM-TEST tasks;
+- invent or start terminal ARCH-024 system-test tasks;
 - merge implementation branches;
 - push main;
 - modify another repository to work around missing application capability.
@@ -1062,4 +1059,4 @@ Awaiting implementation.
 
 ### Follow-up
 
-After acceptance, reevaluate readiness of the terminal ARCH-024 system-test tasks. Do not launch them automatically; developer manual validation may occur first.
+After acceptance, return control to `moda_architect`. Terminal integrated system-test task materialisation is deliberately deferred to a later architecture session; do not invent or launch one from this task.

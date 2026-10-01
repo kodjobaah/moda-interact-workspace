@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-COMMERCE-109
 architecture_id: ARCH-021
-title: Remove redundant human-facing Preview functionality
+title: Superseded - human Preview cleanup
 task_kind: implementation
 domain: commerce
 repository: moda-interact-commerce
@@ -9,21 +9,22 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 103
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-021-COMMERCE-107
-  - ARCH-021-COMMERCE-108
-enables:
-  - ARCH-021-GATEWAY-002
+depends_on: []
+enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-10-01
+superseded_by: ARCH-024-COMMERCE-001
 ---
 
 # Remove redundant human-facing Preview functionality
+
+> **Superseded 2026-10-01. Do not execute.** ARCH-024-COMMERCE-001 replaces this unstarted cleanup task and intentionally runs cleanup first.
+> The remaining content is retained as historical design context only.
 
 ## Architecture
 

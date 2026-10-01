@@ -16,11 +16,11 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-DATABASE-001
-  - ARCH-024-SHARED-002
+  - ARCH-024-SHARED-004
 enables:
   - ARCH-024-ADMIN-002
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Administer Commerce model availability
@@ -118,7 +118,7 @@ shopId
 
 The database rejects Availability deletion.
 
-ARCH-024-SHARED-001/002 publishes the canonical runtime-safe `CommerceModelAvailability` contract. Admin MUST consume the exact published Shared contract rather than inventing a structurally similar local cross-service Availability type.
+ARCH-024-SHARED-001 defines the canonical runtime-safe `CommerceModelAvailability` contract and ARCH-024-SHARED-004 publishes the combined accepted Shared package. Admin MUST consume the exact published Shared contract rather than inventing a structurally similar local cross-service Availability type.
 
 The current Admin application already provides the required platform patterns:
 
@@ -196,7 +196,7 @@ Do not modify the database schema/migration inside this task.
 Before implementation:
 
 1. synchronize the nested `database/` submodule to the architect-accepted `ARCH-024-DATABASE-001` implementation;
-2. update `@modainteract/moda-interact-shared` to the exact version published and architect-accepted by `ARCH-024-SHARED-002`;
+2. update `@modainteract/moda-interact-shared` to the exact version published and architect-accepted by `ARCH-024-SHARED-004`;
 3. regenerate Prisma using the repository's declared command:
 
 ```bash
@@ -937,7 +937,7 @@ The database identity guard remains authoritative and Admin must not attempt to 
 ## Work Items
 
 - [ ] Synchronize the Admin database submodule to the architect-accepted `ARCH-024-DATABASE-001` commit.
-- [ ] Consume the exact Shared package version published by `ARCH-024-SHARED-002`.
+- [ ] Consume the exact Shared package version published by `ARCH-024-SHARED-004`.
 - [ ] Run Prisma validate/generate before implementing the Admin model layer.
 - [ ] Add `model-availability-validation.ts` with the exact two input parsers.
 - [ ] Add `model-availability.ts` with the exact read model, Shop candidate search and two mutation kinds.
@@ -960,7 +960,7 @@ The database identity guard remains authoritative and Admin must not attempt to 
 
 Published by:
 
-`ARCH-024-SHARED-002`
+`ARCH-024-SHARED-004`
 
 Package:
 
@@ -1033,7 +1033,7 @@ DISABLE_MODEL_AVAILABILITY
 ## Dependencies
 
 - `ARCH-024-DATABASE-001`
-- `ARCH-024-SHARED-002`
+- `ARCH-024-SHARED-004`
 
 Both dependencies MUST be `complete` and architect-accepted before this task becomes Ready.
 
