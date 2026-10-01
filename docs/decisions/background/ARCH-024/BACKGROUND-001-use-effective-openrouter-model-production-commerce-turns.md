@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 55
-executor: copilot
-claimed_at: 2026-10-01T18:46:26Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-DATABASE-001
@@ -1232,24 +1232,54 @@ None identified. Awaiting `moda_architect` review and acceptance decision.
 
 ### Review Status
 
-Changes Requested
+Accepted — Attempt 2
 
 ### Review Notes
 
-Attempt 1 implementation review found the production model/runtime design architecturally conformant in the inspected source: the resolver uses one `REPEATABLE READ` decision snapshot and exact `SHOP -> PRICING_PLAN -> PLATFORM` precedence; model identity/configuration is fixed once per turn; the current encrypted OpenRouter credential is resolved for every model invocation; the Shared `CommerceModelInvoker`/`OpenRouterModelClient` boundary is consumed; host Shop ID/domain mismatch is denied before model invocation; the obsolete conversational Groq provider is removed while Groq transcription remains; and the MCP/runner boundary is preserved.
+#### Attempt 2 review — Accepted — 2026-10-01
 
-Acceptance is withheld for durable task-evidence deficiencies. These corrections are evidence/reconciliation work unless the requested baseline comparison reveals an implementation regression.
+Reviewed implementation `9304da2599800c63b2b649dd7a414286859faeac` and the submitted
+Attempt 2 parent-task evidence against the ARCH-024 BACKGROUND-001 task contract, the parent
+architecture and the Attempt 1 correction contract. Attempt 2 is accepted.
 
-**A1-R1 — Complete the authoritative task checklists before resubmission.** The task is in `review`, but every Work Item, Acceptance Criterion and Validation checkbox remains unchecked. Reconcile those sections to the work actually completed. Do not check the repository-wide test-suite item unless A1-R3 establishes that the submitted implementation introduced no new or worsened failure. The task must not return to `review` with required checklist state knowingly incomplete.
+The Attempt 1 implementation conclusions remain valid. Production CommerceAgent execution resolves
+one effective model from a single `REPEATABLE READ` decision snapshot using exact
+`SHOP -> current PRICING_PLAN -> PLATFORM` precedence; the selected model identity/configuration is
+fixed for a turn; each model invocation resolves/decrypts the current environment OpenRouter
+credential and constructs the published Shared client; canonical Shop ID/domain mismatch is denied
+before model invocation; the obsolete conversational Groq provider is removed while Groq speech
+transcription remains; and the existing Background ordering/admission/MCP boundary is preserved.
 
-**A1-R2 — Record the prepared-launch/worktree evidence in the Completion Report.** Add the launcher-resolved canonical workspace root, dedicated parent task worktree, dedicated `moda-interact-background` implementation worktree, exact `task/ARCH-024-BACKGROUND-001` branches, start-of-attempt synchronization evidence, recursive implementation-submodule materialisation evidence, accepted database gitlink identity, exact Shared `1.1.0` consumption, implementation/report commit identities, remote-head equality and final clean-worktree evidence. The prepared launcher packet is valid evidence, but the Completion Report must preserve it durably.
+Attempt 2 closes the evidence/reconciliation requirements. All Work Items, Acceptance Criteria and
+Validation checklists are complete. The Completion Report records the launcher-resolved canonical
+workspace, dedicated parent and implementation task worktrees, matching task branches,
+start-of-attempt synchronization, recursive submodule materialisation, accepted database gitlink,
+exact Shared `1.1.0` consumption, implementation/report publication evidence and clean-worktree /
+remote-equality evidence. Independent comparison of the submitted Attempt 1 and Attempt 2 archives
+confirms there is no file delta under `moda-interact-background/`; implementation remains at
+`9304da2599800c63b2b649dd7a414286859faeac`.
 
-**A1-R3 — Prove the nine repository-suite failures are not regressions.** The Completion Report records `95` test files passed, `15` skipped, `5` failed and `9` failing tests, but there is no durable baseline ID and the exact failing test names/results are not recorded. Run the same full repository test command at the synchronized pre-task implementation baseline under the same toolchain/dependency/environment conditions, record both baseline and current failing test names/results, and show that the current implementation introduces no new or worsened failure. This comparison must specifically identify the observability timeout because this task changed Shared/runtime observability-adjacent test/dependency state. If the baseline is equivalent or worse and task-owned focused validation remains green, no source churn is required. If any current failure is new or worsened, correct the responsible source/test within this same task and rerun the required validation.
+The repository-wide non-regression proof is sufficient. The synchronized pre-task baseline
+`db13625ae23a23b3ba853087a843e551d7ef04fe` produced 9 failing tests, while the latest current run
+produced 8. Every persistent current failure matches the corresponding baseline test and outcome.
+The baseline-only stale Shared-version assertion is corrected for the required `1.1.0` dependency.
+The one observability child-process timeout observed in an earlier current run did not reproduce in
+the latest full-suite rerun or the focused 10-test observability run, so it is not a persistent
+regression. The non-clean full suite therefore does not block this task.
 
-No new task is required. `ARCH-024-BACKGROUND-002` and `ARCH-024-GATEWAY-001` remain gated until BACKGROUND-001 is architect-accepted Complete.
+#### Attempt 1 review — Changes Requested — 2026-10-01
+
+Attempt 1 found the production model/runtime implementation architecturally conformant but withheld
+acceptance for durable task evidence. The correction contract required completed authoritative task
+checklists, launcher/worktree/synchronization/submodule evidence and deterministic pre-task-baseline
+proof for the reported full-suite failures, with implementation changes only if that comparison
+revealed a regression. Attempt 2 satisfies that contract without implementation churn.
 
 ### Reviewed Files
 
+Implementation/review evidence:
+
+- complete `moda-interact-background/` Attempt 1 -> Attempt 2 tree comparison (no changes)
 - `src/commerce/model-environment.ts`
 - `src/commerce/model-resolution.ts`
 - `src/commerce/credential-keyring.ts`
@@ -1260,21 +1290,51 @@ No new task is required. `ARCH-024-BACKGROUND-002` and `ARCH-024-GATEWAY-001` re
 - `src/commerce/host.ts`
 - `src/services/checkout-recovery.service.ts`
 - `scripts/run-arch024-production-model-disposable.mjs`
-- focused model/credential/agent/host tests and Background-owned runtime documentation
-- task Completion Report and ARCH-024 parent/background coordination documents
+- focused model/credential/agent/host tests and Background runtime documentation
+
+Parent workspace:
+
+- `docs/decisions/background/ARCH-024/BACKGROUND-001-use-effective-openrouter-model-production-commerce-turns.md`
+- `docs/decisions/background/ARCH-024/BACKGROUND-002-retire-redundant-commerce-agent-langgraph-wrapper.md`
+- `docs/decisions/background/ARCH-024/_index.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 
 ### Validation Reviewed
 
-Reviewed the submitted evidence for Prisma validation/generation, focused model tests, host integration tests, speech-transcription regression, disposable PostgreSQL proof, production build, static cleanup assertions, changed-file diagnostics and `git diff --check`. Static source inspection independently confirmed exact Shared `1.1.0` direct consumption, removal of the Background `@ai-sdk/groq` dependency/provider, absence of direct production `@langchain/openrouter`/`@langchain/core` imports, and retention of `GROQ_API_KEY` for speech transcription.
-
-The repository-wide suite is not accepted as baseline-equivalent yet because A1-R3 evidence is missing.
+- Verified every Work Item, Acceptance Criterion and Validation checkbox is reconciled.
+- Verified the Completion Report contains the requested launcher/worktree, branch,
+  synchronization, recursive-submodule, database-gitlink, Shared-version and publication evidence.
+- Compared the submitted Attempt 1 and Attempt 2 `moda-interact-background/` trees: no source/test
+  delta.
+- Reviewed the exact full-suite comparison: baseline 9 failures; current 8 failures; every
+  persistent current failure is baseline-equivalent and no new/worsened failure remains.
+- Reviewed the observability timeout reconciliation: not reproducible in the latest full-suite run
+  or focused 10-test run.
+- Reviewed the recorded Prisma validate/generate, focused model tests, host integration, Groq
+  transcription regression, disposable PostgreSQL proof, production build, static cleanup
+  assertions, changed-file diagnostics and `git diff --check` results.
+- The submitted review archive contains no usable Git metadata or installed dependency tree, so
+  remote heads and Node validation commands were not independently re-executed here; the durable
+  launcher/validation evidence and unchanged Attempt 2 implementation satisfy the correction
+  contract.
 
 ### Architecture Conformance
 
-Implementation design: conformant in the inspected task-owned runtime paths.
-
-Task lifecycle/evidence: not yet conformant because required checklists and prepared-launch evidence are not durably reconciled, and the non-clean repository suite lacks deterministic baseline-parity proof.
+Conforms. BACKGROUND-001 now implements the accepted production model-resolution and OpenRouter
+runtime boundary while preserving Background ownership of conversation execution, admission,
+ordering and hardened MCP Tool transport. Attempt 2 resolves the only outstanding review issues:
+durable execution evidence and baseline non-regression proof.
 
 ### Follow-up
 
-Reclaim the same task for Attempt 2. Treat A1-R1/A1-R2 as report/evidence reconciliation. Treat A1-R3 as evidence-only unless the baseline comparison proves a regression; only then make the minimum source/test correction required and rerun validation. Do not begin BACKGROUND-002 or GATEWAY-001.
+`ARCH-024-BACKGROUND-001` is **Complete / Accepted at Attempt 2**.
+
+Dependency reconciliation promotes exactly:
+
+```text
+ARCH-024-BACKGROUND-002 -> Ready
+```
+
+`ARCH-024-GATEWAY-001` remains Pending because `ARCH-024-ADMIN-003` and
+`ARCH-024-COMMERCE-007` are not Complete. No downstream implementation is started implicitly by
+this review.
