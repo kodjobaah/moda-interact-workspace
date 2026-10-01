@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 52
 executor: null
 claimed_at: null
@@ -583,6 +583,43 @@ Earlier task implementation on the same task branch remains unchanged, including
 - Submitted implementation HEAD: `244f3f60035c3651168571869234ab23654854d3`, pushed to `origin/task/ARCH-023-SHOPIFY-005`. The parent Completion Report is pushed on the same task branch; the report commit is the pushed parent branch HEAD at submission, following claim HEAD `79bbde8554d7ae5c260b86664810276b3b29caa0`. Its exact commit SHA is included in the execution handoff.
 
 ## Architect Review
+
+### Review Status
+Changes Requested — Attempt 2
+
+### Review Notes
+
+The Attempt 1 implementation corrections are substantively closed. The create-only R2 upload contract now signs `IfNoneMatch: "*"`, returns exact browser headers `{ "Content-Type": <validated>, "If-None-Match": "*" }`, and the browser forwards both values unchanged. The task-owned disposable PostgreSQL suite is also recorded as 4 passed / 0 skipped. No implementation-source correction is requested.
+
+Attempt 2 cannot be accepted yet because the Completion Report still omits three mandatory physical-isolation attestations required verbatim by `docs/agent-worktree-isolation-policy.md`:
+
+```text
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+```
+
+The report already contains the canonical parent/implementation paths, branches, four start-of-attempt synchronization outcomes, recursive submodule state and submitted implementation head. Branch cleanliness and remote alignment do not replace the three missing attestations; the policy explicitly classifies missing physical-isolation evidence as workflow non-conformance.
+
+Attempt 3 is therefore evidence-only unless synchronization or refreshed validation exposes an actual regression. Reclaim through `/moda-task ARCH-023-SHOPIFY-005`, preserve the current implementation, rerun the task-required validation from the canonical prepared worktrees, and record the three missing attestations plus final submitted heads in the Completion Report. Deployed R2 CORS/preflight and live replay rejection remain owned by `GATEWAY-001` / `SYSTEM-TEST-002`.
+
+### Reviewed Files
+
+Reviewed the Attempt 2 task/report, `r2-client.server.ts`, upload intent/finalization service, browser upload form, focused presigner/browser regressions, PostgreSQL transaction harness, canonical D23 contract and the governing worktree-isolation policy.
+
+### Validation Reviewed
+
+Accepted as supporting implementation evidence: focused upload/browser tests 14/14, disposable PostgreSQL transaction cases 4/4 with 0 skipped, `npm run typecheck`, production build, changed-file ESLint/diagnostics and `git diff --check`. The repository-wide 17 unrelated lint errors remain non-blocking.
+
+### Architecture Conformance
+
+Implementation conformant. Workflow evidence incomplete only. The signed create-only PUT matches the amended R5/D23 boundary, while deployed Cloudflare CORS and same-key replay rejection remain correctly deferred to Gateway/System Test.
+
+### Follow-up
+
+Return the same task to Ready at Attempt 2 with claim cleared. Reclaim normally as Attempt 3. Do not alter implementation source solely to manufacture a new code delta. `GATEWAY-001` remains Pending behind `BACKGROUND-005` and this task; no Gateway task is started by this review.
+
+---
 
 ### Review Status
 Changes Requested — Attempt 1
