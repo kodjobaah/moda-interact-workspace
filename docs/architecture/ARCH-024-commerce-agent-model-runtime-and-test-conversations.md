@@ -16,11 +16,11 @@ Agreed.
 ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Preview/Test Conversation work. It keeps accepted ARCH-021 Studio authoring foundations, consumes frozen ARCH-023 Platform/Shop Instruction semantics, and replaces the unstarted ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 plan with a broader Admin-owned model catalogue, scoped availability, database-backed OpenRouter credentials, LangChain/OpenRouter model integration, a modular Shared LangGraph Commerce-turn runtime with canonical structured logging, production Background parity and Feature-composed selected-shop Test Conversations.
 
 ARCH-024 implementation is underway. `ARCH-024-DATABASE-001` is Complete / Accepted at
-Attempt 1. The current Ready frontier is:
+Attempt 1 and `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2. The current Ready frontier is:
 
 ```text
 ARCH-024-SHARED-001
-ARCH-024-COMMERCE-001
+ARCH-024-COMMERCE-004
 ```
 
 All other ARCH-024 tasks remain Pending behind their declared dependencies.
@@ -1045,11 +1045,11 @@ Logging is best-effort and cannot change a Commerce turn result, retry, Tool inv
 
 ARCH-024 implementation order is dependency-driven rather than a single serial chain.
 
-Current Ready frontier after DATABASE-001 acceptance:
+Current Ready frontier after DATABASE-001 and COMMERCE-001 acceptance:
 
 ```text
 ARCH-024-SHARED-001
-ARCH-024-COMMERCE-001
+ARCH-024-COMMERCE-004
 ```
 
 Shared publication sequence:
@@ -1108,10 +1108,10 @@ Individual task YAML is authoritative.
 | `ARCH-024-ADMIN-002` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-001 |
 | `ARCH-024-ADMIN-003` | `moda_admin` | Pending | DATABASE-001, SHARED-002, ADMIN-002 |
 | `ARCH-024-ADMIN-004` | `moda_admin` | Pending | DATABASE-001, SHARED-002 |
-| `ARCH-024-COMMERCE-001` | `moda_commerce` | Ready | - |
+| `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
 | `ARCH-024-COMMERCE-002` | `moda_commerce` | Pending | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
-| `ARCH-024-COMMERCE-004` | `moda_commerce` | Pending | COMMERCE-001 |
+| `ARCH-024-COMMERCE-004` | `moda_commerce` | Ready | COMMERCE-001 |
 | `ARCH-024-COMMERCE-005` | `moda_commerce` | Pending | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |
 | `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-002 |
@@ -1190,6 +1190,10 @@ pricing-plan model storage -> MerchantPricingPlan.commerceModelId only; never Bi
 The final integrated system-test decomposition across ARCH-023, ARCH-024 and subsequent overlapping work remains deliberately deferred to a later architecture session.
 
 ## Change History
+
+- **2026-10-01 — COMMERCE-001 accepted at Attempt 2:** the evidence-only correction durably records launcher/worktree/synchronization/submodule/publication evidence and proves the six remaining `studio-workspace.test.tsx` failures are shared with the synchronized pre-task baseline. Attempt 2 made no Commerce source/test changes; the current suite has 7 passed / 6 failed versus baseline 5 passed / 7 failed, with the stale Release fixture failure corrected by COMMERCE-001. `ARCH-024-COMMERCE-001` is Complete and `ARCH-024-COMMERCE-004` is promoted Ready.
+
+- **2026-10-01 — COMMERCE-001 Attempt 1 changes requested (evidence-only):** the submitted Preview/Test Conversations cleanup is architecturally conformant in implementation, but the task returned Ready because its Completion Report does not yet durably record the required launcher-resolved worktree/synchronization/submodule/commit evidence and the six reported legacy `studio-workspace.test.tsx` Tool-editor failures still require explicit pre-task baseline parity evidence. No implementation source correction is requested unless that evidence reveals a regression. `ARCH-024-COMMERCE-004` remains Pending.
 
 - **2026-10-01 — DATABASE-001 accepted:** `ARCH-024-DATABASE-001` completed at Attempt 1, establishing the agreed Model Availability/Catalogue/Price-Plan/OpenRouter credential persistence boundary. `ARCH-024-SHARED-001` is promoted Ready; independently executable `ARCH-024-COMMERCE-001` remains Ready.
 
