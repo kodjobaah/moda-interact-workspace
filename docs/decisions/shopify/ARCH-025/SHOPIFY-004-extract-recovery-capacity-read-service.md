@@ -230,9 +230,9 @@ Implementation repository:
 
 Parent workspace:
 - Task file: `docs/decisions/shopify/ARCH-025/SHOPIFY-004-extract-recovery-capacity-read-service.md`
-- Report commit: to be recorded after task-file commit.
+- Report commit: `5091aa4bf646a86f721f0bdf798bf2a9047868be`
 - Remote branch: `origin/task/ARCH-025-SHOPIFY-004`
-- Pushed: pending
+- Pushed: yes
 - Submodule gitlink staged: no
 
 Merged to implementation main: no
