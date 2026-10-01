@@ -11,19 +11,16 @@ Coordinator: `moda_architect`.
 ARCH-023 requires one infrastructure/deployment task:
 
 ```text
-BACKGROUND-005
-SHOPIFY-005
-COMMERCE-002
-      \ | /
-       \|/
- GATEWAY-001
+BACKGROUND-005 -> BACKGROUND-008 --+
+SHOPIFY-005 ------------------------+--> GATEWAY-001
+COMMERCE-002 -----------------------+
 ```
 
 Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [GATEWAY-001](GATEWAY-001-wire-merchant-knowledge-deployment.md) | Deploy the dedicated Merchant Knowledge worker and wire private R2, upload limits, embeddings and Commerce bootstrap configuration | Ready | BACKGROUND-005, SHOPIFY-005, COMMERCE-002 |
+| [GATEWAY-001](GATEWAY-001-wire-merchant-knowledge-deployment.md) | Deploy the dedicated Merchant Knowledge worker and wire private R2, upload limits, embeddings and Commerce bootstrap configuration | Blocked — Attempt 1 | BACKGROUND-005, BACKGROUND-008, SHOPIFY-005, COMMERCE-002 |
 
 ## Deployment boundary
 
@@ -55,17 +52,18 @@ system tests
 
 ## Execution frontier
 
-Ready: `ARCH-023-GATEWAY-001`.
+Blocked: `ARCH-023-GATEWAY-001` at Attempt 1.
 
-All declared prerequisites are now Complete / architect-accepted:
+Its original prerequisites remain Complete / architect-accepted, but R17 exposed the Background-owned observability prerequisite:
 
 ```text
 ARCH-023-BACKGROUND-005 = Complete — Accepted Attempt 2
+ARCH-023-BACKGROUND-008 = Ready — Attempt 2 evidence correction
 ARCH-023-SHOPIFY-005    = Complete — Accepted Attempt 3
 ARCH-023-COMMERCE-002   = Complete — Accepted Attempt 4
 ```
 
-The task remains unclaimed. Start it only through the normal `/moda-task ARCH-023-GATEWAY-001` launcher.
+Do not reclaim Gateway until BACKGROUND-008 is Complete / architect-accepted. Then moda_architect returns the same GATEWAY-001 task to Ready with Attempt 1 preserved; the next launcher claim becomes Attempt 2.
 
 ## No new HTTP service
 

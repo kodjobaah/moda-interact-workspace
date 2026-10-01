@@ -16,7 +16,7 @@ Agreed — the architecture and repository task decomposition are materialised a
 Historical execution state after runtime-lease prerequisites completed and before BACKGROUND-004 Attempt 2:
 The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
-Current execution frontier (2026-10-01) supersedes the historical notes above: `ARCH-023-BACKGROUND-004` is Complete / Accepted Attempt 3, `ARCH-023-DATABASE-006` is Complete / Accepted Attempt 1, and `ARCH-023-BACKGROUND-005` is Complete / Accepted Attempt 2 after consuming the exact entitlement-reconciliation lease identity and proving the Background-owned 300-second persisted cadence. `ARCH-023-GATEWAY-001` is therefore Ready because its declared BACKGROUND-005, SHOPIFY-005 and COMMERCE-002 prerequisites are all Complete/architect-accepted; it remains unclaimed until its normal launcher is invoked.
+Current execution frontier (2026-10-01) supersedes the historical notes above: `ARCH-023-BACKGROUND-004` is Complete / Accepted Attempt 3, `ARCH-023-DATABASE-006` is Complete / Accepted Attempt 1, and `ARCH-023-BACKGROUND-005` is Complete / Accepted Attempt 2. `ARCH-023-GATEWAY-001` Attempt 1 exercised R17 and exposed the missing Merchant Knowledge worker observability preload. `ARCH-023-BACKGROUND-008` implemented the correct preload but is Ready for an evidence-only Attempt 2 because its Completion Report omitted the mandatory prepared-execution provenance; GATEWAY-001 remains Blocked at Attempt 1 until BACKGROUND-008 is Complete/architect-accepted.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3277,10 +3277,13 @@ ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
            PENDING/processing eligibility      |
                                                 v
         DATABASE-005 -> BACKGROUND-007 -> BACKGROUND-004 -> BACKGROUND-005
-          lease enum      lease cadence       final worker        ^
-                                                                 |
-                                                        DATABASE-006
-                                                   entitlement lease enum
+          lease enum      lease cadence       final worker        ^       |
+                                                                 |       v
+                                                        DATABASE-006   BACKGROUND-008
+                                                   entitlement lease   observability preload
+                                                                        |
+                                                                        v
+                                                                    GATEWAY-001
 ```
 
 `COMMERCE-002` is Complete / Accepted Attempt 4 with the final bootstrap activation-mode guard. `COMMERCE-004` owns only the remaining request-time preference gate after ADMIN-004 establishes the final Admin-owned product-policy row.
@@ -3297,7 +3300,8 @@ ARCH-023-COMMERCE-002   Complete — Accepted Attempt 4
 ARCH-023-COMMERCE-003   Complete — Accepted Attempt 2
 ARCH-023-ADMIN-004      Complete — Accepted Attempt 1
 ARCH-023-COMMERCE-004   Complete — Accepted Attempt 2
-ARCH-023-GATEWAY-001    Ready — prerequisites complete; unclaimed
+ARCH-023-BACKGROUND-008 Ready — Attempt 2 evidence correction
+ARCH-023-GATEWAY-001    Blocked — Attempt 1 pending BACKGROUND-008
 ARCH-023-SYSTEM-TEST-002 Pending — terminal dependencies remain
 ```
 
@@ -3346,7 +3350,7 @@ ARCH-023-SHOPIFY-004    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-005    Complete — Accepted Attempt 3
 ```
 
-SHOPIFY-005 is Complete / Accepted Attempt 3 after an evidence-only revalidation: the create-only signed PUT and immutable upload lifecycle remain unchanged, all three mandatory physical-isolation attestations are now durable, and the focused/upload PostgreSQL validation was refreshed without code churn. `ARCH-023-BACKGROUND-005` is now Complete / Accepted Attempt 2 and `ARCH-023-COMMERCE-002` is Complete / Accepted Attempt 4, so all declared `ARCH-023-GATEWAY-001` prerequisites are satisfied and Gateway is Ready. The separately required Background billing-reconciliation activation hook remains outside these tasks and must be materialised before final ARCH-023 system acceptance.
+SHOPIFY-005 is Complete / Accepted Attempt 3 after an evidence-only revalidation: the create-only signed PUT and immutable upload lifecycle remain unchanged, all three mandatory physical-isolation attestations are now durable, and the focused/upload PostgreSQL validation was refreshed without code churn. `ARCH-023-BACKGROUND-005` and `ARCH-023-COMMERCE-002` are also Complete, but GATEWAY-001 Attempt 1 later exercised R17 and exposed the missing Background-owned Merchant Knowledge observability preload. BACKGROUND-008 is currently Ready for an evidence-only Attempt 2; Gateway remains Blocked at Attempt 1 until that task is accepted. The separately required Background billing-reconciliation activation hook remains outside these tasks and must be materialised before final ARCH-023 system acceptance.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3356,6 +3360,18 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — BACKGROUND-008 Attempt 1 changes requested (evidence-only)
+
+- Reviewed the Merchant Knowledge worker observability bootstrap as substantively architecture-conformant: the accepted package script now preloads the shared runtime before the compiled entrypoint, uses `service.name=moda-merchant-knowledge-worker` / `service.namespace=moda-interact`, preserves the sibling worker instrumentation profile, and reuses the existing shutdown/packaging lifecycle.
+- Accepted the bounded code/runtime evidence (23 focused tests passed with one unrelated stale shared-version assertion excluded; disabled-runtime production-command readiness probe; production build; diagnostics; whitespace check) but found the Completion Report missing the mandatory launcher-resolved worktree/branch, start-of-attempt synchronization and recursive-submodule packet. No source correction is requested.
+- Returned BACKGROUND-008 to Ready with Attempt 1 preserved for an evidence-only Attempt 2. GATEWAY-001 remains Blocked at Attempt 1 and must not be reclaimed until BACKGROUND-008 is Complete/architect-accepted.
+
+### 2026-10-01 — GATEWAY-001 Attempt 1 blocked on Merchant Knowledge worker observability
+
+- Confirmed GATEWAY-001 correctly stopped at R17 before Blueprint changes because the accepted Merchant Knowledge worker command did not initialize the shared observability preload used by sibling Background workers.
+- Materialised `ARCH-023-BACKGROUND-008` as the bounded Background-owned correction and added it as a Gateway dependency. No Gateway implementation was started by this reconciliation.
+- GATEWAY-001 remains Blocked at Attempt 1 with the claim cleared; after BACKGROUND-008 is Complete/architect-accepted, return the same Gateway task to Ready so the next launcher claim becomes Attempt 2.
 
 ### 2026-10-01 — BACKGROUND-005 Attempt 2 accepted
 

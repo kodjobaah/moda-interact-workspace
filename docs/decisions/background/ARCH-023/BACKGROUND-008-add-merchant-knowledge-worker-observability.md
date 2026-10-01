@@ -9,11 +9,9 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: review
 priority: 32
-executor: null
-claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-023-BACKGROUND-005
 enables:
@@ -173,12 +171,12 @@ Focused tests must prove at minimum:
 
 ## Work Items
 
-- [ ] Add the Merchant Knowledge shared-runtime preload/profile.
-- [ ] Preload it from the existing `start:merchant-knowledge-worker` command.
-- [ ] Wire existing shutdown/failure cleanup only if required by the accepted runtime lifecycle.
-- [ ] Package the preload in the production image if the Dockerfile requires explicit inclusion.
-- [ ] Add focused startup/identity/disablement/isolation regressions.
-- [ ] Run the bounded validation contract.
+- [x] Add the Merchant Knowledge shared-runtime preload/profile.
+- [x] Preload it from the existing `start:merchant-knowledge-worker` command.
+- [x] Verify the existing shutdown/failure cleanup covers shared observability.
+- [x] Verify the Dockerfile's existing observability-directory copy includes the preload.
+- [x] Add focused startup/identity/disablement/isolation regressions.
+- [x] Run the bounded validation contract.
 
 ## Interfaces / Contracts
 
@@ -212,26 +210,26 @@ service.name:  moda-merchant-knowledge-worker
 
 ## Acceptance Criteria
 
-- [ ] Merchant Knowledge production startup initializes shared observability before application/Prisma worker imports.
-- [ ] Exact logical service identity is `moda-merchant-knowledge-worker` with `service.namespace=moda-interact`.
-- [ ] Existing shared runtime owns providers/exporters/sampling/environment identity.
-- [ ] Required generic HTTP/fetch/Undici and Prisma instrumentation is enabled without duplicate BullMQ/GenAI instrumentation.
-- [ ] Existing worker business logic, queue contracts, readiness identity and scheduler behavior are unchanged.
-- [ ] `OTEL_SDK_DISABLED=true` preserves the existing startup/readiness failure behavior.
-- [ ] Shared runtime shutdown is reached through the accepted worker lifecycle where required.
-- [ ] Production packaging contains the new preload when explicit packaging is necessary.
-- [ ] Sibling worker start commands and service identities remain unchanged.
+- [x] Merchant Knowledge production startup initializes shared observability before application/Prisma worker imports.
+- [x] Exact logical service identity is `moda-merchant-knowledge-worker` with `service.namespace=moda-interact`.
+- [x] Existing shared runtime owns providers/exporters/sampling/environment identity.
+- [x] Required generic HTTP/fetch/Undici and Prisma instrumentation is enabled without duplicate BullMQ/GenAI instrumentation.
+- [x] Existing worker business logic, queue contracts, readiness identity and scheduler behavior are unchanged.
+- [x] `OTEL_SDK_DISABLED=true` preserves the existing startup/readiness failure behavior.
+- [x] Shared runtime shutdown is reached through the accepted worker lifecycle where required.
+- [x] Production packaging contains the new preload when explicit packaging is necessary.
+- [x] Sibling worker start commands and service identities remain unchanged.
 
 ## Validation
 
 Run only validation relevant to this bounded corrective task:
 
-- [ ] focused observability-startup / entrypoint-isolation / Merchant Knowledge entrypoint tests
-- [ ] exact production-command disabled-runtime subprocess probe
-- [ ] TypeScript/typecheck or repository equivalent
-- [ ] production build
-- [ ] changed-file lint/diagnostics
-- [ ] `git diff --check`
+- [x] focused observability-startup / entrypoint-isolation / Merchant Knowledge entrypoint tests
+- [x] exact production-command disabled-runtime subprocess probe
+- [x] TypeScript/typecheck or repository equivalent
+- [x] production build
+- [x] changed-file lint/diagnostics
+- [x] `git diff --check`
 
 If the broader repository suite is run and reports unrelated failures, record/classify them without expanding task scope.
 
@@ -249,58 +247,93 @@ Follow the already-accepted ARCH-002 Background observability pattern rather tha
 
 ### Status
 
-Not Started
+Implemented and submitted for architect review.
 
 ### Files Changed
 
-None.
+`package.json`; `observability/merchant-knowledge.mjs`; `tests/unit/runtime/observability-startup.test.ts`; `tests/unit/runtime/entrypoint-isolation.test.ts`; `tests/unit/entrypoints/merchant-knowledge.test.ts`.
 
 ### Work Completed
 
-None.
+Added a shared-runtime preload for `moda-merchant-knowledge-worker` using the existing generic HTTP/fetch/Prisma instrumentation profile, and wired it into the existing start script before the compiled entrypoint loads. Extended the existing per-worker startup and entrypoint-isolation test matrices; preserved all sibling worker commands and identities. Confirmed the existing Merchant Knowledge entrypoint closes shared observability on normal shutdown and readiness failure. The Dockerfile already copies the complete `observability` directory, so no packaging edit was required.
 
 ### Validation Results
 
-None.
+Attempt 2 reran `npm test -- --run tests/unit/runtime/observability-startup.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/entrypoints/merchant-knowledge.test.ts -t '^(?!.*architect-approved exact shared runtime release)'`: 23 passed, 1 skipped. The skipped pre-existing assertion expects shared package version `0.12.1`, while this repository declares `1.0.1`; dependency version policy was not changed.
+
+The exact production package command, `npm run start:merchant-knowledge-worker`, was rerun with `OTEL_SDK_DISABLED=true` and an intentionally unreachable Redis URL. It emitted the expected `moda-merchant-knowledge-worker readiness failed: redis unavailable` failure without hosted telemetry configuration; the subprocess was then terminated after observing that failure because the imported Redis client's retry activity kept the process alive. This does not alter the existing readiness contract and was not addressed in this observability-only task.
+
+`npm run build` passed (Prisma client generation and TypeScript compilation). Changed-file diagnostics reported no errors after launcher synchronization. `git diff --check` passed.
 
 ### Deviations
 
-None.
+The bounded production-command probe required explicit termination after the expected readiness error because unavailable Redis leaves retry activity alive. No readiness or Redis lifecycle code was changed, per task scope.
 
 ### Assumptions
 
-None.
+The existing Dockerfile's `COPY observability ./observability` is the production packaging contract for worker preload modules.
 
 ### Unresolved Issues
 
-None.
+The repository's existing shared-runtime-version test assertion remains stale (`0.12.1` versus the package manifest's `1.0.1`) and was excluded from this focused run. With Redis unavailable, the worker logs the expected readiness failure but remains alive on Redis retry handles until terminated; this behavior predates and is outside the task's observability bootstrap scope.
 
 ### Architectural Concerns
 
-None.
+None. The worker now initializes the shared runtime through the established sibling-worker preload pattern; Gateway deployment wiring remains a separate architect-owned task.
+
+### Attempt 2 Launcher Evidence
+
+The deterministic launcher prepared and claimed Attempt 2 with `prepared_execution: true`, `execution_state: claimed`, `dependency_gate: passed`, and `preparation.claim.pushed: true`. The canonical workspace was `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-008`, branch `task/ARCH-023-BACKGROUND-008`. It was reused; remote task-branch fast-forward was `not-needed`; `origin/main` was `already-current`; synchronized head before the claim was `292d3b556c913d0da8017bc0f9f5a125b560332d`.
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-008`, branch `task/ARCH-023-BACKGROUND-008`. It was reused; remote task-branch fast-forward was `not-needed`; current `origin/main` was incorporated (`yes`); synchronized head before implementation validation was `9658c14697fd719583c4394351d12876cd4a7fc9`.
+
+Dependency gate: `ARCH-023-BACKGROUND-005` was `complete`. Recursive submodule synchronization and initialization both passed; status was `ready`; initialized nested database submodule commit was `15859f16a7b9a889df8f70e1ecc29b27df8e31de`.
+
+The launcher claim was committed and pushed as `b1605d8bf2e4175fdc460e2bf246a4c6a1e543eb`, recording executor `copilot`, Attempt 2, and claim time `2026-10-01T13:14:14Z`.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1
 
 ### Review Notes
 
-Pending.
+The implementation is substantively architecture-conformant. The production command now preloads `observability/merchant-knowledge.mjs` before the compiled Merchant Knowledge entrypoint, the preload uses only `@modainteract/moda-interact-shared/observability/node`, and the exact logical identity is `moda-merchant-knowledge-worker` / `moda-interact` with the established HTTP/fetch/Prisma worker instrumentation profile. No service-local SDK/provider/exporter stack, duplicate BullMQ instrumentation or GenAI instrumentation was introduced.
+
+The existing entrypoint already closes shared observability both through its owned-resource shutdown list and on readiness failure. The existing Dockerfile copies the complete `observability` directory, so the new preload is included without a packaging redesign. The focused startup/identity/singleton/isolation tests and disabled-runtime production-command probe support the required runtime behaviour; the excluded `0.12.1` shared-package assertion is a pre-existing stale version expectation against the repository's current `1.0.1` manifest and is not a BACKGROUND-008 implementation defect.
+
+No production or test source correction is requested. Acceptance is blocked only because the durable Completion Report does not record the mandatory launcher-resolved parent/implementation worktree paths and branches, start-of-attempt synchronization evidence, or recursive submodule-preparation evidence. A conversational handoff that both worktrees are clean does not substitute for that durable prepared-execution packet.
 
 ### Reviewed Files
 
-Pending.
+- `moda-interact-background/package.json`
+- `moda-interact-background/observability/merchant-knowledge.mjs`
+- `moda-interact-background/src/entrypoints/merchant-knowledge.ts`
+- `moda-interact-background/src/runtime/observability.ts`
+- `moda-interact-background/Dockerfile`
+- `moda-interact-background/tests/unit/runtime/observability-startup.test.ts`
+- `moda-interact-background/tests/unit/runtime/entrypoint-isolation.test.ts`
+- `moda-interact-background/tests/unit/entrypoints/merchant-knowledge.test.ts`
+- this Completion Report and the ARCH-023 / ARCH-002 observability contracts
 
 ### Validation Reviewed
 
-Pending.
+- 23 focused tests passed; one pre-existing shared-version assertion was excluded because it expects `0.12.1` while the accepted manifest declares `1.0.1`.
+- The exact production command was probed with `OTEL_SDK_DISABLED=true` and an unreachable Redis URL; it reached the existing `moda-merchant-knowledge-worker readiness failed: redis unavailable` path without hosted telemetry export configuration.
+- `npm run build` passed.
+- Changed-file diagnostics passed.
+- `git diff --check` passed.
 
 ### Architecture Conformance
 
-Pending.
+The implementation conforms to the bounded BACKGROUND-008 architecture and preserves repository ownership: Background owns worker observability startup, the shared package remains the SDK/provider/exporter owner, and Gateway remains responsible only for deployment topology after the accepted start command is deployable. The only non-conformance is incomplete durable execution provenance in the task report.
 
 ### Follow-up
 
-Pending.
+1. Return the same task to `ready`, preserve `attempt: 1`, and keep `executor` / `claimed_at` cleared.
+2. Reclaim it through `/moda-task ARCH-023-BACKGROUND-008`; the launcher must create Attempt 2 and the Completion Report must record the exact prepared parent and implementation worktrees/branches, start-of-attempt synchronization, dependency gate and recursive submodule evidence.
+3. No implementation-source change is requested unless refreshed bounded validation after synchronization exposes a regression. Rerun the task-defined focused tests/probe/build/diagnostics/whitespace checks and record the results.
+4. Keep `ARCH-023-GATEWAY-001` Blocked at Attempt 1 until BACKGROUND-008 is architect-accepted Complete. Do not resume Gateway early.
