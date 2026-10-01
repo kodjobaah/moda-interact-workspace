@@ -9,10 +9,8 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 32
-executor: copilot
-claimed_at: 2026-10-01T13:14:14Z
 attempt: 2
 depends_on:
   - ARCH-023-BACKGROUND-005
@@ -261,11 +259,11 @@ Added a shared-runtime preload for `moda-merchant-knowledge-worker` using the ex
 
 ### Validation Results
 
-`npm test -- --run tests/unit/runtime/observability-startup.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/entrypoints/merchant-knowledge.test.ts -t '^(?!.*architect-approved exact shared runtime release)'`: 23 passed, 1 skipped. The skipped pre-existing assertion expects shared package version `0.12.1`, while this repository declares `1.0.1`; dependency version policy was not changed.
+Attempt 2 reran `npm test -- --run tests/unit/runtime/observability-startup.test.ts tests/unit/runtime/entrypoint-isolation.test.ts tests/unit/entrypoints/merchant-knowledge.test.ts -t '^(?!.*architect-approved exact shared runtime release)'`: 23 passed, 1 skipped. The skipped pre-existing assertion expects shared package version `0.12.1`, while this repository declares `1.0.1`; dependency version policy was not changed.
 
-The production Node command was run with `OTEL_SDK_DISABLED=true` and an intentionally unreachable Redis URL. It emitted the expected `moda-merchant-knowledge-worker readiness failed: redis unavailable` failure without hosted telemetry configuration; the subprocess was then terminated after observing that failure because the imported Redis client's retry activity kept the process alive. This does not alter the existing readiness contract and was not addressed in this observability-only task.
+The exact production package command, `npm run start:merchant-knowledge-worker`, was rerun with `OTEL_SDK_DISABLED=true` and an intentionally unreachable Redis URL. It emitted the expected `moda-merchant-knowledge-worker readiness failed: redis unavailable` failure without hosted telemetry configuration; the subprocess was then terminated after observing that failure because the imported Redis client's retry activity kept the process alive. This does not alter the existing readiness contract and was not addressed in this observability-only task.
 
-`npm run build` passed (Prisma client generation and TypeScript compilation). Changed-file diagnostics reported no errors. `git diff --check` passed.
+`npm run build` passed (Prisma client generation and TypeScript compilation). Changed-file diagnostics reported no errors after launcher synchronization. `git diff --check` passed.
 
 ### Deviations
 
@@ -282,6 +280,18 @@ The repository's existing shared-runtime-version test assertion remains stale (`
 ### Architectural Concerns
 
 None. The worker now initializes the shared runtime through the established sibling-worker preload pattern; Gateway deployment wiring remains a separate architect-owned task.
+
+### Attempt 2 Launcher Evidence
+
+The deterministic launcher prepared and claimed Attempt 2 with `prepared_execution: true`, `execution_state: claimed`, `dependency_gate: passed`, and `preparation.claim.pushed: true`. The canonical workspace was `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+
+Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-BACKGROUND-008`, branch `task/ARCH-023-BACKGROUND-008`. It was reused; remote task-branch fast-forward was `not-needed`; `origin/main` was `already-current`; synchronized head before the claim was `292d3b556c913d0da8017bc0f9f5a125b560332d`.
+
+Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-BACKGROUND-008`, branch `task/ARCH-023-BACKGROUND-008`. It was reused; remote task-branch fast-forward was `not-needed`; current `origin/main` was incorporated (`yes`); synchronized head before implementation validation was `9658c14697fd719583c4394351d12876cd4a7fc9`.
+
+Dependency gate: `ARCH-023-BACKGROUND-005` was `complete`. Recursive submodule synchronization and initialization both passed; status was `ready`; initialized nested database submodule commit was `15859f16a7b9a889df8f70e1ecc29b27df8e31de`.
+
+The launcher claim was committed and pushed as `b1605d8bf2e4175fdc460e2bf246a4c6a1e543eb`, recording executor `copilot`, Attempt 2, and claim time `2026-10-01T13:14:14Z`.
 
 ## Architect Review
 
