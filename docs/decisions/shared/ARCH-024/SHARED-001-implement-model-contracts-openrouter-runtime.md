@@ -9,7 +9,7 @@ assigned_agent: moda_shared
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-01T15:17:57Z
@@ -1800,41 +1800,41 @@ Complete all work items from all three implementation facets before returning th
 ### Model/OpenRouter work items
 
 
-- [ ] Add the exact `./commerce/model` pure schemas/types/helpers from R3-R7A, including the Shared-owned OpenRouter credential AAD contract.
-- [ ] Add the `CommerceModelInvoker` named runner type without changing runner semantics.
-- [ ] Add exact pinned LangChain/OpenRouter dependencies and core override from R2.
-- [ ] Add the Node-only `OpenRouterModelClient` from R9-R16.
-- [ ] Add deterministic OpenRouter-style configuration-to-ChatOpenRouter translation.
-- [ ] Add deterministic ModelRequest/LangChain/ModelStep translation.
-- [ ] Add the private test factory seam without exporting it publicly.
-- [ ] Add all focused contract/runtime tests required by R17.
-- [ ] Add package exports, tsup entries, README documentation and clean-entrypoint validator.
-- [ ] Run the focused validation matrix and record exact results.
+- [x] Add the exact `./commerce/model` pure schemas/types/helpers from R3-R7A, including the Shared-owned OpenRouter credential AAD contract.
+- [x] Add the `CommerceModelInvoker` named runner type without changing runner semantics.
+- [x] Add exact pinned LangChain/OpenRouter dependencies and core override from R2.
+- [x] Add the Node-only `OpenRouterModelClient` from R9-R16.
+- [x] Add deterministic OpenRouter-style configuration-to-ChatOpenRouter translation.
+- [x] Add deterministic ModelRequest/LangChain/ModelStep translation.
+- [x] Add the private test factory seam without exporting it publicly.
+- [x] Add all focused contract/runtime tests required by R17.
+- [x] Add package exports, tsup entries, README documentation and clean-entrypoint validator.
+- [x] Run the focused validation matrix and record exact results.
 
 ### Runner/LangGraph work items
 
 
-- [ ] Add exact `@langchain/langgraph@1.4.15` dependency and lockfile update while retaining SHARED-001 core pin.
-- [ ] Extract the current public types/constants without changing their exports.
-- [ ] Implement `failure.ts`, `preflight.ts`, `runtime.ts`, `model-step.ts`, `tool-policy.ts`, `tool-execution.ts`, `evidence.ts` and `final-response.ts` with the exact ownership above.
-- [ ] Implement `CommerceTurnGraphState` and its initial state.
-- [ ] Implement the exact four-node graph and conditional route.
-- [ ] Reduce `index.ts` to the thin facade/coordinator and re-exports.
-- [ ] Preserve the existing 20 runner behavioural tests without weakened assertions.
-- [ ] Add focused module and LangGraph-specific regressions from R18.
-- [ ] Prove Shared runner code has no MCP/checkpointer/createAgent/ToolNode/ToolMessage orchestration imports.
-- [ ] Run the required validation and complete the report.
+- [x] Add exact `@langchain/langgraph@1.4.15` dependency and lockfile update while retaining SHARED-001 core pin.
+- [x] Extract the current public types/constants without changing their exports.
+- [x] Implement `failure.ts`, `preflight.ts`, `runtime.ts`, `model-step.ts`, `tool-policy.ts`, `tool-execution.ts`, `evidence.ts` and `final-response.ts` with the exact ownership above.
+- [x] Implement `CommerceTurnGraphState` and its initial state.
+- [x] Implement the exact four-node graph and conditional route.
+- [x] Reduce `index.ts` to the thin facade/coordinator and re-exports.
+- [x] Preserve the existing 20 runner behavioural tests without weakened assertions.
+- [x] Add focused module and LangGraph-specific regressions from R18.
+- [x] Prove Shared runner code has no MCP/checkpointer/createAgent/ToolNode/ToolMessage orchestration imports.
+- [x] Run the required validation and complete the report.
 
 ### Logging work items
 
 
-- [ ] Add optional `StructuredLogger` to `RunCommerceTurnInput.dependencies` without breaking existing callers.
-- [ ] Create `runner/observability.ts` semantic adapter over the canonical logger.
-- [ ] Add safe turn child context after validated preflight.
-- [ ] Instrument the exact event points/taxonomy/fields from R4-R8.
-- [ ] Add failure-isolation and sensitive-content regressions.
-- [ ] Verify no generic logger/metrics/spans were duplicated.
-- [ ] Run required validation and complete the report.
+- [x] Add optional `StructuredLogger` to `RunCommerceTurnInput.dependencies` without breaking existing callers.
+- [x] Create `runner/observability.ts` semantic adapter over the canonical logger.
+- [x] Add safe turn child context after validated preflight.
+- [x] Instrument the exact event points/taxonomy/fields from R4-R8.
+- [x] Add failure-isolation and sensitive-content regressions.
+- [x] Verify no generic logger/metrics/spans were duplicated.
+- [x] Run required validation and complete the report.
 
 ## Interfaces / Contracts
 
@@ -1989,55 +1989,55 @@ Every criterion below is required before this combined implementation may move t
 ### Model/OpenRouter acceptance
 
 
-- [ ] `./commerce/model` and `./commerce/model/node` are published build entrypoints with the exact browser/Node boundary in R1.
-- [ ] `@langchain/openrouter` and `@langchain/core` are pinned exactly as R2 requires and resolve one compatible core instance.
-- [ ] No closed model-provider enum exists in the new Shared contract.
-- [ ] Availability, Catalogue Entry, Agent selection, Price Plan assignment/selection-source and resolved-model shapes match R3-R7 exactly.
-- [ ] Persisted configuration is direct OpenRouter-style extensible JSON, not a closed list of model parameters and not a Moda `parameters/routing` wrapper.
-- [ ] Unknown non-reserved configuration options survive unchanged within the bounded envelope.
-- [ ] Runtime/security-owned keys cannot be injected through stored configuration.
-- [ ] The existing Commerce runner exposes `CommerceModelInvoker` without behaviour changes.
-- [ ] `OpenRouterModelClient` uses `ChatOpenRouter` and satisfies `CommerceModelInvoker`.
-- [ ] Stored OpenRouter configuration is translated according to R10; unknown options reach `modelKwargs` unchanged.
-- [ ] Credential, model identity, messages, Tools, Tool policy, token budget and cancellation remain runtime authoritative.
-- [ ] Tool results remain data-only and do not become trusted instructions.
-- [ ] LangChain/OpenRouter types do not leak into `./commerce/model` or existing runner contracts.
-- [ ] The accepted `CommerceModelInvoker` / `ModelRequest` / `ModelStep` contracts remain intact while `runCommerceTurn` is internally refactored to the architecture-approved low-level LangGraph `StateGraph`.
-- [ ] Provider/runtime errors are bounded and do not reveal credentials or full conversation payloads.
-- [ ] Focused tests cover every item in R17 with no live provider call.
-- [ ] Clean-entrypoint validation passes.
-- [ ] No Admin, Commerce, Background, Database or Gateway consumer source is modified by this task.
+- [x] `./commerce/model` and `./commerce/model/node` are published build entrypoints with the exact browser/Node boundary in R1.
+- [x] `@langchain/openrouter` and `@langchain/core` are pinned exactly as R2 requires and resolve one compatible core instance.
+- [x] No closed model-provider enum exists in the new Shared contract.
+- [x] Availability, Catalogue Entry, Agent selection, Price Plan assignment/selection-source and resolved-model shapes match R3-R7 exactly.
+- [x] Persisted configuration is direct OpenRouter-style extensible JSON, not a closed list of model parameters and not a Moda `parameters/routing` wrapper.
+- [x] Unknown non-reserved configuration options survive unchanged within the bounded envelope.
+- [x] Runtime/security-owned keys cannot be injected through stored configuration.
+- [x] The existing Commerce runner exposes `CommerceModelInvoker` without behaviour changes.
+- [x] `OpenRouterModelClient` uses `ChatOpenRouter` and satisfies `CommerceModelInvoker`.
+- [x] Stored OpenRouter configuration is translated according to R10; unknown options reach `modelKwargs` unchanged.
+- [x] Credential, model identity, messages, Tools, Tool policy, token budget and cancellation remain runtime authoritative.
+- [x] Tool results remain data-only and do not become trusted instructions.
+- [x] LangChain/OpenRouter types do not leak into `./commerce/model` or existing runner contracts.
+- [x] The accepted `CommerceModelInvoker` / `ModelRequest` / `ModelStep` contracts remain intact while `runCommerceTurn` is internally refactored to the architecture-approved low-level LangGraph `StateGraph`.
+- [x] Provider/runtime errors are bounded and do not reveal credentials or full conversation payloads.
+- [x] Focused tests cover every item in R17 with no live provider call.
+- [x] Clean-entrypoint validation passes.
+- [x] No Admin, Commerce, Background, Database or Gateway consumer source is modified by this task.
 
 ### Runner/LangGraph acceptance
 
 
-- [ ] `runCommerceTurn` public API/result/error semantics are unchanged.
-- [ ] `runnerVersion` remains `1.0.0`.
-- [ ] `index.ts` no longer contains the monolithic model/Tool/evidence loop.
-- [ ] Responsibilities are split across the explicit modules in R4.
-- [ ] The graph contains exactly the four architecture-approved nodes and loop topology.
-- [ ] Moda's `modelSteps` budget remains authoritative over LangGraph's safety ceiling.
-- [ ] Tool visibility and immediate pre-execution authorization are both preserved.
-- [ ] Tool calls execute sequentially and the exact retry/accounting contract is preserved.
-- [ ] Runtime data, including Merchant Knowledge, cannot create Tool authority or trusted instructions.
-- [ ] Evidence and final-response validation semantics remain unchanged.
-- [ ] No LangGraph persistence/memory/checkpoint/thread semantics are introduced.
-- [ ] Shared does not acquire MCP transport ownership.
-- [ ] Every pre-existing `runner.test.ts` assertion passes without weakening.
-- [ ] All new graph-specific regressions pass.
+- [x] `runCommerceTurn` public API/result/error semantics are unchanged.
+- [x] `runnerVersion` remains `1.0.0`.
+- [x] `index.ts` no longer contains the monolithic model/Tool/evidence loop.
+- [x] Responsibilities are split across the explicit modules in R4.
+- [x] The graph contains exactly the four architecture-approved nodes and loop topology.
+- [x] Moda's `modelSteps` budget remains authoritative over LangGraph's safety ceiling.
+- [x] Tool visibility and immediate pre-execution authorization are both preserved.
+- [x] Tool calls execute sequentially and the exact retry/accounting contract is preserved.
+- [x] Runtime data, including Merchant Knowledge, cannot create Tool authority or trusted instructions.
+- [x] Evidence and final-response validation semantics remain unchanged.
+- [x] No LangGraph persistence/memory/checkpoint/thread semantics are introduced.
+- [x] Shared does not acquire MCP transport ownership.
+- [x] Every pre-existing `runner.test.ts` assertion passes without weakening.
+- [x] All new graph-specific regressions pass.
 
 ### Logging acceptance
 
 
-- [ ] Runner uses only the canonical Shared `StructuredLogger` contract.
-- [ ] Shared runner never creates its own service logger identity.
-- [ ] Host service/environment identity survives unchanged.
-- [ ] Exact `commerce.turn.*` taxonomy/levels/fields are implemented.
-- [ ] Safe turn/grant/release context is present for correlation.
-- [ ] No prompt/customer/Tool/Merchant-Knowledge/provider/credential payload is logged.
-- [ ] Logging failure cannot change Commerce-turn behaviour.
-- [ ] Existing runner tests and this task's LangGraph-specific graph tests remain passing.
-- [ ] No duplicate metrics/spans/generic logging mechanism is introduced.
+- [x] Runner uses only the canonical Shared `StructuredLogger` contract.
+- [x] Shared runner never creates its own service logger identity.
+- [x] Host service/environment identity survives unchanged.
+- [x] Exact `commerce.turn.*` taxonomy/levels/fields are implemented.
+- [x] Safe turn/grant/release context is present for correlation.
+- [x] No prompt/customer/Tool/Merchant-Knowledge/provider/credential payload is logged.
+- [x] Logging failure cannot change Commerce-turn behaviour.
+- [x] Existing runner tests and this task's LangGraph-specific graph tests remain passing.
+- [x] No duplicate metrics/spans/generic logging mechanism is introduced.
 
 ## Validation
 
@@ -2069,14 +2069,14 @@ Also run a changed-file lint command only if this repository exposes a lint capa
 
 Required validation properties:
 
-- [ ] focused model contracts/runtime tests pass
-- [ ] existing Commerce runner regression suite passes
-- [ ] TypeScript typecheck passes
-- [ ] package build passes
-- [ ] ARCH-024 entrypoint validator passes
-- [ ] `npm pack --dry-run` contains both intended model entrypoints and declarations
-- [ ] no live OpenRouter network call was required
-- [ ] `git diff --check` passes
+- [x] focused model contracts/runtime tests pass
+- [x] existing Commerce runner regression suite passes
+- [x] TypeScript typecheck passes
+- [x] package build passes
+- [x] ARCH-024 entrypoint validator passes
+- [x] `npm pack --dry-run` contains both intended model entrypoints and declarations
+- [x] no live OpenRouter network call was required
+- [x] `git diff --check` passes
 
 If the repository-wide baseline exposes a documented pre-existing condition, follow `docs/development-baseline.md` policy rather than broadening this task.
 
@@ -2172,35 +2172,67 @@ Do not log graph-state objects wholesale. They contain runtime messages/evidence
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None
+- `package.json`, `package-lock.json`, `tsup.config.ts`, `README.md`
+- `scripts/validate-arch024-model-entrypoints.mjs`
+- `src/commerce/model/**`
+- `src/commerce/runner/**`
 
 ### Work Completed
 
-None
+- Added the browser-safe model contract entrypoint and Node-only OpenRouter adapter, including configuration bounds, reserved-field protection, credential AAD, runtime-owned request controls, output validation, and bounded provider failures.
+- Pinned `@langchain/openrouter@0.4.15`, `@langchain/core@1.2.13` and `@langchain/langgraph@1.4.15`; the installed dependency tree resolves one Core version.
+- Decomposed the Commerce runner into responsibility modules and a four-node low-level `StateGraph`; node implementations live under `runner/graph/nodes/`, while graph construction contains the topology only.
+- Preserved the runner contract and behavior, and added bounded semantic logging through the canonical `StructuredLogger` with failure isolation.
+- No consumer repository was modified; the package was not published and no downstream task was started.
 
 ### Validation Results
 
-Not Run
+- `npm run typecheck` — passed.
+- Focused model tests — 11 passed; focused runner tests — 32 passed.
+- `npm test` — 200 total, 199 passed, 0 failed, 1 skipped because `TEST_REDIS_URL` is unset.
+- `npm run validate:arch024-model-entrypoints` — passed; browser-safe and Node model entrypoints import cleanly without credentials.
+- `npm run validate:commerce-entrypoints` — passed.
+- `npm run build` — passed as part of the final model-entrypoint validator; declaration and JavaScript outputs were generated.
+- `npm pack --dry-run` — passed; the final archive inventory contains `dist/commerce/model/index.js`, `index.d.ts`, `node.js`, and `node.d.ts`. No publish was performed.
+- `npm ls @langchain/langgraph @langchain/core @langchain/openrouter` — exact versions verified; Core is deduplicated at `1.2.13`.
+- Production runner scans found no MCP, persistence/checkpointer, `createAgent`, `ToolNode`, or direct `console.*` usage. Logger imports are limited to Shared `logging/index.js`.
+- `git diff --check` — passed. No lint script is defined by this package.
+- No live OpenRouter request was made.
 
 ### Deviations
 
-None
+- Runner-focused unit and graph regressions are consolidated in the existing `src/commerce/runner/runner.test.ts` rather than split into the separately listed per-module test files. The existing 20 assertions remain active; the consolidated suite contains 32 passing tests. This test-organization deviation is submitted for Architect Review.
 
 ### Assumptions
 
-None
+- The one skipped Redis-dependent Shared test is environment-dependent and is not a task failure; `TEST_REDIS_URL` was not configured.
+- Build output is generated/ignored and is not part of the implementation commit.
 
 ### Unresolved Issues
 
-None
+- `npm install` reported two audit advisories (one low, one high); their applicability was not investigated as part of this bounded implementation task.
 
 ### Architectural Concerns
 
-None
+No known runtime or architecture issue remains. Review the test-file consolidation deviation above.
+
+### Prepared Execution Evidence
+
+- Launcher prepared and claimed Attempt 1 for `copilot`; dependency gate passed for `ARCH-024-DATABASE-001`. Preparation completed worktree synchronization and recursive submodule initialization before implementation.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-SHARED-001`, `task/ARCH-024-SHARED-001`.
+- Implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-SHARED-001`, `task/ARCH-024-SHARED-001`.
+- Shared workspace checkout and shared implementation checkout were not switched or mutated for this task; no other task worktree was reused.
+- Launcher synchronization and recursive submodule sync/update passed. `git submodule status --recursive` returned no nested implementation submodules.
+- Implementation commit `a9f11ff` is pushed to `origin/task/ARCH-024-SHARED-001`. The parent report commit/push completes this review submission; no main merge, publication, or submodule pointer change is included.
+
+### Submission Evidence
+
+Return control to `moda_architect` for review. Stop before `ARCH-024-SHARED-002` and all consumer tasks.
 
 ## Architect Review
 
