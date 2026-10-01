@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 30
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on: []
 enables:
   - ARCH-024-COMMERCE-004
@@ -591,19 +591,19 @@ After this task there is exactly one human `/preview` surface: the temporary ARC
 
 ## Work Items
 
-- [ ] Run and record the mandatory R1 reference audit before editing source.
-- [ ] Rewrite `app/preview/page.tsx` to the exact minimal selected-shop-aware shell contract in R2.
-- [ ] Create `src/studio/test-conversations/test-conversations-screen.tsx` exactly as specified in R3.
-- [ ] Delete the old `PreviewScreen`, browser `PreviewClient`, and their obsolete tests per R4.
-- [ ] Remove Release Composer `Test conversation` -> `/preview?source=release-composer` handoff while preserving Release cloning.
-- [ ] Remove Preview-only Tool composer state and the `/preview` dirty-navigation bypass from `StudioComposerContext`.
-- [ ] Delete `components/preview-handoff.tsx` and all references.
-- [ ] Preserve Code Response Tool-test production routes/service behaviour and prove the required focused suites remain green.
-- [ ] Re-audit `/api/studio/preview/fixtures`; delete the HTTP route only if no non-test production consumer remains.
-- [ ] Leave conversation backend and static Preview model configuration deferred and behaviourally unchanged.
-- [ ] Add the replacement shell test and bounded ARCH-024 source/absence guard.
-- [ ] Run the required focused and repository validation.
-- [ ] Record every retained legacy-looking Preview seam and its concrete consumer/deferred owner in the Completion Report.
+- [x] Run and record the mandatory R1 reference audit before editing source.
+- [x] Rewrite `app/preview/page.tsx` to the exact minimal selected-shop-aware shell contract in R2.
+- [x] Create `src/studio/test-conversations/test-conversations-screen.tsx` exactly as specified in R3.
+- [x] Delete the old `PreviewScreen`, browser `PreviewClient`, and their obsolete tests per R4.
+- [x] Remove Release Composer `Test conversation` -> `/preview?source=release-composer` handoff while preserving Release cloning.
+- [x] Remove Preview-only Tool composer state and the `/preview` dirty-navigation bypass from `StudioComposerContext`.
+- [x] Delete `components/preview-handoff.tsx` and all references.
+- [x] Preserve Code Response Tool-test production routes/service behaviour and prove the required focused suites remain green.
+- [x] Re-audit `/api/studio/preview/fixtures`; delete the HTTP route only if no non-test production consumer remains.
+- [x] Leave conversation backend and static Preview model configuration deferred and behaviourally unchanged.
+- [x] Add the replacement shell test and bounded ARCH-024 source/absence guard.
+- [x] Run the required focused and repository validation.
+- [x] Record every retained legacy-looking Preview seam and its concrete consumer/deferred owner in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -647,23 +647,23 @@ This task may be implemented before ARCH-024 database/shared model work because 
 
 ## Acceptance Criteria
 
-- [ ] `/preview` authenticates, resolves the selected Studio shop and renders only the minimal ARCH-024 Test Conversations shell.
-- [ ] `/preview` does not call `listTools()` or `listReleases()` and does not parse Tool definitions for Preview sources.
-- [ ] `src/studio/preview/preview-screen.tsx` is deleted.
-- [ ] `src/studio/preview/client.ts` is deleted.
-- [ ] The canonical replacement human UI module is `src/studio/test-conversations/**`; later ARCH-024 tasks must not recreate the deleted Preview screen/client.
-- [ ] The old Preview screen/client tests are deleted rather than rewritten to preserve old behaviour.
-- [ ] The Release Composer no longer exposes a `Test conversation` button or navigates to `source=release-composer`.
-- [ ] Release `Edit as new release`/clone behaviour remains intact.
-- [ ] `StudioComposerContext` contains no Preview-only Tool handoff state and no special `/preview` dirty-navigation bypass.
-- [ ] `components/preview-handoff.tsx` is deleted and unreferenced.
-- [ ] Normal `/preview` DOM contains none of the old Tool/Release/Fixture/Model-mode controls.
-- [ ] Code Response sample execution can still POST/read/cancel `/api/studio/preview/tool-tests` with its existing semantics.
-- [ ] Conversation backend infrastructure remains available and behaviourally unchanged for later ARCH-024 tasks.
-- [ ] Static Preview model/provider/API-key configuration remains available and behaviourally unchanged for the later atomic model-runtime cutover.
-- [ ] `/api/studio/preview/fixtures` is either deleted because no non-test consumer remains or explicitly retained with a named production consumer; tests alone are not sufficient reason to retain the HTTP route.
-- [ ] No removed human functionality is hidden behind compatibility flags or alternate UI branches.
-- [ ] Completion Report contains the required REMOVE/RETAIN/DEFER reference-audit table.
+- [x] `/preview` authenticates, resolves the selected Studio shop and renders only the minimal ARCH-024 Test Conversations shell.
+- [x] `/preview` does not call `listTools()` or `listReleases()` and does not parse Tool definitions for Preview sources.
+- [x] `src/studio/preview/preview-screen.tsx` is deleted.
+- [x] `src/studio/preview/client.ts` is deleted.
+- [x] The canonical replacement human UI module is `src/studio/test-conversations/**`; later ARCH-024 tasks must not recreate the deleted Preview screen/client.
+- [x] The old Preview screen/client tests are deleted rather than rewritten to preserve old behaviour.
+- [x] The Release Composer no longer exposes a `Test conversation` button or navigates to `source=release-composer`.
+- [x] Release `Edit as new release`/clone behaviour remains intact.
+- [x] `StudioComposerContext` contains no Preview-only Tool handoff state and no special `/preview` dirty-navigation bypass.
+- [x] `components/preview-handoff.tsx` is deleted and unreferenced.
+- [x] Normal `/preview` DOM contains none of the old Tool/Release/Fixture/Model-mode controls.
+- [x] Code Response sample execution can still POST/read/cancel `/api/studio/preview/tool-tests` with its existing semantics.
+- [x] Conversation backend infrastructure remains available and behaviourally unchanged for later ARCH-024 tasks.
+- [x] Static Preview model/provider/API-key configuration remains available and behaviourally unchanged for the later atomic model-runtime cutover.
+- [x] `/api/studio/preview/fixtures` is either deleted because no non-test consumer remains or explicitly retained with a named production consumer; tests alone are not sufficient reason to retain the HTTP route.
+- [x] No removed human functionality is hidden behind compatibility flags or alternate UI branches.
+- [x] Completion Report contains the required REMOVE/RETAIN/DEFER reference-audit table.
 
 ## Validation
 
@@ -758,67 +758,203 @@ Do not interpret "clean sheet" as permission to remove reusable backend correctn
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `app/preview/page.tsx`; added `src/studio/test-conversations/test-conversations-screen.tsx`.
+- Removed `src/studio/preview/preview-screen.tsx`, `src/studio/preview/client.ts`, `components/preview-handoff.tsx`, and `app/api/studio/preview/fixtures/route.ts`.
+- Removed obsolete `tests/preview-screen.test.tsx` and `tests/preview-client.test.ts`; added `tests/test-conversations-screen.test.tsx` and `tests/arch024-preview-cleanup.test.ts`.
+- Updated `components/studio-workspace.tsx`, `components/studio-composer-context.tsx`, `src/studio/tools/tool-editor.tsx`, `tests/studio-workspace.test.tsx`, and `tests/tool-authoring-screen.test.tsx` to remove Preview handoff state and preserve Release cloning/authoring coverage.
 
 ### Work Completed
 
-None
+- `/preview` now authenticates, resolves `shopId`, and renders only the exact temporary Test Conversations shell inside `StudioScreen`; it no longer loads Tools/Releases or accepts Preview source data.
+- Removed the obsolete Preview UI/client, Release Composer Preview action, PreviewHandoff component, Tool handoff context state, `/preview` navigation-blocker exception, and ToolEditor handoff restoration branch. Release `Edit as new release` still seeds `release` composer state and navigates to `/releases?cloneResponseFrom=...`.
+- Deleted the fixture catalogue HTTP route after the post-deletion audit found only the retained service method; kept fixture definitions and `PreviewService.listFixtures()`.
+- Kept the conversation API/service/store/runtime, Code Response Tool-test routes and service semantics, and static Preview model/provider/key configuration unchanged.
+- Added the exact shell DOM test, a bounded source regression guard, Release handoff absence coverage, and Release clone state/navigation coverage. Updated the existing Release creation fixture expectation to the current `Custom store advice` / `cap_01FEATURE` UI contract.
+
+### Attempt 2 — Architect Review Corrections
+
+This attempt was evidence-only. No implementation source or tests were changed. All four Attempt 1 review requests are addressed below.
+
+1. **Implemented — launcher worktree and start-of-attempt evidence.** The deterministic launcher prepared Attempt 2 at `2026-10-01T15:50:56Z` with executor `copilot`, claim commit `e7a5f63cda88d9e931a3ca4fb59210fb94f0ec78` pushed to the parent task branch. Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`. Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-001`, branch `task/ARCH-024-COMMERCE-001`. Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-001`, branch `task/ARCH-024-COMMERCE-001`. Both dedicated worktrees were reused at their canonical paths; neither shared workspace checkout nor another task worktree was switched or reused. For both task branches, launcher synchronization reported remote task branch fast-forward `not-needed` and `origin/main` incorporation `already-current`. Implementation `git submodule sync --recursive` and `git submodule update --init --recursive` both passed; recursive submodule status was `ready`, with `database` at recorded commit `15859f16a7b9a889df8f70e1ecc29b27df8e31de`.
+2. **Implemented — commit, remote and clean-worktree evidence.** Implementation commit `066948f8e04cc989c8eab3f8a5cd34bb409f1d6f` (`Remove obsolete human Preview workflow`) is present locally and at `origin/task/ARCH-024-COMMERCE-001`. The prior parent report commit `66ee12f4` was pushed to the same named parent task branch before Attempt 2; the launcher then added claim commit `e7a5f63cda88d9e931a3ca4fb59210fb94f0ec78` on that branch. Before this evidence update, implementation worktree status was clean at `066948f8e04cc989c8eab3f8a5cd34bb409f1d6f`; parent worktree status was clean at the pushed claim commit. Final report commit and remote head are recorded after publication in the task branch history; no implementation submodule gitlink was staged or changed.
+3. **Implemented — durable full-suite non-regression evidence.** Re-ran the complete suite in the implementation worktree with `npm test -- --run tests/studio-workspace.test.tsx --reporter=json --outputFile=/tmp/arch024-commerce-001-studio-workspace-attempt2.json`: 7 passed, 6 failed. Reproduced the same suite against an isolated `git archive` snapshot of launcher-recorded pre-task implementation commit `caa34f8718423ea8b1692da05d73de63a35c518a`, using the installed dependency tree via a `node_modules` symlink: `git archive caa34f8718423ea8b1692da05d73de63a35c518a | tar -x -C "$BASELINE_DIR"`, then `./node_modules/.bin/vitest run tests/studio-workspace.test.tsx --reporter=json --outputFile=/tmp/arch024-commerce-001-studio-workspace-baseline.json` from that snapshot: 5 passed, 7 failed. All six Attempt 2 failures are the identical baseline failures listed here:
+
+  - `exposes the failure class when a named Studio action rejects unexpectedly` — cannot find `Immutable MCP name`.
+  - `authors a reusable tool without publishing and navigates to its returned ID` — cannot find `Immutable MCP name`.
+  - `retains incremental invalid JSON and saves only the complete canonical tool definition` — cannot find `Save draft`.
+  - `resets editor state when a mounted detail changes to another record` — cannot find `Save draft`.
+  - `keeps newer edits dirty when an earlier save completes` — cannot find `Save draft`.
+  - `retains editor input after stale CAS` — cannot find `Save draft`.
+
+  Baseline had one additional failure, `composes exact published members and a response contract before release creation`, because it queried the obsolete `Conversation core` / `cap_01CORE` fixture. The current task test uses the present `Custom store advice` / `cap_01FEATURE` fixture and passes. Source comparison from baseline `caa34f8` confirms `src/studio/tools/tool-editor.tsx` changes only remove the Preview-only Composer Tool fallback and its dirty-state effect; it does not change the Tool editor controls implicated by the six failures. The changed Studio workspace test code updates the stale Release fixture expectation and replaces the old Preview handoff test with handoff-absence and Release-clone assertions. Therefore Attempt 2 introduces no new failing test; the six existing failures remain failures and are not counted as passing.
+4. **Implemented — exact successful validation record.** The following commands passed during Attempt 1 and were not invalidated by this evidence-only Attempt 2:
+
+  - `npm test -- --run tests/test-conversations-screen.test.tsx tests/arch024-preview-cleanup.test.ts tests/studio-workspace.test.tsx -t 'TestConversationsScreen|obsolete Preview UI cleanup|does not expose a Release Composer Preview handoff|keeps Release edit-as-new composer cloning|composes exact published members'` — 3 files, 5 passed.
+  - `npm test -- --run tests/test-conversations-screen.test.tsx tests/arch024-preview-cleanup.test.tsx tests/studio-workspace.test.tsx tests/tool-authoring-screen.test.tsx -t 'TestConversationsScreen|obsolete Preview UI cleanup|does not expose a Release Composer Preview handoff|keeps Release edit-as-new composer cloning|composes exact published members|Tool authoring screen|restores|authoring session'` — 4 files, 8 passed.
+  - `npm run code-runtime:package && npm test -- --run tests/preview-routes.test.ts tests/code-editor.test.tsx tests/code-response-processor.test.ts tests/external-preview.test.ts tests/external-wiring.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/tool-authoring-screen.test.tsx` — 8 files, 115 passed.
+  - `npm run typecheck` — passed.
+  - `npm run lint -- app/preview/page.tsx components/studio-workspace.tsx components/studio-composer-context.tsx src/studio/tools/tool-editor.tsx src/studio/test-conversations/test-conversations-screen.tsx tests/test-conversations-screen.test.tsx tests/arch024-preview-cleanup.test.ts tests/studio-workspace.test.tsx tests/tool-authoring-screen.test.tsx` — zero errors; four warnings remain in unrelated files.
+  - `npm run build` — passed; existing Nunjucks dynamic-dependency warnings only.
+  - `git diff --check` — passed.
+
+  The required unfiltered `tests/studio-workspace.test.tsx` command is explicitly not green: current 7 passed / 6 baseline failures versus pre-task 5 passed / 7 failures. No failed case is represented as passing.
 
 ### Validation Results
 
-None
+- PASS: focused shell/cleanup/Release/Tool Authoring selection: 4 test files, 8 tests passed (remaining tests intentionally skipped by the focused name filter).
+- PASS: retained Preview route and Code Response boundary command after `npm run code-runtime:package`: 8 test files, 115 tests passed, including all six required retained suites and `tests/preview-routes.test.ts`.
+- PASS: `npm run typecheck`.
+- PASS: task-targeted `npm run lint -- ...` for changed implementation/test files: 0 errors; 4 warnings remain in unrelated `src/studio/code-response/code-response-panel.tsx` and `tests/agent-configuration-model.test.ts`.
+- PASS: `npm run build`; only existing Nunjucks dynamic-dependency warnings were emitted. Build route output includes `/preview`, all conversation routes, and the Tool-test route family.
+- PASS: `git diff --check`.
+- PASS: post-change UI/source audit: no obsolete handoff controls remain in human Preview/Release/Composer UI; the only old-term matches are the new absence assertions, Test Conversations shell/nav copy, and Tool Authoring's unrelated local `setTool` state.
+- PASS: fixture endpoint audit: no `/api/studio/preview/fixtures` consumer remains; `src/commerce/preview/service.ts:listFixtures()` remains as backend-owned code.
+- PASS: retained Tool-test route audit confirms `src/studio/code-response/production-port.ts` calls POST, GET, and cancel; the route tests remain.
+- BLOCKED / BASELINE-VERIFIED: full `npm test -- --run tests/studio-workspace.test.tsx --reporter=json --outputFile=/tmp/arch024-commerce-001-studio-workspace-attempt2.json`: 7 passed, 6 failed with the exact names and errors recorded under Attempt 2 above. The isolated pre-task `caa34f8718423ea8b1692da05d73de63a35c518a` run had the same six failures plus the now-corrected stale Release fixture failure (5 passed, 7 failed). No new failure was introduced.
 
 ### Reference Audit
 
-Not Run
+R1 audit was run before source edits with the prescribed broad `rg` expression. Post-R4/R9 fixture and route audits were rerun after deletion.
 
 Required final table:
 
 | Symbol / route | Current path(s) | Current supported consumer | Disposition | Reason |
 |---|---|---|---|---|
+| Human Preview screen and browser client | `src/studio/preview/preview-screen.tsx`; `src/studio/preview/client.ts`; `tests/preview-screen.test.tsx`; `tests/preview-client.test.ts` | None outside the obsolete human Preview UI/tests | REMOVE | Human UI/client and tests were exclusive to the removed Tool/Release/Fixture/Model Preview workflows. |
+| Release Composer `Test conversation` handoff and PreviewHandoff | `components/studio-workspace.tsx`; `components/preview-handoff.tsx`; `tests/studio-workspace.test.tsx` | None after removal | REMOVE | This was the obsolete Release-to-Preview path. Release edit-as-new remains covered and navigates within Releases. |
+| Preview-only Composer Tool state and navigation bypass | `components/studio-composer-context.tsx`; `src/studio/tools/tool-editor.tsx`; `tests/tool-authoring-screen.test.tsx` | Only old Preview handoff restoration | REMOVE | Persisted Tool authoring and `authoringSession` remain the supported editor state paths; normal dirty/locked navigation applies to `/preview`. |
+| Fixture catalogue HTTP route | `app/api/studio/preview/fixtures/route.ts`; old `src/studio/preview/client.ts` and its deleted test | No non-test production consumer after old client deletion | REMOVE | R9 audit found only the retained `PreviewService.listFixtures()` method; fixture definitions/service method remain. |
+| Tool-test route family | `app/api/studio/preview/tool-tests/**`; `src/commerce/preview/**`; `src/commerce/external-preview/**` | `src/studio/code-response/production-port.ts` uses POST, GET and cancel; required route/service tests | RETAIN | Accepted Code Response sample execution/reconciliation/cancellation and UNKNOWN semantics depend on these routes. |
+| Conversation routes and backend | `app/api/studio/preview/conversations/**`; `src/commerce/preview/**`; `lib/preview/**` | Later ARCH-024 Test Conversations work, especially COMMERCE-004..007 | RETAIN | Preserved without behavior or contract changes for later composition/runtime tasks. |
+| Preview provider/model/key configuration | `lib/server/config.ts`; `src/commerce/integration/preview/model-provider.ts`; Preview configuration tests | Later COMMERCE-007 and Gateway cutover | DEFER | Static model runtime is intentionally retained until the atomic OpenRouter cutover. |
+| `/preview` URL and shell navigation label | `app/preview/page.tsx`; `components/studio-shell.tsx`; `src/studio/test-conversations/**` | Studio Admin selected-shop Test Conversations shell; COMMERCE-005 continues in the new module | RETAIN | URL boundary and selected-shop control remain; the old `src/studio/preview/**` browser UI is not reused. |
 
 ### Deviations
 
-None
+- `src/studio/tools/tool-editor.tsx` and `tests/tool-authoring-screen.test.tsx` were additional task-owned changes discovered by typecheck and reference tracing: ToolEditor still consumed the removed Preview-only Composer Tool handoff. Only that handoff override/dirty effect was removed; persisted draft and authoring-session behavior were preserved.
+- The full Studio workspace suite has the six Save draft selector failures documented above. They are outside the removed Preview handoff path; no Tool editor control redesign was attempted.
+- Attempt 2 made no source/test change: Architect Review requested durable execution and baseline non-regression evidence only, and the synchronized baseline comparison confirmed no task-introduced regression.
 
 ### Assumptions
 
-None
+- The launcher preparation packet is authoritative for task worktree, claim and submodule evidence; no startup preparation was repeated.
 
 ### Unresolved Issues
 
-None
+- The six baseline `studio-workspace.test.tsx` failures still need separate Tool-editor/test-fixture triage. They do not fail the focused cleanup/Release checks or retained Code Response boundary suites and are unchanged from the pre-task implementation baseline.
 
 ### Architectural Concerns
 
-None
+- None identified. The implementation preserves the later ARCH-024 ownership boundaries and leaves the existing Architect Review section unchanged.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
 
-None
+#### Attempt 2 review — Accepted — 2026-10-01
+
+Reviewed implementation `066948f8e04cc989c8eab3f8a5cd34bb409f1d6f` and parent report
+`d2aebf2d61182c4feda7e6c439a2b882bec8e3e9` against the ARCH-024 COMMERCE-001
+task contract, the parent architecture and the Attempt 1 evidence-only correction contract.
+Attempt 2 is accepted.
+
+The evidence-only correction is complete. The Completion Report now records the
+launcher-resolved canonical workspace, dedicated parent and implementation worktrees, matching
+`task/ARCH-024-COMMERCE-001` branches, start-of-attempt synchronization, recursive submodule
+materialisation, implementation and parent publication commits, remote-task-branch publication
+and final clean-worktree state. The implementation submodule remains at
+`066948f8e04cc989c8eab3f8a5cd34bb409f1d6f`; Attempt 2 made no implementation source or test
+changes. Independent tree comparison of the submitted Attempt 1 and Attempt 2 archives confirms
+no file under `moda-interact-commerce/` changed during the evidence-only attempt.
+
+The required Studio workspace non-regression proof is durable. The current exact suite is
+7 passed / 6 failed; the isolated synchronized pre-task implementation baseline
+`caa34f8718423ea8b1692da05d73de63a35c518a` is 5 passed / 7 failed. Every one of the six
+current failures is present in that baseline. The baseline has one additional stale Release
+fixture failure, `composes exact published members and a response contract before release
+creation`, which COMMERCE-001 correctly updates to the current `Custom store advice` /
+`cap_01FEATURE` fixture and now passes. COMMERCE-001 therefore introduces no new failing test.
+The six remaining Tool-editor failures are pre-existing/non-regressing and do not block this task.
+
+The source-level conclusions from Attempt 1 remain valid: `/preview` is the selected-shop-aware
+minimal Test Conversations shell; obsolete human Preview/Release/Fixture composition and handoff
+state are removed; Release cloning remains intact; the fixture HTTP route had no surviving
+production consumer; and the conversation, Code Response Tool-test and static Preview model
+configuration seams required by later ARCH-024 work remain preserved. No Feature composition,
+effective-model resolution, selected-Shop Tool execution, OpenRouter runtime, database or Gateway
+behaviour is introduced by this task.
+
+The recorded successful validation remains applicable because Attempt 2 changed documentation
+evidence only: focused shell/cleanup/Release/Tool Authoring checks passed, the retained Preview and
+Code Response backend boundary suite passed 115 tests, typecheck passed, targeted lint passed with
+zero errors, production build passed with the existing Nunjucks warnings, and `git diff --check`
+passed. The full Studio workspace suite is intentionally recorded as baseline-verified rather than
+misrepresented as green.
+
+#### Attempt 1 review — Changes Requested — 2026-10-01
+
+Attempt 1 found the implementation architecturally conformant in substance but withheld
+acceptance for evidence only. It required the Completion Report to durably record launcher-resolved
+physical worktree isolation, start-of-attempt synchronization, recursive submodule evidence,
+implementation/parent publication commits and clean-worktree state, plus baseline proof for the six
+reported legacy Studio Tool-editor failures. No source change was requested unless that evidence
+revealed a regression. Attempt 2 satisfies that correction contract without implementation churn.
 
 ### Reviewed Files
 
-None
+Implementation/review evidence:
+
+- complete `moda-interact-commerce/` Attempt 1 -> Attempt 2 tree comparison (no changes)
+- `app/preview/page.tsx`
+- `src/studio/test-conversations/test-conversations-screen.tsx`
+- `components/studio-workspace.tsx`
+- `components/studio-composer-context.tsx`
+- `src/studio/tools/tool-editor.tsx`
+- `tests/studio-workspace.test.tsx`
+- `tests/tool-authoring-screen.test.tsx`
+
+Parent workspace:
+
+- `docs/decisions/commerce/ARCH-024/COMMERCE-001-remove-redundant-human-preview-functionality.md`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-004-compose-test-conversations-from-selected-features.md`
+- `docs/decisions/commerce/ARCH-024/_index.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 
 ### Validation Reviewed
 
-None
+- Verified the Attempt 2 Completion Report contains the launcher/worktree, branch, synchronization, recursive-submodule, publication-SHA and clean-worktree evidence requested by Attempt 1.
+- Compared the submitted Attempt 1 and Attempt 2 `moda-interact-commerce/` trees: no source/test delta.
+- Reviewed the exact current/baseline Studio suite evidence: current 7 passed / 6 failed; synchronized pre-task baseline 5 passed / 7 failed; all six current failures are shared with baseline and no new failure is introduced.
+- Reviewed the corrected Release fixture expectation that accounts for the one baseline-only failure.
+- Reviewed the recorded focused tests, retained backend boundary tests (115 passed), typecheck, targeted lint, production build and `git diff --check` results.
+- The submitted review archive intentionally contains no usable Git metadata or installed dependency tree, so remote heads and the Vitest/build commands were not independently queried/re-executed in this review environment; the durable launcher/validation evidence and unchanged Attempt 2 source tree satisfy the evidence-only correction contract.
 
 ### Architecture Conformance
 
-Pending
+Conforms. COMMERCE-001 establishes the intended clean human-UI seam for later Feature-composed Test
+Conversations while retaining the backend correctness/runtime boundaries required by accepted Code
+Response behaviour and COMMERCE-004..007. Attempt 2 resolves the only outstanding review issue:
+durable execution and baseline non-regression evidence.
 
 ### Follow-up
 
-None
+`ARCH-024-COMMERCE-001` is **Complete / Accepted at Attempt 2**.
+
+Dependency reconciliation promotes exactly:
+
+```text
+ARCH-024-COMMERCE-004 -> Ready
+```
+
+`ARCH-024-SHARED-001` remains independently Ready. All other ARCH-024 tasks remain gated by their
+declared dependencies. The six pre-existing Tool-editor Studio test failures remain separate
+baseline debt and do not block COMMERCE-004. No downstream implementation is started implicitly by
+this review.
