@@ -11,13 +11,15 @@ execution_mode: agent
 completion_mode: automatic
 status: blocked
 priority: 32
-executor: copilot
-claimed_at: 2026-09-30T23:35:49Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-BACKGROUND-002
   - ARCH-023-BACKGROUND-003
   - ARCH-023-BACKGROUND-006
+  - ARCH-023-DATABASE-005
+  - ARCH-023-BACKGROUND-007
 enables:
   - ARCH-023-BACKGROUND-005
 created: 2026-09-29
@@ -596,6 +598,9 @@ Produces the deployable Background process required by Gateway.
 
 - `ARCH-023-BACKGROUND-002`
 - `ARCH-023-BACKGROUND-003`
+- `ARCH-023-BACKGROUND-006`
+- `ARCH-023-DATABASE-005`
+- `ARCH-023-BACKGROUND-007`
 
 ## Enables
 
@@ -664,14 +669,35 @@ The required scheduler leases cross the database/runtime ownership boundary. Shi
 ## Architect Review
 
 ### Review Status
-Pending
+Blocked — Attempt 1
+
 ### Review Notes
-Pending.
+The blocker is valid and crosses repository ownership boundaries. The task-owned Merchant Knowledge entrypoint draft requires the exact lease identities `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`, but the pinned database `BackgroundRuntimeLeaseName` enum does not contain either value. The shared Background lease service also has no global cadence branch for either lease identity.
+
+Do not work around this by casting strings, reusing an unrelated lease, introducing Redis/advisory locking, adding cadence columns, or editing the database/runtime lease implementation inside BACKGROUND-004. The already-agreed scheduler intervals remain 60 seconds for PENDING reconciliation and 3600 seconds for upload cleanup.
+
+No acceptance decision is made on the partial processing implementation in this blocked review. No source correction is requested unless refreshed validation after the prerequisites exposes a regression.
+
 ### Reviewed Files
-Pending.
+
+- `src/entrypoints/merchant-knowledge.ts` task-owned draft
+- `src/runtime/background-runtime-lease.ts`
+- `database/prisma/schema.prisma`
+- `tests/unit/runtime/background-runtime-lease.test.ts`
+- `docs/decisions/background/ARCH-023/BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
+
 ### Validation Reviewed
-Pending.
+
+Reviewed the Completion Report evidence: focused Merchant Knowledge processing tests, pgvector promotion integration, build, readiness, diagnostics and whitespace checks passed as recorded; the repository-wide suite remains non-clean for the recorded mixed baseline/fixture failures. The final entrypoint/scheduler proof remains legitimately open because the required lease contract is unavailable.
+
 ### Architecture Conformance
-Pending.
+
+The repository agent correctly stopped at the ownership boundary. The missing enum values belong to `moda_database`; the global lease cadence mapping belongs to `moda_background` runtime infrastructure but is outside BACKGROUND-004's authorised surface. Shipping R14 before both prerequisites exist would make lease acquisition invalid or cadence enforcement incomplete.
+
 ### Follow-up
-Pending.
+
+1. `ARCH-023-DATABASE-005` adds exactly the two Merchant Knowledge lease enum values and its forward migration.
+2. After DATABASE-005 is Complete/accepted, `ARCH-023-BACKGROUND-007` pins that database revision and adds the two fixed global cadence mappings (`60` and `3600` seconds) with focused/runtime PostgreSQL proof.
+3. BACKGROUND-004 remains Blocked until both tasks are Complete/accepted and their accepted changes are available on its execution baseline. Preserve the current partial implementation. Before reclaim, ensure the task-owned untracked entrypoint draft is durably checkpointed on the implementation task branch or otherwise made clean without stashing, resetting or discarding it.
+4. Then reconcile BACKGROUND-004 `blocked -> ready`; the next launcher claim becomes Attempt 2. Attempt 2 finishes R14 and the remaining entrypoint/full validation only; it must not begin BACKGROUND-005.

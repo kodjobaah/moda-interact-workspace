@@ -13,7 +13,7 @@ updated: 2026-10-01
 
 Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current Background executable frontier is `ARCH-023-BACKGROUND-004`; its acquisition and merchant-activation prerequisites are Complete. `BACKGROUND-005` remains Pending until BACKGROUND-004 completes. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
+`ARCH-023-BACKGROUND-004` Attempt 1 is Blocked at the final entrypoint boundary: the accepted database enum does not yet contain the two required Merchant Knowledge runtime lease identities, and the shared Background lease service has no cadence mapping for them. The prerequisite sequence is `ARCH-023-DATABASE-005 -> ARCH-023-BACKGROUND-007 -> ARCH-023-BACKGROUND-004`; DATABASE-005 is Ready, BACKGROUND-007 is Pending on it, and BACKGROUND-005 remains Pending until BACKGROUND-004 completes. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3265,14 +3265,17 @@ ADMIN-004  -> final Feature.activationMode = MERCHANT_OPT_IN
    +----> SHOPIFY-004 -> SHOPIFY-005
    |       existing FeaturePreferences is canonical merchant ON/OFF
    |
-   +----> BACKGROUND-006 -> BACKGROUND-004 -> BACKGROUND-005
-           PENDING/processing eligibility requires merchant ON
+   +----> BACKGROUND-006 -----------------------+
+           PENDING/processing eligibility      |
+                                                v
+        DATABASE-005 -> BACKGROUND-007 -> BACKGROUND-004 -> BACKGROUND-005
+          lease enum      lease cadence       final worker
 ```
 
 `COMMERCE-002` is Complete / Accepted Attempt 4 with the final bootstrap activation-mode guard. `COMMERCE-004` owns only the remaining request-time preference gate after ADMIN-004 establishes the final Admin-owned product-policy row.
 
 The initial Merchant Knowledge database persistence remains consolidated in DATABASE-001. The earlier split
-DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard.
+DATABASE-002/DATABASE-003 definitions are historical and superseded by DATABASE-001. DATABASE-004 is a separate narrow forward-migration correction discovered by COMMERCE-002's real PostgreSQL successor-release proof; it changes only the ARCH-021 release Feature snapshot insert guard. DATABASE-005 is a second narrow forward migration discovered by BACKGROUND-004 Attempt 1 and adds only the two Merchant Knowledge `BackgroundRuntimeLeaseName` enum values required by the accepted scheduler design.
 
 Commerce-adjacent execution state after COMMERCE-002 Attempt 4 acceptance:
 
@@ -3342,6 +3345,12 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — BACKGROUND-004 Attempt 1 blocked on runtime lease contract
+
+- Confirmed the partial processing implementation correctly stopped at a cross-repository ownership boundary: the task-owned final entrypoint requires `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`, while the pinned `BackgroundRuntimeLeaseName` enum and shared lease cadence `CASE` contain neither identity.
+- Materialised `ARCH-023-DATABASE-005` as the enum/migration-only prerequisite and `ARCH-023-BACKGROUND-007` as the Background runtime cadence-only prerequisite. The fixed global cadences remain exactly 60 seconds and 3600 seconds; no new `BackgroundRuntimeConfig` columns, queue or locking mechanism are introduced.
+- Returned no acceptance decision on BACKGROUND-004's partial implementation. BACKGROUND-004 remains Blocked at Attempt 1 until both prerequisites are Complete/accepted; BACKGROUND-005 remains Pending.
 
 ### 2026-10-01 — BACKGROUND-006 Attempt 1 accepted
 
