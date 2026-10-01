@@ -1,7 +1,7 @@
 ---
 id: ARCH-025
 title: Shopify BillingService maintainability refactor
-status: agreed
+status: in_progress
 coordinator: moda_architect
 created: 2026-10-01
 updated: 2026-10-01
@@ -11,7 +11,7 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed.
+In Progress.
 
 ARCH-025 is intentionally scoped to the Shopify application repository only:
 
@@ -21,7 +21,7 @@ moda-interact/
 
 It refactors the current `app/services/billing/billing.service.ts` monolith behind its existing public façade. It does **not** refactor Background billing reconciliation, CheckoutRecovery, Admin pricing-plan authoring, Commerce Studio, Gateway, Shared, Database or System Test.
 
-This architecture is **defined but not materialised** by this portable packet. No task branch, task worktree, implementation worktree, claim, commit or push is asserted. The developer later materialises executable tasks through the normal `/moda-task <TASK_ID>` path in the canonical development workspace.
+ARCH-025 is now materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` is architect-accepted Complete and the sequential execution frontier has advanced to `ARCH-025-SHOPIFY-002`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
 
 ## Problem
 
@@ -185,23 +185,24 @@ tests/unit/services/billing.service.test.ts
 with:
 
 ```text
-127 tests
+213 tests
 SHA-256: bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4
+Known pre-task failure baseline: ARCH025-TEST-001
 ```
 
-This file is a frozen ARCH-025 regression asset.
+This file is a frozen ARCH-025 regression asset. Attempt 2 of `ARCH-025-SHOPIFY-001` proved that, at exact pre-task commit `b6d1fd6d362f2a6a302a735e0a54abd8ee677782`, the byte-identical file executes 213 tests with 18 date-sensitive failures, and that the submitted extraction commit has the identical 18 failing identifiers. The same differential also proved an identical 24-failure full-suite set. Those facts are recorded durably as `ARCH025-TEST-001` in `docs/development-baseline.md`.
 
 Every ARCH-025 implementation task MUST satisfy all of the following:
 
 1. do not modify `tests/unit/services/billing.service.test.ts`;
 2. verify its SHA-256 remains exactly `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`;
-3. run all 127 tests through the unchanged façade and require them to pass;
+3. run the complete frozen façade suite and require that it introduces no failing test identifier outside `ARCH025-TEST-001`; if an upstream change resolves a baseline failure, do not reintroduce it;
 4. add a separate focused test file for the newly extracted capability;
-5. run the full existing `npm test` suite and introduce no new failure;
+5. run the full existing `npm test` suite and introduce no new failure relative to the current pre-task state; when the observed failure set still matches `ARCH025-TEST-001`, reference that baseline instead of rediscovering it;
 6. do not add `.skip`, `.only`, `test.todo` or equivalent bypasses to make the task pass;
 7. do not weaken production assertions/error handling solely to satisfy extraction tests.
 
-A task with even one regression in the 127-test BillingService suite is not eligible for review.
+A task with any task-introduced regression in the frozen BillingService suite is not eligible for review. A known `ARCH025-TEST-001` failure is not itself a task regression, but any changed, additional or worsened failure must be investigated.
 
 ## Data Model
 
@@ -304,9 +305,9 @@ The parent workspace contains the architecture/task coordination files. Reposito
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-SHOPIFY-001 | Extract current billing-period projection/cycle invariants | Ready | - |
-| ARCH-025-SHOPIFY-002 | Extract operational BillingPlan resolution/catalogue reads | Pending | SHOPIFY-001 |
-| ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service | Pending | SHOPIFY-002 |
+| ARCH-025-SHOPIFY-001 | Extract current billing-period projection/cycle invariants | Complete | - |
+| ARCH-025-SHOPIFY-002 | Extract operational BillingPlan resolution/catalogue reads | Complete | SHOPIFY-001 |
+| ARCH-025-SHOPIFY-003 | Extract Subscription/provider read service | Ready | SHOPIFY-002 |
 | ARCH-025-SHOPIFY-004 | Extract merchant recovery-capacity read service | Pending | SHOPIFY-003 |
 | ARCH-025-SHOPIFY-005 | Extract merchant billing-state read service | Pending | SHOPIFY-004 |
 | ARCH-025-SHOPIFY-006 | Extract initial activation workflow | Pending | SHOPIFY-005 |
@@ -356,7 +357,7 @@ SHOPIFY-011
 
 A separate `moda_system_test` task is **not applicable** to this Shopify-only structural initiative because ARCH-025 introduces no new integrated cross-service behaviour, infrastructure topology, database contract or externally observable product feature.
 
-Architecture completion instead requires every implementation task to preserve the frozen 127-test façade suite and introduce no full-suite regression. This decision does not waive repository-level integration tests already exercised by `npm test`.
+Architecture completion instead requires every implementation task to preserve the byte-identical 213-test façade asset and introduce no task-only failures beyond the durable `ARCH025-TEST-001` baseline, while also introducing no full-suite regression. This decision does not waive repository-level integration tests already exercised by `npm test`.
 
 ## Open Questions
 
@@ -366,3 +367,5 @@ None.
 
 - 2026-10-01: Initial agreed Shopify-only BillingService maintainability architecture and eleven-task deterministic extraction sequence defined from the supplied current snapshot.
 - 2026-10-01: Meticulous source/task reconciliation tightened hidden helper ownership, preserved the frozen-suite private resolution delegate, introduced single owners for shared lock/retry mechanics, corrected initial-Paid finalisation to remain inside the caller-owned sync transaction, fixed notification/no-contract semantics, preserved deliberate provider/catalogue rereads and raw UNMAPPED/SYNC_ERROR BillingPeriod projection, added explicit Stop Conditions, and made hash validation cross-platform.
+- 2026-10-01: SHOPIFY-001 Attempt 2 proved the exact pre-task and submitted commits have identical frozen-suite and full-suite failure identifiers. Corrected the frozen asset count from 127 to 213, established durable baseline `ARCH025-TEST-001`, accepted SHOPIFY-001, and advanced SHOPIFY-002 to Ready.
+- 2026-10-01: SHOPIFY-002 Attempt 1 accepted the move-only `BillingPlanResolutionService` extraction at implementation commit `804894cc598d394c7d1f61bc2828c61743d1145f`. The façade retains its frozen private resolver delegate, all observed failures remain within `ARCH025-TEST-001`, and SHOPIFY-003 advances to Ready.

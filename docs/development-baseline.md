@@ -343,3 +343,108 @@ ARCH-019-SHOPIFY-001 baseline `c4fd514` and reviewed implementation `08af00b` co
 At SHOPIFY-003 `37c62cd`, the task-relevant access-policy syntax repair allows full typechecking to reach 171 existing diagnostics in 27 untouched files. Full lint reports 20 errors and 2 warnings, also only in untouched files. Architect reruns confirmed these totals and byte-identical diagnostic files relative to starting `30c69f8` (37 distinct files across both checks). No changed-file diagnostics remain. Older 48-error and seven-parser-error observations above are historical; neither describes this revision's current full result. Other task branches may still contain the parser blocker until they consume this repair. This is baseline documentation, not a clean-check exemption for future regressions.
 
 <!-- MODA-TYPECHECK-001:END -->
+
+<!-- MODA-ARCH025-TEST-001:START -->
+## ARCH025-TEST-001 — ARCH-025 frozen BillingService and full-suite pre-task failures
+
+**Disposition:** WARN
+
+**Repository:**
+
+```text
+moda-interact/
+```
+
+**Scope:**
+
+```text
+ARCH-025 Shopify BillingService maintainability refactor
+```
+
+**Reference evidence — 2026-10-01:**
+
+```text
+pre-task commit:       b6d1fd6d362f2a6a302a735e0a54abd8ee677782
+SHOPIFY-001 commit:    ed1e4ebe00f29e16e4acb1d799784a6b60b23531
+frozen test SHA-256:   bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4
+frozen suite:          213 total; 18 failed / 195 passed on both commits
+full pre-task suite:   997 total; 24 failed / 940 passed / 33 skipped
+full submitted suite:  1008 total; 24 failed / 951 passed / 33 skipped
+```
+
+The submitted suite has 11 additional passing tests because SHOPIFY-001 adds the
+focused billing-period projection suite. Attempt 2 compared sorted failing test
+identifiers directly and proved there is no failing identifier present only on
+the submitted commit.
+
+### Frozen-suite failing identifiers
+
+The byte-identical `tests/unit/services/billing.service.test.ts` currently has
+these 18 known failures on both reference commits:
+
+```text
+BillingService subscription projection > schedules the next pre-close reconciliation for a pack-enabled Free cycle
+BillingService recovery credit packs > creates a pending pack request for a mapped FREE plan
+BillingService recovery credit packs > creates a pending pack request for a mapped PAID_METERED plan
+BillingService recovery credit packs > uses Serializable isolation and locks Subscription before single-flight lookup
+BillingService recovery credit packs > returns the existing purchase without creating another usage event
+BillingService recovery credit packs > blocks a second unresolved purchase for the same provider context
+BillingService recovery credit packs > replays an existing purchase without provider availability
+BillingService recovery credit packs > fails closed when the durable configuration changes after provider verification
+BillingService recovery credit packs > fails closed when live provider evidence changes before the transaction
+BillingService recovery credit packs > fails closed when the transaction re-read changes the billing period identity
+BillingService recovery credit packs > fails closed when the transaction re-read changes the billing period boundary
+BillingService recovery credit packs > ignores legacy singular top-up configuration fields
+BillingService recovery credit packs > persists fractional provider-before quantity and derived identity when legacy subscription ID is null
+BillingService recovery credit packs > blocks an unresolved purchase from a previous period or provider identity for the same offer
+BillingService recovery credit packs > allows independent unresolved purchases for different event handles
+BillingService recovery credit packs > ignores client-supplied plan and pricing fields
+BillingService recovery credit packs > recovers a concurrent same-id unique conflict by returning the committed purchase
+BillingService recovery credit packs > verifies Shopify before opening the Prisma write transaction
+```
+
+The observed trigger is date-sensitive fixture data around
+`2026-10-01T00:00:00.000Z` combined with the unchanged production default
+`now = new Date()`. This baseline records the proven failure set; it does not
+change production phase semantics and it does not authorize editing the frozen
+ARCH-025 regression asset.
+
+### Additional full-suite failing identifiers
+
+The same six non-frozen failures were also present on both reference commits:
+
+```text
+tests/unit/billing-ui.test.ts > canonical merchant billing UI > sends onboarding plan CTAs to Shopify plan selection
+tests/unit/merchant-knowledge-read-model.test.ts > limits the catalogue to supported WEB_PAGE pairs and filters source types before the cap
+tests/unit/merchant-navigation-history.test.tsx > merchant navigation and history links > renders localized navigation without stale Messages label for ACTIVE
+tests/unit/merchant-pricing-renderer.test.jsx > Onboarding merchant pricing renderer > renders structured DTO card content and hides raw usage pricing mechanics
+tests/unit/merchant-pricing-renderer.test.jsx > Onboarding merchant pricing renderer > renders a generic unavailable state for an empty catalogue
+tests/unit/merchant-pricing-renderer.test.jsx > Onboarding merchant pricing renderer > omits the Free proof item when the active catalogue has no Free plan
+```
+
+### ARCH-025 agent rule
+
+For ARCH-025 tasks:
+
+1. keep `tests/unit/services/billing.service.test.ts` byte-identical and verify
+   the exact SHA-256 above;
+2. run the complete frozen suite;
+3. if its failing identifiers are exactly a subset of the 18 identifiers above,
+   reference `ARCH025-TEST-001` and continue when the task introduces no other
+   regression;
+4. if any failing identifier is new, changed or otherwise worse, investigate it
+   as a potential task regression before review;
+5. if an upstream change resolves a baseline failure, do not reintroduce it;
+6. run full `npm test` and do not use this baseline to excuse any task-only
+   failure;
+7. do not edit the frozen suite, add bypasses, or weaken production behaviour to
+   preserve this baseline.
+
+The known baseline never substitutes for a task's focused tests, typecheck,
+targeted lint, build, or other explicitly required validation.
+
+### Resolution
+
+When these failures are corrected by their owning work, update this entry rather
+than requiring ARCH-025 extraction tasks to recreate the old failure set.
+<!-- MODA-ARCH025-TEST-001:END -->
