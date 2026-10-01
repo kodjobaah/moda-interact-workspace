@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 51
-executor: copilot
-claimed_at: 2026-10-01T00:38:50Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-SHOPIFY-001
@@ -266,7 +266,7 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Implemented for Attempt 1 and submitted to `moda_architect` for review. This is not an architect acceptance decision.
+Attempt 2 corrections implemented and submitted to `moda_architect` for review. This is not an architect acceptance decision.
 ### Files Changed
 - `app/routes.ts`
 - `app/routes/app/recovery-settings/route.tsx`
@@ -308,6 +308,38 @@ Durable OFF-state PENDING revisions are activated by the existing Background per
 None within this task's scope.
 ### Architectural Concerns
 None identified. Commerce retrieval enforcement remains owned by COMMERCE-004; ingestion remains Background-owned.
+
+### Attempt 2
+#### Files Changed
+- `app/services/merchant-knowledge/merchant-knowledge.server.ts`
+- `tests/integration/merchant-knowledge-source-lifecycle.integration.test.ts`
+- `tests/unit/merchant-knowledge-url-validation.test.ts`
+
+#### Corrections Implemented
+- Delete and reorder now resolve current entitlement immediately after locking the Shop and deny before mutation without a valid entitlement. They do not require merchant opt-in or source-count eligibility; existing OFF-state operations under entitlement remain covered and passing.
+- Edit and refresh compute the R3 eligible source window under the Shop lock: active Purpose/Data Format, pair in current C2 `allowedSourceTypes`, position then id order, first `maxKnowledgeSources`. An excess source is denied before metadata, generation, revision or enqueue changes; reorder can move a source into the window.
+- URL validation checks raw and canonical URL lengths and returns only the validated canonical value. A Unicode path regression proves a raw input shorter than 2,048 characters is rejected when `URL.toString()` exceeds 2,048, before transaction entry.
+- PostgreSQL regressions cover a two-source downgrade to `maxKnowledgeSources: 1` (second source denied on edit/refresh without revision/enqueue; reorder moves it into the window and refresh succeeds) and no-entitlement delete/reorder denial with source rows and positions unchanged.
+
+#### Launcher and Worktree Evidence
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-004`, `task/ARCH-023-SHOPIFY-004`.
+- Implementation worktree/branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-004`, `task/ARCH-023-SHOPIFY-004`.
+- Shared workspace checkout switched/mutated for task work: no. Shared implementation checkout switched/mutated for task work: no. Another task worktree reused: no.
+- Prepared launcher synchronized both task worktrees; parent sync was current and implementation began at `a33dc681d8e26adefd9b0ce5b759016d5baed5ce`. Read-only verification confirmed both task branches contain `origin/main`; no startup preparation or resynchronization was repeated.
+- Dependency gate passed: SHOPIFY-001, SHARED-002 and ADMIN-004 complete. Recursive implementation submodules were ready; `database` was at `2eb17ee910491e8f9df82736fc0a843844415947`.
+- Parent claim commit `b2336d9cb1ae8302dd0f8b2498d23dbe4f23cc41` and implementation commit `d17cfffc6c03dec77632d3e9cae5770ca2fc74d8` were pushed on their respective task branches.
+
+#### Validation Results
+- Focused Merchant Knowledge, activation and Recovery Settings suites: 9 files, 36 tests passed.
+- Disposable PostgreSQL lifecycle/concurrency suite: 1 file, 7 tests passed. Per-command environment: `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock`, `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock`, `MODA_DISPOSABLE_INTEGRATION=1`; global Docker configuration was not changed.
+- `npm run typecheck`: passed.
+- Changed-file ESLint: passed; existing parser warning notes TypeScript 5.9.3 is outside its declared `<5.4.0` support range. Changed-file diagnostics: no errors.
+- `npm run build`: passed with existing dependency annotation/externalization and large-chunk warnings; no build errors.
+- `git diff --check`: passed.
+
+#### Deviations and Unresolved Issues
+No scope deviations or unresolved issues. No schema, migration, shared contract, Background, Commerce, or SHOPIFY-005 changes were made.
 
 ## Architect Review
 
