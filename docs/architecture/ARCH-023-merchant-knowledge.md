@@ -13,7 +13,7 @@ updated: 2026-10-01
 
 Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current Background executable frontier is `ARCH-023-BACKGROUND-004`; its acquisition and merchant-activation prerequisites are Complete. `BACKGROUND-005` remains Pending until BACKGROUND-004 completes. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
+The current Merchant Knowledge worker-scheduling prerequisite frontier is `ARCH-023-DATABASE-005`, returned to Ready for an Attempt 2 evidence-only correction. `ARCH-023-BACKGROUND-007` remains Pending until DATABASE-005 is Complete; `ARCH-023-BACKGROUND-004` remains Blocked until BACKGROUND-007 is Complete; and `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3342,6 +3342,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — DATABASE-005 Attempt 1 changes requested
+
+- Reviewed the enum-only Merchant Knowledge Background runtime lease implementation as source/schema conformant: `BackgroundRuntimeLeaseName` adds exactly `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`, `FeatureActivationMode` remains unchanged, and the migration contains only the two additive enum statements.
+- Reviewed the bounded static validator and disposable `pgvector/pgvector:pg17` migration/runtime proof as sufficient technical validation for the implementation semantics; no cadence or business-schema change belongs in DATABASE-005.
+- Withheld acceptance only because the Completion Report omits the mandatory launcher-resolved parent/implementation worktree and branch identities, start-of-attempt synchronization evidence, and recursive-submodule preparation/status evidence. Attempt 2 is evidence/workflow-only unless refreshed validation exposes a regression.
+- Returned DATABASE-005 to Ready with Attempt 1 preserved. BACKGROUND-007 remains Pending on DATABASE-005 and BACKGROUND-004 remains Blocked behind BACKGROUND-007; no downstream implementation was started.
 
 ### 2026-10-01 — BACKGROUND-006 Attempt 1 accepted
 
