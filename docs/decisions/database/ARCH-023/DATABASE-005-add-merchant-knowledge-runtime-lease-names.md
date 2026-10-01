@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 63
-executor: copilot
-claimed_at: 2026-10-01T08:30:33Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
@@ -197,10 +197,19 @@ This task must not solve the Background runtime cadence mapping. Enum ownership 
 ## Completion Report
 
 ### Status
-Ready for architect review.
+Ready for architect review. Attempt 2 completed as the requested evidence/workflow correction; the task is returned to `review` with the claim cleared.
+
+### Attempt 2 Preparation Evidence
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-DATABASE-005`, branch `task/ARCH-023-DATABASE-005`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-DATABASE-005`, branch `task/ARCH-023-DATABASE-005`.
+- Both canonical task worktrees were reused. Launcher synchronization reported remote task fast-forward not needed and `origin/main` already current for both worktrees; parent synchronization HEAD was `c086739e3e35c5100bb9c77e56210797a8e379cb`. The parent task claim commit is `2d06b1db3d011482a1b014684441aa118bee698d`.
+- Dependency gate passed: `ARCH-023-DATABASE-001` and `ARCH-023-DATABASE-004` were complete.
+- Recursive `git submodule sync --recursive` and `git submodule update --init --recursive` passed. Launcher status was ready, recursive true, entries `[]` (no implementation submodules).
+- The implementation worktree started at `b34a563436bbc89b6ca3e26b43a0bd03116a1a66` (`feat(database): add Merchant Knowledge lease names`). Its `HEAD` equaled `origin/task/ARCH-023-DATABASE-005`; the worktree was clean before and after validation. This is the existing Attempt 1 implementation commit, already pushed/upstream. No implementation commit was created for Attempt 2 because no implementation changes were needed or authorized.
 
 ### Files Changed
-Implementation changes:
+Attempt 1 implementation files, unchanged in Attempt 2:
 - `prisma/schema.prisma`
 - `prisma/migrations/20261001010000_arch023_merchant_knowledge_runtime_leases/migration.sql`
 - `scripts/validate-arch023-merchant-knowledge-runtime-leases.mjs`
@@ -209,31 +218,35 @@ Implementation changes:
 - `docs/generated/prisma-erd.puml`
 - `docs/generated/erd.png`
 
+Attempt 2 changes only this task report on the parent task branch.
+
 ### Work Completed
-Added the two exact Merchant Knowledge lease labels to the existing `BackgroundRuntimeLeaseName` enum and the fixed additive migration. The static validator confirms the full expected enum value set and exact enum-only migration text. The PostgreSQL proof applied the complete migration chain in an invocation-owned, network-isolated `pgvector/pgvector:pg17` container, inserted both enum labels as lease rows, verified them, deleted the fixture rows, and removed the container. No cadence columns, lease table columns, business tables, indexes, or constraints were changed.
+Attempt 1 added the two exact Merchant Knowledge lease labels to the existing `BackgroundRuntimeLeaseName` enum and the fixed additive migration. Attempt 2 made no schema, migration, validator, package, or generated-artifact changes. The rerun PostgreSQL proof applied the complete migration chain in an invocation-owned, network-isolated `pgvector/pgvector:pg17` container, inserted and verified both labels as `BackgroundRuntimeLease.name` values, cleaned up fixture rows, and removed its container. No cadence columns, lease table columns, business tables, indexes, or constraints were changed.
 
 ### Validation Results
-Passed:
-- `npm run format`
-- `npm run validate`
-- `npm run prisma:generate`
-- `npm run test:arch023-merchant-knowledge-runtime-leases`
-- `npm run test:arch023-merchant-knowledge-runtime-leases:postgres`
-- `npm run erd`
-- `node --check` for both new scripts
-- changed-file diagnostics: no errors
-- `git diff --check`
+All required validations were rerun from the canonical implementation worktree and passed:
+- `npm run format` completed; no working-tree changes resulted.
+- `npm run validate` passed; Prisma reported the schema valid.
+- `npm run prisma:generate` passed with Prisma Client v6.19.3.
+- `npm run test:arch023-merchant-knowledge-runtime-leases` passed the focused static contract.
+- `npm run test:arch023-merchant-knowledge-runtime-leases:postgres` passed. It applied migrations through `20261001010000_arch023_merchant_knowledge_runtime_leases`, accepted and verified both enum labels on `BackgroundRuntimeLease.name`, cleaned fixture rows, and logged removal of its invocation-owned isolated container. Initial connection-not-ready messages were emitted during container startup and did not affect the successful proof.
+- `npm run erd` completed successfully; ERD generation left the implementation worktree clean.
+- `node --check scripts/validate-arch023-merchant-knowledge-runtime-leases.mjs` passed (exit 0).
+- `node --check scripts/test-arch023-merchant-knowledge-runtime-leases-postgres.mjs` passed (exit 0).
+- Changed-file diagnostics reported no errors for `prisma/schema.prisma`, both new scripts, and `package.json`.
+- `git diff --check` passed (exit 0).
+- Final implementation status was clean, and implementation `HEAD` still equaled its upstream task branch at `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`.
 
-The disposable PostgreSQL proof applied migrations through `20261001010000_arch023_merchant_knowledge_runtime_leases`; both labels were accepted by PostgreSQL and persisted on `BackgroundRuntimeLease.name`. The invocation-owned container was removed in cleanup.
+Prisma printed an informational notice that a newer major/RC release is available; it was not a validation failure.
 
 ### Deviations
-None. The ERD artifacts were regenerated by the repository's normal `npm run erd` workflow.
+None. No implementation changes or additional implementation commit were required; the normal `npm run erd` workflow regenerated artifacts without leaving changes.
 
 ### Assumptions
 The fixed scheduler cadence mapping remains owned by `ARCH-023-BACKGROUND-007`; this task adds enum labels only.
 
 ### Unresolved Issues
-None.
+None. No new baseline issue or blocker appeared during Attempt 2 validation.
 
 ### Architectural Concerns
 None. No runtime cadence or business-state schema was introduced.
