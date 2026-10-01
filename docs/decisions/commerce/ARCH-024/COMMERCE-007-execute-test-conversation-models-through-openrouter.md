@@ -214,6 +214,7 @@ import {
   CommerceModelConfigurationSchema,
   CommerceModelProviderSchema,
   CommerceProviderModelIdSchema,
+  CommerceModelSelectionSourceSchema,
 } from '@modainteract/moda-interact-shared/commerce/model';
 import {
   OpenRouterModelClient,
@@ -245,7 +246,9 @@ In `src/commerce/preview/types.ts`, add strict schemas/types equivalent to:
 
 ```ts
 export const PreviewConversationModelSnapshotSchema = z.strictObject({
-  selectionSource: z.enum(['PLATFORM', 'SHOP']),
+  selectionSource: CommerceModelSelectionSourceSchema,
+  merchantPricingPlanId: SavedIdSchema.nullable(),
+  shopifyPlanHandle: z.string().trim().min(1).max(255).nullable(),
   catalogueEntryId: SavedIdSchema,
   provider: CommerceModelProviderSchema,
   providerModelId: CommerceProviderModelIdSchema,
@@ -309,7 +312,7 @@ The browser's configuration summary is display-only and MUST NOT be accepted as 
 Start succeeds only when:
 
 ```text
-effective model source = PLATFORM or SHOP
+effective model source = PLATFORM, PRICING_PLAN or SHOP
 effective model.model != null
 Platform Instructions are present and valid
 Shop Instructions are either absent or valid
@@ -319,6 +322,8 @@ Map the model snapshot exactly from the effective model result:
 
 ```text
 selectionSource              -> model.selectionSource
+merchantPricingPlanId        -> model.merchantPricingPlanId
+shopifyPlanHandle            -> model.shopifyPlanHandle
 catalogueEntryId             -> model.model.catalogueEntryId
 provider                     -> model.model.provider
 providerModelId              -> model.model.providerModelId
@@ -326,7 +331,15 @@ configurationSchemaVersion   -> model.model.configurationSchemaVersion
 configuration                -> model.model.configuration
 ```
 
-Validate `provider`, `providerModelId` and `configuration` again through the published Shared schemas before storing.
+Validate `provider`, `providerModelId` and `configuration` again through the published Shared schemas before storing. Enforce snapshot provenance exactly:
+
+```text
+selectionSource = PRICING_PLAN
+    -> merchantPricingPlanId and shopifyPlanHandle are non-null
+
+selectionSource = PLATFORM or SHOP
+    -> merchantPricingPlanId and shopifyPlanHandle are null
+```
 
 Map instructions exactly from ARCH-023 additive effective instructions:
 

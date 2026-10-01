@@ -20,6 +20,8 @@ depends_on:
   - ARCH-024-ADMIN-001
 enables:
   - ARCH-024-COMMERCE-003
+  - ARCH-024-ADMIN-003
+  - ARCH-024-ADMIN-004
 created: 2026-09-30
 updated: 2026-10-01
 ---
@@ -213,6 +215,7 @@ Do not modify the database schema/migration inside this task.
 - Deleting a Model Availability.
 - OpenRouter credential administration; `ARCH-024-ADMIN-003` owns it.
 - Agent model selection.
+- Merchant Pricing Plan -> model association; `ARCH-024-ADMIN-004` owns that product-tier configuration.
 - Commerce Studio changes.
 - Test Conversation changes.
 - Background runtime changes.

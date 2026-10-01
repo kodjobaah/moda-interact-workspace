@@ -15,7 +15,7 @@ DATABASE-001 + SHARED-004 + COMMERCE-002 + ADMIN-003
         |
         v
 BACKGROUND-001
-production effective model + OpenRouter + runner logger wiring
+production SHOP -> PRICING_PLAN -> PLATFORM model + OpenRouter + runner logger wiring
         |
         v
 BACKGROUND-002
@@ -27,7 +27,7 @@ GATEWAY-001
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-use-effective-openrouter-model-production-commerce-turns.md) | Replace conversational Groq model path with effective ARCH-024 model resolution + current OpenRouter credential + published Shared model/LangGraph runner; inject canonical logger; retain hardened MCP client | Pending | DATABASE-001, SHARED-004, COMMERCE-002, ADMIN-003 |
+| [BACKGROUND-001](BACKGROUND-001-use-effective-openrouter-model-production-commerce-turns.md) | Replace conversational Groq model path with `SHOP -> current PRICING_PLAN -> PLATFORM` resolution + current OpenRouter credential + published Shared model/LangGraph runner; inject canonical logger; retain hardened MCP client | Pending | DATABASE-001, SHARED-004, COMMERCE-002, ADMIN-003 |
 | [BACKGROUND-002](BACKGROUND-002-retire-redundant-commerce-agent-langgraph-wrapper.md) | Delete the unused one-node Background LangGraph wrapper and direct dependency while preserving the official MCP SDK client | Pending | BACKGROUND-001, SHARED-004 |
 
 ## Execution frontier

@@ -14,7 +14,7 @@ The Commerce sequence intentionally removes the obsolete human Preview compositi
 COMMERCE-001  cleanup old human Preview UI
        |
        v
-COMMERCE-002  effective available + one active model
+COMMERCE-002  effective available + SHOP -> PRICING_PLAN -> PLATFORM model
        |
        v
 COMMERCE-003  Studio model selection-only
@@ -37,8 +37,8 @@ Additional dependencies from Database/Shared/Admin/ARCH-023 are shown below.
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [COMMERCE-001](COMMERCE-001-remove-redundant-human-preview-functionality.md) | Remove obsolete human-facing Tool/Release/Fixture Preview composition while retaining referenced internal runtime seams | Ready | - |
-| [COMMERCE-002](COMMERCE-002-resolve-effective-available-active-model.md) | Resolve effective Shop model availability and exactly one active model with fail-closed explicit overrides | Pending | DATABASE-001, SHARED-004, COMMERCE-001 |
-| [COMMERCE-003](COMMERCE-003-make-commerce-studio-model-selection-only.md) | Retire Catalogue administration from Studio and retain only Platform/Shop active-model selection | Pending | COMMERCE-002, ADMIN-002 |
+| [COMMERCE-002](COMMERCE-002-resolve-effective-available-active-model.md) | Resolve effective Shop availability and exactly one model with fail-closed `SHOP -> current PRICING_PLAN -> PLATFORM` precedence | Pending | DATABASE-001, SHARED-004, COMMERCE-001 |
+| [COMMERCE-003](COMMERCE-003-make-commerce-studio-model-selection-only.md) | Retire Catalogue administration from Studio; retain explicit Platform/Shop selection and surface inherited `PRICING_PLAN` vs `PLATFORM` provenance | Pending | COMMERCE-002, ADMIN-002 |
 | [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Pending | COMMERCE-003 |
 | [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create Conversation Configuration Snapshots | Pending | COMMERCE-004, ARCH-023-COMMERCE-003 |
 | [COMMERCE-006](COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md) | Execute exact snapshot Tool revisions through production execution against the real selected Shop | Pending | COMMERCE-005 |

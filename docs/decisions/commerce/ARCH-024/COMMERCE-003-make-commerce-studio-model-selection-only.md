@@ -41,7 +41,7 @@ Coordinator:
 
 ## Objective
 
-Remove Model Catalogue administration from Commerce Studio and leave Agent Configuration responsible only for selecting the one active Platform model and an optional Shop model override from the models that Admin has made available.
+Remove Model Catalogue administration from Commerce Studio and leave Agent Configuration responsible only for selecting the one active Platform model and an optional explicit Shop model override from the models that Admin has made available. When the Shop override is cleared, Studio must display the inherited winner resolved by COMMERCE-002: current Price Plan model when configured, otherwise Platform.
 
 The completed behaviour must be:
 
@@ -58,7 +58,9 @@ Commerce Studio
     SHOP configuration
         selects one effectively available model
         OR
-        uses Platform model by storing modelId = NULL
+        stores modelId = NULL for inherited resolution:
+            Price Plan model when configured
+            otherwise Platform model
 ```
 
 Commerce Studio MUST NOT create, edit, enable, disable, reassign or otherwise administer `CommerceModelAvailability`, `CommerceModelCatalogueEntry` or `CommerceOpenRouterCredential`.
@@ -103,7 +105,9 @@ Platform modelId
     one selected Platform model
 
 Shop modelId = NULL
-    use Platform model
+    no explicit Shop override
+    -> effective resolver uses Price Plan model when configured
+    -> otherwise Platform model
 
 Shop modelId != NULL
     explicit Shop selection
@@ -145,6 +149,7 @@ Do not change the Shared package version established by ARCH-024-COMMERCE-002 un
 - Admin Model Availability implementation; ARCH-024-ADMIN-001 owns it.
 - Admin Model Catalogue implementation; ARCH-024-ADMIN-002 owns it.
 - Admin OpenRouter credential management.
+- Editing `MerchantPricingPlan.commerceModelId`; ARCH-024-ADMIN-004 owns Price Plan model product configuration.
 - Creating, editing, enabling, disabling or reassigning Catalogue Entries from Commerce Studio.
 - Model Availability mutation from Commerce Studio.
 - OpenRouter credential lookup/decryption.
@@ -176,7 +181,7 @@ READ
 WRITE
     set Platform modelId
     set Shop modelId
-    clear Shop modelId -> NULL (Use Platform model)
+    clear Shop modelId -> NULL (Use inherited model: Price Plan -> Platform)
 ```
 
 The Studio MUST NOT expose or call Catalogue/Availability/Credential administration operations.
@@ -373,6 +378,22 @@ No Platform models are available. Configure Model Availability in Admin.
 - do not query the global catalogue as fallback.
 
 ### R9 — Shop model UI uses effective Shop availability only
+### R9A — Shop UI must display inherited model provenance
+
+When the Shop Agent Configuration has `modelId = NULL`, the UI MUST call/use the COMMERCE-002 effective model result for the same Shop/environment and render the inherited winner explicitly.
+
+Render one of these states:
+
+```text
+Inherited from Price Plan — <displayName> (<provider>/<providerModelId>)
+Inherited from Platform — <displayName> (<provider>/<providerModelId>)
+Inherited model unavailable — <bounded reason>
+```
+
+For a Price Plan winner, show the current pricing-plan display identity when already available to the server-side view model, but do not expose or add any merchant model-selection control. The minimum required provenance is `selectionSource = PRICING_PLAN`.
+
+The clear/null option remains a single choice. Do NOT add separate `Use Price Plan model` and `Use Platform model` choices because those are not merchant/Shop selections; they are the deterministic inheritance chain.
+
 
 `ShopAgentConfiguration` MUST load model data with:
 
@@ -446,7 +467,7 @@ Current selection unavailable — <modelId>
 The selected Shop model is no longer available. Select another available model or use the Platform model.
 ```
 
-4. allow `SUPER_ADMIN` to repair it either by selecting a valid effective model or by choosing `Use platform model`;
+4. allow `SUPER_ADMIN` to repair it either by selecting a valid effective model or by choosing `Use inherited model`;
 5. do not automatically clear the override on load.
 
 ### R12 — Server-side availability validation remains authoritative
@@ -504,7 +525,7 @@ Update the top-level Agent Configuration lede so it no longer says Commerce Stud
 Use wording equivalent to:
 
 ```text
-Select the active CommerceAgent model for the Platform and optional Shop override from models made available by Admin.
+Select the active CommerceAgent Platform model and optional Shop override from models made available by Admin. Shops without an override inherit their current Price Plan model when configured, otherwise the Platform model.
 ```
 
 Do not remove or redesign Prompt/Instruction components in this task.
@@ -548,17 +569,19 @@ Update/add tests proving at minimum:
 13. Platform and Shop availability entries are labelled with the correct provenance suffix;
 14. two different Catalogue Entry IDs with the same provider/model identity remain two options;
 15. selecting an available model calls `setShopModelSelection` with exact Shop ID/model ID/current `modelEditVersion`;
-16. `Use platform model` calls `clearShopModelSelection` with current `modelEditVersion`;
-17. a broken explicit Shop selection renders the unavailable sentinel + warning and is not automatically cleared;
-18. `SUPER_ADMIN` can repair a broken selection by valid replacement or Platform inheritance;
-19. existing Prompt/Instruction selection behaviour continues to pass unchanged;
-20. `ADMIN` cannot mutate.
+16. `Use inherited model` calls `clearShopModelSelection` with current `modelEditVersion`;
+17. null Shop selection renders the COMMERCE-002 inherited winner as `PRICING_PLAN` or `PLATFORM`;
+18. the UI does not offer separate Price Plan-vs-Platform inheritance choices;
+19. a broken explicit Shop selection renders the unavailable sentinel + warning and is not automatically cleared;
+20. `SUPER_ADMIN` can repair a broken selection by valid replacement or inherited Price Plan/Platform resolution;
+21. existing Prompt/Instruction selection behaviour continues to pass unchanged;
+22. `ADMIN` cannot mutate.
 
 #### Server/API removal
 
-21. `model-server-actions.ts` no longer exports Catalogue create/update/enable/global-list operations;
-22. removed Catalogue mutation input types/port methods have no remaining source reference;
-23. selection Server Actions still return existing typed error/reconciliation behaviour.
+23. `model-server-actions.ts` no longer exports Catalogue create/update/enable/global-list operations;
+24. removed Catalogue mutation input types/port methods have no remaining source reference;
+25. selection Server Actions still return existing typed error/reconciliation behaviour.
 
 ### R18 — No new runtime/model-provider dependency
 
@@ -580,6 +603,7 @@ This is a Studio ownership/selection task only.
 - [ ] Implement valid, unavailable and empty Platform selection states exactly as specified.
 - [ ] Replace Shop global-catalogue loading with `listEffectiveAvailableModels(shopId)`.
 - [ ] Render deterministic Platform/Shop availability provenance in Shop options.
+- [ ] Render the COMMERCE-002 inherited winner and `PRICING_PLAN | PLATFORM` provenance whenever Shop `modelId = NULL`; do not add separate inheritance controls.
 - [ ] Implement broken explicit Shop selection recovery without auto-clear.
 - [ ] Remove Commerce Studio global Catalogue Server Actions and mutation contracts.
 - [ ] Remove now-dead Catalogue service methods/compatibility aliases after reference audit.
@@ -686,9 +710,9 @@ Catalogue/Availability authoring is owned by `moda_admin`.
 - [ ] Platform selector receives only Platform-available models from COMMERCE-002.
 - [ ] Shop selector receives only Platform + exact-Shop available models from COMMERCE-002.
 - [ ] Platform Agent Configuration selects one Platform-available model using current CAS state.
-- [ ] Shop Agent Configuration selects one effective model or clears to `modelId = NULL` / Platform inheritance.
+- [ ] Shop Agent Configuration selects one explicit effective model or clears to `modelId = NULL`; null renders the deterministic Price Plan -> Platform inherited winner from COMMERCE-002.
 - [ ] Platform and Shop invalid durable selections remain visible, fail closed, and are repairable without automatic clearing.
-- [ ] Shop dropdown distinguishes Platform vs Shop Availability provenance.
+- [ ] Shop dropdown distinguishes Platform vs Shop Availability provenance, while inherited status separately distinguishes `PRICING_PLAN` vs `PLATFORM` selection provenance.
 - [ ] Distinct Catalogue Entry IDs are never deduplicated by provider/model identity.
 - [ ] Forged/stale model IDs remain rejected server-side through `assertModelSelectable(...)`.
 - [ ] Existing `ADMIN` read-only / `SUPER_ADMIN` mutation authorization remains intact.
@@ -792,11 +816,14 @@ An unavailable selected model is not equivalent to no selected model:
 
 ```text
 Shop modelId = NULL
-    intentional Platform inheritance
+    intentional inherited resolution
+    -> Price Plan model when configured
+    -> otherwise Platform model
 
 Shop modelId = unavailable-id
     explicit broken override
     must remain visible until repaired
+    must NOT inspect/fall back to Price Plan or Platform
 ```
 
 The same distinction applies to a broken Platform selected model versus no Platform selection.

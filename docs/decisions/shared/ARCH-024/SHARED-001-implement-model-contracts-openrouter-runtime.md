@@ -40,7 +40,7 @@ Coordinator:
 
 ## Objective
 
-Publish one bounded Shared implementation that defines the canonical ARCH-024 model/availability/configuration contracts and provides a thin Node-only LangChain `ChatOpenRouter` integration that satisfies the existing Commerce runner model interface without changing Commerce turn orchestration in this task. The dependent SHARED-002 task owns the LangGraph orchestration refactor.
+Publish one bounded Shared implementation that defines the canonical ARCH-024 model/availability/configuration contracts, including Price Plan model-assignment/selection provenance, and provides a thin Node-only LangChain `ChatOpenRouter` integration that satisfies the existing Commerce runner model interface without changing Commerce turn orchestration in this task. The dependent SHARED-002 task owns the LangGraph orchestration refactor.
 
 ## Context
 
@@ -92,15 +92,15 @@ The persisted `configuration` object is intentionally extensible. Adding a new O
 This task owns all of the following in `moda-interact-shared`:
 
 1. a browser/runtime-safe public model-contract entrypoint;
-2. exact Zod schemas and TypeScript types for Model Availability, Catalogue Entry identity/configuration and Agent model selection;
+2. exact Zod schemas and TypeScript types for Model Availability, Catalogue Entry identity/configuration, Platform/Shop Agent model selection, Price Plan model assignment and effective selection source;
 3. an extensible bounded OpenRouter-compatible model configuration object;
 4. an explicit list of runtime/security fields that persisted Admin configuration is forbidden to override;
-5. one named existing-runner model dependency type (`CommerceModelInvoker`);
-6. a Node-only `OpenRouterModelClient` backed by `@langchain/openrouter` `ChatOpenRouter`;
-7. deterministic translation from OpenRouter-style persisted configuration to `ChatOpenRouter` fields / `modelKwargs`;
-8. deterministic translation between existing Moda `ModelRequest` / `ModelStep` and LangChain messages/tool calls;
-9. build/package public exports and clean-entrypoint validation;
-10. focused unit tests with no live OpenRouter network calls.
+7. one named existing-runner model dependency type (`CommerceModelInvoker`);
+8. a Node-only `OpenRouterModelClient` backed by `@langchain/openrouter` `ChatOpenRouter`;
+9. deterministic translation from OpenRouter-style persisted configuration to `ChatOpenRouter` fields / `modelKwargs`;
+10. deterministic translation between existing Moda `ModelRequest` / `ModelStep` and LangChain messages/tool calls;
+11. build/package public exports and clean-entrypoint validation;
+12. focused unit tests with no live OpenRouter network calls.
 
 ## Out of Scope
 
@@ -454,7 +454,35 @@ export const CommerceAgentModelSelectionSchema = z.discriminatedUnion("scope", [
 ]);
 ```
 
-`SHOP.modelId === null` means **Use Platform model**. Shared validates the durable shape only. Shared MUST NOT resolve the effective model or silently substitute a Platform model.
+`SHOP.modelId === null` means **no explicit Shop override**. Shared validates the durable Agent Configuration shape only. The authoritative Commerce/Background resolver may then select the current Price Plan model and finally the Platform model. Shared MUST NOT perform that resolution itself.
+
+Export the canonical effective selection-source contract exactly:
+
+```ts
+export const CommerceModelSelectionSourceSchema = z.enum([
+  "PLATFORM",
+  "PRICING_PLAN",
+  "SHOP",
+]);
+
+export type CommerceModelSelectionSource =
+  z.infer<typeof CommerceModelSelectionSourceSchema>;
+```
+
+Export the runtime-safe Price Plan assignment shape exactly:
+
+```ts
+export const CommercePricingPlanModelAssignmentSchema = z.strictObject({
+  merchantPricingPlanId: z.string().min(1).max(128),
+  shopifyPlanHandle: z.string().trim().min(1).max(255),
+  modelId: z.string().min(1).max(128).nullable(),
+});
+
+export type CommercePricingPlanModelAssignment =
+  z.infer<typeof CommercePricingPlanModelAssignmentSchema>;
+```
+
+This contract is deliberately not another Agent Configuration scope. `PRICING_PLAN` selection comes from `MerchantPricingPlan.commerceModelId`, not from `CommerceAgentConfiguration`, and the assignment is global product configuration rather than environment-scoped selection.
 
 Also export the runtime-safe resolved model shape used by Commerce/Background after their authoritative resolution:
 
@@ -720,25 +748,27 @@ Tests must prove at minimum:
 1. provider/model identifiers validate and combine deterministically;
 2. a provider not previously known to Moda (for example `anthropic`) validates without a new enum/schema branch;
 3. Platform/Shop Availability discriminants validate correctly;
-4. `SHOP.modelId = null` is valid and means durable Platform inheritance;
-5. configuration `{}` is valid;
-6. the OpenRouter-style `temperature/top_p/reasoning/provider` example in R5 is valid;
-7. a previously unknown non-reserved option survives parsing and reaches `modelKwargs` unchanged;
-8. every R6 reserved key is rejected;
-9. prototype-pollution keys are rejected at nested depths;
-10. every R5 size/depth/node/key/array/string bound is enforced;
-11. provider + providerModelId maps to exactly one `provider/model` slug;
-12. known snake_case fields map to the exact ChatOpenRouter fields from R10;
-13. unknown options remain snake_case in `modelKwargs`;
-14. explicit credential is supplied to ChatOpenRouter and no environment lookup is required;
-15. `ModelRequest.maxOutputTokens`, Tool list, required Tool choice and disabled parallel Tool calls cannot be overridden by stored configuration;
-16. instructions/context/history/Tool-result translation preserves the R12 order and data-only framing;
-17. AbortSignal reaches the LangChain invocation;
-18. LangChain Tool calls map exactly into `ModelStep.calls`;
-19. output token usage maps exactly from `usage_metadata.output_tokens`;
-20. malformed Tool calls or usage fail closed;
-21. provider errors are redacted to `Commerce model unavailable`;
-22. no test makes a live OpenRouter network request.
+4. `SHOP.modelId = null` is valid and means no explicit Shop override; consumer resolution may then use `PRICING_PLAN` and finally `PLATFORM`;
+5. `CommerceModelSelectionSourceSchema` accepts exactly `PLATFORM | PRICING_PLAN | SHOP`;
+6. `CommercePricingPlanModelAssignmentSchema` accepts a non-empty plan ID/handle plus nullable modelId and rejects extra keys;
+7. configuration `{}` is valid;
+8. the OpenRouter-style `temperature/top_p/reasoning/provider` example in R5 is valid;
+9. a previously unknown non-reserved option survives parsing and reaches `modelKwargs` unchanged;
+10. every R6 reserved key is rejected;
+11. prototype-pollution keys are rejected at nested depths;
+12. every R5 size/depth/node/key/array/string bound is enforced;
+13. provider + providerModelId maps to exactly one `provider/model` slug;
+14. known snake_case fields map to the exact ChatOpenRouter fields from R10;
+15. unknown options remain snake_case in `modelKwargs`;
+16. explicit credential is supplied to ChatOpenRouter and no environment lookup is required;
+17. `ModelRequest.maxOutputTokens`, Tool list, required Tool choice and disabled parallel Tool calls cannot be overridden by stored configuration;
+18. instructions/context/history/Tool-result translation preserves the R12 order and data-only framing;
+19. AbortSignal reaches the LangChain invocation;
+20. LangChain Tool calls map exactly into `ModelStep.calls`;
+21. output token usage maps exactly from `usage_metadata.output_tokens`;
+22. malformed Tool calls or usage fail closed;
+23. provider errors are redacted to `Commerce model unavailable`;
+24. no test makes a live OpenRouter network request.
 
 ### R18 — Clean public-entrypoint validation is mandatory
 
@@ -872,7 +902,7 @@ Consumer tasks are intentionally not listed here until their ARCH-024 task defin
 - [ ] `./commerce/model` and `./commerce/model/node` are published build entrypoints with the exact browser/Node boundary in R1.
 - [ ] `@langchain/openrouter` and `@langchain/core` are pinned exactly as R2 requires and resolve one compatible core instance.
 - [ ] No closed model-provider enum exists in the new Shared contract.
-- [ ] Availability, Catalogue Entry, Agent selection and resolved-model shapes match R3-R7 exactly.
+- [ ] Availability, Catalogue Entry, Agent selection, Price Plan assignment/selection-source and resolved-model shapes match R3-R7 exactly.
 - [ ] Persisted configuration is direct OpenRouter-style extensible JSON, not a closed list of model parameters and not a Moda `parameters/routing` wrapper.
 - [ ] Unknown non-reserved configuration options survive unchanged within the bounded envelope.
 - [ ] Runtime/security-owned keys cannot be injected through stored configuration.

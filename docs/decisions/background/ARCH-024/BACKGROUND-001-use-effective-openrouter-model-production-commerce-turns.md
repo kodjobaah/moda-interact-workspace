@@ -87,8 +87,9 @@ src/commerce/host.ts
 That path conflicts with ARCH-024:
 
 - Admin owns Model Catalogue, Model Availability and the environment OpenRouter credential;
-- Commerce Studio owns the one active model selection;
-- ARCH-024-COMMERCE-002 defines the canonical Platform/Shop effective-model semantics;
+- Commerce Studio owns the explicit Platform/Shop Agent Configuration selection;
+- Platform Admin may associate a global Platform-available model with a Merchant Pricing Plan;
+- ARCH-024-COMMERCE-002 defines the canonical `SHOP -> PRICING_PLAN -> PLATFORM` effective-model semantics;
 - ARCH-024-SHARED-004 publishes the canonical model contracts and Node-only `OpenRouterModelClient` implementing the existing Shared `CommerceModelInvoker` boundary;
 - `CommerceOpenRouterCredential` stores one encrypted OpenRouter credential per `CommerceEnvironment`.
 
@@ -104,7 +105,7 @@ That wrapper delegates to `runCommerceAgent` and is not the production worker en
 
 `GROQ_API_KEY` is also used by the independent WhatsApp speech-transcription path. This task MUST NOT remove or reinterpret that speech-transcription configuration merely because CommerceAgent model execution moves to OpenRouter.
 
-ARCH-023 is frozen. Preserve whatever accepted Platform/Shop Instruction behaviour exists in the integrated baseline; do not redesign trusted-instruction semantics in this task.
+ARCH-023 is frozen. Preserve whatever accepted Platform/Shop Instruction behaviour exists in the integrated baseline; do not redesign trusted-instruction semantics in this task. Price Plan model assignment is ARCH-024 Platform product configuration only and MUST NOT introduce merchant model selection.
 
 ## Scope
 
@@ -166,6 +167,7 @@ Do not use a local Shared checkout, `npm link`, `file:` dependency or workspace 
 - Commerce Studio model selection UI.
 - Test Conversation/Preview execution; ARCH-024-COMMERCE-007 owns that path.
 - Changing ARCH-024-COMMERCE-002 selection semantics.
+- Editing Merchant Pricing Plan model assignments; ARCH-024-ADMIN-004 owns that control-plane surface.
 - Merchant-facing model selection; merchants never select the model.
 - LangGraph topology redesign, checkpointing or durable LangGraph state.
 - Tool/Capability/Release selection or MCP authorization changes.
@@ -190,6 +192,9 @@ At minimum use:
     CommerceEnvironmentSchema
     CommerceModelAvailabilitySchema
     CommerceModelCatalogueEntrySchema
+    CommerceModelSelectionSource
+    CommerceModelSelectionSourceSchema
+    CommercePricingPlanModelAssignmentSchema
     ResolvedCommerceModel
     ResolvedCommerceModelSchema
 
@@ -283,49 +288,37 @@ src/commerce/model-resolution.ts
 Export exactly:
 
 ```ts
+export type ResolvedProductionCommerceModel = {
+  selectionSource: CommerceModelSelectionSource;
+  selectionShopId: string | null;
+  merchantPricingPlanId: string | null;
+  shopifyPlanHandle: string | null;
+  model: ResolvedCommerceModel;
+};
+
 export async function resolveProductionCommerceModel(input: {
   db: PrismaClient;
   environment: CommerceEnvironment;
   shopId: string;
-}): Promise<ResolvedCommerceModel>;
+}): Promise<ResolvedProductionCommerceModel>;
 ```
 
-Execute the resolution in one Prisma transaction using `REPEATABLE READ`.
+Execute the resolution in one Prisma transaction using `REPEATABLE READ`. The resolver MUST use the same durable decision snapshot for the Shop override, current subscription/plan and Platform fallback.
 
-Within that transaction:
-
-1. require the exact `Shop.id = shopId` to exist;
-2. load at most the two `CommerceAgentConfiguration` rows for:
-   - `scope = PLATFORM`, `shopId = NULL`, exact `environment`;
-   - `scope = SHOP`, `shopId = input.shopId`, exact `environment`;
-3. include each selected `CommerceModelCatalogueEntry` and its `CommerceModelAvailability`;
-4. validate durable rows through the accepted Shared schemas before using them.
-
-Apply this exact winner algorithm:
+Within that transaction, load only what the winning branch requires and apply this exact precedence:
 
 ```text
-IF Shop configuration exists AND Shop.modelId != NULL:
-    validate that exact Shop-selected model
-    DO NOT require Platform model to be valid first
-    DO NOT fall back to Platform on failure
-    winner = Shop-selected model
-
-ELSE:
-    require Platform configuration with non-null modelId
-    validate Platform-selected model
-    winner = Platform-selected model
+1. SHOP explicit override
+2. current PRICING_PLAN model assignment
+3. PLATFORM default
 ```
 
-A Platform-selected model is valid only when all are true:
+#### R4.1 — Shop explicit override
 
-```text
-model.enabled = true
-availability.enabled = true
-availability.scope = PLATFORM
-availability.shopId = NULL
-```
-
-An explicit Shop-selected model is valid only when all are true:
+1. require the exact `Shop.id = input.shopId` to exist;
+2. load the `CommerceAgentConfiguration` row for `scope = SHOP`, `shopId = input.shopId`, exact `environment`;
+3. if that row exists and `modelId != NULL`, validate that exact selected model;
+4. a Shop-selected model is valid only when:
 
 ```text
 model.enabled = true
@@ -337,33 +330,119 @@ AND (
 )
 ```
 
-A Shop-selected model belonging to any other Shop is invalid.
+5. a Shop-selected model belonging to another Shop is invalid;
+6. if the explicit Shop selection is valid, return immediately with:
 
-Return exactly the published `ResolvedCommerceModel` shape and validate the final object with `ResolvedCommerceModelSchema` before returning it.
-
-The returned provenance is the **availability provenance of the winning catalogue entry**:
-
-```text
-sourceScope  = winning availability.scope
-sourceShopId = winning availability.shopId
+```ts
+{
+  selectionSource: "SHOP",
+  selectionShopId: input.shopId,
+  merchantPricingPlanId: null,
+  shopifyPlanHandle: null,
+  model: resolvedModel,
+}
 ```
 
-Do not mutate or clear `CommerceAgentConfiguration.modelId` when resolution fails.
+Do **not** query or require Price Plan/Platform selection validity before accepting a valid explicit Shop override. If an explicit Shop-selected model is invalid/disabled/unavailable, fail `UNAVAILABLE`; do not fall through.
 
-Missing Shop, missing selection, disabled model, disabled Availability, malformed persisted configuration, wrong-Shop Availability or database failure MUST fail bounded before model invocation. Never silently substitute another model.
+#### R4.2 — current Price Plan model assignment
+
+Only when there is no explicit Shop model (`Shop configuration missing` or `Shop.modelId = NULL`), resolve the Shop's **current** subscribed Price Plan.
+
+Use exactly:
+
+```text
+Shop.id
+  -> Shop.subscription (unique)
+  -> Subscription.status
+  -> Subscription.planId / Subscription.plan
+  -> BillingPlan.shopifyPlanHandle
+  -> MerchantPricingPlan.shopifyPlanHandle
+  -> MerchantPricingPlan.commerceModelId
+```
+
+Rules:
+
+1. only `Subscription.status IN (ACTIVE, TRIALING)` is eligible;
+2. require non-null current `Subscription.planId`/`Subscription.plan` before any Price Plan override can exist;
+3. use the current `BillingPlan.shopifyPlanHandle`;
+4. ignore `pendingPlanId`, `pendingPlan` and `pendingShopifyPlanHandle`; a future upgrade/downgrade receives no model benefit until it becomes current;
+5. match `MerchantPricingPlan` by exact unique `shopifyPlanHandle`;
+6. do **not** require `MerchantPricingPlan.isActive = true` for an existing subscriber; `isActive` controls catalogue sale/selection, not benefits attached to the current plan;
+7. validate the materialised assignment through `CommercePricingPlanModelAssignmentSchema`;
+8. if there is no eligible current subscription/current BillingPlan, no matching `MerchantPricingPlan`, or `commerceModelId = NULL`, there is no Price Plan override and resolution continues to Platform;
+9. if `commerceModelId != NULL`, validate that exact model. A Price Plan-selected model is valid only when:
+
+```text
+model.enabled = true
+availability.enabled = true
+availability.scope = PLATFORM
+availability.shopId = NULL
+```
+
+A Price Plan MUST NOT consume a Shop-scoped model.
+
+10. if valid, return:
+
+```ts
+{
+  selectionSource: "PRICING_PLAN",
+  selectionShopId: input.shopId,
+  merchantPricingPlanId: merchantPricingPlan.id,
+  shopifyPlanHandle: merchantPricingPlan.shopifyPlanHandle,
+  model: resolvedModel,
+}
+```
+
+11. if the matching Price Plan explicitly names a model but that model is missing, disabled, Availability-disabled or no longer Platform-available, fail `UNAVAILABLE`; do **not** silently downgrade to Platform.
+
+A valid Price Plan winner does **not** require a valid Platform Agent Configuration.
+
+#### R4.3 — Platform fallback
+
+Only when there is neither an explicit Shop override nor an applicable Price Plan model assignment:
+
+1. load the `CommerceAgentConfiguration` row for `scope = PLATFORM`, `shopId = NULL`, exact `environment`;
+2. require non-null `modelId`;
+3. validate the selected model as:
+
+```text
+model.enabled = true
+availability.enabled = true
+availability.scope = PLATFORM
+availability.shopId = NULL
+```
+
+4. return:
+
+```ts
+{
+  selectionSource: "PLATFORM",
+  selectionShopId: null,
+  merchantPricingPlanId: null,
+  shopifyPlanHandle: null,
+  model: resolvedModel,
+}
+```
+
+For every branch, validate the inner `model` with `ResolvedCommerceModelSchema` and validate `selectionSource` with `CommerceModelSelectionSourceSchema` before returning.
+
+The returned `ResolvedCommerceModel.sourceScope/sourceShopId` remains **availability provenance**. It MUST NOT be overloaded to mean selection precedence. Selection precedence is carried separately by `selectionSource`.
+
+Do not mutate/clear `CommerceAgentConfiguration.modelId` or `MerchantPricingPlan.commerceModelId` when resolution fails. Missing Shop, invalid explicit selection, malformed persisted configuration or database failure MUST fail bounded before model invocation.
 
 ### R5 — model selection is stable for one production turn
 
-The effective model MUST be resolved exactly once for one `runCommerceAgent(context)` invocation.
+The effective model (including any current Price Plan winner) MUST be resolved exactly once for one `runCommerceAgent(context)` invocation.
 
-If Commerce Studio changes the active model after a production turn has begun:
+If Commerce Studio changes an Agent Configuration selection, Platform Admin changes `MerchantPricingPlan.commerceModelId`, or billing makes a different `Subscription.planId` current after a production turn has begun:
 
 ```text
 current turn
     -> continues using the model resolved at turn start
 
 next runCommerceAgent turn
-    -> resolves the new active model
+    -> resolves the new Shop / current Price Plan / Platform winner
 ```
 
 Do not re-query Agent Configuration before every model call inside the same `runCommerceTurn` loop.
@@ -483,7 +562,7 @@ export async function createProductionCommerceModelInvoker(input: {
 `createProductionCommerceModelInvoker(...)` MUST:
 
 1. resolve the effective model once through `resolveProductionCommerceModel(...)`;
-2. retain only the resolved non-secret model identity/configuration for the returned invoker;
+2. retain the returned `selectionSource`/plan provenance for safe diagnostics and retain only the resolved non-secret `model` identity/configuration for model execution;
 3. default `createClient` to:
 
 ```ts
@@ -493,7 +572,7 @@ export async function createProductionCommerceModelInvoker(input: {
 4. on **every** returned `invoke(request, signal)` call:
    - fail if signal is aborted;
    - resolve the current environment OpenRouter credential using `credentialResolver.resolve(...)`;
-   - construct a fresh `OpenRouterModelClient` from the fixed resolved model's exact `provider`, `providerModelId`, `configurationSchemaVersion`, `configuration` plus the just-resolved credential;
+   - construct a fresh `OpenRouterModelClient` from the fixed `resolved.model` exact `provider`, `providerModelId`, `configurationSchemaVersion`, `configuration` plus the just-resolved credential;
    - delegate the exact existing `ModelRequest` and `AbortSignal`;
    - return the exact `ModelStep`;
 5. never persist/cache plaintext credential or an `OpenRouterModelClient` across model invocations.
@@ -671,6 +750,8 @@ logger: hostLogger.child({
   component: "commerce-agent-host",
   recoveryId: recovery.id,
   conversationId: current.id,
+  modelSelectionSource: resolved.selectionSource,
+  merchantPricingPlanId: resolved.merchantPricingPlanId,
 })
 ```
 
@@ -682,20 +763,33 @@ Add regression coverage proving Background passes a logger to the runner and MCP
 
 Add deterministic unit tests proving at least:
 
-1. Shop with no override uses valid Platform-selected model.
-2. Shop with explicit valid Platform-availability model uses that explicit model.
-3. Shop with explicit valid own-Shop-availability model uses that explicit model.
-4. Valid explicit Shop model works even when Platform selection is missing/broken.
+1. Shop with no override, no eligible current Price Plan model and valid Platform selection uses Platform.
+2. Shop with explicit valid Platform-availability model uses that explicit Shop override.
+3. Shop with explicit valid own-Shop-availability model uses that explicit Shop override.
+4. Valid explicit Shop model works even when current Price Plan and Platform selections are missing/broken.
 5. Explicit Shop model in another Shop's Availability fails closed.
-6. Explicit disabled Shop model fails closed with no Platform fallback.
+6. Explicit disabled Shop model fails closed with no Price Plan/Platform fallback.
 7. Explicit model in disabled Availability fails closed.
-8. Missing Platform selection fails when Shop has no override.
-9. Disabled Platform model fails when Shop has no override.
-10. Malformed persisted configuration fails validation before client construction.
-11. Missing Shop ID fails rather than treating the request as Platform-only.
-12. Resolution result validates through `ResolvedCommerceModelSchema`.
-13. availability provenance in the resolved shape is correct for Platform vs Shop catalogue entries.
-14. Agent Configuration is not mutated/cleared by resolution failures.
+8. `ACTIVE` current Subscription + matching `BillingPlan.shopifyPlanHandle` + matching `MerchantPricingPlan.commerceModelId` selects that Price Plan model.
+9. `TRIALING` current Subscription is eligible for the same Price Plan model rule.
+10. `NO_CONTRACT`, `UNMAPPED`, `SYNC_ERROR`, `FROZEN` or any future non-`ACTIVE`/`TRIALING` subscription status does not grant a Price Plan model override.
+11. `pendingPlanId`/pending plan handle is ignored while the current plan remains unchanged.
+12. current BillingPlan handle with no matching MerchantPricingPlan falls through to Platform.
+13. matching MerchantPricingPlan with `commerceModelId = NULL` falls through to Platform.
+14. matching MerchantPricingPlan with `isActive = false` still supplies the configured model to an existing current subscriber.
+15. valid Price Plan model works even when Platform selection is missing/broken.
+16. Price Plan model in Shop Availability fails closed; Price Plan models must be Platform-available.
+17. disabled/missing Price Plan-selected model fails closed with no Platform fallback.
+18. valid explicit Shop override wins over a valid Price Plan model.
+19. changing only the current Subscription plan/handle changes the winner on the **next resolver call**.
+20. changing only `MerchantPricingPlan.commerceModelId` changes the winner on the **next resolver call**.
+21. Missing Platform selection fails when neither Shop nor Price Plan supplies a winner.
+22. Disabled Platform model fails when neither Shop nor Price Plan supplies a winner.
+23. Malformed persisted configuration fails validation before client construction.
+24. Missing Shop ID fails rather than treating the request as Platform-only.
+25. Inner model result validates through `ResolvedCommerceModelSchema`.
+26. selection provenance is exactly `SHOP | PRICING_PLAN | PLATFORM`; availability provenance remains correct independently.
+27. Agent Configuration and MerchantPricingPlan model associations are not mutated/cleared by resolution failures.
 
 ### R16 — credential/model-invoker tests are mandatory
 
@@ -747,19 +841,26 @@ The proof must:
 1. create one Platform Admin required by credential provenance;
 2. create two Shops: `shop-a`, `shop-b`;
 3. create enabled Platform Availability and enabled exact-Shop Availability for `shop-a`;
-4. create Platform model `platform-model` and private Shop A model `shop-a-model` with valid Shared configuration JSON;
+4. create Platform models `platform-model`, `starter-model`, `growth-model` and private Shop A model `shop-a-model` with valid Shared configuration JSON;
 5. create DEVELOPMENT Platform Agent Configuration selecting `platform-model`;
-6. create DEVELOPMENT Shop A Agent Configuration with `modelId = NULL` and prove Platform inheritance;
-7. set Shop A explicit selection to `shop-a-model` and prove exact-Shop winner;
-8. prove Shop B cannot treat `shop-a-model` as valid;
-9. seal and insert OpenRouter credential `credential-A` with the exact ADMIN-003/C007 AAD/keyring contract;
-10. create the production model invoker with an injected fake Shared client factory and prove model invocation receives `credential-A` plus the expected selected model;
-11. replace the database credential with sealed `credential-B` without recreating the production invoker;
-12. invoke again and prove the fake client receives `credential-B` while the model identity/configuration remains unchanged;
-13. change the Shop's active model after the invoker was created and prove the existing invoker still uses the original per-turn model;
-14. create a **new** production invoker and prove it resolves the newly active model;
-15. remove/disable the explicit selected model and prove a new resolver invocation fails closed rather than silently inheriting Platform;
-16. clean up every task-owned container/network in `finally`.
+6. create DEVELOPMENT Shop A Agent Configuration with `modelId = NULL`;
+7. create `MerchantPricingPlan` rows `starter` and `growth` with exact unique Shopify handles and `commerceModelId = starter-model/growth-model`;
+8. create matching operational `BillingPlan` rows with the same handles, without any model FK/column;
+9. create an `ACTIVE` Shop A `Subscription` whose current `planId` points to `starter` and prove the winner is `starter-model` with `selectionSource = PRICING_PLAN`;
+10. set `pendingPlanId`/pending handle to `growth` while current plan remains `starter` and prove the winner remains `starter-model`;
+11. make `growth` the current Subscription plan and prove a **new** resolver/invoker sees `growth-model`;
+12. prove a valid explicit Shop A selection of `shop-a-model` wins over the current Price Plan model;
+13. clear the Shop override and prove the current Price Plan wins again even if the Platform Agent Configuration is made invalid/missing;
+14. point the current Price Plan at an invalid/disabled/non-Platform model and prove resolution fails closed rather than silently using Platform;
+15. clear the current Price Plan's `commerceModelId` and restore valid Platform configuration, then prove Platform inheritance;
+16. prove Shop B cannot treat `shop-a-model` as valid;
+17. seal and insert OpenRouter credential `credential-A` with the exact ADMIN-003/C007 AAD/keyring contract;
+18. create the production model invoker with an injected fake Shared client factory and prove model invocation receives `credential-A` plus the expected selected model;
+19. replace the database credential with sealed `credential-B` without recreating the production invoker;
+20. invoke again and prove the fake client receives `credential-B` while the model identity/configuration remains unchanged for that turn;
+21. change Agent Configuration, Price Plan assignment or current Subscription plan after the invoker was created and prove the existing invoker still uses the original per-turn model;
+22. create a **new** production invoker and prove it resolves the new effective winner;
+23. clean up every task-owned container/network in `finally`.
 
 Do not print decrypted credentials to stdout/stderr. Assertions compare them only in process memory.
 
@@ -791,9 +892,9 @@ Validation MUST prove Background production source contains no import from:
 Update `README.md`, `docs/commerce-host.md` and the CommerceAgent inner-loop sequence diagram to describe:
 
 ```text
-Commerce Studio selection
-    -> CommerceAgentConfiguration
-    -> effective Platform/Shop model resolution per production turn
+Commerce Studio explicit Shop/Platform selection + current subscription Price Plan
+    -> CommerceAgentConfiguration / MerchantPricingPlan.commerceModelId
+    -> effective SHOP -> PRICING_PLAN -> PLATFORM model resolution per production turn
     -> current environment OpenRouter credential per model invocation
     -> Shared OpenRouterModelClient
     -> OpenRouter
@@ -801,7 +902,8 @@ Commerce Studio selection
 
 Documentation MUST explicitly state:
 
-- one effective active model per Shop;
+- one effective active model per Shop with precedence `SHOP -> PRICING_PLAN -> PLATFORM`;
+- Price Plan inheritance uses only the current ACTIVE/TRIALING subscription plan; pending plan changes do not grant model benefits early;
 - model selection is stable for one production turn;
 - OpenRouter credential is live per invocation;
 - `GROQ_COMMERCE_MODEL` is no longer a CommerceAgent requirement;
@@ -814,7 +916,7 @@ Do not document ARCH-024 Test Conversations as Background runtime behaviour.
 - [ ] Consume the accepted ARCH-024 Database gitlink and exact SHARED-004 package version.
 - [ ] Add canonical deployment-to-Commerce environment resolution.
 - [ ] Add canonical `shopId` to `RecoveryAgentContext` and populate it from durable ownership.
-- [ ] Implement the exact production effective-model resolver from R4.
+- [ ] Implement the exact `SHOP -> PRICING_PLAN -> PLATFORM` production effective-model resolver from R4, including current Subscription/BillingPlan/MerchantPricingPlan lookup.
 - [ ] Implement the existing Commerce credential-keyring parser from `COMMERCE_CONNECTION_KEYS_JSON`.
 - [ ] Implement AES-256-GCM OpenRouter credential resolution using the exact ADMIN-003/C007 AAD contract.
 - [ ] Implement the per-turn fixed-model/per-invocation-live-credential production model invoker.
@@ -822,7 +924,7 @@ Do not document ARCH-024 Test Conversations as Background runtime behaviour.
 - [ ] Refactor `executeCommerceHost` to accept `CommerceModelInvoker` directly and remove the local AI-SDK model adapter.
 - [ ] Delete the obsolete CommerceAgent Groq provider and remove `@ai-sdk/groq` only if no remaining references exist.
 - [ ] Preserve Groq speech-transcription environment requirements.
-- [ ] Add focused model-resolution, credential, model-invoker, agent and host regressions.
+- [ ] Add focused Shop/Price Plan/Platform model-resolution, credential, model-invoker, agent and host regressions.
 - [ ] Add and pass the disposable PostgreSQL selection + credential-rotation proof.
 - [ ] Update Background-owned CommerceAgent runtime documentation.
 - [ ] Run all required validation and record exact results/warnings in the Completion Report.
@@ -848,6 +950,8 @@ CommerceEnvironment
 CommerceEnvironmentSchema
 CommerceModelAvailabilitySchema
 CommerceModelCatalogueEntrySchema
+CommerceModelSelectionSource
+CommercePricingPlanModelAssignmentSchema
 ResolvedCommerceModel
 ResolvedCommerceModelSchema
 ```
@@ -873,12 +977,15 @@ commerce.CommerceModelAvailability
 commerce.CommerceModelCatalogueEntry
 commerce.CommerceAgentConfiguration
 commerce.CommerceOpenRouterCredential
+billing.MerchantPricingPlan
+billing.BillingPlan
+billing.Subscription
 commerce.Shop
 ```
 
 ### Effective model semantic contract
 
-`ARCH-024-COMMERCE-002` defines the canonical Platform/Shop selection semantics consumed by Studio/Test Conversations.
+`ARCH-024-COMMERCE-002` defines the canonical `SHOP -> PRICING_PLAN -> PLATFORM` selection semantics consumed by Studio/Test Conversations.
 
 Background MUST implement the exact same architect-defined semantics from R4 for production execution because Background is a separate deployable/repository and MUST NOT import private Commerce source code.
 
@@ -931,10 +1038,13 @@ Terminal ARCH-024 system-test tasks may also depend on this task when they are m
 ## Acceptance Criteria
 
 - [ ] Production CommerceAgent no longer reads `GROQ_COMMERCE_MODEL` or constructs the conversational model through `src/providers/groq.provider.ts`.
-- [ ] Production model selection resolves exactly one effective active model from current Agent Configuration and Availability for the trusted Shop/environment.
-- [ ] An explicit valid Shop override does not depend on a valid Platform model.
-- [ ] An explicit broken Shop override fails closed and never silently falls back to Platform.
-- [ ] A Shop with no override inherits the valid Platform selection.
+- [ ] Production model selection resolves exactly one effective active model using `SHOP -> current PRICING_PLAN -> PLATFORM` for the trusted Shop/environment.
+- [ ] An explicit valid Shop override wins and does not depend on valid Price Plan or Platform configuration.
+- [ ] An explicit broken Shop override fails closed and never silently falls back to Price Plan/Platform.
+- [ ] With no Shop override, an ACTIVE/TRIALING current subscription may inherit `MerchantPricingPlan.commerceModelId` through exact `BillingPlan.shopifyPlanHandle`; pending plans are ignored.
+- [ ] A valid Price Plan model must be Platform-available, wins over Platform, and does not require Platform selection to be valid.
+- [ ] A broken explicit Price Plan model fails closed and never silently falls back to Platform.
+- [ ] With no Shop or Price Plan override, the Shop inherits the valid Platform selection.
 - [ ] The resolved model identity/configuration is stable for one `runCommerceAgent` turn and a new turn observes a later selection change.
 - [ ] Every model invocation resolves/decrypts the current environment OpenRouter credential and therefore observes credential replacement without worker restart.
 - [ ] No plaintext OpenRouter credential is persisted, cached process-wide, logged or included in model/configuration state.
@@ -946,7 +1056,7 @@ Terminal ARCH-024 system-test tasks may also depend on this task when they are m
 - [ ] `GROQ_API_KEY` speech-transcription behaviour remains intact and is not conflated with CommerceAgent OpenRouter authentication.
 - [ ] Missing/malformed model configuration or credential fails through a bounded non-secret error path.
 - [ ] No automated test makes a live OpenRouter request.
-- [ ] Disposable PostgreSQL proof demonstrates Platform inheritance, exact-Shop override, cross-Shop denial, credential A -> B live rotation and next-turn model-selection refresh.
+- [ ] Disposable PostgreSQL proof demonstrates Shop override, current Price Plan inheritance, pending-plan exclusion, Platform fallback, broken-plan fail-closed behaviour, cross-Shop denial, credential A -> B live rotation and next-turn model-selection refresh.
 - [ ] Background-owned CommerceAgent documentation describes the final dynamic model path accurately.
 
 ## Validation
