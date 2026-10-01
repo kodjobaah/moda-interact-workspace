@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -1268,9 +1268,25 @@ Ready for Review
 
 ### Review Status
 
-Changes Requested
+Accepted — Attempt 2
 
 ### Review Notes
+
+#### Attempt 2 review — Accepted — 2026-10-01
+
+Attempt 2 satisfies both corrections from the prior Architect Review and is accepted.
+
+**A1-R1 is closed.** `model-availability-editor.tsx` now derives the scope-specific disable warning only when `availability.enabled` is true, which is the same state that selects the `Disable availability` action and `Disabling…` pending label. When the Availability is already disabled, the action is `Enable availability` and `warning` is `null`, so no disable warning is rendered. The focused Admin regression ties the exact action-label expression, the `availability.enabled` warning guard and conditional warning render together while retaining both exact Platform/Shop warning strings.
+
+**A1-R2 is closed.** The task-definition `Validation`, `Stop Condition` and `Implementation Notes` sections are restored to clean canonical ADMIN-001 content with completed validation checkboxes, and implementation evidence now lives under `Completion Report`. The Completion Report durably records the launcher-resolved canonical workspace root, dedicated parent and Admin implementation worktrees, matching `task/ARCH-024-ADMIN-001` branches, start-of-attempt synchronization, dependency gates, recursive submodule readiness, accepted database submodule commit, implementation commit/push state, parent report publication evidence and clean/up-to-date final worktree state.
+
+The correction remains bounded to ADMIN-001. No Catalogue Entry editor, credential administration, Agent Configuration mutation, OpenRouter provider execution, Availability deletion or follow-on task was introduced. The Shared dependency remains exactly `@modainteract/moda-interact-shared@1.1.0` with the accepted SHARED-002 integrity.
+
+The resubmission identifies implementation head `badf437d` and final parent task-branch head `dafea3de`. The uploaded review archive contains no usable Git metadata, so those remote heads cannot be independently queried here. The durable Completion Report itself records the implementation commit, a pushed parent report commit and the final clean/remote-aligned state; the later submitted parent head is treated as additional handoff evidence, not as a reason to manufacture another report-only commit.
+
+The existing BullMQ/optional Valkey build warnings, Node `MODULE_TYPELESS_PACKAGE_JSON` warning and npm audit findings remain non-blocking for this task because the submitted Attempt 2 evidence records no changed/worse task-owned condition, matching the Attempt 1 correction contract.
+
+#### Attempt 1 review — Changes Requested — 2026-10-01
 
 Attempt 1 implementation is substantially aligned with ARCH-024 and ADMIN-001. The protected page, Shared `1.1.0` contract consumption, bounded read/search model, SUPER_ADMIN mutation boundary, Serializable transaction, CAS update, same-transaction audit writes, navigation integration and prohibited-mutation boundaries were inspected in the submitted snapshot.
 
@@ -1312,17 +1328,31 @@ No other source correction is requested by this review. The recorded BullMQ buil
 
 ### Validation Reviewed
 
-- Re-ran `node --test tests/security/admin-model-availability.test.mjs tests/security/admin-sidebar-navigation.test.mjs`: **11/11 passed**.
-- Re-ran `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts`: **4/4 passed**; Node emitted the same module-type warning recorded by the submission.
-- Re-checked the exact `@modainteract/moda-interact-shared@1.1.0` package/lockfile pin and registry integrity entry.
-- Re-checked source absence of Catalogue Entry, Agent Configuration, OpenRouter credential and Availability deletion mutations in the ADMIN-001 implementation surface.
-- Inspected the focused service tests covering create, missing/existing Shop rejection, enable/disable CAS, stale/same-state/race rejection and audit targets.
-- The submitted archive contains no `node_modules` and no Git metadata, so this review environment did not independently rerun the dependency-backed service test, Prisma commands, TypeScript, ESLint or production build, nor independently verify the reported remote branch SHAs. Attempt 2 must rerun the task-required validation from the canonical launcher-resolved implementation worktree because the required physical-isolation/start-of-attempt evidence is not durably present in the submitted task record.
+- Independently reran `node --test tests/security/admin-model-availability.test.mjs tests/security/admin-sidebar-navigation.test.mjs` from the uploaded snapshot: **11/11 passed**, including the A1-R1 warning/action relationship regression.
+- Independently reran `node --experimental-strip-types --test tests/unit/model-availability-validation.test.ts`: **4/4 passed**; Node emitted the same module-type warning already recorded by the task.
+- Independently inspected `model-availability-editor.tsx`: `actionLabel`, `pendingLabel` and the scope-specific warning are all derived from `availability.enabled`; the warning is `null` for the enable transition.
+- Independently reparsed the ADMIN-001 YAML and inspected the restored `Validation`, `Stop Condition` and `Implementation Notes` sections; the task record is structurally valid and the Attempt 2 launcher/worktree/synchronization/submodule evidence is under `Completion Report`.
+- Re-checked `package.json` and `package-lock.json`: both pin `@modainteract/moda-interact-shared` exactly to `1.1.0`; the lockfile entry carries the accepted SHARED-002 integrity `sha512-XZMhMbEn8oy9xZfqrAWmbjcbYdOxScUsCE1myCqiywuUgcDPnhGDs1jj2bORyqhFYvOwhFzI4K5vmkSlxqOwiA==`.
+- Re-checked the ADMIN-001 mutation surface for prohibited Catalogue Entry, Agent Configuration, OpenRouter credential and Availability deletion mutations; none are present.
+- Reviewed submitted Attempt 2 evidence for Prisma generation/validation, focused unit suite **8/8**, focused Admin security/navigation suite **11/11**, TypeScript, changed-file lint, Prettier, production build and `git diff --check`; all passed with only the recorded non-blocking existing warnings.
+- The uploaded archive contains no `node_modules` and no Git metadata, so the dependency-backed service tests, Prisma commands, TypeScript, ESLint, production build and remote branch heads were not independently re-executed/queried in this review environment.
 
 ### Architecture Conformance
 
-Changes required. The core Availability control-plane design, authorization boundary, Shared contract ownership, transaction/CAS/audit semantics and repository scope conform to ARCH-024. A1-R1 is a bounded ADMIN-001 UI correctness defect. A1-R2 is workflow/documentation non-conformance that prevents architect acceptance until the canonical task definition and physical execution evidence are restored.
+Conforms. ADMIN-001 now satisfies the Availability control-plane contract, SUPER_ADMIN mutation boundary, Shared contract ownership, immutable scope/Shop identity, transactional CAS/audit semantics, Platform-first presentation and bounded Shop creation/search requirements. Attempt 2 closes the only UI correctness defect and workflow/documentation non-conformance from Attempt 1 without broadening repository scope.
+
+The task preserves the ownership boundary: Availability administration does not mutate Catalogue Entries or Agent Configuration, does not manage OpenRouter credentials, and does not select the active CommerceAgent model.
 
 ### Follow-up
 
-Return the same task through `/moda-task ARCH-024-ADMIN-001` for Attempt 2. Make only the bounded A1-R1 source/test correction plus the A1-R2 task-report/evidence repair, rerun all ADMIN-001 required validation in the launcher-resolved dedicated implementation worktree, set the task back to `review`, and STOP. Do not begin `ARCH-024-ADMIN-002` or any other follow-on work.
+`ARCH-024-ADMIN-001` is **Complete / Accepted at Attempt 2**.
+
+Dependency reconciliation promotes exactly:
+
+```text
+ARCH-024-ADMIN-002 -> Ready
+```
+
+No follow-on implementation is started implicitly by this review. `ARCH-024-ADMIN-003` remains Pending behind ADMIN-002.
+
+This isolated ADMIN-001 parent snapshot still contains `ARCH-024-ADMIN-004` as Ready because the separately accepted ADMIN-004 reconciliation lives on its own parent task branch and has not been incorporated into this branch. This acceptance patch does not replay another task's Completion Report or Architect Review. During later parent-branch integration, preserve the already accepted ADMIN-004 state rather than regressing it.
