@@ -12,7 +12,7 @@ ARCH-024 deliberately consolidates all durable model/availability/OpenRouter cre
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [DATABASE-001](DATABASE-001-persist-model-catalogue-availability-openrouter-credentials.md) | Persist Model Availability, scoped Catalogue Entries, dynamic provider/model identity, OpenRouter configuration JSON, encrypted per-environment credential and audit constraints | Ready | - |
+| [DATABASE-001](DATABASE-001-persist-model-catalogue-availability-openrouter-credentials.md) | Persist Model Availability, scoped Catalogue Entries, optional Merchant Pricing Plan -> Platform model association, dynamic provider/model identity, OpenRouter configuration JSON, encrypted per-environment credential and audit constraints | Ready | - |
 
 ## Execution frontier
 
