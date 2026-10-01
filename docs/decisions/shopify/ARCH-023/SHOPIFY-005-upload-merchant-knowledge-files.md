@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 52
-executor: copilot
-claimed_at: 2026-10-01T09:58:02Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-023-SHOPIFY-004
@@ -534,7 +534,7 @@ Gateway wiring may be finalized after both Shopify upload and Background worker 
 - [x] database transaction integration tests
 - [x] browser component tests with mocked PUT
 - [x] `npm run typecheck`
-- [ ] `npm run lint` (run; existing unrelated repository errors remain)
+- [x] `npm run lint` (run; 17 existing unrelated repository errors remain)
 - [x] `npm run build`
 - [x] `git diff --check`
 - [x] changed-file diagnostics clean
@@ -581,6 +581,24 @@ Earlier task implementation on the same task branch remains unchanged, including
 - None newly identified. A1-R1, A1-R2, and A1-R3 are implemented with the evidence above.
 - Attempt 2 launcher evidence: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-005`, branch `task/ARCH-023-SHOPIFY-005`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-005`, branch `task/ARCH-023-SHOPIFY-005`. At the start boundary, parent and implementation task-remote fast-forwards were both not needed; parent and implementation already contained current `origin/main`. Launcher-synchronized parent HEAD was `ef949a7a797bec37ad6f602bf52b27585be63b82`, followed by pushed Attempt 2 claim commit `79bbde8554d7ae5c260b86664810276b3b29caa0`; implementation prepared HEAD was `7c97d90cc9ae0eeacd4aa6121ef7801342437d7f`. Recursive submodule sync/update passed; `database` was clean at `a5e633a6ed1631e64510b936b2b19e8e50c7a5de`. Dependency ARCH-023-SHOPIFY-004 was complete. Claim: executor `copilot`, Attempt 2, claimed at `2026-10-01T09:31:32Z`.
 - Submitted implementation HEAD: `244f3f60035c3651168571869234ab23654854d3`, pushed to `origin/task/ARCH-023-SHOPIFY-005`. The parent Completion Report is pushed on the same task branch; the report commit is the pushed parent branch HEAD at submission, following claim HEAD `79bbde8554d7ae5c260b86664810276b3b29caa0`. Its exact commit SHA is included in the execution handoff.
+
+### Attempt 3 Revalidation
+- No implementation source or tests were changed in Attempt 3. The implementation branch remains at submitted HEAD `244f3f60035c3651168571869234ab23654854d3`, pushed to `origin/task/ARCH-023-SHOPIFY-005`.
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-SHOPIFY-005`, `task/ARCH-023-SHOPIFY-005`. Launcher-synchronized parent HEAD: `e40a137d93fc15859348459559a9a7cdea856feb`; pushed Attempt 3 claim commit: `c08e16c0bc5e40d090a290e4b3d23f013d76e708`.
+- Implementation worktree and branch: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-SHOPIFY-005`, `task/ARCH-023-SHOPIFY-005`. Initial and final implementation HEAD: `244f3f60035c3651168571869234ab23654854d3`.
+- Start-of-attempt synchronization: parent task-remote fast-forward not-needed; parent `origin/main` incorporated yes; implementation task-remote fast-forward not-needed; implementation `origin/main` already-current / incorporated yes. Recursive submodule sync/update passed; `database` remained at `a5e633a6ed1631e64510b936b2b19e8e50c7a5de`. Dependency ARCH-023-SHOPIFY-004 was complete. Parent and implementation task branches were clean and up to date with their origin task branches before report editing.
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+- Focused upload service/presigner and browser component tests: `npm test -- --run tests/unit/merchant-knowledge-upload.test.ts tests/unit/merchant-knowledge-upload-form.test.tsx` — 14 passed.
+- Disposable PostgreSQL transaction integration: `DOCKER_HOST=unix:///Users/kwadwoadomafriyie/.colima/default/docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock MODA_DISPOSABLE_INTEGRATION=1 npm test -- --run tests/integration/merchant-knowledge-upload.integration.test.ts` — 4 passed, 0 skipped.
+- `npm run typecheck` — passed.
+- `npm run lint` — run; 17 errors remain in unrelated existing files, with no reported errors in the Attempt 2 changed files.
+- `npm run build` — passed for client and SSR bundles; existing dependency annotation and large-chunk warnings remain.
+- Changed-file diagnostics — no errors in the five Attempt 2 changed files.
+- `git diff --check` — passed.
+- Parent task report is the only Attempt 3 change and will be published on `task/ARCH-023-SHOPIFY-005`; no implementation commit was created. Deployed R2 CORS/preflight and live replay validation remain assigned to GATEWAY-001 / SYSTEM-TEST-002.
 
 ## Architect Review
 
