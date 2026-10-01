@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
-executor: copilot
-claimed_at: 2026-10-01T19:42:01Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -125,10 +125,10 @@ The extracted helper performs exactly the existing Prisma operations for the sam
 
 ## Work Items
 
-- [ ] Create `billing-period-projection.ts` and move the bounded projection/cycle logic, including `isSafeNonNegativeInteger`.
-- [ ] Replace in-file implementations with imports/re-export wiring from `billing.service.ts`.
-- [ ] Add focused unit tests for READY create, compatible repair, FREE/PAID counter rules, conflict/no-overwrite and phase/cycle helpers.
-- [ ] Prove the frozen façade suite is byte-identical and green.
+- [x] Create `billing-period-projection.ts` and move the bounded projection/cycle logic, including `isSafeNonNegativeInteger`.
+- [x] Replace in-file implementations with imports/re-export wiring from `billing.service.ts`.
+- [x] Add focused unit tests for READY create, compatible repair, FREE/PAID counter rules, conflict/no-overwrite and phase/cycle helpers.
+- [ ] Prove the frozen façade suite is byte-identical and green. The file is byte-identical, but its current run has date-sensitive failures documented below.
 
 ## Interfaces / Contracts
 
@@ -146,24 +146,24 @@ None
 
 ## Acceptance Criteria
 
-- [ ] BillingPeriod projection/cycle logic has one owner in `billing-period-projection.ts`.
-- [ ] No equivalent implementation remains duplicated in `billing.service.ts`.
-- [ ] Existing conflict reasons, reads/writes (including the compatible-row update), counter semantics and returned results are unchanged.
-- [ ] `deriveBillingPeriodPhase` remains publicly available from `billing.service.ts`.
-- [ ] Frozen 127-test façade suite passes unchanged.
+- [x] BillingPeriod projection/cycle logic has one owner in `billing-period-projection.ts`.
+- [x] No equivalent implementation remains duplicated in `billing.service.ts`.
+- [x] Existing conflict reasons, reads/writes (including the compatible-row update), counter semantics and returned results are unchanged.
+- [x] `deriveBillingPeriodPhase` remains publicly available from `billing.service.ts`.
+- [ ] Frozen 127-test façade suite passes unchanged. The file hash is unchanged; the actual suite contains 213 tests and 18 currently fail due fixed-date assumptions against the 2026-10-01 runtime date.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
-- [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests
-- [ ] `npm test -- tests/unit/services/billing/billing-period-projection.test.ts` passes the new focused capability tests
-- [ ] `npm test` introduces no new failures
-- [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/billing-period-projection.ts tests/unit/services/billing/billing-period-projection.test.ts`
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate` (Prisma Client 6.19.3 generated successfully)
+- [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [x] `git diff -- tests/unit/services/billing.service.test.ts` is empty
+- [ ] `npm test -- tests/unit/services/billing.service.test.ts` passes all 127 tests. Actual current suite: 18 failed / 213 total; frozen file hash remains exact.
+- [x] `npm test -- tests/unit/services/billing/billing-period-projection.test.ts` passes the new focused capability tests (11 tests)
+- [ ] `npm test` introduces no new failures. Final run: 5 failed files / 24 failed tests; 74 files passed / 8 skipped; 951 tests passed / 33 skipped. No matching entries were found in `docs/development-baseline.md`.
+- [x] `npm run typecheck`
+- [x] `npx eslint app/services/billing/billing.service.ts app/services/billing/billing-period-projection.ts tests/unit/services/billing/billing-period-projection.test.ts`
+- [x] `npm run build`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -178,35 +178,72 @@ Prefer direct function exports from the internal module rather than a class; thi
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/billing-period-projection.ts` (new)
+- `tests/unit/services/billing/billing-period-projection.test.ts` (new)
 
 ### Work Completed
 
-None.
+- Moved `DurableBillingCycle`, projection types, `hasDurableBillingPeriod`, `hasMatchingBillingCycle`, `ensureMappedCurrentBillingPeriodProjection`, `deriveBillingPeriodPhase` and `isSafeNonNegativeInteger` into the repository-internal billing-period module. The projection algorithm, including the compatible existing-period update, counter rules, conflict reasons and transaction-caller ownership, was moved without redesign.
+- Rewired existing `BillingService` call sites to the internal module and retained `deriveBillingPeriodPhase` as a compatibility export from `billing.service.ts`.
+- Added 11 focused tests covering paid create/counter creation, compatible repair/update, missing paid counter repair, closed-period no-overwrite, FREE and PAID counter conflicts, invalid allowance, cycle matching, phase boundaries and safe integer checks.
+- Frozen `tests/unit/services/billing.service.test.ts` was not edited. Its SHA-256 remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`.
+- Implementation commit: `ed1e4eb` (`Extract billing period projection helpers`), pushed to `task/ARCH-025-SHOPIFY-001`.
+
+Physical worktree isolation:
+  canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+  parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-001`
+  parent branch: `task/ARCH-025-SHOPIFY-001`
+  implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-001`
+  implementation branch: `task/ARCH-025-SHOPIFY-001`
+  shared workspace checkout switched/mutated for task work: no
+  shared implementation checkout switched/mutated for task work: no
+  another task worktree reused: no
+
+Start-of-attempt synchronization:
+  parent remote task branch fast-forwarded: not-needed
+  parent `origin/main` incorporated: already-current
+  implementation remote task branch fast-forwarded: not-needed
+  implementation `origin/main` incorporated: already-current
+
+Recursive implementation submodules:
+  `git submodule sync --recursive`: passed
+  `git submodule update --init --recursive`: passed
+  recorded submodule commits: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
+  preparation claim: Attempt 1, executor `copilot`, claim commit `c2b5751f3f2276ca1eefe149a59c26e63c1ba909`, pushed
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:generate`: passed; Prisma Client 6.19.3 generated.
+- Focused new suite: passed, 1 file / 11 tests.
+- Frozen façade suite: failed, 18 of 213 tests. Several failures use a fixed period end of `2026-10-01T00:00:00.000Z` without freezing the clock, so with the runtime date on 2026-10-01 after midnight, the unchanged phase function returns `RECONCILING` and recovery-credit requests stop at the transition guard. The committed pre-extraction implementation has the same `now = new Date()` phase logic. Frozen source SHA and diff checks pass. No baseline ID for these failures was found.
+- Full `npm test`: 5 failed files / 24 failed tests; 74 files passed / 8 skipped; 951 tests passed / 33 skipped. Failures: 18 in the frozen billing façade suite, 1 billing UI test, 1 merchant knowledge read-model test, 1 merchant navigation test, and 3 merchant pricing renderer tests. No matching documented baseline entries were found. The shared-runtime timeout seen on the first full run did not recur on the final run.
+- `npm run typecheck`: passed.
+- Required three-file ESLint command: passed (repository parser emitted its existing TypeScript 5.9 support-range warning).
+- `npm run build`: passed (client and SSR bundles built; existing bundler warnings only).
+- Frozen file SHA-256: exact required value; frozen file diff: empty.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None.
+The task text describes the frozen façade suite as 127 tests, but the current checked-in file executes 213 tests. The frozen suite is byte-identical and was not modified; its current date-sensitive failures prevent marking the frozen-suite acceptance criterion green. The full-suite failures are reported without assigning them a baseline ID because no matching entries were found.
 
 ### Assumptions
 
-None.
+The phase-helper failures reflect the current wall-clock date against fixed historical test fixtures; the extracted implementation retains the original function body and default-time behavior.
 
 ### Unresolved Issues
 
-None.
+- Architect guidance is needed on the frozen 18 date-sensitive failures and whether the task acceptance count/fixture expectation should be reconciled. The task prohibits editing the frozen façade test file.
+- The final full suite has 6 non-billing test failures in addition to the 18 frozen façade failures; these have no matching documented baseline IDs and are outside the authorized file scope.
 
 ### Architectural Concerns
 
-None.
+None identified in the bounded extraction. No provider calls, transaction ownership, durable operations or production call paths were changed beyond importing the moved helpers.
 
 ## Architect Review
 
