@@ -34,6 +34,11 @@ The private Commerce MCP topology remains unchanged: `COMMERCE_MCP_URL` is the m
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [GATEWAY-002](GATEWAY-002-wire-commerce-preview-model-provider-credentials.md) | Wire Commerce-owned OpenAI/Groq Preview credentials and remove obsolete fixed Preview provider/model/API-key Blueprint configuration | Pending | COMMERCE-106, COMMERCE-109 |
+| [GATEWAY-002](GATEWAY-002-wire-commerce-preview-model-provider-credentials.md) | Historical static OpenAI/Groq Preview credential wiring | Superseded by ARCH-024-GATEWAY-001 | - |
 
 GATEWAY-002 runs only after Commerce has adopted the new selected-model runtime contract and removed its old fixed Preview configuration dependency. It preserves the current `COMMERCE_PREVIEW_ENABLED` policy and does not enable production Preview.
+
+
+## 2026-10-01 Phase-6 supersession
+
+`ARCH-021-GATEWAY-002` is superseded and must not execute. `ARCH-024-GATEWAY-001` owns the database-backed OpenRouter/keyring deployment cutover.

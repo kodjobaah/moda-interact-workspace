@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 30
 executor: null
 claimed_at: null
@@ -18,7 +18,7 @@ depends_on: []
 enables:
   - ARCH-024-COMMERCE-002
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Remove redundant human-facing Preview functionality

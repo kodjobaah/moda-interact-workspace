@@ -718,3 +718,6 @@ The developer explicitly requested reopening after the prerequisite work complet
 
 ### Dependency Reconciliation
 `ARCH-023-BACKGROUND-005` remains `pending` because it depends on BACKGROUND-004 being Complete. It is unclaimed and requires no regression. No downstream task already in progress, review or complete was changed.
+
+### Blocker Resolution
+DATABASE-005 is Complete / Accepted Attempt 2 and BACKGROUND-007 is Complete / Accepted Attempt 1. The exact enum identities and fixed 60-second / 3600-second global lease cadences are available. The task is `ready` with Attempt 1 preserved; the next normal claim becomes Attempt 2. Preserve the existing partial implementation and complete only R14 plus the remaining task-defined validation before returning to architect review.

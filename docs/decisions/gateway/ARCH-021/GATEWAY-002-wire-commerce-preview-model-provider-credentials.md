@@ -1,7 +1,7 @@
 ---
 id: ARCH-021-GATEWAY-002
 architecture_id: ARCH-021
-title: Wire Commerce Preview selected-model provider credentials
+title: Superseded - Preview provider credential wiring
 task_kind: implementation
 domain: gateway
 repository: moda-interact-gateway
@@ -9,21 +9,22 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: superseded
 priority: 104
 executor: null
 claimed_at: null
 attempt: 0
-depends_on:
-  - ARCH-021-COMMERCE-106
-  - ARCH-021-COMMERCE-109
-enables:
-  - ARCH-021-SYSTEM-TEST-004
+depends_on: []
+enables: []
 created: 2026-09-29
-updated: 2026-09-29
+updated: 2026-10-01
+superseded_by: ARCH-024-GATEWAY-001
 ---
 
 # Wire Commerce Preview selected-model provider credentials
+
+> **Superseded 2026-10-01. Do not execute.** ARCH-024-GATEWAY-001 replaces this unstarted static OpenAI/Groq credential-wiring task with the database-backed OpenRouter/keyring design.
+> The remaining content is retained as historical design context only.
 
 ## Architecture
 

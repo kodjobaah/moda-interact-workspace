@@ -11,9 +11,9 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-`ARCH-023-BACKGROUND-004` Attempt 1 is Blocked at the final entrypoint boundary: the accepted database enum does not yet contain the two required Merchant Knowledge runtime lease identities, and the shared Background lease service has no cadence mapping for them. The prerequisite sequence is `ARCH-023-DATABASE-005 -> ARCH-023-BACKGROUND-007 -> ARCH-023-BACKGROUND-004`; DATABASE-005 is Ready, BACKGROUND-007 is Pending on it, and BACKGROUND-005 remains Pending until BACKGROUND-004 completes. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
+The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3283,7 +3283,7 @@ Commerce-adjacent execution state after COMMERCE-002 Attempt 4 acceptance:
 ARCH-023-DATABASE-004   Complete — Accepted Attempt 1
 ARCH-023-COMMERCE-001   Complete — Accepted Attempt 2
 ARCH-023-COMMERCE-002   Complete — Accepted Attempt 4
-ARCH-023-COMMERCE-003   Ready
+ARCH-023-COMMERCE-003   Complete — Accepted Attempt 2
 ARCH-023-ADMIN-004      Ready
 ARCH-023-COMMERCE-004   Pending — waits for ADMIN-004
 ARCH-023-GATEWAY-001    Pending — additional prerequisites remain
@@ -3318,24 +3318,24 @@ ARCH-023-BACKGROUND-002 Ready
 ARCH-023-BACKGROUND-003 Ready
 ARCH-023-COMMERCE-001   Ready
 ARCH-023-SHOPIFY-003    Ready
-ARCH-023-SHOPIFY-004    Ready
-ARCH-023-SHOPIFY-005    Pending — still depends on SHOPIFY-004
+ARCH-023-SHOPIFY-004    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-005    Ready
 all other ARCH-023 implementation tasks remain gated by their declared dependencies
 ```
 
 SHOPIFY-001 acceptance satisfies the last dependency for SHOPIFY-003 and SHOPIFY-004. Both are promoted to Ready; neither is started implicitly.
 
-Current Shopify frontier after SHOPIFY-003 Attempt 3 acceptance:
+Current Shopify frontier after SHOPIFY-004 Attempt 2 acceptance:
 
 ```text
 ARCH-023-SHOPIFY-001    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-002    Complete — Accepted Attempt 2
 ARCH-023-SHOPIFY-003    Complete — Accepted Attempt 3
-ARCH-023-SHOPIFY-004    Pending — requires ADMIN-004
-ARCH-023-SHOPIFY-005    Pending — requires SHOPIFY-004
+ARCH-023-SHOPIFY-004    Complete — Accepted Attempt 2
+ARCH-023-SHOPIFY-005    Ready
 ```
 
-SHOPIFY-003 Attempt 3 is accepted. Initial activation now publishes the exact already-pinned pending DRAFT even if Admin later reassigns the category's current `defaultTemplateId`; the Template-A -> Template-B regression passes in both focused and disposable-PostgreSQL coverage, and the existing activation/rollback/replay proof remains green. This acceptance promotes no new task. The separately required Background billing-reconciliation activation hook remains outside SHOPIFY-003 and must be materialised before final ARCH-023 system acceptance.
+SHOPIFY-003 remains Complete / Accepted Attempt 3. SHOPIFY-004 is now Complete / Accepted Attempt 2: current-plan configuration gates cover every source mutation, edit/refresh share the R3 first-N entitlement window, OFF remains non-destructive, and canonical URL length is validated before persistence. SHOPIFY-004 acceptance satisfies SHOPIFY-005's only dependency, so SHOPIFY-005 is Ready but not started implicitly. The separately required Background billing-reconciliation activation hook remains outside these tasks and must be materialised before final ARCH-023 system acceptance.
 
 No implementation task may depend on a terminal system-test task.
 
@@ -3351,6 +3351,33 @@ through bounded task reviews without changing the agreed architecture contract.
 - Confirmed the partial processing implementation correctly stopped at a cross-repository ownership boundary: the task-owned final entrypoint requires `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`, while the pinned `BackgroundRuntimeLeaseName` enum and shared lease cadence `CASE` contain neither identity.
 - Materialised `ARCH-023-DATABASE-005` as the enum/migration-only prerequisite and `ARCH-023-BACKGROUND-007` as the Background runtime cadence-only prerequisite. The fixed global cadences remain exactly 60 seconds and 3600 seconds; no new `BackgroundRuntimeConfig` columns, queue or locking mechanism are introduced.
 - Returned no acceptance decision on BACKGROUND-004's partial implementation. BACKGROUND-004 remains Blocked at Attempt 1 until both prerequisites are Complete/accepted; BACKGROUND-005 remains Pending.
+
+### 2026-10-01 — BACKGROUND-007 Attempt 1 accepted
+
+- Accepted the bounded Background runtime-lease cadence extension at implementation `b39fc48c5a02e3b4f9d492f6d83e1650390ede53` against the exact architect-accepted DATABASE-005 pin `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`.
+- Confirmed `BackgroundRuntimeLeaseService.tryAcquire()` adds exactly `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION -> 60` seconds and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP -> 3600` seconds while preserving every existing lease branch, PostgreSQL-time gating and generation/owner fencing. No runtime config, scheduler, entrypoint, schema/migration or business-processing change is introduced.
+- Accepted 5 focused unit tests and the 3-case disposable pgvector PostgreSQL proof covering both new lease identities, persisted `lastFinishedAt`, immediate in-cadence suppression, exactly one generation-2 reacquisition after the fixed cadence, stale heartbeat/release rejection and cleanup; Prisma generation, build, diagnostics and whitespace validation also passed.
+- Marked BACKGROUND-007 Complete / Accepted Attempt 1 and resolved the lease prerequisite on BACKGROUND-004. BACKGROUND-004 returns from Blocked to Ready with Attempt 1 preserved; its next launcher claim becomes Attempt 2. BACKGROUND-005 remains Pending.
+
+### 2026-10-01 — DATABASE-005 Attempt 2 accepted
+
+- Accepted the enum-only Merchant Knowledge runtime-lease extension after the evidence-only Attempt 2 recorded the canonical parent/implementation worktrees, synchronization state, dependency gate and recursive submodule preparation required by the architect protocol.
+- Confirmed the implementation remains unchanged at `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`: only `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP` are added to `public.BackgroundRuntimeLeaseName`, and the forward migration contains only those two additive enum statements.
+- Accepted the refreshed formatting, Prisma validate/generate, focused static validation, disposable pgvector PostgreSQL migration/runtime proof, ERD generation, script syntax checks, diagnostics and whitespace validation; the task-owned PostgreSQL container and fixtures were removed.
+- Marked DATABASE-005 Complete / Accepted Attempt 2 and promoted exactly BACKGROUND-007 to Ready. BACKGROUND-004 remains Blocked at Attempt 1 until BACKGROUND-007 is Complete/accepted; BACKGROUND-005 remains Pending.
+
+### 2026-10-01 — COMMERCE-003 Attempt 2 accepted
+
+- Accepted the evidence-only Attempt 2 after the canonical parent and Commerce task worktrees were synchronized and the required worktree/provenance packet, completed checklists, corrected lint count and categorized full-suite failure inventory were recorded.
+- Confirmed the Commerce implementation remained unchanged: Platform plus optional Shop Instructions are additive, exposed through the fixed reserved MCP prompts, consumed in the same order by Preview, and no Background files were modified.
+- Marked COMMERCE-003 Complete / Accepted Attempt 2. No implementation task is promoted by this acceptance because COMMERCE-003 declares no `enables`; the separate Background host-consumption follow-up remains mandatory before final ARCH-023 system acceptance.
+### 2026-10-01 — SHOPIFY-004 Attempt 2 accepted
+
+- Accepted the Merchant Knowledge Recovery Settings control plane and WEB_PAGE lifecycle after closing all three Attempt 1 server-boundary findings.
+- Confirmed delete/reorder require current Merchant Knowledge plan entitlement without requiring merchant opt-in or first-N source eligibility; edit/refresh use the same ordered active allowed-source first-N window as the R3 read model.
+- Accepted the disposable PostgreSQL regressions proving a source-count downgrade blocks edit/refresh without state/enqueue changes, reorder can move the dormant source back into eligibility, and delete/reorder fail without current entitlement while preserving rows/positions.
+- Confirmed raw and canonical HTTPS URL lengths are both bounded before persistence; the Unicode expansion regression fails before transaction entry.
+- Marked SHOPIFY-004 Complete / Accepted Attempt 2 and promoted SHOPIFY-005 to Ready. SHOPIFY-005 is not claimed or started by this reconciliation.
 
 ### 2026-10-01 — BACKGROUND-006 Attempt 1 accepted
 

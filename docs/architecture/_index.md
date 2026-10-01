@@ -994,3 +994,18 @@ Proposed architecture review packet. Initial Ready frontier: `DATABASE-001`, `DA
 The architecture adds Store Category onboarding/default prompt seeding, Admin-owned Platform/Shop Instructions with all-20 translation gating, logical Merchant Knowledge entries processed asynchronously by Background, PostgreSQL/pgvector semantic retrieval through one feature-bound Commerce capability, and one platform-wide environment-selected multilingual embedding model.
 
 [Architecture](ARCH-023-merchant-knowledge-store-aware-commerce-agent.md)
+
+
+## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
+
+Agreed architecture. Current task state: **Ready 2, Pending 13**. Initial independent
+frontier: `DATABASE-001` and `COMMERCE-001`. Model Catalogue/Availability/OpenRouter
+credential administration is Admin-owned; Commerce Studio selects one effective active
+model and composes Test Conversations from selected Features; Background adopts the same
+OpenRouter runtime for production CommerceAgent turns. No Shopify task is required.
+
+ARCH-021 COMMERCE-105..109, GATEWAY-002 and SYSTEM-TEST-004 are superseded. ARCH-023
+remains frozen and is consumed as an external instruction dependency. ARCH-024 terminal
+system-test task materialisation is deliberately deferred to a later architecture session.
+
+[Architecture](ARCH-024-commerce-agent-model-runtime-and-test-conversations.md)

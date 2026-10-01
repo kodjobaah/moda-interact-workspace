@@ -1,7 +1,7 @@
 ---
 id: ARCH-024-DATABASE-001
 architecture_id: ARCH-024
-title: Persist Model Catalogue availability and OpenRouter credentials
+title: Persist Model Catalogue availability, Price Plan model assignment and OpenRouter credentials
 task_kind: implementation
 domain: database
 repository: moda-interact-database
@@ -9,7 +9,7 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -18,10 +18,10 @@ depends_on: []
 enables:
   - ARCH-024-SHARED-001
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
-# Persist Model Catalogue availability and OpenRouter credentials
+# Persist Model Catalogue availability, Price Plan model assignment and OpenRouter credentials
 
 ## Architecture
 
@@ -39,7 +39,7 @@ Coordinator:
 
 ## Objective
 
-Evolve the existing ARCH-021 Commerce model persistence into the complete ARCH-024 database boundary in one pre-production breaking migration: persist Platform/Shop Model Availability, make every `CommerceModelCatalogueEntry` belong to exactly one Availability, replace the closed `CommerceModelProvider` enum with durable `provider + providerModelId` strings, add versioned JSON model configuration, and persist one encrypted hot-swappable OpenRouter credential per `CommerceEnvironment`.
+Evolve the existing ARCH-021 Commerce model persistence into the complete ARCH-024 database boundary in one pre-production breaking migration: persist Platform/Shop Model Availability, make every `CommerceModelCatalogueEntry` belong to exactly one Availability, replace the closed `CommerceModelProvider` enum with durable `provider + providerModelId` strings, add versioned JSON model configuration, add one optional `MerchantPricingPlan.commerceModelId` association for product-tier model selection, and persist one encrypted hot-swappable OpenRouter credential per `CommerceEnvironment`.
 
 ## Context
 
@@ -78,6 +78,9 @@ Model Catalogue Entry
 
 Agent Configuration
     which one available model is selected for Platform or a Shop
+
+Merchant Pricing Plan
+    which optional Platform-available model is the default benefit for subscribers to that pricing tier
 ```
 
 The target ownership is:
@@ -96,6 +99,15 @@ CommerceModelAvailability (SHOP -> shop X)
 ```
 
 Every catalogue entry belongs to exactly one Availability. One Platform Availability exists globally. A Shop may have at most one Shop Availability. An Availability may temporarily contain zero entries while an Admin is authoring it; the durable relationship is one Availability to zero-or-more entries, with every entry having exactly one non-null Availability.
+
+ARCH-024 also adds this one-way product-tier association:
+
+```text
+billing.MerchantPricingPlan.commerceModelId?
+    -> commerce.CommerceModelCatalogueEntry.id
+```
+
+`NULL` means the Price Plan has no model override. Runtime then falls through to Platform unless a Shop Agent Configuration has an explicit model override. The association is stored only on `MerchantPricingPlan`; no model field or FK is added to `BillingPlan`.
 
 Model selection remains in the existing `CommerceAgentConfiguration.modelId`. This task MUST NOT create another active-model table or active flag. There is still at most one explicit model pointer per Platform/Shop Agent Configuration because the existing Agent Configuration uniqueness rules remain authoritative.
 
@@ -145,7 +157,9 @@ Do not modify Admin, Commerce, Background, Gateway, Shopify or Shared implementa
 - Adding an `active` flag to a catalogue entry or Availability.
 - Creating a replacement Platform/Shop model-selection table.
 - Changing the existing `CommerceAgentConfiguration` Platform/Shop uniqueness rules.
-- Automatically clearing or changing Agent Configuration when an Availability or catalogue entry is disabled/reassigned.
+- Adding `commerceModelId` or another model association to `BillingPlan`.
+- Adding a physical `MerchantPricingPlan` <-> `BillingPlan` foreign key; accepted ARCH-017 same-`shopifyPlanHandle` identity remains authoritative.
+- Automatically clearing or changing Agent Configuration or MerchantPricingPlan model associations when an Availability or catalogue entry is disabled/reassigned.
 - A database trigger that silently falls back from an invalid explicit Shop model to the Platform model.
 - A database trigger that prevents Admin from disabling/reassigning a selected model. Broken explicit selections must remain representable so later Commerce resolution can fail closed as `UNAVAILABLE`.
 - A catalogue-entry-to-credential FK. Credential resolution is by Agent Configuration environment as described above.
@@ -309,8 +323,9 @@ model CommerceModelCatalogueEntry {
   availability CommerceModelAvailability @relation(fields: [availabilityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   createdBy     PlatformAdmin             @relation("CommerceModelCatalogueEntryCreator", fields: [createdByAdminId], references: [id], onDelete: Restrict, onUpdate: Restrict)
   updatedBy     PlatformAdmin             @relation("CommerceModelCatalogueEntryUpdater", fields: [updatedByAdminId], references: [id], onDelete: Restrict, onUpdate: Restrict)
-  configurations CommerceAgentConfiguration[]
-  auditEvents    CommerceAuditEvent[]
+  configurations      CommerceAgentConfiguration[]
+  merchantPricingPlans MerchantPricingPlan[] @relation("MerchantPricingPlanCommerceModel")
+  auditEvents           CommerceAuditEvent[]
 
   @@unique([availabilityId, provider, providerModelId])
   @@index([availabilityId, enabled, displayName, id])
@@ -418,6 +433,56 @@ Exact semantics:
 5. The database MUST NOT reject an Availability reassignment merely because an existing Agent Configuration currently references the entry. That explicit selection is allowed to become invalid and must later resolve `UNAVAILABLE` until corrected.
 
 Drop the old trigger/function only after the ARCH-024 replacement is installed.
+
+### R6A — Add the optional `MerchantPricingPlan` Commerce model association exactly
+
+Modify the existing billing model with exactly this additive relation:
+
+```prisma
+model MerchantPricingPlan {
+  // existing fields unchanged
+
+  commerceModelId String? @db.Text
+  commerceModel   CommerceModelCatalogueEntry? @relation(
+    "MerchantPricingPlanCommerceModel",
+    fields: [commerceModelId],
+    references: [id],
+    onDelete: Restrict,
+    onUpdate: Restrict
+  )
+
+  @@index([commerceModelId])
+  @@schema("billing")
+}
+```
+
+Add the inverse relation to the ARCH-024 target `CommerceModelCatalogueEntry`:
+
+```prisma
+merchantPricingPlans MerchantPricingPlan[] @relation("MerchantPricingPlanCommerceModel")
+```
+
+Create the FK exactly:
+
+```text
+billing.MerchantPricingPlan.commerceModelId
+    -> commerce.CommerceModelCatalogueEntry.id
+    ON DELETE RESTRICT
+    ON UPDATE RESTRICT
+```
+
+Migration semantics are exact:
+
+1. every existing `MerchantPricingPlan` receives `commerceModelId = NULL`;
+2. `NULL` means no Price Plan model override;
+3. no existing `BillingPlan` row is changed;
+4. do not add a `BillingPlan.commerceModelId`;
+5. do not add a MerchantPricingPlan/BillingPlan FK;
+6. do not infer a model from plan price, catalogue position, Feature set, existing Agent Configuration or any other state.
+
+Database responsibility stops at referential integrity. Do **not** add a database trigger that requires the referenced Catalogue Entry to remain enabled or in Platform Availability. Admin write-time validation and Commerce/Background runtime resolution own those dynamic rules. Therefore a later Catalogue disablement or Availability reassignment may intentionally leave a durable now-invalid Price Plan selection that resolves `UNAVAILABLE` until an administrator repairs or clears it.
+
+The association is global product configuration and is not keyed by `CommerceEnvironment`. Environment remains a property of Platform/Shop Agent Configuration and OpenRouter credentials.
 
 ### R7 — Add `CommerceOpenRouterCredential` exactly
 
@@ -612,9 +677,11 @@ updatedCommerceModelAvailabilities     CommerceModelAvailability[]   @relation("
 updatedCommerceOpenRouterCredentials   CommerceOpenRouterCredential[] @relation("CommerceOpenRouterCredentialUpdater")
 ```
 
-Keep the existing Model Catalogue creator/updater relations unchanged.
+Keep the existing Model Catalogue creator/updater relations unchanged. The `CommerceModelCatalogueEntry.merchantPricingPlans` inverse relation required by R6A is also part of the target schema.
 
-### R12 — Do not create model runtime or merchant-selection persistence
+### R12 — Do not create model runtime or merchant-controlled selection persistence
+
+`MerchantPricingPlan.commerceModelId` is Platform Admin product-tier configuration, not merchant-controlled selection.
 
 This migration must not create:
 
@@ -623,6 +690,7 @@ CommerceModelProvider table
 CommerceModelAvailabilityAssignment join table
 CommerceModelSelection replacement table
 CommerceMerchantModelSelection
+BillingPlan.commerceModelId
 CommerceModelRuntime
 CommerceModelClient configuration table
 LangChain/OpenRouter request/response tables
@@ -635,7 +703,7 @@ The agreed ARCH-024 relationship is direct:
 CommerceModelAvailability 1 ---- * CommerceModelCatalogueEntry
 ```
 
-with existing `CommerceAgentConfiguration.modelId` remaining the active model pointer.
+with existing `CommerceAgentConfiguration.modelId` remaining the explicit Platform/Shop model pointer and `MerchantPricingPlan.commerceModelId` remaining the optional product-tier pointer.
 
 ### R13 — Rollout classification is pre-production / breaking
 
@@ -656,7 +724,8 @@ The Completion Report must record that ARCH-024 intentionally uses a breaking de
 - [ ] Add `CommerceModelAvailabilityScope`.
 - [ ] Add `CommerceModelAvailability` with exact Platform/Shop scope constraints, FKs, partial uniqueness and immutable identity guard.
 - [ ] Bootstrap the single Platform Availability with deterministic ID.
-- [ ] Add required Prisma inverse relations on `Shop` and `PlatformAdmin`.
+- [ ] Add required Prisma inverse relations on `Shop`, `PlatformAdmin` and `CommerceModelCatalogueEntry`.
+- [ ] Add nullable `MerchantPricingPlan.commerceModelId` FK/index exactly as R6A and leave all existing Price Plans at NULL.
 - [ ] Establish the target non-null `availabilityId` relationship on `CommerceModelCatalogueEntry`; no pre-ARCH-024 development-data ID/backfill preservation is required.
 - [ ] Replace `CommerceModelCatalogueEntry.provider` enum storage with canonical lower-case `VARCHAR(64)` and remove `CommerceModelProvider`; development rows may be reset rather than preserved.
 - [ ] Add `configurationSchemaVersion` and `configuration JSONB` with database structural checks.
@@ -665,6 +734,7 @@ The Completion Report must record that ARCH-024 intentionally uses a breaking de
 - [ ] Add `CommerceOpenRouterCredential` with one-row-per-environment uniqueness and encrypted-envelope constraints.
 - [ ] Extend `CommerceAuditEvent` with `modelAvailabilityId` and the new audit actions/target rules.
 - [ ] Preserve the `CommerceAgentConfiguration` schema and uniqueness rules; pre-ARCH-024 development `modelId` values may be cleared/reset if required by the breaking migration.
+- [ ] Prove no `BillingPlan` model column/FK and no MerchantPricingPlan/BillingPlan FK is introduced.
 - [ ] Add focused schema validation.
 - [ ] Add fresh PostgreSQL migration rehearsal.
 - [ ] Add a current-schema -> ARCH-024 development-upgrade rehearsal proving the breaking migration reaches the target schema without requiring data preservation.
@@ -725,6 +795,11 @@ None.
 
 ## Acceptance Criteria
 
+- [ ] `MerchantPricingPlan.commerceModelId` is nullable, indexed and FK-constrained to `CommerceModelCatalogueEntry` with `ON DELETE/UPDATE RESTRICT`.
+- [ ] Existing Price Plans migrate with `commerceModelId = NULL`; no model assignment is inferred.
+- [ ] `BillingPlan` remains physically independent of the Commerce model association and gains no model field/FK.
+- [ ] Disabling/reassigning a referenced Catalogue Entry does not rewrite the Price Plan association at database level.
+
 - [ ] Exactly one bootstrap Platform Model Availability exists after migration.
 - [ ] Database constraints prevent a second Platform Availability.
 - [ ] A Shop can have at most one Shop Availability.
@@ -755,6 +830,9 @@ None.
 - [ ] Development-upgrade rehearsal proves unrelated schema outside the explicitly breaking model-catalogue/model-selection boundary remains structurally valid.
 
 ## Validation
+
+- [ ] Static schema/migration validation proves the exact Price Plan model FK/index and absence of any `BillingPlan` model association.
+- [ ] Disposable PostgreSQL proof creates a Price Plan with null model, assigns a Catalogue Entry, leaves the Price Plan FK unchanged when the model/Availability is later disabled/reassigned, and proves no automatic model inference/backfill occurs.
 
 The implementing agent must add these package scripts:
 
