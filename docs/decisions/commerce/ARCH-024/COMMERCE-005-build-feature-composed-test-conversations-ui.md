@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-024-COMMERCE-002
   - ARCH-024-COMMERCE-004
@@ -923,25 +923,25 @@ Only bounded Preview conversation state may be written by the existing Preview s
 
 ## Work Items
 
-- [ ] Create `src/studio/test-conversations/contracts.ts` with the exact R1 browser-safe contracts and continue the C001 Test Conversations module.
-- [ ] Project Feature data to R2 without Feature Behaviour/edit metadata crossing to the client.
-- [ ] Load only the validated selected Shop from `resolveStudioShopSelection`.
-- [ ] Resolve/project effective active Model + ARCH-023 instruction provenance per R4.
-- [ ] Replace the human conversation-start schema/client input with R5.
-- [ ] Revalidate `shopId` server-side, resolve the complete effective model/instruction state, and atomically persist the exact R7 `PreviewConversationSnapshot`.
-- [ ] Refactor the C004 frozen-snapshot schema into the R7 reusable base/refinement without changing its existing validation semantics.
-- [ ] Add `tests/test-conversation-snapshot.test.ts` covering atomic authored-snapshot creation and stability.
-- [ ] Implement deterministic Feature checkbox/order/limit semantics.
-- [ ] Implement the exact Agent configuration / Features / Conversation layout.
-- [ ] Implement deterministic Start eligibility.
-- [ ] Add synchronous same-tick Start single-flight gating.
-- [ ] Preserve original payload/ID for uncertain start reconciliation.
-- [ ] Lock authoring controls after successful Start and implement local `Start new conversation` reset.
-- [ ] Keep message execution disabled pending C006/C007; do not route the new UI through synthetic conversation execution.
-- [ ] Prove no trusted texts/definitions/secrets leak into browser props.
-- [ ] Prove legacy Preview controls stay absent.
-- [ ] Prove Tool-test APIs remain unchanged.
-- [ ] Update focused tests and Completion Report.
+- [x] Create `src/studio/test-conversations/contracts.ts` with the exact R1 browser-safe contracts and continue the C001 Test Conversations module.
+- [x] Project Feature data to R2 without Feature Behaviour/edit metadata crossing to the client.
+- [x] Load only the validated selected Shop from `resolveStudioShopSelection`.
+- [x] Resolve/project effective active Model + ARCH-023 instruction provenance per R4.
+- [x] Replace the human conversation-start schema/client input with R5.
+- [x] Revalidate `shopId` server-side, resolve the complete effective model/instruction state, and atomically persist the exact R7 `PreviewConversationSnapshot`.
+- [x] Refactor the C004 frozen-snapshot schema into the R7 reusable base/refinement without changing its existing validation semantics.
+- [x] Add `tests/test-conversation-snapshot.test.ts` covering atomic authored-snapshot creation and stability.
+- [x] Implement deterministic Feature checkbox/order/limit semantics.
+- [x] Implement the exact Agent configuration / Features / Conversation layout.
+- [x] Implement deterministic Start eligibility.
+- [x] Add synchronous same-tick Start single-flight gating.
+- [x] Preserve original payload/ID for uncertain start reconciliation.
+- [x] Lock authoring controls after successful Start and implement local `Start new conversation` reset.
+- [x] Keep message execution disabled pending C006/C007; do not route the new UI through synthetic conversation execution.
+- [x] Prove no trusted texts/definitions/secrets leak into browser props.
+- [x] Prove legacy Preview controls stay absent.
+- [x] Prove Tool-test APIs remain unchanged.
+- [x] Update focused tests and Completion Report.
 
 ## Interfaces / Contracts
 
@@ -1009,36 +1009,36 @@ All must be `complete` before this task becomes executable. C002 supplies effect
 
 ## Acceptance Criteria
 
-- [ ] Test Conversations shows only the replacement Agent configuration / Features / Conversation workflow.
-- [ ] No raw/unvalidated URL `shopId` reaches the conversation start path.
-- [ ] No Shop selected => Start disabled with the exact R9 guidance.
-- [ ] Broken/unavailable effective Agent Configuration => Start disabled with a bounded message.
-- [ ] READY configuration displays the exact effective Model and Platform/Shop Instruction revision provenance.
-- [ ] Platform/Shop Instruction text itself is not sent to the browser by this screen.
-- [ ] Model configuration JSON is not sent to the browser by this screen.
-- [ ] Feature Behaviour text is not sent to the browser by this screen.
-- [ ] Every Feature with Capabilities has exactly one checkbox.
-- [ ] Zero-Capability Features are visible but not selectable.
-- [ ] Inactive Features remain selectable and are labelled `Inactive · testable`.
-- [ ] Disabled Capability/Tool status is informational and does not remove it from explicit Feature composition.
-- [ ] Selection order follows user checkbox selection order exactly.
-- [ ] Re-selecting a Feature appends it to the end of `featureIds`.
-- [ ] The client prevents more than 32 selected Features.
-- [ ] Start request is exactly `{ previewConversationId, shopId, selection: { kind:'FEATURES', featureIds } }`.
-- [ ] Conversation creation revalidates the Shop server-side.
-- [ ] Stored Feature-composed grant uses the exact validated Shop ID, not `preview-<admin>`.
-- [ ] C005 is the only task that assembles the complete authored Conversation Configuration Snapshot; it contains exact Shop id/domain, model/provenance/configuration, Platform/optional Shop instruction revisions+text and the C004 composition fragment.
-- [ ] Refactoring `PreviewFrozenSnapshotSchema` into a reusable base/refinement preserves every existing C004 size/content validation for both narrow and complete snapshots.
-- [ ] The complete snapshot contains no OpenRouter, Shopify or External HTTP credential material.
-- [ ] Later model/instruction/Feature/Tool authoring edits do not alter an already-started conversation; a new conversation resolves current authored state.
-- [ ] Shopify-session absence alone does not prevent Start.
-- [ ] Same-tick repeated Start activations dispatch exactly one request and one conversation ID.
-- [ ] Unknown Start outcome can only reconcile with the exact original ID/shop/Feature payload.
-- [ ] Successful Start locks Feature selection until `Start new conversation`.
-- [ ] New UI does not submit message runs in this task and does not silently use the old synthetic conversation runtime.
-- [ ] Tool-test fixture APIs remain intact.
-- [ ] Legacy Preview selectors/labels listed in R15 are absent.
-- [ ] No authoring/business rows are mutated by Feature selection/conversation creation.
+- [x] Test Conversations shows only the replacement Agent configuration / Features / Conversation workflow.
+- [x] No raw/unvalidated URL `shopId` reaches the conversation start path.
+- [x] No Shop selected => Start disabled with the exact R9 guidance.
+- [x] Broken/unavailable effective Agent Configuration => Start disabled with a bounded message.
+- [x] READY configuration displays the exact effective Model and Platform/Shop Instruction revision provenance.
+- [x] Platform/Shop Instruction text itself is not sent to the browser by this screen.
+- [x] Model configuration JSON is not sent to the browser by this screen.
+- [x] Feature Behaviour text is not sent to the browser by this screen.
+- [x] Every Feature with Capabilities has exactly one checkbox.
+- [x] Zero-Capability Features are visible but not selectable.
+- [x] Inactive Features remain selectable and are labelled `Inactive · testable`.
+- [x] Disabled Capability/Tool status is informational and does not remove it from explicit Feature composition.
+- [x] Selection order follows user checkbox selection order exactly.
+- [x] Re-selecting a Feature appends it to the end of `featureIds`.
+- [x] The client prevents more than 32 selected Features.
+- [x] Start request is exactly `{ previewConversationId, shopId, selection: { kind:'FEATURES', featureIds } }`.
+- [x] Conversation creation revalidates the Shop server-side.
+- [x] Stored Feature-composed grant uses the exact validated Shop ID, not `preview-<admin>`.
+- [x] C005 is the only task that assembles the complete authored Conversation Configuration Snapshot; it contains exact Shop id/domain, model/provenance/configuration, Platform/optional Shop instruction revisions+text and the C004 composition fragment.
+- [x] Refactoring `PreviewFrozenSnapshotSchema` into a reusable base/refinement preserves every existing C004 size/content validation for both narrow and complete snapshots.
+- [x] The complete snapshot contains no OpenRouter, Shopify or External HTTP credential material.
+- [x] Later model/instruction/Feature/Tool authoring edits do not alter an already-started conversation; a new conversation resolves current authored state.
+- [x] Shopify-session absence alone does not prevent Start.
+- [x] Same-tick repeated Start activations dispatch exactly one request and one conversation ID.
+- [x] Unknown Start outcome can only reconcile with the exact original ID/shop/Feature payload.
+- [x] Successful Start locks Feature selection until `Start new conversation`.
+- [x] New UI does not submit message runs in this task and does not silently use the old synthetic conversation runtime.
+- [x] Tool-test fixture APIs remain intact.
+- [x] Legacy Preview selectors/labels listed in R15 are absent.
+- [x] No authoring/business rows are mutated by Feature selection/conversation creation.
 
 ## Validation
 
@@ -1053,18 +1053,18 @@ Then inspect `moda-interact-commerce/package.json` and use the repository-declar
 
 Required validation:
 
-- [ ] Focused `test-conversations-screen.test.tsx` coverage for R8-R13 and R15.
-- [ ] Focused `preview-page.test.tsx` or equivalent coverage for R2-R4/R14.
-- [ ] Focused `test-conversations-client.test.ts` coverage for exact selected-Shop start payload and uncertain same-ID handling.
-- [ ] Focused `preview-routes.test.ts` coverage proving strict R5 body parsing and rejection of legacy fields.
-- [ ] Focused `preview-service.test.ts` coverage proving server-side Shop validation and exact grant Shop identity.
-- [ ] Focused `test-conversation-snapshot.test.ts` coverage proving R7 atomic snapshot creation, exact provenance, stability after later authoring edits, new-conversation refresh, and absence of operational secrets.
-- [ ] Existing Tool-test/Code Response Preview tests remain green, proving R16.
-- [ ] Targeted ESLint for every changed Commerce source/test file.
-- [ ] Changed-file TypeScript diagnostics are zero.
-- [ ] Repository typecheck command required by the current Commerce package/task baseline, with any unrelated known baseline recorded by baseline ID rather than silently ignored.
-- [ ] Production build if declared/required by the Commerce repository baseline for changed Next.js page/client code.
-- [ ] `git diff --check`.
+- [x] Focused `test-conversations-screen.test.tsx` coverage for R8-R13 and R15.
+- [x] Focused `preview-page.test.tsx` or equivalent coverage for R2-R4/R14.
+- [x] Focused `test-conversations-client.test.ts` coverage for exact selected-Shop start payload and uncertain same-ID handling.
+- [x] Focused `preview-routes.test.ts` coverage proving strict R5 body parsing and rejection of legacy fields.
+- [x] Focused `preview-service.test.ts` coverage proving server-side Shop validation and exact grant Shop identity.
+- [x] Focused `test-conversation-snapshot.test.ts` coverage proving R7 atomic snapshot creation, exact provenance, stability after later authoring edits, new-conversation refresh, and absence of operational secrets.
+- [x] Existing Tool-test/Code Response Preview tests remain green, proving R16.
+- [x] Targeted ESLint for every changed Commerce source/test file.
+- [x] Changed-file TypeScript diagnostics are zero.
+- [x] Repository typecheck command required by the current Commerce package/task baseline, with any unrelated known baseline recorded by baseline ID rather than silently ignored.
+- [x] Production build if declared/required by the Commerce repository baseline for changed Next.js page/client code.
+- [x] `git diff --check`.
 
 No live Shopify/OpenRouter call is required by this task.
 
@@ -1085,58 +1085,219 @@ Do not begin ARCH-024-COMMERCE-006 or any follow-on task.
 
 ### Status
 
-Not Started
+Ready for Architect review after Attempt 2 evidence-only rework. Implementation commits `9f395d1aca723c5ffe99bdae0c4fcbc929aec664` and `7bf981db210de46ccda3d66fd21c0d194944b062` contain the C005 implementation. Attempt 2 made no implementation-source changes.
 
 ### Files Changed
 
-None
+- `app/preview/page.tsx` — loads validated Shop, projects browser-safe Feature data, and resolves effective model/instruction provenance.
+- `components/studio-screen.tsx` — replaces the obsolete synthetic Preview description with the required Test Conversations description.
+- `src/commerce/integration/preview/adapters.ts` — revalidates the exact Shop, resolves effective configuration, and builds the selected-Shop composition/snapshot inputs.
+- `src/commerce/preview/redis-store.ts` — decodes persisted conversations with the required complete authored snapshot schema.
+- `src/commerce/preview/service.ts` — validates complete server-owned snapshot provenance before claiming a conversation and reads trusted instruction text from that snapshot.
+- `src/commerce/preview/types.ts` — adds the strict selected-Shop start body and complete snapshot schemas while retaining the independent Tool-test contract.
+- `src/studio/test-conversations/client.ts` — sends the exact selected-Shop request and classifies uncertain outcomes.
+- `src/studio/test-conversations/contracts.ts` — defines the bounded browser-safe Feature/configuration/request types.
+- `src/studio/test-conversations/test-conversations-screen.tsx` — implements Feature selection, configuration display, start/reconcile/reset and disabled runtime controls.
+- `tests/external-preview.test.ts` — replaces obsolete conversation-scoped external fixture execution expectations with strict selected-Shop request rejection coverage; standalone Tool-test/Code Response fixture processing remains covered.
+- `tests/feature-preview-composition.test.ts` — adapts C004 composition coverage to the accepted Shop/effective-configuration reads.
+- `tests/preview-integration.test.ts` — verifies selected-Shop and effective provenance adapter integration.
+- `tests/preview-page.test.tsx` — verifies page projection and browser-data boundaries.
+- `tests/preview-redis-lua.test.ts` — migrates persistence fixtures to the complete snapshot.
+- `tests/preview-routes.test.ts` — verifies exact start-body parsing and retained Tool-test routes.
+- `tests/preview-service.test.ts` — migrates selected-Shop fixtures and preserves applicable lifecycle/Tool-test regressions; removes legacy mode/prompt-loader cases whose selectors are no longer part of the contract.
+- `tests/preview-store.test.ts` — migrates stored conversation fixtures to the complete snapshot.
+- `tests/test-conversation-snapshot.test.ts` — verifies atomic snapshot provenance, replay stability, refresh, fail-closed validation and no operational secrets.
+- `tests/test-conversations-client.test.ts` — verifies the exact request body and uncertain/error handling.
+- `tests/test-conversations-screen.test.tsx` — covers selection semantics, same-tick single-flight, uncertainty reconciliation, success lock/reset and legacy-control absence.
 
 ### Work Completed
 
-None
+- Implemented the Feature-only Test Conversations surface and browser-safe selected-Shop start client contract.
+- The page uses only `resolveStudioShopSelection(...).selectedShop`, projects exact Feature/Capability/Tool display fields, resolves effective configuration, and sends no trusted instruction text or model configuration to the browser.
+- The server revalidates the requested Shop, composes the ordered Feature IDs, validates effective model/instruction provenance, uses the exact validated Shop ID in the grant, and validates the complete immutable snapshot before persistence.
+- Added snapshot schemas for Shop identity, model provenance/configuration and Platform/optional Shop instruction revisions/text; retained the narrower composition schema for independent Tool-test state.
+- Implemented deterministic selection ordering/limits, disabled no-Capability Features, informational inactive/disabled states, synchronous duplicate protection, same-payload uncertain reconciliation, post-success lock/reset, and the required disabled message controls.
+- Preserved independent Tool-test APIs and standalone external fixture/Code Response processing. Removed only conversation-scoped synthetic external fixture runtime expectations superseded by the exact C005 selected-Shop body. No database, Shared, Admin, Background, Gateway, C006 or C007 implementation was changed.
 
 ### Validation Results
 
-None
+- Focused Preview/UI/snapshot/adapter test run: 10 files passed, 63 tests passed. After the final UI wording adjustment, the directly affected screen/adapter run passed 2 files, 12 tests.
+- Focused retained external fixture/Tool-test and Code Response processor run: 3 files passed, 28 tests passed; final `external-preview.test.ts` run passed 16/16.
+- Tool-test route/service regressions passed within the focused Preview test run.
+- `npm run typecheck` passed, including Next.js route type generation and `tsc --noEmit`.
+- `npm run build` passed, including manuals/code-runtime packaging and smoke checks, Prisma generation, and Next.js production build. Build emitted the existing Nunjucks dynamic-require warnings.
+- Targeted ESLint across all changed Commerce source/test files passed without warnings; `git diff --check` passed.
+- Full Commerce Vitest suite after the test migration: 160 files, 136 passed, 19 failed, 5 skipped; 1,312 tests passed, 29 failed, 9 skipped. The focused C005 and retained Tool-test/Code Response suites pass, but no accepted baseline ID was available to classify the remaining full-suite failures.
+- Implementation commits `9f395d1aca723c5ffe99bdae0c4fcbc929aec664` and `7bf981db210de46ccda3d66fd21c0d194944b062` are published to the mirrored implementation task branch. The database submodule remains at `cfeeb12456b4e05067a96857a8c47837d7e33bbd` and was not changed.
 
 ### Deviations
 
-None
+No product-scope deviation. Legacy conversation tests tied to the removed FIXTURE/MODEL selector or the superseded Prompt-loader start path were removed or migrated; independent Tool-test contracts and applicable run lifecycle coverage remain.
 
 ### Assumptions
 
-None
+The full-suite failures require Architect triage because no accepted baseline identifier or failure attribution was available during this task attempt.
 
 ### Unresolved Issues
 
-None
+The full Commerce Vitest suite is not green (19 failing files / 29 failing tests). Focused C005 and retained Tool-test/Code Response coverage is green; the remaining broader failures were not modified or represented as an accepted baseline.
 
 ### Architectural Concerns
 
-None
+None. Message execution remains disabled for C006/C007, and the complete authored snapshot is persisted once without live operational credentials.
+
+### Attempt 2 — Full-suite baseline comparison and prepared-execution evidence
+
+#### Prepared execution
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent task worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-005
+parent branch: task/ARCH-024-COMMERCE-005
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-005
+implementation branch: task/ARCH-024-COMMERCE-005
+shared/default workspace checkout used for task edits: no
+shared implementation checkout used for task edits: no
+another task worktree reused: no
+
+parent remote task synchronization at preparation: not-needed
+parent origin/main incorporated at preparation: yes
+implementation remote task synchronization at preparation: not-needed
+implementation origin/main incorporated at preparation: yes
+parent preparation head: a555444c8c3dd1a963329cba58824c5f7ec003ed
+implementation prepared head: 4a38f092d3a360e19c0bae8432961109cdd78917
+
+dependency gate: passed
+  ARCH-024-COMMERCE-002: complete
+  ARCH-024-COMMERCE-004: complete
+  ARCH-023-COMMERCE-003: complete
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recursive implementation submodule: database at cfeeb12456b4e05067a96857a8c47837d7e33bbd (initialized)
+
+Attempt 2 claim: executor copilot; claimed_at 2026-10-01T22:26:21Z
+claim transition: ready / attempt 1 -> in_progress / attempt 2
+durable claim commit: 228902dcc41ce6ea2d8f55f6f849050a429879bb (committed and pushed)
+final parent preparation sync: remote task fast-forward not-needed; origin/main already-current
+```
+
+#### Paired full-suite comparison
+
+The same `npx vitest run` command was executed on the synchronized pre-task Commerce commit `1318596b523190a8c422cf0fb9ddfeae06847e63` and prepared C005 implementation head `4a38f092d3a360e19c0bae8432961109cdd78917`. Both runs used Node `v24.19.0`, npm `11.17.0`, Vitest `5.0.1`, the same installed dependency tree/package-lock, database submodule `cfeeb12456b4e05067a96857a8c47837d7e33bbd`, and the same local integration-test environment.
+
+```text
+Baseline 1318596b523190a8c422cf0fb9ddfeae06847e63:
+  157 files: 23 failed, 129 passed, 5 skipped
+  1,348 tests: 60 failed, 1,279 passed, 9 skipped
+
+Submitted 4a38f092d3a360e19c0bae8432961109cdd78917:
+  160 files: 19 failed, 136 passed, 5 skipped
+  1,363 tests: 29 failed, 1,325 passed, 9 skipped
+
+Failure comparison:
+  28 individual failed test identifiers are common to both runs.
+  Five collection/setup failures are common to both runs.
+  32 individual failures occur only on the baseline.
+  One individual failure occurs only on the submitted run; it is an unrelated
+  Shopify Admin UI timeout and passes when run alone (1 passed, 42 skipped).
+```
+
+Common individual failing test identifiers:
+
+- `tests/admin-explorer.test.tsx`: `builds and validates a representable selection before merging query fields into an existing draft`; `cancel returns to the validated origin without merging temporary Explorer state`; `keeps Validate available when the visual candidate cannot yet be built and reports the blocking reason`; `keeps exact raw text for an unchanged literal mapping and drops stale buffers`; `offers a return action beside validation without applying temporary Explorer state`; `preserves a valid manual query that is not representable and returns it unchanged`; `round-trips a newly visual-authored string literal through the New Tool Request editor`; `shows validation progress while the Shopify Admin validation request is in flight`; `validates Request query while preserving malformed unrelated editor buffers`; `validates a restored visual selection even when the selected root field is outside the loaded schema page`.
+- `tests/agent-configuration-retained-read.test.ts`: `tracks model and prompt CAS versions on one retained row across clear operations`.
+- `tests/agent-contract-validation.test.ts`: `rejects unknown scalar paths and non-list items paths`.
+- `tests/auth-entrypoints.test.ts`: `keeps NextAuth and health public while the MCP route remains private`.
+- `tests/backend-postgres-rehearsal.test.ts`: `publishes once, replays durably, rejects stale CAS, races across connections, and rolls back injected failure`.
+- `tests/discount-evaluator.test.ts`: `retains preview purpose, environment, and trace correlation in eligibility telemetry`.
+- `tests/discovery-limits.test.ts`: `allows 60 sequential requests and rejects the 61st in the rolling window`.
+- `tests/health.test.ts`: `bounds hanging dependencies under two seconds and aborts Redis`; `readiness checks required dependencies and has no release-publication dependency`.
+- `tests/merchant-knowledge-embedding.test.ts`: `validates the exact OpenAI provenance environment contract`.
+- `tests/policy-operation-authoring-server-actions.test.ts`: `returns UNAVAILABLE for invalid or unregistered operation identities without fallback`.
+- `tests/policy-operation-result-template.test.ts`: `reports whether each currently registered operation result is template-compatible`.
+- `tests/preview-model-provider.test.ts`: `defaults disabled without provider settings and validates both providers`.
+- `tests/studio-workspace.test.tsx`: `authors a reusable tool without publishing and navigates to its returned ID`; `exposes the failure class when a named Studio action rejects unexpectedly`; `keeps newer edits dirty when an earlier save completes`; `resets editor state when a mounted detail changes to another record`; `retains editor input after stale CAS`; `retains incremental invalid JSON and saves only the complete canonical tool definition`.
+
+Common collection/setup failure identifiers:
+
+- `tests/agent-configuration-model-postgres.test.ts` (0 tests collected).
+- `tests/agent-configuration-prompts-postgres.test.ts` (0 tests collected).
+- `tests/c20-integration-fixture.test.ts` (0 tests collected).
+- `tests/local-external-mcp-diagnostic.test.ts` (0 tests collected).
+- `tests/studio-integration-c20.test.ts` (0 tests collected).
+
+Baseline-only failing test identifiers:
+
+- `tests/code-request-processor.test.ts`: `does not expose network or host capabilities`; `rejects unsafe args, oversized input, missing entrypoints, and cancellation`; `rejects unsafe output through the Commerce descriptor schema`; `rejects unsafe request output values through the processor`; `returns a deterministic canonical descriptor`.
+- `tests/code-response-processor.test.ts`: `keeps simultaneous inputs isolated`; `leaves result-schema enforcement at the Shared validation boundary`; `maps syntax, deadline, cancellation, and output-limit failures`; `rejects malformed responses and non-object output roots`; `runs v2 with Moda helpers and keeps unsupported versions unavailable`; `transforms JSON through the accepted kernel`; `transforms TEXT without attempting JSON parsing`.
+- `tests/code-runtime-proof.test.ts`: `cancels and cleans up workers`; `compiles valid code and rejects syntax without running it`; `executes the deterministic text transform with exact output`; `keeps concurrent inputs isolated and throttles the fifth active run`; `keeps expected guest syntax diagnostics out of operational error logs`; `keeps validation intrinsics outside guest mutation`; `proves supervisor termination after a built-in operation starts`; `rejects enumerable and non-enumerable custom serialization hooks`; `rejects forbidden host capabilities and invalid output shapes`; `retains capacity until cancelled workers terminate`; `terminates infinite loops and recovers the process`.
+- `tests/external-preview.test.ts`: `rejects a selected non external conversation fixture before persistence`; `rejects foreign conversation fixtures before persistence`; `reuses the same JavaScript fixture processor for tool-test and conversation execution`; `runs JavaScript sample through the accepted code processor and receipt lifecycle`; `runs a frozen conversation external fixture without live provider or credential access`; `uses developmentBypass as the complete authorization signal regardless of role or staff state`; `validates canonical code content hashes and rejects stale source`.
+- `tests/external-tool-authoring-validation.test.ts`: `rejects an unsafe JavaScript request descriptor during preview`; `resolves the same explicit structured and literal bindings before real QuickJS preview`.
+
+Submitted-only failing test identifier:
+
+- `tests/shopify-admin-tools-ui.test.tsx`: `saves, publishes through the canonical action, and reopens the exact Policy binding read-only` timed out during the full suite; isolated rerun passed (1 passed, 42 skipped). It is outside C005 ownership and is not represented as baseline-equivalent.
+
+No Test Conversations or Preview test failed in the submitted run. The submitted tree has fewer failed tests/files overall; the only submitted-only failure is the unrelated, non-reproducing isolated timeout above. Therefore the comparison identifies no new or worsened C005-owned failure, and no implementation-source correction was warranted. The full suite is not literally failure-for-failure baseline-equivalent because of that one submitted-only timeout; it is classified here explicitly rather than hidden under an aggregate claim.
+
+#### Final task-branch publication evidence
+
+The implementation task branch was fast-forward-pushed to the launcher-prepared head `4a38f092d3a360e19c0bae8432961109cdd78917`, which contains the remote C005 implementation commits and launcher-incorporated `origin/main`; its remote task ref now equals that head. The implementation worktree is clean and local head equals remote. Before this report commit, the parent worktree was clean at the pushed Attempt 2 claim commit `228902dcc41ce6ea2d8f55f6f849050a429879bb`, matching its remote. This report is the only parent task file change; after it is committed and pushed, the parent worktree will be verified clean with local head equal to its remote task ref.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
 
-None
+Attempt 2 closes both evidence-only corrections from Attempt 1. No C005-owned implementation source/test file changed during the retry; direct comparison with the previously reviewed C005 submission confirms the Feature-only Test Conversations implementation remains unchanged while the prepared implementation branch incorporates later accepted `origin/main` work.
+
+**A1-R1 — closed: paired full-suite non-regression evidence is sufficient.** The same `npx vitest run` command was executed under the same Node/npm/Vitest/dependency/database-submodule/integration-test environment on synchronized pre-task Commerce commit `1318596b523190a8c422cf0fb9ddfeae06847e63` and submitted prepared head `4a38f092d3a360e19c0bae8432961109cdd78917`. The baseline recorded 23 failing files / 60 failed tests plus five collection failures; the submitted tree recorded 19 failing files / 29 failed tests with the same five collection failures. Twenty-eight failed test identifiers are common, 32 failures are baseline-only, and the sole submitted-only failure is `tests/shopify-admin-tools-ui.test.tsx` / `saves, publishes through the canonical action, and reopens the exact Policy binding read-only`, which is outside C005 ownership and passed in isolated rerun (`1 passed, 42 skipped`). No Test Conversations or Preview test failed in the submitted run. The evidence therefore demonstrates no new or worsened C005-owned regression without incorrectly claiming literal failure-for-failure baseline equivalence.
+
+**A1-R2 — closed: deterministic prepared-execution evidence is durable.** The Completion Report records the canonical workspace root; dedicated parent and Commerce implementation worktrees; matching `task/ARCH-024-COMMERCE-005` branches; no shared/default or prior-task worktree edits; parent/implementation `origin/main` incorporation; dependency gate; recursive submodule sync/materialisation; database gitlink `cfeeb12456b4e05067a96857a8c47837d7e33bbd`; Attempt 2 claim metadata and durable claim commit `228902dcc41ce6ea2d8f55f6f849050a429879bb`; prepared implementation head `4a38f092d3a360e19c0bae8432961109cdd78917`; and final clean, remote-aligned task-branch evidence. The developer handoff identifies final parent report commit `22af5c0b` and confirms both task worktrees are clean and match their remote refs.
+
+The implementation conclusions from Attempt 1 therefore stand. The selected-Shop browser contract is strict and server-revalidated; the browser receives no trusted instruction/model configuration/Feature Behaviour payloads; C005 owns one complete immutable authored snapshot; Feature selection order and limits are deterministic; Start is same-tick single-flight safe; uncertain outcomes replay the exact original identity/payload; successful Start freezes authoring controls; message execution remains disabled for C006/C007; retained Tool-test/Code Response APIs remain separate; and no authoring/business state outside Preview conversation state is mutated.
 
 ### Reviewed Files
 
-None
+Implementation/review evidence:
+
+- Attempt 1 C005 submission -> Attempt 2 prepared-head comparison for all C005-owned implementation/test files
+- `moda-interact-commerce/app/preview/page.tsx`
+- `moda-interact-commerce/components/studio-screen.tsx`
+- `moda-interact-commerce/src/commerce/integration/preview/adapters.ts`
+- `moda-interact-commerce/src/commerce/preview/redis-store.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/studio/test-conversations/client.ts`
+- `moda-interact-commerce/src/studio/test-conversations/contracts.ts`
+- `moda-interact-commerce/src/studio/test-conversations/test-conversations-screen.tsx`
+- focused C005 Preview/UI/snapshot/adapter tests
+- retained Tool-test / Code Response tests
+- Attempt 2 paired full-suite failure-identifier evidence
+
+Parent coordination:
+
+- `docs/decisions/commerce/ARCH-024/COMMERCE-005-build-feature-composed-test-conversations-ui.md`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md`
+- `docs/decisions/commerce/ARCH-024/_index.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
+- `docs/architecture/_index.md`
 
 ### Validation Reviewed
 
-None
+- Submitted required/focused validation remains green: 63 focused C005 tests and 28 retained Tool-test/Code Response tests, targeted ESLint, `npm run typecheck`, production build and `git diff --check`.
+- Paired full-suite comparison: synchronized baseline `1318596b523190a8c422cf0fb9ddfeae06847e63` = 23 failing files / 60 failed tests; submitted `4a38f092d3a360e19c0bae8432961109cdd78917` = 19 failing files / 29 failed tests; 28 failed test identifiers plus five collection failures common; 32 baseline-only; one unrelated submitted-only timeout passes in isolation.
+- Direct archive comparison confirms C005-owned implementation/test files are unchanged from the previously reviewed submission; Attempt 2 is evidence-only.
+- Completion Report records the launcher-resolved physical-isolation, synchronization, recursive-submodule, claim/publication and final clean-worktree evidence required by the architect protocol.
+- The uploaded archive contains no installed dependency tree or usable Git metadata, so the reviewer could not independently replay Node commands or query remote refs; acceptance relies on direct source/report inspection plus the durable paired-run/launcher evidence.
 
 ### Architecture Conformance
 
-Pending
+Conforms. C005 owns only the selected-Shop Feature-composed Test Conversations authoring/start boundary and complete authored Conversation Configuration Snapshot. Real selected-Shop Tool execution remains C006; OpenRouter conversation execution remains C007. Repository ownership, trusted-data boundaries, snapshot immutability, Tool-test separation and no-business-mutation constraints are preserved.
 
 ### Follow-up
 
-None
+`ARCH-024-COMMERCE-006` becomes Ready because its sole dependency, C005, is now Complete. Do not start C007 until C006 is architect-accepted Complete. No follow-on task is claimed or started by this review.
