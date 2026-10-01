@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-09-30T23:36:50Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-023-DATABASE-001
@@ -20,7 +20,7 @@ depends_on:
   - ARCH-023-ADMIN-003
 enables: []
 created: 2026-09-29
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Resolve additive Platform and Shop Instructions
@@ -559,35 +559,90 @@ The later Background host task is required for production runtime adoption becau
 ## Completion Report
 
 ### Status
-Changes Requested — Ready for Attempt 2
+Ready for Review — Attempt 2
 ### Files Changed
-Implementation changes are in the dedicated `moda-interact-commerce` task worktree. They cover effective instruction resolution/contracts, MCP authorization and reserved prompts, Preview selection/revalidation, Agent Configuration read-only context, removal of Studio-only mutation adapters, and related tests.
+Attempt 1 implementation is preserved without source changes in the dedicated `moda-interact-commerce` task worktree. It covers effective instruction resolution/contracts, MCP authorization and reserved prompts, Preview selection/revalidation, Agent Configuration read-only context, removal of Studio-only mutation adapters, and related tests. This Attempt 2 changes only this parent task report and lifecycle metadata.
 ### Work Completed
-Implemented deterministic additive Platform plus optional Shop instruction resolution. Platform is required; an invalid present Shop configuration fails closed. Existing Shop-over-Platform model selection semantics are preserved, and effective metadata includes source template edit-version provenance.
+Attempt 1 implementation remains unchanged after the required synchronization. It provides deterministic additive Platform plus optional Shop instruction resolution. Platform is required; an invalid present Shop configuration fails closed. Existing Shop-over-Platform model selection semantics are preserved, and effective metadata includes source template edit-version provenance.
 
-Exposed exact resolved text through the fixed `commerce/platform-instructions` and `commerce/shop-instructions` MCP prompt names, scoped through the authenticated authorization snapshot. Capability prompt behavior and names remain unchanged.
+Exact resolved text is exposed through the fixed `commerce/platform-instructions` and `commerce/shop-instructions` MCP prompt names, scoped through the authenticated authorization snapshot. Capability prompt behavior and names remain unchanged.
 
-Commerce Preview now treats the selected shop ID only as a selector, revalidates it through server-side inspection for the authenticated principal, resolves the same trusted instruction bundle, freezes it for the conversation, and passes Preview safety, Platform, then optional Shop instructions to the runner.
+Commerce Preview treats the selected shop ID only as a selector, revalidates it through server-side inspection for the authenticated principal, resolves the same trusted instruction bundle, freezes it for the conversation, and passes Preview safety, Platform, then optional Shop instructions to the runner.
 
-Removed Platform/Shop and template authoring mutations from Commerce Studio while retaining model editing and a read-only effective-instructions/provenance view labeled “Managed in Admin”. Durable Commerce prompt/template services remain available to Admin/runtime.
+Platform/Shop and template authoring mutations are removed from Commerce Studio while retaining model editing and a read-only effective-instructions/provenance view labeled “Managed in Admin”. Durable Commerce prompt/template services remain available to Admin/runtime.
+
+Attempt 2 correction dispositions:
+- Synchronization and start-of-attempt evidence: implemented by the prepared launcher; both canonical task worktrees were synchronized before any Attempt 2 source inspection or validation.
+- Canonical worktree/provenance evidence: recorded below from the prepared launcher packet and final submission.
+- Completion-report bookkeeping and refreshed validation inventory: implemented here; all Work Items, Acceptance Criteria and Validation checkboxes reflect the completed focused checks, the lint count is corrected, and the refreshed full-suite failures are listed below.
 ### Validation Results
+Prepared launcher evidence (2026-09-30T23:36:50Z):
+
+```text
+canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-023-COMMERCE-003
+parent branch: task/ARCH-023-COMMERCE-003
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-023-COMMERCE-003
+implementation branch: task/ARCH-023-COMMERCE-003
+shared/default checkout used for edits: no
+previous task worktree reused: no
+parent remote task fast-forward: not-needed
+parent origin/main incorporated: yes; synchronized head 00e6e1afc53c7975450dd2ebc91c66b82990d9c4
+implementation remote task fast-forward: not-needed
+implementation origin/main incorporated: already-current; synchronized head 669e8ffd6c415b67b34d3dea34dd4e43e841f760
+recursive submodule sync/update: passed / passed
+database submodule: 6a8602e67d2308189af81ee0091e5189f1ffd71a (initialized, recursive)
+claim: Attempt 2, copilot, committed and pushed as 95234fddef40bf37ddd2349debdcaff8d7f41bce
+```
+
 `npm run typecheck`: passed.
 
-Focused changed-file Vitest run: 16 files passed, 101 tests passed. The C20 integration suite was unable to initialize because `COMMERCE_TEST_DATABASE_URL`, `COMMERCE_TEST_REDIS_URL`, and `COMMERCE_C20_REDIS_NAMESPACE` were not configured for disposable targets.
+Focused task tests plus synchronized backend-bootstrap regressions: 19 files passed, 118 tests passed. An additional focused resolver/model UI/MCP/Preview run passed 5 files, 63 tests. The declared `test:arch021-tool-authoring-common` regression target passed 7 files, 84 tests. C20/PostgreSQL integration suites require disposable database/Redis targets and could not be fully exercised in this environment.
 
-`npm run lint`: passed with 0 errors and 4 warnings (React Hook dependency warnings in `src/studio/code-response/code-response-panel.tsx`; unused declarations in `tests/agent-configuration-model.test.ts` and `tests/mcp-service.test.ts`).
+`npm run lint`: passed with 0 errors and 4 warnings (two React Hook dependency warnings in `src/studio/code-response/code-response-panel.tsx`; two unused declarations in `tests/agent-configuration-model.test.ts`).
 
-`npm run build`: passed, including package/smoke steps; webpack emitted the existing Nunjucks dynamic-dependency warning.
+`npm run build`: passed on retry, including manual/runtime packaging smoke steps, Prisma generation and Next production compilation. The build emitted the existing Nunjucks dynamic-dependency warning. Standalone runtime smoke invocations were intermittent under concurrent test/process load; this task does not change the runtime, and the complete build sequence passed.
 
-`git diff --check`: passed. Changed-file diagnostics: no errors.
+`git diff --check`: passed. Changed-file diagnostics: no errors. Implementation worktree was clean after validation; recursive database submodule remained at the launcher-recorded commit.
 
-Full `npm test`: not clean; Vitest reported 25 failed files, 122 passed, 3 skipped, with 61 failed tests, 1,257 passed, and 7 skipped. The captured failure details include unrelated `studio-workspace.test.tsx` authoring cases. The task-owned focused tests pass; the broader failure remains for Architect review.
+Full `npm test`: not clean. Vitest summary reported 29 failed files, 121 passed, 4 skipped; 48 failed tests, 1,290 passed, 8 skipped. A structured reporter run listed these 26 unique failing file paths (including suite setup/collection failures):
+
+```text
+tests/admin-explorer.test.tsx
+tests/agent-configuration-model-postgres.test.ts
+tests/agent-configuration-model-ui.test.tsx
+tests/agent-configuration-prompts-postgres.test.ts
+tests/agent-configuration-shop-ui.test.tsx
+tests/agent-contract-validation.test.ts
+tests/auth-entrypoints.test.ts
+tests/backend-postgres-rehearsal.test.ts
+tests/c20-integration-fixture.test.ts
+tests/code-response-processor.test.ts
+tests/code-runtime-proof.test.ts
+tests/discount-evaluator.test.ts
+tests/discovery-limits.test.ts
+tests/discovery-process.test.ts
+tests/external-tools-ui.test.tsx
+tests/health.test.ts
+tests/local-external-mcp-diagnostic.test.ts
+tests/merchant-knowledge-embedding.test.ts
+tests/policy-operation-authoring-server-actions.test.ts
+tests/policy-operation-result-template.test.ts
+tests/preview-model-provider.test.ts
+tests/readiness-docker.test.ts
+tests/shop-execution-context.test.ts
+tests/studio-integration-c20.test.ts
+tests/studio-services-errors.test.ts
+tests/studio-workspace.test.tsx
+```
+
+The structured reporter counted 47 failed suite results, 40 failed assertions, 1,298 passed assertions and 8 pending; its suite/assertion accounting differs from Vitest's terminal summary. Setup/collection failures include the PostgreSQL, C20 and local external-MCP integration suites. Remaining reported failures span Admin Explore, unrelated tool/release authoring, health/readiness, response/runtime, discount, discovery, and Studio workflows. `agent-configuration-model-ui.test.tsx` and `agent-configuration-shop-ui.test.tsx` appeared in the package run but passed in the focused reruns (including the 63-test rerun); no task-owned assertion failure reproduced in focused validation. The package-wide failures are retained for Architect attribution, not silently treated as passing.
 ### Deviations
-The implementation stayed within Commerce and did not modify Background, as required. C20 disposable integration validation was not run because its required isolated database/Redis environment was unavailable.
+No implementation-source changes were needed for Attempt 2. Work remained within Commerce and did not modify Background. C20/PostgreSQL integration validation was limited by the unavailable disposable test targets.
 ### Assumptions
 The reserved MCP prompts are the production-facing Commerce contract; a separate bounded Background task must fetch them and append Platform then Shop after true host-owned Level-2 instructions before invoking `runCommerceTurn`.
 ### Unresolved Issues
-The package-wide test suite has the failures recorded above and should be triaged independently. C20 integration requires configured disposable database and Redis targets.
+The package-wide failures listed above remain for Architect attribution; the Shop/model UI failures did not reproduce in focused reruns. C20/PostgreSQL integration requires configured disposable database and Redis targets. Standalone packaged-runtime smoke results were intermittent, although the complete production build passed.
 ### Architectural Concerns
 Production conversation execution remains Background-owned, so these resolved prompts are not consumed by the production runner until the required Background host-integration task is completed. No Background files were edited here.
 
