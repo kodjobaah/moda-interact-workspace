@@ -11,9 +11,9 @@ updated: 2026-10-01
 
 ## Status
 
-Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
+Agreed — the architecture and repository task decomposition are materialised and implementation is underway. The currently architect-accepted foundation includes `ARCH-023-DATABASE-001`, `ARCH-023-DATABASE-004`, `ARCH-023-DATABASE-005`, `ARCH-023-SHARED-001`, `ARCH-023-SHARED-002`, `ARCH-023-ADMIN-001`, `ARCH-023-ADMIN-002`, `ARCH-023-ADMIN-003`, `ARCH-023-ADMIN-004`, `ARCH-023-BACKGROUND-001`, `ARCH-023-BACKGROUND-002`, `ARCH-023-BACKGROUND-003`, `ARCH-023-BACKGROUND-006`, `ARCH-023-BACKGROUND-007`, `ARCH-023-COMMERCE-001`, `ARCH-023-SHOPIFY-001`, `ARCH-023-SHOPIFY-002` and `ARCH-023-SHOPIFY-003`. The canonical Shared consumer revision remains exactly `@modainteract/moda-interact-shared@1.0.1`.
 
-The current Merchant Knowledge worker-scheduling prerequisite frontier is `ARCH-023-BACKGROUND-007`, promoted to Ready after DATABASE-005 Attempt 2 acceptance. `ARCH-023-BACKGROUND-004` remains Blocked until BACKGROUND-007 is Complete; `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
+The Merchant Knowledge runtime-lease prerequisites are now complete: `ARCH-023-DATABASE-005` is Complete / Accepted Attempt 2 and `ARCH-023-BACKGROUND-007` is Complete / Accepted Attempt 1. The blocker recorded by BACKGROUND-004 Attempt 1 is therefore resolved; `ARCH-023-BACKGROUND-004` is Ready with Attempt 1 preserved so its next launcher claim becomes Attempt 2. `BACKGROUND-005` remains Pending on BACKGROUND-004. Other domain tasks retain the status recorded in their authoritative task YAML. Ready tasks remain unclaimed until their normal task launcher is invoked.
 
 ARCH-023 extends the existing dynamic Feature/BillingPlan model, ARCH-005 language
 foundation and ARCH-021 CommerceAgent configuration/capability foundation. Where this
@@ -3350,6 +3350,13 @@ None at the current implementation frontier. Further implementation detail may b
 through bounded task reviews without changing the agreed architecture contract.
 
 ## Change History
+
+### 2026-10-01 — BACKGROUND-007 Attempt 1 accepted
+
+- Accepted the bounded Background runtime-lease cadence extension at implementation `b39fc48c5a02e3b4f9d492f6d83e1650390ede53` against the exact architect-accepted DATABASE-005 pin `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`.
+- Confirmed `BackgroundRuntimeLeaseService.tryAcquire()` adds exactly `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION -> 60` seconds and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP -> 3600` seconds while preserving every existing lease branch, PostgreSQL-time gating and generation/owner fencing. No runtime config, scheduler, entrypoint, schema/migration or business-processing change is introduced.
+- Accepted 5 focused unit tests and the 3-case disposable pgvector PostgreSQL proof covering both new lease identities, persisted `lastFinishedAt`, immediate in-cadence suppression, exactly one generation-2 reacquisition after the fixed cadence, stale heartbeat/release rejection and cleanup; Prisma generation, build, diagnostics and whitespace validation also passed.
+- Marked BACKGROUND-007 Complete / Accepted Attempt 1 and resolved the lease prerequisite on BACKGROUND-004. BACKGROUND-004 returns from Blocked to Ready with Attempt 1 preserved; its next launcher claim becomes Attempt 2. BACKGROUND-005 remains Pending.
 
 ### 2026-10-01 — DATABASE-005 Attempt 2 accepted
 
