@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 32
 executor: copilot
 claimed_at: 2026-09-30T23:35:49Z
@@ -21,7 +21,7 @@ depends_on:
 enables:
   - ARCH-023-BACKGROUND-005
 created: 2026-09-29
-updated: 2026-09-30
+updated: 2026-10-01
 ---
 
 # Process and promote Merchant Knowledge revisions
@@ -566,17 +566,17 @@ terminal retry failure only marks current PROCESSING revision
 
 ## Work Items
 
-- [ ] Add exact embedding runtime config.
-- [ ] Implement pure D3 normalization/content-unit/truncation helpers.
-- [ ] Implement deterministic chunking/hashing.
-- [ ] Implement OpenAI embedding adapter and provenance validation.
-- [ ] Implement processing state machine and acquisition dispatch.
-- [ ] Implement pgvector persistence/promotion transaction.
-- [ ] Implement permanent/transient/terminal failure behavior.
-- [ ] Create final dedicated Merchant Knowledge entrypoint.
-- [ ] Wire PENDING reconciliation and upload cleanup schedules.
-- [ ] Add package start/readiness scripts.
-- [ ] Add focused unit/integration/entrypoint tests.
+- [x] Add exact embedding runtime config.
+- [x] Implement pure D3 normalization/content-unit/truncation helpers.
+- [x] Implement deterministic chunking/hashing.
+- [x] Implement OpenAI embedding adapter and provenance validation.
+- [x] Implement processing state machine and acquisition dispatch.
+- [x] Implement pgvector persistence/promotion transaction.
+- [x] Implement permanent/transient/terminal failure behavior.
+- [ ] Create final dedicated Merchant Knowledge entrypoint. Blocked by missing database-owned lease names and out-of-scope background lease cadence wiring.
+- [ ] Wire PENDING reconciliation and upload cleanup schedules. Blocked by the same lease contract.
+- [x] Add package start/readiness scripts.
+- [ ] Add focused unit/integration/entrypoint tests. Processing tests are present; dedicated entrypoint test is blocked with its entrypoint.
 
 ## Interfaces / Contracts
 
@@ -604,25 +604,25 @@ Produces the deployable Background process required by Gateway.
 ## Acceptance Criteria
 
 - [ ] Dedicated Merchant Knowledge entrypoint is operational and independently startable.
-- [ ] Source processing is tenant/current-plan/current-generation scoped.
-- [ ] Exact D3 normalization/truncation and D17 chunking are implemented.
-- [ ] Vectors/provenance persist correctly with pgvector dimension enforcement.
-- [ ] Prior ACTIVE revision remains usable until successful replacement.
-- [ ] Mid-flight entitlement changes cannot promote stale results.
-- [ ] Retry behavior does not corrupt durable lifecycle state.
+- [x] Source processing is tenant/current-plan/current-generation scoped.
+- [x] Exact D3 normalization/truncation and D17 chunking are implemented.
+- [x] Vectors/provenance persist correctly with pgvector dimension validation and parameterized writes.
+- [x] Prior ACTIVE revision remains usable until successful replacement.
+- [x] Mid-flight entitlement changes cannot promote stale results.
+- [x] Retry behavior does not corrupt durable lifecycle state.
 - [ ] PENDING queue-loss reconciliation and upload cleanup are scheduled.
-- [ ] No automatic URL refresh or entitlement-change revision generation is implemented here.
+- [x] No automatic URL refresh or entitlement-change revision generation is implemented here.
 
 ## Validation
 
-- [ ] all focused normalization/chunking/processing/embedding tests
-- [ ] pgvector integration test
-- [ ] final worker entrypoint/readiness test
-- [ ] `npm test`
-- [ ] `npm run build`
-- [ ] `npm run readiness:merchant-knowledge-worker` against disposable Redis/PostgreSQL fixture
-- [ ] `git diff --check`
-- [ ] changed-file diagnostics clean
+- [x] all focused normalization/chunking/processing/embedding tests: 36 passed; the database integration case was skipped in this first focused run.
+- [x] pgvector integration test: 1 passed against the disposable `pgvector/pgvector:pg17` fixture after applying all 21 committed database migrations.
+- [ ] final worker entrypoint/readiness test: no entrypoint exists because its required lease contract is missing; the package readiness command itself passed against disposable Redis/PostgreSQL.
+- [ ] `npm test`: failed. With the disposable database configured, 12 files failed (22 tests), 94 files passed, and 2 files were skipped (1,321 tests passed, 4 skipped). Causes include missing ARCH-020 fixture, existing tests using Prisma fields absent from the pinned schema, unrelated billing/recovery expectation failures, observability timeout/version assertions, Merchant Knowledge reconciliation fixture interference under parallel execution, and upload-cleanup transaction timeout. Serial Merchant Knowledge processing and reconciliation integrations passed; upload cleanup had one test fail after its 5-second transaction expired.
+- [x] `npm run build`
+- [x] `npm run readiness:merchant-knowledge-worker` against disposable Redis/PostgreSQL fixture: ready.
+- [x] `git diff --check`
+- [x] changed-file diagnostics clean
 
 ## Stop Condition
 
@@ -631,21 +631,35 @@ Set status `review`, complete Completion Report, return to `moda_architect` and 
 ## Completion Report
 
 ### Status
-Not Started
+Blocked: implementation and validation are complete for processing, but the dedicated entrypoint and both leased schedules cannot be implemented safely within this task's authorized files. The pinned database schema's `BackgroundRuntimeLeaseName` enum lacks `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP`; `src/runtime/background-runtime-lease.ts` also lacks cadence mappings. Database schema/migrations are owned by `moda-interact-database`, while changing the background lease runtime is outside this task's authorized file list. R14 is therefore not deployable and requires `moda_architect` to sequence the database/runtime contract work before this task can resume.
 ### Files Changed
-None.
+Implementation commit `f1e6869` (`feat: process merchant knowledge revisions`), pushed to `task/ARCH-023-BACKGROUND-004` in `moda-interact-background`:
+- `package.json`
+- `src/services/merchant-knowledge-chunking.ts`
+- `src/services/merchant-knowledge-embedding.ts`
+- `src/services/merchant-knowledge-failures.ts`
+- `src/services/merchant-knowledge-normalization.ts`
+- `src/services/merchant-knowledge-processing.service.ts`
+- `tests/integration/merchant-knowledge-processing.integration.test.ts`
+- `tests/unit/services/merchant-knowledge-chunking.test.ts`
+- `tests/unit/services/merchant-knowledge-embedding.test.ts`
+- `tests/unit/services/merchant-knowledge-normalization.test.ts`
+- `tests/unit/services/merchant-knowledge-processing.service.test.ts`
+- This task report only.
 ### Work Completed
-None.
+Implemented the embedding configuration/client, D3 normalization and code-point truncation, deterministic D17 chunking, activation-aware processing state machine, format-specific acquisition dispatch, transient/permanent/terminal retry handling, and transactional pgvector promotion with parameterized metadata/content values. Added processing/unit coverage and a real pgvector promotion integration test. Added only the two requested package scripts; no existing worker scripts or package dependencies changed.
 ### Validation Results
-None.
+Passed: focused Merchant Knowledge unit tests (36 tests); `npm run build`; disposable pgvector promotion integration (1 test); `npm run readiness:merchant-knowledge-worker` against task-isolated Redis and PostgreSQL; changed-file diagnostics; and staged `git diff --check`.
+
+Full suite: `npm test` did not pass. With the disposable database configured, Vitest reported 12 failed files / 22 failed tests, 94 passed files / 1,321 passed tests, and 2 skipped files / 4 skipped tests. Failures include a missing ARCH-020 evidence fixture, several unrelated integration fixtures using `defaultOutboundSoftLimit` absent from the pinned generated Prisma schema, unrelated promotion/billing/recovery expectations, observability timeouts and an expected shared-package version of `0.12.1` versus manifest `1.0.1`, plus parallel Merchant Knowledge fixture interference. A clean serial run passed processing and reconciliation integrations; upload cleanup had one test fail when its page-through transaction exceeded 5 seconds. These failures were not represented as baseline IDs or changed as part of this task.
 ### Deviations
-None.
+R14 and the associated entrypoint/readiness test remain unimplemented because their required lease enum labels and lease cadence handling are unavailable under the pinned database/background runtime contracts. No type cast, unrelated lease name, local advisory-lock substitute, or cross-repository schema change was introduced.
 ### Assumptions
-None.
+The local integration services were disposable containers on localhost with database `moda_interact`; only committed migrations were deployed. No shared/developer database was modified.
 ### Unresolved Issues
-None.
+`moda_architect` must arrange the missing lease contract: database enum/migration support for both exact Merchant Knowledge lease names, plus corresponding background lease cadence mapping. The task can resume on the same mirrored task branches after that contract is available.
 ### Architectural Concerns
-None.
+The required scheduler leases cross the database/runtime ownership boundary. Shipping the entrypoint before those enum values and cadence mappings exist would cause scheduler lease acquisition to fail or never become due, so this is a blocking dependency rather than a validation-only omission.
 
 ## Architect Review
 
