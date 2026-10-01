@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 40
 executor: null
 claimed_at: null
@@ -1101,24 +1101,75 @@ None identified. Implementation is ready for `moda_architect` review; no follow-
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 is substantially architecture-conformant across the new model-resolution boundary, but two corrections are required before acceptance.
+
+**A1-R1 — Preserve the migration-owned Platform Availability boundary.**
+
+`ModelConfigurationService.createCatalogueEntry(...)` currently calls `commerceModelAvailability.upsert(...)` for `arch024-platform-model-availability`. The accepted ARCH-024 architecture establishes that deterministic Platform Availability in the database migration and makes it non-recreatable; Availability authoring is not owned by Commerce. The legacy Catalogue compatibility bridge may create a Catalogue Entry *inside* that row, but must not create/recreate the Availability itself.
+
+Correct the production path so it only reads the deterministic Platform Availability (for example, `findUnique`) and fails closed with the existing bounded database-unavailable error if the row is absent or structurally not the expected `PLATFORM` / `shopId = null` row. Do not create, upsert or repair the Availability from Commerce application code.
+
+Because the required disposable PostgreSQL runner uses Prisma `db push`, which creates schema but does not execute the migration's deterministic data insert, seed `arch024-platform-model-availability` explicitly as **test fixture state only** after `db push` (or in the focused PostgreSQL fixture) before exercising legacy Catalogue creation. This fixture seeding must not be reachable from production Commerce service code.
+
+Add a focused regression proving that a missing bootstrap Platform Availability is not recreated by `createCatalogueEntry(...)`; the operation must fail boundedly and leave the Availability absent.
+
+**A1-R2 — Record deterministic task-launch evidence in the Completion Report.**
+
+The submitted Completion Report records the implementation commit and validation but does not preserve the launcher-resolved physical-isolation/synchronization packet required for repository-task review. Attempt 2 must record the canonical workspace root, dedicated parent task worktree, dedicated Commerce implementation worktree, matching `task/ARCH-024-COMMERCE-002` branches, start-of-attempt synchronization evidence, recursive submodule materialisation evidence, accepted `database/` gitlink identity (`cfeeb12` or the exact accepted equivalent present at preparation), and final clean/local-equals-remote evidence for both worktrees.
+
+The implementation commit `1f9a462` and parent report commit `5184a5c1` are accepted as the submitted Attempt 1 heads; do not create source churn outside A1-R1 merely to manufacture another implementation change.
 
 ### Reviewed Files
 
-Pending implementation.
+- `src/commerce/agent-configuration/model-availability.ts`
+- `src/commerce/agent-configuration/pricing-plan-model.ts`
+- `src/commerce/agent-configuration/effective-configuration.ts`
+- `src/commerce/agent-configuration/model-service.ts`
+- `src/studio/agent-configuration/model-contracts.ts`
+- `src/studio/agent-configuration/effective-contracts.ts`
+- `src/studio/agent-configuration/model-server-actions.ts`
+- `tests/agent-configuration-model-availability.test.ts`
+- `tests/agent-configuration-effective.test.ts`
+- `tests/agent-configuration-reduced.test.ts`
+- `tests/agent-configuration-model.test.ts`
+- `tests/agent-configuration-model-postgres.test.ts`
+- `scripts/run-arch024-model-resolution-disposable.mjs`
+- `package.json`
+- `package-lock.json`
+- accepted nested `database/prisma/schema.prisma` and ARCH-024 migration
+- this task's Completion Report
+- parent `ARCH-024` architecture and Commerce task index
 
 ### Validation Reviewed
 
-Pending implementation.
+Submitted Attempt 1 evidence records PASS for Prisma generation; the required focused five-suite Vitest set (36 tests); model-service tests (5 tests); disposable PostgreSQL proof (7 tests) with zero owned Docker resources remaining; targeted ESLint; typecheck; editor diagnostics; and `git diff --check`.
+
+The uploaded snapshot does not contain installed `node_modules`, so those Node/Docker checks were inspected from the durable Completion Report rather than independently rerun in this review environment. Attempt 2 must rerun the task-required validation after A1-R1 because production source/test fixture code changes are required.
 
 ### Architecture Conformance
 
-Pending implementation.
+Conforms:
+
+- canonical Shared `@modainteract/moda-interact-shared@1.1.0` model contracts are consumed;
+- Platform and exact-Shop Availability reads are bounded, Shared-validated and deterministically ordered;
+- Platform/Shop selection writes use the single `assertModelSelectable(...)` gate inside the mutation transaction;
+- current ACTIVE/TRIALING subscription state resolves through current `BillingPlan.shopifyPlanHandle` to `MerchantPricingPlan`, ignoring pending plan state;
+- effective model precedence is fail-closed `SHOP -> PRICING_PLAN -> PLATFORM`;
+- Price Plan models are constrained to Platform Availability;
+- selected model/Availability state is revalidated inside the existing repeatable-read effective-configuration transaction;
+- effective selection provenance remains distinct from Availability provenance;
+- no credential/OpenRouter runtime dependency enters model resolution;
+- focused real-PostgreSQL coverage exercises the required resolution scenarios.
+
+Correction required:
+
+- the temporary legacy Catalogue compatibility bridge must not recreate the migration-owned Platform Availability;
+- the Completion Report must retain the required prepared-launch/worktree evidence.
 
 ### Follow-up
 
-Pending implementation.
+Return the same task through `/moda-task ARCH-024-COMMERCE-002` for Attempt 2. Implement only A1-R1, add the regression, record A1-R2 evidence, rerun the required task validation, set the task back to `review`, and STOP. `ARCH-024-COMMERCE-003` and `ARCH-024-COMMERCE-005` remain gated until COMMERCE-002 is Accepted and Complete.
