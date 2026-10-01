@@ -16,7 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-024-BACKGROUND-001
-  - ARCH-024-SHARED-004
+  - ARCH-024-SHARED-002
 enables:
   - ARCH-024-GATEWAY-001
 created: 2026-10-01
@@ -57,7 +57,7 @@ builds only:
 START -> commerceAgent -> END
 ```
 
-where `commerceAgent` delegates to `runCommerceAgent`. Production WhatsApp processing already invokes `runCommerceAgent` through the conversation-turn/admission path rather than this wrapper. After SHARED-002/003 are published through SHARED-004, retaining a second one-node graph in Background is misleading and leaves an unnecessary direct `@langchain/langgraph` dependency.
+where `commerceAgent` delegates to `runCommerceAgent`. Production WhatsApp processing already invokes `runCommerceAgent` through the conversation-turn/admission path rather than this wrapper. After the combined SHARED-001 implementation is published through SHARED-002, retaining a second one-node graph in Background is misleading and leaves an unnecessary direct `@langchain/langgraph` dependency.
 
 This task is cleanup only. It must not redesign production orchestration.
 
@@ -203,7 +203,7 @@ No new cross-service contract.
 ## Dependencies
 
 - ARCH-024-BACKGROUND-001
-- ARCH-024-SHARED-004
+- ARCH-024-SHARED-002
 
 ## Enables
 

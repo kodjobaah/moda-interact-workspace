@@ -52,7 +52,7 @@ Individual task YAML is authoritative.
 | [SHOPIFY-002](SHOPIFY-002-select-store-category-pending-profile.md) | One initial/later Store Category selection lifecycle and pending Shop DRAFT/profile | Complete | DATABASE-001, SHARED-002 |
 | [SHOPIFY-003](SHOPIFY-003-activate-initial-store-category.md) | Initial Store Category/Shop prompt activation only after durable ACTIVE/TRIALING subscription state | Complete — Accepted Attempt 3 | SHOPIFY-001, SHOPIFY-002 |
 | [SHOPIFY-004](SHOPIFY-004-manage-merchant-knowledge-web-pages.md) | Merchant opt-in control plane plus current-plan WEB_PAGE source management | Complete — Accepted Attempt 2 | SHOPIFY-001, SHARED-002, ADMIN-004 |
-| [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Ready | SHOPIFY-004 |
+| [SHOPIFY-005](SHOPIFY-005-upload-merchant-knowledge-files.md) | Private R2 CSV/XLSX upload/finalize/replace/reprocess | Complete — Accepted Attempt 3 | SHOPIFY-004 |
 
 ## Execution frontier
 
@@ -63,20 +63,24 @@ SHOPIFY-001 -> Complete — Accepted Attempt 2
 SHOPIFY-002 -> Complete — Accepted Attempt 2
 SHOPIFY-003 -> Complete — Accepted Attempt 3
 SHOPIFY-004 -> Complete — Accepted Attempt 2
-SHOPIFY-005 -> Ready
+SHOPIFY-005 -> Complete — Accepted Attempt 3
 ```
 
-SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 is Complete / Accepted Attempt 3. ADMIN-004 is Complete / Accepted Attempt 1 and SHOPIFY-004 is now Complete / Accepted Attempt 2. SHOPIFY-005 is therefore Ready and remains unclaimed until its normal launcher is invoked.
+SHOPIFY-001 and SHOPIFY-002 both consume exactly `@modainteract/moda-interact-shared@1.0.1`. SHOPIFY-003 is Complete / Accepted Attempt 3. ADMIN-004 is Complete / Accepted Attempt 1, SHOPIFY-004 is Complete / Accepted Attempt 2, and SHOPIFY-005 is Complete / Accepted Attempt 3. GATEWAY-001 remains Pending because BACKGROUND-005 is not yet Complete.
 
 SHOPIFY-003 Attempt 3 is accepted. Activation treats `sourceTemplateId` / `sourceTemplateEditVersion` as selection-time provenance, publishes the exact pinned DRAFT even after a later category `defaultTemplateId` reassignment, and retains the passing disposable PostgreSQL activation/rollback/idempotency proof. Acceptance promotes no new Shopify task; the separate Background missed-callback activation hook remains required before final ARCH-023 system acceptance.
 
-SHOPIFY-004 Attempt 2 acceptance satisfies SHOPIFY-005's only dependency; SHOPIFY-005 is Ready but is not claimed or started by the architect reconciliation.
+SHOPIFY-005 Attempt 3 is accepted after the evidence-only revalidation supplied the three mandatory physical-isolation attestations and refreshed 14/14 focused plus 4/4 PostgreSQL validation with no implementation changes. GATEWAY-001 remains Pending on BACKGROUND-005 despite SHOPIFY-005 now being Complete.
 
 ## Cross-domain follow-up required
 
 ARCH-023 also requires the **existing Background subscription reconciler** to perform the same initial pending Store Category activation when the Shopify billing callback is missed.
 
 SHOPIFY-003 implements the Shopify-repository activation path only after authoritative durable ACTIVE/TRIALING subscription state. A bounded Background reconciliation hook must be defined before final ARCH-023 system acceptance; it must not be hidden inside the new Merchant Knowledge worker.
+
+## SHOPIFY-005 Attempt 3 acceptance
+
+Attempt 3 is Accepted. The implementation remains unchanged at `244f3f60035c3651168571869234ab23654854d3`; the Completion Report now records all three mandatory physical-isolation attestations, launcher synchronization/submodule evidence and refreshed validation. The focused upload/browser suite passed 14/14 and disposable PostgreSQL integration passed 4/4 with 0 skipped. SHOPIFY-005 is Complete / Accepted Attempt 3. GATEWAY-001 remains Pending because BACKGROUND-005 is still incomplete.
 
 ## SHOPIFY-004 Attempt 2 acceptance
 
