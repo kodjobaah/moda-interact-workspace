@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
 executor: null
 claimed_at: null
@@ -19,7 +19,8 @@ depends_on:
   - ARCH-023-BACKGROUND-008
   - ARCH-023-SHOPIFY-005
   - ARCH-023-COMMERCE-002
-enables: []
+enables:
+  - ARCH-023-SYSTEM-TEST-002
 created: 2026-09-29
 updated: 2026-10-01
 ---
@@ -767,7 +768,7 @@ to link/reference this contract rather than duplicating conflicting instructions
 - [x] Extend negative Blueprint validation.
 - [x] Add Merchant Knowledge deployment contract, including exact-origin R2 browser create-only PUT CORS prerequisite/replay verification.
 - [x] Update topology/prerequisite docs.
-- [ ] Run all required Gateway validation.
+- [x] Run all required Gateway-owned validation.
 
 ## Interfaces / Contracts
 
@@ -801,9 +802,9 @@ All must be Complete and architect-accepted before this task becomes Ready. `ARC
 
 ## Enables
 
-No terminal system-test task is materialised by this task.
+- `ARCH-023-SYSTEM-TEST-002`
 
-After Gateway acceptance, ARCH-023 developer/manual validation and final system tests may depend on this task.
+Gateway acceptance completes the final declared implementation/infrastructure dependency of `ARCH-023-SYSTEM-TEST-002`. Per the architecture lifecycle, developer/manual deployed-environment validation remains a checkpoint after implementation acceptance and before invoking the terminal system test; the Ready system-test task may remain unclaimed until the developer chooses to run that validation.
 
 ## Acceptance Criteria
 
@@ -812,8 +813,8 @@ After Gateway acceptance, ARCH-023 developer/manual validation and final system 
 - [x] Worker has Redis/PostgreSQL/common observability wiring.
 - [x] Test/production worker topology is environment-isolated.
 - [x] Shopify and Background use separate R2 credentials.
-- [ ] Private R2 bucket CORS permits only exact deployed Shopify-app origin(s) for browser PUT with `Content-Type` and `If-None-Match`, and creates no public read/list surface.
-- [ ] A deployed-origin create-only presigned PUT succeeds once and replay to the same key is rejected without replacing the object.
+- [x] Deployment contract requires private R2 bucket CORS to permit only exact deployed Shopify-app origin(s) for browser PUT with `Content-Type` and `If-None-Match`, with no public read/list surface; deployed-environment proof is deferred to developer/manual validation and `ARCH-023-SYSTEM-TEST-002`.
+- [x] Deployment contract requires a deployed-origin create-only presigned PUT to succeed once and replay to the same key to be rejected without replacing the object; deployed-environment proof is deferred to developer/manual validation and `ARCH-023-SYSTEM-TEST-002`.
 - [x] R2 endpoint/bucket configuration is shared only between Shopify and Merchant Knowledge worker.
 - [x] R2 credentials are never attached to Commerce.
 - [x] Shopify does not receive embedding credentials.
@@ -840,13 +841,22 @@ git diff --check
 
 Also parse both Blueprint YAML files with the repository's existing YAML validation mechanism.
 
-Also perform/document one deployed-origin R2 preflight + presigned PUT validation using the accepted Shopify upload flow. The validation MUST send the accepted `Content-Type` and `If-None-Match: *` headers, prove the first PUT succeeds, and prove replaying the same signed PUT/key is rejected without replacing the object.
+The commands above plus successful parsing of both Blueprints are the required Gateway-owned acceptance validation.
+
+The following deployed-environment checks are **deferred developer/manual and terminal system validation**, not Gateway implementation-acceptance gates:
+
+- deploy/apply the accepted Render topology in the intended environment;
+- from the exact deployed Shopify application origin, prove R2 preflight permits `PUT`, `Content-Type` and `If-None-Match` without wildcard origin;
+- using the accepted Shopify upload flow, prove the first signed `If-None-Match: *` PUT succeeds and replaying the same signed PUT/key is rejected without replacing the existing object;
+- prove the bucket exposes no public read/list surface.
+
+`ARCH-023-SYSTEM-TEST-002` already owns the same live R2 evidence. Gateway acceptance MUST NOT claim those checks passed when they have not been run, and architecture status MUST NOT become `Implemented` until the required developer/manual and terminal system validation is complete.
 
 If application task outputs differ from the exact dependency contracts recorded above, STOP and return the mismatch to `moda_architect`; do not silently alter application commands/env names in Gateway.
 
 ## Stop Condition
 
-After all Work Items, Acceptance Criteria and Validation are complete:
+After all Gateway-owned Work Items, Acceptance Criteria and Gateway-owned Validation are complete:
 
 1. complete the Completion Report;
 2. set task status to `review`;
@@ -917,6 +927,57 @@ The deployed-origin R2 acceptance check is documented but remains an external va
 Attempt 1 correctly stopped at R17 because the accepted Merchant Knowledge worker command lacked the Background observability preload. `ARCH-023-BACKGROUND-008` was subsequently completed and accepted, clearing that blocker for Attempt 2. The historical Attempt 1 architect review below is retained unchanged.
 
 ## Architect Review
+
+### Attempt 2 Review Status
+
+Accepted — Attempt 2
+
+### Attempt 2 Review Notes
+
+Attempt 2 implements the complete version-controlled ARCH-023 deployment topology without adding a Merchant Knowledge HTTP surface. Both canonical Render Blueprints contain the required environment-specific embedding, private-R2 location, split R2 credential and upload-limit groups; the dedicated private Background worker uses the accepted `npm run start:merchant-knowledge-worker` command; Shopify, Background and Commerce receive only their authorised configuration surfaces; and the deployment/runbook contract records the required pgvector, Commerce bootstrap, R2/CORS, rollout and rollback prerequisites.
+
+The positive/negative validators enforce the topology, environment isolation, secret-hygiene and forbidden-network-surface invariants. The accepted Background observability correction closes Attempt 1 R17, so the Gateway command contract now initialises the normal worker observability path without Gateway-owned application changes.
+
+The live Render deployment and real-origin R2 CORS/create-only PUT checks were not run and are **not represented as passed**. At the developer's direction, this review reconciles those checks to the architecture's post-implementation developer/manual validation layer and `ARCH-023-SYSTEM-TEST-002`, which already requires the same deployed R2 evidence. This is consistent with the architecture lifecycle: implementation/infrastructure tasks are architect-accepted first; developer manual validation follows; terminal system testing then validates the integrated deployment.
+
+### Attempt 2 Reviewed Files
+
+- `render.test.yaml`
+- `render.production.yaml`
+- `tests/validate-render-blueprints.sh`
+- `tests/validate-render-blueprints-negative.sh`
+- `docs/merchant-knowledge-deployment.md`
+- `docs/render-topology.md`
+- `docs/deployment-prerequisites.md`
+- `docs/decisions/gateway/ARCH-023/GATEWAY-001-wire-merchant-knowledge-deployment.md`
+
+### Attempt 2 Validation Reviewed
+
+The submitted evidence records:
+
+```text
+positive Blueprint validator                         PASS
+negative Blueprint mutation validator               PASS
+observability configuration validator               PASS
+Ruby/Psych parse: render.test.yaml                   PASS
+Ruby/Psych parse: render.production.yaml             PASS
+git diff --check                                    PASS
+live Render/R2 deployed-origin validation            DEFERRED — developer/manual + SYSTEM-TEST-002
+```
+
+No deployed-environment result is inferred from the static checks. The deferred R2 checks remain required before final ARCH-023 architectural completion.
+
+### Attempt 2 Architecture Conformance
+
+Accepted. Gateway owns and now codifies the required Render topology/configuration boundary, preserves least-privilege R2 credential attachment, shares embedding identity by construction between Background and Commerce, reuses existing PostgreSQL/Redis resources, keeps the Merchant Knowledge worker private, preserves environment isolation and existing observability configuration, and introduces no Gateway route or new Merchant Knowledge network service.
+
+The deferred live R2/Render checks are deployment validation rather than missing Gateway source capability. They remain explicitly required by the runbook and `ARCH-023-SYSTEM-TEST-002`; accepting this task does not mark the overall architecture `Implemented`.
+
+### Attempt 2 Dependency Reconciliation
+
+`ARCH-023-GATEWAY-001` is **Complete / Accepted Attempt 2** under `completion_mode: automatic`. This completes the final declared dependency of `ARCH-023-SYSTEM-TEST-002`, so that terminal task becomes **Ready**. Per the architect protocol, the developer may leave it Ready while performing manual deployed-environment validation and invoke it when satisfied. No system-test execution is started implicitly.
+
+#### Historical Attempt 1 — Blocked
 
 ### Review Status
 

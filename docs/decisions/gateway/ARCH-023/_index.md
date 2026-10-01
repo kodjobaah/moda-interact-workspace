@@ -20,7 +20,7 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [GATEWAY-001](GATEWAY-001-wire-merchant-knowledge-deployment.md) | Deploy the dedicated Merchant Knowledge worker and wire private R2, upload limits, embeddings and Commerce bootstrap configuration | Ready — next claim Attempt 2 | BACKGROUND-005, BACKGROUND-008, SHOPIFY-005, COMMERCE-002 |
+| [GATEWAY-001](GATEWAY-001-wire-merchant-knowledge-deployment.md) | Deploy the dedicated Merchant Knowledge worker and wire private R2, upload limits, embeddings and Commerce bootstrap configuration | Complete — Accepted Attempt 2 | BACKGROUND-005, BACKGROUND-008, SHOPIFY-005, COMMERCE-002 |
 
 ## Deployment boundary
 
@@ -52,18 +52,9 @@ system tests
 
 ## Execution frontier
 
-Ready: `ARCH-023-GATEWAY-001` with Attempt 1 preserved; the next launcher claim becomes Attempt 2.
+`ARCH-023-GATEWAY-001` is Complete / Accepted Attempt 2. Static Blueprint, topology, secret-hygiene and observability validation passed. Live Render deployment and real-origin R2 CORS/create-only PUT evidence are intentionally deferred to developer/manual validation and `ARCH-023-SYSTEM-TEST-002`; they are not represented as already executed.
 
-Its original prerequisites remain Complete / architect-accepted, but R17 exposed the Background-owned observability prerequisite:
-
-```text
-ARCH-023-BACKGROUND-005 = Complete — Accepted Attempt 2
-ARCH-023-BACKGROUND-008 = Complete — Accepted Attempt 2
-ARCH-023-SHOPIFY-005    = Complete — Accepted Attempt 3
-ARCH-023-COMMERCE-002   = Complete — Accepted Attempt 4
-```
-
-All declared Gateway prerequisites are now Complete / architect-accepted. GATEWAY-001 is Ready with Attempt 1 preserved; invoke its normal launcher to claim Attempt 2. Do not start Gateway implicitly from this reconciliation.
+Gateway acceptance completes the final declared dependency of `ARCH-023-SYSTEM-TEST-002`, which is now Ready and may remain unclaimed while the developer performs the documented deployed-environment checks.
 
 ## No new HTTP service
 
@@ -79,4 +70,4 @@ Commerce -> PostgreSQL / embedding provider
 
 ## Browser upload CORS
 
-GATEWAY-001 must document and verify the private Cloudflare R2 bucket CORS policy required by SHOPIFY-005: exact deployed Moda Shopify application origin(s), `PUT`, `Content-Type` plus `If-None-Match`, no wildcard origin and no public read/list exposure. It must also prove a create-only signed PUT succeeds once and replay to the same generated key is rejected without replacing the immutable object.
+GATEWAY-001 documents the private Cloudflare R2 bucket CORS policy required by SHOPIFY-005; live deployed-origin verification is deferred to developer/manual validation and SYSTEM-TEST-002: exact deployed Moda Shopify application origin(s), `PUT`, `Content-Type` plus `If-None-Match`, no wildcard origin and no public read/list exposure. It must also prove a create-only signed PUT succeeds once and replay to the same generated key is rejected without replacing the immutable object.
