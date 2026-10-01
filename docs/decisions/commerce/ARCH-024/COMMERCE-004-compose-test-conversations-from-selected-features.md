@@ -778,7 +778,7 @@ Do not start ARCH-024-COMMERCE-005 or any adjacent Preview/UI/runtime work.
 - This task intentionally introduces a dedicated `featureComposition` backend boundary instead of extending the retained `saved` Release/Draft boundary. That keeps the new product concept independent of old saved-selection mechanics.
 - Do not introduce another Feature/Capability contract in Shared merely for this repository-local composition read. The cross-service runtime contract remains the existing published Commerce manifest/runner contract.
 - The current Shared manifest cannot represent a Behaviour-only selected Feature with zero Capabilities. This task therefore fails such a selection rather than silently losing it or changing Shared as a side effect.
-- `PreviewFrozenSnapshot` is reused for exact Tool definitions/non-empty Feature Behaviour prompts. The later broader Conversation Configuration Snapshot is assembled incrementally by ARCH-024-COMMERCE-005..007; do not pre-empt those tasks here.
+- `PreviewFrozenSnapshot` is reused for the exact Tool-definition/non-empty Feature-Behaviour **composition fragment** only. ARCH-024-COMMERCE-005 is the single owner that atomically extends that fragment at Start Conversation into the complete human Conversation Configuration Snapshot (Shop + model + instructions + composition). ARCH-024-COMMERCE-006 and ARCH-024-COMMERCE-007 consume that frozen snapshot and MUST NOT add authored snapshot fields later.
 
 ## Completion Report
 

@@ -91,7 +91,7 @@ EffectiveAgentConfiguration.instructions = {
   platform: EffectivePrompt;
   shop: EffectivePrompt | null;
   ordered: Array<{
-    source: 'PLATFORM' | 'SHOP';
+    source: 'PLATFORM' | 'PRICING_PLAN' | 'SHOP';
     revisionId: string;
     text: string;
   }>;
@@ -110,15 +110,15 @@ Primary implementation surface:
 
 ```text
 moda-interact-commerce/app/preview/page.tsx
-moda-interact-commerce/src/studio/preview/contracts.ts               # create
-moda-interact-commerce/src/studio/preview/preview-screen.tsx
-moda-interact-commerce/src/studio/preview/client.ts
+moda-interact-commerce/src/studio/test-conversations/contracts.ts               # create
+moda-interact-commerce/src/studio/test-conversations/test-conversations-screen.tsx
+moda-interact-commerce/src/studio/test-conversations/client.ts                    # create
 moda-interact-commerce/src/commerce/preview/types.ts
 moda-interact-commerce/src/commerce/preview/service.ts
 moda-interact-commerce/src/commerce/integration/preview/adapters.ts
 
-moda-interact-commerce/tests/preview-screen.test.tsx
-moda-interact-commerce/tests/preview-client.test.ts
+moda-interact-commerce/tests/test-conversations-screen.test.tsx
+moda-interact-commerce/tests/test-conversations-client.test.ts
 moda-interact-commerce/tests/preview-routes.test.ts
 moda-interact-commerce/tests/preview-service.test.ts
 ```
@@ -130,6 +130,12 @@ moda-interact-commerce/tests/preview-page.test.tsx
 ```
 
 if `app/preview/page.tsx` loading/projection coverage is materially clearer there.
+
+Create one focused server snapshot test at exactly:
+
+```text
+moda-interact-commerce/tests/test-conversation-snapshot.test.ts
+```
 
 Additional Commerce files may change only when mechanically required by the exact selected-Shop conversation-start contract defined below. Every additional file MUST be listed and justified in the Completion Report.
 
@@ -167,7 +173,7 @@ moda-interact-gateway/**
 Create:
 
 ```text
-src/studio/preview/contracts.ts
+src/studio/test-conversations/contracts.ts
 ```
 
 with exactly these browser-safe UI contracts:
@@ -204,7 +210,7 @@ export type TestConversationConfigurationSummary = {
     shopifyOfflineSessionAvailable: boolean;
   };
   model: {
-    source: 'PLATFORM' | 'SHOP';
+    source: 'PLATFORM' | 'PRICING_PLAN' | 'SHOP';
     id: string;
     displayName: string;
     provider: string;
@@ -327,7 +333,7 @@ getEffectiveAgentConfiguration(selectedShop.id)
 After ARCH-023-COMMERCE-003 and ARCH-024-COMMERCE-002, a Test Conversation is startable only when all of these are true:
 
 ```text
-effective model source = PLATFORM or SHOP
+effective model source = PLATFORM, PRICING_PLAN or SHOP
 effective model.model != null
 Platform Instructions are valid/published
 optional Shop Instructions, when present, are valid/published
@@ -409,7 +415,9 @@ authorization failure    -> DENIED/FORBIDDEN through existing mapping
 
 Do not accept Shop domain, plan, Shopify session availability or any other Shop metadata from the browser body.
 
-### R7 — carry selected Shop identity into the Feature-composed bundle
+### R7 — C005 owns the complete authored Conversation Configuration Snapshot
+
+The Feature composition returned by ARCH-024-COMMERCE-004 is a server-side composition fragment. This task is the **single owner** that turns that fragment into the complete human Test Conversation authored snapshot when Start Conversation commits.
 
 Extend the Feature-composed Preview bundle-loading boundary from ARCH-024-COMMERCE-004 so the exact selected Shop ID is an explicit input:
 
@@ -431,7 +439,173 @@ PreviewBundle.grant.shopId = validated selected Shop.id
 
 The grant MUST NOT use a synthetic `preview-<admin>` Shop ID for an ARCH-024 Feature Test Conversation.
 
-This task does not yet make Tool execution use the real Shop session; ARCH-024-COMMERCE-006 owns that. It only establishes the correct selected-Shop identity in the conversation boundary and stored bundle.
+In `src/commerce/preview/types.ts`, define the complete authored snapshot from the same raw composition fields as C004. The current baseline applies `.superRefine(...)` directly to `PreviewFrozenSnapshotSchema`; do **not** depend on calling `.extend(...)` on that refined schema. Refactor the existing schema mechanically so one reusable base object plus one shared composition-refinement function backs both schemas:
+
+```ts
+const PreviewFrozenSnapshotBaseSchema = z.strictObject({
+  definitions: z.array(z.strictObject({
+    revisionId: SavedIdSchema,
+    definition: z.unknown(),
+  })).max(32),
+  prompts: PreviewPromptsSchema,
+});
+
+function validateFrozenSnapshotComposition(
+  value: { definitions: Array<{ revisionId: string; definition: unknown }>; prompts: PreviewPrompt[] },
+  context: z.RefinementCtx,
+): void {
+  // Move the existing PreviewFrozenSnapshotSchema superRefine body here unchanged:
+  // - definition <= 65,536 bytes
+  // - authored prompt text <= 64,000 characters
+  // - composition/frozen snapshot <= 3 MiB
+}
+
+export const PreviewFrozenSnapshotSchema =
+  PreviewFrozenSnapshotBaseSchema.superRefine(validateFrozenSnapshotComposition);
+
+export const PreviewConversationShopSnapshotSchema = z.strictObject({
+  id: SavedIdSchema,
+  domain: z.string().trim().min(1).max(255),
+});
+
+export type PreviewConversationShopSnapshot =
+  z.infer<typeof PreviewConversationShopSnapshotSchema>;
+
+export const PreviewConversationModelSnapshotSchema = z.strictObject({
+  selectionSource: CommerceModelSelectionSourceSchema,
+  merchantPricingPlanId: SavedIdSchema.nullable(),
+  shopifyPlanHandle: z.string().trim().min(1).max(255).nullable(),
+  catalogueEntryId: SavedIdSchema,
+  provider: CommerceModelProviderSchema,
+  providerModelId: CommerceProviderModelIdSchema,
+  configurationSchemaVersion: z.number().int().positive(),
+  configuration: CommerceModelConfigurationSchema,
+}).superRefine((value, context) => {
+  if (value.selectionSource === 'PRICING_PLAN') {
+    if (value.merchantPricingPlanId === null || value.shopifyPlanHandle === null) {
+      context.addIssue({ code: 'custom', message: 'price plan model provenance is incomplete' });
+    }
+    return;
+  }
+  if (value.merchantPricingPlanId !== null || value.shopifyPlanHandle !== null) {
+    context.addIssue({ code: 'custom', message: 'non-price-plan model has price plan provenance' });
+  }
+});
+
+export type PreviewConversationModelSnapshot =
+  z.infer<typeof PreviewConversationModelSnapshotSchema>;
+
+export const PreviewInstructionRevisionSnapshotSchema = z.strictObject({
+  revisionId: SavedIdSchema,
+  revisionNumber: z.number().int().positive(),
+  text: z.string().trim().min(1).max(32_000),
+});
+
+export const PreviewConversationInstructionsSnapshotSchema = z.strictObject({
+  platform: PreviewInstructionRevisionSnapshotSchema,
+  shop: PreviewInstructionRevisionSnapshotSchema.nullable(),
+});
+
+export const PreviewConversationSnapshotSchema =
+  PreviewFrozenSnapshotBaseSchema.extend({
+    shop: PreviewConversationShopSnapshotSchema,
+    model: PreviewConversationModelSnapshotSchema,
+    instructions: PreviewConversationInstructionsSnapshotSchema,
+  }).superRefine(validateFrozenSnapshotComposition);
+
+export type PreviewConversationSnapshot =
+  z.infer<typeof PreviewConversationSnapshotSchema>;
+```
+
+For the human Feature Test Conversation, `StoredConversation.snapshot` MUST use `PreviewConversationSnapshot`. Do not add a parallel `StoredConversation.shop`, `StoredConversation.model` or `StoredConversation.instructions` authored-state object.
+
+The retained fixture-backed Tool-test boundary MAY continue using the narrower `PreviewFrozenSnapshot` where required. Do not force independent Tool-test fixtures to carry Shop/model/instruction state.
+
+The Start transaction/operation MUST perform this sequence from server-owned reads only:
+
+```text
+1. revalidate requested shopId through the accepted Studio Shop execution-context read
+2. load the C004 Feature composition for the exact ordered featureIds
+3. resolve the selected Shop's effective Agent Configuration through the accepted C002/ARCH-023 server read
+4. validate that the effective model source is SHOP, PRICING_PLAN or PLATFORM and model != null
+5. validate provider/providerModelId/configuration through the published Shared model schemas
+6. require valid Platform Instructions and valid optional Shop Instructions
+7. assemble PreviewConversationSnapshot exactly once
+8. validate the complete snapshot before storing/claiming the conversation
+```
+
+Map the Shop snapshot only from the accepted server-side Shop result:
+
+```text
+selectedShop.id     -> snapshot.shop.id
+selectedShop.domain -> snapshot.shop.domain
+```
+
+Never copy Shop domain from URL/query/body data.
+
+Map the model snapshot exactly from the accepted effective model:
+
+```text
+selectionSource              -> snapshot.model.selectionSource
+merchantPricingPlanId        -> snapshot.model.merchantPricingPlanId
+shopifyPlanHandle            -> snapshot.model.shopifyPlanHandle
+catalogueEntryId             -> snapshot.model.catalogueEntryId
+provider                     -> snapshot.model.provider
+providerModelId              -> snapshot.model.providerModelId
+configurationSchemaVersion   -> snapshot.model.configurationSchemaVersion
+configuration                -> snapshot.model.configuration
+```
+
+Enforce provenance exactly:
+
+```text
+selectionSource = PRICING_PLAN
+    -> merchantPricingPlanId and shopifyPlanHandle are non-null
+
+selectionSource = PLATFORM or SHOP
+    -> merchantPricingPlanId and shopifyPlanHandle are null
+```
+
+Map ARCH-023 additive trusted instructions exactly from the already-resolved effective configuration:
+
+```text
+platform.revisionId      -> snapshot.instructions.platform.revisionId
+platform.revisionNumber  -> snapshot.instructions.platform.revisionNumber
+platform.text            -> snapshot.instructions.platform.text
+
+shop = null
+    when effective instructions.shop = null
+
+otherwise:
+shop.revisionId          -> snapshot.instructions.shop.revisionId
+shop.revisionNumber      -> snapshot.instructions.shop.revisionNumber
+shop.text                -> snapshot.instructions.shop.text
+```
+
+If the accepted ARCH-023 effective contract names these resolved fields differently, map the exact accepted equivalents. Do not reread prompt-template source rows after resolving the effective instructions.
+
+The snapshot composition fields remain the exact C004 values:
+
+```text
+selection + bundle.manifest
+snapshot.definitions
+snapshot.prompts
+```
+
+The complete snapshot MUST NOT contain live operational state:
+
+```text
+OpenRouter credential/ciphertext/nonce/authTag/keyId
+Shopify access token/offline-session secret
+External HTTP connection credential or resolved auth headers
+provider response bodies
+```
+
+Those values remain live and are resolved by C006/C007 when needed.
+
+Conversation creation MUST fail bounded `UNAVAILABLE` and MUST NOT persist/claim a conversation when the Shop, Feature composition, effective model or instruction snapshot cannot be validated.
+
+Once Start succeeds, this authored snapshot is immutable for the conversation. C006 and C007 MUST consume it; they MUST NOT extend it with additional authored fields or reread current Shop/model/instruction/Feature/Tool authoring state for an already-started conversation.
 
 ### R8 — Feature selection semantics are explicit and stable
 
@@ -492,7 +666,7 @@ The Studio description for `preview` MUST no longer describe synthetic fixtures.
 Compose a CommerceAgent from selected Features and test that configuration for the selected shop.
 ```
 
-`PreviewScreen` MUST render sections in this order:
+`TestConversationsScreen` MUST render sections in this order:
 
 ```text
 1. Agent configuration
@@ -509,7 +683,7 @@ Shop                 <shop.domain>
 Plan                 <shop.plan>
 Active model         <model.displayName>
 Model ID             <provider>/<providerModelId>
-Model source         Platform | Shop
+Model source         Platform | Price Plan | Shop
 Platform Instructions Revision <revisionNumber>
 Shop Instructions    Revision <revisionNumber> | None
 Shopify session      Available | Unavailable
@@ -748,12 +922,14 @@ Only bounded Preview conversation state may be written by the existing Preview s
 
 ## Work Items
 
-- [ ] Create `src/studio/preview/contracts.ts` with the exact R1 browser-safe contracts.
+- [ ] Create `src/studio/test-conversations/contracts.ts` with the exact R1 browser-safe contracts and continue the C001 Test Conversations module.
 - [ ] Project Feature data to R2 without Feature Behaviour/edit metadata crossing to the client.
 - [ ] Load only the validated selected Shop from `resolveStudioShopSelection`.
 - [ ] Resolve/project effective active Model + ARCH-023 instruction provenance per R4.
 - [ ] Replace the human conversation-start schema/client input with R5.
-- [ ] Revalidate `shopId` server-side and carry exact selected Shop identity into the Feature-composed grant.
+- [ ] Revalidate `shopId` server-side, resolve the complete effective model/instruction state, and atomically persist the exact R7 `PreviewConversationSnapshot`.
+- [ ] Refactor the C004 frozen-snapshot schema into the R7 reusable base/refinement without changing its existing validation semantics.
+- [ ] Add `tests/test-conversation-snapshot.test.ts` covering atomic authored-snapshot creation and stability.
 - [ ] Implement deterministic Feature checkbox/order/limit semantics.
 - [ ] Implement the exact Agent configuration / Features / Conversation layout.
 - [ ] Implement deterministic Start eligibility.
@@ -773,10 +949,11 @@ Consumes:
 ```text
 ARCH-024-COMMERCE-004
   PreviewSelection = { kind: 'FEATURES'; featureIds: string[] }
-  Feature-composed manifest/Tool-definition/Feature-Behaviour snapshot
+  Feature-composed manifest/Tool-definition/Feature-Behaviour composition fragment
 
 ARCH-024-COMMERCE-002/003 transitively
   one effective active Model for the selected Shop
+  SHOP -> PRICING_PLAN -> PLATFORM provenance
 
 ARCH-023-COMMERCE-003
   EffectiveAgentConfiguration.instructions.platform
@@ -801,6 +978,16 @@ Produces browser-safe page configuration:
 ```ts
 TestConversationConfigurationState
 TestConversationFeatureOption[]
+```
+
+Produces the single server-side authored-state contract consumed by C006/C007:
+
+```ts
+PreviewConversationSnapshot
+  = PreviewFrozenSnapshot
+    + shop
+    + model
+    + instructions
 ```
 
 No new cross-repository runtime contract is introduced.
@@ -836,6 +1023,10 @@ Both must be `complete` before this task becomes executable.
 - [ ] Start request is exactly `{ previewConversationId, shopId, selection: { kind:'FEATURES', featureIds } }`.
 - [ ] Conversation creation revalidates the Shop server-side.
 - [ ] Stored Feature-composed grant uses the exact validated Shop ID, not `preview-<admin>`.
+- [ ] C005 is the only task that assembles the complete authored Conversation Configuration Snapshot; it contains exact Shop id/domain, model/provenance/configuration, Platform/optional Shop instruction revisions+text and the C004 composition fragment.
+- [ ] Refactoring `PreviewFrozenSnapshotSchema` into a reusable base/refinement preserves every existing C004 size/content validation for both narrow and complete snapshots.
+- [ ] The complete snapshot contains no OpenRouter, Shopify or External HTTP credential material.
+- [ ] Later model/instruction/Feature/Tool authoring edits do not alter an already-started conversation; a new conversation resolves current authored state.
 - [ ] Shopify-session absence alone does not prevent Start.
 - [ ] Same-tick repeated Start activations dispatch exactly one request and one conversation ID.
 - [ ] Unknown Start outcome can only reconcile with the exact original ID/shop/Feature payload.
@@ -858,11 +1049,12 @@ Then inspect `moda-interact-commerce/package.json` and use the repository-declar
 
 Required validation:
 
-- [ ] Focused `preview-screen.test.tsx` coverage for R8-R13 and R15.
+- [ ] Focused `test-conversations-screen.test.tsx` coverage for R8-R13 and R15.
 - [ ] Focused `preview-page.test.tsx` or equivalent coverage for R2-R4/R14.
-- [ ] Focused `preview-client.test.ts` coverage for exact selected-Shop start payload and uncertain same-ID handling.
+- [ ] Focused `test-conversations-client.test.ts` coverage for exact selected-Shop start payload and uncertain same-ID handling.
 - [ ] Focused `preview-routes.test.ts` coverage proving strict R5 body parsing and rejection of legacy fields.
 - [ ] Focused `preview-service.test.ts` coverage proving server-side Shop validation and exact grant Shop identity.
+- [ ] Focused `test-conversation-snapshot.test.ts` coverage proving R7 atomic snapshot creation, exact provenance, stability after later authoring edits, new-conversation refresh, and absence of operational secrets.
 - [ ] Existing Tool-test/Code Response Preview tests remain green, proving R16.
 - [ ] Targeted ESLint for every changed Commerce source/test file.
 - [ ] Changed-file TypeScript diagnostics are zero.
@@ -881,9 +1073,9 @@ Do not begin ARCH-024-COMMERCE-006 or any follow-on task.
 ## Implementation Notes
 
 - Prefer extending the accepted Preview conversation service/store seams rather than creating a second Test Conversation store.
-- The phrase **Conversation Configuration Snapshot** means the server-side authored composition captured at Start. Do not introduce a second duplicate persisted snapshot object if C004's existing `selection + bundle.manifest + snapshot.definitions + snapshot.prompts` already represents the required authored composition.
+- **Conversation Configuration Snapshot ownership is final in this task.** Extend C004's existing `selection + bundle.manifest + snapshot.definitions + snapshot.prompts` composition fragment exactly once with `snapshot.shop`, `snapshot.model` and `snapshot.instructions`. Do not create a second parallel persisted snapshot object.
 - This task intentionally keeps message execution disabled so the new product UI cannot misrepresent the retained synthetic runtime as real selected-Shop/OpenRouter execution.
-- ARCH-024-COMMERCE-006 and C007 will connect that shell to real Tool and model execution respectively.
+- C006 and C007 consume `PreviewConversationSnapshot` unchanged. C006 owns live selected-Shop Tool execution; C007 owns live OpenRouter credential resolution/model invocation. Neither task may add authored snapshot fields.
 
 ## Completion Report
 
