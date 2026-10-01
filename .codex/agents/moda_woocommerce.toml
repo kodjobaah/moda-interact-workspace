@@ -201,17 +201,24 @@ worktree merely because marker files exist. Do NOT search the wider filesystem,
 reconstruct a developer-specific absolute path, or assume a username/home
 location.
 
-Use the environment already available. Before the first Node-related command:
+Use the environment already available. Before the first Node, PHP, Composer,
+Docker, or wp-env-related command in a WooCommerce task:
 
-    command -v node >/dev/null 2>&1 || \
-      source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-node.sh"
+    source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"
 
-Node environment recovery is owned exclusively by `scripts/bootstrap-node.sh`.
-MUST NOT manually add inferred NVM/Node directories to `PATH`, use `nvm use` as
-a substitute for the bootstrap, hardcode the `.nvmrc` version, search the
-filesystem for Node, or silently install/select another Node version. If the
-bootstrap reports that the workspace version is unavailable, report that exact
+WooCommerce task environment bootstrap is owned exclusively by
+`scripts/bootstrap-woocommerce.sh`. It reuses the canonical Node bootstrap and
+verifies that PHP, Composer, Docker, and a running Docker daemon are already
+available. It MUST NOT install or silently select replacement host software.
+MUST NOT manually add inferred PHP/Composer/Docker/Node directories to `PATH`,
+search the wider filesystem for alternate runtimes, use `nvm use` as a
+substitute for the workspace bootstrap, or silently install/select another
+runtime. If bootstrap reports a missing prerequisite, report that exact
 condition.
+
+Read `docs/woocommerce-toolchain.md` when a Woo task changes toolchain state,
+when bootstrap fails, or when the task Validation section requires environment
+evidence. Do not read it as an unrelated startup ritual.
 
 The workspace doctor is diagnostic/validation tooling, not a startup ritual.
 Run it only for an actual environment/dependency problem; a relevant

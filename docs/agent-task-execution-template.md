@@ -139,18 +139,13 @@ cross-repository requirement to `moda_architect`.
 
 ## Lean environment rule
 
-Use the environment already available. Before the first Node-related command:
-
-```bash
-command -v node >/dev/null 2>&1 || \
-  source "<WORKSPACE_ROOT>/scripts/bootstrap-node.sh"
-```
+<TOOLCHAIN_BOOTSTRAP>
 
 The workspace doctor is **not** part of normal `/moda-task` startup. Run it only
 when one of these conditions actually applies:
 
 - a real environment/dependency problem occurs;
-- the current task changes relevant Node/toolchain/dependency/configuration;
+- the current task changes relevant toolchain/dependency/configuration;
 - the task Validation section explicitly requires it;
 - `moda_architect` explicitly requests it;
 - observed behaviour materially contradicts the known development baseline.
