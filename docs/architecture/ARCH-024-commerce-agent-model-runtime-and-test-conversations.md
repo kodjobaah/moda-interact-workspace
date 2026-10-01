@@ -24,17 +24,18 @@ Attempt 1, `ARCH-024-COMMERCE-001` is Complete / Accepted at Attempt 2,
 Attempt 2, `ARCH-024-ADMIN-004` is Complete / Accepted at Attempt 1,
 `ARCH-024-COMMERCE-002` is Complete / Accepted at Attempt 2, and
 `ARCH-024-BACKGROUND-001` / `ARCH-024-BACKGROUND-002` are Complete / Accepted at
-Attempt 2, and `ARCH-024-ADMIN-002` is Complete / Accepted at Attempt 2 after
-closing its bounded R3 Server Action authorization correction. After reconciling
-the accepted task branches, the current Ready frontier is:
+Attempt 2, `ARCH-024-ADMIN-002` is Complete / Accepted at Attempt 2 after
+closing its bounded R3 Server Action authorization correction, and
+`ARCH-024-COMMERCE-003` is Complete / Accepted at Attempt 2 after closing the
+Platform non-selectable-placeholder correction. After reconciling the accepted
+task branches, the current Ready frontier is:
 
 ```text
 ARCH-024-ADMIN-003
-ARCH-024-COMMERCE-003
 ARCH-024-COMMERCE-005
 ```
 
-The architecture task table currently records 11 Complete, 3 Ready and 3 Pending
+The architecture task table currently records 12 Complete, 2 Ready and 3 Pending
 tasks. All other tasks remain Pending behind their declared dependencies.
 
 Integrated system-test tasks are **deliberately not materialised in this architecture session** because final acceptance overlaps frozen ARCH-023 completion and upcoming architecture work. Any terminal integrated validation will be defined separately against the final combined architecture.
@@ -1060,13 +1061,18 @@ ARCH-024 implementation order is dependency-driven rather than a single serial c
 Current Ready frontier after reconciling the accepted parent task branches:
 
 ```text
-ARCH-024-ADMIN-003
 ARCH-024-COMMERCE-003
 ARCH-024-COMMERCE-005
 ```
 
-ADMIN-001, ADMIN-002 and ADMIN-004 are Complete, so ADMIN-003 is Ready.
+ADMIN-001, ADMIN-002, ADMIN-003 and ADMIN-004 are Complete; no ARCH-024 Admin task remains Ready.
 COMMERCE-002 and ADMIN-002 are Complete, so the ownership-cutover COMMERCE-003 is Ready.
+ARCH-024-ADMIN-003
+ARCH-024-COMMERCE-005
+```
+
+ADMIN-001, ADMIN-002 and ADMIN-004 are Complete, so ADMIN-003 is Ready.
+COMMERCE-003 is Complete / Accepted at Attempt 2 after the selection-only ownership cutover.
 COMMERCE-002 and COMMERCE-004 are Complete, and ARCH-023-COMMERCE-003 satisfies
 the remaining prerequisite, so COMMERCE-005 remains Ready. BACKGROUND-001 and
 BACKGROUND-002 are Complete; no ARCH-024 Background task remains Ready.
@@ -1126,11 +1132,11 @@ Individual task YAML is authoritative.
 | `ARCH-024-SHARED-002` | `moda_shared` | Complete | SHARED-001 |
 | `ARCH-024-ADMIN-001` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-ADMIN-002` | `moda_admin` | Complete | DATABASE-001, SHARED-002, ADMIN-001 |
-| `ARCH-024-ADMIN-003` | `moda_admin` | Ready | DATABASE-001, SHARED-002, ADMIN-002 |
+| `ARCH-024-ADMIN-003` | `moda_admin` | Complete | DATABASE-001, SHARED-002, ADMIN-002 |
 | `ARCH-024-ADMIN-004` | `moda_admin` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
 | `ARCH-024-COMMERCE-002` | `moda_commerce` | Complete | DATABASE-001, SHARED-002 |
-| `ARCH-024-COMMERCE-003` | `moda_commerce` | Ready | COMMERCE-002, ADMIN-002 |
+| `ARCH-024-COMMERCE-003` | `moda_commerce` | Complete | COMMERCE-002, ADMIN-002 |
 | `ARCH-024-COMMERCE-004` | `moda_commerce` | Complete | COMMERCE-001 |
 | `ARCH-024-COMMERCE-005` | `moda_commerce` | Ready | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |
@@ -1211,6 +1217,7 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 
 ## Change History
 
+- **2026-10-01 — ADMIN-003 accepted at Attempt 2:** the evidence-only correction durably records the launcher-resolved parent/Admin worktrees, start synchronization, recursive database submodule materialisation, exact Shared 1.1.0 consumption and clean remote-aligned branch identities. The encrypted current-environment OpenRouter credential implementation remains unchanged at `b0a894d65878b81bf533212fab98a48296b34fcf` and conformant. ADMIN-003 is Complete; no ARCH-024 Admin task remains Ready. `ARCH-024-GATEWAY-001` remains Pending because `ARCH-024-COMMERCE-007` is still incomplete.
 - **2026-10-01 — ADMIN-002 accepted at Attempt 2:** the bounded correction restores the exact R3 hard Server Action authorization boundary: non-SUPER_ADMIN mutation calls throw `SUPER_ADMIN access is required.` before form parsing or transaction work, while ordinary validation/conflict errors retain bounded form-result handling. Attempt 2 records the required launcher/worktree/synchronization/submodule/publication evidence and reruns the complete task validation. ADMIN-002 is Complete; ADMIN-003 and COMMERCE-003 are promoted Ready; COMMERCE-005 remains independently Ready.
 - **2026-10-01 — ADMIN-002 Attempt 1 changes requested:** the Catalogue implementation is otherwise conformant, including Shared-backed validation, server-side pagination, immutable model identity, CAS lifecycle/reassignment, bounded audit metadata and same-tick submit protection. One bounded source/test correction is required: R3 mandates that a non-SUPER_ADMIN Server Action call throw exactly `SUPER_ADMIN access is required.`; the submitted action returns a form result instead and its source-level security regression asserts that deviation. ADMIN-002 returns Ready at Attempt 1; ADMIN-003 and COMMERCE-003 remain gated.
 - **2026-10-01 — BACKGROUND-002 accepted at Attempt 2:** the evidence-only correction durably records prepared launcher/worktree/synchronization/submodule/publication evidence and proves the dependency-cleanup full suite is non-regressing against synchronized pre-task baseline `0b629d4365d857eb21127f55a701d63635a201c5`. Baseline and submitted `ed12296fe11669f48eda50066163aef50aa7fa8d` both have the same eight failing tests plus the same missing ARCH-020 fixture suite; the submitted tree has one fewer passing file/test exactly because the wrapper test was intentionally deleted, and the focused observability slice passes 5 files / 27 tests on both trees. BACKGROUND-002 is Complete; it enables no further Background task and does not gate GATEWAY-001.

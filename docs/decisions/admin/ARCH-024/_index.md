@@ -32,13 +32,13 @@ OpenRouter credential
 |---|---|---|---|
 | [ADMIN-001](ADMIN-001-administer-model-availability.md) | Administer the global Platform Availability and zero/one Shop Availability per Shop | Complete | DATABASE-001, SHARED-002 |
 | [ADMIN-002](ADMIN-002-administer-model-catalogue-entries.md) | Create/edit/enable/disable/reassign Catalogue Entries and validated OpenRouter-style configuration | Complete | DATABASE-001, SHARED-002, ADMIN-001 |
-| [ADMIN-003](ADMIN-003-manage-openrouter-credentials.md) | Set/replace/remove the encrypted OpenRouter credential for the current environment without exposing plaintext | Ready | DATABASE-001, SHARED-002, ADMIN-002 |
+| [ADMIN-003](ADMIN-003-manage-openrouter-credentials.md) | Set/replace/remove the encrypted OpenRouter credential for the current environment without exposing plaintext | Complete | DATABASE-001, SHARED-002, ADMIN-002 |
 | [ADMIN-004](ADMIN-004-assign-commerce-model-to-merchant-pricing-plans.md) | Assign zero/one enabled Platform-available Commerce model to each Merchant Pricing Plan through the existing billing builder | Complete | DATABASE-001, SHARED-002 |
 
 ## Execution frontier
 
-Ready: `ARCH-024-ADMIN-003`.
+Ready: None.
 
-ADMIN-001 is Complete at Attempt 2, ADMIN-002 is Complete / Accepted at Attempt 2 and ADMIN-004 is Complete at Attempt 1. ADMIN-003 is now Ready because DATABASE-001, SHARED-002 and ADMIN-002 are all Complete.
+ADMIN-001 is Complete at Attempt 2, ADMIN-002 is Complete / Accepted at Attempt 2, ADMIN-003 is Complete / Accepted at Attempt 2, and ADMIN-004 is Complete at Attempt 1. No ARCH-024 Admin task remains Ready.
 
 Commerce Studio consumes this state; it does not duplicate Admin Catalogue/Availability/Credential or Price Plan model administration.
