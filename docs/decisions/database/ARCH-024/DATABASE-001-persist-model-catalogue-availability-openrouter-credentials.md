@@ -9,10 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-10-01T14:29:54Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -31,7 +31,7 @@ Architecture ID:
 
 Architecture document:
 
-`docs/architecture/ARCH-024-commerce-model-availability-and-test-conversations.md`
+`docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
 
 Coordinator:
 
@@ -952,24 +952,107 @@ None. Task is submitted at `review` for `moda_architect`; no main branch was upd
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
 
-Pending implementation.
+#### Attempt 1 review — Accepted — 2026-10-01
+
+Reviewed implementation `6ef1ea2` and parent report `5449e0db` against the
+ARCH-024 DATABASE-001 task contract and the canonical parent architecture. Attempt 1 is
+accepted.
+
+The submitted Prisma schema and migration implement the complete ARCH-024 database
+boundary without introducing a second model-selection store. `CommerceModelAvailability`
+provides the required global Platform / per-Shop availability boundary, every Catalogue
+Entry has one non-null Availability, provider identity is now a canonical lower-case string,
+Availability-scoped model uniqueness replaces the former global uniqueness, and the
+ARCH-024 guards preserve immutable Availability/catalogue identity while allowing catalogue
+Availability reassignment. The existing `CommerceAgentConfiguration` model is byte-for-byte
+unchanged from the review baseline.
+
+`MerchantPricingPlan.commerceModelId` is nullable and FK-constrained directly to
+`CommerceModelCatalogueEntry`; `BillingPlan` remains unchanged and no physical
+MerchantPricingPlan/BillingPlan FK was introduced. The migration leaves existing Price Plans
+unassigned and deliberately permits a later model disablement or Availability reassignment
+to leave the explicit Price Plan / Agent Configuration pointer intact for fail-closed runtime
+resolution.
+
+`CommerceOpenRouterCredential` is correctly environment-unique, contains only encrypted
+envelope material, enforces the required nonce/auth-tag/ciphertext/key/edit-version
+constraints, has no catalogue-entry FK and is not seeded by the migration. Credential
+resolution therefore remains the architecture-approved `CommerceAgentConfiguration.environment`
+join performed by later service code.
+
+The audit-target reconciliation is additive. Independent comparison against the immediately
+preceding `arch020_audit_targets` definition confirms every prior branch is retained and only
+the eight ARCH-024 actions/targets are added. The migration is correctly classified as the
+agreed pre-production breaking migration and the full-history/upgrade validator explicitly
+exercises target application before the later ARCH-023 migrations.
+
+The Completion Report records launcher-resolved dedicated parent and implementation
+worktrees, matching task branches, start-of-attempt synchronization, recursive submodule
+materialisation, clean implementation handoff and explicit pushes of implementation
+`6ef1ea2` and parent report `5449e0db`. The review archive intentionally contains no Git
+metadata, so those remote SHAs cannot be independently queried here. The reported local
+implementation upstream still pointing at `origin/main` is non-blocking local tracking
+metadata: the task ran on the correct `task/ARCH-024-DATABASE-001` branch/worktree and the
+implementation was explicitly pushed to `origin/task/ARCH-024-DATABASE-001`. No source or
+report rework is required solely to change that local upstream setting.
+
+The task's Architecture link contained an architect-authored stale filename; this acceptance
+reconciliation corrects it to the canonical ARCH-024 document. That coordination correction
+is not an implementation deficiency.
 
 ### Reviewed Files
 
-None.
+Implementation repository:
+
+- `prisma/schema.prisma`
+- `prisma/migrations/20260930120000_arch024_model_availability_openrouter/migration.sql`
+- `scripts/validate-arch024-model-availability-schema.mjs`
+- `scripts/validate-arch024-model-availability-migration.mjs`
+- `package.json`
+- `docs/generated/prisma-erd.puml`
+
+Parent workspace:
+
+- `docs/decisions/database/ARCH-024/DATABASE-001-persist-model-catalogue-availability-openrouter-credentials.md`
+- `docs/decisions/database/ARCH-024/_index.md`
+- `docs/decisions/shared/ARCH-024/SHARED-001-implement-model-contracts-openrouter-runtime.md`
+- `docs/decisions/shared/ARCH-024/_index.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
+- `docs/architecture/_index.md`
 
 ### Validation Reviewed
 
-None.
+- Re-ran `npm run test:arch024-model-availability-schema` against the submitted snapshot: passed.
+- Re-ran `node --check scripts/validate-arch024-model-availability-migration.mjs`: passed.
+- Compared the submitted `CommerceAgentConfiguration` model with the session baseline: no schema changes.
+- Compared the new `arch020_audit_targets` CHECK with the final pre-ARCH-024 definition: all existing branches are retained and the ARCH-024 branches are additive.
+- Inspected the recorded `npm run prisma:validate`, `npm run prisma:generate`, fresh migration rehearsal, development-upgrade PostgreSQL rehearsal, behavior matrix and `git diff --check`: all are recorded passed.
+- The review container does not contain this repository's installed Prisma client, Docker or a local PostgreSQL server, so the disposable PostgreSQL rehearsals were not independently re-executed; their validator implementation and recorded evidence were inspected instead.
 
 ### Architecture Conformance
 
-Pending implementation.
+Conforms. DATABASE-001 establishes exactly the durable boundary owned by
+`moda-interact-database`: Availability, Catalogue identity/configuration, optional
+Price-Plan model association, environment-specific encrypted OpenRouter credentials and
+audit persistence. It does not implement Admin/Commerce/Background runtime semantics,
+merchant-controlled model selection, provider runtime, Test Conversations or credential
+cryptography. Cross-repository semantic validation remains assigned to Shared and later
+service tasks.
 
 ### Follow-up
 
-None.
+`ARCH-024-DATABASE-001` is **Complete / Accepted at Attempt 1**.
+
+Dependency reconciliation promotes exactly:
+
+```text
+ARCH-024-SHARED-001 -> Ready
+```
+
+`ARCH-024-COMMERCE-001` remains independently Ready. All other ARCH-024 tasks remain
+Pending behind their declared dependencies. No downstream implementation is started
+implicitly by this review.

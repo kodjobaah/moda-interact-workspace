@@ -30,8 +30,16 @@ Publication-only gate
 
 | Task | Description | Status | Dependencies |
 |---|---|---|---|
-| [SHARED-001](SHARED-001-implement-model-contracts-openrouter-runtime.md) | Implement the complete unpublished Shared ARCH-024 Commerce runtime: model contracts/OpenRouter client, modular LangGraph runner, deterministic guardrails and canonical structured logging | Pending | DATABASE-001 |
+| [SHARED-001](SHARED-001-implement-model-contracts-openrouter-runtime.md) | Implement the complete unpublished Shared ARCH-024 Commerce runtime: model contracts/OpenRouter client, modular LangGraph runner, deterministic guardrails and canonical structured logging | Ready | DATABASE-001 |
 | [SHARED-002](SHARED-002-publish-arch024-shared-runtime.md) | Publish the exact architect-accepted SHARED-001 implementation as one backward-compatible Shared package release | Pending | SHARED-001 |
+
+## Current frontier
+
+```text
+ARCH-024-DATABASE-001 -> Complete
+ARCH-024-SHARED-001   -> Ready
+ARCH-024-SHARED-002   -> Pending
+```
 
 ## Boundary
 

@@ -12,12 +12,12 @@ ARCH-024 deliberately consolidates all durable model/availability/OpenRouter cre
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [DATABASE-001](DATABASE-001-persist-model-catalogue-availability-openrouter-credentials.md) | Persist Model Availability, scoped Catalogue Entries, optional Merchant Pricing Plan -> Platform model association, dynamic provider/model identity, OpenRouter configuration JSON, encrypted per-environment credential and audit constraints | Ready | - |
+| [DATABASE-001](DATABASE-001-persist-model-catalogue-availability-openrouter-credentials.md) | Persist Model Availability, scoped Catalogue Entries, optional Merchant Pricing Plan -> Platform model association, dynamic provider/model identity, OpenRouter configuration JSON, encrypted per-environment credential and audit constraints | Complete | - |
 
 ## Execution frontier
 
 ```text
-ARCH-024-DATABASE-001 -> Ready
+ARCH-024-DATABASE-001 -> Complete / Accepted Attempt 1
 ```
 
 The task is a pre-production/breaking migration and may reset incompatible development-only model catalogue state rather than preserving legacy `OPENAI/GROQ` development rows. It must preserve unrelated durable platform state.
