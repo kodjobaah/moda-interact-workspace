@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 31
 executor: null
 claimed_at: null
@@ -217,19 +217,32 @@ None. No cross-repository contract, schema, queue payload, or runtime configurat
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-Pending.
+Accepted. The implementation is bounded to the existing Background runtime lease service and the accepted DATABASE-005 enum contract. `BackgroundRuntimeLeaseService.tryAcquire()` adds exactly the two required fixed PostgreSQL cadence branches: `MERCHANT_KNOWLEDGE_PENDING_RECONCILIATION` = 60 seconds and `MERCHANT_KNOWLEDGE_UPLOAD_CLEANUP` = 3600 seconds. Every pre-existing lease branch remains unchanged, no `BackgroundRuntimeConfig` field or environment/config surface is added, and no scheduler/entrypoint/business logic is introduced.
+
+The persisted cadence gate continues to use PostgreSQL `NOW()` plus `lastFinishedAt`; lease takeover continues to increment generation and the existing owner-token/generation predicates fence stale heartbeat/release attempts. The accepted DATABASE-005 revision supplies the exact typed Prisma/PostgreSQL enum values without casts or local string-contract workarounds.
+
+The Completion Report records the launcher-resolved dedicated parent and implementation worktrees, dependency gate, recursive database-submodule preparation and the exact accepted DATABASE-005 pin `b34a563436bbc89b6ca3e26b43a0bd03116a1a66`. The implementation commit reviewed is `b39fc48c5a02e3b4f9d492f6d83e1650390ede53`.
 
 ### Reviewed Files
-Pending.
+- `moda-interact-background/src/runtime/background-runtime-lease.ts`
+- `moda-interact-background/tests/unit/runtime/background-runtime-lease.test.ts`
+- `moda-interact-background/tests/integration/background-runtime-lease-cadence.concurrency.integration.test.ts`
+- `moda-interact-background/database/prisma/schema.prisma` and the accepted DATABASE-005 migration contract
+- `docs/decisions/background/ARCH-023/BACKGROUND-007-add-merchant-knowledge-runtime-lease-cadences.md`
+- `docs/decisions/background/ARCH-023/BACKGROUND-004-process-and-promote-merchant-knowledge-revisions.md`
+- `docs/decisions/background/ARCH-023/_index.md`
+- `docs/architecture/ARCH-023-merchant-knowledge.md`
 
 ### Validation Reviewed
-Pending.
+Accepted the recorded canonical-worktree validation: 5 focused runtime-lease unit tests passed; 3 disposable PostgreSQL lease-concurrency tests passed using the shared harness with `pgvector/pgvector:pg17`; both Merchant Knowledge leases proved first acquisition, persisted release time, in-cadence suppression, exactly one generation-2 winner after the fixed cadence elapsed, stale-generation heartbeat/release rejection and row cleanup. Prisma generation, production build, changed-file diagnostics and `git diff --check` also passed.
+
+The repository's stock integration wrapper uses plain PostgreSQL and cannot apply the accepted pgvector migration chain; using the existing shared harness with its pgvector image option is an acceptable validation-only deviation and does not change runtime infrastructure. The review archive does not contain installed dependencies or a Docker runtime, so architect-side review inspected the production/test paths and durable validation evidence rather than claiming to rerun the container-backed proof.
 
 ### Architecture Conformance
-Pending.
+Conforms. DATABASE-005 owns only the two lease identities; BACKGROUND-007 owns only their fixed global cadence semantics. BACKGROUND-004 retains ownership of the local `startDynamicLeasedScheduler` timers, final Merchant Knowledge entrypoint and processing pipeline. No schema/migration, runtime configuration, Redis/advisory-lock, worker-entrypoint or business-processing ownership crosses task boundaries.
 
 ### Follow-up
-Pending.
+`ARCH-023-BACKGROUND-007` is Complete / Accepted at Attempt 1. Its acceptance resolves the only remaining external blocker recorded by BACKGROUND-004 Attempt 1. Return `ARCH-023-BACKGROUND-004` from `blocked` to `ready` with Attempt 1 preserved; the next launcher claim becomes Attempt 2 and must finish R14/final entrypoint validation without starting BACKGROUND-005. `ARCH-023-BACKGROUND-005` remains Pending until BACKGROUND-004 is Complete/architect-accepted.

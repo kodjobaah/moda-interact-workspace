@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 32
 executor: null
 claimed_at: null
@@ -701,3 +701,5 @@ The repository agent correctly stopped at the ownership boundary. The missing en
 2. After DATABASE-005 is Complete/accepted, `ARCH-023-BACKGROUND-007` pins that database revision and adds the two fixed global cadence mappings (`60` and `3600` seconds) with focused/runtime PostgreSQL proof.
 3. BACKGROUND-004 remains Blocked until both tasks are Complete/accepted and their accepted changes are available on its execution baseline. Preserve the current partial implementation. Before reclaim, ensure the task-owned untracked entrypoint draft is durably checkpointed on the implementation task branch or otherwise made clean without stashing, resetting or discarding it.
 4. Then reconcile BACKGROUND-004 `blocked -> ready`; the next launcher claim becomes Attempt 2. Attempt 2 finishes R14 and the remaining entrypoint/full validation only; it must not begin BACKGROUND-005.
+
+Blocker resolution — 2026-10-01: DATABASE-005 is Complete / Accepted Attempt 2 and BACKGROUND-007 is Complete / Accepted Attempt 1. The exact enum identities and fixed 60-second / 3600-second global lease cadences are therefore available. The task is returned to `ready` with Attempt 1 preserved; the next normal claim becomes Attempt 2. Preserve the existing partial implementation and complete only R14 plus the remaining task-defined validation before returning to architect review.
