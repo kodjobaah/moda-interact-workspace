@@ -1046,12 +1046,18 @@ Logging is best-effort and cannot change a Commerce turn result, retry, Tool inv
 
 ARCH-024 implementation order is dependency-driven rather than a single serial chain.
 
+Current Ready frontier after DATABASE-001, COMMERCE-001 and COMMERCE-004 acceptance:
+
+```text
+ARCH-024-SHARED-001
 Current Ready frontier after DATABASE-001, COMMERCE-001 and SHARED-001 acceptance:
 
 ```text
 ARCH-024-SHARED-002
 ARCH-024-COMMERCE-004
 ```
+
+COMMERCE-004 is Complete. Its acceptance does not yet promote COMMERCE-005 because COMMERCE-002 remains incomplete.
 
 Shared publication sequence:
 
@@ -1112,7 +1118,7 @@ Individual task YAML is authoritative.
 | `ARCH-024-COMMERCE-001` | `moda_commerce` | Complete | - |
 | `ARCH-024-COMMERCE-002` | `moda_commerce` | Pending | DATABASE-001, SHARED-002 |
 | `ARCH-024-COMMERCE-003` | `moda_commerce` | Pending | COMMERCE-002, ADMIN-002 |
-| `ARCH-024-COMMERCE-004` | `moda_commerce` | Ready | COMMERCE-001 |
+| `ARCH-024-COMMERCE-004` | `moda_commerce` | Complete | COMMERCE-001 |
 | `ARCH-024-COMMERCE-005` | `moda_commerce` | Pending | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Pending | COMMERCE-005 |
 | `ARCH-024-COMMERCE-007` | `moda_commerce` | Pending | COMMERCE-006, SHARED-002 |
@@ -1192,6 +1198,7 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 
 ## Change History
 
+- **2026-10-01 — COMMERCE-004 accepted at Attempt 1:** selected ordered Feature IDs now resolve server-side to every direct Capability, current published Tool revision and one Feature Behaviour per selected Feature; the Preview adapter builds the deterministic synthetic manifest identity and freezes the exact composition fragment for the conversation. Retained saved Release/Draft lookups remain available for non-conversation Tool-test consumers. `ARCH-024-COMMERCE-005` remains Pending because `ARCH-024-COMMERCE-002` is not yet Complete.
 - **2026-10-01 — SHARED-001 accepted at Attempt 2:** the bounded correction closes the Attempt 1 runner-to-OpenRouter schema mismatch by making synthetic denied/revoked Tool rows canonical `commerce.v1` `CommerceToolResult` errors while retaining strict adapter validation. The new offline runner-plus-adapter regression proves hostile runtime data cannot authorize an ungranted Tool and that the denial path reaches the required `REFER_TO_STORE` outcome. SHARED-001 is Complete and the publication-only `ARCH-024-SHARED-002` gate is promoted Ready; no package publication or consumer task is started by this review.
 
 - **2026-10-01 — COMMERCE-001 accepted at Attempt 2:** the evidence-only correction durably records launcher/worktree/synchronization/submodule/publication evidence and proves the six remaining `studio-workspace.test.tsx` failures are shared with the synchronized pre-task baseline. Attempt 2 made no Commerce source/test changes; the current suite has 7 passed / 6 failed versus baseline 5 passed / 7 failed, with the stale Release fixture failure corrected by COMMERCE-001. `ARCH-024-COMMERCE-001` is Complete and `ARCH-024-COMMERCE-004` is promoted Ready.

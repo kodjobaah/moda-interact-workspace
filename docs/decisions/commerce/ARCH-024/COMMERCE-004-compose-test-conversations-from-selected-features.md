@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-024-COMMERCE-001
 enables:
@@ -624,20 +624,20 @@ Do not include Tool definitions, Behaviour text, database error bodies, SQL, cre
 
 ## Work Items
 
-- [ ] Replace conversation `PreviewSelectionSchema` with strict `FEATURES + featureIds` selection.
-- [ ] Add `CommerceFeatureCompositionResult` and `CommerceFeatureComposition` to the Commerce backend boundary.
-- [ ] Implement `createPrismaFeatureComposition()` using existing staff authorization.
-- [ ] Resolve selected Features in input order without relying on `IN` query order.
-- [ ] Resolve all direct Capabilities with deterministic Feature/Capability ordering.
-- [ ] Fail closed for zero-Capability Features and compositions exceeding 32 Capabilities.
-- [ ] Resolve exact current published Tool revisions and parse definitions.
-- [ ] Resolve Feature Behaviour once per selected Feature, defaulting missing configuration to empty text.
-- [ ] Use `EMPTY_RESPONSE_CONTRACT` and its canonical hash.
-- [ ] Build deterministic synthetic `preview-features-<sha256>` manifest identity.
-- [ ] Build and validate deterministic manifest/granted-Tool ordering.
-- [ ] Freeze exact Tool definitions and non-empty Feature Behaviour prompts in the existing snapshot.
-- [ ] Preserve internal Release/Draft saved-selection support still required outside conversation composition.
-- [ ] Add focused unit/integration regressions for every acceptance case below.
+- [x] Replace conversation `PreviewSelectionSchema` with strict `FEATURES + featureIds` selection.
+- [x] Add `CommerceFeatureCompositionResult` and `CommerceFeatureComposition` to the Commerce backend boundary.
+- [x] Implement `createPrismaFeatureComposition()` using existing staff authorization.
+- [x] Resolve selected Features in input order without relying on `IN` query order.
+- [x] Resolve all direct Capabilities with deterministic Feature/Capability ordering.
+- [x] Fail closed for zero-Capability Features and compositions exceeding 32 Capabilities.
+- [x] Resolve exact current published Tool revisions and parse definitions.
+- [x] Resolve Feature Behaviour once per selected Feature, defaulting missing configuration to empty text.
+- [x] Use `EMPTY_RESPONSE_CONTRACT` and its canonical hash.
+- [x] Build deterministic synthetic `preview-features-<sha256>` manifest identity.
+- [x] Build and validate deterministic manifest/granted-Tool ordering.
+- [x] Freeze exact Tool definitions and non-empty Feature Behaviour prompts in the existing snapshot.
+- [x] Preserve internal Release/Draft saved-selection support still required outside conversation composition.
+- [x] Add focused unit/integration regressions for every acceptance case below.
 
 ## Interfaces / Contracts
 
@@ -693,23 +693,23 @@ This dependency is the UI/runtime ownership handoff: COMMERCE-001 removes the ob
 
 ## Acceptance Criteria
 
-- [ ] Conversation Preview accepts exactly `{ kind: 'FEATURES', featureIds }`; `RELEASE`/`DRAFT` are not accepted by `PreviewSelectionSchema`.
-- [ ] `featureIds` must contain 1..32 unique saved IDs and input order is preserved exactly.
-- [ ] Unknown Feature ID fails the whole composition as `NOT_FOUND`.
-- [ ] A selected Feature with zero direct Capabilities fails the whole composition as `UNAVAILABLE`.
-- [ ] Feature.active, Capability.enabled, Tool.enabled, billing, Shop preferences and Release membership do not filter the selected Feature composition.
-- [ ] Capabilities are ordered selected-Feature order, then `key ASC`, then `id ASC`, with global positions `0..N-1`.
-- [ ] More than 32 resolved Capabilities fails; nothing is truncated.
-- [ ] Every Capability uses the current `PUBLISHED` Tool revision ordered `revisionNumber DESC, id ASC`.
-- [ ] Missing/invalid published Tool revision fails the whole composition; no Capability is silently dropped and no DRAFT is substituted.
-- [ ] Feature Behaviour is resolved once per selected Feature in selected order and missing configuration means `''`.
-- [ ] The Feature path always uses `EMPTY_RESPONSE_CONTRACT` and canonical hash.
-- [ ] Synthetic manifest identity is deterministic and changes when Feature order, Behaviour, Capability membership, Tool revision or Tool content hash changes.
-- [ ] Multiple Capabilities may share one Tool revision; Capability members remain distinct while Tool definition/grant entries are deduplicated deterministically.
-- [ ] Stored conversation selection + manifest + snapshot preserve the exact Feature composition after later authoring changes.
-- [ ] Feature composition performs no durable authoring/business writes.
-- [ ] Internal saved `RELEASE`/`DRAFT` selection remains available only to retained non-conversation consumers.
-- [ ] No Model/OpenRouter/credential or real selected-shop Tool-execution behaviour is introduced by this task.
+- [x] Conversation Preview accepts exactly `{ kind: 'FEATURES', featureIds }`; `RELEASE`/`DRAFT` are not accepted by `PreviewSelectionSchema`.
+- [x] `featureIds` must contain 1..32 unique saved IDs and input order is preserved exactly.
+- [x] Unknown Feature ID fails the whole composition as `NOT_FOUND`.
+- [x] A selected Feature with zero direct Capabilities fails the whole composition as `UNAVAILABLE`.
+- [x] Feature.active, Capability.enabled, Tool.enabled, billing, Shop preferences and Release membership do not filter the selected Feature composition.
+- [x] Capabilities are ordered selected-Feature order, then `key ASC`, then `id ASC`, with global positions `0..N-1`.
+- [x] More than 32 resolved Capabilities fails; nothing is truncated.
+- [x] Every Capability uses the current `PUBLISHED` Tool revision ordered `revisionNumber DESC, id ASC`.
+- [x] Missing/invalid published Tool revision fails the whole composition; no Capability is silently dropped and no DRAFT is substituted.
+- [x] Feature Behaviour is resolved once per selected Feature in selected order and missing configuration means `''`.
+- [x] The Feature path always uses `EMPTY_RESPONSE_CONTRACT` and canonical hash.
+- [x] Synthetic manifest identity is deterministic and changes when Feature order, Behaviour, Capability membership, Tool revision or Tool content hash changes.
+- [x] Multiple Capabilities may share one Tool revision; Capability members remain distinct while Tool definition/grant entries are deduplicated deterministically.
+- [x] Stored conversation selection + manifest + snapshot preserve the exact Feature composition after later authoring changes.
+- [x] Feature composition performs no durable authoring/business writes.
+- [x] Internal saved `RELEASE`/`DRAFT` selection remains available only to retained non-conversation consumers.
+- [x] No Model/OpenRouter/credential or real selected-shop Tool-execution behaviour is introduced by this task.
 
 ## Validation
 
@@ -786,58 +786,109 @@ Do not start ARCH-024-COMMERCE-005 or any adjacent Preview/UI/runtime work.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+- `src/commerce/preview/types.ts`: strict Feature-only conversation selection contract.
+- `src/commerce/integration/backend.ts`: explicit composition port, Prisma resolver, authorization, deterministic ordering, validation, and backend default wiring.
+- `src/commerce/integration/preview/adapters.ts`: Feature resolver use, synthetic manifest identity, deterministic manifest/grants, snapshot definitions/prompts, and bounded lifecycle error mapping. Internal saved Release/Draft access remains for Tool-test consumers.
+- `tests/feature-preview-composition.test.ts`: strict selection and resolver/adapter composition matrix, including no-filtering, ordering, failures, deduplication, identity changes, freezing, and bounded errors.
+- `tests/backend-integration.test.ts`: backend Feature-composition wiring coverage.
+- `tests/preview-integration.test.ts`: Feature selection/composition and immutable snapshot integration coverage; retained saved-selection Tool-test coverage.
+- `tests/preview-routes.test.ts` and `tests/preview-service.test.ts`: use the strict Feature selection shape at the conversation boundary.
+- `tests/preview-store.test.ts` and `tests/preview-redis-lua.test.ts`: mechanically update persisted conversation fixtures to the new Feature selection shape; no store/Redis production behavior changed.
 
 ### Work Completed
 
-None
+- Replaced the conversation-facing `RELEASE`/`DRAFT` selector with a strict, unique 1..32 `FEATURES + featureIds` contract. Existing internal `CommerceSavedSelectionInput` Release/Draft operations remain available to non-conversation Tool-test consumers.
+- Added `CommerceFeatureCompositionResult` / `CommerceFeatureComposition` and wired `createCommerceBackend()` to default to `createPrismaFeatureComposition()` while preserving dependency injection.
+- Implemented a single bounded Feature graph read after `authorizeStaff()`. Requested Feature order is reconstructed explicitly; all direct Capabilities are included without activation, enabled-state, billing, preference, or Release filters. Capabilities sort by key/id and receive global positions. Missing Features, empty Features, over-32 composition, missing Tools/revisions, invalid definitions, and conflicting Tool/revision data fail closed.
+- Resolved current published revisions with `revisionNumber DESC, id ASC`, retained each Capability member, deduplicated Tools by exact revision, returned one Behaviour per Feature with the empty-configuration default, and used the canonical empty response contract/hash.
+- Rebuilt the Preview manifest with the deterministic `preview-features-<sha256>` identity, exact ordered descriptors and grants, validated it with `CommerceManifestSchema`, and froze unique definitions plus non-empty Feature Behaviour prompts named `commerce/test-conversation/feature/<featureId>` in the existing conversation snapshot.
+- Kept model/provider configuration, selected-shop execution, Instruction resolution, and retained synthetic Tool execution semantics outside this change.
+- Launcher preparation packet: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-004`, branch `task/ARCH-024-COMMERCE-004`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-004`, branch `task/ARCH-024-COMMERCE-004`. Dedicated worktrees were created for this task; the shared workspace/source checkouts were not switched or mutated for implementation, and no other task worktree was reused.
+- Launcher synchronization: parent remote task branch fast-forward `not-needed`, parent `origin/main` incorporation `already-current`; implementation remote task branch fast-forward `not-needed`, implementation `origin/main` incorporation `already-current`.
+- Launcher recursive submodule setup: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` initialized at recorded commit `15859f16a7b9a889df8f70e1ecc29b27df8e31de`.
+- Claim: Attempt 1, executor `copilot`, claimed at `2026-10-01T16:11:34Z`; parent claim commit `6749a8acf2cd727dde69c36aee16776d73cd02b0` was committed and pushed by the launcher.
+- Implementation commit `9834f4694f216dac082d7620f349712d2f1d4763` (`task(ARCH-024-COMMERCE-004): compose previews from features`) is pushed to `origin/task/ARCH-024-COMMERCE-004`. Final implementation worktree was clean at that commit; the parent worktree was clean at its claim commit before this report update. No database gitlink was changed.
 
 ### Validation Results
 
-None
+- PASS: `npx vitest run tests/feature-preview-composition.test.ts tests/preview-service.test.ts tests/preview-integration.test.ts tests/preview-routes.test.ts tests/backend-integration.test.ts` — 5 files, 52 tests passed.
+- PASS: `npx vitest run tests/feature-preview-composition.test.ts tests/preview-service.test.ts tests/preview-integration.test.ts tests/preview-routes.test.ts tests/backend-integration.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts` — 7 files, 65 tests passed. The two additional suites cover the mechanically updated persisted-store/Redis selection fixtures.
+- PASS: `npm run typecheck` — Next route types generated; `tsc --noEmit` passed.
+- PASS: `npm run build` — production build passed. Existing Nunjucks dynamic-dependency warnings were emitted from `node-loaders.js`; build completed successfully.
+- PASS: `npx eslint src/commerce/preview/types.ts src/commerce/integration/backend.ts src/commerce/integration/preview/adapters.ts tests/feature-preview-composition.test.ts tests/backend-integration.test.ts tests/preview-integration.test.ts tests/preview-routes.test.ts tests/preview-service.test.ts tests/preview-store.test.ts tests/preview-redis-lua.test.ts` — passed with no reported issues.
+- PASS: `git diff --check` — passed.
 
 ### Deviations
 
-None
+No scope deviation. `tests/preview-store.test.ts` and `tests/preview-redis-lua.test.ts` were the only additional files beyond the named primary targets; they were required to migrate retained storage test fixtures to the new strict selection shape.
 
 ### Assumptions
 
-None
+Per the task contract, legacy development Redis conversations encoded with the old Release/Draft selection schema may be discarded; no compatibility parser was added.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None. The implementation stays within `moda-interact-commerce`; no Shared contract, schema, migration, UI, Model/OpenRouter, selected-shop execution, or ARCH-023 Instruction change was introduced.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+Accepted at Attempt 1. The implementation conforms to the ARCH-024 Feature-composed Test Conversation boundary. The conversation-facing selector is strict `FEATURES + featureIds`; the separate saved Release/Draft boundary remains available only to retained non-conversation consumers.
+
+`createPrismaFeatureComposition()` uses the existing staff authorization before the Feature read, reconstructs selected Feature order explicitly, performs one bounded Feature-graph read, includes every direct Capability without active/enabled/entitlement/Release filtering, orders Capabilities deterministically, fails closed for missing/empty/oversized composition, resolves the current published Tool revision, validates Tool definitions, deduplicates exact revisions, preserves one Behaviour per selected Feature, and uses the canonical empty response contract/hash.
+
+The Preview adapter consumes only `featureComposition` for conversation composition, builds the required deterministic `preview-features-<sha256>` identity, validates the complete Commerce manifest, orders grants by first Capability use, and freezes the resolved Tool definitions plus non-empty Feature Behaviour prompts into the existing snapshot. The retained Tool-test executor continues to use the saved DRAFT lookup boundary. No Model/OpenRouter, real selected-Shop Tool execution, database, Shared-package, Admin, Background or Gateway behaviour was introduced.
+
+The two additional changed test files (`preview-store.test.ts` and `preview-redis-lua.test.ts`) are mechanically required fixture migrations for the strict Feature selection shape and remain within task scope.
 
 ### Reviewed Files
 
-None
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/src/commerce/integration/backend.ts`
+- `moda-interact-commerce/src/commerce/integration/preview/adapters.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/tests/feature-preview-composition.test.ts`
+- `moda-interact-commerce/tests/backend-integration.test.ts`
+- `moda-interact-commerce/tests/preview-integration.test.ts`
+- `moda-interact-commerce/tests/preview-routes.test.ts`
+- `moda-interact-commerce/tests/preview-service.test.ts`
+- `moda-interact-commerce/tests/preview-store.test.ts`
+- `moda-interact-commerce/tests/preview-redis-lua.test.ts`
+- `moda-interact-commerce/database/prisma/schema.prisma` (relationship verification only; unchanged by task)
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-004-compose-test-conversations-from-selected-features.md`
 
 ### Validation Reviewed
 
-None
+Submitted evidence records:
+
+- required focused Vitest command: 5 files / 52 tests passed;
+- extended Preview/store/Redis set: 7 files / 65 tests passed;
+- `npm run typecheck` passed;
+- targeted ESLint over every changed TypeScript source/test file passed;
+- `npm run build` passed with the pre-existing Nunjucks dynamic-dependency warnings only;
+- `git diff --check` passed;
+- implementation commit `9834f4694f216dac082d7620f349712d2f1d4763` and parent report commit `81bc7ce8` were reported pushed with both task worktrees clean and remote-aligned.
+
+The submitted snapshot does not include installed `node_modules`, so the architect did not rerun the Node validation locally; the changed source and focused tests were inspected directly against the task contract and the recorded validation evidence.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. COMMERCE-004 establishes the server-authoritative Feature-composition fragment required by ARCH-024 without crossing into COMMERCE-005 UI/model/instruction snapshot completion, COMMERCE-006 selected-Shop execution, or COMMERCE-007 OpenRouter execution.
 
 ### Follow-up
 
-None
+No correction required. `ARCH-024-COMMERCE-005` remains Pending because `ARCH-024-COMMERCE-002` is not yet Complete; acceptance of COMMERCE-004 alone does not satisfy the full COMMERCE-005 dependency set.

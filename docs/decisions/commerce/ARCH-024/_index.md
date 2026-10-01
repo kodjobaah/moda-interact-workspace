@@ -51,7 +51,7 @@ ARCH-023-COMMERCE-003 ------------+
 | [COMMERCE-001](COMMERCE-001-remove-redundant-human-preview-functionality.md) | Remove obsolete human-facing Tool/Release/Fixture Preview composition while retaining referenced internal runtime seams | Complete | - |
 | [COMMERCE-002](COMMERCE-002-resolve-effective-available-active-model.md) | Resolve effective Shop availability and exactly one model with fail-closed `SHOP -> current PRICING_PLAN -> PLATFORM` precedence | Pending | DATABASE-001, SHARED-002 |
 | [COMMERCE-003](COMMERCE-003-make-commerce-studio-model-selection-only.md) | Retire Catalogue administration from Studio; retain explicit Platform/Shop selection and surface inherited `PRICING_PLAN` vs `PLATFORM` provenance | Pending | COMMERCE-002, ADMIN-002 |
-| [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Ready | COMMERCE-001 |
+| [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Complete | COMMERCE-001 |
 | [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create the complete authored Conversation Configuration Snapshot | Pending | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | [COMMERCE-006](COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md) | Execute exact snapshot Tool revisions through production execution against the real selected Shop | Pending | COMMERCE-005 |
 | [COMMERCE-007](COMMERCE-007-execute-test-conversation-models-through-openrouter.md) | Execute the snapshot active model through Shared OpenRouter runtime using the current environment credential per invocation | Pending | COMMERCE-006, SHARED-002 |
@@ -59,12 +59,12 @@ ARCH-023-COMMERCE-003 ------------+
 ## Execution frontier
 
 ```text
-ARCH-024-COMMERCE-004 -> Ready
+No Commerce-domain task is currently Ready.
 ```
 
-COMMERCE-001 is Complete / Accepted at Attempt 2. Its evidence-only rework proved the six remaining `studio-workspace.test.tsx` failures are pre-existing/non-regressing, with no implementation source/test changes in Attempt 2. COMMERCE-004 is now Ready and owns the next Feature-composition step.
+COMMERCE-004 is Complete / Accepted at Attempt 1. The selected-Feature composition boundary is now available for the later Test Conversations join.
 
-COMMERCE-001 completed independently of the new database/shared model stack. COMMERCE-004 is now Ready from that retained Preview/runtime seam. Once DATABASE-001 + SHARED-002 are Complete, COMMERCE-002 may execute independently of COMMERCE-004; Studio model-selection UI does not gate Feature composition.
+COMMERCE-005 remains Pending: `ARCH-023-COMMERCE-003` and COMMERCE-004 are Complete, but COMMERCE-002 is still gated by DATABASE-001 + SHARED-002. Once SHARED-002 completes, COMMERCE-002 may become executable independently; Studio model-selection UI does not gate Feature composition.
 
 COMMERCE-003 retains one deliberate cross-application dependency on ADMIN-002 because it removes Commerce-owned Catalogue administration only after the Admin-owned replacement control plane exists. That is an ownership-migration dependency, not a source-code dependency.
 
