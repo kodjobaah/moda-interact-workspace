@@ -9,8 +9,10 @@ assigned_agent: moda_database
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 64
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-023-DATABASE-005
@@ -240,19 +242,29 @@ None. This adds only the persisted enum identity required by the dependent Backg
 ## Architect Review
 
 ### Review Status
-Pending
+Accepted — Attempt 1
 
 ### Review Notes
-Pending.
+Accepted the database-owned prerequisite exactly as bounded. The implementation adds only `MERCHANT_KNOWLEDGE_ENTITLEMENT_RECONCILIATION` to `public.BackgroundRuntimeLeaseName`; the forward migration contains one additive `ALTER TYPE ... ADD VALUE IF NOT EXISTS` statement and does not change cadence configuration, runtime lease SQL, business tables, indexes, constraints or `FeatureActivationMode`.
+
+The focused validator fixes the complete expected lease-label set and rejects migration drift. The disposable PostgreSQL proof applies the accepted migration chain through this task, proves all three Merchant Knowledge lease names coexist as valid `BackgroundRuntimeLease.name` values, removes task-owned rows and removes its invocation-owned `pgvector/pgvector:pg17` container.
+
+The Completion Report records the launcher-resolved canonical parent and implementation worktrees, task branches, start-of-attempt synchronization, dependency gate and recursive submodule preparation. No artificial follow-up implementation commit is required.
 
 ### Reviewed Files
-Pending.
+- `moda-interact-database/prisma/schema.prisma`
+- `moda-interact-database/prisma/migrations/20261001120000_arch023_merchant_knowledge_entitlement_reconciliation_lease/migration.sql`
+- `moda-interact-database/scripts/validate-arch023-merchant-knowledge-entitlement-reconciliation-lease.mjs`
+- `moda-interact-database/scripts/test-arch023-merchant-knowledge-entitlement-reconciliation-lease-postgres.mjs`
+- `moda-interact-database/package.json`
+- generated ERD outputs
+- this task Completion Report and launcher evidence
 
 ### Validation Reviewed
-Pending.
+Reviewed the recorded passing format, Prisma validate/generate, focused static contract, disposable PostgreSQL migration/runtime proof, ERD generation, script syntax checks, changed-file diagnostics and `git diff --check`. The editor's Prisma 7 `datasource.url` warning is pre-existing and does not conflict with the repository-locked Prisma 6.19.3 validation result.
 
 ### Architecture Conformance
-Pending.
+Conforms. The change remains inside database ownership and supplies only the persisted enum identity required by `ARCH-023-BACKGROUND-005`. The 300-second cadence and scheduler semantics remain Background-owned as required.
 
 ### Follow-up
-Pending.
+Mark `ARCH-023-DATABASE-006` Complete. Restore `ARCH-023-BACKGROUND-005` from Blocked to Ready with Attempt 1 preserved now that this prerequisite is Complete; its next `/moda-task ARCH-023-BACKGROUND-005` claim becomes Attempt 2. Attempt 2 must add/prove the existing lease service's exact 300-second entitlement-reconciliation cadence branch and finish the already-started scheduler/build validation. `ARCH-023-GATEWAY-001` remains gated until BACKGROUND-005 is Complete.
