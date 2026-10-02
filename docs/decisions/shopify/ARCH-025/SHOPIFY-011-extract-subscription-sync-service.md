@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 110
-executor: copilot
-claimed_at: 2026-10-02T10:27:12Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-010
@@ -283,24 +283,47 @@ Recursive implementation submodules:
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None.
+Attempt 1 implementation review found no source-level architectural defect. `SubscriptionSyncService` is the single owner of the remaining provider-to-local synchronization workflow and `BillingService.syncSubscription(...)` is a thin compatibility delegate. The implementation branch changes only the three authorised files, preserves provider-read placement, shared `ShopSettings -> Subscription` locking, stale-token fencing, no-contract projection and post-commit notification, raw UNMAPPED/SYNC_ERROR BillingPeriod upsert, mapped projection delegation, initial-Paid projection suppression, same-transaction SHOPIFY-010 finalisation, pending-state preservation and sync-error mapping.
+
+The task cannot be accepted in its current durable state because the implementing agent moved it to `review` while every Work Item, every Acceptance Criterion and every Validation checkbox remains unchecked. Those fields are owned by the implementing repository agent and must not be silently completed by `moda_architect`. The Completion Report also omits the pushed implementation and parent-report commit identities.
+
+A1-R1 is therefore **report-only**. No production or test source correction is requested.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/subscription-sync.service.ts`
+- `moda-interact/tests/unit/services/billing/subscription-sync.service.test.ts`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-011-extract-subscription-sync-service.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
 
 ### Validation Reviewed
 
-None.
+- Reviewed reported focused sync suite: 6/6 passed.
+- Reviewed reported Prisma generation, typecheck, task-scoped ESLint, production build and `git diff --check`: passed.
+- Frozen regression SHA remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; frozen file is reported byte-identical.
+- Frozen suite: 18 failures, all attributed to durable baseline `ARCH025-TEST-001`.
+- Full suite: 24 failures across five files, with no task-owned failing identifier reported outside `ARCH025-TEST-001`.
+- GitHub task refs reviewed: implementation `3e96f68decc0051aefa9dfbb53101a3661895a9b`; parent report `f14293bae4bef10cb97f0100b0dac542a35dc2b9`.
 
 ### Architecture Conformance
 
-Pending.
+Source implementation conforms to ARCH-025 and SHOPIFY-011 scope. Acceptance is withheld solely because the repository-agent-owned execution/checklist record is incomplete.
 
 ### Follow-up
 
-None.
+A1-R1 — Reclaim the same task for Attempt 2 and perform a report-only reconciliation:
+
+1. mark each completed `## Work Items` checkbox `[x]`;
+2. mark each satisfied `## Acceptance Criteria` checkbox `[x]`;
+3. mark each completed `## Validation` checkbox `[x]`;
+4. record implementation commit `3e96f68decc0051aefa9dfbb53101a3661895a9b` and parent report commit `f14293bae4bef10cb97f0100b0dac542a35dc2b9`, together with final clean/remote-aligned branch evidence;
+5. leave all production and test source unchanged;
+6. validation does not need to be rerun solely for this report correction unless implementation/dependency state changes;
+7. set the task back to `review`, clear the execution claim and STOP.
+
+Do not begin or modify the independent ARCH-025 Background tranche as part of this correction.
