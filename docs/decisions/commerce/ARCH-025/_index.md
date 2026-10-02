@@ -6,7 +6,7 @@ Assigned Agent: `moda_commerce`
 
 Coordinator: `moda_architect`
 
-This is an independent Commerce maintainability chain for `components/studio-workspace.tsx`. It does not depend on the Shopify, Background or Admin ARCH-025 chains. Tasks are sequential internally because every later extraction consumes the accepted workspace controller/module contracts established by earlier tasks.
+ARCH-025 Commerce now contains two staged UI maintainability chains. COMMERCE-001..005 refactor `components/studio-workspace.tsx`. COMMERCE-006..010 refactor `src/studio/tools/tool-editor.tsx`. The ToolEditor chain is deliberately gated behind COMMERCE-005 because COMMERCE-001..005 freeze `tests/external-tools-ui.test.tsx`, while COMMERCE-006 owns one controlled source-loader change in that same regression asset. This is a test-baseline coordination dependency, not a runtime dependency.
 
 Reviewed baseline:
 
@@ -43,3 +43,37 @@ COMMERCE-001 alone may change source-loading mechanics in `legacy-capability-sur
 ## Execution frontier
 
 `ARCH-025-COMMERCE-001` is Ready independently of `ARCH-025-BACKGROUND-001`, `ARCH-025-BACKGROUND-008`, `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-009`. COMMERCE-002..005 remain Pending until the immediately preceding Commerce task is architect-accepted Complete.
+
+
+## ToolEditor persisted-authoring tranche
+
+Reviewed baseline:
+
+```text
+src/studio/tools/tool-editor.tsx
+916 lines
+SHA-256: c91ff89cb47d5e9afd50dec2b0aeb24e59c57dfc37e2013e6511f87d15be54fa
+```
+
+Frozen throughout COMMERCE-006..010:
+
+```text
+tests/shopify-admin-tools-ui.test.tsx
+  SHA-256 d856cac3626605670e08a21826cfcc1a8e6595dcffc764e20d9ef59c2ff78446
+tests/tool-authoring-screen.test.tsx
+  SHA-256 2245e54996589f7289639bb28c6b364f1726ec291debec390e208a5c304b6c20
+tests/new-tool-authoring-state.test.ts
+  SHA-256 267352261520b38eaa9845f93dc09eb8860e75a4010d9da26827c6617bcdcf63
+```
+
+`tests/external-tools-ui.test.tsx` starts at SHA-256 `97ffbc70e29d4ff60a48e5aabd0ff3faec6dea7984ed0f239fcb4a8fc868f4d3`. COMMERCE-006 may change only its bounded source-loader for the existing persisted-External uniqueness assertion; COMMERCE-007..010 must keep the accepted COMMERCE-006 version unchanged.
+
+Supplementary behaviour/follow-up register: `docs/architecture/ARCH-025-tool-editor-refactor-observations.md`.
+
+| Task | Outcome | Status | Dependencies |
+|---|---|---|---|
+| [COMMERCE-006](COMMERCE-006-extract-persisted-tool-authoring-controller.md) | Persisted Tool authoring controller + extraction-safe External source assertion | Pending | COMMERCE-005 |
+| [COMMERCE-007](COMMERCE-007-extract-policy-operation-persisted-editor.md) | Persisted Policy Operation wrapper | Pending | COMMERCE-006 |
+| [COMMERCE-008](COMMERCE-008-extract-external-http-persisted-editor.md) | Persisted External HTTP wrapper | Pending | COMMERCE-007 |
+| [COMMERCE-009](COMMERCE-009-extract-shopify-admin-persisted-editor.md) | Persisted Shopify Admin wrapper | Pending | COMMERCE-008 |
+| [COMMERCE-010](COMMERCE-010-reduce-tool-editor-shell.md) | Revision/read-only/generic extraction + thin ToolEditor dispatch | Pending | COMMERCE-009 |

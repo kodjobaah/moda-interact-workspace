@@ -16,7 +16,8 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-025-COMMERCE-004
-enables: []
+enables:
+  - ARCH-025-COMMERCE-006
 created: 2026-10-02
 updated: 2026-10-02
 ---
@@ -109,7 +110,7 @@ Final repository-internal page/detail composition contract. Public compatibility
 
 ## Enables
 
-None
+- `ARCH-025-COMMERCE-006`
 
 ## Acceptance Criteria
 
