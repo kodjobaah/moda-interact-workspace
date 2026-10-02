@@ -1016,9 +1016,9 @@ remains frozen and is consumed as an external instruction dependency. ARCH-024 t
 system-test task materialisation is deliberately deferred to a later architecture session.
 
 [Architecture](ARCH-024-commerce-agent-model-runtime-and-test-conversations.md)
-## ARCH-025 — Billing service maintainability refactor (2026-10-01)
+## ARCH-025 — Shopify and Background runtime maintainability refactor (2026-10-01)
 
-In-progress structural refactor with two independent repository tranches. The Shopify tranche extracts the `moda-interact/app/services/billing/billing.service.ts` workflows behind the unchanged `BillingService` façade; SHOPIFY-001 through SHOPIFY-011 are architect-accepted Complete, with the byte-identical 213-test façade asset governed by `ARCH025-TEST-001`. The Background tranche independently decomposes `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts` into seven sequential `moda_background` tasks behind the unchanged worker/service façade; BACKGROUND-001 is Ready and BACKGROUND-002..007 are dependency-gated. No Database, Shared, Admin, Commerce, Gateway or System Test implementation task is required.
+In-progress structural refactor with three independent sub-tranches. The Shopify tranche extracts `moda-interact/app/services/billing/billing.service.ts` behind the unchanged `BillingService` façade; SHOPIFY-001 through SHOPIFY-011 are architect-accepted Complete, with the byte-identical 213-test façade asset governed by `ARCH025-TEST-001`. Background has two independent chains: BACKGROUND-001..007 decompose `billing-subscription-reconciliation.service.ts`, while BACKGROUND-008..015 decompose the integrated post-ARCH-024 `checkout-recovery.service.ts` behind its unchanged worker/service façade. BACKGROUND-001 and BACKGROUND-008 are both Ready; later tasks in each chain are dependency-gated. No Database, Shared, Admin, Commerce, Gateway or System Test implementation task is required.
 
 [Architecture](ARCH-025-shopify-billing-service-maintainability.md)
 

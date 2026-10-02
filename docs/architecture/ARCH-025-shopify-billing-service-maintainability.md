@@ -1,32 +1,35 @@
 ---
 id: ARCH-025
-title: Billing service maintainability refactor
+title: Shopify and Background runtime maintainability refactor
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-01
 updated: 2026-10-02
 ---
 
-# ARCH-025: Billing service maintainability refactor
+# ARCH-025: Shopify and Background runtime maintainability refactor
 
 ## Status
 
 In Progress.
 
-ARCH-025 now contains two **independent, repository-owned maintainability tranches** under the same billing architecture initiative:
+ARCH-025 now contains three **independent maintainability sub-tranches** across two repository owners:
 
 ```text
 moda-interact/             Shopify BillingService façade
 moda-interact-background/  billing subscription reconciliation coordinator
+moda-interact-background/  CheckoutRecoveryService lifecycle façade
 ```
 
-The historical architecture filename is retained so the already-materialised Shopify task files keep a stable durable reference. The architecture ID and this document remain authoritative for both tranches.
+The historical architecture filename is retained so already-materialised task files keep a stable durable reference. The architecture ID and this document remain authoritative for all ARCH-025 tranches.
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is Ready; BACKGROUND-002 through BACKGROUND-007 remain dependency-gated.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is Ready; BACKGROUND-002 through BACKGROUND-007 remain dependency-gated.
 
-The two tranches have **no ARCH-025 dependency on one another** and may proceed independently because they modify different repositories and introduce no cross-repository contract change. Within each repository, tasks remain sequential because they progressively extract from one high-churn compatibility façade/coordinator.
+The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
+
+There is deliberately **no dependency edge between the three sub-tranches**. The two Background chains touch different high-churn service files and may proceed independently; each chain remains sequential internally so accepted extraction interfaces are stable before the next extraction builds on them.
 
 ## Problem
 
@@ -63,7 +66,24 @@ The two tranches have **no ARCH-025 dependency on one another** and may proceed 
 
 Several canonical lower-level Background services already exist (`SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`). ARCH-025 must increase delegation to those owners rather than create parallel implementations.
 
-The objective in both repositories is maintainability, not behavioural redesign. Existing callers, routes, worker entrypoints, queue contracts and durable billing semantics remain stable while internal owners are extracted incrementally.
+### Background checkout recovery
+
+`moda-interact-background/src/services/checkout-recovery.service.ts` is approximately 1,579 lines and exposes a worker-facing compatibility surface spanning several independently meaningful recovery lifecycles:
+
+- checkout-created/update/cart contract handling and activity correlation;
+- matured pending-candidate materialisation from current Shopify data;
+- durable CheckoutRecovery creation/generation and customer association;
+- initial proactive recovery outreach, billing admission/revalidation and confirmed-send finalisation;
+- no-response follow-up execution;
+- order completion correlation, pending-candidate cancellation and checkout-scoped order tombstones;
+- durable recovery-capacity blocking/resume/terminalisation;
+- CommerceAgent recovery/conversation read-model assembly.
+
+ARCH-024 Background work is integrated in the reviewed baseline: `RecoveryAgentContext` includes canonical `shopId`, both agent-context readers return the durable Shop identity, and the production Commerce model runtime changes are already present. CheckoutRecovery extraction therefore proceeds against the post-ARCH-024 source shape.
+
+Canonical adjacent owners already exist and remain authoritative: `RecoveryBillingService`, `RecoveryOutreachAttemptService`, `recoveryOutreachFollowUpService`, `RecoveryPolicyService`, `PendingRecoveryCandidateService`, `ShopExecutionEligibilityService`, `AbandonedCheckoutLookupService`, `RecoveryCapacityResumeService`, `OutboundWhatsAppAdmissionService`, `ConversationService`, `ConversationMessageService` and `WhatsAppTemplateSelectorService`. ARCH-025 must increase delegation to these owners rather than create a second billing, queue, candidate-correlation, conversation or WhatsApp-send stack.
+
+The objective in both repositories is maintainability, not behavioural redesign. Existing callers, routes, worker entrypoints, queue contracts, durable billing semantics and durable recovery semantics remain stable while internal owners are extracted incrementally.
 
 ## Goals
 
@@ -76,15 +96,20 @@ The objective in both repositories is maintainability, not behavioural redesign.
 - Preserve the Background invariant that every **successfully parsed** queued job captures exactly one immutable `BackgroundRuntimeConfigSnapshot` immediately after parsing and before durable context loading; malformed input still fails during parsing before runtime-config/database/provider work.
 - Preserve normal queued reconciliation as one `getSubscriptionReconciliationSnapshot(...)` call per accepted job and preserve reinstall's distinct `getActiveSubscription(...)` path.
 - Reuse existing Background rollover, plan-change, lifecycle, projection, usage-publishing, discount and capacity-resume owners instead of duplicating their behaviour.
-- Add focused tests for each extracted owner while preserving both large regression suites byte-for-byte.
-- Make Shopify `syncSubscription()` and Background `reconcileJob()` the final coordinator extractions in their respective tranches.
+- Add focused tests for each extracted owner while preserving the frozen regression assets byte-for-byte.
+- Keep `CheckoutRecoveryService`, `checkoutRecoveryService`, its one-argument `RecoveryBillingService` constructor dependency, every current public method and the current exported result types compatible throughout the structural phase.
+- Preserve checkout-scoped serialization, order-processed tombstones, recovery generation ordering, durable capacity-block state and deterministic outreach idempotency keys.
+- Preserve the post-ARCH-024 `RecoveryAgentContext` shape, including canonical `shopId`, shop domain and bounded conversation-history semantics.
+- Reuse the existing recovery billing, outreach-attempt, follow-up scheduling, policy, candidate-correlation, eligibility, checkout lookup, capacity-resume, outbound admission, conversation and template-selection owners.
+- Make Shopify `syncSubscription()`, Background `reconcileJob()` and the final `CheckoutRecoveryService` façade reduction the terminal extraction steps in their respective sub-tranches.
 
 ## Non-Goals
 
 ARCH-025 does not authorise:
 
 - implementation changes outside `moda-interact/` and `moda-interact-background/`;
-- CheckoutRecovery, Admin pricing-plan authoring, Commerce Studio, Messaging, Shared, Database, Gateway or System Test feature work;
+- Admin pricing-plan authoring, Commerce Studio, Messaging, Shared, Database, Gateway or System Test feature work;
+- redesigning CheckoutRecovery product behaviour, outreach policy, recovery capacity economics, candidate/order correlation semantics or CommerceAgent context contracts;
 - Prisma schema or migration changes;
 - Shared queue/event contract changes;
 - Shopify provider protocol changes;
@@ -97,7 +122,9 @@ ARCH-025 does not authorise:
 - changing existing test expectations to accommodate refactoring;
 - deleting, skipping or weakening existing tests;
 - opportunistically fixing questionable legacy behaviour discovered during extraction;
-- refactoring `recovery-credit-purchase-management.service.ts` except where a later separate architecture explicitly authorises it.
+- refactoring `recovery-credit-purchase-management.service.ts` except where a later separate architecture explicitly authorises it;
+- refactoring the canonical adjacent recovery services themselves except for import/wiring changes explicitly required by an ARCH-025 CheckoutRecovery task;
+- introducing a second WhatsApp send path, billing reservation implementation, pending-candidate store, recovery queue framework or generic repository/service framework.
 
 If an implementation task discovers that a safe extraction requires one of these changes, it must stop and return the dependency/conflict to `moda_architect`.
 
@@ -178,6 +205,48 @@ The current constructor is positional and is asserted by `tests/unit/runtime/ent
 ```
 
 `src/entrypoints/billing.ts` and `src/services/billing-reconciliation.service.ts` are callers. The latter constructs this service solely to invoke `activateInitialPaid(...)`, which validates initial activation as a first-class extraction seam.
+
+### Background checkout recovery
+
+The worker/service façade is:
+
+```text
+src/services/checkout-recovery.service.ts
+  CheckoutRecoveryService
+  checkoutRecoveryService
+```
+
+The current public compatibility surface that must remain callable throughout the structural phase is:
+
+```text
+handleCheckoutCreatedContract(...)
+materializeMaturedCandidate(...)
+recordExternalActivity(...)
+handleCheckoutUpdatedContract(...)
+handleCartActivityContract(...)
+handleOrderCompletedContract(...)
+upsertRecovery(...)
+attachCustomer(...)
+resolveRecipient(...)
+markRecoveryMessageSent(...)
+handleOrderCompleted(...)
+handleCheckoutCreated(...)
+processRecoveryOutreachFollowUp(...)
+markRecoveryCapacityBlocked(...)
+resumeCapacityBlockedRecovery(...)
+getAgentContext(...)
+getAgentContextForStandaloneConversation(...)
+MaturedCandidateMaterializationResult
+CheckoutRefreshResult
+```
+
+The constructor remains:
+
+```text
+(billingService: RecoveryBillingService = recoveryBillingService)
+```
+
+Direct worker callers currently include checkout, order, pending-candidate, recovery-follow-up, capacity-resume and WhatsApp flows. Existing worker entrypoints must continue calling the `checkoutRecoveryService` singleton during the structural phase.
 
 ## Proposed Architecture
 
@@ -330,24 +399,32 @@ moda-interact-background/tests/unit/services/billing-subscription-reconciliation
 SHA-256: 0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239
 ```
 
-This file is a frozen ARCH-025 Background regression asset. Every Background task MUST:
+This file is frozen for BACKGROUND-001..007. Every reconciliation-chain task MUST leave it byte-for-byte unchanged, verify the SHA-256, run the complete file, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without regression, and add no test bypasses or weakened production assertions.
 
-1. leave it byte-for-byte unchanged;
-2. verify that SHA-256 exactly;
-3. run the complete 98-test file and require all 98 tests to pass;
-4. add separate focused tests for the newly extracted owner;
-5. run `tests/unit/runtime/entrypoint-isolation.test.ts` to protect the billing-worker constructor/entrypoint contract;
-6. run the full existing `npm test` suite and introduce no regression;
-7. add no `.skip`, `.only`, `test.todo` or equivalent bypass;
-8. not weaken production assertions/error handling to satisfy extraction tests.
+### Background frozen CheckoutRecovery assets
 
-The supplied ZIP intentionally has no `moda-interact-background/node_modules`, so this architecture definition does **not** claim that the 98-test Background suite was executed while authoring these tasks. Runtime validation belongs to each prepared implementation worktree.
+The integrated post-ARCH-024 source snapshot freezes these four existing CheckoutRecovery regression files for BACKGROUND-008..015:
+
+```text
+tests/unit/services/matured-candidate.materialization.test.ts
+  SHA-256: 28d629008a63e3fc554dd15bd268c52a73287169832f40f63f5d02c0c3bcafcb
+tests/unit/services/checkout-refresh.test.ts
+  SHA-256: 3330367841b6a35e5cdb15c6f8619b529b74336834da8c307d66c16e3202a36f
+tests/unit/services/order-recovery-correlation.test.ts
+  SHA-256: 7b3d3020f822ee1bc514de7aee9f15245f3d86cd6dacd6fee6b1f892a6516dbf
+tests/unit/services/checkout-recovery.capacity-resume.test.ts
+  SHA-256: 8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1
+```
+
+Every CheckoutRecovery-chain task MUST leave all four files byte-for-byte unchanged, verify all four hashes, run them, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without task-introduced regression, and add no test bypasses or weakened production assertions.
+
+The supplied ZIP intentionally has no `moda-interact-background/node_modules`, so this architecture definition does **not** claim runtime execution of either Background frozen baseline while authoring the tasks. Runtime validation belongs to each prepared implementation worktree.
 
 ## Data Model
 
 No schema or migration changes are authorised.
 
-Existing PostgreSQL tables, relationships, uniqueness constraints, BillingPeriod/Subscription lifecycle semantics and entitlement counters remain unchanged.
+Existing PostgreSQL tables, relationships, uniqueness constraints, BillingPeriod/Subscription lifecycle semantics, CheckoutRecovery/outreach/status-history semantics and entitlement counters remain unchanged.
 
 ## Contracts
 
@@ -355,9 +432,11 @@ ARCH-025 introduces no new cross-repository runtime contract.
 
 The Shopify compatibility contract remains `BillingService` in `app/services/billing/billing.service.ts`.
 
-The Background compatibility contract remains `BillingSubscriptionReconciliationService` in `src/services/billing-subscription-reconciliation.service.ts`, including its constructor, four public methods, singleton and public helper/type exports. Existing imports in `src/entrypoints/billing.ts` and `src/services/billing-reconciliation.service.ts` remain valid throughout the structural phase.
+The Background reconciliation compatibility contract remains `BillingSubscriptionReconciliationService` in `src/services/billing-subscription-reconciliation.service.ts`, including its constructor, four public methods, singleton and public helper/type exports. Existing imports in `src/entrypoints/billing.ts` and `src/services/billing-reconciliation.service.ts` remain valid throughout the structural phase.
 
-The Shared billing reconciliation queue contract remains owned by `@modainteract/moda-interact-shared/billing`; no ARCH-025 task may redefine or version it locally. Extracted collaborator APIs are repository-internal implementation contracts only.
+The Background recovery compatibility contract remains `CheckoutRecoveryService` / `checkoutRecoveryService` in `src/services/checkout-recovery.service.ts`, including the existing constructor, all 17 current public methods and the exported `MaturedCandidateMaterializationResult` / `CheckoutRefreshResult` types. Existing checkout/order/pending-candidate/follow-up/capacity/WhatsApp/Commerce callers remain valid throughout the structural phase.
+
+The Shared billing reconciliation queue contract remains owned by `@modainteract/moda-interact-shared/billing`; no ARCH-025 task may redefine or version it locally. CheckoutRecovery queue/provider/event contracts likewise remain unchanged. Extracted collaborator APIs are repository-internal implementation contracts only.
 
 ## Consistency and Transactions
 
@@ -377,7 +456,7 @@ Structural extraction must preserve the exact transaction model currently expres
 - normal mapped BillingPeriods use the mapped projection helper, while the existing raw `billingPeriod.upsert` path for UNMAPPED/SYNC_ERROR cycles remains separate;
 - notification/translation side effects remain isolated from already committed billing state where they are isolated today; missing durable lifecycle identity still propagates while other notification/dispatch failures remain best-effort.
 
-### Background
+### Background reconciliation
 
 Structural extraction MUST preserve:
 
@@ -398,18 +477,35 @@ Structural extraction MUST preserve:
 
 This is move-only refactoring. Do not remove, coalesce, reorder or "optimise" existing provider/database calls, locks, transactions or durable rereads merely because code is moved.
 
+### Background CheckoutRecovery
+
+Structural extraction MUST preserve:
+
+- checkout-scoped `PendingRecoveryCandidateService.withCheckoutLock(...)` boundaries and the current before/inside-lock execution-eligibility rereads;
+- order-processed tombstone placement outside the Prisma completion transaction and before materialisation can initiate outreach;
+- latest recovery generation ordering by `generation DESC, id DESC`;
+- status-guarded `updateMany` predicates and terminal-state non-reopening;
+- durable `RECOVERY_CAPACITY_EXHAUSTED` blocking and first-block timestamp semantics;
+- provider/network calls outside Prisma transactions and the current billing admit/revalidate/commit/release/provider-failure order;
+- deterministic outbound idempotency `recovery-outreach:<attemptId>` and durable-message confirmation before billing/outreach finalisation;
+- current Shopify lookup as the authoritative basket/customer source for materialisation/refresh/resume;
+- exact post-ARCH-024 `RecoveryAgentContext` Shop identity and bounded conversation-history semantics.
+
+No CheckoutRecovery task may create a second billing, candidate/tombstone, WhatsApp-send, follow-up queue, capacity-resume queue or conversation implementation.
+
 ## Ordering
 
-The two repository tranches are independent and are not serialized against one another:
+The three sub-tranches are independent and are not serialized against one another:
 
 ```text
-Shopify:    SHOPIFY-001 -> ... -> SHOPIFY-011
-Background: BACKGROUND-001 -> ... -> BACKGROUND-007
+Shopify:                  SHOPIFY-001 -> ... -> SHOPIFY-011
+Background reconciliation: BACKGROUND-001 -> ... -> BACKGROUND-007
+Background recovery:       BACKGROUND-008 -> ... -> BACKGROUND-015
 ```
 
-Within each repository the tasks execute sequentially because each extraction edits the same compatibility façade/coordinator and later tasks consume capabilities established by earlier tasks.
+Within each individual chain tasks execute sequentially because later tasks consume interfaces established by earlier tasks. The two Background chains intentionally may execute independently even though they share one repository because they modify different primary coordinator/façade files and have no runtime-contract dependency.
 
-Do not parallelise sibling ARCH-025 tasks within the same repository.
+Do not parallelise tasks **within the same chain**. Do not invent a cross-chain dependency or priority when both Background frontiers are Ready.
 
 ## Failure Handling
 
@@ -445,7 +541,7 @@ PERIOD_ALIGNMENT_REQUIRED
 PROVIDER_CYCLE_LAG
 ```
 
-Lifecycle-specific retry decisions remain with their owning handlers; do not create a generic retry service that centralises business policy.
+Lifecycle-specific reconciliation retry decisions remain with their owning handlers; do not create a generic retry service that centralises business policy. CheckoutRecovery extraction likewise preserves existing result/reason strings, provider-failure distinctions, template/admission suppression outcomes and recovery status transitions rather than normalising them.
 
 ## Scalability
 
@@ -453,7 +549,9 @@ This is a structural refactor only. It must not add provider calls, Prisma round
 
 A task that accidentally multiplies Shopify Partner API reads or database work is a behavioural regression.
 
-For Background, the common hot path must not gain additional provider calls, database round trips, queue publications or transaction duration. In particular, normal accepted jobs continue to acquire at most one `getSubscriptionReconciliationSnapshot(...)` and reuse it; reinstall continues its separate single `getActiveSubscription(...)` read. Queue identity, delayed scheduling and startup reconstruction cardinality remain unchanged.
+For Background reconciliation, the common hot path must not gain additional provider calls, database round trips, queue publications or transaction duration. In particular, normal accepted jobs continue to acquire at most one `getSubscriptionReconciliationSnapshot(...)` and reuse it; reinstall continues its separate single `getActiveSubscription(...)` read. Queue identity, delayed scheduling and startup reconstruction cardinality remain unchanged.
+
+For CheckoutRecovery, extraction must not add Shopify checkout lookups, billing admissions/revalidations, outbound provider sends, candidate/Redis operations or Prisma round trips to an equivalent lifecycle path. In particular no-recovery/terminal checkout updates still avoid Shopify lookup, candidate materialisation still checks the order tombstone before provider lookup, and capacity resume still rereads durable state under the checkout lock before Shopify/provider work.
 
 ## Security
 
@@ -461,13 +559,13 @@ No authentication, authorization, tenant isolation or secret-handling boundary c
 
 Extracted services receive server-side dependencies only. No provider credential, Shopify token, whole customer object or billing payload may be newly exposed to browser code or logs.
 
-Background extraction must likewise keep provider credentials, Shopify tokens and whole provider/customer payloads out of new logs and preserve tenant/shop scoping on every durable lookup/mutation.
+Background extraction must likewise keep provider credentials, Shopify tokens and whole provider/customer payloads out of new logs and preserve tenant/shop scoping on every durable lookup/mutation. CheckoutRecovery mapping must continue ignoring untrusted/stale webhook basket/customer fields where current Shopify data is the authoritative recovery snapshot source.
 
 ## Observability
 
 No new observability mechanism is required. Existing log/telemetry semantics remain unchanged. Do not introduce a new generic logger during extraction.
 
-Background already uses the canonical Shared structured logger. Preserve existing `billing.subscription_reconciliation.*` event meanings and bounded identifiers across extraction, including job start/finish, enqueue failure, provider failure, reinstall outcomes, pre-close publish failure, rollover retry and unsupported Paid trial. Do not introduce a competing logger or newly log provider/customer payloads.
+Background reconciliation already uses the canonical Shared structured logger. Preserve existing `billing.subscription_reconciliation.*` event meanings and bounded identifiers across extraction, including job start/finish, enqueue failure, provider failure, reinstall outcomes, pre-close publish failure, rollover retry and unsupported Paid trial. CheckoutRecovery does not need a new generic logging layer for this structural refactor; any newly necessary diagnostics must use the canonical Shared logger and bounded IDs only. Do not introduce a competing logger or newly log provider/customer/message payloads.
 
 ## Infrastructure Assessment
 
@@ -480,6 +578,32 @@ Therefore no `moda_gateway` task is required.
 Classification: **PRODUCTION / COMPATIBLE ROLLOUT** for behavioural purposes.
 
 No database migration, Shared publication, queue drain, infrastructure change or coordinated cross-repository deployment is required. Shopify and Background tasks are independently deployable because their existing public/worker façades remain compatible.
+
+### Background CheckoutRecovery target
+
+The final CheckoutRecovery boundary remains worker-facing and compatible:
+
+```text
+workers / Commerce host
+        |
+        v
+CheckoutRecoveryService                         compatibility façade
+        |
+        +--> RecoveryInitiationService
+        |      +--> RecoveryOutreachFinalizationService
+        |      +--> latest-recovery query primitive
+        +--> RecoveryOutreachFollowUpProcessorService
+        +--> RecoverySnapshotBuilder / recovery-mappers
+        +--> RecoveryMaterializationService
+        +--> CheckoutEventOrchestratorService
+        +--> OrderRecoveryCorrelationService
+        +--> RecoveryCapacityResumeProcessorService
+        +--> RecoveryAgentContextService
+```
+
+The extracted owners continue to delegate canonical work to the existing recovery billing, outreach-attempt, follow-up scheduling, policy, candidate correlation, execution-eligibility, Shopify checkout lookup, capacity-resume scheduling, outbound WhatsApp admission, conversation and template-selection services.
+
+The checkout-recovery chain is independent of BACKGROUND-001..007 and the Shopify chain. Within BACKGROUND-008..015, tasks are sequential because each extraction establishes interfaces reused by later CheckoutRecovery lifecycle owners.
 
 Rollback is ordinary code rollback of the affected repository commit; there is no schema rollback.
 
@@ -494,7 +618,7 @@ scope: Shopify BillingService tranche
 
 repository: moda-interact-background
 assigned_agent: moda_background
-scope: billing subscription reconciliation tranche
+scope: billing subscription reconciliation and CheckoutRecovery maintainability tranches
 ```
 
 The parent workspace owns architecture/task coordination files. Repository implementation remains confined to the assigned implementation repository plus the assigned parent task report file permitted by the task/VCS protocol. No ARCH-025 task grants either repository agent ownership of the other repository.
@@ -528,6 +652,14 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
 | ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Pending | BACKGROUND-005 |
 | ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Pending | BACKGROUND-006 |
+| ARCH-025-BACKGROUND-008 | Extract initial recovery outreach and confirmed-send finalisation | Ready | - |
+| ARCH-025-BACKGROUND-009 | Extract no-response recovery outreach follow-up processor | Pending | BACKGROUND-008 |
+| ARCH-025-BACKGROUND-010 | Extract canonical recovery snapshot mapping | Pending | BACKGROUND-009 |
+| ARCH-025-BACKGROUND-011 | Extract matured-candidate materialisation | Pending | BACKGROUND-010 |
+| ARCH-025-BACKGROUND-012 | Extract checkout/cart event orchestration | Pending | BACKGROUND-011 |
+| ARCH-025-BACKGROUND-013 | Extract order completion correlation | Pending | BACKGROUND-012 |
+| ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Pending | BACKGROUND-013 |
+| ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade | Pending | BACKGROUND-014 |
 
 Execution graph:
 
@@ -536,15 +668,29 @@ SHOPIFY-001 -> ... -> SHOPIFY-010 -> SHOPIFY-011
 
 BACKGROUND-001 -> BACKGROUND-002 -> BACKGROUND-003 -> BACKGROUND-004
       -> BACKGROUND-005 -> BACKGROUND-006 -> BACKGROUND-007
+
+BACKGROUND-008 -> BACKGROUND-009 -> BACKGROUND-010 -> BACKGROUND-011
+      -> BACKGROUND-012 -> BACKGROUND-013 -> BACKGROUND-014 -> BACKGROUND-015
 ```
 
-There is deliberately no dependency edge between the two repository tranches.
+There is deliberately no dependency edge between the Shopify tranche, the Background reconciliation chain and the Background CheckoutRecovery chain.
 
 ## System Validation
 
 A separate `moda_system_test` task is **not applicable** to this structural maintainability initiative because ARCH-025 introduces no new cross-service contract, infrastructure topology, schema, queue protocol or externally observable product behaviour.
 
-Architecture completion instead requires both repository tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background, all 98 frozen reconciliation tests are required to pass. This does not waive repository-level integration/runtime validation already exercised by `npm test` or the production build.
+Architecture completion instead requires all three sub-tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background reconciliation, all 98 frozen reconciliation tests are required to pass. CheckoutRecovery extraction additionally freezes these integrated post-ARCH-024 regression assets byte-for-byte:
+
+```text
+tests/unit/services/matured-candidate.materialization.test.ts
+  SHA-256 28d629008a63e3fc554dd15bd268c52a73287169832f40f63f5d02c0c3bcafcb
+tests/unit/services/checkout-refresh.test.ts
+  SHA-256 3330367841b6a35e5cdb15c6f8619b529b74336834da8c307d66c16e3202a36f
+tests/unit/services/order-recovery-correlation.test.ts
+  SHA-256 7b3d3020f822ee1bc514de7aee9f15245f3d86cd6dacd6fee6b1f892a6516dbf
+tests/unit/services/checkout-recovery.capacity-resume.test.ts
+  SHA-256 8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1
+``` This does not waive repository-level integration/runtime validation already exercised by `npm test` or the production build.
 
 ## Open Questions
 
@@ -552,6 +698,7 @@ None.
 
 ## Change History
 
+- 2026-10-02: Added the independent CheckoutRecoveryService maintainability chain BACKGROUND-008..015 against the integrated post-ARCH-024 Background baseline. Preserved the worker-facing façade, canonical Shop `shopId` agent context, checkout-scoped race guards, recovery generation/idempotency, billing/provider boundaries and existing adjacent recovery owners; froze four post-ARCH-024 regression assets and kept the chain independent from BACKGROUND-001..007.
 - 2026-10-02: SHOPIFY-011 Attempt 2 accepted the report-only reconciliation for the final Shopify sync-coordinator extraction at reviewed implementation commit `3e96f68decc0051aefa9dfbb53101a3661895a9b` and published parent report tip `ac475108c5ec5326d14cbc151d2825786b4b008b`. `BillingService.syncSubscription()` is a thin delegate, the provider-to-local coordinator preserves the accepted provider/transaction/locking/projection semantics, and the full Shopify tranche is now Complete. ARCH-025 remains In Progress because the independent Background tranche is still active.
 - 2026-10-02: Deep Background task-coherence review tightened parse-before-runtime-config semantics, clock/log preservation, reconstruction count semantics, cycle error-clearing distinctions, exact current-plan eligibility gates, reinstall pre-transaction rereads and the legacy FROZEN `continue` provider-plan fallthrough. Kept the final provider-plan lookup/branch dispatch as bounded coordinator orchestration so accepted lifecycle-service interfaces remain sufficient through BACKGROUND-007.
 - 2026-10-02: Extended ARCH-025 with an independent Background billing-subscription reconciliation maintainability tranche. Added seven sequential `moda_background` tasks, froze the 98-test reconciliation regression asset, preserved worker constructor/entrypoint and provider-call invariants, and kept lifecycle-specific retries with their owning handlers rather than creating a generic retry service.
