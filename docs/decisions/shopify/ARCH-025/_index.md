@@ -8,7 +8,7 @@ Repository: `moda-interact`.
 
 Coordinator: `moda_architect`.
 
-ARCH-025 is deliberately limited to the Shopify application `BillingService` maintainability refactor. Background reconciliation, CheckoutRecovery, Admin and Commerce maintainability work are not part of this architecture.
+This directory is the Shopify `BillingService` tranche of ARCH-025. Background billing-subscription reconciliation is now a separate sibling tranche under `docs/decisions/background/ARCH-025/` and does **not** gate this Shopify sequence. CheckoutRecovery, Admin and Commerce maintainability work remain outside ARCH-025.
 
 The tasks execute sequentially because they share the `billing.service.ts` compatibility façade and later tasks consume collaborators extracted by earlier tasks.
 
@@ -35,9 +35,9 @@ Individual task YAML is authoritative.
 | [SHOPIFY-007](SHOPIFY-007-extract-hosted-plan-change-service.md) | Extract hosted plan-change callback fencing | Complete | SHOPIFY-006 |
 | [SHOPIFY-008](SHOPIFY-008-extract-recovery-credit-purchase-request-service.md) | Extract recovery-credit purchase initiation | Complete | SHOPIFY-007 |
 | [SHOPIFY-009](SHOPIFY-009-extract-subscription-ended-notification-service.md) | Extract subscription-ended support notification | Complete | SHOPIFY-008 |
-| [SHOPIFY-010](SHOPIFY-010-extract-initial-paid-activation-finalisation.md) | Extract initial Paid activation durable finalisation from sync | Ready | SHOPIFY-009 |
-| [SHOPIFY-011](SHOPIFY-011-extract-subscription-sync-service.md) | Extract remaining provider-to-local synchronization coordinator | Pending | SHOPIFY-010 |
+| [SHOPIFY-010](SHOPIFY-010-extract-initial-paid-activation-finalisation.md) | Extract initial Paid activation durable finalisation from sync | Complete | SHOPIFY-009 |
+| [SHOPIFY-011](SHOPIFY-011-extract-subscription-sync-service.md) | Extract remaining provider-to-local synchronization coordinator | Complete | SHOPIFY-010 |
 
 ## Execution frontier
 
-`ARCH-025-SHOPIFY-001` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-002` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-003` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-004` through `ARCH-025-SHOPIFY-008` are Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-009` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-010` is Ready. SHOPIFY-011 remains Pending and must not be started until SHOPIFY-010 is architect-accepted Complete.
+`ARCH-025-SHOPIFY-001` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-002` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-003` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-004` through `ARCH-025-SHOPIFY-008` are Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-009` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-010` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-011` is Complete and architect-accepted at Attempt 2. The **Shopify tranche is complete**; the independent Background tranche remains the ARCH-025 execution frontier.

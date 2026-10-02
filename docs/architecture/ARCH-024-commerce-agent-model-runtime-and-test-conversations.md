@@ -16,19 +16,16 @@ Agreed.
 ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Preview/Test Conversation work. It keeps accepted ARCH-021 Studio authoring foundations, consumes frozen ARCH-023 Platform/Shop Instruction semantics, and replaces the unstarted ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 plan with a broader Admin-owned model catalogue, scoped availability, database-backed OpenRouter credentials, LangChain/OpenRouter model integration, a modular Shared LangGraph Commerce-turn runtime with canonical structured logging, production Background parity and Feature-composed selected-shop Test Conversations.
 
 ARCH-024 implementation is underway. Database, Shared publication, all Admin tasks,
-Background production parity/cleanup, and Commerce tasks COMMERCE-001 through COMMERCE-006
-are Complete / architect-accepted. COMMERCE-006 is Complete / Accepted at Attempt 2 after
-its bounded correction preserved valid C004 many-Capabilities-to-one-Tool compositions and
-retained fail-closed descriptor validation before provider dispatch.
+Background production parity/cleanup, and all Commerce tasks COMMERCE-001 through COMMERCE-007
+are Complete / architect-accepted. COMMERCE-007 is Complete / Accepted at Attempt 2 after
+its bounded browser-lifecycle correction made cancellation reachable for the exact retained
+run, prevented pending/UNKNOWN runs from being abandoned, fenced stale asynchronous results,
+and recorded the required deterministic execution evidence.
 
-The current Ready frontier is:
+No ARCH-024 task is currently Ready. `ARCH-024-GATEWAY-001` remains Pending because its
+external prerequisite `ARCH-020-GATEWAY-003` is still `Ready`, not `Complete`.
 
-```text
-ARCH-024-COMMERCE-007
-```
-
-The architecture task table currently records 15 Complete, 1 Ready and 1 Pending task.
-COMMERCE-007 is Ready; GATEWAY-001 remains gated by COMMERCE-007.
+The architecture task table currently records 16 Complete, 0 Ready and 1 Pending task.
 
 Integrated system-test tasks are **deliberately not materialised in this architecture session** because final acceptance overlaps frozen ARCH-023 completion and upcoming architecture work. Any terminal integrated validation will be defined separately against the final combined architecture.
 
@@ -1125,7 +1122,7 @@ Individual task YAML is authoritative.
 | `ARCH-024-COMMERCE-004` | `moda_commerce` | Complete | COMMERCE-001 |
 | `ARCH-024-COMMERCE-005` | `moda_commerce` | Complete | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | `ARCH-024-COMMERCE-006` | `moda_commerce` | Complete | COMMERCE-005 |
-| `ARCH-024-COMMERCE-007` | `moda_commerce` | Ready | COMMERCE-006, SHARED-002 |
+| `ARCH-024-COMMERCE-007` | `moda_commerce` | Complete | COMMERCE-006, SHARED-002 |
 | `ARCH-024-BACKGROUND-001` | `moda_background` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001 |
 | `ARCH-024-GATEWAY-001` | `moda_gateway` | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
@@ -1202,6 +1199,7 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 
 ## Change History
 
+- **2026-10-02 — COMMERCE-007 accepted at Attempt 2:** the bounded browser-lifecycle correction lets `Cancel run` target the exact retained pending operation while preserving same-tick single-flight safety, prevents pending/`UNKNOWN` runs from being abandoned through `Start new conversation`, and fences stale asynchronous completions from later conversations. The complete C007 validation passed, including the disposable PostgreSQL credential-rotation/decryption proof with cleanup, 57-test focused runtime suite, Redis parity, retained Tool-test/Code Response regressions, Prisma generation, typecheck, targeted lint, production build and static/whitespace audits; no live OpenRouter call was made. The launcher/worktree/synchronization/submodule/claim evidence is durably recorded. All ARCH-024 Commerce tasks are now Complete. `GATEWAY-001` remains Pending solely because external prerequisite `ARCH-020-GATEWAY-003` is not yet Complete.
 - **2026-10-02 — COMMERCE-006 accepted at Attempt 2:** the bounded A1-R1 correction accepts one-or-more manifest Capability members sharing an exact Tool revision, rejects zero matches and any conflicting duplicate descriptor before provider dispatch, and preserves the single deduplicated grant plus frozen-definition checks. Regression coverage proves a valid two-Capability/one-Tool composition executes exactly once through `backend.execution` and a conflicting duplicate remains fail closed. Attempt 2 reran the complete C006 validation (11 files / 102 tests, targeted ESLint, typecheck, production build and static/whitespace audits) and records clean remote-aligned dedicated task worktrees. COMMERCE-006 is Complete and COMMERCE-007 is promoted Ready; GATEWAY-001 remains Pending on COMMERCE-007.
 - **2026-10-01 — COMMERCE-005 accepted at Attempt 2:** the evidence-only retry leaves all C005-owned implementation/test files unchanged while durably recording the launcher-resolved parent/Commerce worktrees, synchronized task branches, recursive database submodule state, Attempt 2 claim and clean remote-aligned heads. The paired `npx vitest run` comparison uses synchronized pre-task Commerce `1318596b523190a8c422cf0fb9ddfeae06847e63` versus submitted `4a38f092d3a360e19c0bae8432961109cdd78917`: baseline 60 failed tests versus submitted 29, with 28 common failed test identifiers plus the same five collection failures, 32 baseline-only failures, and one unrelated submitted-only Shopify Admin UI timeout that passes in isolation. No Test Conversations/Preview test fails in the submitted run, so no C005-owned regression is demonstrated. COMMERCE-005 is Complete and COMMERCE-006 is promoted Ready; C007 remains Pending.
 - **2026-10-01 — ADMIN-003 accepted at Attempt 2:** the evidence-only correction durably records the launcher-resolved parent/Admin worktrees, start synchronization, recursive database submodule materialisation, exact Shared 1.1.0 consumption and clean remote-aligned branch identities. The encrypted current-environment OpenRouter credential implementation remains unchanged at `b0a894d65878b81bf533212fab98a48296b34fcf` and conformant. ADMIN-003 is Complete; no ARCH-024 Admin task remains Ready. `ARCH-024-GATEWAY-001` remains Pending because `ARCH-024-COMMERCE-007` is still incomplete.

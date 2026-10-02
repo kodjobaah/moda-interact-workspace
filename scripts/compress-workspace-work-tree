@@ -65,6 +65,10 @@ case "$TASK_ID" in
     COMPONENT="woocommerce"
     REPOSITORY="moda-interact-woocommerce"
     ;;
+  *-API-*)
+    COMPONENT="api"
+    REPOSITORY="moda-interact-api"
+    ;;
   *-ADMIN-*)
     COMPONENT="admin"
     REPOSITORY="moda-interact-admin"
@@ -97,7 +101,7 @@ case "$TASK_ID" in
     echo "Error: cannot determine the repository from task '$TASK_ID'." >&2
     echo >&2
     echo "Expected the task ID to contain one of:" >&2
-    echo "  SHOPIFY, ADMIN, BACKGROUND, DATABASE, GATEWAY," >&2
+    echo "  SHOPIFY, API, ADMIN, BACKGROUND, DATABASE, GATEWAY," >&2
     echo "  MESSAGING, SHARED, SITE, SYSTEM-TEST, WOOCOMMERCE" >&2
     exit 1
     ;;

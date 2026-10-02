@@ -46,18 +46,18 @@ python3 scripts/provision-moda-repository.py \
   --json
 ```
 
-Create the private GitHub repository when it does not yet exist and register it:
+Create the GitHub repository with explicit visibility when it does not yet exist and register it:
 
 ```bash
 python3 scripts/provision-moda-repository.py \
   moda-interact-woocommerce \
   --remote https://github.com/kodjobaah/moda-interact-woocommerce.git \
-  --create-private \
+  --create --visibility public \
   --description "Moda Interact WooCommerce WordPress extension" \
   --json
 ```
 
-`--create-private` is always explicit. The script never derives or invents the
+`--create` and `--visibility public|private` are always explicit. The script never derives or invents the
 remote URL.
 
 ## Canonical workspace preconditions
@@ -100,9 +100,7 @@ default branch: main
 at least one commit on main
 ```
 
-For a missing GitHub remote, `--create-private` uses the authenticated `gh` CLI
-to create a private repository with an initial README commit. The flag is never
-implicit.
+For a missing GitHub remote, `--create --visibility public|private` uses the authenticated `gh` CLI to create a repository with exactly that visibility and an initial README commit. Creation and visibility are never implicit.
 
 ## Workspace result
 

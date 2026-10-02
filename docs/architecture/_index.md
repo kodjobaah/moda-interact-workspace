@@ -999,11 +999,11 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
 Agreed architecture. Combined parent task state after reconciling accepted Admin, Commerce and
-Background branches: **Complete 15, Ready 1, Pending 1**. Current frontier: `COMMERCE-007`.
-COMMERCE-006 is Complete / Accepted at Attempt 2 after its bounded shared-Tool correction accepts
-valid many-Capabilities-to-one-Tool manifests while rejecting conflicting duplicate descriptors
-before provider dispatch. All Admin and Background tasks and COMMERCE-001 through COMMERCE-006 are
-Complete; COMMERCE-007 is Ready and GATEWAY-001 remains dependency-gated. COMMERCE-002 and
+Background branches: **Complete 16, Ready 0, Pending 1**. All ARCH-024 Admin, Background and
+Commerce tasks are Complete / architect-accepted. COMMERCE-007 is Complete / Accepted at Attempt 2
+after its bounded cancellation/unresolved-run lifecycle correction and complete validation/evidence
+handoff. No ARCH-024 task is currently Ready; GATEWAY-001 remains Pending because external
+prerequisite `ARCH-020-GATEWAY-003` is still Ready rather than Complete. COMMERCE-002 and
 BACKGROUND-001/002 are Complete from their accepted mainline reconciliations; ADMIN-001 and
 ADMIN-004 remain Complete from their accepted Admin reconciliations. The canonical published Shared revision is
 `@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter credential
@@ -1016,20 +1016,22 @@ remains frozen and is consumed as an external instruction dependency. ARCH-024 t
 system-test task materialisation is deliberately deferred to a later architecture session.
 
 [Architecture](ARCH-024-commerce-agent-model-runtime-and-test-conversations.md)
-## ARCH-025 — Shopify BillingService maintainability refactor (2026-10-01)
+## ARCH-025 — Shopify and Background runtime maintainability refactor (2026-10-01)
 
-In-progress Shopify-only structural refactor of `moda-interact/app/services/billing/billing.service.ts`. Eleven sequential `moda_app` tasks extract BillingPeriod projection, plan resolution, reads, activation, hosted callback fencing, recovery-credit purchase initiation, subscription-ended notification and finally subscription synchronization behind the unchanged `BillingService` façade. No Database, Shared, Background, Admin, Commerce, Gateway or System Test implementation task is part of ARCH-025. The byte-identical `billing.service.test.ts` asset contains 213 tests; its proven pre-task failure set is recorded as `ARCH025-TEST-001`. SHOPIFY-001 through SHOPIFY-009 are Complete; SHOPIFY-010 is the current Ready frontier.
+In-progress structural refactor with three independent sub-tranches. The Shopify tranche extracts `moda-interact/app/services/billing/billing.service.ts` behind the unchanged `BillingService` façade; SHOPIFY-001 through SHOPIFY-011 are architect-accepted Complete, with the byte-identical 213-test façade asset governed by `ARCH025-TEST-001`. Background has two independent chains: BACKGROUND-001..007 decompose `billing-subscription-reconciliation.service.ts`, while BACKGROUND-008..015 decompose the integrated post-ARCH-024 `checkout-recovery.service.ts` behind its unchanged worker/service façade. BACKGROUND-001 and BACKGROUND-008 are both Ready; later tasks in each chain are dependency-gated. No Database, Shared, Admin, Commerce, Gateway or System Test implementation task is required.
 
 [Architecture](ARCH-025-shopify-billing-service-maintainability.md)
 
 ## ARCH-026 — WooCommerce application foundation (2026-10-01)
 
-Proposed, iterative architecture. `ARCH-026-WOOCOMMERCE-001` is defined Pending to
-establish the installable PHP + React WordPress/WooCommerce extension foundation. The
-new `moda_woocommerce` owner and WOOCOMMERCE launcher route are registered by the
-definition patch; execution remains gated on provisioning/registering the actual
-`moda-interact-woocommerce` repository as a workspace submodule. Hosted Moda API,
-commerce-event, Background/recovery and billing boundaries are intentionally deferred
-until their later tasks are discussed.
+Proposed, iterative architecture. The WooCommerce plugin foundation (WOO-001/WOO-002),
+DATABASE-001 plus hosted API-001/API-002 are materialised.
+`moda-interact-woocommerce` / `moda_woocommerce` owns the merchant-installed PHP + React
+extension; `moda-interact-api` / `moda_api` is the separate server-only synchronous
+Moda HTTP boundary. API-001 remains repository-provisioning-gated and intentionally
+contains only canonical database consumption plus liveness/readiness; API-002 is pending
+on accepted API-001 + DATABASE-001 and owns Woo site-control proof, installation credential
+issuance/rotation and steady-state installation authentication. Merchant business APIs,
+commerce-event/Background integration and billing remain later tasks.
 
 [Architecture](ARCH-026-woocommerce-application-foundation.md)

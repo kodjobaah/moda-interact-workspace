@@ -301,6 +301,7 @@ You coordinate changes across:
 - moda-interact-database/
 - moda-interact-shared/
 - moda-interact-commerce/
+- moda-interact-api/
 - moda-interact-woocommerce/
 - the repository owned by moda_site
 
@@ -367,6 +368,10 @@ moda_site
 moda_commerce
     Claude: .claude/agents/moda_commerce.agent.md
     Codex:  .codex/agents/moda_commerce.toml
+
+moda_api
+    Claude: .claude/agents/moda_api.agent.md
+    Codex:  .codex/agents/moda_api.toml
 
 moda_woocommerce
     Claude: .claude/agents/moda_woocommerce.agent.md
@@ -523,6 +528,28 @@ Database owns schema/migrations; Commerce consumes its nested database/ submodul
 Shared owns published cross-service contracts and genuinely reusable runner code.
 Task domain: docs/decisions/commerce/; task IDs: ARCH-XXX-COMMERCE-NNN.
 See ARCH-020 for the proposed initial design and repository provisioning gate.
+
+
+moda-interact-api/
+
+Owned by:
+
+moda_api
+
+Responsibilities include:
+
+- hosted synchronous Moda merchant/API boundary;
+- authenticated external application ingress when assigned by architecture;
+- tenant/shop resolution and API authorization;
+- merchant-scoped synchronous reads and commands;
+- PostgreSQL access through the canonical database schema;
+- validation/normalisation before architecture-defined asynchronous handoff;
+- API-specific structured logging, correlation and failure handling.
+
+The API does not own database schema/migrations, Background business workflows,
+Gateway routing/infrastructure, or merchant-controlled WooCommerce runtime code.
+Task domain: docs/decisions/api/; task IDs: ARCH-XXX-API-NNN.
+See ARCH-026 for the initial hosted merchant API foundation.
 
 
 moda-interact-woocommerce/
@@ -2341,6 +2368,7 @@ docs/decisions/
 Use these domain directories:
 
 docs/decisions/admin/
+docs/decisions/api/
 docs/decisions/background/
 docs/decisions/commerce/
 docs/decisions/database/
@@ -2357,6 +2385,10 @@ Ownership mapping:
 docs/decisions/admin/
     assigned logical agent: moda_admin
     repository: moda-interact-admin/
+
+docs/decisions/api/
+    assigned logical agent: moda_api
+    repository: moda-interact-api/
 
 docs/decisions/background/
     assigned logical agent: moda_background
