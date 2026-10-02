@@ -119,10 +119,30 @@ React UI
 
 `ARCH-026-API-001` establishes only the backend-only API runtime, canonical database
 consumption and health/readiness behavior. `ARCH-026-API-002` then establishes the
-Woo installation connection/authentication boundary: SSRF-safe site-control proof,
+Woo installation connection/authentication boundary: production-safe site-control proof,
 first connection/reconnect credential issuance, and reusable installation-principal
 authentication. Merchant business APIs remain later tasks. `ARCH-026-DATABASE-001`
 prepares the durable identity/credential state consumed by API-002.
+
+ARCH-026 also defines a separate explicit local-development connection mode so normal
+development does not require paid/public WordPress hosting:
+
+```text
+local WordPress/WooCommerce
+    -> local PHP plugin
+    -> local moda-interact-api
+    -> development PostgreSQL
+
+API callback:
+local moda-interact-api
+    -> local WordPress REST challenge route
+```
+
+The local-development mode changes only network reachability/TLS rules for explicitly local
+targets. The HMAC site-control proof, secret handling, credential issuance/rotation, tenant
+resolution, request limits, CAS/concurrency and browser-isolation rules remain identical.
+Production remains strict public HTTPS and the development mode must fail closed when
+configured in a production API runtime.
 
 ## Repository Responsibilities
 
@@ -323,15 +343,18 @@ API-001 separates liveness from readiness: process liveness does not depend on
 PostgreSQL, while readiness returns 503 when the bounded database connectivity probe
 fails. It must not run migrations or mutate business state as part of readiness.
 
-WOO-003 must fail locally before connection when the store is not HTTPS, uses Plain permalinks or cannot expose the exact API-002 challenge REST route. Remote outage must not be interpreted as disconnection, and site URL mismatch must prevent silent credential reuse on a cloned/migrated WordPress database.
+WOO-003 must fail locally before connection when the store violates the selected API-002 connection mode, uses Plain permalinks or cannot expose the exact challenge REST route. Production requires public HTTPS. Explicit local-development mode may use a local HTTP WordPress identity and local API origin without requiring public hosting. Remote outage must not be interpreted as disconnection, and site URL mismatch must prevent silent credential reuse on a cloned/migrated WordPress database.
 
 WOO-004 consumes only WOO-003's local browser-safe connection GET/POST routes. Its React shell must preserve the distinction between local connection state, remote availability and account/billing lifecycle; unknown/malformed responses fail closed rather than becoming connected/disconnected.
 
-API-002 treats Woo site verification as an SSRF boundary: public HTTPS only, public/global
-DNS answers only, pinned socket, original-host TLS verification, connected-peer checks,
-no redirects, bounded deadline/body and exact HMAC proof. Connection/proof failure causes
-zero durable mutation. Concurrent connects must converge without duplicate tenants or
-silently invalidating a successfully returned credential.
+API-002 treats Woo site verification as an SSRF boundary. Production mode remains public
+HTTPS only with public/global DNS answers, pinned socket, original-host TLS verification,
+connected-peer checks, no redirects, bounded deadline/body and exact HMAC proof. An
+explicit local-development mode may additionally verify loopback/private/`.local` identities
+(and local HTTP) while retaining address pinning, peer checks, no redirects, bounds and the
+exact HMAC proof; it cannot start under the production runtime. Connection/proof failure
+causes zero durable mutation. Concurrent connects must converge without duplicate tenants
+or silently invalidating a successfully returned credential.
 
 ## Scalability
 
@@ -356,6 +379,7 @@ Moda ingress and shared Background workload separately.
 - WOO-003 stores the raw installation credential only in non-autoloaded server-side WordPress state and never exposes it to browser JavaScript, localized data or logs.
 - WOO-003 derives site identity and API authentication material server-side; browser requests cannot choose the remote tenant or API origin.
 - WOO-004 browser code calls only the local WordPress REST connection facade and never receives the long-lived installation credential, bootstrap secret, Authorization header or credential digest.
+- Local-development network relaxation is explicit server-side configuration only, is disabled by default, cannot run in the production API runtime and does not bypass HMAC proof, credential protection, tenant resolution or request bounds.
 - Installation status remains connection/authentication state only; onboarding and billing
   lifecycle are not encoded in `WooCommerceInstallationStatus`.
 
@@ -374,6 +398,12 @@ Moda-specific semantic gaps.
 
 This is a pre-production foundation with no existing WooCommerce Moda installation
 state to migrate. No backwards-compatibility adapter is required.
+
+Normal development may use a developer-owned local WordPress/WooCommerce fixture rather
+than a paid/public WordPress host. The currently demonstrated Local fixture uses WordPress
+7.1.2, WooCommerce 11.1.2, PHP 8.2.29 and non-Plain permalinks at a `.local` HTTP origin.
+This is development evidence only; it does not replace the deterministic WOO-002 compatibility
+matrices or terminal production/public-mode validation.
 
 The WooCommerce repository-provisioning checkpoint has been satisfied. WOO-001 must
 complete and be architect-accepted before WOO-002 can execute. WOO-002 changes only
@@ -488,3 +518,4 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
   ADMIN-001 moves tenant presentation to the shared source after both writers migrate.
 - 2026-10-02: API-003 materialised as the first authenticated Woo merchant business read boundary, exposing shared `Shop.onboardingCompleted` plus bounded Commerce store-profile category identity without duplicating Store Category mutation logic or touching billing.
 - 2026-10-02: Internationalization made a first-class ARCH-026 invariant. DATABASE-002 materialised provider-neutral Shop store-locale/language/time-zone/country state without a Woo locale allowlist; SHOPIFY-002, BACKGROUND-002 and ADMIN-002 materialised bounded consumer migrations; API-003 and WOO-004 were tightened to consume/present international context without treating translation coverage as locale support.
+- 2026-10-02: Local WooCommerce development made an explicit architecture mode rather than requiring public WordPress hosting. API-002/WOO-003 now permit a deliberate local-development path for `.local`/loopback/private HTTP fixtures while retaining HMAC proof, address pinning, credential/tenant protections and strict production public-HTTPS behavior; WOO-006 keeps the bypass disabled by default in the distributable package.
