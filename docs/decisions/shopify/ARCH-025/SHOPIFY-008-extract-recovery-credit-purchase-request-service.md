@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 80
 executor: copilot
 claimed_at: 2026-10-02T00:03:38Z
@@ -120,11 +120,11 @@ The frozen suite deliberately invokes the JavaScript method with a fifth attacke
 
 ## Work Items
 
-- [ ] Create `RecoveryCreditPurchaseRequestService` with provider, Prisma, SHOPIFY-001 cycle helpers and SHOPIFY-002 catalogue collaborator dependencies.
-- [ ] Move request command/helpers and leave façade delegate.
-- [ ] Do not edit purchase-management/refund service.
-- [ ] Add focused tests proving exactly two provider lifecycle snapshot reads, two-stage catalogue verification, provider-before ordering, Serializable/lock order, exact cycle, duplicate replay, unresolved blocking, changed provider/config evidence, invalid IDs and unique-race recovery.
-- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Create `RecoveryCreditPurchaseRequestService` with provider, Prisma, SHOPIFY-001 cycle helpers and SHOPIFY-002 catalogue collaborator dependencies.
+- [x] Move request command/helpers and leave façade delegate.
+- [x] Do not edit purchase-management/refund service.
+- [x] Add focused tests proving exactly two provider lifecycle snapshot reads, two-stage catalogue verification, provider-before ordering, Serializable/lock order, exact cycle, duplicate replay, unresolved blocking, changed provider/config evidence, invalid IDs and unique-race recovery.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -140,25 +140,24 @@ Consumes existing `BillingProvider`, Shared `createShopifyUsageIdempotencyKey`/p
 
 ## Acceptance Criteria
 
-- [ ] Purchase initiation is owned by a dedicated request service.
-- [ ] Existing purchase-management/refund service is not enlarged by this refactor.
-- [ ] Provider-before/provider-after evidence, exact two provider snapshot reads, catalogue reread and transaction ordering are unchanged.
-- [ ] Idempotency/single-flight behaviour is unchanged.
-- [ ] Extra runtime/client-supplied plan/pricing arguments remain ignored and cannot influence the persisted usage event or purchase.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Purchase initiation is owned by a dedicated request service.
+- [x] Existing purchase-management/refund service is not enlarged by this refactor.
+- [x] Provider-before/provider-after evidence, exact two provider snapshot reads, catalogue reread and transaction ordering are unchanged.
+- [x] Idempotency/single-flight behaviour is unchanged.
+- [x] Extra runtime/client-supplied plan/pricing arguments remain ignored and cannot influence the persisted usage event or purchase.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
-- [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
-- [ ] `npm test -- tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts` passes the new focused capability tests
-- [ ] `npm test` introduces no new failures
-- [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/recovery-credit-purchase-request.service.ts tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts`
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate` passed.
+- [x] Frozen test SHA-256 is `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; `git diff -- tests/unit/services/billing.service.test.ts` is empty.
+- [x] Frozen façade suite: 195 passed, 18 failed; all 18 failures match `ARCH025-TEST-001`.
+- [x] Focused purchase-request suite: 10 passed.
+- [x] Full `npm test`: 1,001 passed, 24 failed, 33 skipped across 94 files; all 24 failures match `ARCH025-TEST-001`.
+- [x] `npm run typecheck` passed.
+- [x] Task-scoped ESLint passed (existing TypeScript parser compatibility warning only).
+- [x] `npm run build` passed (existing large-chunk warning).
+- [x] `git diff --check` passed.
 
 ## Stop Condition
 
@@ -173,23 +172,36 @@ Do not generalise this into a command bus. Keep current error messages because b
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None.
+Implementation repository (`moda-interact`):
+
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/recovery-credit-purchase-request.service.ts` (new)
+- `tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts` (new)
+
+Parent workspace: this task report only.
 
 ### Work Completed
 
-None.
+- Moved the recovery-credit request workflow and its provider-evidence, request validation, unresolved purchase, idempotency and unique-race helpers into `RecoveryCreditPurchaseRequestService`; the four-argument `BillingService` method delegates without forwarding extra runtime arguments.
+- Reused `BillingPlanResolutionService.readMerchantPricingPlan` and SHOPIFY-001 billing-cycle helpers; retained the provider-before transaction boundary, two lifecycle snapshot reads, two catalogue reads, Serializable isolation, Subscription lock, single-flight lookup and durable transaction reread.
+- Left purchase-management/refund ownership and all routes unchanged.
+- Added ten focused tests covering two provider snapshots/two catalogue reads, provider-before ordering, Serializable/lock order, exact billing-cycle identity, frozen lifecycle, provider/catalogue changes, existing replay, unresolved blocking, invalid IDs, same-ID P2002 recovery and ignored extra pricing payloads.
 
 ### Validation Results
 
-Not run.
+Passed: Prisma client generation, focused purchase-request suite (10/10), typecheck, task-scoped ESLint, production build, frozen test hash/diff verification and `git diff --check`.
+
+The frozen façade suite ran 213 tests: 195 passed and 18 failed; all 18 identifiers match the existing `ARCH025-TEST-001` baseline. Full `npm test` ran 1,058 tests across 94 files: 1,001 passed, 24 failed and 33 skipped. The 24 failure identifiers match the documented 18 frozen plus six unrelated full-suite baseline failures; no new failing identifier was observed.
+
+ESLint emitted the existing TypeScript parser compatibility warning; the production build emitted the existing large-chunk warning. Neither command failed.
 
 ### Deviations
 
-None.
+The fresh implementation worktree initially lacked installed dependencies; `npm ci` installed from the committed lockfile before Prisma generation and validation. No task scope or behavior deviations.
 
 ### Assumptions
 
@@ -197,11 +209,33 @@ None.
 
 ### Unresolved Issues
 
-None.
+None task-introduced. The documented `ARCH025-TEST-001` failures remain unchanged.
 
 ### Architectural Concerns
 
-None.
+None identified. Provider/network verification remains outside the Prisma transaction; shared cycle and catalogue ownership are reused without changing read counts; the request service does not import the façade.
+
+### Launcher and VCS Evidence
+
+```text
+canonical workspace root: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-008
+parent branch: task/ARCH-025-SHOPIFY-008
+implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-008
+implementation branch: task/ARCH-025-SHOPIFY-008
+shared workspace checkout switched/mutated for task work: no
+shared implementation checkout switched/mutated for task work: no
+another task worktree reused: no
+parent remote task branch fast-forwarded: not-needed
+parent origin/main incorporated: already-current
+implementation remote task branch fast-forwarded: not-needed
+implementation origin/main incorporated: already-current
+git submodule sync --recursive: passed
+git submodule update --init --recursive: passed
+recorded database submodule commit: cfeeb12456b4e05067a96857a8c47837d7e33bbd
+launcher claim commit: 8eb3dda29603ce6a1e3636872c3c83825bfbb008
+implementation commit: 96f7db9e437b9732ba0f2b4186fa9306e72dec97 (pushed to origin/task/ARCH-025-SHOPIFY-008)
+```
 
 ## Architect Review
 
