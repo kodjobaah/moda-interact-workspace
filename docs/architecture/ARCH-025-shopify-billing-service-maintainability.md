@@ -21,7 +21,7 @@ moda-interact/
 
 It refactors the current `app/services/billing/billing.service.ts` monolith behind its existing public façade. It does **not** refactor Background billing reconciliation, CheckoutRecovery, Admin pricing-plan authoring, Commerce Studio, Gateway, Shared, Database or System Test.
 
-ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-009` are architect-accepted Complete, and the sequential execution frontier is `ARCH-025-SHOPIFY-010`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
+ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-010` are architect-accepted Complete, and the sequential execution frontier is `ARCH-025-SHOPIFY-011`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
 
 ## Problem
 
@@ -314,8 +314,8 @@ The parent workspace contains the architecture/task coordination files. Reposito
 | ARCH-025-SHOPIFY-007 | Extract hosted plan-change verification workflow | Complete | SHOPIFY-006 |
 | ARCH-025-SHOPIFY-008 | Extract recovery-credit purchase request workflow | Complete | SHOPIFY-007 |
 | ARCH-025-SHOPIFY-009 | Extract subscription-ended notification workflow | Complete | SHOPIFY-008 |
-| ARCH-025-SHOPIFY-010 | Extract initial Paid activation finalisation | Ready | SHOPIFY-009 |
-| ARCH-025-SHOPIFY-011 | Extract remaining subscription synchronization coordinator | Pending | SHOPIFY-010 |
+| ARCH-025-SHOPIFY-010 | Extract initial Paid activation finalisation | Complete | SHOPIFY-009 |
+| ARCH-025-SHOPIFY-011 | Extract remaining subscription synchronization coordinator | Ready | SHOPIFY-010 |
 
 Execution graph:
 
@@ -376,3 +376,4 @@ None.
 - 2026-10-02: SHOPIFY-007 Attempt 1 accepted the move-only `HostedPlanChangeService` extraction at implementation commit `a72bd153f3cafd0e8301d64172421cfe066b801b`. Complete durable-fence comparison, shared lock order, pending/current/mismatch/no-active outcomes and `PARTNER_API_ERROR` retry semantics are unchanged; the callback route and SHOPIFY-006 shared lock/retry modules remain untouched, all observed failures remain within `ARCH025-TEST-001`, and SHOPIFY-008 advances to Ready.
 - 2026-10-02: SHOPIFY-008 Attempt 1 accepted the move-only `RecoveryCreditPurchaseRequestService` extraction at implementation commit `96f7db9e437b9732ba0f2b4186fa9306e72dec97`. The exact two provider lifecycle snapshots, two catalogue reads, provider-before-transaction boundary, Serializable Subscription locking/revalidation, idempotency/single-flight behavior and ignored extra runtime pricing payload semantics are unchanged; all observed failures remain within `ARCH025-TEST-001`, and SHOPIFY-009 advances to Ready.
 - 2026-10-02: SHOPIFY-009 Attempt 2 accepted the report-only reconciliation for the move-only `SubscriptionEndedNotificationService` extraction at reviewed implementation task commit `209a36138dd438815c3ee360298a97db6d2d6f85`. Lifecycle/source-key identity, support persistence, translation dispatch timing and missing-identity propagation remain unchanged; Attempt 2 introduced no source/test delta, the implementation main merge contains the reviewed task commit without additional file changes, and SHOPIFY-010 advances to Ready.
+- 2026-10-02: SHOPIFY-010 Attempt 1 accepted the initial Paid activation finalisation extraction at final implementation commit `b3f0733388f5b2d83d259a61a4319eb15448af45` (production extraction introduced by `9c039a87f98ff3b8c0f51bb9fd9b4552855fda44`; final commit adds focused failure-identity coverage only). The caller-owned `syncSubscription()` transaction, stale-token fence, `ShopSettings -> Subscription -> Shop` lock order, branch-specific error precedence, exact BillingPeriod/counter/lifetime predicates and atomic success projection are preserved; no provider call or nested transaction was introduced, all observed failures remain within `ARCH025-TEST-001`, and SHOPIFY-011 advances to Ready.
