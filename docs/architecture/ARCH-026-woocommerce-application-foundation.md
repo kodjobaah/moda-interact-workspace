@@ -393,10 +393,12 @@ to migrate before using the shared field as its cross-platform tenant presentati
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
-It remains Pending until the `moda-interact-api` repository is provisioned and registered
-as a workspace submodule. API-002 remains Pending until API-001 and DATABASE-001 are both
-architect-accepted Complete; it must then pin the API repository's nested `database/`
-gitlink to the accepted DATABASE-001 main commit before implementing the connection flow.
+The `moda-interact-api` repository/submodule provisioning gate is satisfied. Attempt 1
+implementation is architecture-conformant but API-001 is Ready for a bounded
+launcher/worktree/VCS evidence correction before acceptance. API-002 remains Pending until
+API-001 and DATABASE-001 are both architect-accepted Complete; it must then pin the API
+repository's nested `database/` gitlink to the accepted DATABASE-001 main commit before
+implementing the connection flow.
 
 ## Decisions / Tasks
 
@@ -406,7 +408,7 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 | ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Complete | ARCH-026-WOOCOMMERCE-001 |
 | ARCH-026-DATABASE-001 | moda_database | Ready | - |
 | ARCH-026-DATABASE-002 | moda_database | Pending | ARCH-026-DATABASE-001 |
-| ARCH-026-API-001 | moda_api | Pending | - |
+| ARCH-026-API-001 | moda_api | Ready | - |
 | ARCH-026-API-002 | moda_api | Pending | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-API-003 | moda_api | Pending | ARCH-026-API-002, ARCH-026-DATABASE-002 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
@@ -420,7 +422,7 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003's WOO-002 dependency is now satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 has no task dependency; its repository-provisioning gate is satisfied and Attempt 1 is in bounded evidence-only rework before acceptance. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003's WOO-002 dependency is now satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -448,6 +450,7 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
 - 2026-10-02: API-001 materialised to establish `moda-interact-api` as the backend-only
   hosted synchronous API boundary with canonical database consumption and health/readiness
   behavior. Repository provisioning remains its only readiness gate.
+- 2026-10-02: API-001 Attempt 1 implementation found architecture-conformant; task returned to Ready for a bounded launcher/worktree/VCS evidence-only correction before acceptance.
 - 2026-10-02: API-002 materialised to establish SSRF-safe Woo site-control proof,
   first-connect/reconnect credential issuance, and a reusable authenticated installation
   principal over the DATABASE-001 identity model.

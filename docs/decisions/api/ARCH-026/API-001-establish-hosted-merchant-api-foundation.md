@@ -9,10 +9,10 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 12
-executor: copilot
-claimed_at: 2026-10-02T15:42:32Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -567,24 +567,45 @@ The required Shared logger package brings BullMQ transitively into the install t
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 implementation is architecture-conformant. The server-only Node/TypeScript runtime, canonical nested database/Prisma consumption, dependency-independent liveness, PostgreSQL-backed readiness, bounded unknown-route behavior, Shared structured logging, graceful shutdown and explicit exclusion of merchant/Woo/queue business behavior match the task contract.
+
+The remaining deficiency is durable execution evidence, not application code. The Completion Report says both task worktrees are clean and synchronized and records the implementation head, but it does not record the launcher-resolved physical-isolation/start-of-attempt synchronization packet required by the architect protocol. It also leaves repository provisioning as an assumption rather than recording that the API repository/submodule/launcher readiness gate was actually satisfied before execution, and it does not durably identify the final parent report publication heads supplied with the review submission. Chat-only evidence is insufficient for cross-environment handoff.
+
+The disclosed `npm audit` findings in the Prisma CLI dependency chain and BullMQ's transitive presence through the required Shared package do not block this task. No queue behavior is imported or implemented, and Prisma remains aligned to the canonical database version.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-api/package.json`
+- `moda-interact-api/package-lock.json`
+- `moda-interact-api/.gitmodules`
+- `moda-interact-api/src/index.ts`
+- `moda-interact-api/src/runtime-config.ts`
+- `moda-interact-api/src/database.ts`
+- `moda-interact-api/src/server.ts`
+- `moda-interact-api/src/runtime-config.test.ts`
+- `moda-interact-api/src/server.test.ts`
+- `moda-interact-api/README.md`
+- this task's Completion Report
+- parent `ARCH-026` architecture and API task index
 
 ### Validation Reviewed
 
-None.
+Reviewed the recorded clean `npm ci`, Prisma generation, typecheck, lint, 8-test suite, production build, disposable-PostgreSQL liveness/readiness 200/503 proofs, unknown-route 404 proof, secret/log negative checks, SIGTERM shutdown smoke, static scope audit and `git diff --check`. The submitted review archive contains no dependency install or Git metadata suitable for an independent Node-24/Git rerun, so this review does not replace the recorded task-worktree validation.
 
 ### Architecture Conformance
 
-Pending.
+The implementation conforms to the ARCH-026 API-001 runtime, repository-ownership, database, security and scope boundaries. Acceptance is withheld only until the required launcher/worktree/VCS evidence is made durable in the Completion Report. No implementation source change is requested.
 
 ### Follow-up
 
-Pending.
+Attempt 2 is an evidence-only correction contract:
+
+- **A1-R1 — Record the prepared launcher/worktree packet.** In the Completion Report, record the launcher-resolved canonical workspace root, dedicated parent task worktree and branch, dedicated `moda-interact-api` implementation task worktree and branch, and the explicit evidence that execution did not occur from a shared/default checkout or another task's worktree. Record start-of-attempt synchronization for both repositories, including task-branch remote alignment and the required `origin/main` incorporation state.
+- **A1-R2 — Record repository-provisioning and recursive-submodule evidence as facts.** Replace the stale provisioning assumption with the verified readiness-gate result: canonical `moda-interact-api` workspace submodule/repository, `API` launcher route/logical owner, recursively materialised nested submodules, and the `database/` gitlink SHA used by the attempt. Do not change database schema or dependency versions.
+- **A1-R3 — Record final durable Git publication state.** Record implementation commit `6635491` as pushed to `origin/task/ARCH-026-API-001`; record the parent report publication sequence supplied with the review (`72a5959c`, then final report head `4d108c8c`) and prove the final parent and implementation task worktrees are clean and remote-aligned. Rerun `git diff --check` as the bounded final evidence check.
+
+No API source/test/dependency changes are required. Do not rerun the implementation validation suites merely for this correction unless source, dependency, database gitlink or runtime configuration changes. Reclaim the same task through the normal launcher; preserve Attempt 1 history and let the next authorized claim increment to Attempt 2. API-002 remains Pending until API-001 and DATABASE-001 are both architect-accepted Complete.
