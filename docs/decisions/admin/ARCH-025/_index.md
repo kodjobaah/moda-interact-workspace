@@ -64,8 +64,8 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [ADMIN-001](ADMIN-001-extract-pricing-plan-draft-controller.md) | Typed draft/controller + extraction-safe security loader | Ready | - |
-| [ADMIN-002](ADMIN-002-extract-plan-step.md) | Plan/model/features/knowledge step | Pending | ADMIN-001 |
+| [ADMIN-001](ADMIN-001-extract-pricing-plan-draft-controller.md) | Typed draft/controller + extraction-safe security loader | Complete (Accepted, Attempt 2) | - |
+| [ADMIN-002](ADMIN-002-extract-plan-step.md) | Plan/model/features/knowledge step | Ready | ADMIN-001 |
 | [ADMIN-003](ADMIN-003-extract-catalogue-placement-step.md) | Catalogue placement step | Pending | ADMIN-002 |
 | [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Pending | ADMIN-003 |
 | [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Pending | ADMIN-004 |
@@ -82,7 +82,34 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-009` are independently Ready, and both are independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`. ADMIN-002..008 and ADMIN-010..015 remain Pending until the immediately preceding task in their own Admin chain is architect-accepted Complete.
+`ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2 and `ARCH-025-ADMIN-002` is now Ready. `ARCH-025-ADMIN-009` remains an independent Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+## ADMIN-001 Attempt 2 architect acceptance — 2026-10-02
+
+**Accepted / Complete, Attempt 2.** The evidence-only retry leaves implementation
+`0cd5c010926acfbfaf808fb5d727df9269b30fdb` unchanged. Same-environment comparison
+against pre-task `b8da632a1fcaef7e364be1dc5cca40dfafde4703` shows identical two
+unit-test failures and identical nine package-suite failure identities/reasons, while
+the submitted tree adds fourteen focused controller passes and three package-suite
+passes. Prepared launcher/worktree/synchronization/submodule evidence is durably
+recorded.
+
+`ARCH025-ADMIN-BUILDER-TEST-001` now records those exact inherited failures for
+ADMIN-002..008. ADMIN-002 is promoted Ready; later builder tasks remain gated.
+
+## ADMIN-001 Attempt 1 architect review — 2026-10-02
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The submitted typed
+draft/controller and extraction-safe security loader are accepted in substance; no
+source/test correction is requested. Attempt 2 is evidence-only unless a differential
+reveals a regression.
+
+Before acceptance, compare `npm run test:unit` and `npm test` under the same
+environment on pre-task Admin `b8da632a1fcaef7e364be1dc5cca40dfafde4703`
+versus submitted `0cd5c010926acfbfaf808fb5d727df9269b30fdb`, recording exact
+failure identities/reasons, and add the prepared launcher/worktree/synchronization/
+submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
+independently Ready.
+
 ## Deep coherence review — 2026-10-02
 
 A source/task closure review against the 1,553-line post-ARCH-024 builder kept the ADMIN-001..008 graph unchanged and tightened the execution contract before ADMIN-001 starts. ADMIN-001 must establish the complete consume-only controller/action/selector interface for every later step, keep its pure reducer directly Node-testable, preserve hook-edge event/highlight identity generation and effect-driven economics-override invalidation, make the security harness scan the full bounded builder module set (including the ARCH-014 forbidden-dependency check), and preserve the exact hidden translation JSON fallback. ADMIN-002..008 may consume but not extend that accepted controller; a missing interface returns to `moda_architect`. Usage-event stale-field/tier quirks, the current empty secondary economics rows, and the workbook/final-step mount/conditional DOM semantics are explicitly preserved as move-only behaviour.
