@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 20
 executor: copilot
 claimed_at: 2026-10-02T19:02:35Z
@@ -129,12 +129,12 @@ The queue owner accepts an already-decided durable next schedule. It MUST NOT ce
 
 ## Work Items
 
-- [ ] Add the queue/reconstruction collaborator.
-- [ ] Move `enqueue`, `publishNext`, `publishCommittedLifecycleSchedule` and `reconstruct` behind it with exact current semantics.
-- [ ] Keep public `enqueue`/`reconstruct` façade delegates and `createSubscriptionReconcilePayload` compatibility export.
-- [ ] Route coordinator/later-handler publication through the collaborator without changing queue call count/options.
-- [ ] Add focused queue/reconstruction tests for deterministic IDs, overdue/future delay, public no-queue no-op, no-queue reconstruction count semantics, reconstruction predicate coverage and enqueue-failure isolation.
-- [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
+- [x] Add the queue/reconstruction collaborator.
+- [x] Move `enqueue`, `publishNext`, `publishCommittedLifecycleSchedule` and `reconstruct` behind it with exact current semantics.
+- [x] Keep public `enqueue`/`reconstruct` façade delegates and `createSubscriptionReconcilePayload` compatibility export.
+- [x] Route coordinator/later-handler publication through the collaborator without changing queue call count/options.
+- [x] Add focused queue/reconstruction tests for deterministic IDs, overdue/future delay, public no-queue no-op, no-queue reconstruction count semantics, reconstruction predicate coverage and enqueue-failure isolation.
+- [x] Prove the frozen 98-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -159,15 +159,15 @@ Internal queue collaborator using the façade-supplied database/queue/logger/clo
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
-- [ ] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 98 frozen regression tests
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts` passes
-- [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
+- [x] `npm run prisma:generate`
+- [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
+- [x] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 98 frozen regression tests
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts` passes
+- [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
 - [ ] `npm test` passes with no regression
-- [ ] `npm run build` succeeds
-- [ ] `git diff --check` passes
+- [x] `npm run build` succeeds
+- [x] `git diff --check` passes
 
 ## Stop Condition
 
@@ -181,35 +181,53 @@ None
 
 ### Status
 
-Not Started
+Blocked before review. Queue extraction and focused validation are complete, but `npm test` exits nonzero with the same pre-existing full-suite failure set recorded under `ARCH025-BACKGROUND-TEST-001`; the latest run reported no additional task-specific failures. That condition is not documented in `docs/development-baseline.md`. The task explicitly requires stopping and reporting an observed pre-existing condition unless it is durably recorded there, so no full-suite pass is claimed and architect direction is required before this task can proceed to review.
 
 ### Files Changed
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/reconciliation-queue.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts`
+- This task report only; no unrelated parent-workspace files changed.
 
 ### Work Completed
 
-None
+- Extracted queue publication and startup reconstruction into `ReconciliationQueueService`, wired with the façade's database, queue, logger, and clock instances.
+- Kept public `enqueue()` and `reconstruct()` as façade delegates and compatibility-re-exported `createSubscriptionReconcilePayload()`.
+- Preserved the reconstruction Prisma predicate, delay calculation, no-queue behavior/count semantics, enqueue failure isolation, logging, deterministic job identity, and BullMQ options.
+- Added focused queue/reconstruction tests covering the requested behaviors.
+- The implementation task worktree was created at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-BACKGROUND-002` on `task/ARCH-025-BACKGROUND-002`; parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-BACKGROUND-002` on the same branch. The canonical workspace checkout and shared implementation checkout were not switched or mutated, and no other task worktree was reused.
+- Start synchronization: parent remote task branch fast-forwarded `not-needed`, parent `origin/main` incorporated `already-current`; implementation remote task branch fast-forwarded `not-needed`, implementation `origin/main` incorporated `already-current`.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` is initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Durable launcher claim: Attempt 1, executor `copilot`, claim commit `504001040d2f5a2580e4b262a10ac7fc64795d49`.
+- Implementation commit `8bfb6dc` (`refactor(background): extract reconciliation queue`) was pushed to `origin/task/ARCH-025-BACKGROUND-002`; it contains only the three authorized implementation/test files. No main merge or main push was performed.
 
 ### Validation Results
 
-None
+- `npm run prisma:generate`: passed.
+- Frozen regression file SHA-256: `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; `git diff` for that file is empty.
+- `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 146 tests (the task text's stated count is 98).
+- `npm test -- tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts`: passed, 6 tests.
+- `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 10 tests.
+- `npm run build`: passed; includes Prisma generation and TypeScript compilation.
+- `git diff --check`: passed.
+- `npm test`: failed (exit code 1); the latest run retained the previously reported full-suite failures under `ARCH025-BACKGROUND-TEST-001`, with no new task-specific failure reported. The same condition is not present in `docs/development-baseline.md`; per task instructions, the gate remains unmet and the issue is escalated rather than reclassified as an accepted baseline.
 
 ### Deviations
 
-None
+- Task status is `blocked`, not `review`, because the mandatory full-suite gate did not pass and the observed pre-existing failure condition has not been recorded in the development baseline.
 
 ### Assumptions
 
-None
+- The queue/reconstruction implementation is complete within the authorized three-file surface; no lifecycle retry policy or queue contract changes were introduced.
 
 ### Unresolved Issues
 
-None
+- `npm test` remains nonzero for the pre-existing failure set; `moda_architect` must determine the authorized next step under the task's stop condition.
 
 ### Architectural Concerns
 
-None
+- None identified in the queue extraction. No development-baseline entry was created or changed by this task.
 
 ## Architect Review
 
