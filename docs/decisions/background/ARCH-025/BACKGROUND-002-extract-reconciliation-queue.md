@@ -9,11 +9,11 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-025-BACKGROUND-001
 enables:
@@ -129,12 +129,12 @@ The queue owner accepts an already-decided durable next schedule. It MUST NOT ce
 
 ## Work Items
 
-- [ ] Add the queue/reconstruction collaborator.
-- [ ] Move `enqueue`, `publishNext`, `publishCommittedLifecycleSchedule` and `reconstruct` behind it with exact current semantics.
-- [ ] Keep public `enqueue`/`reconstruct` façade delegates and `createSubscriptionReconcilePayload` compatibility export.
-- [ ] Route coordinator/later-handler publication through the collaborator without changing queue call count/options.
-- [ ] Add focused queue/reconstruction tests for deterministic IDs, overdue/future delay, public no-queue no-op, no-queue reconstruction count semantics, reconstruction predicate coverage and enqueue-failure isolation.
-- [ ] Prove the frozen 146-test regression file remains byte-identical and passes.
+- [x] Add the queue/reconstruction collaborator.
+- [x] Move `enqueue`, `publishNext`, `publishCommittedLifecycleSchedule` and `reconstruct` behind it with exact current semantics.
+- [x] Keep public `enqueue`/`reconstruct` façade delegates and `createSubscriptionReconcilePayload` compatibility export.
+- [x] Route coordinator/later-handler publication through the collaborator without changing queue call count/options.
+- [x] Add focused queue/reconstruction tests for deterministic IDs, overdue/future delay, public no-queue no-op, no-queue reconstruction count semantics, reconstruction predicate coverage and enqueue-failure isolation.
+- [x] Prove the frozen 146-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -150,24 +150,24 @@ Internal queue collaborator using the façade-supplied database/queue/logger/clo
 
 ## Acceptance Criteria
 
-- [ ] Queue publication/reconstruction no longer lives in the coordinator implementation.
-- [ ] Existing job payload/schema, job identity and BullMQ options are unchanged.
-- [ ] Reconstruction selects the same durable rows, preserves the current count semantics including the no-queue case, and performs no provider calls.
-- [ ] Existing public helper/method imports continue to work without caller edits.
-- [ ] Lifecycle retry choice remains outside the queue service.
-- [ ] Frozen regression suite remains byte-identical and all 146 tests pass.
+- [x] Queue publication/reconstruction no longer lives in the coordinator implementation.
+- [x] Existing job payload/schema, job identity and BullMQ options are unchanged.
+- [x] Reconstruction selects the same durable rows, preserves the current count semantics including the no-queue case, and performs no provider calls.
+- [x] Existing public helper/method imports continue to work without caller edits.
+- [x] Lifecycle retry choice remains outside the queue service.
+- [x] Frozen regression suite remains byte-identical and all 146 tests pass.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
-- [ ] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts` passes
-- [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
+- [x] `npm run prisma:generate`
+- [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
+- [x] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts` passes
+- [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
 - [ ] `npm test` passes with no regression
-- [ ] `npm run build` succeeds
-- [ ] `git diff --check` passes
+- [x] `npm run build` succeeds
+- [x] `git diff --check` passes
 
 ## Stop Condition
 
@@ -181,58 +181,113 @@ None
 
 ### Status
 
-Not Started
+Attempt 1 implementation and validation evidence remain recorded below. Attempt 2 revalidated the bounded extraction and acceptance criteria. The documented full-suite baseline remains, and the additional timeout cases from the full run passed when isolated. Status: Ready for Review.
 
 ### Files Changed
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/reconciliation-queue.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts`
+- This task report only; no unrelated parent-workspace files changed.
 
 ### Work Completed
 
-None
+- Extracted queue publication and startup reconstruction into `ReconciliationQueueService`, wired with the façade's database, queue, logger, and clock instances.
+- Kept public `enqueue()` and `reconstruct()` as façade delegates and compatibility-re-exported `createSubscriptionReconcilePayload()`.
+- Preserved the reconstruction Prisma predicate, delay calculation, no-queue behavior/count semantics, enqueue failure isolation, logging, deterministic job identity, and BullMQ options.
+- Added focused queue/reconstruction tests covering the requested behaviors.
+- The implementation task worktree was created at `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-BACKGROUND-002` on `task/ARCH-025-BACKGROUND-002`; parent task worktree is `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-BACKGROUND-002` on the same branch. The canonical workspace checkout and shared implementation checkout were not switched or mutated, and no other task worktree was reused.
+- Start synchronization: parent remote task branch fast-forwarded `not-needed`, parent `origin/main` incorporated `already-current`; implementation remote task branch fast-forwarded `not-needed`, implementation `origin/main` incorporated `already-current`.
+- Recursive implementation submodules: `git submodule sync --recursive` passed; `git submodule update --init --recursive` passed; `database` is initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Durable launcher claim: Attempt 1, executor `copilot`, claim commit `504001040d2f5a2580e4b262a10ac7fc64795d49`.
+- Implementation commit `8bfb6dc` (`refactor(background): extract reconciliation queue`) was pushed to `origin/task/ARCH-025-BACKGROUND-002`; it contains only the three authorized implementation/test files. No main merge or main push was performed.
 
-### Validation Results
+### Attempt 1 Validation Results
 
-None
+- `npm run prisma:generate`: passed.
+- Frozen regression file SHA-256: `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; `git diff` for that file is empty.
+- `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 146 tests (the task text's stated count is 98).
+- `npm test -- tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts`: passed, 6 tests.
+- `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 10 tests.
+- `npm run build`: passed; includes Prisma generation and TypeScript compilation.
+- `git diff --check`: passed.
+- `npm test`: failed (exit code 1); the reported failures match the pre-task failure set documented under `ARCH025-BACKGROUND-TEST-001` in `docs/development-baseline.md`. No task-only failure has been reported, so the documented baseline permits continuation; no full-suite pass is claimed.
 
 ### Deviations
 
-None
+- The task was blocked based on a stale baseline reference. `ARCH025-BACKGROUND-TEST-001` documents the matching pre-task failures and permits continuation when there is no task-only regression.
 
 ### Assumptions
 
-None
+- The queue/reconstruction implementation is complete within the authorized three-file surface; no lifecycle retry policy or queue contract changes were introduced.
 
 ### Unresolved Issues
 
-None
+- `npm test` remains nonzero for the documented pre-task failure set. Continue only while the failures match `ARCH025-BACKGROUND-TEST-001` and no task-only regression is present.
 
 ### Architectural Concerns
 
-None
+- None identified in the queue extraction.
+
+### Attempt 2 Execution (2026-10-02)
+
+- The latest Architect Review remains `Pending` with no requested corrections; no Architect Review content was edited.
+- No implementation-source edits were needed. The Attempt 1 extraction remains on the authorized implementation branch at `8bfb6dcaf57ee852407e8650d8449b0818ce75e5`.
+- `npm test -- tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts`: passed, 6 tests.
+- `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 146 tests.
+- Frozen test SHA-256: `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; its diff is empty.
+- `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 10 tests.
+- `npm run build`: passed, including Prisma generation and TypeScript compilation.
+- `npm test`: exit 1; 13 tests failed, 1,415 passed and 38 skipped, with 95 test files passing and 15 skipped. Eight failed test identities and the ARCH-020 fixture-loading failure match `ARCH025-BACKGROUND-TEST-001`. Five additional full-suite timeout failures (GenAI metrics and four observability-startup cases) passed on isolated reruns: 1/1 and 10/10 respectively. No failure occurred in the changed extraction tests.
+- `git diff --check`: passed in the implementation worktree.
+- Physical worktree isolation: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-BACKGROUND-002` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-BACKGROUND-002` are both on `task/ARCH-025-BACKGROUND-002`. Neither shared checkout was switched or mutated; no other task worktree was reused.
+- Start-of-attempt synchronization: parent and implementation remote task-branch fast-forwards were both `not-needed`; `origin/main` was already current in both worktrees. Recursive implementation submodule sync and update/init passed; `database` is initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Durable Attempt 2 parent claim: commit `cb2fbf54388b28050d6f6fa51843eb2066df63c7`, pushed. The implementation commit above is present on `origin/task/ARCH-025-BACKGROUND-002`; no new implementation commit was needed because the implementation tree was clean.
+- No architectural concerns or unresolved implementation issues were found. The full-suite baseline caveat remains documented above; no full-suite pass is claimed.
+
+## Developer Dependency-Frontier Reconciliation (2026-10-02)
+
+`ARCH-025-BACKGROUND-001` was reopened from `complete` to `ready` at its existing Attempt 2 after a developer request to reconcile the prerequisite lifecycle discrepancy. Because this task is unclaimed (`executor: null`, `claimed_at: null`) and explicitly depends on BACKGROUND-001, its state regresses from `ready` to `pending`. Attempt 1 implementation, validation and review history are preserved; the task must pass the normal dependency gate before another claim.
+
+The prerequisite was subsequently audited, accepted, and restored to Complete at Attempt 3. The architect-authorized dependency-frontier reconciliation therefore restores this task from Pending to Ready, preserving Attempt 1 and null claim fields. The normal launcher must perform any subsequent claim.
+
+## Dependency-Frontier Reconciliation (2026-10-02, Attempt 3)
+
+BACKGROUND-001 has since been re-audited and accepted Complete at Attempt 3. BACKGROUND-002 is Ready, unclaimed, and at Attempt 1. The preserved Attempt 1 implementation and validation report above is historical evidence; it does not constitute a new claim. Normal `/moda-task` preparation is required to begin Attempt 2.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
 
-None
+The queue/reconstruction extraction is accepted. `ReconciliationQueueService` owns the moved `enqueue`, `reconstruct`, `publishNext`, `publishCommittedLifecycleSchedule` and payload helper implementations while `BillingSubscriptionReconciliationService` retains its public compatibility delegates/exports. Source comparison against the pre-task implementation confirms the reconstruction Prisma predicate, per-row clock reads, structured log events, no-queue semantics/counting, deterministic job identity, BullMQ options, durable schedule reread and queue-failure isolation are preserved.
+
+The full-suite command remained nonzero and is therefore not recorded as a pass. Eight failing test identities plus the ARCH-020 fixture-loading failure are covered by `ARCH025-BACKGROUND-TEST-001`. Five additional full-suite timeout failures occurred only in unrelated GenAI-metrics / observability-startup process-spawn tests and all passed on isolated reruns (1/1 and 10/10 respectively). They are treated as investigated transient execution-time failures, are not added to the durable baseline, and do not constitute a BACKGROUND-002 regression.
 
 ### Reviewed Files
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/reconciliation-queue.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-002-extract-reconciliation-queue.md`
 
 ### Validation Reviewed
 
-None
+- implementation task ref `8bfb6dcaf57ee852407e8650d8449b0818ce75e5` is unchanged from the reviewed extraction and contains only the three authorised files;
+- parent report tip `a4b258a80743d047e78a228ddcaae78625693b5e` is pushed;
+- focused queue/reconstruction suite: 6/6 passed;
+- frozen reconciliation suite: 146/146 passed and SHA-256 `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239` remained exact;
+- entrypoint isolation: 10/10 passed;
+- Prisma generation/build and `git diff --check`: passed;
+- full suite: 13 failed / 1,415 passed / 38 skipped; eight failures plus the fixture-loading error match `ARCH025-BACKGROUND-TEST-001`, and the five additional timeout failures passed on isolated rerun. No changed-extraction test failed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The task is a move-only extraction with no queue contract, retry-policy, provider-call, worker-entrypoint or lifecycle-state semantic change.
 
 ### Follow-up
 
-None
+`ARCH-025-BACKGROUND-003` may proceed. Do not add the transient GenAI/observability timeouts to `ARCH025-BACKGROUND-TEST-001`; investigate again only if they recur or worsen in later full-suite runs.
