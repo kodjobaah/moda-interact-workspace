@@ -445,6 +445,8 @@ The pure draft/controller owns local UI transitions only. It may call existing c
 
 ADMIN-001 also changes the existing source-based security test harness so builder assertions read the bounded builder shell + `merchant-pricing-plan-builder/**` module set. Assertion names/patterns remain semantically equivalent; this is test-location adaptation, not a behavioural expectation change. After ADMIN-001 that security test becomes immutable for ADMIN-002..008.
 
+A deep pre-execution coherence review further establishes ADMIN-001 as the complete controller-contract task: all state mutations and derived selectors required by ADMIN-002..008 must exist before ADMIN-001 is accepted, with later tasks consume-only. The pure draft module remains directly testable by the repository plain-Node TypeScript runner; event/highlight identity generation and economics-override clearing stay at their current hook/UI impurity boundaries. The extraction-safe security module set also participates in the existing ARCH-014 forbidden operational-dependency scan, so moving JSX cannot create a blind spot.
+
 The Admin chain is independent of the Shopify and Background chains. Within ADMIN-001..008, tasks are sequential because each extraction relies on the accepted typed draft/controller and previously established child-module contracts.
 
 ## Regression Baseline
@@ -854,6 +856,8 @@ The Admin tranche must preserve the seven frozen pure-policy test files listed a
 None.
 
 ## Change History
+
+- 2026-10-02: Deep ADMIN-001..008 source/task coherence review kept the eight-task graph unchanged, made ADMIN-001 the complete consume-only controller contract for all later steps, preserved pure-Node testability and UI-edge identity/effect semantics, closed the extracted-module security-scan blind spot, and characterized exact translation fallback, usage-event stale-field/tier behaviour, secondary economics rows and translation-workbook/final-step mount semantics.
 
 - 2026-10-02: Added the independent Admin `MerchantPricingPlanBuilder` maintainability chain ADMIN-001..008 against the post-ARCH-024 model-assignment baseline. Preserved the seven-step form/action contract, exact navigation/economics/translation/product-policy semantics, established a typed draft/controller boundary before JSX extraction, froze seven pure-policy test assets, and made the existing source-based security assertions extraction-safe without weakening them.
 - 2026-10-02: Added the independent CheckoutRecoveryService maintainability chain BACKGROUND-008..015 against the integrated post-ARCH-024 Background baseline. Preserved the worker-facing façade, canonical Shop `shopId` agent context, checkout-scoped race guards, recovery generation/idempotency, billing/provider boundaries and existing adjacent recovery owners; froze four post-ARCH-024 regression assets and kept the chain independent from BACKGROUND-001..007.

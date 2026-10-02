@@ -70,7 +70,7 @@ Moving substantial step JSX; server action changes; domain-helper rewrites; chil
 - Preserve economics override invalidation exactly: changing handle, credits, currency, recurring amount, effective placement, `minimumUpgradePremiumBps` or serialized usage events clears enabled override state. Commerce model, Merchant Knowledge fields, merchant description/highlights, admin reason and translation state do not currently participate in that invalidation key.
 - Preserve Merchant Knowledge product policy: it remains included in submitted `supportedFeatureKeys` regardless of generic feature toggles; its configuration is separately validated with the Shared schema and only active purpose/data-format source options are offered.
 - Preserve Commerce-model repair behaviour: `Use Platform default` maps to `null`; a saved currently-unavailable model remains present as `Current model unavailable — <id>` with the existing alert until the admin deliberately repairs it.
-- Preserve translation semantics: retained translations depend on the current English description/highlights rules; `validTranslationJson()` continues preferring a valid workbook result, then retained template, then current/fresh template fallback. `MerchantPricingTranslationWorkbook` remains mounted across normal step navigation (hidden outside step 6), so uploaded workbook/file/error state is not discarded by Back/Next navigation.
+- Preserve translation semantics exactly: retained translations depend on the current English description/highlights rules; `validTranslationJson()` returns the raw `translationJson` when `translationResult?.valid`, otherwise an edit `retainedTemplate` when present, otherwise the existing non-empty raw `translationJson` unchanged, and only when that raw value is empty builds the fresh current template. `canSubmit` independently still requires retained translations or a valid translation result. `MerchantPricingTranslationWorkbook` remains mounted across normal step navigation (hidden outside step 6), so uploaded workbook/file/error state is not discarded by Back/Next navigation.
 - The typed reducer/controller manages local UI transitions only. Do not move or duplicate canonical payload validation, economics policy, translation validation or feature policy from existing modules under `src/lib/admin/merchant/`.
 - Do not add a Redux/global store, form framework, generic UI plugin system or new React test framework solely for this extraction.
 - Keep tests honest: no skipped tests, weakened assertions or changed expected behaviour merely because JSX/state moved. `npm run test:unit`, `npm test` and production build must introduce no task regression.
@@ -84,13 +84,23 @@ Moving substantial step JSX; server action changes; domain-helper rewrites; chil
   - `tests/unit/merchant-pricing-translation-workbook.test.ts` — SHA-256 `385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8`
 
 
-### R1 — typed draft/controller
+### R1 — typed draft/controller and complete downstream contract
 
-Create one typed draft initialized from the current props/plan and one pure reducer/action surface for local transitions. A thin hook may wrap it for React. Keep non-draft external inputs (`cataloguePlans`, feature/source/model catalogues, minimum premium) explicit rather than copying entire server objects into mutable state.
+Create one typed draft initialized from the current props/plan and one pure reducer/action surface for local transitions. A thin hook wraps it for React. Keep non-draft external inputs (`cataloguePlans`, feature/source/model catalogues, minimum premium) explicit rather than copying entire server objects into mutable state.
 
-### R2 — preserve exact transition rules
+ADMIN-001 is the contract-establishing task for ADMIN-002..008. Before returning for review, the hook/controller MUST expose every current value, action and derived selector needed by all seven later steps so those tasks can be presentation-only consumers. This includes: step navigation; plan identity/status/model/kind/credits; supported-feature and Merchant Knowledge edits; placement; recovery handle/currency/recurring pricing; usage-event add/remove/move/update and tier add/remove/update; description/highlight add/remove/move/update; economics override enabled/reason; workbook `onChange`; admin reason; payload/hidden-field values; `canNavigateTo`; `canSubmit`; Commerce-model repair state; Merchant Knowledge configuration/validity; effective placement/placement label; merchant-content validity; economics derived/presented state; translation retention/template state; and final translation JSON serialization.
 
-Focused controller tests must cover at least: create default FREE/PAID choice when a FREE plan exists; create-only placement recomputation on plan-kind change; edit placement staying `UNCHANGED`; FREE payload nulling the recovery usage handle without erasing the draft value; exact forward-navigation gates; economics override invalidation field set and non-field set; Merchant Knowledge always included in submitted feature keys; unavailable current Commerce-model retention; final can-submit dependencies; valid translation JSON fallback ordering.
+The pure `merchant-pricing-plan-draft.ts` module MUST remain React-free, Next/browser-runtime-free and directly loadable by the repository's plain Node `--experimental-strip-types` unit-test command. Do not depend on the `@/` tsconfig path alias from that pure module because the plain Node test runner does not resolve it; use Node-resolvable package imports and relative `.ts` imports for repository-local pure helpers. React effects/refs belong in `use-merchant-pricing-plan-draft.ts`.
+
+### R2 — preserve exact transition rules and impurity boundaries
+
+Focused controller tests must cover at least: a new plan defaults to `FREE` when no FREE plan exists and to `PAID_METERED` when a FREE plan already exists; the FREE option is disabled for a non-FREE edit while remaining available for the existing FREE plan; create-only placement recomputation on plan-kind change; edit placement staying `UNCHANGED`; FREE payload nulling the recovery usage handle without erasing the draft value; exact forward-navigation gates; exact final can-submit dependencies (required fields, valid Merchant Knowledge configuration, bounded non-empty admin reason, satisfied economics and retained-or-valid translations); economics override invalidation field set and non-field set; Merchant Knowledge always included in submitted feature keys; unavailable current Commerce-model retention; and the exact translation JSON precedence documented above.
+
+Preserve the current Merchant Knowledge initialization quirk: an existing configuration is retained only when exactly one `merchant_knowledge` mapping exists, the Shared schema parses it, and every configured purpose/data-format pair is still present in the active source-type options; otherwise limits/source selections initialize blank/empty and require repair.
+
+The reducer itself must remain pure. Preserve identity generation outside it: new usage events use a per-component-mount monotonic counter starting at `0` and only allocate `new-usage-event-<n>` when an event can actually be added (the five-event cap does not consume a key); new highlight `contentKey` values are created with `crypto.randomUUID()` at the hook/UI action boundary and passed into the reducer.
+
+Preserve economics override invalidation as the current hook-level effect keyed by the exact `economicsConfigurationKey`; do not silently turn field-update reducer actions into synchronous override clearing. The key remains exactly handle.trim(), credits, uppercase-trimmed currency, recurring string, effective placement, `minimumUpgradePremiumBps` and `events.map(serializeBuilderEvent)`.
 
 ### R3 — canonical policy reuse
 
@@ -98,13 +108,15 @@ The controller may call existing pure helpers but must not reimplement `merchant
 
 ### R4 — extraction-safe security assertions
 
-In `admin-merchant-pricing-plan.test.mjs`, replace only the builder source-loading mechanism with a bounded helper that concatenates/reads `merchant-pricing-plan-builder.tsx` plus files under `src/components/admin/merchant/merchant-pricing-plan-builder/`. Preserve all 13 existing test names and their existing product/security assertions; do not broaden the search to unrelated Admin source. No builder assertion is deleted merely because later tasks will move JSX. After this task, later ADMIN-002..008 must not modify this security file.
+In `admin-merchant-pricing-plan.test.mjs`, replace only source-location plumbing needed for builder extraction with one deterministic bounded builder-module loader: the public `merchant-pricing-plan-builder.tsx` shell plus sorted `.ts`/`.tsx` files directly under `src/components/admin/merchant/merchant-pricing-plan-builder/`. Preserve all 13 existing test names and product/security assertion intent; do not broaden the search to unrelated Admin source.
+
+Use that bounded builder-module source not only for the tests that currently assign a `builder` string, but also for the existing ARCH-014 `nonActionModules` forbidden-operational-dependency scan. Otherwise later extracted step modules could introduce `BillingEconomicsSnapshot`, `BillingUpgradeEconomicsEdge`, `getBillingPlans`, `getBillingPlanById` or `mutateBillingPlanAction` without the existing security assertion seeing them. No assertion is deleted merely because later tasks move JSX. After ADMIN-001 is accepted, ADMIN-002..008 must not modify this security file.
 
 ## Work Items
 
-- [ ] Introduce typed draft/reducer/selectors and thin hook.
+- [ ] Introduce typed draft/reducer/selectors and thin hook with the complete ADMIN-002..008 consume-only action/selector contract.
 - [ ] Rewire the existing builder to the controller without substantial JSX extraction.
-- [ ] Add focused pure controller tests for all listed state transitions.
+- [ ] Add focused pure controller tests for all listed state transitions, identity-generation inputs, hidden-field serialization and complete downstream action/selector surface.
 - [ ] Make the existing security test loader extraction-safe without weakening assertions.
 - [ ] Prove all frozen pure-policy tests remain byte-identical.
 
@@ -122,6 +134,7 @@ None
 
 ## Acceptance Criteria
 
+- [ ] Draft/controller exposes the complete consume-only state/action/selector interface required by ADMIN-002..008; later step tasks need no controller extension.
 - [ ] Builder renders/submits through the same public component/form contract.
 - [ ] Draft/controller tests prove the exact current state-transition semantics.
 - [ ] No server/domain validation moved into the reducer/controller.
@@ -135,8 +148,7 @@ None
 - [ ] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
 - [ ] For ADMIN-001 only: `tests/security/admin-merchant-pricing-plan.test.mjs` may change solely as authorised by R4; run `node --test tests/security/admin-merchant-pricing-plan.test.mjs` and prove all 13 tests/assertions remain.
 - [ ] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
-- [ ] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes
-- [ ] `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes and still reports 13 tests
+- [ ] `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes and still reports 13 tests.
 - [ ] `npm run test:unit` passes without task-introduced regression.
 - [ ] `npm test` passes without task-introduced regression.
 - [ ] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
