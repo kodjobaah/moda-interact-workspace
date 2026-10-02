@@ -13,7 +13,7 @@ This directory contains two independent Background maintainability chains under 
 - BACKGROUND-001..007: billing-subscription reconciliation coordinator;
 - BACKGROUND-008..015: CheckoutRecoveryService lifecycle façade.
 
-Neither Background chain depends on the Shopify tranche or on the other Background chain. `ARCH-025-BACKGROUND-001` and `ARCH-025-BACKGROUND-008` may therefore both be Ready. Each chain is sequential internally because it progressively extracts from one high-churn compatibility façade/coordinator.
+Neither Background chain depends on the Shopify tranche or on the other Background chain. They may therefore advance independently. BACKGROUND-001 is now Complete, so the current independent Background frontiers are `ARCH-025-BACKGROUND-002` and `ARCH-025-BACKGROUND-008`. Each chain is sequential internally because it progressively extracts from one high-churn compatibility façade/coordinator.
 
 ```text
 BACKGROUND-001 -> BACKGROUND-002 -> BACKGROUND-003 -> BACKGROUND-004
@@ -52,8 +52,8 @@ Individual task YAML is authoritative.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [BACKGROUND-001](BACKGROUND-001-extract-reconciliation-classification.md) | Pure durable state/job classification | Ready | - |
-| [BACKGROUND-002](BACKGROUND-002-extract-reconciliation-queue.md) | Deterministic queue publication and reconstruction | Pending | BACKGROUND-001 |
+| [BACKGROUND-001](BACKGROUND-001-extract-reconciliation-classification.md) | Pure durable state/job classification | Complete | - |
+| [BACKGROUND-002](BACKGROUND-002-extract-reconciliation-queue.md) | Deterministic queue publication and reconstruction | Ready | BACKGROUND-001 |
 | [BACKGROUND-003](BACKGROUND-003-extract-initial-activation-reconciliation.md) | Initial Free/Paid activation and shared exact primitives | Pending | BACKGROUND-002 |
 | [BACKGROUND-004](BACKGROUND-004-extract-reinstall-reconciliation.md) | UNINSTALLED reinstall lifecycle | Pending | BACKGROUND-003 |
 | [BACKGROUND-005](BACKGROUND-005-extract-billing-cycle-reconciliation.md) | Cycle discovery, pre-close and same-plan rollover | Pending | BACKGROUND-004 |
@@ -70,4 +70,4 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-BACKGROUND-001` and `ARCH-025-BACKGROUND-008` are independently Ready. BACKGROUND-002..007 and BACKGROUND-009..015 remain Pending until the immediately preceding task in their own chain is architect-accepted Complete.
+`ARCH-025-BACKGROUND-002` and `ARCH-025-BACKGROUND-008` are independently Ready. BACKGROUND-003..007 and BACKGROUND-009..015 remain Pending until the immediately preceding task in their own chain is architect-accepted Complete. BACKGROUND-001 is architect-accepted Complete; full-suite no-regression evidence for this repository is governed by `ARCH025-BACKGROUND-TEST-001` in `docs/development-baseline.md`.
