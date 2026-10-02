@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-10-02T00:34:11Z
@@ -882,6 +882,31 @@ Do not begin ARCH-024-COMMERCE-007 or any adjacent OpenRouter/model-runtime work
 ### Status
 
 Ready for Review
+
+### Attempt 2 Rework — 2026-10-02
+
+**Architect Review A1-R1: implemented.** In `src/commerce/integration/preview/adapters.ts`, the selected-Shop executor now fails closed when no manifest capability matches the exact `toolId + toolRevisionId`, accepts one or more matching capabilities, and compares every matching descriptor with the requested descriptor before dispatch. The single deduplicated grant-entry check and all frozen-definition checks remain unchanged. `tests/selected-shop-preview-tool-execution.test.ts` adds coverage for two distinct capabilities sharing one Tool revision with one grant entry containing both keys, plus a conflicting duplicate descriptor that returns `INCOMPATIBLE_VERSION` without calling `backend.execution`.
+
+### Attempt 2 Validation Results
+
+- Focused duplicate-capability matrix: `npm test -- tests/selected-shop-preview-tool-execution.test.ts` passed; 1 file, 8 tests.
+- Complete focused C006 packet: Vitest passed 11 files and 102 tests, covering selected-Shop execution, Preview service/integration/routes/store/Redis, External HTTP/credentials, DefinitionExecutor, snapshot and Feature composition.
+- Targeted ESLint over all 16 C006-changed TypeScript/TSX files: passed with no output.
+- `npm run typecheck`: passed (`next typegen`, `tsc --noEmit`).
+- `npm run build`: passed; emitted the existing Nunjucks dynamic-dependency warning.
+- Changed-file diagnostics for both Attempt 2 files: no errors.
+- Static audits: the human conversation service contains no `preview.myshopify.com`, fixture query/executor, or fixture response data references; independent `/api/studio/preview/tool-tests` routes and fixture executor remain. No credential-bearing field was added to Preview types/service.
+- `git diff --check`: passed. No live Shopify or External network calls were made.
+
+### Attempt 2 Execution Evidence
+
+- Prepared claim: `in_progress`, attempt `2`, executor `copilot`, claimed `2026-10-02T00:34:11Z`; durable parent claim commit `976eba68e4aad52ca0fc8258aac8f1cb720de68b` was pushed.
+- Dedicated worktrees reused without rerunning launcher, claim or synchronization: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-006`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-006`. Both use `task/ARCH-024-COMMERCE-006`.
+- Prepared evidence: parent start head `e3e960dd986ef786e69a94df18f645b8125acff4`; implementation start head `0fa6a8ad088886d4b9573b6abcd507c59003ff5e`; parent already included `origin/main`, implementation was current, and task-branch remote fast-forwards were not needed. Dependency ARCH-024-COMMERCE-005 was complete; recursive Database submodule was `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Implementation commit `78257d26c0dbc08e261d10ee80221bef314667b2` is pushed; local and remote task heads match, and the implementation worktree is clean.
+- Parent task/report changes are limited to this task file. The report branch was pushed and local/remote equality plus clean status were verified after publication.
+
+No C007 work was started. The task is returned to review and is not marked complete.
 
 ### Files Changed
 
