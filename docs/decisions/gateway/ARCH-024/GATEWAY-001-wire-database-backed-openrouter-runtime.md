@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 60
 executor: null
 claimed_at: null
@@ -1059,24 +1059,66 @@ No unrelated task file, architecture/index file, implementation gitlink, or `mai
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-Definition only; implementation has not been reviewed.
+Accepted against implementation `6b574199dc76589e12dc6ca37e15f8ad658ce905`
+and submitted parent report `a2b8d583`. The implementation delta from the accepted
+ARCH-020-GATEWAY-003 baseline is confined exactly to the five task-owned files:
+`render.test.yaml`, `render.production.yaml`,
+`tests/validate-render-blueprints.sh`,
+`tests/validate-render-blueprints-negative.sh` and
+`docs/commerce-deployment.md`.
+
+Both environments define exactly one shared Commerce credential-keyring group and one
+writer-config group. Admin and Commerce receive both groups; the messaging worker
+receives only the decrypt keyring. The External Connection command-HMAC remains
+Commerce-only. Legacy Preview provider/model/API-key inputs are absent, the
+environment-specific `COMMERCE_PREVIEW_ENABLED` kill switch is preserved, and
+Groq/OpenAI transcription configuration remains on its prior messaging boundary.
 
 ### Reviewed Files
 
-Not applicable.
+- `render.test.yaml`
+- `render.production.yaml`
+- `tests/validate-render-blueprints.sh`
+- `tests/validate-render-blueprints-negative.sh`
+- `docs/commerce-deployment.md`
+- this task Completion Report
+- accepted ARCH-020-GATEWAY-003 deployment/keyring baseline
 
 ### Validation Reviewed
 
-Not applicable.
+- `bash tests/validate-render-blueprints.sh`: PASS for both Blueprints.
+- `bash tests/validate-render-blueprints-negative.sh`: PASS; all 92 mutations rejected,
+  including all required ARCH-024 credential/keyring/Preview cases.
+- `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh tests/run-tests.sh`: PASS.
+- Independent YAML inspection confirmed exact group cardinality, contents and service
+  attachment ownership in both environments.
+- Forbidden static model-variable and keyring-ownership scans match the submitted
+  report: only deny-list/negative-fixture references remain for removed model keys.
+- Repository-scope comparison against the accepted Gateway prerequisite baseline
+  confirms that only the five authorized files changed.
+- `bash tests/run-tests.sh` could not run in the submitted environment because Docker
+  was unavailable. This is non-blocking for this task: the task explicitly permits an
+  unavailable broader prerequisite to be recorded, no HAProxy/Docker/route file
+  changed, and the changed Blueprint/configuration boundary is directly covered by
+  the passing positive/negative validators. No Docker result is fabricated.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Conforms. The Blueprint now distributes one environment keyring to exactly the three
+authorized decrypting runtimes, exposes the active key selector only to Admin and
+Commerce writers, preserves Commerce-only command HMAC and independent transcription,
+and removes obsolete static Preview model credentials without changing public/private
+topology. Ordinary OpenRouter API-key replacement remains a database/Admin operation
+that requires no Render secret edit or application restart.
 
 ### Follow-up
 
-After acceptance, return control to `moda_architect`. Terminal integrated system-test task materialisation is deliberately deferred to a later architecture session; do not invent or launch one from this task.
+`ARCH-024-GATEWAY-001` is Complete / Accepted at Attempt 1. All materialised ARCH-024
+implementation tasks are now Complete. No terminal ARCH-024 system-test task is
+materialised in this session; the previously documented later integrated-validation
+decision remains unchanged. No live Render deployment, credential mutation or
+capacity claim is implied by this acceptance.
