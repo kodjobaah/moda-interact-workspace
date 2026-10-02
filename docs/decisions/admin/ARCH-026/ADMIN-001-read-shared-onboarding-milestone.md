@@ -17,7 +17,8 @@ attempt: 0
 depends_on:
   - ARCH-026-SHOPIFY-001
   - ARCH-026-BACKGROUND-001
-enables: []
+enables:
+  - ARCH-026-ADMIN-002
 created: 2026-10-02
 updated: 2026-10-02
 ---
@@ -146,7 +147,9 @@ Both must be architect-accepted Complete so the shared field is maintained by th
 
 ## Enables
 
-None.
+- `ARCH-026-ADMIN-002`
+
+ADMIN-002 serializes the later provider-neutral international-context read migration in the Admin repository.
 
 ## Acceptance Criteria
 

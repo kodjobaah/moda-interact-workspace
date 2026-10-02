@@ -9,7 +9,7 @@ Definitions are on local main for review by explicit developer request. Individu
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
 | [ARCH-020-SYSTEM-TEST-001](SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | pending | ARCH-020-COMMERCE-012, ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-014, ARCH-020-COMMERCE-015, ARCH-020-COMMERCE-016, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
-| [ARCH-020-SYSTEM-TEST-002](SYSTEM-TEST-002-validate-external-api-tools-end-to-end.md) | Validate external API tools end to end | pending | ARCH-020-COMMERCE-024, ARCH-020-GATEWAY-003, ARCH-020-BACKGROUND-002 |
+| [ARCH-020-SYSTEM-TEST-002](SYSTEM-TEST-002-validate-external-api-tools-end-to-end.md) | Validate external API tools end to end | ready | ARCH-020-COMMERCE-024, ARCH-020-GATEWAY-003, ARCH-020-BACKGROUND-002 |
 
 
 ## GATEWAY-002 supersession dependency reconciliation — 2026-09-22
@@ -27,3 +27,11 @@ COMMERCE-024 acceptance gate.
 
 SYSTEM-TEST-002 remains Pending because GATEWAY-003 is not yet Complete. It still
 requires explicit developer invocation when it eventually becomes Ready.
+
+## GATEWAY-003 Attempt 3 acceptance dependency reconciliation — 2026-10-02
+
+GATEWAY-003, COMMERCE-024 and BACKGROUND-002 are now Complete, so SYSTEM-TEST-002 is
+promoted **Pending -> Ready, Attempt 0, claim clear**. It remains an explicit
+developer-invoked terminal validation task and is not automatically started by this
+reconciliation. SYSTEM-TEST-001 remains Pending behind COMMERCE-012 and
+SYSTEM-TEST-002 completion.

@@ -12,7 +12,7 @@ ARCH-024 requires one infrastructure/deployment task after the application runti
 
 | Task | Outcome | Status | Depends on |
 |---|---|---|---|
-| [GATEWAY-001](GATEWAY-001-wire-database-backed-openrouter-runtime.md) | Share the accepted credential keyring with authorized runtimes and remove obsolete static Preview provider/model/API-key configuration | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
+| [GATEWAY-001](GATEWAY-001-wire-database-backed-openrouter-runtime.md) | Share the accepted credential keyring with authorized runtimes and remove obsolete static Preview provider/model/API-key configuration | Ready | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
 
 ## Dependency rationale
 
@@ -38,4 +38,4 @@ No ARCH-024 system-test task is materialised in this architecture session. After
 
 ARCH-024 application-side cutover prerequisites are now satisfied: `ARCH-024-ADMIN-003`, `ARCH-024-COMMERCE-007`, and `ARCH-024-BACKGROUND-001` are Complete / architect-accepted.
 
-`ARCH-024-GATEWAY-001` remains `Pending` because external prerequisite `ARCH-020-GATEWAY-003` is still `Ready`, not `Complete`. Do not claim or execute GATEWAY-001 until that external dependency is accepted Complete.
+`ARCH-020-GATEWAY-003` is now Complete / Accepted at Attempt 3. With ADMIN-003, COMMERCE-007 and BACKGROUND-001 already Complete, `ARCH-024-GATEWAY-001` is promoted **Pending -> Ready, Attempt 0, claim clear**. Readiness does not launch or claim the task.

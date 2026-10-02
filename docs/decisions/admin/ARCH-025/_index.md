@@ -60,3 +60,6 @@ Individual task YAML is authoritative.
 ## Execution frontier
 
 `ARCH-025-ADMIN-001` is Ready independently of `ARCH-025-BACKGROUND-001` and `ARCH-025-BACKGROUND-008`. ADMIN-002..008 remain Pending until the immediately preceding Admin task is architect-accepted Complete.
+## Deep coherence review — 2026-10-02
+
+A source/task closure review against the 1,553-line post-ARCH-024 builder kept the ADMIN-001..008 graph unchanged and tightened the execution contract before ADMIN-001 starts. ADMIN-001 must establish the complete consume-only controller/action/selector interface for every later step, keep its pure reducer directly Node-testable, preserve hook-edge event/highlight identity generation and effect-driven economics-override invalidation, make the security harness scan the full bounded builder module set (including the ARCH-014 forbidden-dependency check), and preserve the exact hidden translation JSON fallback. ADMIN-002..008 may consume but not extend that accepted controller; a missing interface returns to `moda_architect`. Usage-event stale-field/tier quirks, the current empty secondary economics rows, and the workbook/final-step mount/conditional DOM semantics are explicitly preserved as move-only behaviour.

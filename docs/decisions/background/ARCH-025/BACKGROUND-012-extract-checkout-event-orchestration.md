@@ -87,9 +87,11 @@ Move the existing `lifecycleReason(...)` mapping with this event-orchestration o
 
 `handleCheckoutCreatedContract(...)` remains a thin scheduling adaptation over `PendingRecoveryCandidateService.scheduleFromCheckoutCreated(...)`, preserving `discarded-shop-unavailable`, `discarded-subscription-frozen`, scheduled outcome fields and source `v2`.
 
-### R2 — update decision precedence
+### R2 — update decision precedence and exact resolved-shop read
 
-Preserve resolved-shop lookup/eligibility before candidate refresh. A matching pending candidate is refreshed/rescheduled and returns before any durable recovery/Shopify lookup. No recovery means discard with no provider lookup. Terminal `COMPLETED/CANCELLED` means ignore with no provider lookup/write. `EXPIRED` schedules from checkout-updated and does not refresh the old recovery.
+Preserve the current direct Prisma shop lookup by **domain** selecting `id`, Shop `status` and `subscription.status`, followed by `ShopExecutionEligibilityService.evaluateResolvedShop(...)`, before candidate refresh. Do not replace this with another shop-resolution helper or add/remove a database read merely because the code moved; the frozen checkout-refresh suite observes this boundary.
+
+A matching pending candidate is refreshed/rescheduled and returns before any durable recovery/Shopify lookup. No recovery means discard with no provider lookup. Terminal `COMPLETED/CANCELLED` means ignore with no provider lookup/write. `EXPIRED` schedules from checkout-updated and does not refresh the old recovery. Preserve the pending refresh arguments (`cartToken: null`, `isEmpty: null`, optional event international context) and the EXPIRED scheduling source fields from the durable recovery.
 
 ### R3 — active recovery refresh
 
@@ -101,9 +103,9 @@ The basket refresh remains a status-guarded Prisma transaction that changes only
 
 Cart activity continues to resolve/evaluate shop and only refresh pending candidate activity; it does not trigger Shopify lookup or create a recovery.
 
-### R5 — WhatsApp compatibility
+### R5 — result/type and WhatsApp compatibility
 
-Keep `CheckoutRecoveryService.recordExternalActivity(...)` as a delegate because `whatsapp.worker.ts` calls it directly.
+`CheckoutRefreshResult` belongs to this event-orchestration capability if moved, but MUST remain compatibility-exported from `checkout-recovery.service.ts`. Keep `CheckoutRecoveryService.recordExternalActivity(...)` as a delegate because `whatsapp.worker.ts` calls it directly. The monotonic update retains statuses `DETECTED`/`MESSAGE_SENT`/`ENGAGED` and `lastExternalActivityAt < activityAt`; active refresh still calls it before Shopify lookup, so provider failure/non-found outcomes do not roll back the activity timestamp.
 
 ## Work Items
 

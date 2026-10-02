@@ -67,10 +67,11 @@ Changing `MerchantPricingTranslationWorkbook`, submit button implementation, tra
 - Preserve economics override invalidation exactly: changing handle, credits, currency, recurring amount, effective placement, `minimumUpgradePremiumBps` or serialized usage events clears enabled override state. Commerce model, Merchant Knowledge fields, merchant description/highlights, admin reason and translation state do not currently participate in that invalidation key.
 - Preserve Merchant Knowledge product policy: it remains included in submitted `supportedFeatureKeys` regardless of generic feature toggles; its configuration is separately validated with the Shared schema and only active purpose/data-format source options are offered.
 - Preserve Commerce-model repair behaviour: `Use Platform default` maps to `null`; a saved currently-unavailable model remains present as `Current model unavailable — <id>` with the existing alert until the admin deliberately repairs it.
-- Preserve translation semantics: retained translations depend on the current English description/highlights rules; `validTranslationJson()` continues preferring a valid workbook result, then retained template, then current/fresh template fallback. `MerchantPricingTranslationWorkbook` remains mounted across normal step navigation (hidden outside step 6), so uploaded workbook/file/error state is not discarded by Back/Next navigation.
+- Preserve translation semantics exactly: retained translations depend on the current English description/highlights rules; `validTranslationJson()` returns the raw `translationJson` when `translationResult?.valid`, otherwise an edit `retainedTemplate` when present, otherwise the existing non-empty raw `translationJson` unchanged, and only when that raw value is empty builds the fresh current template. `canSubmit` independently still requires retained translations or a valid translation result. `MerchantPricingTranslationWorkbook` remains mounted across normal step navigation (hidden outside step 6), so uploaded workbook/file/error state is not discarded by Back/Next navigation.
 - The typed reducer/controller manages local UI transitions only. Do not move or duplicate canonical payload validation, economics policy, translation validation or feature policy from existing modules under `src/lib/admin/merchant/`.
 - Do not add a Redux/global store, form framework, generic UI plugin system or new React test framework solely for this extraction.
 - Keep tests honest: no skipped tests, weakened assertions or changed expected behaviour merely because JSX/state moved. `npm run test:unit`, `npm test` and production build must introduce no task regression.
+- ADMIN-001 owns the accepted controller/action/selector contract. ADMIN-002..008 are consume-only presentation extractions and MUST NOT redesign or extend `merchant-pricing-plan-draft.ts` / `use-merchant-pricing-plan-draft.ts`. If an accepted controller value/action/selector required by this step is missing, stop and return the interface gap to `moda_architect` rather than widening this task.
 - Preserve these existing pure/domain test assets byte-for-byte throughout ADMIN-001..008:
   - `tests/unit/merchant-pricing-builder-payload.test.ts` — SHA-256 `a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243`
   - `tests/unit/merchant-pricing-plan-model.test.ts` — SHA-256 `e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086`
@@ -83,11 +84,13 @@ Changing `MerchantPricingTranslationWorkbook`, submit button implementation, tra
 
 ### R1 — workbook remains mounted
 
-Move the workbook wrapper and final step presentation into `translations-review-step.tsx`, but render that child for the wizard lifetime so `MerchantPricingTranslationWorkbook` stays mounted and is hidden outside step 6 exactly as today. Do not replace it with `{step === 6 ? <Workbook/> : null}` or otherwise discard selected-file/workbook issue state during navigation.
+Move the workbook wrapper and final step presentation into `translations-review-step.tsx`, but render that child for the wizard lifetime so the `MerchantPricingTranslationWorkbook` subtree stays mounted and is hidden outside step 6 exactly as today. Do not replace it with `{step === 6 ? <Workbook/> : null}` or otherwise discard selected-file/workbook issue/uploaded-bytes state during navigation.
+
+Preserve the current conditional DOM for the rest of the final step: final review, admin-reason textarea and `MerchantPricingPlanSubmitButton` are rendered only while `step === 6`; keeping the child mounted must not make those controls present on earlier steps.
 
 ### R2 — final review fidelity
 
-Preserve the current review summary, including human-readable fixed usage-event formatting (`formatBuilderEventPrice(...) ... per event ... Unlimited`), catalogue placement label, recurring/allowance counts, description/highlights, economics PASS/OVERRIDE/NOT PASS state, override failure codes/reason, and retained/validated translation state.
+Preserve the current review summary, including human-readable fixed usage-event formatting (`formatBuilderEventPrice(...) ... per event ... Unlimited`), catalogue placement label, recurring/allowance counts, description/highlights, economics PASS/OVERRIDE/NOT PASS state and override failure codes/reason. Preserve the exact translation-state display precedence: when `translationsRetained` is true it displays `20/20 retained` even if a currently uploaded workbook result is also valid; otherwise a valid workbook displays `20/20 validated`; otherwise `Not validated`.
 
 ### R3 — form shell ownership
 

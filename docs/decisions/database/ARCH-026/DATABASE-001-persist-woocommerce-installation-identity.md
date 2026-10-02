@@ -17,6 +17,7 @@ attempt: 0
 depends_on: []
 enables:
   - ARCH-026-API-002
+  - ARCH-026-DATABASE-002
   - ARCH-026-SHOPIFY-001
   - ARCH-026-BACKGROUND-001
 created: 2026-10-02
@@ -593,10 +594,11 @@ Its lack of dependency MUST NOT be interpreted as permission to begin future API
 ## Enables
 
 - `ARCH-026-API-002`
+- `ARCH-026-DATABASE-002`
 - `ARCH-026-SHOPIFY-001`
 - `ARCH-026-BACKGROUND-001`
 
-API-002 consumes the Woo installation identity contract. SHOPIFY-001 and BACKGROUND-001 migrate current runtime onboarding lifecycle reads/writes to the shared Shop milestone while retaining the legacy Shopify field as a compatibility mirror.
+API-002 consumes the Woo installation identity contract. DATABASE-002 extends the accepted shared Shop shape with provider-neutral international context. SHOPIFY-001 and BACKGROUND-001 migrate current runtime onboarding lifecycle reads/writes to the shared Shop milestone while retaining the legacy Shopify field as a compatibility mirror.
 
 ## Acceptance Criteria
 

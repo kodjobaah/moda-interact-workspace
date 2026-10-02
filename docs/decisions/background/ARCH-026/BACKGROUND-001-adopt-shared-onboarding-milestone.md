@@ -18,6 +18,7 @@ depends_on:
   - ARCH-026-DATABASE-001
 enables:
   - ARCH-026-ADMIN-001
+  - ARCH-026-BACKGROUND-002
 created: 2026-10-02
 updated: 2026-10-02
 ---
@@ -191,8 +192,9 @@ DATABASE-001 must be architect-accepted Complete and the Background nested datab
 ## Enables
 
 - `ARCH-026-ADMIN-001`
+- `ARCH-026-BACKGROUND-002`
 
-ADMIN-001 additionally depends on SHOPIFY-001 so Admin switches its cross-platform presentation only after both current onboarding completion writers maintain the shared field.
+ADMIN-001 additionally depends on SHOPIFY-001 so Admin switches its cross-platform presentation only after both current onboarding completion writers maintain the shared field. BACKGROUND-002 serializes the later shared international-context source migration in the same repository.
 
 ## Acceptance Criteria
 

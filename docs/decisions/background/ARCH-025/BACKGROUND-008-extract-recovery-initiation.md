@@ -66,6 +66,7 @@ matured candidate orchestration; checkout/update/cart handlers; follow-up execut
 - Preserve the constructor `(billingService: RecoveryBillingService = recoveryBillingService)`. Existing workers and Commerce callers continue using the `checkoutRecoveryService` singleton; do not migrate worker entrypoints/callers as part of extraction.
 - Extracted modules MUST NOT import `checkout-recovery.service.ts`; dependency direction is façade -> collaborator. Symbols moved out of the façade that are currently exported must be compatibility re-exported from it.
 - Collaborator constructors are inert wiring only. Do not perform Prisma/provider/Redis/queue/environment I/O or eager model access during construction.
+- Any extracted collaborator/finaliser that performs recovery billing MUST receive and reuse the exact `RecoveryBillingService` instance supplied to the `CheckoutRecoveryService` constructor. Do not silently fall back to the module singleton when a caller supplied a custom/test billing service.
 - Continue reusing canonical owners: `RecoveryBillingService`, `RecoveryOutreachAttemptService`, `recoveryOutreachFollowUpService`, `RecoveryPolicyService`, `PendingRecoveryCandidateService`, `ShopExecutionEligibilityService`, `AbandonedCheckoutLookupService`, `RecoveryCapacityResumeService`, `OutboundWhatsAppAdmissionService`, `ConversationService`, `ConversationMessageService`, and `WhatsAppTemplateSelectorService`. Do not duplicate their logic.
 - There remains exactly one outbound WhatsApp provider path through `OutboundWhatsAppAdmissionService`; do not create a direct Meta/provider send workflow. Deterministic outreach idempotency remains `recovery-outreach:<attemptId>`.
 - Preserve all provider/network versus Prisma transaction boundaries, checkout-scoped lock boundaries, order-processed tombstone timing, status-guarded `updateMany` predicates, generation ordering and post-commit queue/provider ordering exactly. Do not move external calls into a Prisma transaction.
@@ -81,11 +82,15 @@ matured candidate orchestration; checkout/update/cart handlers; follow-up execut
 - Add separate focused tests for each extracted owner. Do not move assertions out of frozen files, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - Full `npm test` must introduce no regression. If a synchronized baseline failure exists, follow the durable baseline protocol; do not silently redefine expected failures inside the task.
 
-### R1 — canonical initial outreach owner
+### R1 — canonical initial outreach owner and façade-observable operations
 
-Move the implementation of `handleCheckoutCreated(...)` and its directly owned helpers (`upsertRecovery`, `attachCustomer`, `resolveRecipient`, `markRecoveryMessageSent`, `markRecoveryCapacityBlocked`, `requireConfirmedMessage`, `finalizeConfirmedOutreach`, `ensureScheduledInitialFollowUp`, `isUniqueConflict`) behind bounded collaborators. Keep all currently public methods as thin compatibility delegates on `CheckoutRecoveryService`.
+Move the implementation of `handleCheckoutCreated(...)`, persistence/idempotency helpers and confirmed-send finalisation behind bounded collaborators while keeping every currently public low-level method as a thin compatibility delegate on `CheckoutRecoveryService`.
 
-### R2 — exact initiation order
+The frozen `checkout-refresh.test.ts` replaces `service.upsertRecovery` and then invokes `service.handleCheckoutCreated(...)`. Preserve that observable relationship: initial outreach must call the **current replaceable façade `upsertRecovery(...)` operation** rather than bypassing it with a collaborator-private call. Use a narrow dynamic port/callback such as `(...args) => this.upsertRecovery(...args)` that resolves the façade method at invocation time; do not eagerly bind/capture the original method in the constructor, and do not reverse-import `checkout-recovery.service.ts` from the collaborator. Preserve the same current façade-call relationship for `resolveRecipient(...)` and `markRecoveryCapacityBlocked(...)`.
+
+`attachCustomer(...)` and `markRecoveryMessageSent(...)` are public compatibility operations but are **not** the operations currently used by `handleCheckoutCreated(...)`. Do not consolidate semantics during extraction: customer attachment in initial outreach remains the direct `checkoutRecovery.update(...)` performed only when the resolved customer differs, while confirmed-send recovery transition remains the finaliser's `updateMany(...)` using the provider-confirmed `message.sentAt`. `markRecoveryMessageSent(...)` continues using its own `new Date()` compatibility semantics and must not replace confirmed-send finalisation.
+
+### R2 — exact initiation order and asymmetric suppression semantics
 
 Preserve the current order and failure isolation:
 
@@ -110,13 +115,22 @@ upsert/reuse durable recovery generation
 
 Conversation creation failure must still release the admission before any provider call. Provider-call failure must still route through `RecoveryBillingService.handleProviderFailure(...)` and mark the attempt `FAILED/PROVIDER_FAILURE`. A post-send durable-confirmation/finalisation error must not be reclassified as a pre-provider failure.
 
+Preserve these current initial-outreach distinctions exactly:
+
+- `template-unavailable` / `market-unavailable` (or any selection other than `selected` / `provider-check-required`) returns the current recovery without provider/billing/conversation work and **does not** newly mark the sequence-1 attempt failed/cancelled;
+- an initial billing admission blocked for exact reason `capacity-exhausted` calls the durable `markRecoveryCapacityBlocked(...)` operation and marks the attempt `CAPACITY_BLOCKED` without inventing a new failure code; other initial admission-block reasons return the recovery without introducing a new durable recovery block or attempt transition;
+- a revalidation block marks the attempt `CAPACITY_BLOCKED` with the revalidation reason but does **not** newly call `markRecoveryCapacityBlocked(...)`; preserve the caller's current release/no-release behaviour rather than adding cleanup that is not present today;
+- `resolveRecipient(...)` continues preferring `event.customer.phone`, then `TEST_WHATSAPP_RECIPIENT`, and throws when neither is available. Follow-up processing does not reuse this fallback.
+
 ### R3 — duplicate and confirmation semantics
 
-Preserve `recovery-outreach:<attemptId>` exactly. Duplicate suppression may converge only from a durable message in `SENT`, `DELIVERED` or `READ` with matching conversation and non-null `sentAt`; `PENDING`, missing or mismatched durable messages retain the current error behaviour.
+Preserve `recovery-outreach:<attemptId>` exactly. Duplicate suppression may converge only from a durable message in `SENT`, `DELIVERED` or `READ` with matching conversation and non-null `sentAt`. A duplicate with `PENDING` still throws "send is still pending"; a duplicate with no durable admission still throws "has no durable message"; a confirmed-status message with wrong conversation/missing `sentAt` still fails `requireConfirmedMessage(...)`. Other non-confirmed durable statuses continue through the ordinary suppressed path: release the admission, mark the attempt `FAILED` with the suppression reason (including `duplicate`) and return the suppressed result. Do not normalise these branches.
 
-### R4 — finalisation reuse
+### R4 — finalisation reuse and idempotent convergence
 
-Put confirmed-send finalisation behind one collaborator that BACKGROUND-009 can reuse. Do not duplicate billing commit, attempt transition or confirmed-message validation between initial and follow-up paths.
+Put confirmed-send finalisation behind one collaborator that BACKGROUND-009 can reuse. Do not duplicate billing commit, attempt transition or confirmed-message validation between initial and follow-up paths. Preserve the current order: billing `commitSuccessfulInitiation(...)` first, then `markWaitingAfterConfirmedSend(...)`. If that transition returns `count === 0`, reread the attempt and converge only when it still exists, has the same `outboundMessageId`, and is not `FAILED`/`CANCELLED`; otherwise throw the existing finalisation-conflict error.
+
+For sequence 1, preserve follow-up due-at calculation exactly: an existing attempt `followUpDueAt` wins; otherwise compute from provider `message.sentAt` only when policy follow-up is enabled and has a truthy delay. The recovery changes from `DETECTED` to `MESSAGE_SENT` using `message.sentAt` and clears capacity-block fields. Initial follow-up scheduling still requires recovery `MESSAGE_SENT`/`ENGAGED`, sequence-1 attempt `WAITING_FOR_RESPONSE`, non-null `sentAt` and `followUpDueAt`, no `customerRespondedAt`, and no sequence-2 attempt currently `WAITING_FOR_RESPONSE`/`ENGAGED`. Other sequence-2 statuses do not satisfy that suppression guard.
 
 ### R5 — latest generation query
 
@@ -148,7 +162,7 @@ None
 - [ ] Billing admission/commit/release/provider-failure semantics are unchanged.
 - [ ] Provider send still has one deterministic admission/idempotency path.
 - [ ] Confirmed-send finalisation is reusable by the follow-up task without importing the façade.
-- [ ] Existing public methods/constructor remain compatible and frozen assets pass.
+- [ ] Existing public methods/constructor remain compatible, the frozen `upsertRecovery` façade-spy relationship remains observable, and frozen assets pass.
 
 ## Validation
 

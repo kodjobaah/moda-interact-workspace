@@ -18,6 +18,7 @@ depends_on:
   - ARCH-026-DATABASE-001
 enables:
   - ARCH-026-ADMIN-001
+  - ARCH-026-SHOPIFY-002
 created: 2026-10-02
 updated: 2026-10-02
 ---
@@ -221,8 +222,9 @@ DATABASE-001 must be architect-accepted Complete and the `moda-interact` nested 
 ## Enables
 
 - `ARCH-026-ADMIN-001`
+- `ARCH-026-SHOPIFY-002`
 
-ADMIN-001 additionally depends on BACKGROUND-001 so the shared milestone is maintained by both current production completion writers before Admin makes it its cross-platform presentation source.
+ADMIN-001 additionally depends on BACKGROUND-001 so the shared milestone is maintained by both current production completion writers before Admin makes it its cross-platform presentation source. SHOPIFY-002 is the next serialized `moda-interact` ARCH-026 migration and adopts shared international context after the onboarding migration is accepted.
 
 ## Acceptance Criteria
 
