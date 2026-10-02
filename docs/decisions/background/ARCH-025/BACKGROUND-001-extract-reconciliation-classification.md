@@ -113,6 +113,14 @@ subscription-state-ineligible
 
 Reinstall eligibility remains evaluated before the normal ACTIVE-shop state machine. Do not make UNINSTALLED work pass through ACTIVE-only classification.
 
+Preserve the source predicates exactly even where the current TypeScript expected-state types look stricter than the runtime gate:
+
+- `initial-activation` currently does **not** require `pendingEffectiveAt !== null`; do not add that guard during extraction, and preserve the runtime property value if it is null.
+- `rollover` currently requires a durable `billingPeriodId` but does **not** require non-null `currentPeriodStart` or `currentPeriodEnd`; do not add those guards during extraction.
+- `frozen-reconciliation` retains the unnormalised expected-object shape described below.
+
+If these shapes are judged invalid product states, report them separately; ARCH-025 must characterise rather than repair them.
+
 ### R3 — expected snapshot types
 
 Move the current internal expected-state types (`InitialActivationExpected`, `FreeCycleExpected`, `RolloverExpected`, `EstablishedPlanChangeExpected`, `ReinstallExpected`) into the pure classification boundary or a directly adjacent pure type module. Preserve the exact fields used by current CAS predicates.
@@ -141,7 +149,7 @@ Current-plan database eligibility checks for cycle discovery/rollover occur afte
 - [ ] Add the pure classification module and discriminated result/expected snapshot types.
 - [ ] Replace the boolean classification block in `reconcileJob()` with the pure classifier while leaving subsequent plan/provider/lifecycle work in place.
 - [ ] Preserve exact accepted `kind` values and skipped reason/field logging.
-- [ ] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence.
+- [ ] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence, initial activation with null `pendingEffectiveAt`, and rollover with null period-date fields.
 - [ ] Prove classifier tests perform no database/provider/queue work.
 - [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
 
@@ -160,7 +168,7 @@ None
 ## Acceptance Criteria
 
 - [ ] Reconciliation kind selection is owned by a pure module with no I/O.
-- [ ] Reinstall, initial activation, cycle discovery, rollover, established plan change, frozen and skip outcomes match current behaviour exactly.
+- [ ] Reinstall, initial activation, cycle discovery, rollover, established plan change, frozen and skip outcomes match current behaviour exactly, including the current permissive null-shape predicates.
 - [ ] All current skip reason strings and decision precedence remain unchanged.
 - [ ] Retryable established-plan-change SYNC_ERROR classification uses one shared pure constant.
 - [ ] No provider/database call count or transaction boundary changes.

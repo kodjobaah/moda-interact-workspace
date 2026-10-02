@@ -106,9 +106,11 @@ For rollover jobs preserve the current order after lifecycle replay:
 
 Do not reorder provider-null handling ahead of pre-close work.
 
-### R3 — runtime snapshot reuse
+### R3 — runtime snapshot and dependency reuse
 
 `shopifyUsageEventPublisherService.publishDue(...)` must receive the exact immutable `BackgroundRuntimeConfigSnapshot` captured once by the coordinator. The cycle handler must not call `backgroundRuntimeConfigService.current()` itself.
+
+The handler must receive/use the same façade-supplied database, structured logger and clock plus the accepted BACKGROUND-002 queue publisher and BACKGROUND-003 timing/locking primitives. `reconcileFreeCycle(...)` must reuse BACKGROUND-003 `lockSubscription(...)`; do not copy the `FOR UPDATE` SQL into the cycle service or replace it with another lock abstraction.
 
 ### R4 — canonical owners remain canonical
 
@@ -136,7 +138,7 @@ Paid same-plan transition continues to schedule `recoveryCapacityResumeService` 
 - [ ] Add the billing-cycle reconciliation service.
 - [ ] Move cycle discovery, current-cycle pending/cancel projection, pre-close flush, same-plan rollover and their failure/retry helpers.
 - [ ] Pass the one captured runtime-config snapshot into every usage-publish call.
-- [ ] Reuse queue/timing collaborators and existing canonical projection/rollover services.
+- [ ] Reuse queue/timing/locking collaborators and existing canonical projection/rollover services.
 - [ ] Add focused tests for cycle discovery, pack-enabled Free exact projection, pending/cancellation projection, before/inside drain window, both distinct pre-close error-clearing behaviours, provider null/lag, same-plan rollover and capacity-resume isolation.
 - [ ] Prove no provider call is made by the handler itself; it consumes the coordinator's snapshot result.
 - [ ] Prove the frozen 98-test regression file remains byte-identical and passes.

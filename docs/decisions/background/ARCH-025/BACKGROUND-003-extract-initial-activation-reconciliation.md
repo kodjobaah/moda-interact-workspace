@@ -50,7 +50,11 @@ src/services/billing-subscription-reconciliation/initial-activation-reconciliati
 src/services/billing-subscription-reconciliation/reconciliation-timing.ts
 src/services/billing-subscription-reconciliation/locking.ts
 src/services/billing-subscription-reconciliation/discount-sync-publisher.service.ts
+src/services/billing-subscription-reconciliation/types.ts
 tests/unit/services/billing-subscription-reconciliation/initial-activation-reconciliation.service.test.ts
+tests/unit/services/billing-subscription-reconciliation/reconciliation-timing.test.ts
+tests/unit/services/billing-subscription-reconciliation/locking.test.ts
+tests/unit/services/billing-subscription-reconciliation/discount-sync-publisher.service.test.ts
 ```
 
 BACKGROUND-001/002 modules are consumable dependencies.
@@ -100,7 +104,7 @@ applyOtherCurrentPlan
 
 Keep the **final provider-plan lookup and branch predicates** in the coordinator during this task. That dispatch is shared with later established-plan-change handling and the current legacy FROZEN lifecycle-`continue` fallthrough, so it must not be hidden behind an initial-only entry point. The extracted service must expose repository-internal operations sufficient for the coordinator to invoke the moved Free/Paid/failure/`applyOtherCurrentPlan` implementations without importing back from the façade.
 
-Move `InitialActivationPlan` with the initial-activation owner (or a directly adjacent pure type module) and compatibility re-export it from `billing-subscription-reconciliation.service.ts`. BACKGROUND-004 must import the canonical moved type rather than duplicate its shape.
+Move `InitialActivationPlan` with the initial-activation owner or the authorised adjacent `types.ts` pure type module and compatibility re-export it from `billing-subscription-reconciliation.service.ts`. BACKGROUND-004 must import the canonical moved type rather than duplicate its shape.
 
 ### R2 — direct `activateInitialPaid` compatibility path
 
@@ -138,7 +142,9 @@ Preserve all existing Free/Paid/alternate-plan transaction boundaries, CAS predi
 
 `sameDate`/expected schedule equality from BACKGROUND-001 must be reused rather than duplicated.
 
-`applyOtherCurrentPlan(...)` must remain independently invocable by the coordinator with the source values. Do not add an initial-activation-only precondition around that operation: the current coordinator can reach it after a non-initial FROZEN lifecycle reconciliation returns `continue`, and BACKGROUND-007 must be able to preserve that legacy fallthrough without reopening this task.
+`applyOtherCurrentPlan(...)` and `recordMissingSubscription(...)` must remain independently invocable by the coordinator with the source values. Do not add an initial-activation-only precondition around either operation: the current coordinator can reach them after a non-initial FROZEN lifecycle reconciliation returns `continue`, and BACKGROUND-007 must be able to preserve those legacy fallthroughs without reopening this task.
+
+Preserve the short-circuit stale-guard evaluation in `applyOtherCurrentPlan(...)`: the `NO_CONTRACT`/`planId === null` checks must reject a genuine FROZEN row before code attempts to dereference pending fields such as `expected.pendingEffectiveAt`. BACKGROUND-001 deliberately preserves a FROZEN expected object with those pending properties absent. Do not precompute `pendingEffectiveAt.toISOString()` or otherwise reorder this guard in a way that can throw on the legacy FROZEN path.
 
 ### R7 — post-commit side effects remain post-commit
 
@@ -152,7 +158,8 @@ Discount sync and next-reconcile enqueue happen only after the same current comm
 - [ ] Add the shared discount-sync publisher with existing best-effort semantics.
 - [ ] Move the complete initial activation helper cluster while retaining the shared final provider-plan lookup/branch dispatch in the coordinator.
 - [ ] Keep public `activateInitialPaid(...)` as a no-provider-call compatibility delegate.
-- [ ] Add focused tests for tiered retry expiry, stale CAS, Free activation, Paid activation, alternate current plan, all fail-closed errors, exact lock order, projection/counter replay and post-commit queue/discount failures.
+- [ ] Add focused initial-activation tests for tiered retry expiry, stale CAS, Free activation, Paid activation, alternate current plan, all fail-closed errors, projection/counter replay, post-commit queue/discount failures, and FROZEN-shaped calls to `recordMissingSubscription`/`applyOtherCurrentPlan` that remain non-throwing/no-op against non-NO_CONTRACT durable state.
+- [ ] Add direct focused tests for `reconciliation-timing.ts`, exact lock SQL/order primitives and the discount-sync publisher rather than relying only on façade regression coverage for those newly extracted owners.
 - [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
