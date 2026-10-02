@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-10-01T23:33:44Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-024-COMMERCE-005
@@ -948,24 +948,85 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-Pending.
+Attempt 1 — Changes Requested (2026-10-02).
+
+The selected-Shop execution architecture is otherwise conformant: the human conversation path is separated from retained fixture Tool tests, `backend.execution` / the production `DefinitionExecutor` is reused, frozen definitions and selected-Shop identity are validated before provider dispatch, current Shopify sessions and External credentials remain live, the 10-second / 12-provider-request envelope is present, the composer remains locked for C007, and the submitted Completion Report contains the required dedicated-worktree / synchronization / recursive-submodule / claim / clean-remote evidence.
+
+**A1-R1 — valid C004 compositions with more than one Capability using the same Tool revision are rejected.**
+
+ARCH-024-COMMERCE-004 explicitly requires every Capability member to remain in the manifest while Tool definitions and `grantedTools` are deduplicated by exact Tool revision. Its accepted contract therefore permits multiple `manifest.capabilities` entries to carry the same `toolId + toolRevisionId`, with one deduplicated `grantedTools` entry whose `capabilityKeys` contains every Capability key using that revision.
+
+The C006 selected-Shop executor currently does:
+
+```ts
+const manifestMatches = bundle.manifest.capabilities.filter(
+  (item) =>
+    item.toolDescriptor.toolId === tool.toolId
+    && item.toolDescriptor.toolRevisionId === tool.toolRevisionId,
+);
+
+if (
+  manifestMatches.length !== 1
+  || canonicalJson(manifestMatches[0]!.toolDescriptor) !== canonicalJson(tool)
+) {
+  return incompatibleToolResult();
+}
+```
+
+That `length !== 1` check makes a valid C004 composition fail with `INCOMPATIBLE_VERSION` before provider dispatch whenever two or more Capability members legitimately share one Tool revision. This contradicts the accepted C004 invariant and C006 R6, which requires that the descriptor **appears** in `bundle.manifest.capabilities`; it does not require the Tool revision to occur in exactly one Capability member.
+
+Attempt 2 correction contract:
+
+1. Keep the exact `toolId + toolRevisionId` manifest lookup, but accept one-or-more matching Capability members.
+2. Fail closed when there are zero matching Capability members.
+3. Because duplicate Capability members are valid, validate the requested descriptor against **every** matching Capability member (or an equivalent fail-closed check) so a conflicting duplicate descriptor still returns `INCOMPATIBLE_VERSION` before provider dispatch.
+4. Preserve the single deduplicated `bundle.grant.grantedTools` integrity check and the frozen-definition checks.
+5. Add focused selected-Shop regression coverage using a manifest with at least two distinct Capability members that share the same Tool revision and one deduplicated grant entry containing both Capability keys. Prove the valid Tool executes through `backend.execution`.
+6. Add or retain a fail-closed regression proving a conflicting descriptor among matching duplicate Capability members does not dispatch the provider.
+7. Rerun the complete C006 required validation and return the same task to review.
+8. Do not begin COMMERCE-007.
+
+No database, Shared, Admin, Background, Gateway, model-runtime, credential-administration, or broader Feature-composition redesign is requested.
 
 ### Reviewed Files
 
-Pending.
+- `docs/decisions/commerce/ARCH-024/COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-004-compose-test-conversations-from-selected-features.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
+- `moda-interact-commerce/src/commerce/integration/preview/adapters.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/lib/preview/runtime.ts`
+- `moda-interact-commerce/src/commerce/connections/credentials/index.ts`
+- `moda-interact-commerce/src/commerce/integration/external/index.ts`
+- `moda-interact-commerce/lib/discovery/admin-compiler.ts`
+- `moda-interact-commerce/tests/selected-shop-preview-tool-execution.test.ts`
+- `moda-interact-commerce/tests/feature-preview-composition.test.ts`
+- `moda-interact-commerce/tests/preview-integration.test.ts`
+- `moda-interact-commerce/tests/preview-service.test.ts`
+- `moda-interact-commerce/tests/external-credentials.test.ts`
+- `moda-interact-commerce/tests/test-conversation-snapshot.test.ts`
 
 ### Validation Reviewed
 
-Pending.
+- Inspected the exact C006 implementation delta against the accepted C005 snapshot.
+- Confirmed C004's accepted contract and regression fixture retain multiple Capability members sharing one Tool revision while deduplicating Tool/grant entries.
+- Confirmed the current C006 `manifestMatches.length !== 1` guard rejects that valid manifest shape before `backend.execution.execute(...)`.
+- Reviewed the submitted focused-validation evidence: 11 test files / 100 tests, targeted ESLint, TypeScript, production build, changed-file diagnostics, static audits and `git diff --check`.
+- Confirmed the uploaded archive contains no installed dependency tree or Git metadata, so dependency-backed test/build commands and remote refs were not independently replayed in the review environment.
 
 ### Architecture Conformance
 
-Pending.
+Changes Required.
+
+The implementation conforms to the selected-Shop execution, frozen-definition, live-credential/session, fixture-separation, provider-budget, secret-safety, persistence and C007-lockout boundaries except for A1-R1. A1-R1 breaks the already-accepted C004 many-Capabilities-to-one-Tool composition invariant and must be corrected before C006 can become Complete.
 
 ### Follow-up
 
-Pending.
+Return `ARCH-024-COMMERCE-006` to `ready` with Attempt 1 preserved and the execution claim cleared. The next authorized `/moda-task ARCH-024-COMMERCE-006` claim becomes Attempt 2.
+
+`ARCH-024-COMMERCE-007` remains Pending until C006 is architect-accepted Complete.
