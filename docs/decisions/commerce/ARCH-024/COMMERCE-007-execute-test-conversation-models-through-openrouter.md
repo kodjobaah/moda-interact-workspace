@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-10-02T09:21:33Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-COMMERCE-006
@@ -1162,9 +1162,19 @@ None.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
+
+**Attempt 2 — Accepted.**
+
+A1-R1 and A1-R2 are closed. `test-conversations-screen.tsx` now separates the retained run identity from the cancellation gate: a visible pending run can dispatch cancellation for the exact retained `{ conversationId, previewRunId }`, repeated Cancel activation is gated, known terminal results release the retained operation exactly once, and any late poll result is ignored after that operation has been settled. `Start new conversation` is disabled and defensively fenced while a run remains pending or `UNKNOWN`, preserving the exact operation required for reconciliation and preventing stale asynchronous results from mutating a later conversation.
+
+The focused browser regressions exercise the exact accepted lifecycle: cancellation of the retained running operation without allocating a second run, same-tick duplicate-cancel protection, pending/UNKNOWN new-conversation lockout, and stale-result isolation after a later conversation starts.
+
+A1-R3 is also closed. The Completion Report durably records the launcher-resolved canonical workspace, dedicated parent and Commerce task worktrees, task branches, start-of-attempt synchronization, dependency gate, recursive database submodule materialisation/gitlink, Attempt 1/2 claims, implementation publication and clean remote-aligned branch state. The submitted handoff identifies final implementation head `c3a7fe7ff4414fa8c731361dbc171f52f39bb59d` and final parent report head `8af8f734`; the task file records the prior report-publication commit because a commit cannot contain its own final SHA.
+
+Attempt 2 reran the complete C007 validation contract, including the previously blocked disposable PostgreSQL credential-rotation/decryption proof and task-owned resource cleanup. No live OpenRouter request was made. The server/runtime conclusions from Attempt 1 remain conformant: exact C005 snapshot use, no authored-state re-resolution, per-invocation current credential lookup, Shared `OpenRouterModelClient`/`runCommerceTurn`, selected-Shop C006 Tool execution, unconditional human-run quotas, independent fixture Tool-test retention, provider/config cleanup and secret-safe failure handling.
 
 Attempt 1 review found the server/runtime architecture broadly conformant, including frozen C005 snapshot use, per-invocation OpenRouter credential resolution, Shared `OpenRouterModelClient`/`runCommerceTurn` reuse, selected-Shop C006 Tool execution, unconditional human-conversation model quotas, independent fixture Tool-test retention, bounded provider failures and no live provider validation.
 
@@ -1240,6 +1250,15 @@ No Database, Shared, Admin, Background or Gateway implementation change is reque
 
 ### Validation Reviewed
 
+- Attempt 2 submitted: required seven-file focused runtime suite — 57 tests passed.
+- Attempt 2 submitted: focused browser lifecycle suite — 13 tests passed.
+- Attempt 2 submitted: Redis parity suite — 9 tests passed.
+- Attempt 2 submitted: retained Tool-test/Code Response regressions — 16 + 7 tests passed.
+- Attempt 2 submitted: disposable PostgreSQL credential-rotation/decryption proof passed with integrated migrations and verified cleanup of all task-owned containers/networks.
+- Attempt 2 submitted: Prisma generation, targeted ESLint, typecheck, production build, R18 static audit and `git diff --check` passed; build retained only the known Nunjucks dynamic-dependency warnings.
+- Direct Attempt 2 source/test review confirmed the cancel path targets the retained run while polling is active, duplicate cancellation is gated, unresolved runs block local reset, and stale settled results cannot populate a later conversation.
+- Direct comparison with the earlier C007 snapshot confirmed the Attempt 2 implementation correction is confined to `src/studio/test-conversations/test-conversations-screen.tsx` and `tests/test-conversations-screen.test.tsx` (apart from generated `tsconfig.tsbuildinfo`).
+- The uploaded review archive does not contain installed `node_modules` or usable Git metadata, so dependency-backed commands and remote-head identity were not independently replayed in the architect environment.
 - Submitted: required seven-file focused runtime suite — 54 tests passed.
 - Submitted: Redis parity suite — 9 tests passed.
 - Submitted: retained Tool-test/Code Response regressions — 16 + 7 tests passed.
@@ -1252,8 +1271,8 @@ No Database, Shared, Admin, Background or Gateway implementation change is reque
 
 ### Architecture Conformance
 
-Changes Requested. The server-side frozen-snapshot/OpenRouter runtime, credential rotation semantics, selected-Shop Tool execution boundary, quota/storage split and provider cleanup conform. The browser run lifecycle does not yet satisfy C007 cancellation and exact unresolved-run reconciliation requirements, and the Completion Report lacks mandatory physical-isolation/start-of-attempt evidence.
+Accepted. Attempt 2 closes the two browser lifecycle defects without changing the accepted server/runtime architecture: cancellation can act on the exact retained running operation; pending/`UNKNOWN` operations cannot be abandoned through local conversation reset; stale asynchronous results are fenced; exact-run reconciliation is preserved; and the deterministic launcher/worktree evidence plus complete validation contract are now durable.
 
 ### Follow-up
 
-Return the same task through the normal `/moda-task ARCH-024-COMMERCE-007` path. The next authorized claim becomes Attempt 2. Correct A1-R1/A1-R2, add the focused UI lifecycle regressions, rerun the complete C007 validation contract, add the A1-R3 prepared-execution evidence, set the task back to `review`, and STOP. `ARCH-024-GATEWAY-001` remains dependency-gated until C007 is architect-accepted Complete.
+`ARCH-024-COMMERCE-007` is Complete. Do not start `ARCH-024-GATEWAY-001` from this acceptance: on the exact reviewed workspace its ARCH-024 dependencies (`ADMIN-003`, `COMMERCE-007`, `BACKGROUND-001`) are Complete, but external prerequisite `ARCH-020-GATEWAY-003` is still `Ready`, not `Complete`. `GATEWAY-001` therefore remains Pending until that external dependency is accepted Complete.
