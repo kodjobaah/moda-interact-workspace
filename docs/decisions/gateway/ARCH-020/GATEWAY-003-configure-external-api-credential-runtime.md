@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 175
 executor: copilot
 claimed_at: 2026-10-02T14:01:45Z
@@ -128,9 +128,79 @@ implementation on main. Preserve unrelated work and existing task claims.
 
 ## Completion Report
 
+### Attempt 3 — Blocked (2026-10-02)
+
+#### A2-R1 — per-replica capacity proof
+
+**Blocked; capacity is not proven and no plan change is claimed.** The accepted
+COMMERCE-029 implementation is `f22e2d6` and its accepted report is `4069f60c`.
+Its production build packages and smoke-tests the pinned
+`quickjs-emscripten@0.31.0` artifact, but the accepted report explicitly states
+that the runtime is not wired into the typed adapter or production factory;
+those integration boundaries belong to COMMERCE-026/024. The available package
+smoke runs the worker independently and does not expose a way to run four fresh
+workers inside the built Commerce Next host while measuring the host-plus-worker
+process-tree RSS. Adding that invocation/measurement seam requires Commerce-owned
+runtime or production-composition source, outside GATEWAY-003 ownership. The
+canonical Commerce checkout is on `main` at `f9fa054` and contains a different
+`quickjs-wasi@3.6.2` runtime artifact; it is not substituted for the accepted
+task pin, and its unrelated working-tree changes are preserved.
+
+The current Commerce plans remain `0.5c-512mb` (test) and `0.5c-1g`
+(production). No measured peak RSS or 25% headroom calculation is available, so
+neither plan is asserted sufficient and the plans/validators/runbook are not
+changed to imply otherwise. Required architect decision: assign or approve a
+Commerce-owned production-host capacity measurement seam after the runtime is
+wired, then rerun this bounded proof before selecting plans. The four-worker
+contract is unchanged.
+
+#### Attempt 3 correction checklist
+
+- **A2-R1: blocked.** The exact missing seam is an invocation from the running
+  production Commerce host into its accepted `createSandboxKernel()` so four
+  fresh worker threads can be exercised and the host/worker RSS peak measured.
+  No Commerce source was changed by Gateway.
+- **A1-R1/A1-R3/A1-R4: preserved from Attempt 2.** Their submitted Docker/HAProxy
+  results, HMAC rotation wording and prior task-record reconciliation remain in
+  the Attempt 2 report below; Attempt 3 rerun results and current Git evidence
+  are recorded below.
+- **A1-R2: not closed for capacity.** Accepted package/build identity evidence
+  remains recorded below, but it does not prove per-replica host memory adequacy.
+
+#### Validation results
+
+Passed in the dedicated Gateway implementation worktree:
+
+- `./scripts/validate:arch020-external-runtime`: PASS; positive configuration
+  checks and all expected negative cases rejected.
+- `bash tests/run-tests.sh`: PASS; 162 passed, 0 failed. The rendered HAProxy
+  configuration was exercised with the actual HAProxy binary in Docker.
+- `bash tests/validate-render-blueprints.sh render.test.yaml`: PASS.
+- `bash tests/validate-render-blueprints.sh render.production.yaml`: PASS.
+- `bash tests/validate-render-blueprints-negative.sh`: PASS.
+- `bash -n docker/entrypoint.sh tests/run-tests.sh
+  tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh`:
+  PASS.
+- `git diff --check` in both task worktrees: PASS.
+
+The Attempt 3 Commerce production-host/four-worker RSS measurement and capacity
+build were not run: the accepted runtime is not connected to the production host,
+and the only locally checked-out Commerce runtime is a different, user-modified
+mainline revision. The accepted COMMERCE-029 package/smoke/build results remain
+valid for that producer commit only; they are not presented as host-capacity
+evidence. No live Render deployment, external connection, provider credential,
+or production mutation was used.
+
+#### Git / VCS
+
+- Parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-GATEWAY-003`, branch `task/ARCH-020-GATEWAY-003`; prepared claim commit `3613f652ba2cef03c9ff9180fc991fd30e4300c0`.
+- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-020-GATEWAY-003`, branch `task/ARCH-020-GATEWAY-003`; preserved starting/head commit `1102490fec44be11920f563552ceb26ec4d85f3d`, with no implementation changes.
+- The parent report is the only parent-worktree change. No implementation gitlink or other task/architecture file is staged. Both task remote-tracking refs were present before report publication.
+- The current task-report commit and push outcome are recorded in the execution handoff; no main branch was updated.
+
 ### Status
 
-Attempt 2 corrections complete; submitted for Architect Review. No live Render deployment, connection, provider credential, or production assertion was created.
+Attempt 2 corrections remain complete, but Attempt 3 is blocked pending a Commerce-owned production-host measurement seam and moda_architect's capacity decision. No live Render deployment, connection, provider credential, or production assertion was created.
 
 ### Files Changed
 
