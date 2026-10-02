@@ -274,7 +274,7 @@ All seven report-only corrections are implemented in this task file; no producti
 4. Implementation commit: `3e96f68decc0051aefa9dfbb53101a3661895a9b`. The reviewed Attempt 1 parent report commit: `f14293bae4bef10cb97f0100b0dac542a35dc2b9`.
 5. Source unchanged: only this current task file is modified for A1-R1; the implementation worktree was clean at the reviewed implementation commit.
 6. Revalidation: not rerun, as implementation/dependency state did not change and the review explicitly says it is unnecessary for this report correction.
-7. Lifecycle: this task file returns to `review`; the execution claim is cleared. The report correction will be committed and pushed on the parent task branch. At verification, implementation `HEAD` matched `origin/task/ARCH-025-SHOPIFY-011` at `3e96f68decc0051aefa9dfbb53101a3661895a9b`; parent `HEAD` matched the same remote task branch at claim commit `15c9c14e7d72ae9d39464a4b5cba30fdebb5144c` before this report update. Both worktrees were clean; final parent alignment is verified after publication.
+7. Lifecycle: this task file is at `review`; the execution claim is cleared. The checklist/report reconciliation was committed and pushed on the parent task branch as `08f3a64f389f514903f97bf081c4797e5865826c`. After that publication, parent `HEAD` matched `origin/task/ARCH-025-SHOPIFY-011` at that commit and the worktree was clean. Implementation `HEAD` matched `origin/task/ARCH-025-SHOPIFY-011` at `3e96f68decc0051aefa9dfbb53101a3661895a9b` and the implementation worktree was clean. Final parent branch alignment is reverified after this evidence update is published.
 
 ### Deviations
 
