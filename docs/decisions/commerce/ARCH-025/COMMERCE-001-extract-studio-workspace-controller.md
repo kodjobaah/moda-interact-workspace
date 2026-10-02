@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-02T21:04:50Z
@@ -105,11 +105,11 @@ Do not introduce route-change resets that do not exist today. In particular, rou
 
 ## Work Items
 
-- [ ] Introduce `studio-workspace.types.ts` and `use-studio-workspace-controller.ts` with the complete downstream contract.
-- [ ] Rewire the existing monolithic shell/pages to consume the controller without moving Release/page JSX yet.
-- [ ] Add focused controller tests.
-- [ ] Make the two source-inspection harnesses extraction-safe without changing their assertions.
-- [ ] Prove all frozen integration/state assets remain byte-identical.
+- [x] Introduce `studio-workspace.types.ts` and `use-studio-workspace-controller.ts` with the complete downstream contract.
+- [x] Rewire the existing monolithic shell/pages to consume the controller without moving Release/page JSX yet.
+- [x] Add focused controller tests.
+- [x] Make the two source-inspection harnesses extraction-safe without changing their assertions.
+- [x] Prove all frozen integration/state assets remain byte-identical.
 
 
 ## Interfaces / Contracts
@@ -126,23 +126,23 @@ Internal Commerce UI controller/type contract only. `components/studio-workspace
 
 ## Acceptance Criteria
 
-- [ ] Existing production callers continue importing `StudioWorkspace` / `StudioPage` from `components/studio-workspace.tsx`.
-- [ ] Route/hydration/load and write/unknown reconciliation behaviour is unchanged.
-- [ ] Controller contract is sufficient for COMMERCE-002..005 without later controller redesign.
-- [ ] Source-inspection assertions cover the bounded extracted module set and retain every current assertion.
-- [ ] Frozen 13/3/90-test assets are unchanged and pass.
+- [x] Existing production callers continue importing `StudioWorkspace` / `StudioPage` from `components/studio-workspace.tsx`.
+- [x] Route/hydration/load and write/unknown reconciliation behaviour is unchanged.
+- [x] Controller contract is sufficient for COMMERCE-002..005 without later controller redesign.
+- [x] Source-inspection assertions cover the bounded extracted module set and retain every current assertion.
+- [ ] Frozen 13/3/90-test assets are unchanged and pass. The files are byte-identical, but the required Studio browser suite has six failures; see Validation Results and Unresolved Issues.
 
 
 ## Validation
 
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/studio-workspace.test.tsx':'400ce6b68cb5a9fdeecf9233bc2b3f58a42742c974da2c5b6ffd2b5a16ae44a7','tests/agent-configuration-screen-state.test.tsx':'72c71a09eaf5bdc2d79c686cf5ec43d5abfd49cfe421cadedbbe665140582b0a','tests/external-tools-ui.test.tsx':'97ffbc70e29d4ff60a48e5aabd0ff3faec6dea7984ed0f239fcb4a8fc868f4d3'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen hashes.
-- [ ] `npx vitest run tests/studio-workspace-controller.test.tsx tests/studio-workspace.test.tsx tests/agent-configuration-screen-state.test.tsx tests/external-tools-ui.test.tsx tests/legacy-capability-surface.test.ts tests/arch024-preview-cleanup.test.ts` passes.
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/studio-workspace.test.tsx':'400ce6b68cb5a9fdeecf9233bc2b3f58a42742c974da2c5b6ffd2b5a16ae44a7','tests/agent-configuration-screen-state.test.tsx':'72c71a09eaf5bdc2d79c686cf5ec43d5abfd49cfe421cadedbbe665140582b0a','tests/external-tools-ui.test.tsx':'97ffbc70e29d4ff60a48e5aabd0ff3faec6dea7984ed0f239fcb4a8fc868f4d3'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen hashes.
+- [ ] `npx vitest run tests/studio-workspace-controller.test.tsx tests/studio-workspace.test.tsx tests/agent-configuration-screen-state.test.tsx tests/external-tools-ui.test.tsx tests/legacy-capability-surface.test.ts tests/arch024-preview-cleanup.test.ts` passes. It reports 6 failed and 116 passed; failures are all in unchanged `tests/studio-workspace.test.tsx`.
 
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run typecheck` passes.
-- [ ] targeted `npm run lint -- <changed Commerce source/test files>` (or repository-equivalent targeted ESLint invocation using the declared lint script) passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [ ] `npm test` passes without task-introduced regression. Full run: 30 failed, 128 passed, 5 skipped; 65 failed, 1,308 passed, 9 skipped. Detailed failures include the unchanged Studio browser and Tool Authoring screen suites.
+- [x] `npm run typecheck` passes after Prisma Client generation.
+- [x] targeted `npm run lint -- <changed Commerce source/test files>` (or repository-equivalent targeted ESLint invocation using the declared lint script) exits successfully; two hook-dependency warnings are reported in untouched `src/studio/code-response/code-response-panel.tsx`.
+- [x] `npm run build` succeeds; Next reports the existing Nunjucks dynamic-require warning.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -156,35 +156,52 @@ None
 
 ### Status
 
-Not Started
+Ready for Architect Review; frozen-suite acceptance remains unresolved.
 
 ### Files Changed
 
-None
+- `moda-interact-commerce/components/studio-workspace.tsx`
+- `moda-interact-commerce/components/studio-workspace/studio-workspace.types.ts`
+- `moda-interact-commerce/components/studio-workspace/use-studio-workspace-controller.ts`
+- `moda-interact-commerce/tests/studio-workspace-controller.test.tsx`
+- `moda-interact-commerce/tests/legacy-capability-surface.test.ts`
+- `moda-interact-commerce/tests/arch024-preview-cleanup.test.ts`
 
 ### Work Completed
 
-None
+- Claimed Commerce Attempt 1 as `copilot` (claim commit `5e9ca7b83b553eb925c8c82218a6cdc1626a7a37`); dependency `ARCH-024-COMMERCE-003` passed.
+- Implementation ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-COMMERCE-001`, on `task/ARCH-025-COMMERCE-001`; parent report ran in `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-COMMERCE-001`.
+- Extracted route/load orchestration, global command admission, unknown-operation reconciliation, dirty revision fencing and navigation-blocker state into the typed hook. Kept public shell/type exports, specialized early-return boundaries, server actions and page JSX in their existing owners.
+- Added five focused controller cases and updated only the source-loading mechanics in the two authorized source-inspection tests; existing assertions were retained.
+- Verified the three frozen files against their required SHA-256 values. No frozen test asset was edited.
+- Installed the locked npm dependencies and generated Prisma Client from the canonical schema before typecheck/build validation. Commerce is at Node `v24.19.0`; submodule `database` is at `cfeeb12456b4e05067a96857a8c47837d7e33bbd` (`heads/main`).
 
 ### Validation Results
 
-None
+- `npx vitest run tests/studio-workspace-controller.test.tsx tests/legacy-capability-surface.test.ts tests/arch024-preview-cleanup.test.ts`: passed, 3 files / 8 tests.
+- Required six-file focused Vitest command: 6 failed, 116 passed, 122 total; only the unchanged `tests/studio-workspace.test.tsx` file failed.
+- `npm test`: 30 failed, 128 passed, 5 skipped across 163 files; 65 failed, 1,308 passed, 9 skipped. Existing broad-suite failures are outside the controller/scanner tests; detailed output included `tests/tool-authoring-screen.test.tsx` timing out.
+- `npm run typecheck`: passed.
+- Targeted ESLint command: exit 0, 0 errors; two warnings in untouched `src/studio/code-response/code-response-panel.tsx`.
+- `npm run build`: passed; includes successful manual/runtime packaging smoke checks and production build. Next emitted a Nunjucks dynamic-require warning.
+- Frozen hashes: all three expected SHA-256 values matched.
+- `git diff --check`: passed.
 
 ### Deviations
 
-None
+The frozen Studio browser suite and full repository suite do not pass. The frozen test files remain byte-identical, and no canonical Tool Authoring/UI owner or frozen test was changed because doing so would exceed this task's move-only authorized scope. Architect review should determine whether these are baseline test/production mismatches or require a separate task before accepting the frozen-suite criterion.
 
 ### Assumptions
 
-None
+The downstream controller contract is adequate for COMMERCE-002..005 based on the values/actions consumed by the retained shell and the focused behavior tests; later tasks remain consume-only as specified.
 
 ### Unresolved Issues
 
-None
+The frozen `tests/studio-workspace.test.tsx` failures include new-tool tests querying authoring fields without invoking the existing Tool Library create action, and detail-edit tests querying `Save draft` while the existing editor is on the `Request` tab. The original committed shell invokes the unchanged `ToolAuthoringScreen` with the same props; this extraction did not alter that screen. The full test command also reports 65 failures overall, including a timeout in `tests/tool-authoring-screen.test.tsx`. These failures need architect classification; the explicit frozen-suite pass criterion is not met.
 
 ### Architectural Concerns
 
-None
+No new router, command bus, state store or dependency-injection layer was introduced. No server-action signatures, persistence behavior, canonical owner files or frozen test assets were changed. Do not start `ARCH-025-COMMERCE-002` until architect review resolves the failed validation gate.
 
 ## Architect Review
 
