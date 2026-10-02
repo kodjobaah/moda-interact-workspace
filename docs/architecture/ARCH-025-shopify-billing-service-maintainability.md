@@ -1,24 +1,25 @@
 ---
 id: ARCH-025
-title: Shopify and Background runtime maintainability refactor
+title: Runtime and Admin maintainability refactor
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-01
 updated: 2026-10-02
 ---
 
-# ARCH-025: Shopify and Background runtime maintainability refactor
+# ARCH-025: Runtime and Admin maintainability refactor
 
 ## Status
 
 In Progress.
 
-ARCH-025 now contains three **independent maintainability sub-tranches** across two repository owners:
+ARCH-025 now contains four **independent maintainability sub-tranches** across three repository owners:
 
 ```text
 moda-interact/             Shopify BillingService façade
 moda-interact-background/  billing subscription reconciliation coordinator
 moda-interact-background/  CheckoutRecoveryService lifecycle façade
+moda-interact-admin/       MerchantPricingPlanBuilder wizard
 ```
 
 The historical architecture filename is retained so already-materialised task files keep a stable durable reference. The architecture ID and this document remain authoritative for all ARCH-025 tranches.
@@ -29,7 +30,9 @@ The first Background tranche refactors `src/services/billing-subscription-reconc
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
-There is deliberately **no dependency edge between the three sub-tranches**. The two Background chains touch different high-churn service files and may proceed independently; each chain remains sequential internally so accepted extraction interfaces are stable before the next extraction builds on them.
+The Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Ready; ADMIN-002 through ADMIN-008 remain dependency-gated.
+
+There is deliberately **no dependency edge between the four sub-tranches**. They modify different high-churn files across three repositories and may proceed independently; each chain remains sequential internally so accepted extraction interfaces are stable before the next extraction builds on them.
 
 ## Problem
 
@@ -83,7 +86,24 @@ ARCH-024 Background work is integrated in the reviewed baseline: `RecoveryAgentC
 
 Canonical adjacent owners already exist and remain authoritative: `RecoveryBillingService`, `RecoveryOutreachAttemptService`, `recoveryOutreachFollowUpService`, `RecoveryPolicyService`, `PendingRecoveryCandidateService`, `ShopExecutionEligibilityService`, `AbandonedCheckoutLookupService`, `RecoveryCapacityResumeService`, `OutboundWhatsAppAdmissionService`, `ConversationService`, `ConversationMessageService` and `WhatsAppTemplateSelectorService`. ARCH-025 must increase delegation to these owners rather than create a second billing, queue, candidate-correlation, conversation or WhatsApp-send stack.
 
-The objective in both repositories is maintainability, not behavioural redesign. Existing callers, routes, worker entrypoints, queue contracts, durable billing semantics and durable recovery semantics remain stable while internal owners are extracted incrementally.
+### Admin merchant pricing-plan builder
+
+`moda-interact-admin/src/components/admin/merchant/merchant-pricing-plan-builder.tsx` is approximately 1,553 lines and combines seven wizard screens with a large cross-step draft, local transition rules and several derived read models:
+
+- plan identity/status, Commerce-model assignment and supported-feature/Merchant Knowledge configuration;
+- create/edit catalogue placement semantics;
+- Shopify recurring pricing and recovery-meter configuration;
+- usage-event/tier editing;
+- English merchant content/highlight editing;
+- portfolio economics presentation and SUPER_ADMIN override request state;
+- translation workbook retention/validation and final review/submission;
+- navigation gating, hidden form payload composition and final submit eligibility.
+
+ARCH-024 Admin model-assignment work is integrated in the reviewed baseline: the draft contains `commerceModelId`, `Use Platform default` is supported, and a saved model that is no longer selectable remains visible as a repairable current value. Existing policy/validation modules under `src/lib/admin/merchant/` remain canonical and must not be duplicated inside the UI controller.
+
+The current security suite intentionally reads the builder source and asserts product/security UI invariants. ADMIN-001 therefore makes those assertions extraction-safe by scanning the bounded builder module set without deleting or weakening them before JSX begins moving into child modules.
+
+The objective across all participating repositories is maintainability, not behavioural redesign. Existing callers, routes, worker entrypoints, form/action contracts, queue contracts, durable billing/recovery semantics and Admin product policy remain stable while internal owners are extracted incrementally.
 
 ## Goals
 
@@ -101,14 +121,18 @@ The objective in both repositories is maintainability, not behavioural redesign.
 - Preserve checkout-scoped serialization, order-processed tombstones, recovery generation ordering, durable capacity-block state and deterministic outreach idempotency keys.
 - Preserve the post-ARCH-024 `RecoveryAgentContext` shape, including canonical `shopId`, shop domain and bounded conversation-history semantics.
 - Reuse the existing recovery billing, outreach-attempt, follow-up scheduling, policy, candidate-correlation, eligibility, checkout lookup, capacity-resume, outbound admission, conversation and template-selection owners.
-- Make Shopify `syncSubscription()`, Background `reconcileJob()` and the final `CheckoutRecoveryService` façade reduction the terminal extraction steps in their respective sub-tranches.
+- Keep `MerchantPricingPlanBuilder` at its existing module path with the same props, form action, hidden-field contract, seven step labels/order and final submit semantics throughout the Admin structural phase.
+- Move local Admin draft/state transitions into one typed reducer/controller without moving server/domain validation into React state.
+- Preserve create-versus-edit plan-kind/placement behaviour, exact navigation gates, economics-override invalidation semantics, Merchant Knowledge product-policy inclusion, unavailable-current-Commerce-model repair, translation-retention rules and the always-mounted translation workbook.
+- Keep existing pure/domain owners (`pricing-plan-builder.ts`, `pricing-builder-payload.ts`, `pricing-economics*`, `pricing-translations.ts`, `pricing-plan-feature-controls.ts`) authoritative.
+- Make Shopify `syncSubscription()`, Background `reconcileJob()`, the final `CheckoutRecoveryService` façade reduction and the final `MerchantPricingPlanBuilder` wizard-shell reduction the terminal extraction steps in their respective sub-tranches.
 
 ## Non-Goals
 
 ARCH-025 does not authorise:
 
-- implementation changes outside `moda-interact/` and `moda-interact-background/`;
-- Admin pricing-plan authoring, Commerce Studio, Messaging, Shared, Database, Gateway or System Test feature work;
+- implementation changes outside `moda-interact/`, `moda-interact-background/` and `moda-interact-admin/`;
+- Admin merchant-pricing-plan server-action transaction refactoring, QueueMonitor refactoring, other Admin UI refactors, Commerce Studio, Messaging, Shared, Database, Gateway or System Test feature work;
 - redesigning CheckoutRecovery product behaviour, outreach policy, recovery capacity economics, candidate/order correlation semantics or CommerceAgent context contracts;
 - Prisma schema or migration changes;
 - Shared queue/event contract changes;
@@ -125,6 +149,9 @@ ARCH-025 does not authorise:
 - refactoring `recovery-credit-purchase-management.service.ts` except where a later separate architecture explicitly authorises it;
 - refactoring the canonical adjacent recovery services themselves except for import/wiring changes explicitly required by an ARCH-025 CheckoutRecovery task;
 - introducing a second WhatsApp send path, billing reservation implementation, pending-candidate store, recovery queue framework or generic repository/service framework.
+- changing `mutateMerchantPricingPlanAction`, server-side pricing/economics/translation policy or SUPER_ADMIN authorization as part of the builder extraction;
+- introducing a new React form framework, client-side domain validation engine, global state store or UI component framework solely for this refactor;
+- conditionally unmounting `MerchantPricingTranslationWorkbook` during normal wizard navigation or otherwise discarding its local workbook/upload state;
 
 If an implementation task discovers that a safe extraction requires one of these changes, it must stop and return the dependency/conflict to `moda_architect`.
 
@@ -248,6 +275,43 @@ The constructor remains:
 
 Direct worker callers currently include checkout, order, pending-candidate, recovery-follow-up, capacity-resume and WhatsApp flows. Existing worker entrypoints must continue calling the `checkoutRecoveryService` singleton during the structural phase.
 
+### Admin merchant pricing-plan builder
+
+The public Admin UI boundary remains:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+  MerchantPricingPlanBuilder
+```
+
+The current component owns these seven ordered steps:
+
+```text
+0 Plan
+1 Catalogue placement
+2 Shopify pricing
+3 Usage events
+4 Merchant content
+5 Portfolio economics
+6 Translations & review
+```
+
+Important current transition semantics that are part of the compatibility contract include:
+
+- forward navigation is only one step at a time; backward navigation is always permitted;
+- step 3 blocks forward navigation only for an unbounded zero-cost fixed usage event;
+- step 4 blocks forward navigation only when merchant content is invalid;
+- step 5 blocks forward navigation until economics passes or an allowed override has a valid reason;
+- final submission is stricter than step navigation and additionally requires required fields, valid Merchant Knowledge configuration, a bounded admin reason and retained/validated translations;
+- create-time FREE/PAID changes recompute catalogue placement, while edit-time plan-kind changes do not;
+- FREE payload submission nulls the recovery usage-event handle without erasing the retained local draft value;
+- economics override enablement resets only when the current economics configuration key changes (handle, credits, currency, recurring price, effective placement, minimum upgrade premium or serialized usage events);
+- Merchant Knowledge is always submitted in `supportedFeatureKeys` by product policy while its configuration is independently validated;
+- the current unavailable Commerce model stays visible/selectable until explicitly repaired;
+- `MerchantPricingTranslationWorkbook` remains mounted and is hidden outside step 6 so its local uploaded-workbook state survives navigation.
+
+The form continues to submit to `mutateMerchantPricingPlanAction` with hidden `payload`, `translationJson`, `economicsOverrideRequested` and `economicsOverrideReason` fields. Server-side action validation/transactions remain outside this tranche.
+
 ## Proposed Architecture
 
 ### Shopify application target
@@ -357,6 +421,32 @@ The final provider-plan lookup/branch dispatch remains bounded coordinator orche
 
 All collaborator constructors in both repositories are inert wiring only: no provider/database I/O, environment discovery or eager Prisma-model access.
 
+### Admin target
+
+The final Admin boundary remains the existing exported component while internal draft/state and substantial step markup move behind it:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+  MerchantPricingPlanBuilder                     form shell + hidden fields + navigation
+
+src/components/admin/merchant/merchant-pricing-plan-builder/
+  merchant-pricing-plan-draft.ts                 typed draft, pure reducer/actions/selectors
+  use-merchant-pricing-plan-draft.ts             thin React wiring around the pure draft controller
+  plan-step.tsx                                  identity/status/model/features/knowledge
+  catalogue-placement-step.tsx                   placement presentation
+  shopify-pricing-step.tsx                       recovery meter/currency/recurring price
+  usage-events-step.tsx                          usage events + tiers
+  merchant-content-step.tsx                      description/highlights
+  portfolio-economics-step.tsx                   economics presentation/override controls
+  translations-review-step.tsx                   mounted workbook + final review/admin reason/submit UI
+```
+
+The pure draft/controller owns local UI transitions only. It may call existing canonical pure helpers but must not duplicate server-side payload validation, economics policy, translation validation or feature policy. Step components receive bounded props/actions and do not independently reconstruct the complete draft or hidden submission payload.
+
+ADMIN-001 also changes the existing source-based security test harness so builder assertions read the bounded builder shell + `merchant-pricing-plan-builder/**` module set. Assertion names/patterns remain semantically equivalent; this is test-location adaptation, not a behavioural expectation change. After ADMIN-001 that security test becomes immutable for ADMIN-002..008.
+
+The Admin chain is independent of the Shopify and Background chains. Within ADMIN-001..008, tasks are sequential because each extraction relies on the accepted typed draft/controller and previously established child-module contracts.
+
 ## Regression Baseline
 
 ### Shopify frozen façade asset
@@ -420,11 +510,36 @@ Every CheckoutRecovery-chain task MUST leave all four files byte-for-byte unchan
 
 The supplied ZIP intentionally has no `moda-interact-background/node_modules`, so this architecture definition does **not** claim runtime execution of either Background frozen baseline while authoring the tasks. Runtime validation belongs to each prepared implementation worktree.
 
+### Admin frozen policy assets
+
+These existing pure/domain test assets are frozen byte-for-byte throughout ADMIN-001..008:
+
+```text
+tests/unit/merchant-pricing-builder-payload.test.ts
+  SHA-256 a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243
+tests/unit/merchant-pricing-plan-model.test.ts
+  SHA-256 e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086
+tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts
+  SHA-256 610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f
+tests/unit/merchant-pricing-economics.test.ts
+  SHA-256 eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8
+tests/unit/merchant-pricing-economics-override.test.ts
+  SHA-256 434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7
+tests/unit/merchant-pricing-translations.test.ts
+  SHA-256 90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92
+tests/unit/merchant-pricing-translation-workbook.test.ts
+  SHA-256 385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8
+```
+
+`tests/security/admin-merchant-pricing-plan.test.mjs` starts from SHA-256 `89243548c486f68cc7b741e9cac6ded5090ba477f1049e512ae6f982ccd92856` with 13 tests. ADMIN-001 may modify only its builder source-loading mechanism so existing builder assertions scan the bounded extracted module set; existing test names and product/security assertions must not be removed or weakened. ADMIN-002..008 MUST NOT modify that accepted ADMIN-001 test file.
+
+ADMIN-001 adds focused pure controller tests in `tests/unit/merchant-pricing-plan-builder-draft.test.ts`. Later step-extraction tasks reuse that controller suite plus the extraction-safe security suite rather than introducing a new React test framework solely for structural extraction.
+
 ## Data Model
 
 No schema or migration changes are authorised.
 
-Existing PostgreSQL tables, relationships, uniqueness constraints, BillingPeriod/Subscription lifecycle semantics, CheckoutRecovery/outreach/status-history semantics and entitlement counters remain unchanged.
+Existing PostgreSQL tables, relationships, uniqueness constraints, BillingPeriod/Subscription lifecycle semantics, CheckoutRecovery/outreach/status-history semantics and entitlement counters remain unchanged. The Admin builder continues producing the same server-validated MerchantPricingPlan payload; ARCH-025 introduces no Admin schema/migration change.
 
 ## Contracts
 
@@ -437,6 +552,8 @@ The Background reconciliation compatibility contract remains `BillingSubscriptio
 The Background recovery compatibility contract remains `CheckoutRecoveryService` / `checkoutRecoveryService` in `src/services/checkout-recovery.service.ts`, including the existing constructor, all 17 current public methods and the exported `MaturedCandidateMaterializationResult` / `CheckoutRefreshResult` types. Existing checkout/order/pending-candidate/follow-up/capacity/WhatsApp/Commerce callers remain valid throughout the structural phase.
 
 The Shared billing reconciliation queue contract remains owned by `@modainteract/moda-interact-shared/billing`; no ARCH-025 task may redefine or version it locally. CheckoutRecovery queue/provider/event contracts likewise remain unchanged. Extracted collaborator APIs are repository-internal implementation contracts only.
+
+The Admin compatibility contract remains the `MerchantPricingPlanBuilder` props/export and its HTML form submission to `mutateMerchantPricingPlanAction`, including hidden `intent`, `payload`, `translationJson`, `economicsOverrideRequested` and `economicsOverrideReason` fields. Extracted draft/step APIs are repository-internal UI contracts only.
 
 ## Consistency and Transactions
 
@@ -493,6 +610,10 @@ Structural extraction MUST preserve:
 
 No CheckoutRecovery task may create a second billing, candidate/tombstone, WhatsApp-send, follow-up queue, capacity-resume queue or conversation implementation.
 
+### Admin builder
+
+No Prisma transaction moves into the client refactor. `mutateMerchantPricingPlanAction` remains the server-side authority for parsing, SUPER_ADMIN authorization, catalogue concurrency, economics override approval, translation validation, feature persistence, usage-event persistence and audit writes. The client draft/controller must not claim those responsibilities.
+
 ## Ordering
 
 The three sub-tranches are independent and are not serialized against one another:
@@ -506,6 +627,8 @@ Background recovery:       BACKGROUND-008 -> ... -> BACKGROUND-015
 Within each individual chain tasks execute sequentially because later tasks consume interfaces established by earlier tasks. The two Background chains intentionally may execute independently even though they share one repository because they modify different primary coordinator/façade files and have no runtime-contract dependency.
 
 Do not parallelise tasks **within the same chain**. Do not invent a cross-chain dependency or priority when both Background frontiers are Ready.
+
+For the Admin wizard, preserve the seven-step order, one-step forward navigation limit, unrestricted backward navigation and the exact step-specific forward gates described above. Moving a step into another component must not change when the translation workbook mounts or when final submission becomes available.
 
 ## Failure Handling
 
@@ -543,6 +666,8 @@ PROVIDER_CYCLE_LAG
 
 Lifecycle-specific reconciliation retry decisions remain with their owning handlers; do not create a generic retry service that centralises business policy. CheckoutRecovery extraction likewise preserves existing result/reason strings, provider-failure distinctions, template/admission suppression outcomes and recovery status transitions rather than normalising them.
 
+Admin extraction must preserve the current non-destructive translation workbook behaviour, unavailable-Commerce-model repair warning, economics hard-fail/override distinctions and local draft state across normal step navigation. Structural extraction must not convert render/local-state errors into server mutations or alter server-returned validation/error semantics.
+
 ## Scalability
 
 This is a structural refactor only. It must not add provider calls, Prisma round trips, transaction duration, queue work or per-request durable writes relative to the current equivalent path. Existing deliberate rereads/fences (for example the recovery-credit purchase provider and catalogue revalidation reads) must not be coalesced away.
@@ -560,6 +685,8 @@ No authentication, authorization, tenant isolation or secret-handling boundary c
 Extracted services receive server-side dependencies only. No provider credential, Shopify token, whole customer object or billing payload may be newly exposed to browser code or logs.
 
 Background extraction must likewise keep provider credentials, Shopify tokens and whole provider/customer payloads out of new logs and preserve tenant/shop scoping on every durable lookup/mutation. CheckoutRecovery mapping must continue ignoring untrusted/stale webhook basket/customer fields where current Shopify data is the authoritative recovery snapshot source.
+
+Admin extraction does not move authorization client-side. `mutateMerchantPricingPlanAction` remains protected by the existing Platform SUPER_ADMIN mutation boundary and revalidates every submitted payload. The builder may present availability/repair state but must not treat client-side selectors as authorization or durable validation.
 
 ## Observability
 
@@ -607,9 +734,13 @@ The checkout-recovery chain is independent of BACKGROUND-001..007 and the Shopif
 
 Rollback is ordinary code rollback of the affected repository commit; there is no schema rollback.
 
+### Admin builder rollout
+
+ADMIN-001..008 are a pre-production-compatible structural UI extraction with no form/action/schema migration. Each task is independently reviewable, retains the public component module, and can be rolled back by reverting that task's repository commit. The Admin chain may run independently of both Background chains because it modifies a different repository and no shared runtime contract.
+
 ## Repository Responsibilities
 
-Two implementation repositories participate, independently:
+Three implementation repositories participate, independently:
 
 ```text
 repository: moda-interact
@@ -619,9 +750,13 @@ scope: Shopify BillingService tranche
 repository: moda-interact-background
 assigned_agent: moda_background
 scope: billing subscription reconciliation and CheckoutRecovery maintainability tranches
+
+repository: moda-interact-admin
+assigned_agent: moda_admin
+scope: MerchantPricingPlanBuilder draft/controller and step extraction
 ```
 
-The parent workspace owns architecture/task coordination files. Repository implementation remains confined to the assigned implementation repository plus the assigned parent task report file permitted by the task/VCS protocol. No ARCH-025 task grants either repository agent ownership of the other repository.
+The parent workspace owns architecture/task coordination files. Repository implementation remains confined to the assigned implementation repository plus the assigned parent task report file permitted by the task/VCS protocol. No ARCH-025 task grants one repository agent ownership of another participating repository.
 
 ## Decisions / Tasks
 
@@ -661,6 +796,19 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-BACKGROUND-014 | Extract capacity-blocked recovery resume | Pending | BACKGROUND-013 |
 | ARCH-025-BACKGROUND-015 | Extract recovery agent-context reads and finish the façade | Pending | BACKGROUND-014 |
 
+### Admin tranche
+
+| Task | Outcome | Status | Depends On |
+|---|---|---|---|
+| ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Ready | - |
+| ARCH-025-ADMIN-002 | Extract Plan step | Pending | ADMIN-001 |
+| ARCH-025-ADMIN-003 | Extract Catalogue placement step | Pending | ADMIN-002 |
+| ARCH-025-ADMIN-004 | Extract Shopify pricing step | Pending | ADMIN-003 |
+| ARCH-025-ADMIN-005 | Extract Usage events step | Pending | ADMIN-004 |
+| ARCH-025-ADMIN-006 | Extract Merchant content step | Pending | ADMIN-005 |
+| ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
+| ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Pending | ADMIN-007 |
+
 Execution graph:
 
 ```text
@@ -671,15 +819,18 @@ BACKGROUND-001 -> BACKGROUND-002 -> BACKGROUND-003 -> BACKGROUND-004
 
 BACKGROUND-008 -> BACKGROUND-009 -> BACKGROUND-010 -> BACKGROUND-011
       -> BACKGROUND-012 -> BACKGROUND-013 -> BACKGROUND-014 -> BACKGROUND-015
+
+ADMIN-001 -> ADMIN-002 -> ADMIN-003 -> ADMIN-004
+      -> ADMIN-005 -> ADMIN-006 -> ADMIN-007 -> ADMIN-008
 ```
 
-There is deliberately no dependency edge between the Shopify tranche, the Background reconciliation chain and the Background CheckoutRecovery chain.
+There is deliberately no dependency edge between the Shopify tranche, either Background chain and the Admin builder chain.
 
 ## System Validation
 
 A separate `moda_system_test` task is **not applicable** to this structural maintainability initiative because ARCH-025 introduces no new cross-service contract, infrastructure topology, schema, queue protocol or externally observable product behaviour.
 
-Architecture completion instead requires all three sub-tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background reconciliation, all 98 frozen reconciliation tests are required to pass. CheckoutRecovery extraction additionally freezes these integrated post-ARCH-024 regression assets byte-for-byte:
+Architecture completion instead requires all four sub-tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background reconciliation, all 98 frozen reconciliation tests are required to pass. CheckoutRecovery extraction additionally freezes these integrated post-ARCH-024 regression assets byte-for-byte:
 
 ```text
 tests/unit/services/matured-candidate.materialization.test.ts
@@ -690,7 +841,9 @@ tests/unit/services/order-recovery-correlation.test.ts
   SHA-256 7b3d3020f822ee1bc514de7aee9f15245f3d86cd6dacd6fee6b1f892a6516dbf
 tests/unit/services/checkout-recovery.capacity-resume.test.ts
   SHA-256 8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1
-``` This does not waive repository-level integration/runtime validation already exercised by `npm test` or the production build.
+```
+
+The Admin tranche must preserve the seven frozen pure-policy test files listed above, retain all 13 existing `admin-merchant-pricing-plan.test.mjs` tests/assertions through its ADMIN-001 extraction-safe loader adjustment, then keep the accepted security file unchanged for ADMIN-002..008. Every Admin task must pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. This does not waive repository-level integration/runtime validation already exercised by those commands.
 
 ## Open Questions
 
@@ -698,6 +851,7 @@ None.
 
 ## Change History
 
+- 2026-10-02: Added the independent Admin `MerchantPricingPlanBuilder` maintainability chain ADMIN-001..008 against the post-ARCH-024 model-assignment baseline. Preserved the seven-step form/action contract, exact navigation/economics/translation/product-policy semantics, established a typed draft/controller boundary before JSX extraction, froze seven pure-policy test assets, and made the existing source-based security assertions extraction-safe without weakening them.
 - 2026-10-02: Added the independent CheckoutRecoveryService maintainability chain BACKGROUND-008..015 against the integrated post-ARCH-024 Background baseline. Preserved the worker-facing façade, canonical Shop `shopId` agent context, checkout-scoped race guards, recovery generation/idempotency, billing/provider boundaries and existing adjacent recovery owners; froze four post-ARCH-024 regression assets and kept the chain independent from BACKGROUND-001..007.
 - 2026-10-02: SHOPIFY-011 Attempt 2 accepted the report-only reconciliation for the final Shopify sync-coordinator extraction at reviewed implementation commit `3e96f68decc0051aefa9dfbb53101a3661895a9b` and published parent report tip `ac475108c5ec5326d14cbc151d2825786b4b008b`. `BillingService.syncSubscription()` is a thin delegate, the provider-to-local coordinator preserves the accepted provider/transaction/locking/projection semantics, and the full Shopify tranche is now Complete. ARCH-025 remains In Progress because the independent Background tranche is still active.
 - 2026-10-02: Deep Background task-coherence review tightened parse-before-runtime-config semantics, clock/log preservation, reconstruction count semantics, cycle error-clearing distinctions, exact current-plan eligibility gates, reinstall pre-transaction rereads and the legacy FROZEN `continue` provider-plan fallthrough. Kept the final provider-plan lookup/branch dispatch as bounded coordinator orchestration so accepted lifecycle-service interfaces remain sufficient through BACKGROUND-007.
