@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 80
-executor: copilot
-claimed_at: 2026-10-02T00:03:38Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-007
@@ -241,24 +241,45 @@ implementation commit: 96f7db9e437b9732ba0f2b4186fa9306e72dec97 (pushed to origi
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 accepted.
+
+The recovery-credit purchase request extraction is a move-only refactor. Direct comparison with the pre-task `BillingService.requestRecoveryCreditPack(...)` implementation confirms the complete command body is unchanged apart from ownership/delegation. Provider verification remains outside the Prisma transaction; exactly two lifecycle snapshots and two catalogue reads remain on the successful path before the Serializable transaction; the Subscription row is locked before unresolved-purchase and durable-state revalidation; and no provider/network operation occurs inside the transaction.
+
+The four-argument `BillingService.requestRecoveryCreditPack(shopId, intent, purchaseId, eventHandle)` compatibility method delegates only those four declared arguments. The fifth attacker-controlled runtime argument exercised by the frozen regression suite is not forwarded or inspected and therefore cannot influence persisted plan, meter, credits or pricing evidence.
+
+Existing-purchase replay, same-shop validation, unresolved same-offer blocking, exact BillingPeriod/cycle/phase validation, provider-before evidence capture, provider-context identity, provider/catalogue change fencing, deterministic Shopify usage idempotency, usage-event/purchase write ordering and P2002 same-ID recovery semantics are unchanged. `recovery-credit-purchase-management.service.ts` and all routes remain untouched.
+
+Implementation commit reviewed: `96f7db9e437b9732ba0f2b4186fa9306e72dec97`.
+Parent Completion Report reviewed: `42652f3bf02ad7443b20073e62551f41050668f9`.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/app/services/billing/recovery-credit-purchase-request.service.ts`
+- `moda-interact/tests/unit/services/billing/recovery-credit-purchase-request.service.test.ts`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-008-extract-recovery-credit-purchase-request-service.md`
+- `docs/decisions/shopify/ARCH-025/_index.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- `docs/development-baseline.md`
 
 ### Validation Reviewed
 
-None.
+- Focused purchase-request suite: 10/10 passed.
+- Frozen façade SHA-256 remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; frozen test diff is empty.
+- Frozen façade suite: 195 passed / 18 failed, with all failures contained in `ARCH025-TEST-001`.
+- Full suite: 1,001 passed / 24 failed / 33 skipped, with all failures contained in `ARCH025-TEST-001` and no task-only failing identifier.
+- Prisma generation, typecheck, task-scoped ESLint, production build and `git diff --check`: passed.
+- GitHub branch comparison confirms implementation commit `96f7db9e437b9732ba0f2b4186fa9306e72dec97` is the single task implementation commit ahead of its base and changes only the three authorised implementation/test files.
+- Uploaded review snapshot contains no cross-task `node_modules` symlink.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-025 and SHOPIFY-008. Purchase initiation has one dedicated owner; the façade remains stable; SHOPIFY-001 cycle helpers and SHOPIFY-002 catalogue ownership are reused without coalescing the deliberate rereads; provider/transaction, locking, Serializable isolation, idempotency and durable-fencing semantics are preserved; and no new external contract, database schema, route or purchase-management ownership change is introduced.
 
 ### Follow-up
 
-None.
+`ARCH-025-SHOPIFY-009` is now Ready. Do not begin SHOPIFY-010 until SHOPIFY-009 is architect-accepted Complete.
