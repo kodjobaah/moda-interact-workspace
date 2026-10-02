@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 50
-executor: copilot
-claimed_at: 2026-10-02T00:34:11Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-024-COMMERCE-005
@@ -973,9 +973,17 @@ None.
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
+
+Attempt 2 — Accepted (2026-10-02).
+
+A1-R1 is closed. The selected-Shop executor now accepts one or more manifest Capability members matching the exact `toolId + toolRevisionId`, fails closed when no matching member exists, and requires every matching member's `toolDescriptor` to canonical-equal the requested descriptor before provider dispatch. This preserves the accepted C004 many-Capabilities-to-one-Tool composition while remaining fail closed for conflicting duplicate descriptors.
+
+The Attempt 2 regression constructs two distinct Capability members sharing one Tool revision and one deduplicated grant entry containing both Capability keys, proves the Tool executes exactly once through `backend.execution`, and separately proves a conflicting duplicate descriptor returns `INCOMPATIBLE_VERSION` without dispatch. The single deduplicated grant-entry integrity check and frozen-definition checks remain unchanged.
+
+The Attempt 2 implementation delta is bounded to `src/commerce/integration/preview/adapters.ts` and `tests/selected-shop-preview-tool-execution.test.ts`; `tsconfig.tsbuildinfo` is generated validation output. No C007 source was started.
 
 Attempt 1 — Changes Requested (2026-10-02).
 
@@ -1038,6 +1046,12 @@ No database, Shared, Admin, Background, Gateway, model-runtime, credential-admin
 
 ### Validation Reviewed
 
+- Re-reviewed the exact Attempt 2 delta against Attempt 1: only `src/commerce/integration/preview/adapters.ts`, `tests/selected-shop-preview-tool-execution.test.ts` and generated `tsconfig.tsbuildinfo` differ in the Commerce tree.
+- Confirmed the valid shared-revision regression retains distinct Capability members, one deduplicated grant entry and both Capability keys, and dispatches exactly once through the production DefinitionExecutor seam.
+- Confirmed the conflicting duplicate-descriptor regression returns `INCOMPATIBLE_VERSION` and does not call the execution port.
+- Reviewed the submitted Attempt 2 validation evidence: focused duplicate-capability matrix 8/8; complete C006 packet 11 files / 102 tests; targeted ESLint; TypeScript; production build; changed-file diagnostics; static audits; `git diff --check`.
+- The uploaded review archive contains no installed dependency tree or Git metadata, so dependency-backed validation and remote-head equality were not independently replayed in this review environment; the Completion Report records those results and the clean remote-aligned task heads.
+
 - Inspected the exact C006 implementation delta against the accepted C005 snapshot.
 - Confirmed C004's accepted contract and regression fixture retain multiple Capability members sharing one Tool revision while deduplicating Tool/grant entries.
 - Confirmed the current C006 `manifestMatches.length !== 1` guard rejects that valid manifest shape before `backend.execution.execute(...)`.
@@ -1046,12 +1060,14 @@ No database, Shared, Admin, Background, Gateway, model-runtime, credential-admin
 
 ### Architecture Conformance
 
-Changes Required.
+Conforms.
 
-The implementation conforms to the selected-Shop execution, frozen-definition, live-credential/session, fixture-separation, provider-budget, secret-safety, persistence and C007-lockout boundaries except for A1-R1. A1-R1 breaks the already-accepted C004 many-Capabilities-to-one-Tool composition invariant and must be corrected before C006 can become Complete.
+The implementation now conforms to the selected-Shop execution, C004 shared-Tool composition, frozen-definition, live-credential/session, fixture-separation, provider-budget, secret-safety, persistence and C007-lockout boundaries. A1-R1 is corrected without broadening task scope.
 
 ### Follow-up
 
-Return `ARCH-024-COMMERCE-006` to `ready` with Attempt 1 preserved and the execution claim cleared. The next authorized `/moda-task ARCH-024-COMMERCE-006` claim becomes Attempt 2.
+`ARCH-024-COMMERCE-006` is Complete / Accepted at Attempt 2.
 
-`ARCH-024-COMMERCE-007` remains Pending until C006 is architect-accepted Complete.
+`ARCH-024-COMMERCE-007` is promoted to Ready because both declared dependencies, `ARCH-024-COMMERCE-006` and `ARCH-024-SHARED-002`, are Complete. Do not start C007 as part of this acceptance reconciliation.
+
+`ARCH-024-GATEWAY-001` remains Pending on `ARCH-024-COMMERCE-007`.
