@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -181,7 +181,7 @@ None
 
 ### Status
 
-Attempt 1 implementation and validation evidence remain recorded below. The task is now `pending` because its explicit dependency, `ARCH-025-BACKGROUND-001`, has been reopened; no Attempt 2 claim is taken.
+Attempt 1 implementation and validation evidence remain recorded below. BACKGROUND-001 is again architect-accepted Complete, so this task is Ready for its next authorized execution. Attempt 1 remains unchanged; no Attempt 2 claim is taken by this frontier update.
 
 ### Files Changed
 
@@ -233,9 +233,11 @@ Attempt 1 implementation and validation evidence remain recorded below. The task
 
 `ARCH-025-BACKGROUND-001` was reopened from `complete` to `ready` at its existing Attempt 2 after a developer request to reconcile the prerequisite lifecycle discrepancy. Because this task is unclaimed (`executor: null`, `claimed_at: null`) and explicitly depends on BACKGROUND-001, its state regresses from `ready` to `pending`. Attempt 1 implementation, validation and review history are preserved; the task must pass the normal dependency gate before another claim.
 
+The prerequisite was subsequently audited, accepted, and restored to Complete at Attempt 3. The architect-authorized dependency-frontier reconciliation therefore restores this task from Pending to Ready, preserving Attempt 1 and null claim fields. The normal launcher must perform any subsequent claim.
+
 ## Dependency-Frontier Reconciliation (2026-10-02, Attempt 3)
 
-BACKGROUND-001 has since been re-audited and is in review at Attempt 3. BACKGROUND-002 remains `pending`, unclaimed, and at Attempt 1 until BACKGROUND-001 is again accepted Complete. The preserved Attempt 1 implementation and validation report above is historical evidence; it does not constitute a new claim or authorize execution.
+BACKGROUND-001 has since been re-audited and accepted Complete at Attempt 3. BACKGROUND-002 is Ready, unclaimed, and at Attempt 1. The preserved Attempt 1 implementation and validation report above is historical evidence; it does not constitute a new claim. Normal `/moda-task` preparation is required to begin Attempt 2.
 
 ## Architect Review
 

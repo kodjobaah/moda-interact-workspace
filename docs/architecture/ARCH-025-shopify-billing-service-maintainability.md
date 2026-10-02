@@ -1221,6 +1221,8 @@ None.
 
 ## Change History
 
+- 2026-10-02: BACKGROUND-001 Attempt 3 is architect-accepted Complete. Reconciled the earlier dependency regression by restoring BACKGROUND-002 to Ready at unchanged Attempt 1, with no claim; the standard launcher remains the only path to claim Attempt 2.
+
 - 2026-10-02: BACKGROUND-001 is in review at Attempt 3; keep BACKGROUND-002 Pending and unclaimed until the dependency is again accepted Complete. Preserve BACKGROUND-002 Attempt 1 implementation/report history while synchronizing current mainline and correcting the frozen Background suite count to 146.
 
 - 2026-10-02: BACKGROUND-001 Attempt 3 accepted the lifecycle/report reconciliation at parent report commit `fc303934c4b92eb22f5116fb501339b779c41417`. No source/test change occurred; implementation task ref `3cc3b89da4c008d00b2cb6c21505eb738b15cf3f` contains reviewed implementation `b3c7a1264a22baf498b14916a341686a751de869` with no file delta. Cleared stale task claim state and made the previously identified frozen reconciliation count correction durable across BACKGROUND-001..007: the required-hash asset currently executes 146 tests, not 98.
