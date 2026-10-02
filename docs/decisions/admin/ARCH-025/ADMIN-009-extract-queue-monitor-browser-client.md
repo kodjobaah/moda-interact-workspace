@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: blocked
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T19:47:20Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on: []
 enables:
@@ -149,19 +149,60 @@ None
 
 ### Status
 
-Not Started
+Blocked pending architect disposition of inherited focused security/i18n and broad-suite failures. No task-introduced regression was found by same-revision comparison, but the required focused suite remains red.
 
 ### Files Changed
 
-None
+Implementation commit `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1` (pushed to `task/ARCH-025-ADMIN-009`):
+
+- `src/components/admin/queue-monitor.tsx`
+- `src/components/admin/queue-monitor/queue-monitor.client.ts`
+- `src/components/admin/queue-monitor/queue-monitor.types.ts`
+- `tests/security/admin-failed-job-detail-panel.test.mjs`
+- `tests/security/admin-internationalization.test.mjs`
+- `tests/security/admin-queue-details-drawer.test.mjs`
+- `tests/security/admin-queue-monitor.test.mjs`
+- `tests/unit/queue-monitor-client.test.ts`
 
 ### Work Completed
 
-None
+- Added browser-local QueueMonitor response types and a bounded client for the existing summary, jobs and detail endpoints; rewired the component while leaving request lifecycle ownership in place.
+- Updated only source loaders in the four authorized security/i18n tests and added the focused client tests. No server/API source or dedicated server test was changed.
+- Implementation branch is clean at `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1` and matches its origin task branch.
+- Launcher preparation succeeded for attempt 1 with canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-009`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-009`, and task branch `task/ARCH-025-ADMIN-009` in both worktrees. The dedicated worktrees were used; the shared workspace and shared implementation checkout were not used for task edits, and no other task worktree was reused.
+- The preparation packet's individual parent/implementation fast-forward and origin/main incorporation fields were not retained in the available session record. The implementation starting revision recorded for attribution was `b8da632a1fcaef7e364be1dc5cca40dfafde4703`. The prepared launcher's recursive submodule synchronization/initialization completed before handoff; its complete recorded submodule list was not retained.
 
 ### Validation Results
 
-None
+Same-revision attribution comparison recorded 2026-10-02. Current task revision: `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1`; starting baseline revision: `b8da632a1fcaef7e364be1dc5cca40dfafde4703`.
+
+Current-task commands and retained summaries:
+
+- `cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-009 && node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` — 27 passed, 2 failed. Underlying process exit code: **not retained**.
+- `cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-009 && npm run test:unit` — 231 passed, 2 failed. Underlying process exit code: **not retained**.
+- `cd /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-009 && npm test` — 226 passed, 9 failed. Underlying process exit code: **not retained**. The retained capture command redirected output to `/tmp/arch-025-admin-009-npm-test-current.log`, printed `npm test exit=%s`, then ended with `exit 0`; that log was subsequently removed, so the printed child exit code is unavailable. The capture wrapper's shell exit code was 0.
+
+Baseline commands and retained summaries:
+
+- `cd /tmp/moda-admin-ARCH-025-ADMIN-009-baseline.rdNGfx && node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` — 27 passed, 2 failed. Underlying process exit code: **not retained**.
+- `cd /tmp/moda-admin-ARCH-025-ADMIN-009-baseline.rdNGfx && npm run test:unit` — 228 passed, 2 failed. The capture wrapper printed `npm run test:unit exit=%s` from the child result and then explicitly returned shell exit code 0. The captured log was removed; the child process exit code is **not retained**.
+- The valid baseline check for the nine named `npm test` failures was this filtered Node test run, not an unfiltered baseline `npm test`:
+
+```sh
+cd /tmp/moda-admin-ARCH-025-ADMIN-009-baseline.rdNGfx && node --test --test-name-pattern='no Moda-owned span/metric creation exists in application code|accepts strict non-negative lifetime Free defaults|every RecoveryCreditPurchaseStatus has an ICU label and filter support|purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups|Admin validates and consumes the published Shared ICU runtime|Admin canonical catalogue keys are independent and intentionally aligned|consumes the published shared release without a local declaration shim|identity, revocation, mutation, session, and route contracts are wired|Tenant Directory KPIs are derived from durable business state' tests/observability/shared-runtime-ownership.test.mjs tests/security/admin-billing-controls.test.mjs tests/security/admin-billing-pack-status.test.mjs tests/security/admin-internationalization.test.mjs tests/security/admin-merchant-support.test.mjs tests/security/admin-security-boundary.test.mjs tests/security/admin-tenant-business-kpis.test.mjs > /tmp/arch-025-admin-009-named-baseline.log 2>&1; result=$?; printf 'named baseline cases exit=%s\n' "$result"; rg -n '^✖|^test at |^ℹ tests|^ℹ pass|^ℹ fail|^ℹ skipped' /tmp/arch-025-admin-009-named-baseline.log; exit 0
+```
+
+The retained prior-session comparison summary reports 9 of 9 selected tests failing with the same assertion categories as the current revision. The wrapper explicitly returned shell exit code 0; the printed `result` value and detailed baseline log were removed and are **not retained**, so the underlying Node test exit code cannot be stated. Exact test names retained in the comparison are `no Moda-owned span/metric creation exists in application code`, `accepts strict non-negative lifetime Free defaults`, `every RecoveryCreditPurchaseStatus has an ICU label and filter support`, `purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups`, `Admin validates and consumes the published Shared ICU runtime`, `Admin canonical catalogue keys are independent and intentionally aligned`, `consumes the published shared release without a local declaration shim`, `identity, revocation, mutation, session, and route contracts are wired`, and `Tenant Directory KPIs are derived from durable business state`.
+
+The exact retained failures at the task revision were:
+
+- Focused security/i18n: `Admin validates and consumes the published Shared ICU runtime` (actual `1.1.0`, expected `1.0.1`) and `Admin canonical catalogue keys are independent and intentionally aligned` (22 expected `billing.refund.*` keys absent).
+- Unit: `rejects stale metadata, locale/header changes, and highlight identity changes` (`assert.ok(...)` false) and `returns all bounded validation issues in canonical order` (no `PLAN_HANDLE_MISMATCH` issue).
+- `npm test`: `no Moda-owned span/metric creation exists in application code` (translation-workbook source matched `/\bsanitize/i`); `accepts strict non-negative lifetime Free defaults` (actual `accepted: null`, expected `accepted: 7`); `every RecoveryCreditPurchaseStatus has an ICU label and filter support` (missing `/Object\.values\(RecoveryCreditPurchaseStatus\)/`); `purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups` (missing `/export function adminBillingPackStatusLabel/`); `Admin validates and consumes the published Shared ICU runtime` (actual `1.1.0`, expected `1.0.1`); `Admin canonical catalogue keys are independent and intentionally aligned` (catalogue key equality failure); `consumes the published shared release without a local declaration shim` (actual `1.1.0`, expected `1.0.1`); `identity, revocation, mutation, session, and route contracts are wired` (`assert.ok(...)` false); and `Tenant Directory KPIs are derived from durable business state` (missing `/type:\s*["']RECOVERY["']/`).
+
+Same-revision comparison reports the same focused failures at `b8da632a1fcaef7e364be1dc5cca40dfafde4703`, the same two merchant-pricing unit failures, and all nine selected package-suite failures with the same assertion categories. This supports that the failures predate ADMIN-009, but does not make the required focused suite pass or waive acceptance. The named package-suite check was filtered to those nine cases; no claim is made that a full baseline `npm test` passed. Raw temporary logs and the disposable baseline snapshot have been removed. Exit codes not retained are explicitly recorded as unavailable above.
+
+Additional implementation validation reported before triage: frozen-file hashes and frozen-source diffs passed; focused client tests passed 3/3; production build passed; targeted ESLint reported zero errors and two hook-dependency warnings; and `git diff --check` passed. The focused security/i18n suite, `npm run test:unit`, and `npm test` remain unresolved red checks at both task and starting revisions.
 
 ### Deviations
 
@@ -173,11 +214,11 @@ None
 
 ### Unresolved Issues
 
-None
+Required focused QueueMonitor security/i18n validation is 27/29 at both the task and starting revisions because of inherited Shared ICU/catalogue failures. Required broad validations also contain inherited failures. The failure attribution indicates no task regression, but no documented baseline ID or architect waiver has been provided; acceptance therefore remains incomplete pending architect disposition.
 
 ### Architectural Concerns
 
-None
+None identified in the bounded implementation. Validation disposition remains with `moda_architect`.
 
 ## Architect Review
 
