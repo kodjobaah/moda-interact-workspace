@@ -27,7 +27,7 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is Ready; BACKGROUND-002 through BACKGROUND-007 remain dependency-gated.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete; `ARCH-025-BACKGROUND-002` is Ready and BACKGROUND-003 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
@@ -569,11 +569,13 @@ The 2 October 2026 source snapshot contains:
 
 ```text
 moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
-98 tests
+146 tests
 SHA-256: 0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239
 ```
 
 This file is frozen for BACKGROUND-001..007. Every reconciliation-chain task MUST leave it byte-for-byte unchanged, verify the SHA-256, run the complete file, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without regression, and add no test bypasses or weakened production assertions.
+
+BACKGROUND-001 Attempt 2 established durable development baseline `ARCH025-BACKGROUND-TEST-001` for the full `moda-interact-background` suite by comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same dependency/environment state. Later ARCH-025 Background tasks may reference that baseline only when they introduce no new failing test or suite identity; if an upstream/environment repair resolves a baseline failure, tasks must not recreate it.
 
 ### Background frozen CheckoutRecovery assets
 
@@ -923,8 +925,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Ready | - |
-| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Pending | BACKGROUND-001 |
+| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Complete | - |
+| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Ready | BACKGROUND-001 |
 | ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Pending | BACKGROUND-002 |
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Pending | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
@@ -1006,16 +1008,16 @@ None.
 
 ## Change History
 
-- 2026-10-02: Added the independent Admin QueueMonitor maintainability chain ADMIN-009..015. Preserved the read-only public shell, protected API/server-reader boundaries, summary single-flight polling, queue-job/detail stale-request cancellation, filter/pagination/selection asymmetries, drawer mechanics, catalogue/i18n ownership and bounded failed-job diagnostics; established browser-local contracts/client and extraction-safe source assertions before hook/presentation extraction.
+- 2026-10-02: BACKGROUND-001 blocked-task disposition found no source-level defect in the pure classification extraction. Corrected the architect-authored frozen reconciliation suite count from 98 to the 146 tests actually executed by the byte-identical required-hash asset. Returned BACKGROUND-001 to Ready for an evidence-only Attempt 2 comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same environment; no Background full-suite baseline is created until that differential proves the failure set is pre-existing.
+- 2026-10-02: BACKGROUND-001 Attempt 2 was accepted after the same-environment differential proved the exact same eight failing tests plus the same commerce-evidence fixture-loading failure on the pre-task and submitted commits. Recorded durable no-regression baseline `ARCH025-BACKGROUND-TEST-001`, marked BACKGROUND-001 Complete and promoted BACKGROUND-002 to Ready.
 - 2026-10-02: Deep ADMIN-001..008 source/task coherence review kept the eight-task graph unchanged, made ADMIN-001 the complete consume-only controller contract for all later steps, preserved pure-Node testability and UI-edge identity/effect semantics, closed the extracted-module security-scan blind spot, and characterized exact translation fallback, usage-event stale-field/tier behaviour, secondary economics rows and translation-workbook/final-step mount semantics.
-
 - 2026-10-02: Added the independent Admin `MerchantPricingPlanBuilder` maintainability chain ADMIN-001..008 against the post-ARCH-024 model-assignment baseline. Preserved the seven-step form/action contract, exact navigation/economics/translation/product-policy semantics, established a typed draft/controller boundary before JSX extraction, froze seven pure-policy test assets, and made the existing source-based security assertions extraction-safe without weakening them.
 - 2026-10-02: Added the independent CheckoutRecoveryService maintainability chain BACKGROUND-008..015 against the integrated post-ARCH-024 Background baseline. Preserved the worker-facing façade, canonical Shop `shopId` agent context, checkout-scoped race guards, recovery generation/idempotency, billing/provider boundaries and existing adjacent recovery owners; froze four post-ARCH-024 regression assets and kept the chain independent from BACKGROUND-001..007.
 - 2026-10-02: Deep architectural coherence review of BACKGROUND-008..015 retained the eight-task graph but tightened test-visible façade compatibility ports, exact injected billing identity, initial/follow-up suppression asymmetries, finalisation CAS convergence, CheckoutRefresh direct shop lookup, materialisation result semantics and capacity-resume re-entry arity/result behaviour.
 - 2026-10-02: SHOPIFY-011 Attempt 2 accepted the report-only reconciliation for the final Shopify sync-coordinator extraction at reviewed implementation commit `3e96f68decc0051aefa9dfbb53101a3661895a9b` and published parent report tip `ac475108c5ec5326d14cbc151d2825786b4b008b`. `BillingService.syncSubscription()` is a thin delegate, the provider-to-local coordinator preserves the accepted provider/transaction/locking/projection semantics, and the full Shopify tranche is now Complete. ARCH-025 remains In Progress because the independent Background tranche is still active.
 - 2026-10-02: Second deep BACKGROUND-001..007 source-closure review preserved permissive null-shape classification quirks, exact dependency identity across extracted collaborators, canonical shared locking reuse, direct tests for timing/locking/discount primitives, and both FROZEN `continue` edge paths (provider present and provider null). No task split, reorder or new runtime behaviour was introduced.
 - 2026-10-02: Deep Background task-coherence review tightened parse-before-runtime-config semantics, clock/log preservation, reconstruction count semantics, cycle error-clearing distinctions, exact current-plan eligibility gates, reinstall pre-transaction rereads and the legacy FROZEN `continue` provider-plan fallthrough. Kept the final provider-plan lookup/branch dispatch as bounded coordinator orchestration so accepted lifecycle-service interfaces remain sufficient through BACKGROUND-007.
-- 2026-10-02: Extended ARCH-025 with an independent Background billing-subscription reconciliation maintainability tranche. Added seven sequential `moda_background` tasks, froze the 98-test reconciliation regression asset, preserved worker constructor/entrypoint and provider-call invariants, and kept lifecycle-specific retries with their owning handlers rather than creating a generic retry service.
+- 2026-10-02: Extended ARCH-025 with an independent Background billing-subscription reconciliation maintainability tranche. Added seven sequential `moda_background` tasks, froze the reconciliation regression asset, preserved worker constructor/entrypoint and provider-call invariants, and kept lifecycle-specific retries with their owning handlers rather than creating a generic retry service.
 - 2026-10-01: Initial agreed Shopify-only BillingService maintainability architecture and eleven-task deterministic extraction sequence defined from the supplied current snapshot.
 - 2026-10-01: Meticulous source/task reconciliation tightened hidden helper ownership, preserved the frozen-suite private resolution delegate, introduced single owners for shared lock/retry mechanics, corrected initial-Paid finalisation to remain inside the caller-owned sync transaction, fixed notification/no-contract semantics, preserved deliberate provider/catalogue rereads and raw UNMAPPED/SYNC_ERROR BillingPeriod projection, added explicit Stop Conditions, and made hash validation cross-platform.
 - 2026-10-01: SHOPIFY-001 Attempt 2 proved the exact pre-task and submitted commits have identical frozen-suite and full-suite failure identifiers. Corrected the frozen asset count from 127 to 213, established durable baseline `ARCH025-TEST-001`, accepted SHOPIFY-001, and advanced SHOPIFY-002 to Ready.
