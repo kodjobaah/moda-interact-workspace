@@ -72,8 +72,8 @@ Individual task YAML is authoritative.
 | [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Pending | ADMIN-005 |
 | [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Pending | ADMIN-006 |
 | [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Pending | ADMIN-007 |
-| [ADMIN-009](ADMIN-009-extract-queue-monitor-browser-client.md) | Browser contracts/client + extraction-safe QueueMonitor assertions | Ready | - |
-| [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Pending | ADMIN-009 |
+| [ADMIN-009](ADMIN-009-extract-queue-monitor-browser-client.md) | Browser contracts/client + extraction-safe QueueMonitor assertions | Complete (Accepted, Attempt 3) | - |
+| [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Ready | ADMIN-009 |
 | [ADMIN-011](ADMIN-011-extract-queue-jobs-hook.md) | Queue jobs filters/page/recent-full hook | Pending | ADMIN-010 |
 | [ADMIN-012](ADMIN-012-extract-queue-job-detail-hook.md) | Selected-job detail hook | Pending | ADMIN-011 |
 | [ADMIN-013](ADMIN-013-extract-resizable-queue-drawer-hook.md) | Resizable drawer viewport/pointer/keyboard hook | Pending | ADMIN-012 |
@@ -82,7 +82,8 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2 and `ARCH-025-ADMIN-002` is now Ready. `ARCH-025-ADMIN-009` remains an independent Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+`ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2 and `ARCH-025-ADMIN-002` is Ready. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3 and `ARCH-025-ADMIN-010` is now the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+
 ## ADMIN-001 Attempt 2 architect acceptance — 2026-10-02
 
 **Accepted / Complete, Attempt 2.** The evidence-only retry leaves implementation
@@ -110,6 +111,45 @@ failure identities/reasons, and add the prepared launcher/worktree/synchronizati
 submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
 independently Ready.
 
+## ADMIN-009 Attempt 3 architect acceptance — 2026-10-02
+
+**Accepted / Complete, Attempt 3.** The final report-only retry reconciles all five
+Acceptance Criteria and final branch state. The launcher-required implementation
+merge head `b09d421d...` changes only already-accepted ADMIN-001 files relative to
+reviewed ADMIN-009 implementation `eda069b4...`; no QueueMonitor/frozen/dependency
+state changed, so the Attempt 2 validation remains authoritative. Final parent task
+head is `1c9a1305...`.
+
+ADMIN-010 is promoted Ready; ADMIN-011..015 remain dependency-gated.
+
+## ADMIN-009 Attempt 2 architect disposition — 2026-10-02
+
+**Changes Requested / Ready, Attempt 2 retained; claim clear.** Attempt 2 satisfies
+the implementation/provenance/baseline evidence contract and leaves implementation
+`eda069b4...` unchanged. The only remaining items are task-record reconciliation:
+the five Acceptance Criteria remain unchecked, and the Completion Report's Final
+Branch State still contains a pre-publication placeholder rather than final parent
+report `9df2fa00...` plus clean local==remote evidence.
+
+Attempt 3 is report-only. No implementation/test changes or validation reruns are
+requested absent unexpected state drift. ADMIN-010 remains Pending until ADMIN-009 is
+Complete.
+
+## ADMIN-009 Attempt 1 architect disposition — 2026-10-02
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The browser-local
+contracts/client extraction and bounded source-loader changes are accepted in
+substance; no implementation/test source correction is requested.
+
+The former validation block is reclassified as inherited Admin baseline debt under
+`ARCH025-ADMIN-TEST-001`: the focused command's only two failures are global i18n
+assertions reproduced on pre-task `b8da632a...`, while every QueueMonitor-owned
+assertion passes. The two unit failures and all nine submitted package-suite failing
+identifiers are likewise reproduced at the starting revision.
+
+Attempt 2 is evidence-only: record the complete prepared-launch packet, cite the
+baseline, reconcile task checklists/report state, preserve implementation `eda069b...`
+and return to review. ADMIN-010 remains Pending until ADMIN-009 is Complete.
 ## Deep coherence review — 2026-10-02
 
 A source/task closure review against the 1,553-line post-ARCH-024 builder kept the ADMIN-001..008 graph unchanged and tightened the execution contract before ADMIN-001 starts. ADMIN-001 must establish the complete consume-only controller/action/selector interface for every later step, keep its pure reducer directly Node-testable, preserve hook-edge event/highlight identity generation and effect-driven economics-override invalidation, make the security harness scan the full bounded builder module set (including the ARCH-014 forbidden-dependency check), and preserve the exact hidden translation JSON fallback. ADMIN-002..008 may consume but not extend that accepted controller; a missing interface returns to `moda_architect`. Usage-event stale-field/tier quirks, the current empty secondary economics rows, and the workbook/final-step mount/conditional DOM semantics are explicitly preserved as move-only behaviour.

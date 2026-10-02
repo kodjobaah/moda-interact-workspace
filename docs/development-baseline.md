@@ -449,6 +449,115 @@ When these failures are corrected by their owning work, update this entry rather
 than requiring ARCH-025 extraction tasks to recreate the old failure set.
 <!-- MODA-ARCH025-TEST-001:END -->
 
+<!-- MODA-ARCH025-ADMIN-TEST-001:START -->
+## ARCH025-ADMIN-TEST-001 — Inherited Admin validation failures during QueueMonitor extraction
+
+**Disposition:** WARN
+
+**Repository:**
+
+```text
+moda-interact-admin/
+```
+
+**Scope:**
+
+```text
+ARCH-025 ADMIN-009..015 QueueMonitor maintainability chain
+```
+
+**Reference evidence — 2026-10-02:**
+
+```text
+pre-task commit:       b8da632a1fcaef7e364be1dc5cca40dfafde4703
+ADMIN-009 commit:      eda069b4b165f0b6cbb0c3fa3ac821aef32662e1
+
+focused QueueMonitor command:
+  baseline:   27 passed / 2 failed
+  submitted:  27 passed / 2 failed
+
+npm run test:unit:
+  baseline:   228 passed / 2 failed
+  submitted:  231 passed / 2 failed
+
+npm test submitted:
+  226 passed / 9 failed
+```
+
+ADMIN-009 adds three passing focused client tests, which explains the three additional
+unit-test passes.
+
+The two failures in the four-file QueueMonitor source/security/i18n command are
+global Admin internationalisation assertions co-located in
+`tests/security/admin-internationalization.test.mjs`; they do not assert QueueMonitor
+behaviour:
+
+```text
+Admin validates and consumes the published Shared ICU runtime
+  -> package currently consumes Shared 1.1.0 while the stale assertion expects 1.0.1
+
+Admin canonical catalogue keys are independent and intentionally aligned
+  -> pre-existing required-key/catalogue mismatch
+```
+
+Both failures reproduce unchanged on the pre-task commit. The remaining
+QueueMonitor-specific assertions in that file and the dedicated QueueMonitor
+security/detail files pass.
+
+The same two unit failures reproduce on both reference commits:
+
+```text
+rejects stale metadata, locale/header changes, and highlight identity changes
+returns all bounded validation issues in canonical order
+```
+
+The nine failing identifiers observed by submitted `npm test` were each rerun against
+the pre-task commit and reproduced with the same assertion category:
+
+```text
+no Moda-owned span/metric creation exists in application code
+accepts strict non-negative lifetime Free defaults
+every RecoveryCreditPurchaseStatus has an ICU label and filter support
+purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups
+Admin validates and consumes the published Shared ICU runtime
+Admin canonical catalogue keys are independent and intentionally aligned
+consumes the published shared release without a local declaration shim
+identity, revocation, mutation, session, and route contracts are wired
+Tenant Directory KPIs are derived from durable business state
+```
+
+A full pre-task `npm test` total was not retained, so this entry does **not** claim the
+entire baseline suite was otherwise green. It records only that every failing
+identifier present in the ADMIN-009 submitted full-suite run was independently
+reproduced on the starting revision.
+
+### ARCH-025 Admin QueueMonitor rule
+
+For ADMIN-009..015:
+
+1. task-owned focused client/state/geometry helpers must be green;
+2. frozen QueueMonitor server/API sources and dedicated server tests must retain their
+   architecture-defined hashes;
+3. the ADMIN-009 extraction-safe QueueMonitor source/security loaders must not be
+   weakened or changed after ADMIN-009;
+4. if the four-file source/security/i18n command fails only the two global
+   internationalisation identifiers documented above, record
+   `ARCH025-ADMIN-TEST-001` and continue when all QueueMonitor-owned assertions pass;
+5. for `npm run test:unit` / `npm test`, this baseline may cover only the exact
+   documented failing identifiers with equivalent failure reasons; any new, changed or
+   worse failure is a potential task regression and must be investigated;
+6. if an upstream change fixes a documented baseline failure, do not reintroduce it;
+7. this baseline never authorizes skipping tests, weakening assertions, changing
+   expected QueueMonitor behaviour, or modifying unrelated Admin code merely to make
+   an extraction task green.
+
+### Resolution
+
+When the owning Admin/i18n/billing/security work corrects these failures, update or
+remove this entry rather than requiring QueueMonitor extraction tasks to recreate the
+old failure set.
+<!-- MODA-ARCH025-ADMIN-TEST-001:END -->
+
 <!-- MODA-ARCH025-BACKGROUND-TEST-001:START -->
 ## ARCH025-BACKGROUND-TEST-001 — ARCH-025 Background full-suite pre-task failures
 
