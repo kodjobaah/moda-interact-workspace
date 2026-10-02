@@ -9,10 +9,10 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 50
-executor: copilot
-claimed_at: 2026-10-02T07:46:08Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-024-COMMERCE-006
@@ -1142,24 +1142,98 @@ None.
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 review found the server/runtime architecture broadly conformant, including frozen C005 snapshot use, per-invocation OpenRouter credential resolution, Shared `OpenRouterModelClient`/`runCommerceTurn` reuse, selected-Shop C006 Tool execution, unconditional human-conversation model quotas, independent fixture Tool-test retention, bounded provider failures and no live provider validation.
+
+Three bounded corrections are required before acceptance.
+
+**A1-R1 — the visible Cancel run action is unreachable while a run is actually pending.**
+
+`sendMessage()` sets `runInFlightRef.current = true` before the POST and keeps it true while `reconcileRun(...)` polls a `RUNNING` run to terminal state. The UI renders `Cancel run` when `runPending` is true, but `cancelPendingRun()` immediately returns when `runInFlightRef.current` is true. Therefore the normal pending-run state exposes a Cancel button that cannot dispatch `cancelTestConversationRun(...)`.
+
+Correct the client-side run lifecycle so:
+
+- Send remains same-tick single-flight safe and cannot allocate a second run ID while the original run is unresolved;
+- Cancel can be invoked for the exact retained `{ conversationId, previewRunId }` while that run is `RUNNING`;
+- repeated same-tick Cancel activation is bounded/idempotently gated;
+- cancel/reconcile races settle only the retained original run and do not create a new run ID;
+- known `CANCELLED`, `FAILED` or `COMPLETED` results release the local pending gate exactly once;
+- `UNKNOWN` retains the original operation for explicit reconciliation.
+
+Add focused browser regression coverage that starts a run returning `RUNNING`, proves the rendered Cancel button calls the cancel client with the exact original conversation/run IDs, and proves the terminal cancellation/reconciliation result is settled without a second Start Run request.
+
+**A1-R2 — Start new conversation may orphan or cross-contaminate an unresolved run.**
+
+`Start new conversation` remains enabled while `runPending` or `runUnknown`. `startNewConversation()` clears `pendingRunRef` and `runInFlightRef` even though the original server run may still be active or require reconciliation. The earlier asynchronous send/poll can then settle after local state has been reset (or after another conversation has started), appending the old run transcript/status into the wrong local conversation and discarding the exact operation needed for `UNKNOWN` reconciliation.
+
+Preserve the C007 exact-run reconciliation invariant. At minimum:
+
+- do not allow local conversation reset/new-conversation transition while a run is pending or `UNKNOWN`;
+- defensively fence `startNewConversation()` against an unresolved `pendingRunRef`;
+- do not clear the retained original run identity until a known terminal result has been settled;
+- add focused regressions proving a pending or `UNKNOWN` run cannot be abandoned through `Start new conversation`, and an old asynchronous result cannot populate a later conversation.
+
+A different implementation is acceptable if it proves the same lifecycle isolation without weakening same-tick/idempotency behaviour.
+
+**A1-R3 — mandatory deterministic execution evidence is absent from the Completion Report.**
+
+The task report records validation results and final implementation/report commit summaries but does not durably record the launcher-resolved prepared execution packet required by the repository-task review protocol. Attempt 2 must record the actual evidence for:
+
+- canonical `workspace_root`;
+- dedicated parent task worktree and exact `task/ARCH-024-COMMERCE-007` branch;
+- dedicated Commerce implementation worktree and exact matching task branch;
+- confirmation that the shared/default checkout and a previous task worktree were not used;
+- parent task-branch synchronization and `origin/main` incorporation at attempt start;
+- implementation task-branch synchronization and `origin/main` incorporation at attempt start;
+- dependency gate showing `ARCH-024-COMMERCE-006` and `ARCH-024-SHARED-002` Complete;
+- recursive submodule sync/update and the exact integrated database gitlink identity;
+- Attempt 1/Attempt 2 claim metadata and durable claim commit(s);
+- final implementation commit and remote task-branch head;
+- final parent report commit and remote task-branch head;
+- clean final status and local-head-equals-remote-head evidence for both worktrees.
+
+A1-R3 is evidence-only and must not cause source churn. If the launcher packet is available, copy the actual prepared evidence rather than reconstructing paths or synchronization claims from memory.
+
+No Database, Shared, Admin, Background or Gateway implementation change is requested. Do not start `ARCH-024-GATEWAY-001`.
 
 ### Reviewed Files
 
-None
+- `src/studio/test-conversations/test-conversations-screen.tsx`
+- `src/studio/test-conversations/client.ts`
+- `src/commerce/preview/service.ts`
+- `src/commerce/preview/store.ts`
+- `src/commerce/preview/redis-store.ts`
+- `src/commerce/integration/preview/model-runtime.ts`
+- `src/commerce/integration/preview/openrouter-credential.ts`
+- `lib/preview/runtime.ts`
+- `lib/server/config.ts`
+- `lib/server/credential-keyring.ts`
+- `tests/test-conversations-screen.test.tsx`
+- `tests/preview-openrouter-runtime.test.ts`
+- `tests/preview-openrouter-postgres.test.ts`
+- `tests/preview-service.test.ts`
+- `tests/preview-redis-lua.test.ts`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-007-execute-test-conversation-models-through-openrouter.md`
 
 ### Validation Reviewed
 
-None
+- Submitted: required seven-file focused runtime suite — 54 tests passed.
+- Submitted: Redis parity suite — 9 tests passed.
+- Submitted: retained Tool-test/Code Response regressions — 16 + 7 tests passed.
+- Submitted: disposable PostgreSQL credential-rotation/decryption proof passed with cleanup.
+- Submitted: Prisma generation, targeted ESLint, typecheck, production build, R18 static audit and `git diff --check` passed.
+- Direct source review confirmed no live Commerce runtime reference to the removed bespoke Preview provider/mode variables and no direct Commerce LangChain/OpenRouter/LangGraph import.
+- Direct source review confirmed the current Cancel handler is fenced by the same long-lived `runInFlightRef` used by Send/polling and therefore cannot dispatch during the visible pending state.
+- Direct source review confirmed `Start new conversation` is not disabled for pending/UNKNOWN runs and clears the retained pending-run identity.
+- The uploaded review archive does not contain installed `node_modules` or usable Git metadata, so dependency-backed commands and remote-head identity were not independently replayed in the architect environment.
 
 ### Architecture Conformance
 
-Pending
+Changes Requested. The server-side frozen-snapshot/OpenRouter runtime, credential rotation semantics, selected-Shop Tool execution boundary, quota/storage split and provider cleanup conform. The browser run lifecycle does not yet satisfy C007 cancellation and exact unresolved-run reconciliation requirements, and the Completion Report lacks mandatory physical-isolation/start-of-attempt evidence.
 
 ### Follow-up
 
-None
+Return the same task through the normal `/moda-task ARCH-024-COMMERCE-007` path. The next authorized claim becomes Attempt 2. Correct A1-R1/A1-R2, add the focused UI lifecycle regressions, rerun the complete C007 validation contract, add the A1-R3 prepared-execution evidence, set the task back to `review`, and STOP. `ARCH-024-GATEWAY-001` remains dependency-gated until C007 is architect-accepted Complete.
