@@ -1,29 +1,36 @@
 ---
 id: ARCH-025
-title: Shopify BillingService maintainability refactor
+title: Billing service maintainability refactor
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-01
 updated: 2026-10-02
 ---
 
-# ARCH-025: Shopify BillingService maintainability refactor
+# ARCH-025: Billing service maintainability refactor
 
 ## Status
 
 In Progress.
 
-ARCH-025 is intentionally scoped to the Shopify application repository only:
+ARCH-025 now contains two **independent, repository-owned maintainability tranches** under the same billing architecture initiative:
 
 ```text
-moda-interact/
+moda-interact/             Shopify BillingService façade
+moda-interact-background/  billing subscription reconciliation coordinator
 ```
 
-It refactors the current `app/services/billing/billing.service.ts` monolith behind its existing public façade. It does **not** refactor Background billing reconciliation, CheckoutRecovery, Admin pricing-plan authoring, Commerce Studio, Gateway, Shared, Database or System Test.
+The historical architecture filename is retained so the already-materialised Shopify task files keep a stable durable reference. The architecture ID and this document remain authoritative for both tranches.
 
-ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-010` are architect-accepted Complete, and the sequential execution frontier is `ARCH-025-SHOPIFY-011`. Later tasks remain dependency-gated and are materialised/claimed only through the normal `/moda-task <TASK_ID>` path.
+The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-010` are architect-accepted Complete and the Shopify frontier is `ARCH-025-SHOPIFY-011` Ready.
+
+The Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is Ready; BACKGROUND-002 through BACKGROUND-007 remain dependency-gated.
+
+The two tranches have **no ARCH-025 dependency on one another** and may proceed independently because they modify different repositories and introduce no cross-repository contract change. Within each repository, tasks remain sequential because they progressively extract from one high-churn compatibility façade/coordinator.
 
 ## Problem
+
+### Shopify application
 
 `moda-interact/app/services/billing/billing.service.ts` is approximately 2,677 lines and currently combines multiple independently meaningful workflows behind one public class:
 
@@ -38,40 +45,65 @@ ARCH-025 is materialised in the canonical development workspace. `ARCH-025-SHOPI
 - provider-to-local Subscription synchronization;
 - subscription-ended support notification/translation scheduling.
 
-The objective is maintainability, not behavioural redesign. The current public façade is widely consumed by Shopify routes and tests, so callers must remain unchanged while internal workflow owners are extracted incrementally.
+### Background billing reconciliation
+
+`moda-interact-background/src/services/billing-subscription-reconciliation.service.ts` is approximately 1,900 lines. Its four-method public surface (`activateInitialPaid`, `enqueue`, `reconstruct`, `reconcileJob`) currently contains or directly owns:
+
+- queued-job parsing, durable schedule fencing, state classification and skip logging;
+- deterministic queue publication and startup reconstruction;
+- one-snapshot provider reconciliation orchestration;
+- initial Free/Paid activation and alternate-current-plan convergence;
+- reinstall reconciliation;
+- Free cycle discovery, pre-close usage flushing and same-plan rollover;
+- established plan-change convergence;
+- FROZEN/lifecycle replay coordination;
+- lifecycle-specific retry/CAS behaviour;
+- discount-sync and recovery-capacity-resume side effects;
+- shared row-lock helpers.
+
+Several canonical lower-level Background services already exist (`SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`). ARCH-025 must increase delegation to those owners rather than create parallel implementations.
+
+The objective in both repositories is maintainability, not behavioural redesign. Existing callers, routes, worker entrypoints, queue contracts and durable billing semantics remain stable while internal owners are extracted incrementally.
 
 ## Goals
 
 - Keep `BillingService` and `billingService` as the stable Shopify application entry point.
-- Preserve the current `BillingService` constructor signature and every public method signature.
-- Preserve every public export currently exposed from `billing.service.ts`, including compatibility re-exports when implementation moves.
+- Preserve the current `BillingService` constructor signature, every public method signature and every compatibility export already required by the frozen Shopify suite.
+- Reduce `BillingSubscriptionReconciliationService` to a queue-facing coordinator while preserving its exact seven-position constructor, four public methods, singleton and helper exports.
 - Extract one coherent billing responsibility per task into bounded modules/services.
-- Preserve all provider/network versus Prisma transaction boundaries and current lock order.
-- Preserve all current billing lifecycle, CAS/fencing, retry, error-code, provider-evidence and entitlement semantics.
-- Add focused tests for each extracted owner while preserving the existing façade regression suite byte-for-byte.
-- Make `syncSubscription()` the final coordinator extraction after its subordinate responsibilities have stable owners.
+- Preserve all provider/network versus Prisma transaction boundaries and current lock/CAS behaviour in both repositories.
+- Preserve all current billing lifecycle, retry, error-code, provider-evidence and entitlement semantics.
+- Preserve the Background invariant of one immutable `BackgroundRuntimeConfigSnapshot` per accepted queued job.
+- Preserve normal queued reconciliation as one `getSubscriptionReconciliationSnapshot(...)` call per accepted job and preserve reinstall's distinct `getActiveSubscription(...)` path.
+- Reuse existing Background rollover, plan-change, lifecycle, projection, usage-publishing, discount and capacity-resume owners instead of duplicating their behaviour.
+- Add focused tests for each extracted owner while preserving both large regression suites byte-for-byte.
+- Make Shopify `syncSubscription()` and Background `reconcileJob()` the final coordinator extractions in their respective tranches.
 
 ## Non-Goals
 
 ARCH-025 does not authorise:
 
-- changes outside `moda-interact/` implementation code;
-- changes to `moda-interact-background/`, Admin, Commerce, Messaging, Shared, Database, Gateway or System Test;
+- implementation changes outside `moda-interact/` and `moda-interact-background/`;
+- CheckoutRecovery, Admin pricing-plan authoring, Commerce Studio, Messaging, Shared, Database, Gateway or System Test feature work;
 - Prisma schema or migration changes;
-- queue/event contract changes;
+- Shared queue/event contract changes;
 - Shopify provider protocol changes;
-- billing economics, plan rules, credits, retries or error-code changes;
-- authorization/authentication changes;
-- route API changes;
-- introducing a command bus, plugin framework, DI container or generic billing framework;
-- replacing the existing billing provider abstraction;
-- changing existing test expectations to accommodate the refactor;
+- billing economics, plan rules, credits, retry intervals, error codes or durable lifecycle semantics;
+- authentication/authorization changes;
+- Shopify route or Background worker-entrypoint API changes;
+- changing worker deployment topology, environment variables or Render configuration;
+- introducing a command bus, plugin framework, DI container or generic billing/retry framework;
+- replacing existing provider abstractions or canonical lifecycle/rollover/plan-change services;
+- changing existing test expectations to accommodate refactoring;
 - deleting, skipping or weakening existing tests;
+- opportunistically fixing questionable legacy behaviour discovered during extraction;
 - refactoring `recovery-credit-purchase-management.service.ts` except where a later separate architecture explicitly authorises it.
 
-If an implementation task discovers that its required extraction cannot be completed without one of these changes, it must stop and return the dependency/conflict to `moda_architect`.
+If an implementation task discovers that a safe extraction requires one of these changes, it must stop and return the dependency/conflict to `moda_architect`.
 
 ## Current Architecture
+
+### Shopify application
 
 The public façade is:
 
@@ -112,7 +144,44 @@ Commands / synchronization
 
 The file also owns substantial private/module logic including `ensureMappedCurrentBillingPeriodProjection`, `resolveOrMaterializeBillingPlan`, `readRecoveryCreditTopUpConfiguration`, `readMerchantPricingPlan`, `mapMerchantShopifySubscription`, activation locks/tokens, recovery-credit provider-evidence helpers and subscription-ended notification persistence.
 
+### Background billing reconciliation
+
+The worker/service façade is:
+
+```text
+src/services/billing-subscription-reconciliation.service.ts
+  BillingSubscriptionReconciliationService
+  billingSubscriptionReconciliationService
+```
+
+Current public methods/exports that must remain compatible are:
+
+```text
+BillingSubscriptionReconciliationService
+billingSubscriptionReconciliationService
+activateInitialPaid(...)
+enqueue(...)
+reconstruct()
+reconcileJob(...)
+InitialActivationPlan
+FREE_CYCLE_DISCOVERY_RETRY_MS
+ROLLOVER_RETRY_MS
+nextSubscriptionReconcileAt(...)
+createSubscriptionReconcilePayload(...)
+APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS  (compatibility re-export)
+```
+
+The current constructor is positional and is asserted by `tests/unit/runtime/entrypoint-isolation.test.ts`:
+
+```text
+(database, partner, queue, logger, now, runtimeConfig, discountQueue)
+```
+
+`src/entrypoints/billing.ts` and `src/services/billing-reconciliation.service.ts` are callers. The latter constructs this service solely to invoke `activateInitialPaid(...)`, which validates initial activation as a first-class extraction seam.
+
 ## Proposed Architecture
+
+### Shopify application target
 
 The final Shopify billing boundary remains:
 
@@ -174,7 +243,51 @@ renderSubscriptionEndedMessage
 
 In addition, the frozen regression suite currently invokes the runtime-private method name `resolveOrMaterializeBillingPlan(...)` through a TypeScript cast. ARCH-025 therefore preserves that private method name as a **thin compatibility delegate** to `BillingPlanResolutionService`; it is not a public API, but removing it during this initiative would violate the byte-identical regression contract.
 
+### Background target
+
+```text
+billing worker / BillingReconciliationService
+        |
+        v
+BillingSubscriptionReconciliationService       compatibility coordinator
+        |
+        +--> classification.ts                  pure job/state classification
+        +--> reconciliation-queue.service.ts    deterministic enqueue/reconstruction
+        +--> initial-activation-reconciliation.service.ts
+        |       +--> reconciliation-timing.ts
+        |       +--> locking.ts
+        |       +--> discount-sync-publisher.service.ts
+        +--> reinstall-reconciliation.service.ts
+        +--> billing-cycle-reconciliation.service.ts
+        |       +--> SamePlanBillingPeriodRolloverService (existing)
+        |       +--> shopifyUsageEventPublisherService (existing)
+        +--> established-plan-change-reconciliation.service.ts
+        |       +--> ShopifyPlanChangeTransitionService (existing)
+        +--> reconciliation-context.ts          bounded durable snapshot/current-plan loading
+        +--> ShopifySubscriptionLifecycleReconciliationService (existing)
+```
+
+The final `reconcileJob()` flow is:
+
+```text
+parse job
+  -> capture exactly one BackgroundRuntimeConfigSnapshot
+  -> load current durable shop/subscription context
+  -> pure classify / reject stale or ineligible work
+  -> load current local plan when required
+  -> request exactly one provider reconciliation snapshot when required
+  -> run existing lifecycle reconciliation with the captured runtime config
+  -> delegate to exactly one extracted lifecycle owner
+  -> publish only the committed durable next schedule
+```
+
+Reinstall intentionally remains separate from the normal snapshot path and continues to call `partner.getActiveSubscription(...)` once. Lifecycle retry decisions stay with the owning handler; the queue collaborator only publishes a requested durable schedule and does not become a generic retry-policy engine.
+
+All collaborator constructors in both repositories are inert wiring only: no provider/database I/O, environment discovery or eager Prisma-model access.
+
 ## Regression Baseline
+
+### Shopify frozen façade asset
 
 The supplied 1 October 2026 snapshot contains:
 
@@ -204,6 +317,29 @@ Every ARCH-025 implementation task MUST satisfy all of the following:
 
 A task with any task-introduced regression in the frozen BillingService suite is not eligible for review. A known `ARCH025-TEST-001` failure is not itself a task regression, but any changed, additional or worsened failure must be investigated.
 
+### Background frozen reconciliation asset
+
+The 2 October 2026 source snapshot contains:
+
+```text
+moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
+98 tests
+SHA-256: 0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239
+```
+
+This file is a frozen ARCH-025 Background regression asset. Every Background task MUST:
+
+1. leave it byte-for-byte unchanged;
+2. verify that SHA-256 exactly;
+3. run the complete 98-test file and require all 98 tests to pass;
+4. add separate focused tests for the newly extracted owner;
+5. run `tests/unit/runtime/entrypoint-isolation.test.ts` to protect the billing-worker constructor/entrypoint contract;
+6. run the full existing `npm test` suite and introduce no regression;
+7. add no `.skip`, `.only`, `test.todo` or equivalent bypass;
+8. not weaken production assertions/error handling to satisfy extraction tests.
+
+The supplied ZIP intentionally has no `moda-interact-background/node_modules`, so this architecture definition does **not** claim that the 98-test Background suite was executed while authoring these tasks. Runtime validation belongs to each prepared implementation worktree.
+
 ## Data Model
 
 No schema or migration changes are authorised.
@@ -214,15 +350,15 @@ Existing PostgreSQL tables, relationships, uniqueness constraints, BillingPeriod
 
 ARCH-025 introduces no new cross-repository runtime contract.
 
-The principal compatibility contract is the existing in-process `BillingService` façade. Existing Shopify routes and services continue importing from:
+The Shopify compatibility contract remains `BillingService` in `app/services/billing/billing.service.ts`.
 
-```text
-app/services/billing/billing.service.ts
-```
+The Background compatibility contract remains `BillingSubscriptionReconciliationService` in `src/services/billing-subscription-reconciliation.service.ts`, including its constructor, four public methods, singleton and public helper/type exports. Existing imports in `src/entrypoints/billing.ts` and `src/services/billing-reconciliation.service.ts` remain valid throughout the structural phase.
 
-Extracted collaborator APIs are repository-internal implementation contracts only.
+The Shared billing reconciliation queue contract remains owned by `@modainteract/moda-interact-shared/billing`; no ARCH-025 task may redefine or version it locally. Extracted collaborator APIs are repository-internal implementation contracts only.
 
 ## Consistency and Transactions
+
+### Shopify
 
 Structural extraction must preserve the exact transaction model currently expressed by `BillingService`:
 
@@ -238,11 +374,37 @@ Structural extraction must preserve the exact transaction model currently expres
 - normal mapped BillingPeriods use the mapped projection helper, while the existing raw `billingPeriod.upsert` path for UNMAPPED/SYNC_ERROR cycles remains separate;
 - notification/translation side effects remain isolated from already committed billing state where they are isolated today; missing durable lifecycle identity still propagates while other notification/dispatch failures remain best-effort.
 
+### Background
+
+Structural extraction MUST preserve:
+
+- exact `expectedNextReconcileAt` stale-job authority/CAS fencing;
+- deterministic queue job identity derived from `subscriptionId` + `expectedNextReconcileAt`;
+- current queue options and delayed scheduling;
+- exactly one immutable runtime-config snapshot per `reconcileJob()` invocation;
+- normal reconciliation's single `getSubscriptionReconciliationSnapshot(...)` call and snapshot reuse;
+- reinstall's distinct single `getActiveSubscription(...)` call;
+- current provider/network versus transaction boundaries;
+- every current `SELECT ... FOR UPDATE` target/order per lifecycle rather than imposing one global lock order;
+- existing `updateMany` CAS predicates and no-op behaviour on stale source state;
+- post-commit/best-effort discount-sync and recovery-capacity-resume isolation where they are best-effort today;
+- current pre-close usage-publish-before-period-boundary ordering;
+- existing canonical `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService` and `ensureCurrentBillingPeriodProjection` transaction ownership.
+
+This is move-only refactoring. Do not remove, coalesce, reorder or "optimise" existing provider/database calls, locks, transactions or durable rereads merely because code is moved.
+
 ## Ordering
 
-The eleven tasks execute sequentially because each extraction edits the same compatibility façade and later tasks intentionally consume owners created by earlier tasks.
+The two repository tranches are independent and are not serialized against one another:
 
-Do not parallelise sibling ARCH-025 Shopify tasks.
+```text
+Shopify:    SHOPIFY-001 -> ... -> SHOPIFY-011
+Background: BACKGROUND-001 -> ... -> BACKGROUND-007
+```
+
+Within each repository the tasks execute sequentially because each extraction edits the same compatibility façade/coordinator and later tasks consume capabilities established by earlier tasks.
+
+Do not parallelise sibling ARCH-025 tasks within the same repository.
 
 ## Failure Handling
 
@@ -260,11 +422,33 @@ INVALID_PAID_PLAN_CONFIGURATION
 
 and all current recovery-credit purchase error/admission semantics.
 
+For Background, preserve the current meaning and retry/fail-closed handling of at least:
+
+```text
+PARTNER_API_ERROR
+PROVIDER_STATE_UNRESOLVED
+MISSING_BILLING_CYCLE
+MISSING_USAGE_METER
+INVALID_INCLUDED_ALLOWANCE
+PENDING_PLAN_HANDLE_MISMATCH
+UNSUPPORTED_PAID_TRIAL
+UNMAPPED_PLAN_HANDLE
+UNEXPECTED_IMMEDIATE_PLAN_CHANGE
+BILLING_PERIOD_PLAN_CONFLICT
+PRE_CLOSE_USAGE_FLUSH_FAILED
+PERIOD_ALIGNMENT_REQUIRED
+PROVIDER_CYCLE_LAG
+```
+
+Lifecycle-specific retry decisions remain with their owning handlers; do not create a generic retry service that centralises business policy.
+
 ## Scalability
 
 This is a structural refactor only. It must not add provider calls, Prisma round trips, transaction duration, queue work or per-request durable writes relative to the current equivalent path. Existing deliberate rereads/fences (for example the recovery-credit purchase provider and catalogue revalidation reads) must not be coalesced away.
 
 A task that accidentally multiplies Shopify Partner API reads or database work is a behavioural regression.
+
+For Background, the common hot path must not gain additional provider calls, database round trips, queue publications or transaction duration. In particular, normal accepted jobs continue to acquire at most one `getSubscriptionReconciliationSnapshot(...)` and reuse it; reinstall continues its separate single `getActiveSubscription(...)` read. Queue identity, delayed scheduling and startup reconstruction cardinality remain unchanged.
 
 ## Security
 
@@ -272,9 +456,13 @@ No authentication, authorization, tenant isolation or secret-handling boundary c
 
 Extracted services receive server-side dependencies only. No provider credential, Shopify token, whole customer object or billing payload may be newly exposed to browser code or logs.
 
+Background extraction must likewise keep provider credentials, Shopify tokens and whole provider/customer payloads out of new logs and preserve tenant/shop scoping on every durable lookup/mutation.
+
 ## Observability
 
 No new observability mechanism is required. Existing log/telemetry semantics remain unchanged. Do not introduce a new generic logger during extraction.
+
+Background already uses the canonical Shared structured logger. Preserve existing `billing.subscription_reconciliation.*` event meanings and bounded identifiers across extraction, including job start/finish, enqueue failure, provider failure, reinstall outcomes, pre-close publish failure, rollover retry and unsupported Paid trial. Do not introduce a competing logger or newly log provider/customer payloads.
 
 ## Infrastructure Assessment
 
@@ -286,22 +474,29 @@ Therefore no `moda_gateway` task is required.
 
 Classification: **PRODUCTION / COMPATIBLE ROLLOUT** for behavioural purposes.
 
-No database migration, data backfill, queue drain or cross-service deployment ordering is required. Each accepted task is independently deployable because the public Shopify application façade remains compatible.
+No database migration, Shared publication, queue drain, infrastructure change or coordinated cross-repository deployment is required. Shopify and Background tasks are independently deployable because their existing public/worker façades remain compatible.
 
-Rollback is ordinary code rollback of the affected Shopify application commit; there is no schema rollback.
+Rollback is ordinary code rollback of the affected repository commit; there is no schema rollback.
 
 ## Repository Responsibilities
 
-Only one implementation repository participates:
+Two implementation repositories participate, independently:
 
 ```text
 repository: moda-interact
 assigned_agent: moda_app
+scope: Shopify BillingService tranche
+
+repository: moda-interact-background
+assigned_agent: moda_background
+scope: billing subscription reconciliation tranche
 ```
 
-The parent workspace contains the architecture/task coordination files. Repository task implementation remains confined to `moda-interact/` plus the assigned parent task report file permitted by the task/VCS protocol.
+The parent workspace owns architecture/task coordination files. Repository implementation remains confined to the assigned implementation repository plus the assigned parent task report file permitted by the task/VCS protocol. No ARCH-025 task grants either repository agent ownership of the other repository.
 
 ## Decisions / Tasks
+
+### Shopify tranche
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
@@ -317,47 +512,34 @@ The parent workspace contains the architecture/task coordination files. Reposito
 | ARCH-025-SHOPIFY-010 | Extract initial Paid activation finalisation | Complete | SHOPIFY-009 |
 | ARCH-025-SHOPIFY-011 | Extract remaining subscription synchronization coordinator | Ready | SHOPIFY-010 |
 
+### Background tranche
+
+| Task | Outcome | Status | Depends On |
+|---|---|---|---|
+| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Ready | - |
+| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Pending | BACKGROUND-001 |
+| ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Pending | BACKGROUND-002 |
+| ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Pending | BACKGROUND-003 |
+| ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
+| ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Pending | BACKGROUND-005 |
+| ARCH-025-BACKGROUND-007 | Reduce `reconcileJob()` to bounded context/coordinator flow | Pending | BACKGROUND-006 |
+
 Execution graph:
 
 ```text
-SHOPIFY-001
-   |
-   v
-SHOPIFY-002
-   |
-   v
-SHOPIFY-003
-   |
-   v
-SHOPIFY-004
-   |
-   v
-SHOPIFY-005
-   |
-   v
-SHOPIFY-006
-   |
-   v
-SHOPIFY-007
-   |
-   v
-SHOPIFY-008
-   |
-   v
-SHOPIFY-009
-   |
-   v
-SHOPIFY-010
-   |
-   v
-SHOPIFY-011
+SHOPIFY-001 -> ... -> SHOPIFY-010 -> SHOPIFY-011
+
+BACKGROUND-001 -> BACKGROUND-002 -> BACKGROUND-003 -> BACKGROUND-004
+      -> BACKGROUND-005 -> BACKGROUND-006 -> BACKGROUND-007
 ```
+
+There is deliberately no dependency edge between the two repository tranches.
 
 ## System Validation
 
-A separate `moda_system_test` task is **not applicable** to this Shopify-only structural initiative because ARCH-025 introduces no new integrated cross-service behaviour, infrastructure topology, database contract or externally observable product feature.
+A separate `moda_system_test` task is **not applicable** to this structural maintainability initiative because ARCH-025 introduces no new cross-service contract, infrastructure topology, schema, queue protocol or externally observable product behaviour.
 
-Architecture completion instead requires every implementation task to preserve the byte-identical 213-test façade asset and introduce no task-only failures beyond the durable `ARCH025-TEST-001` baseline, while also introducing no full-suite regression. This decision does not waive repository-level integration tests already exercised by `npm test`.
+Architecture completion instead requires both repository tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background, all 98 frozen reconciliation tests are required to pass. This does not waive repository-level integration/runtime validation already exercised by `npm test` or the production build.
 
 ## Open Questions
 
@@ -365,6 +547,7 @@ None.
 
 ## Change History
 
+- 2026-10-02: Extended ARCH-025 with an independent Background billing-subscription reconciliation maintainability tranche. Added seven sequential `moda_background` tasks, froze the 98-test reconciliation regression asset, preserved worker constructor/entrypoint and provider-call invariants, and kept lifecycle-specific retries with their owning handlers rather than creating a generic retry service.
 - 2026-10-01: Initial agreed Shopify-only BillingService maintainability architecture and eleven-task deterministic extraction sequence defined from the supplied current snapshot.
 - 2026-10-01: Meticulous source/task reconciliation tightened hidden helper ownership, preserved the frozen-suite private resolution delegate, introduced single owners for shared lock/retry mechanics, corrected initial-Paid finalisation to remain inside the caller-owned sync transaction, fixed notification/no-contract semantics, preserved deliberate provider/catalogue rereads and raw UNMAPPED/SYNC_ERROR BillingPeriod projection, added explicit Stop Conditions, and made hash validation cross-platform.
 - 2026-10-01: SHOPIFY-001 Attempt 2 proved the exact pre-task and submitted commits have identical frozen-suite and full-suite failure identifiers. Corrected the frozen asset count from 127 to 213, established durable baseline `ARCH025-TEST-001`, accepted SHOPIFY-001, and advanced SHOPIFY-002 to Ready.

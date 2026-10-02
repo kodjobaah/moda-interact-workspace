@@ -73,7 +73,7 @@ OpenRouterModelClient
 LangChain ChatOpenRouter
         |
         v
-OpenRouter
+OpenRouters
 ```
 
 The authored model/instruction configuration is stable for one Test Conversation. Operational secrets are not stable conversation state: credential replacement must affect the next model invocation without restarting Commerce and without starting a new conversation.

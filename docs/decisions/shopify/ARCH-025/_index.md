@@ -8,7 +8,7 @@ Repository: `moda-interact`.
 
 Coordinator: `moda_architect`.
 
-ARCH-025 is deliberately limited to the Shopify application `BillingService` maintainability refactor. Background reconciliation, CheckoutRecovery, Admin and Commerce maintainability work are not part of this architecture.
+This directory is the Shopify `BillingService` tranche of ARCH-025. Background billing-subscription reconciliation is now a separate sibling tranche under `docs/decisions/background/ARCH-025/` and does **not** gate this Shopify sequence. CheckoutRecovery, Admin and Commerce maintainability work remain outside ARCH-025.
 
 The tasks execute sequentially because they share the `billing.service.ts` compatibility façade and later tasks consume collaborators extracted by earlier tasks.
 
@@ -40,4 +40,4 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-SHOPIFY-001` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-002` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-003` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-004` through `ARCH-025-SHOPIFY-008` are Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-009` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-010` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-011` is Ready as the final ARCH-025 implementation task.
+`ARCH-025-SHOPIFY-001` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-002` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-003` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-004` through `ARCH-025-SHOPIFY-008` are Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-009` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-010` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-011` is Ready as the final **Shopify-tranche** implementation task; the independent Background tranche has its own frontier.

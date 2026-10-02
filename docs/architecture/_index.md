@@ -1016,9 +1016,9 @@ remains frozen and is consumed as an external instruction dependency. ARCH-024 t
 system-test task materialisation is deliberately deferred to a later architecture session.
 
 [Architecture](ARCH-024-commerce-agent-model-runtime-and-test-conversations.md)
-## ARCH-025 — Shopify BillingService maintainability refactor (2026-10-01)
+## ARCH-025 — Billing service maintainability refactor (2026-10-01)
 
-In-progress Shopify-only structural refactor of `moda-interact/app/services/billing/billing.service.ts`. Eleven sequential `moda_app` tasks extract BillingPeriod projection, plan resolution, reads, activation, hosted callback fencing, recovery-credit purchase initiation, subscription-ended notification and finally subscription synchronization behind the unchanged `BillingService` façade. No Database, Shared, Background, Admin, Commerce, Gateway or System Test implementation task is part of ARCH-025. The byte-identical `billing.service.test.ts` asset contains 213 tests; its proven pre-task failure set is recorded as `ARCH025-TEST-001`. SHOPIFY-001 through SHOPIFY-010 are Complete; SHOPIFY-011 is the current Ready frontier.
+In-progress structural refactor with two independent repository tranches. The Shopify tranche extracts the `moda-interact/app/services/billing/billing.service.ts` workflows behind the unchanged `BillingService` façade; SHOPIFY-001 through SHOPIFY-010 are Complete and SHOPIFY-011 is Ready, with the byte-identical 213-test façade asset governed by `ARCH025-TEST-001`. The Background tranche independently decomposes `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts` into seven sequential `moda_background` tasks behind the unchanged worker/service façade; BACKGROUND-001 is Ready and BACKGROUND-002..007 are dependency-gated. No Database, Shared, Admin, Commerce, Gateway or System Test implementation task is required.
 
 [Architecture](ARCH-025-shopify-billing-service-maintainability.md)
 

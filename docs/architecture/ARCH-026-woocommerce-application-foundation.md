@@ -13,10 +13,10 @@ updated: 2026-10-02
 
 Proposed.
 
-This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001` and
-`ARCH-026-WOOCOMMERCE-002` are currently materialised. Later tasks must be added only
-after their precise runtime, security and ownership boundaries have been discussed
-and inspected.
+This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001`,
+`ARCH-026-WOOCOMMERCE-002` and `ARCH-026-DATABASE-001` are currently materialised.
+Later tasks must be added only after their precise runtime, security and ownership
+boundaries have been discussed and inspected.
 
 ## Problem
 
@@ -39,13 +39,15 @@ recovery processing, products, discounts or billing.
 - Keep the WooCommerce application boundary separate from Moda-hosted backend and
   asynchronous service ownership.
 - Preserve a clean path for later secure HTTPS integration with Moda services.
+- Establish the minimum durable Shop platform and Woo installation identity needed
+  by that future hosted API without refactoring existing Shopify/billing semantics.
 
 ## Non-Goals
 
-The WOO-001/WOO-002 foundation stage does not implement:
+The WOO-001/WOO-002 plugin-foundation stage does not implement:
 
-- Moda-hosted merchant APIs or database reads/writes;
-- installation credentials or Woo store -> Moda Shop association;
+- Moda-hosted merchant APIs or database reads/writes from the plugin;
+- Woo store -> Moda Shop connection/handshake application code;
 - cart/checkout/order event ingress;
 - BullMQ or Background integration;
 - recovery workflows;
@@ -99,7 +101,8 @@ React UI
     -> Moda-hosted API
 ```
 
-That hosted API is not defined by WOO-001.
+That hosted API is not defined by WOO-001/WOO-002. `ARCH-026-DATABASE-001` prepares
+only the durable identity/credential state that a later hosted API will consume.
 
 ## Repository Responsibilities
 
@@ -112,16 +115,48 @@ hooks/APIs and later Woo-specific provider edges when explicitly assigned.
 It does not own Moda durable-state schema, Background workflows, Shared internal
 contracts, Gateway infrastructure or private platform credentials.
 
+### `moda-interact-database` / `moda_database`
+
+Owns the additive ARCH-026 durable identity boundary: explicit `Shop.platform` and
+one one-to-one `WooCommerceInstallation` record containing the canonical Woo site
+URL, current one-way installation-credential digest/version and revocation state.
+It does not own the HTTP connection flow, raw secret generation, request
+authentication or provider business workflows.
+
 ## Data Model
 
-None for WOO-001.
+ARCH-026 keeps `commerce.Shop` as the single Moda tenant. DATABASE-001 adds only:
 
-Woo installation identity and Moda `Shop` association will be defined by a later
-ARCH-026 database/API task after that boundary is agreed.
+```text
+commerce.Shop
+    platform = SHOPIFY | WOOCOMMERCE
+    |
+    `-- WooCommerceInstallation?
+            id
+            shopId                 UNIQUE -> Shop.id
+            canonicalSiteUrl       UNIQUE
+            status                 ACTIVE | REVOKED
+            credentialDigest       SHA-256 digest only
+            credentialVersion
+            credentialIssuedAt
+            revokedAt?
+```
+
+Existing Shop rows are migrated/defaulted to `SHOPIFY`; existing `domain` and
+`shopifyShopId` fields remain intact. A Woo Shop must have `shopifyShopId = NULL`.
+The installation row is deleted with its Shop but cannot be reassigned to another
+Shop. No raw installation credential is persisted.
+
+DATABASE-001 intentionally does not generalise `Customer`, billing, recovery or
+other Shopify-specific historical fields.
 
 ## Contracts
 
-WOO-001 and WOO-002 create no cross-service runtime contract.
+WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
+a durable database contract only: `Shop.platform` plus `WooCommerceInstallation`.
+The future hosted API must authenticate an installation using installation ID plus
+a presented raw credential whose SHA-256 digest matches the stored digest, then
+resolve the authoritative `shopId`; site URL alone is not authentication.
 
 WOO-001 establishes stable local plugin identities:
 
@@ -135,7 +170,11 @@ Woo Admin path: /moda-interact
 
 ## Consistency and Transactions
 
-Not applicable to WOO-001; it performs no Moda durable-state mutation.
+WOO-001/WOO-002 perform no Moda durable-state mutation. DATABASE-001 establishes
+constraints so one Woo installation belongs to exactly one Shop, credential/revocation
+state is internally consistent and an installation cannot be reassigned to another
+tenant. The later hosted API must create/rotate/revoke installation state through
+normal PostgreSQL transactions; that application transaction is not implemented here.
 
 ## Ordering
 
@@ -163,6 +202,8 @@ Moda ingress and shared Background workload separately.
 - No fake remote connection or merchant state presented as real.
 - Executable UI assets are built and shipped with the plugin rather than requiring a
   merchant-side development server.
+- Woo installation authentication stores only a one-way 32-byte credential digest;
+  raw installation credentials must never be persisted in PostgreSQL or browser assets.
 
 ## Observability
 
@@ -179,21 +220,28 @@ complete and be architect-accepted before WOO-002 can execute. WOO-002 changes o
 local plugin runtime/lifecycle behaviour and requires no deployment migration or
 backwards-compatibility adapter.
 
+DATABASE-001 is an additive pre-production migration that may execute independently.
+It preserves existing Shop data and defaults/backfills all pre-existing Shop rows to
+`SHOPIFY`; there is no existing Woo installation state to migrate.
+
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
 | ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Blocked | - |
 | ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-001 |
+| ARCH-026-DATABASE-001 | moda_database | Ready | - |
 
+DATABASE-001 may execute independently while the Woo plugin stream is blocked/pending.
 WOO-002 remains Pending until WOO-001 is architect-accepted Complete. Later ARCH-026
-tasks remain intentionally iterative and are not frozen by the existence of WOO-002.
+tasks remain intentionally iterative and are not frozen by these materialised tasks.
 
 ## Open Questions
 
 - Exact hosted Moda merchant-API repository/service boundary for later real database
   reads and merchant commands.
-- Secure Woo installation identity/credential handshake.
+- Exact hosted-API connection/credential-issuance handshake using the durable
+  DATABASE-001 identity model.
 - Exact first DB-backed merchant capability after the plugin foundation.
 - Commerce-event and shared Background integration.
 - Woo Marketplace billing architecture.
@@ -205,3 +253,6 @@ tasks remain intentionally iterative and are not frozen by the existence of WOO-
 - 2026-10-02: Repository provisioning completed and WOO-002 materialised to establish
   local plugin dependency, compatibility, initialisation and lifecycle behaviour after
   WOO-001 completes.
+- 2026-10-02: DATABASE-001 materialised independently to persist explicit Shop platform
+  identity plus the minimal one-to-one Woo installation credential/revocation state
+  required by the future hosted API.
