@@ -4,7 +4,7 @@ title: Runtime, Admin and Commerce maintainability refactor
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-02
+updated: 2026-10-03
 ---
 
 # ARCH-025: Runtime, Admin and Commerce maintainability refactor
@@ -37,7 +37,7 @@ The first Admin tranche refactors `src/components/admin/merchant/merchant-pricin
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2; ADMIN-011 is Ready and ADMIN-012 through ADMIN-015 remain dependency-gated.
 
-The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Ready; COMMERCE-002 through COMMERCE-005 remain dependency-gated.
+The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Complete / Accepted at Attempt 2 and establishes durable no-regression baseline `ARCH025-COMMERCE-TEST-001`; COMMERCE-002 is Ready and COMMERCE-003 through COMMERCE-005 remain dependency-gated.
 
 The second Commerce tranche refactors `src/studio/tools/tool-editor.tsx` behind its unchanged `ToolEditor` boundary while separating common persisted-authoring state from Policy, External HTTP and Shopify Admin workflows and final revision/read-only dispatch. COMMERCE-006 is Pending on COMMERCE-005 solely because COMMERCE-006 owns a controlled source-loader change in `tests/external-tools-ui.test.tsx`, which the StudioWorkspace tranche freezes. COMMERCE-007 through COMMERCE-010 remain dependency-gated.
 
@@ -1156,8 +1156,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Ready | ARCH-024-COMMERCE-003 (Complete) |
-| ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Pending | COMMERCE-001 |
+| ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Complete | ARCH-024-COMMERCE-003 (Complete) |
+| ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Ready | COMMERCE-001 (Complete) |
 | ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Pending | COMMERCE-002 |
 | ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Pending | COMMERCE-003 |
 | ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell | Pending | COMMERCE-004 |
@@ -1211,7 +1211,7 @@ The Admin tranche must preserve the seven frozen pure-policy test files listed a
 
 The QueueMonitor tranche must preserve the frozen server/API sources and dedicated server tests, retain the accepted ADMIN-009 extraction-safe UI/security harnesses for ADMIN-010..015, pass focused tests for newly introduced client/pure state/geometry helpers where applicable, pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. A new browser/React test framework is not required for this structural initiative; existing source/security assertions plus pure Node tests remain the accepted validation style. `ARCH025-ADMIN-TEST-001` records inherited Admin failures proven at the QueueMonitor pre-task revision; it may satisfy only those exact unchanged baseline failures. QueueMonitor-owned focused assertions and newly introduced pure/client tests must remain green, and any new or worsened failure remains blocking.
 
-The Commerce StudioWorkspace tranche must keep the workspace, Agent Configuration state and External Tools UI assets byte-identical, retain all existing source-inspection assertions through the bounded COMMERCE-001 loader update, add focused controller/release/shop/page tests as responsibilities move, pass `npm test`, `npm run typecheck`, targeted `npm run lint`, `npm run build` and `git diff --check`.
+The Commerce StudioWorkspace tranche must keep the workspace, Agent Configuration state and External Tools UI assets byte-identical, retain all existing source-inspection assertions through the bounded COMMERCE-001 loader update, add focused controller/release/shop/page tests as responsibilities move, pass `npm test`, `npm run typecheck`, targeted `npm run lint`, `npm run build` and `git diff --check`. `ARCH025-COMMERCE-TEST-001` records the stable inherited Commerce failure/collection identities proved by COMMERCE-001 Attempt 2; later Commerce tasks may reference only those exact unchanged identities, must treat disappearance as improvement, and must investigate every new/changed/worsened failure.
 
 The Commerce ToolEditor tranche must keep the Shopify Admin, Tool Authoring Screen and New Tool Authoring State suites byte-identical, permit only COMMERCE-006 to make the bounded persisted-External source-loader update in `external-tools-ui.test.tsx`, add focused controller/wrapper/dispatch tests, and pass the same repository-wide validation gates.
 
