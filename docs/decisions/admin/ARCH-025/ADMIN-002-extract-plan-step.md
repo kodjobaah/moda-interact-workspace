@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 20
 executor: null
 claimed_at: null
@@ -209,24 +209,122 @@ Implementation worktree is clean and its task branch matches `origin/task/ARCH-0
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-None
+The submitted Plan-step extraction is conformant in substance and preserves the
+move-only product behaviour. Architect inspection of Admin implementation
+`4a98b7a27198932861bbdaed462d85d7cc174f57` found exactly the two task-authorised
+source files changed:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/plan-step.tsx
+```
+
+The synchronized implementation parent `dfb790ffe613f7afeb8630e740010bdd12d5e014`
+is one commit ahead of accepted ADMIN-001 `0cd5c010926acfbfaf808fb5d727df9269b30fdb`
+with no file delta, so the accepted controller boundary is present unchanged.
+
+Both former step-0 JSX regions now live in `PlanStep`; the shell still owns the
+`mutateMerchantPricingPlanAction` form, hidden payload fields, seven-step navigation,
+and all non-Plan steps. Commerce-model repair text/option semantics, FREE option
+disablement, supported-feature/product-policy controls, active Merchant Knowledge
+source options and configuration validation remain unchanged.
+
+One bounded R2/Acceptance-Criterion-3 violation remains.
+
+#### A1-R1 — remove the full persisted `plan` object from the child boundary
+
+**Source correction required; no controller/server/test redesign is authorised.**
+
+`PlanStepProps` currently accepts:
+
+```ts
+plan?: MerchantPricingPlanWithChildren;
+```
+
+and the child uses that entire persisted plan object only for:
+
+```ts
+readOnly={Boolean(plan)}
+```
+
+This is broader than the task contract:
+
+```text
+R2 — the step receives only the values/catalogues/derived controls/actions it needs
+Acceptance — only bounded draft, action, selector and catalogue props
+ADMIN-001 — accepted controller is the consume-only boundary for ADMIN-002..008
+```
+
+The accepted controller already exposes `draft.isEditing`, so passing the complete
+`MerchantPricingPlanWithChildren` object is unnecessary and creates a presentation
+escape hatch around the controller boundary.
+
+Attempt 2 must make only this bounded correction:
+
+1. add `isEditing` to the `PlanStep` `draft` Pick;
+2. remove the `plan` prop and the `MerchantPricingPlanWithChildren` import from
+   `plan-step.tsx`;
+3. change handle read-only logic to `readOnly={draft.isEditing}`;
+4. pass `isEditing` from the existing `controller.draft` object in the shell;
+5. do not change `merchant-pricing-plan-draft.ts`,
+   `use-merchant-pricing-plan-draft.ts`, server actions, payload construction,
+   validation policy or the accepted ADMIN-001 security test.
+
+No new test framework or test-source change is required. Because source changes are
+required, rerun the complete ADMIN-002 validation contract, using
+`ARCH025-ADMIN-BUILDER-TEST-001` only for the exact inherited broad-suite failures.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/plan-step.tsx`
+- accepted ADMIN-001 controller/draft modules
+- `tests/security/admin-merchant-pricing-plan.test.mjs`
+- `tests/unit/merchant-pricing-plan-builder-draft.test.ts`
+- seven frozen pricing-policy test assets
+- this task Completion Report
+- ARCH-025 parent architecture and ADMIN-003 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `4a98b7a27198932861bbdaed462d85d7cc174f57`: exactly two authorised files.
+- GitHub parent comparison: accepted ADMIN-001
+  `0cd5c010926acfbfaf808fb5d727df9269b30fdb` ->
+  synchronized ADMIN-002 base `dfb790ffe613f7afeb8630e740010bdd12d5e014`
+  contains no file delta.
+- All seven frozen SHA-256 values independently reproduced against the uploaded
+  snapshot.
+- `node --test tests/security/admin-merchant-pricing-plan.test.mjs` independently
+  rerun: 13/13 passed.
+- `node --experimental-strip-types --test
+  tests/unit/merchant-pricing-plan-builder-draft.test.ts` independently rerun:
+  14/14 passed.
+- Submitted `npm run test:unit`: 242 passed / 2 inherited failures covered by
+  `ARCH025-ADMIN-BUILDER-TEST-001`.
+- Submitted `npm test`: 226 passed / 9 inherited failures / 0 skipped, all covered by
+  `ARCH025-ADMIN-BUILDER-TEST-001`.
+- Submitted Prisma generation, scoped lint, production build and `git diff --check`:
+  passed as recorded.
+- GitHub confirms parent task branch head
+  `69efd67c411d5c5103581b8c27edd393aa604e40` and Admin implementation task branch
+  head `4a98b7a27198932861bbdaed462d85d7cc174f57`.
 
 ### Architecture Conformance
 
-Pending.
+Changes required only for the child-prop boundary. Runtime/product semantics and the
+move-only extraction are otherwise conformant. The current full `plan` prop violates
+the accepted consume-only controller boundary even though it is presently used only as
+a boolean.
 
 ### Follow-up
 
-None
+Return this same task to Ready, Attempt 1 retained and claim clear. Reclaim through
+`/moda-task ARCH-025-ADMIN-002`, which must create Attempt 2 exactly once. Apply only
+A1-R1, rerun the defined validation, update the Completion Report and return to review.
+
+Do not begin ADMIN-003 until ADMIN-002 is architect-accepted Complete.

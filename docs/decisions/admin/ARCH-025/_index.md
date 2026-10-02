@@ -83,6 +83,18 @@ Individual task YAML is authoritative.
 ## Execution frontier
 
 `ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2 and `ARCH-025-ADMIN-002` is now Ready. `ARCH-025-ADMIN-009` remains an independent Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+## ADMIN-002 Attempt 1 architect review — 2026-10-02
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The two-file Plan-step
+move is accepted in substance and all focused/frozen/baseline-aware validation is
+satisfactory. One bounded R2 correction remains: `PlanStep` receives the complete
+persisted `MerchantPricingPlanWithChildren` object solely to compute edit/read-only
+state. Attempt 2 must consume existing `controller.draft.isEditing` instead, remove the
+full `plan` prop/import, rerun ADMIN-002 validation and return to review.
+
+No ADMIN-001 controller/security/server contract change is authorised. ADMIN-003
+remains Pending.
+
 ## ADMIN-001 Attempt 2 architect acceptance — 2026-10-02
 
 **Accepted / Complete, Attempt 2.** The evidence-only retry leaves implementation
