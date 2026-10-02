@@ -36,8 +36,8 @@ Individual task YAML is authoritative.
 | [SHOPIFY-008](SHOPIFY-008-extract-recovery-credit-purchase-request-service.md) | Extract recovery-credit purchase initiation | Complete | SHOPIFY-007 |
 | [SHOPIFY-009](SHOPIFY-009-extract-subscription-ended-notification-service.md) | Extract subscription-ended support notification | Complete | SHOPIFY-008 |
 | [SHOPIFY-010](SHOPIFY-010-extract-initial-paid-activation-finalisation.md) | Extract initial Paid activation durable finalisation from sync | Complete | SHOPIFY-009 |
-| [SHOPIFY-011](SHOPIFY-011-extract-subscription-sync-service.md) | Extract remaining provider-to-local synchronization coordinator | Ready | SHOPIFY-010 |
+| [SHOPIFY-011](SHOPIFY-011-extract-subscription-sync-service.md) | Extract remaining provider-to-local synchronization coordinator | Complete | SHOPIFY-010 |
 
 ## Execution frontier
 
-`ARCH-025-SHOPIFY-001` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-002` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-003` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-004` through `ARCH-025-SHOPIFY-008` are Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-009` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-010` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-011` is Ready as the final **Shopify-tranche** implementation task; the independent Background tranche has its own frontier.
+`ARCH-025-SHOPIFY-001` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-002` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-003` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-004` through `ARCH-025-SHOPIFY-008` are Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-009` is Complete and architect-accepted at Attempt 2. `ARCH-025-SHOPIFY-010` is Complete and architect-accepted at Attempt 1. `ARCH-025-SHOPIFY-011` is Complete and architect-accepted at Attempt 2. The **Shopify tranche is complete**; the independent Background tranche remains the ARCH-025 execution frontier.
