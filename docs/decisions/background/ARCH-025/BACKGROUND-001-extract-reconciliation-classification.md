@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-10-02T15:28:25Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -182,7 +182,7 @@ None
 - [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes (146 discovered tests; task text specifies 98)
 - [x] `npm test -- tests/unit/services/billing-subscription-reconciliation/classification.test.ts` passes
 - [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
-- [ ] `npm test` passes (both exact baseline and submitted commits have the same 8 failed tests plus the same fixture-loading failure; differential evidence is recorded in the Completion Report)
+- [x] `npm test` introduces no new failing test or suite identity relative to durable baseline `ARCH025-BACKGROUND-TEST-001`; Attempt 2 proved the exact same 8 failing tests plus the same fixture-loading failure on the pre-task and submitted commits
 - [x] `npm run build` succeeds
 - [x] `git diff --check` passes
 
@@ -265,55 +265,49 @@ Ready for Review. Attempt 2 proves the full-suite failures are identical on the 
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 blocked disposition reviewed the submitted extraction rather than treating the full-suite failure as an implementation defect. The scoped source change is architecture-conformant: classification is pure/I/O-free, the coordinator still performs the same durable read before classification, post-classification plan gates remain outside the classifier, accepted/skip decision order and strings are preserved, and the changed implementation surface is limited to the three authorised files. No source or focused-test correction is requested.
+Attempt 2 closes A1-R1 and `ARCH-025-BACKGROUND-001` is accepted. The implementation remained unchanged at `b3c7a1264a22baf498b14916a341686a751de869`; Attempt 2 was evidence-only and required no production or test-source correction.
 
-A1-R1 is evidence-only. The required full `npm test` gate failed with eight failed tests plus a fixture-loading failure, and those conditions are not currently recorded in `docs/development-baseline.md`. Some failures are in Background billing/recovery test areas, so architect review cannot infer that they are unrelated merely from the focused/frozen suites passing. Attempt 2 must prove whether the exact failure set is pre-existing by running the same full suite against both the exact pre-task implementation commit and the submitted implementation commit under the same dependency/environment state.
+The same-environment differential compared exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with the submitted implementation commit. Both runs used Node `v24.21.0`, identical `package-lock.json` SHA-256 `24b51056b787611cc08f854679c6570ad823c345e03f24101847d7b4829334bc`, and the same dependency tree. Each full-suite run produced the same eight failing test identities plus the same `tests/unit/commerce/evidence.test.ts` fixture-loading failure. The submitted tree differs only by the additional passing focused classifier file/tests. Therefore no full-suite regression was introduced by this extraction.
 
-The frozen reconciliation asset count in the architect-authored task set was also stale. The byte-identical required-hash file executes 146 passing tests, not 98. This reconciliation corrects the durable count across ARCH-025 BACKGROUND-001..007; the SHA-256 remains the invariant.
+The scoped implementation remains architecture-conformant: classification is pure and I/O-free, the coordinator retains durable loading and all post-classification plan/provider/lifecycle work, accepted-kind and skip-reason ordering is preserved, the retryable plan-change error set has one pure owner, and the implementation commit changes only the three authorised files.
+
+Architect reconciliation records the proven pre-task full-suite conditions as durable baseline `ARCH025-BACKGROUND-TEST-001` in `docs/development-baseline.md`. This is a no-regression reference, not an instruction to recreate unavailable PostgreSQL or fixture conditions if the development environment is later repaired.
 
 ### Reviewed Files
 
 - `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
 - `moda-interact-background/src/services/billing-subscription-reconciliation/classification.ts`
 - `moda-interact-background/tests/unit/services/billing-subscription-reconciliation/classification.test.ts`
+- frozen `moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts` identity/evidence
 - `docs/decisions/background/ARCH-025/BACKGROUND-001-extract-reconciliation-classification.md`
 - `docs/development-baseline.md`
 - `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- implementation commit `b3c7a1264a22baf498b14916a341686a751de869`
+- pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a`
+- Attempt 2 report commit `080c4070134b3a2191a893f865815379eea1b7cf`
 
 ### Validation Reviewed
 
-Submitted Attempt 1 evidence:
-
-- Prisma generation passed.
-- Frozen regression SHA-256 matched `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; frozen file diff was empty.
-- Frozen reconciliation suite passed all 146 tests discovered.
+- Frozen reconciliation SHA-256 remained `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; file diff was empty.
+- Frozen reconciliation suite passed all 146 tests on the submitted tree.
 - Focused classifier suite passed 22 tests.
 - Billing entrypoint-isolation suite passed 10 tests.
-- Production build passed.
-- `git diff --check` passed.
-- Full `npm test` did not pass: eight failed tests plus a fixture-loading failure, including Background billing/recovery assertions, a missing ARCH-020 fixture worktree and four PostgreSQL connection failures to `localhost:5432`. No matching durable baseline entry exists.
-
-Implementation commit `b3c7a1264a22baf498b14916a341686a751de869` is exactly one commit ahead of pre-task implementation commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` and changes only the three authorised implementation/test files. Parent blocked report tip `fdb4ad853f9ade8f39aca0cf34e764bfd9d52ef0` was also reviewed.
+- `npm run prisma:generate`, production build and `git diff --check` passed.
+- Full pre-task suite: eight failing tests plus one suite-loading failure; 1,392 passed / 38 skipped.
+- Full submitted suite: the same eight failing tests plus the same suite-loading failure; 1,414 passed / 38 skipped. The additional passes are the focused classifier coverage.
+- Four translation-enum integration failures reported the same `Can't reach database server at localhost:5432` error on both commits.
+- The commerce evidence suite reported the same missing ARCH-020 fixture path on both commits.
+- The three billing-reconciliation assertions and one matured-candidate assertion had identical expected/actual differences on both commits.
+- Physical worktree, dependency, temporary baseline-worktree cleanup and clean/pushed evidence are recorded in the Attempt 2 Completion Report.
 
 ### Architecture Conformance
 
-The scoped extraction conforms to ARCH-025 and repository ownership. Acceptance remains gated only by unresolved repository-wide regression evidence; no product, queue, provider, transaction or lifecycle redesign is requested.
+Conforms to ARCH-025, the authorised Background repository/file boundary, pure-classification extraction contract, public coordinator compatibility and no-regression requirement as reconciled by durable baseline `ARCH025-BACKGROUND-TEST-001`.
 
 ### Follow-up
 
-Return the same task through the normal `moda_background` execution path for Attempt 2. This is an evidence-only retry:
-
-1. keep implementation commit `b3c7a1264a22baf498b14916a341686a751de869` unchanged unless the differential proves a task-only regression;
-2. create/use an isolated temporary comparison worktree for exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a`, derived from the canonical repository rather than another task worktree;
-3. ensure the pre-task and submitted runs use the same Node/dependency state and the same external-service/fixture availability;
-4. run full `npm test` on the pre-task commit and on submitted commit `b3c7a1264a22baf498b14916a341686a751de869`;
-5. record the sorted failing test identifiers and the fixture-loading failure identity from both runs, plus PostgreSQL connection/error identity;
-6. prove whether every submitted failure is already present on the pre-task commit. If the sets match, do not change production/tests and return the evidence to review; if any submitted-only failure exists, investigate only that regression;
-7. do not modify `docs/development-baseline.md` inside the repository-agent attempt. A new ARCH-025 Background baseline, if justified, is an architect-owned acceptance reconciliation;
-8. remove the temporary comparison worktree, record final clean/remote-aligned state, set the task back to `review`, and STOP. Do not start BACKGROUND-002.
-
-No rerun of already-passing focused/frozen/build validation is required solely to manufacture evidence if implementation/dependency state is unchanged, beyond checks needed to establish the same comparison environment.
+`ARCH-025-BACKGROUND-002` is now Ready. BACKGROUND-003..007 remain Pending behind the sequential reconciliation chain. The independent BACKGROUND-008 and ADMIN-001 frontiers are unchanged. No further BACKGROUND-001 implementation work is required.
