@@ -29,11 +29,11 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete; `ARCH-025-BACKGROUND-002` is Ready and BACKGROUND-003 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is in review at Attempt 3; `ARCH-025-BACKGROUND-002` remains Pending until its dependency gate passes. BACKGROUND-003 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Ready; ADMIN-002 through ADMIN-008 remain dependency-gated.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2; ADMIN-002 is Ready and ADMIN-003 through ADMIN-008 remain dependency-gated.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Ready; ADMIN-010 through ADMIN-015 remain dependency-gated.
 
@@ -671,11 +671,13 @@ The 2 October 2026 source snapshot contains:
 
 ```text
 moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
-98 tests
+146 tests
 SHA-256: 0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239
 ```
 
-This file is frozen for BACKGROUND-001..007. Every reconciliation-chain task MUST leave it byte-for-byte unchanged, verify the SHA-256, run the complete file, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without regression, and add no test bypasses or weakened production assertions.
+This file is frozen for BACKGROUND-001..007. Every reconciliation-chain task MUST leave it byte-for-byte unchanged, verify the SHA-256, run all 146 currently discovered tests in the complete file, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without regression, and add no test bypasses or weakened production assertions.
+
+BACKGROUND-001 Attempt 2 established durable development baseline `ARCH025-BACKGROUND-TEST-001` for the full `moda-interact-background` suite by comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same dependency/environment state. Later ARCH-025 Background tasks may reference that baseline only when they introduce no new failing test or suite identity; if an upstream/environment repair resolves a baseline failure, tasks must not recreate it.
 
 ### Background frozen CheckoutRecovery assets
 
@@ -1115,7 +1117,7 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
 | ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Complete | - |
-| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Ready | BACKGROUND-001 |
+| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Pending | BACKGROUND-001 |
 | ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Pending | BACKGROUND-002 |
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Pending | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
@@ -1134,8 +1136,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Ready | - |
-| ARCH-025-ADMIN-002 | Extract Plan step | Pending | ADMIN-001 |
+| ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Complete | - |
+| ARCH-025-ADMIN-002 | Extract Plan step | Ready | ADMIN-001 |
 | ARCH-025-ADMIN-003 | Extract Catalogue placement step | Pending | ADMIN-002 |
 | ARCH-025-ADMIN-004 | Extract Shopify pricing step | Pending | ADMIN-003 |
 | ARCH-025-ADMIN-005 | Extract Usage events step | Pending | ADMIN-004 |
@@ -1205,7 +1207,7 @@ tests/unit/services/checkout-recovery.capacity-resume.test.ts
   SHA-256 8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1
 ```
 
-The Admin tranche must preserve the seven frozen pure-policy test files listed above, retain all 13 existing `admin-merchant-pricing-plan.test.mjs` tests/assertions through its ADMIN-001 extraction-safe loader adjustment, then keep the accepted security file unchanged for ADMIN-002..008. Every Admin task must pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. This does not waive repository-level integration/runtime validation already exercised by those commands.
+The Admin tranche must preserve the seven frozen pure-policy test files listed above, retain all 13 existing `admin-merchant-pricing-plan.test.mjs` tests/assertions through its ADMIN-001 extraction-safe loader adjustment, then keep the accepted security file unchanged for ADMIN-002..008. Every Admin task must run `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check` and introduce no task regression. `ARCH025-ADMIN-BUILDER-TEST-001` may cover only its exact unchanged inherited failures; any new/worsened failure remains blocking. This does not waive repository-level integration/runtime validation already exercised by those commands.
 
 The QueueMonitor tranche must preserve the frozen server/API sources and dedicated server tests, retain the accepted ADMIN-009 extraction-safe UI/security harnesses for ADMIN-010..015, pass focused tests for newly introduced client/pure state/geometry helpers where applicable, pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. A new browser/React test framework is not required for this structural initiative; existing source/security assertions plus pure Node tests remain the accepted validation style.
 
@@ -1219,12 +1221,20 @@ None.
 
 ## Change History
 
+- 2026-10-02: BACKGROUND-001 is in review at Attempt 3; keep BACKGROUND-002 Pending and unclaimed until the dependency is again accepted Complete. Preserve BACKGROUND-002 Attempt 1 implementation/report history while synchronizing current mainline and correcting the frozen Background suite count to 146.
+
+- 2026-10-02: BACKGROUND-001 Attempt 3 accepted the lifecycle/report reconciliation at parent report commit `fc303934c4b92eb22f5116fb501339b779c41417`. No source/test change occurred; implementation task ref `3cc3b89da4c008d00b2cb6c21505eb738b15cf3f` contains reviewed implementation `b3c7a1264a22baf498b14916a341686a751de869` with no file delta. Cleared stale task claim state and made the previously identified frozen reconciliation count correction durable across BACKGROUND-001..007: the required-hash asset currently executes 146 tests, not 98.
+
+- 2026-10-02: ADMIN-001 Accepted / Complete at Attempt 2. The evidence-only retry preserves implementation `0cd5c010926acfbfaf808fb5d727df9269b30fdb`; same-environment comparison against pre-task `b8da632a1fcaef7e364be1dc5cca40dfafde4703` proves the same two unit and nine package-suite failures with no new/worsened failure, while launcher/worktree/submodule evidence is now durable. Added `ARCH025-ADMIN-BUILDER-TEST-001` for those exact inherited failures and promoted ADMIN-002 Ready.
+- 2026-10-02: ADMIN-001 Attempt 1 implementation was accepted in substance at `0cd5c010926acfbfaf808fb5d727df9269b30fdb`: the five-file delta establishes the typed consume-only controller, pure draft reducer and bounded extraction-safe security loader without a source-level product regression. Acceptance is deferred for an evidence-only Attempt 2 because the reported `npm run test:unit` / `npm test` failures have no Admin baseline ID; the retry must compare exact pre-task `b8da632a1fcaef7e364be1dc5cca40dfafde4703` versus submitted failure identities under the same environment and durably record prepared worktree/synchronization/submodule evidence. ADMIN-002 remains gated.
 - 2026-10-02: Deep Commerce COMMERCE-001..010 coherence review retained the ten-task graph, made the completed ARCH-024 Studio model-selection prerequisite explicit, corrected seeded Release Composer ADMIN/SUPER_ADMIN client-gate wording, closed the persisted ToolEditor controller state-ownership/Cancel contract, preserved exact authoring-session and no-port External revision quirks, and made RevisionHistory ownership deterministic across the wrapper extraction sequence.
 
 - 2026-10-02: Added the gated Commerce ToolEditor maintainability chain COMMERCE-006..010. Established a complete persisted-authoring controller before execution-kind extraction, preserved existing Policy/External/Admin validation/Test/CAS/publication semantics and recorded observed source quirks/follow-up candidates separately in `ARCH-025-tool-editor-refactor-observations.md` so the structural refactor does not silently change them.
 
 - 2026-10-02: Added the independent Commerce `StudioWorkspace` maintainability chain COMMERCE-001..005 against the post-ARCH-024 model-selection baseline. Preserved the public `StudioWorkspace`/`StudioPage` module boundary, route/hydration/stale-load and unknown-operation reconciliation semantics, specialised Tool/Agent Configuration boundaries, Release validation/activation/rollback invariants and current Shop views; froze the strong integration suites and made source-inspection assertions extraction-safe before JSX moves.
 - 2026-10-02: Added the independent Admin QueueMonitor maintainability chain ADMIN-009..015. Preserved the read-only public shell, protected API/server-reader boundaries, summary single-flight polling, queue-job/detail stale-request cancellation, filter/pagination/selection asymmetries, drawer mechanics, catalogue/i18n ownership and bounded failed-job diagnostics; established browser-local contracts/client and extraction-safe source assertions before hook/presentation extraction.
+- 2026-10-02: BACKGROUND-001 blocked-task disposition found no source-level defect in the pure classification extraction. Corrected the architect-authored frozen reconciliation suite count from 98 to the 146 tests actually executed by the byte-identical required-hash asset. Returned BACKGROUND-001 to Ready for an evidence-only Attempt 2 comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same environment; no Background full-suite baseline is created until that differential proves the failure set is pre-existing.
+- 2026-10-02: BACKGROUND-001 Attempt 2 was accepted after the same-environment differential proved the exact same eight failing tests plus the same commerce-evidence fixture-loading failure on the pre-task and submitted commits. Recorded durable no-regression baseline `ARCH025-BACKGROUND-TEST-001`, marked BACKGROUND-001 Complete and promoted BACKGROUND-002 to Ready.
 - 2026-10-02: Deep ADMIN-001..008 source/task coherence review kept the eight-task graph unchanged, made ADMIN-001 the complete consume-only controller contract for all later steps, preserved pure-Node testability and UI-edge identity/effect semantics, closed the extracted-module security-scan blind spot, and characterized exact translation fallback, usage-event stale-field/tier behaviour, secondary economics rows and translation-workbook/final-step mount semantics.
 
 - 2026-10-02: Added the independent Admin `MerchantPricingPlanBuilder` maintainability chain ADMIN-001..008 against the post-ARCH-024 model-assignment baseline. Preserved the seven-step form/action contract, exact navigation/economics/translation/product-policy semantics, established a typed draft/controller boundary before JSX extraction, froze seven pure-policy test assets, and made the existing source-based security assertions extraction-safe without weakening them.

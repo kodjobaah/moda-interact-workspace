@@ -134,7 +134,7 @@ The queue owner accepts an already-decided durable next schedule. It MUST NOT ce
 - [x] Keep public `enqueue`/`reconstruct` façade delegates and `createSubscriptionReconcilePayload` compatibility export.
 - [x] Route coordinator/later-handler publication through the collaborator without changing queue call count/options.
 - [x] Add focused queue/reconstruction tests for deterministic IDs, overdue/future delay, public no-queue no-op, no-queue reconstruction count semantics, reconstruction predicate coverage and enqueue-failure isolation.
-- [x] Prove the frozen 98-test regression file remains byte-identical and passes.
+- [x] Prove the frozen 146-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -162,7 +162,7 @@ Internal queue collaborator using the façade-supplied database/queue/logger/clo
 - [x] `npm run prisma:generate`
 - [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
 - [x] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
-- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 98 frozen regression tests
+- [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
 - [x] `npm test -- tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts` passes
 - [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
 - [ ] `npm test` passes with no regression
@@ -211,11 +211,11 @@ Attempt 1 implementation and validation evidence remain recorded below. The task
 - `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 10 tests.
 - `npm run build`: passed; includes Prisma generation and TypeScript compilation.
 - `git diff --check`: passed.
-- `npm test`: failed (exit code 1); the reported failures match the pre-task failure set documented under `ARCH025-TEST-001` in `docs/development-baseline.md`. No task-only failure has been reported, so the documented baseline permits continuation; no full-suite pass is claimed.
+- `npm test`: failed (exit code 1); the reported failures match the pre-task failure set documented under `ARCH025-BACKGROUND-TEST-001` in `docs/development-baseline.md`. No task-only failure has been reported, so the documented baseline permits continuation; no full-suite pass is claimed.
 
 ### Deviations
 
-- The task was blocked based on a stale baseline reference. `ARCH025-TEST-001` documents the matching pre-task failures and permits continuation when there is no task-only regression.
+- The task was blocked based on a stale baseline reference. `ARCH025-BACKGROUND-TEST-001` documents the matching pre-task failures and permits continuation when there is no task-only regression.
 
 ### Assumptions
 
@@ -223,7 +223,7 @@ Attempt 1 implementation and validation evidence remain recorded below. The task
 
 ### Unresolved Issues
 
-- `npm test` remains nonzero for the documented pre-task failure set. Continue only while the failures match `ARCH025-TEST-001` and no task-only regression is present.
+- `npm test` remains nonzero for the documented pre-task failure set. Continue only while the failures match `ARCH025-BACKGROUND-TEST-001` and no task-only regression is present.
 
 ### Architectural Concerns
 
@@ -232,6 +232,10 @@ Attempt 1 implementation and validation evidence remain recorded below. The task
 ## Developer Dependency-Frontier Reconciliation (2026-10-02)
 
 `ARCH-025-BACKGROUND-001` was reopened from `complete` to `ready` at its existing Attempt 2 after a developer request to reconcile the prerequisite lifecycle discrepancy. Because this task is unclaimed (`executor: null`, `claimed_at: null`) and explicitly depends on BACKGROUND-001, its state regresses from `ready` to `pending`. Attempt 1 implementation, validation and review history are preserved; the task must pass the normal dependency gate before another claim.
+
+## Dependency-Frontier Reconciliation (2026-10-02, Attempt 3)
+
+BACKGROUND-001 has since been re-audited and is in review at Attempt 3. BACKGROUND-002 remains `pending`, unclaimed, and at Attempt 1 until BACKGROUND-001 is again accepted Complete. The preserved Attempt 1 implementation and validation report above is historical evidence; it does not constitute a new claim or authorize execution.
 
 ## Architect Review
 
