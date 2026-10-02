@@ -9,11 +9,11 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-024-COMMERCE-006
   - ARCH-024-SHARED-002
@@ -880,23 +880,23 @@ retained fixture Tool-test executor remains referenced
 
 ## Work Items
 
-- [ ] Update Commerce to the exact SHARED-002 published package version.
-- [ ] Remove the bespoke Preview HTTP model provider and obsolete provider tests.
-- [ ] Consume and validate the exact C005 `PreviewConversationSnapshot`; do not extend authored state in C007.
-- [ ] Prove model/instructions/Shop are never re-resolved for an already-started conversation.
-- [ ] Implement the AES-256-GCM current-environment OpenRouter credential resolver using the shared Commerce keyring.
-- [ ] Refactor generic credential-keyring parsing only as required for reuse; preserve External Connection behaviour.
-- [ ] Implement per-invocation current-credential OpenRouter model construction through Shared `OpenRouterModelClient`.
-- [ ] Remove human conversation FIXTURE/MODEL mode state and scripted fixture model execution.
-- [ ] Make model-run quota unconditional for human conversation runs in both stores.
-- [ ] Wire exact host instruction order and selected-Shop context into `runCommerceTurn`.
-- [ ] Pass the existing Commerce `StructuredLogger` child (`purpose=preview`, `previewRunId`) into `runCommerceTurn`; do not create a second logger.
-- [ ] Reduce Commerce Preview config to `COMMERCE_PREVIEW_ENABLED` only.
-- [ ] Enable Test Conversation message Send/reconcile/cancel behaviour with same-tick single-flight protection.
-- [ ] Add focused runtime tests.
-- [ ] Add disposable PostgreSQL credential-rotation/decryption proof.
-- [ ] Preserve independent fixture-backed Tool Authoring / Code Response Tool-test APIs.
-- [ ] Perform final static cleanup/reference audit.
+- [x] Update Commerce to the exact SHARED-002 published package version (`@modainteract/moda-interact-shared@1.1.0`).
+- [x] Remove the bespoke Preview HTTP model provider and obsolete provider tests.
+- [x] Consume and validate the exact C005 `PreviewConversationSnapshot`; do not extend authored state in C007.
+- [x] Prove model/instructions/Shop are never re-resolved for an already-started conversation.
+- [x] Implement the AES-256-GCM current-environment OpenRouter credential resolver using the shared Commerce keyring.
+- [x] Refactor generic credential-keyring parsing only as required for reuse; preserve External Connection behaviour.
+- [x] Implement per-invocation current-credential OpenRouter model construction through Shared `OpenRouterModelClient`.
+- [x] Remove human conversation FIXTURE/MODEL mode state and scripted fixture model execution.
+- [x] Make model-run quota unconditional for human conversation runs in both stores.
+- [x] Wire exact host instruction order and selected-Shop context into `runCommerceTurn`.
+- [x] Pass the existing Commerce `StructuredLogger` child (`purpose=preview`, `previewRunId`) into `runCommerceTurn`; do not create a second logger.
+- [x] Reduce Commerce Preview config to `COMMERCE_PREVIEW_ENABLED` only.
+- [x] Enable Test Conversation message Send/reconcile/cancel behaviour with same-tick single-flight protection.
+- [x] Add focused runtime tests.
+- [x] Add disposable PostgreSQL credential-rotation/decryption proof.
+- [x] Preserve independent fixture-backed Tool Authoring / Code Response Tool-test APIs.
+- [x] Perform final static cleanup/reference audit.
 
 ## Interfaces / Contracts
 
@@ -997,28 +997,28 @@ Later ARCH-024 system-test tasks will also depend on this task when materialised
 
 ## Acceptance Criteria
 
-- [ ] Human Test Conversations use the exact effective active Agent model already captured by C005 in `conversation.snapshot.model`.
-- [ ] Platform + optional Shop Instructions already captured by C005 remain stable for the conversation and are not re-resolved by C007.
-- [ ] Later Agent Configuration/Instruction edits do not alter an already-started conversation.
-- [ ] A new conversation observes current Agent Configuration/Instructions.
-- [ ] Every model invocation resolves the current environment OpenRouter credential from PostgreSQL.
-- [ ] Replacing the credential takes effect on the next model invocation without Commerce restart or new conversation.
-- [ ] Removing/misconfiguring the credential fails bounded `UNAVAILABLE` without leaking secret material.
-- [ ] The decrypted credential is never persisted in Preview state or browser data.
-- [ ] Commerce uses the published Shared `OpenRouterModelClient`/`runCommerceTurn`; there is no direct LangChain/OpenRouter/LangGraph SDK dependency.
-- [ ] The existing Commerce `StructuredLogger` is passed into `runCommerceTurn` with safe preview context, and logging failure does not change the run result.
-- [ ] The old bespoke Preview provider implementation is removed.
-- [ ] `COMMERCE_PREVIEW_PROVIDER`, `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY` are no longer read by Commerce application/runtime code.
-- [ ] `COMMERCE_PREVIEW_ENABLED` remains the only Preview model-execution kill switch.
-- [ ] Human conversation FIXTURE/MODEL mode state is removed.
-- [ ] Human conversation runs always use the existing model quota in memory and Redis.
-- [ ] Tool-test fixture APIs remain separate and functional.
-- [ ] `runCommerceTurn` receives host safety, Platform and optional Shop Instructions in deterministic trusted order.
-- [ ] Human conversation context uses the selected Shop and no synthetic fixture context.
-- [ ] Test Conversation message composer is enabled only after a conversation starts and has same-tick single-flight protection.
-- [ ] Unknown run outcomes preserve the original run ID for reconciliation.
-- [ ] No live OpenRouter call occurs in automated validation.
-- [ ] Disposable PostgreSQL proof demonstrates hot credential replacement without recreating the resolver/service.
+- [x] Human Test Conversations use the exact effective active Agent model already captured by C005 in `conversation.snapshot.model`.
+- [x] Platform + optional Shop Instructions already captured by C005 remain stable for the conversation and are not re-resolved by C007.
+- [x] Later Agent Configuration/Instruction edits do not alter an already-started conversation.
+- [x] A new conversation observes current Agent Configuration/Instructions.
+- [x] Every model invocation resolves the current environment OpenRouter credential from PostgreSQL.
+- [x] Replacing the credential takes effect on the next model invocation without Commerce restart or new conversation.
+- [x] Removing/misconfiguring the credential fails bounded `UNAVAILABLE` without leaking secret material.
+- [x] The decrypted credential is never persisted in Preview state or browser data.
+- [x] Commerce uses the published Shared `OpenRouterModelClient`/`runCommerceTurn`; there is no direct LangChain/OpenRouter/LangGraph SDK dependency.
+- [x] The existing Commerce `StructuredLogger` is passed into `runCommerceTurn` with safe preview context, and logging failure does not change the run result.
+- [x] The old bespoke Preview provider implementation is removed.
+- [x] `COMMERCE_PREVIEW_PROVIDER`, `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY` are no longer read by Commerce application/runtime code.
+- [x] `COMMERCE_PREVIEW_ENABLED` remains the only Preview model-execution kill switch.
+- [x] Human conversation FIXTURE/MODEL mode state is removed.
+- [x] Human conversation runs always use the existing model quota in memory and Redis.
+- [x] Tool-test fixture APIs remain separate and functional.
+- [x] `runCommerceTurn` receives host safety, Platform and optional Shop Instructions in deterministic trusted order.
+- [x] Human conversation context uses the selected Shop and no synthetic fixture context.
+- [x] Test Conversation message composer is enabled only after a conversation starts and has same-tick single-flight protection.
+- [x] Unknown run outcomes preserve the original run ID for reconciliation.
+- [x] No live OpenRouter call occurs in automated validation.
+- [x] Disposable PostgreSQL proof demonstrates hot credential replacement without recreating the resolver/service.
 
 ## Validation
 
@@ -1031,8 +1031,8 @@ command -v node >/dev/null 2>&1 || \
 
 Inspect the synchronized `package.json` first and use the declared scripts. Required validation for this task:
 
-- [ ] Prisma generation succeeds against the integrated ARCH-024 database submodule.
-- [ ] Focused runtime tests pass:
+- [x] Prisma generation succeeds against the integrated ARCH-024 database submodule.
+- [x] Focused runtime tests pass (7 files, 57 tests):
 
 ```bash
 npx vitest run \
@@ -1045,30 +1045,30 @@ npx vitest run \
   tests/preview-integration.test.ts
 ```
 
-- [ ] Redis parity/regression test passes:
+- [x] Redis parity/regression test passes (1 file, 9 tests):
 
 ```bash
 npx vitest run tests/preview-redis-lua.test.ts
 ```
 
-- [ ] Independent Tool-test/Code Response regressions covering `/api/studio/preview/tool-tests` remain green using the repository's current focused suites.
-- [ ] Disposable PostgreSQL credential proof passes:
+- [x] Independent Tool-test/Code Response regressions covering `/api/studio/preview/tool-tests` remain green using the repository's current focused suites (16 external-preview tests and 7 Code Response tests).
+- [x] Disposable PostgreSQL credential proof passes:
 
 ```bash
 node scripts/run-preview-openrouter-disposable.mjs
 ```
 
-- [ ] `npm run typecheck` succeeds, or any pre-existing baseline diagnostics are recorded exactly according to `docs/development-baseline.md`; no changed-file diagnostic may be introduced.
-- [ ] Targeted ESLint succeeds for every changed TypeScript/TSX/JavaScript file.
-- [ ] Production build succeeds:
+- [x] `npm run typecheck` succeeds; no changed-file diagnostic was introduced.
+- [x] Targeted ESLint succeeds for every changed TypeScript/TSX/JavaScript file with no warnings or errors on the final pass.
+- [x] Production build succeeds:
 
 ```bash
 npm run build
 ```
 
-- [ ] Static reference audit from R18 passes.
-- [ ] `git diff --check` passes.
-- [ ] The disposable PostgreSQL runner removes every task-owned container/network in `finally`.
+- [x] Static reference audit from R18 passes.
+- [x] `git diff --check` passes.
+- [x] The disposable PostgreSQL runner removes every task-owned container/network in `finally`.
 
 No validation command may send a real request to OpenRouter or any other LLM provider.
 
@@ -1097,58 +1097,182 @@ Do not begin Background, Gateway or ARCH-024 system-test work.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+`.env.example`, `README.md`, `app/preview/page.tsx`, `docs/commerce-preview-integration.md`, `docs/runtime-compatibility.md`, `lib/preview/runtime.ts`, `lib/server/config.ts`, `lib/server/credential-keyring.ts`, `package.json`, `scripts/clean-clone.sh`, `scripts/run-preview-openrouter-disposable.mjs`, `src/commerce/integration/backend.ts`, `src/commerce/integration/preview/adapters.ts`, `src/commerce/integration/preview/model-provider.ts` (deleted), `src/commerce/integration/preview/model-runtime.ts`, `src/commerce/integration/preview/openrouter-credential.ts`, `src/commerce/preview/redis-store.ts`, `src/commerce/preview/service.ts`, `src/commerce/preview/store.ts`, `src/commerce/preview/types.ts`, `src/studio/test-conversations/client.ts`, `src/studio/test-conversations/test-conversations-screen.tsx`, `tests/external-preview.test.ts`, `tests/preview-integration.test.ts`, `tests/preview-model-provider.test.ts` (deleted), `tests/preview-openrouter-postgres.test.ts`, `tests/preview-openrouter-runtime.test.ts`, `tests/preview-redis-lua.test.ts`, `tests/preview-routes.test.ts`, `tests/preview-service.test.ts`, `tests/preview-store.test.ts`, `tests/test-conversations-screen.test.tsx`.
 
 ### Work Completed
 
-None
+Replaced the human Test Conversation fixture/provider split with the published Shared runtime and exact C005 snapshot; implemented the environment-scoped encrypted credential resolver and per-invocation credential refresh; reused the existing Commerce keyring; retained isolated fixture Tool-test APIs and unconditional conversation quotas; enabled composer/send/reconcile/cancel flows; added frozen-snapshot, logger-failure, runtime and PostgreSQL credential-rotation regressions. The Shared dependency remains pinned to the exact accepted `@modainteract/moda-interact-shared@1.1.0`; no Shared or database schema changes were made. The generic keyring helper and retained fixture adapter domain correction are the only mechanically related additional implementation files. No automated test called OpenRouter.
 
 ### Validation Results
 
-None
+All required validation passed on attempt 2:
+
+- `node scripts/run-preview-openrouter-disposable.mjs` — integrated migrations and the PostgreSQL credential rotation/decryption proof passed (1 test); cleanup verified zero owned containers or networks remain. No OpenRouter call was made.
+- Focused browser regression `npx vitest run tests/test-conversations-screen.test.tsx` — 1 file, 13 tests passed.
+- Required seven-file focused Vitest suite — 7 files, 57 tests passed.
+- `npx vitest run tests/preview-redis-lua.test.ts` — 1 file, 9 tests passed.
+- `npm run code-runtime:package`, `npm run test:arch020-external-preview`, and `npm run test:arch020-code-processor` — package step passed; suites passed with 16 and 7 tests respectively.
+- `npx prisma generate --schema database/prisma/schema.prisma` — Prisma Client v6.19.3 generated. `npm run build` also completed its declared Prisma generation step successfully.
+- `npm run typecheck` — passed.
+- Targeted ESLint on both attempt-2 changed TSX files — passed with no warnings or errors.
+- `npm run build` — passed. Existing Nunjucks `node-loaders.js` dynamic-dependency warnings appeared in two traces.
+- R18 static audit — passed: no forbidden provider/mode/hostname/direct-SDK references in application/runtime source; `/api/studio/preview/tool-tests` exists and the retained fixture Tool-test executor remains referenced.
+- `git diff --check` — passed.
 
 ### Deviations
 
-None
+No scope or contract deviation. The stale `preview.myshopify.com` literal in the retained fixture adapter was changed to `fixture.invalid` to satisfy R18. A no-op legacy-selector test input was removed because spreading an empty object left the valid request unchanged.
 
 ### Assumptions
 
-None
+The accepted Shared release remains `1.1.0`, and the integrated database submodule already contains the accepted ARCH-024 schema/migrations; both were verified in the task worktree. The disposable proof is local-only and uses no provider credentials.
 
 ### Unresolved Issues
 
-None
+None identified. The production build retains the noted Nunjucks dynamic-dependency warnings; the build succeeds and the warnings are outside the changed runtime path.
 
 ### Architectural Concerns
 
-None
+None.
+
+### Architect Review Corrections
+
+- **A1-R1 — implemented.** Cancel dispatches for the retained conversation/run identity while the original run is pending, gates repeated cancellation, and lets cancel/reconcile races settle only that operation. Known terminal outcomes release it once; UNKNOWN retains it. Changed `src/studio/test-conversations/test-conversations-screen.tsx` and `tests/test-conversations-screen.test.tsx`. The focused 13-test browser suite and seven-file suite passed.
+- **A1-R2 — implemented.** Start new conversation is disabled while a run is pending or UNKNOWN, its handler also refuses to clear an unresolved run, and stale asynchronous results are fenced by the retained operation identity. Regressions cover pending/UNKNOWN lockout and late results after a subsequent conversation. Changed the same two files; the focused 13-test browser suite and seven-file suite passed.
+- **A1-R3 — implemented (evidence only).** This Completion Report records the prepared paths, branch/start synchronization, dependency gate, database gitlink, both claim attempts and claim commit IDs, plus final implementation publication. No implementation source changes were made for this item. The parent report commit and matching remote head are published on the task branch; their exact final SHA is included in the task handoff because a commit cannot contain its own hash.
+
+### Prepared Attempt and Publication Evidence
+
+- Canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-007`, branch `task/ARCH-024-COMMERCE-007`.
+- Dedicated Commerce implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-007`, branch `task/ARCH-024-COMMERCE-007`.
+- The shared/default checkout and any previous task worktree were not used for implementation or parent task edits.
+- Attempt 2 prepared start: parent HEAD `f9a15f1b8bdb24e88901eab02592a705898d60c4`; implementation HEAD `20b037095bde85a446236a42e4192fb3ad67644a`. For both repositories, task-branch remote fast-forward was not needed and `origin/main` was already incorporated/current. Recursive submodule sync/update passed during preparation; the integrated database gitlink is `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Dependency gate passed: `ARCH-024-COMMERCE-006` and `ARCH-024-SHARED-002` were Complete.
+- Attempt 1 claim metadata from parent history: executor `copilot`, claimed at `2026-10-02T07:46:08Z`, attempt `1`; durable claim commit `cd4ef983c823e7b1abc3b444adc10568b27ad078`. The attempt-1 Changes Requested review is commit `55089c6007302c79ee895fd144e86ba91b3a9581`.
+- Attempt 2 claim metadata: executor `copilot`, claimed at `2026-10-02T09:21:33Z`, attempt `2`; durable parent claim commit `bb9df450128b3c45d98fb9bd3f675f7b2785c89e`.
+- Final implementation commit and remote task-branch head: `c3a7fe7ff4414fa8c731361dbc171f52f39bb59d`; local and `origin/task/ARCH-024-COMMERCE-007` matched, and the implementation worktree was clean.
+- Parent Completion Report publication commit and remote task-branch head: `a264d9d1cd1b20a4be4de843a544c5a0bf4962a3`; local and `origin/task/ARCH-024-COMMERCE-007` matched, and the parent worktree was clean at verification. This evidence-only follow-up updates the report without changing the implementation commit or task status.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None
+**Attempt 2 — Accepted.**
+
+A1-R1 and A1-R2 are closed. `test-conversations-screen.tsx` now separates the retained run identity from the cancellation gate: a visible pending run can dispatch cancellation for the exact retained `{ conversationId, previewRunId }`, repeated Cancel activation is gated, known terminal results release the retained operation exactly once, and any late poll result is ignored after that operation has been settled. `Start new conversation` is disabled and defensively fenced while a run remains pending or `UNKNOWN`, preserving the exact operation required for reconciliation and preventing stale asynchronous results from mutating a later conversation.
+
+The focused browser regressions exercise the exact accepted lifecycle: cancellation of the retained running operation without allocating a second run, same-tick duplicate-cancel protection, pending/UNKNOWN new-conversation lockout, and stale-result isolation after a later conversation starts.
+
+A1-R3 is also closed. The Completion Report durably records the launcher-resolved canonical workspace, dedicated parent and Commerce task worktrees, task branches, start-of-attempt synchronization, dependency gate, recursive database submodule materialisation/gitlink, Attempt 1/2 claims, implementation publication and clean remote-aligned branch state. The submitted handoff identifies final implementation head `c3a7fe7ff4414fa8c731361dbc171f52f39bb59d` and final parent report head `8af8f734`; the task file records the prior report-publication commit because a commit cannot contain its own final SHA.
+
+Attempt 2 reran the complete C007 validation contract, including the previously blocked disposable PostgreSQL credential-rotation/decryption proof and task-owned resource cleanup. No live OpenRouter request was made. The server/runtime conclusions from Attempt 1 remain conformant: exact C005 snapshot use, no authored-state re-resolution, per-invocation current credential lookup, Shared `OpenRouterModelClient`/`runCommerceTurn`, selected-Shop C006 Tool execution, unconditional human-run quotas, independent fixture Tool-test retention, provider/config cleanup and secret-safe failure handling.
+
+Attempt 1 review found the server/runtime architecture broadly conformant, including frozen C005 snapshot use, per-invocation OpenRouter credential resolution, Shared `OpenRouterModelClient`/`runCommerceTurn` reuse, selected-Shop C006 Tool execution, unconditional human-conversation model quotas, independent fixture Tool-test retention, bounded provider failures and no live provider validation.
+
+Three bounded corrections are required before acceptance.
+
+**A1-R1 — the visible Cancel run action is unreachable while a run is actually pending.**
+
+`sendMessage()` sets `runInFlightRef.current = true` before the POST and keeps it true while `reconcileRun(...)` polls a `RUNNING` run to terminal state. The UI renders `Cancel run` when `runPending` is true, but `cancelPendingRun()` immediately returns when `runInFlightRef.current` is true. Therefore the normal pending-run state exposes a Cancel button that cannot dispatch `cancelTestConversationRun(...)`.
+
+Correct the client-side run lifecycle so:
+
+- Send remains same-tick single-flight safe and cannot allocate a second run ID while the original run is unresolved;
+- Cancel can be invoked for the exact retained `{ conversationId, previewRunId }` while that run is `RUNNING`;
+- repeated same-tick Cancel activation is bounded/idempotently gated;
+- cancel/reconcile races settle only the retained original run and do not create a new run ID;
+- known `CANCELLED`, `FAILED` or `COMPLETED` results release the local pending gate exactly once;
+- `UNKNOWN` retains the original operation for explicit reconciliation.
+
+Add focused browser regression coverage that starts a run returning `RUNNING`, proves the rendered Cancel button calls the cancel client with the exact original conversation/run IDs, and proves the terminal cancellation/reconciliation result is settled without a second Start Run request.
+
+**A1-R2 — Start new conversation may orphan or cross-contaminate an unresolved run.**
+
+`Start new conversation` remains enabled while `runPending` or `runUnknown`. `startNewConversation()` clears `pendingRunRef` and `runInFlightRef` even though the original server run may still be active or require reconciliation. The earlier asynchronous send/poll can then settle after local state has been reset (or after another conversation has started), appending the old run transcript/status into the wrong local conversation and discarding the exact operation needed for `UNKNOWN` reconciliation.
+
+Preserve the C007 exact-run reconciliation invariant. At minimum:
+
+- do not allow local conversation reset/new-conversation transition while a run is pending or `UNKNOWN`;
+- defensively fence `startNewConversation()` against an unresolved `pendingRunRef`;
+- do not clear the retained original run identity until a known terminal result has been settled;
+- add focused regressions proving a pending or `UNKNOWN` run cannot be abandoned through `Start new conversation`, and an old asynchronous result cannot populate a later conversation.
+
+A different implementation is acceptable if it proves the same lifecycle isolation without weakening same-tick/idempotency behaviour.
+
+**A1-R3 — mandatory deterministic execution evidence is absent from the Completion Report.**
+
+The task report records validation results and final implementation/report commit summaries but does not durably record the launcher-resolved prepared execution packet required by the repository-task review protocol. Attempt 2 must record the actual evidence for:
+
+- canonical `workspace_root`;
+- dedicated parent task worktree and exact `task/ARCH-024-COMMERCE-007` branch;
+- dedicated Commerce implementation worktree and exact matching task branch;
+- confirmation that the shared/default checkout and a previous task worktree were not used;
+- parent task-branch synchronization and `origin/main` incorporation at attempt start;
+- implementation task-branch synchronization and `origin/main` incorporation at attempt start;
+- dependency gate showing `ARCH-024-COMMERCE-006` and `ARCH-024-SHARED-002` Complete;
+- recursive submodule sync/update and the exact integrated database gitlink identity;
+- Attempt 1/Attempt 2 claim metadata and durable claim commit(s);
+- final implementation commit and remote task-branch head;
+- final parent report commit and remote task-branch head;
+- clean final status and local-head-equals-remote-head evidence for both worktrees.
+
+A1-R3 is evidence-only and must not cause source churn. If the launcher packet is available, copy the actual prepared evidence rather than reconstructing paths or synchronization claims from memory.
+
+No Database, Shared, Admin, Background or Gateway implementation change is requested. Do not start `ARCH-024-GATEWAY-001`.
 
 ### Reviewed Files
 
-None
+- `src/studio/test-conversations/test-conversations-screen.tsx`
+- `src/studio/test-conversations/client.ts`
+- `src/commerce/preview/service.ts`
+- `src/commerce/preview/store.ts`
+- `src/commerce/preview/redis-store.ts`
+- `src/commerce/integration/preview/model-runtime.ts`
+- `src/commerce/integration/preview/openrouter-credential.ts`
+- `lib/preview/runtime.ts`
+- `lib/server/config.ts`
+- `lib/server/credential-keyring.ts`
+- `tests/test-conversations-screen.test.tsx`
+- `tests/preview-openrouter-runtime.test.ts`
+- `tests/preview-openrouter-postgres.test.ts`
+- `tests/preview-service.test.ts`
+- `tests/preview-redis-lua.test.ts`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-007-execute-test-conversation-models-through-openrouter.md`
 
 ### Validation Reviewed
 
-None
+- Attempt 2 submitted: required seven-file focused runtime suite — 57 tests passed.
+- Attempt 2 submitted: focused browser lifecycle suite — 13 tests passed.
+- Attempt 2 submitted: Redis parity suite — 9 tests passed.
+- Attempt 2 submitted: retained Tool-test/Code Response regressions — 16 + 7 tests passed.
+- Attempt 2 submitted: disposable PostgreSQL credential-rotation/decryption proof passed with integrated migrations and verified cleanup of all task-owned containers/networks.
+- Attempt 2 submitted: Prisma generation, targeted ESLint, typecheck, production build, R18 static audit and `git diff --check` passed; build retained only the known Nunjucks dynamic-dependency warnings.
+- Direct Attempt 2 source/test review confirmed the cancel path targets the retained run while polling is active, duplicate cancellation is gated, unresolved runs block local reset, and stale settled results cannot populate a later conversation.
+- Direct comparison with the earlier C007 snapshot confirmed the Attempt 2 implementation correction is confined to `src/studio/test-conversations/test-conversations-screen.tsx` and `tests/test-conversations-screen.test.tsx` (apart from generated `tsconfig.tsbuildinfo`).
+- The uploaded review archive does not contain installed `node_modules` or usable Git metadata, so dependency-backed commands and remote-head identity were not independently replayed in the architect environment.
+- Submitted: required seven-file focused runtime suite — 54 tests passed.
+- Submitted: Redis parity suite — 9 tests passed.
+- Submitted: retained Tool-test/Code Response regressions — 16 + 7 tests passed.
+- Submitted: disposable PostgreSQL credential-rotation/decryption proof passed with cleanup.
+- Submitted: Prisma generation, targeted ESLint, typecheck, production build, R18 static audit and `git diff --check` passed.
+- Direct source review confirmed no live Commerce runtime reference to the removed bespoke Preview provider/mode variables and no direct Commerce LangChain/OpenRouter/LangGraph import.
+- Direct source review confirmed the current Cancel handler is fenced by the same long-lived `runInFlightRef` used by Send/polling and therefore cannot dispatch during the visible pending state.
+- Direct source review confirmed `Start new conversation` is not disabled for pending/UNKNOWN runs and clears the retained pending-run identity.
+- The uploaded review archive does not contain installed `node_modules` or usable Git metadata, so dependency-backed commands and remote-head identity were not independently replayed in the architect environment.
 
 ### Architecture Conformance
 
-Pending
+Accepted. Attempt 2 closes the two browser lifecycle defects without changing the accepted server/runtime architecture: cancellation can act on the exact retained running operation; pending/`UNKNOWN` operations cannot be abandoned through local conversation reset; stale asynchronous results are fenced; exact-run reconciliation is preserved; and the deterministic launcher/worktree evidence plus complete validation contract are now durable.
 
 ### Follow-up
 
-None
+`ARCH-024-COMMERCE-007` is Complete. Do not start `ARCH-024-GATEWAY-001` from this acceptance: on the exact reviewed workspace its ARCH-024 dependencies (`ADMIN-003`, `COMMERCE-007`, `BACKGROUND-001`) are Complete, but external prerequisite `ARCH-020-GATEWAY-003` is still `Ready`, not `Complete`. `GATEWAY-001` therefore remains Pending until that external dependency is accepted Complete.

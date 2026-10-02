@@ -54,13 +54,13 @@ ARCH-023-COMMERCE-003 ------------+
 | [COMMERCE-004](COMMERCE-004-compose-test-conversations-from-selected-features.md) | Resolve selected Feature IDs to every direct Capability, Feature Behaviour and exact published Tool revisions | Complete | COMMERCE-001 |
 | [COMMERCE-005](COMMERCE-005-build-feature-composed-test-conversations-ui.md) | Build selected-Shop Feature-composed Test Conversations UI and create the complete authored Conversation Configuration Snapshot | Complete | COMMERCE-002, COMMERCE-004, ARCH-023-COMMERCE-003 |
 | [COMMERCE-006](COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md) | Execute exact snapshot Tool revisions through production execution against the real selected Shop | Complete | COMMERCE-005 |
-| [COMMERCE-007](COMMERCE-007-execute-test-conversation-models-through-openrouter.md) | Execute the snapshot active model through Shared OpenRouter runtime using the current environment credential per invocation | Ready | COMMERCE-006, SHARED-002 |
+| [COMMERCE-007](COMMERCE-007-execute-test-conversation-models-through-openrouter.md) | Execute the snapshot active model through Shared OpenRouter runtime using the current environment credential per invocation | Complete | COMMERCE-006, SHARED-002 |
 
 ## Execution frontier
 
-```text
-ARCH-024-COMMERCE-007 -> Ready
-```
+No ARCH-024 Commerce task remains Ready. All seven Commerce tasks are Complete / architect-accepted.
+
+`ARCH-024-GATEWAY-001` remains Pending outside the Commerce domain because external prerequisite `ARCH-020-GATEWAY-003` is still not Complete.
 
 COMMERCE-002 is Complete / Accepted at Attempt 2 and consumes the accepted Database contract plus exactly `@modainteract/moda-interact-shared@1.1.0`. COMMERCE-004 is Complete / Accepted at Attempt 1.
 
@@ -68,6 +68,8 @@ COMMERCE-003 is Complete / Accepted at Attempt 2. Commerce Studio is selection-o
 
 COMMERCE-005 is Complete / Accepted at Attempt 2. Its evidence-only retry proves the package-wide suite is non-regressing for C005: the synchronized pre-task baseline had 60 failed tests versus 29 on the submitted tree, all persistent C005-relevant failures were classified, and the sole submitted-only timeout is outside C005 ownership and passes in isolation. The launcher/worktree/synchronization/submodule packet is durably recorded.
 
-COMMERCE-006 is Complete / Accepted at Attempt 2. Its bounded correction preserves valid C004 many-Capabilities-to-one-Tool compositions while failing closed on conflicting duplicate descriptors; selected-Shop Tool execution remains backed by the production DefinitionExecutor and the immutable C005 snapshot. COMMERCE-007 is now Ready because COMMERCE-006 and SHARED-002 are Complete.
+COMMERCE-006 is Complete / Accepted at Attempt 2. Its bounded correction preserves valid C004 many-Capabilities-to-one-Tool compositions while failing closed on conflicting duplicate descriptors; selected-Shop Tool execution remains backed by the production DefinitionExecutor and the immutable C005 snapshot.
+
+COMMERCE-007 is Complete / Accepted at Attempt 2. The human Test Conversation runtime uses the immutable C005 authored snapshot with the published Shared OpenRouter runtime and current database credential per invocation; selected-Shop Tool execution remains C006-owned. The bounded Attempt 2 correction makes live cancellation reachable for the exact retained run, prevents pending/UNKNOWN runs from being abandoned through local reset, fences stale asynchronous results, and records the required deterministic launcher/worktree evidence. The complete C007 validation, including disposable PostgreSQL credential-rotation proof and cleanup, passed without any live OpenRouter call.
 
 Shared `runCommerceTurn` is internally LangGraph-backed after SHARED-002. Commerce remains a consumer only: no direct LangGraph or MCP-client dependency is introduced. COMMERCE-007 passes its existing `StructuredLogger` into the runner.
