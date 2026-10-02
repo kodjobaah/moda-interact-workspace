@@ -13,28 +13,17 @@ materialised at this stage.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [WOOCOMMERCE-001](WOOCOMMERCE-001-establish-woocommerce-extension-foundation.md) | Establish a reproducible installable PHP + React WooCommerce extension foundation and minimal Woo Admin page | Pending | - |
+| [WOOCOMMERCE-001](WOOCOMMERCE-001-establish-woocommerce-extension-foundation.md) | Establish a reproducible installable PHP + React WooCommerce extension foundation and minimal Woo Admin page | Ready | - |
 
 ## Execution frontier
 
 ```text
-No WooCommerce task is Ready.
+ARCH-026-WOOCOMMERCE-001  Ready (Attempt 3 Changes Requested; next claim is Attempt 4)
 ```
 
-WOOCOMMERCE-001 has no architecture-task dependency, but it has a mandatory
-repository-provisioning readiness gate. `moda-interact-woocommerce` does not exist in
-the supplied snapshot and therefore cannot yet have a launcher-created implementation
-worktree.
+Attempt 3 implementation/runtime behaviour passed architectural review, but the task
+was returned to Ready for a bounded VCS/evidence correction: publish the final parent
+review report, resolve the dirty implementation `.gitignore` state, and record the
+mandatory physical-worktree/start-of-attempt synchronization evidence.
 
-Before the architect promotes WOO-001 to Ready, verify:
-
-```text
-private/canonical repository exists and is reachable
-workspace .gitmodules registers moda-interact-woocommerce
-workspace gitlink points to the approved initial main commit
-WOOCOMMERCE launcher route resolves moda_woocommerce/moda-interact-woocommerce
-Codex/Claude moda_woocommerce definitions are synchronized
-```
-
-Do not execute WOO-001 from another repository or a shared/default checkout to bypass
-that gate.
+Do not start WOO-002 until WOO-001 is architect-reviewed as `complete`.

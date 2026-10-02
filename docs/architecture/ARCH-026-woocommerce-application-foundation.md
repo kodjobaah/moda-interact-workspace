@@ -4,7 +4,7 @@ title: WooCommerce application foundation
 status: proposed
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-02
 ---
 
 # ARCH-026: WooCommerce application foundation
@@ -177,10 +177,13 @@ a remote URL or create implementation work in another repository.
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Pending | - |
+| ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Ready | - |
 
-WOO-001 remains Pending until repository provisioning and workspace submodule
-registration are verified. Later ARCH-026 tasks are intentionally not frozen yet.
+Repository provisioning and the WOO-001 implementation now exist. Attempt 3 passed
+functional/architectural inspection but was returned to `Ready` for a bounded
+repository-task VCS/evidence correction before acceptance. WOO-002 must remain gated
+until WOO-001 reaches `complete`. Later ARCH-026 tasks are intentionally not frozen
+here.
 
 ## Open Questions
 
@@ -195,3 +198,6 @@ registration are verified. Later ARCH-026 tasks are intentionally not frozen yet
 
 - 2026-10-01: Initial iterative ARCH-026 foundation defined; WOO-001 materialised as
   the first bounded implementation task and `moda_woocommerce` ownership introduced.
+- 2026-10-02: WOO-001 Attempt 3 implementation/runtime behaviour reviewed as
+  architecture-conformant; task returned to Ready for VCS publication/worktree
+  evidence correction before acceptance.
