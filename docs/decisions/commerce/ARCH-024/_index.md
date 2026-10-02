@@ -60,7 +60,7 @@ ARCH-023-COMMERCE-003 ------------+
 
 No ARCH-024 Commerce task remains Ready. All seven Commerce tasks are Complete / architect-accepted.
 
-`ARCH-024-GATEWAY-001` is Complete / Accepted at Attempt 1 outside the Commerce domain. All materialised ARCH-024 implementation tasks are now Complete / architect-accepted.
+`ARCH-024-GATEWAY-001` is now Ready outside the Commerce domain because external prerequisite `ARCH-020-GATEWAY-003` is Complete / Accepted at Attempt 3 and its other dependencies are Complete.
 
 COMMERCE-002 is Complete / Accepted at Attempt 2 and consumes the accepted Database contract plus exactly `@modainteract/moda-interact-shared@1.1.0`. COMMERCE-004 is Complete / Accepted at Attempt 1.
 

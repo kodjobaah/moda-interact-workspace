@@ -23,6 +23,7 @@ updated: 2026-10-02
 
 # Extract pure subscription reconciliation classification
 
+
 ## Architecture
 
 Architecture ID: `ARCH-025`
@@ -75,7 +76,7 @@ A directly adjacent pure types file is permitted only if required to keep `class
 - Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
 - Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
-- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 146 tests must pass after every task.
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
 - Full `npm test` must pass. If execution reveals a pre-existing baseline condition, stop and report it to `moda_architect` unless it is already durably documented in `docs/development-baseline.md`; do not silently redefine the baseline inside this task.
@@ -146,12 +147,12 @@ Current-plan database eligibility checks for cycle discovery/rollover occur afte
 
 ## Work Items
 
-- [x] Add the pure classification module and discriminated result/expected snapshot types.
-- [x] Replace the boolean classification block in `reconcileJob()` with the pure classifier while leaving subsequent plan/provider/lifecycle work in place.
-- [x] Preserve exact accepted `kind` values and skipped reason/field logging.
-- [x] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence, initial activation with null `pendingEffectiveAt`, and rollover with null period-date fields.
-- [x] Prove classifier tests perform no database/provider/queue work.
-- [x] Prove the frozen regression file remains byte-identical and passes (146 tests discovered; task text states 98).
+- [ ] Add the pure classification module and discriminated result/expected snapshot types.
+- [ ] Replace the boolean classification block in `reconcileJob()` with the pure classifier while leaving subsequent plan/provider/lifecycle work in place.
+- [ ] Preserve exact accepted `kind` values and skipped reason/field logging.
+- [ ] Add exhaustive focused tests for every accepted kind plus every current skip reason and stale schedule/subscription fence, including FROZEN expected-object property presence/absence, initial activation with null `pendingEffectiveAt`, and rollover with null period-date fields.
+- [ ] Prove classifier tests perform no database/provider/queue work.
+- [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -167,12 +168,12 @@ None
 
 ## Acceptance Criteria
 
-- [x] Reconciliation kind selection is owned by a pure module with no I/O.
-- [x] Reinstall, initial activation, cycle discovery, rollover, established plan change, frozen and skip outcomes match current behaviour exactly, including the current permissive null-shape predicates.
-- [x] All current skip reason strings and decision precedence remain unchanged.
-- [x] Retryable established-plan-change SYNC_ERROR classification uses one shared pure constant.
-- [x] No provider/database call count or transaction boundary changes.
-- [x] Frozen regression suite remains byte-identical and all discovered tests pass (146 discovered; specified count is 98).
+- [ ] Reconciliation kind selection is owned by a pure module with no I/O.
+- [ ] Reinstall, initial activation, cycle discovery, rollover, established plan change, frozen and skip outcomes match current behaviour exactly, including the current permissive null-shape predicates.
+- [ ] All current skip reason strings and decision precedence remain unchanged.
+- [ ] Retryable established-plan-change SYNC_ERROR classification uses one shared pure constant.
+- [ ] No provider/database call count or transaction boundary changes.
+- [ ] Frozen regression suite remains byte-identical and all 98 tests pass.
 
 ## Validation
 
@@ -198,68 +199,35 @@ None
 
 ### Status
 
-Ready for Review. Attempt 2 proves the full-suite failures are identical on the exact pre-task and submitted commits under the same Node/dependency environment; no submitted-only failure was found.
+Not Started
 
 ### Files Changed
 
-- `src/services/billing-subscription-reconciliation.service.ts`
-- `src/services/billing-subscription-reconciliation/classification.ts`
-- `tests/unit/services/billing-subscription-reconciliation/classification.test.ts`
-- This task report only; no unrelated parent-workspace files changed.
+None
 
 ### Work Completed
 
-- Extracted reconciliation kind/expected-state classification into the pure classification module and delegated the coordinator's former classification block to it.
-- Added focused exhaustive classification tests, including accepted-kind/skip precedence and permissive nullable expected-state shapes. Focused classifier tests passed.
-- Preserved the frozen regression file byte-for-byte; its SHA-256 matches the required value and all 146 tests reported by the current suite passed (the task text's stated count of 98 does not match the current test inventory).
-- Implementation commit `b3c7a12` was pushed to `origin/task/ARCH-025-BACKGROUND-001`.
-- Attempt 2 made no implementation or test changes. Full-suite differential runs on baseline `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` and submitted `b3c7a1264a22baf498b14916a341686a751de869` reproduced the exact same eight failing test identities and fixture-loading failure; there are no submitted-only failures.
+None
 
 ### Validation Results
 
-- `npm run prisma:generate`: passed.
-- Frozen regression file SHA-256: required digest matched; `git diff` for the frozen file was empty.
-- `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts`: passed, 146 tests. The task definition says 98 tests; current execution discovered 146.
-- `npm test -- tests/unit/services/billing-subscription-reconciliation/classification.test.ts`: passed, 22 tests.
-- `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 10 tests.
-- `npm run build`: passed.
-- `git diff --check`: passed.
-- `npm test` on baseline `670fbad4d52308c96ef41a6a4d29116f1ad42f1a`: failed with 8 tests and 1 suite-loading failure; 1,392 passed, 38 skipped, across 114 files (4 failed, 95 passed, 15 skipped).
-- `npm test` on submitted `b3c7a1264a22baf498b14916a341686a751de869`: failed with the same 8 test identities and 1 suite-loading failure; 1,414 passed, 38 skipped, across 115 files (4 failed, 96 passed, 15 skipped). The additional passing file/tests are the extracted classifier suite.
-- Identical failing test identities on both commits: `billing-reconciliation.service.test.ts` — “persists rotating provider-cycle lag and enqueues the existing +60 second job”, “repairs a missing Paid cycle schedule during rotating provider-cycle lag”, and “repairs a missing pack-enabled Free cycle schedule during rotating provider-cycle lag”; `matured-candidate.materialization.test.ts` — “creates a recovery from current Shopify data when the lookup is found and recoverable”; `translation-enum-bindings.integration.test.ts` — “persists submission failure statuses through the real enum column”, “persists terminal poll Batch and translation statuses through real enum columns”, “persists failed provider results through the real translation enum column”, and “persists SUBMISSION_UNKNOWN correlation adoption through the real Batch enum column”.
-- Identical suite-loading failure: `tests/unit/commerce/evidence.test.ts` cannot open `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002/docs/architecture/ARCH-020-evidence-contract-fixtures.json` (ENOENT; no tests collected).
-- Each of the four PostgreSQL integration failures reports `Can't reach database server at localhost:5432` on both commits. The three billing assertion failures and the matured-candidate assertion also have identical expected/actual differences on both commits.
-- Baseline and submitted runs used Node `v24.21.0`, identical `package-lock.json` SHA-256 `24b51056b787611cc08f854679c6570ad823c345e03f24101847d7b4829334bc`, and the same `node_modules` directory (the baseline worktree symlinked to the submitted worktree's dependencies). The temporary clean baseline worktree was removed after comparison.
-- Full-suite execution remains red, but the differential proves these failures are present before this task's implementation commit. No source, test, environment-service, or baseline-document changes were made in Attempt 2.
+None
 
 ### Deviations
 
-- The full `npm test` command remains unsuccessful on both commits. Per the latest Architect Review, the exact baseline comparison resolves the Attempt 1 regression-evidence question; the task is returned to `review` without claiming the suite itself passed.
-- This task's frozen-test count states 98, while the current execution reports 146 passing tests; the source file digest requirement was satisfied.
+None
 
 ### Assumptions
 
-- The same full-suite failures on baseline and submitted commits are treated as pre-existing with respect to this task only; no repository-wide baseline disposition is inferred or written.
+None
 
 ### Unresolved Issues
 
-- Full `npm test` remains failing identically on baseline and submitted commits. The exact failing identities and environment errors are returned to `moda_architect` for acceptance/baseline disposition.
+None
 
 ### Architectural Concerns
 
-- None identified in the scoped extraction; full-suite validation remains an unresolved release gate.
-
-### Launcher Preparation Evidence
-
-- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
-- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-BACKGROUND-001`, branch `task/ARCH-025-BACKGROUND-001`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-BACKGROUND-001`, branch `task/ARCH-025-BACKGROUND-001`.
-- Both task worktrees were newly created and already current from `origin/main`; task-branch fast-forward was `not-needed` and `origin/main` incorporation was `already-current`.
-- Recursive submodule sync and update passed; `database` was initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
-- Shared/default checkouts were not switched or used for implementation; no other task worktree was reused.
-- Implementation commit: `b3c7a12` (`refactor(background): extract reconciliation classification`), pushed to `origin/task/ARCH-025-BACKGROUND-001`.
-- Parent claim commit: `8fb5de5c0b415bc6c8db3772de593560f44bf115`.
-- Parent blocked-report commit: `8ac808b93f7b6862662b989b72cee0c13cb9dd8e`, pushed to `origin/task/ARCH-025-BACKGROUND-001`.
+None
 
 ## Architect Review
 

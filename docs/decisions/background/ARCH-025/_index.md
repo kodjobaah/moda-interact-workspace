@@ -27,11 +27,11 @@ Frozen Background regression asset:
 
 ```text
 moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
-146 tests
+98 tests
 SHA-256: 0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239
 ```
 
-Every BACKGROUND-001..007 task must leave that file byte-for-byte unchanged and all 146 tests must pass. `tests/unit/runtime/entrypoint-isolation.test.ts` must also pass to protect the seven-position billing-worker construction contract.
+Every BACKGROUND-001..007 task must leave that file byte-for-byte unchanged and all 98 tests must pass. `tests/unit/runtime/entrypoint-isolation.test.ts` must also pass to protect the seven-position billing-worker construction contract.
 
 Frozen CheckoutRecovery regression assets for BACKGROUND-008..015:
 

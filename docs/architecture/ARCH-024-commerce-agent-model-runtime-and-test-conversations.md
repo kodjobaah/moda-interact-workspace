@@ -15,14 +15,18 @@ Agreed.
 
 ARCH-024 is the successor architecture for the unstarted ARCH-021 Phase-6 Preview/Test Conversation work. It keeps accepted ARCH-021 Studio authoring foundations, consumes frozen ARCH-023 Platform/Shop Instruction semantics, and replaces the unstarted ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 plan with a broader Admin-owned model catalogue, scoped availability, database-backed OpenRouter credentials, LangChain/OpenRouter model integration, a modular Shared LangGraph Commerce-turn runtime with canonical structured logging, production Background parity and Feature-composed selected-shop Test Conversations.
 
-All materialised ARCH-024 implementation tasks are now Complete / architect-accepted:
-Database, Shared publication, all Admin tasks, Background production parity/cleanup,
-all Commerce tasks COMMERCE-001 through COMMERCE-007, and GATEWAY-001. GATEWAY-001 is
-Complete / Accepted at Attempt 1 after establishing the shared encryption-keyring and
-writer-config topology, preserving Commerce-only HMAC and transcription boundaries,
-and removing obsolete static Preview model/provider/API-key inputs.
+ARCH-024 implementation is underway. Database, Shared publication, all Admin tasks,
+Background production parity/cleanup, and all Commerce tasks COMMERCE-001 through COMMERCE-007
+are Complete / architect-accepted. COMMERCE-007 is Complete / Accepted at Attempt 2 after
+its bounded browser-lifecycle correction made cancellation reachable for the exact retained
+run, prevented pending/UNKNOWN runs from being abandoned, fenced stale asynchronous results,
+and recorded the required deterministic execution evidence.
 
-The architecture task table currently records 17 Complete, 0 Ready and 0 Pending tasks.
+`ARCH-024-GATEWAY-001` is now Ready because external prerequisite
+`ARCH-020-GATEWAY-003` is Complete / Accepted at Attempt 3 and its other declared
+prerequisites are already Complete.
+
+The architecture task table currently records 16 Complete, 1 Ready and 0 Pending tasks.
 
 Integrated system-test tasks are **deliberately not materialised in this architecture session** because final acceptance overlaps frozen ARCH-023 completion and upcoming architecture work. Any terminal integrated validation will be defined separately against the final combined architecture.
 
@@ -1122,7 +1126,7 @@ Individual task YAML is authoritative.
 | `ARCH-024-COMMERCE-007` | `moda_commerce` | Complete | COMMERCE-006, SHARED-002 |
 | `ARCH-024-BACKGROUND-001` | `moda_background` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001 |
-| `ARCH-024-GATEWAY-001` | `moda_gateway` | Complete | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
+| `ARCH-024-GATEWAY-001` | `moda_gateway` | Ready | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
 
 No ARCH-024 system-test task is materialised in this session. This remains an intentional coordination decision due to overlap with frozen ARCH-023 and upcoming architecture work. Any terminal integrated acceptance work will be defined separately against the final combined architecture.
 
@@ -1196,7 +1200,6 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 
 ## Change History
 
-- **2026-10-02 — GATEWAY-001 accepted at Attempt 1:** both Render Blueprints now share one environment encryption keyring across Admin, Commerce and the messaging worker while exposing the active key selector only to Admin/Commerce writers; `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` remains Commerce-only, obsolete static Preview provider/model/API-key inputs are removed, `COMMERCE_PREVIEW_ENABLED` and transcription wiring are preserved, and the deployment runbook records database-only OpenRouter credential rotation plus retained-key infrastructure rotation. Positive Blueprint validation and all 92 negative mutations pass. The broader Docker/HAProxy harness was unavailable to the executor, but the task changed no HAProxy/Docker/route file and the task contract permits recording an unavailable broader prerequisite without fabricating success. All 17 materialised ARCH-024 implementation tasks are Complete; terminal integrated validation remains intentionally deferred to the later overlapping-architecture session.
 - **2026-10-02 — COMMERCE-007 accepted at Attempt 2:** the bounded browser-lifecycle correction lets `Cancel run` target the exact retained pending operation while preserving same-tick single-flight safety, prevents pending/`UNKNOWN` runs from being abandoned through `Start new conversation`, and fences stale asynchronous completions from later conversations. The complete C007 validation passed, including the disposable PostgreSQL credential-rotation/decryption proof with cleanup, 57-test focused runtime suite, Redis parity, retained Tool-test/Code Response regressions, Prisma generation, typecheck, targeted lint, production build and static/whitespace audits; no live OpenRouter call was made. The launcher/worktree/synchronization/submodule/claim evidence is durably recorded. All ARCH-024 Commerce tasks are now Complete. `GATEWAY-001` remains Pending solely because external prerequisite `ARCH-020-GATEWAY-003` is not yet Complete.
 - **2026-10-02 — COMMERCE-006 accepted at Attempt 2:** the bounded A1-R1 correction accepts one-or-more manifest Capability members sharing an exact Tool revision, rejects zero matches and any conflicting duplicate descriptor before provider dispatch, and preserves the single deduplicated grant plus frozen-definition checks. Regression coverage proves a valid two-Capability/one-Tool composition executes exactly once through `backend.execution` and a conflicting duplicate remains fail closed. Attempt 2 reran the complete C006 validation (11 files / 102 tests, targeted ESLint, typecheck, production build and static/whitespace audits) and records clean remote-aligned dedicated task worktrees. COMMERCE-006 is Complete and COMMERCE-007 is promoted Ready; GATEWAY-001 remains Pending on COMMERCE-007.
 - **2026-10-01 — COMMERCE-005 accepted at Attempt 2:** the evidence-only retry leaves all C005-owned implementation/test files unchanged while durably recording the launcher-resolved parent/Commerce worktrees, synchronized task branches, recursive database submodule state, Attempt 2 claim and clean remote-aligned heads. The paired `npx vitest run` comparison uses synchronized pre-task Commerce `1318596b523190a8c422cf0fb9ddfeae06847e63` versus submitted `4a38f092d3a360e19c0bae8432961109cdd78917`: baseline 60 failed tests versus submitted 29, with 28 common failed test identifiers plus the same five collection failures, 32 baseline-only failures, and one unrelated submitted-only Shopify Admin UI timeout that passes in isolation. No Test Conversations/Preview test fails in the submitted run, so no C005-owned regression is demonstrated. COMMERCE-005 is Complete and COMMERCE-006 is promoted Ready; C007 remains Pending.
