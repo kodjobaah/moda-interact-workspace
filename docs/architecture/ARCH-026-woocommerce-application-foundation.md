@@ -411,6 +411,7 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 | ARCH-026-API-003 | moda_api | Pending | ARCH-026-API-002, ARCH-026-DATABASE-002 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
+| ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
 | ARCH-026-SHOPIFY-001 | moda_app | Pending | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
 | ARCH-026-BACKGROUND-001 | moda_background | Pending | ARCH-026-DATABASE-001 |
@@ -420,7 +421,7 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003's WOO-002 dependency is now satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003's WOO-002 dependency is now satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -453,6 +454,7 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
   principal over the DATABASE-001 identity model.
 - 2026-10-02: WOO-003 materialised as the PHP-side consumer of API-002, adding the public one-attempt site-control challenge callback, privileged local connection facade, server-side installation credential storage and authenticated Moda API client.
 - 2026-10-02: WOO-004 materialised to replace the placeholder Admin page with the first production-shaped React shell and real connection/setup experience, consuming only the accepted WOO-003 browser-safe local REST boundary.
+- 2026-10-02: WOO-005 materialised as the first real authenticated merchant-data surface, consuming accepted WOO-004 + API-003 to render read-only shared onboarding, Store Category projection and provider-neutral international context inside WooCommerce Admin.
 
 - 2026-10-02: Provider-neutral onboarding migration materialised without removing the
   legacy Shopify field: DATABASE-001 adds/backfills `Shop.onboardingCompleted`; SHOPIFY-001

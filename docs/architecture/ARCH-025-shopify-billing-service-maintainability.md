@@ -13,13 +13,14 @@ updated: 2026-10-02
 
 In Progress.
 
-ARCH-025 now contains four **independent maintainability sub-tranches** across three repository owners:
+ARCH-025 now contains five **independent maintainability sub-tranches** across three repository owners:
 
 ```text
 moda-interact/             Shopify BillingService façade
 moda-interact-background/  billing subscription reconciliation coordinator
 moda-interact-background/  CheckoutRecoveryService lifecycle façade
 moda-interact-admin/       MerchantPricingPlanBuilder wizard
+moda-interact-admin/       QueueMonitor operational UI
 ```
 
 The historical architecture filename is retained so already-materialised task files keep a stable durable reference. The architecture ID and this document remain authoritative for all ARCH-025 tranches.
@@ -30,9 +31,11 @@ The first Background tranche refactors `src/services/billing-subscription-reconc
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
-The Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Ready; ADMIN-002 through ADMIN-008 remain dependency-gated.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Ready; ADMIN-002 through ADMIN-008 remain dependency-gated.
 
-There is deliberately **no dependency edge between the four sub-tranches**. They modify different high-churn files across three repositories and may proceed independently; each chain remains sequential internally so accepted extraction interfaces are stable before the next extraction builds on them.
+The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Ready; ADMIN-010 through ADMIN-015 remain dependency-gated.
+
+There is deliberately **no dependency edge between the five sub-tranches**. They modify different high-churn files across three repositories and may proceed independently; each chain remains sequential internally so accepted extraction interfaces are stable before the next extraction builds on them.
 
 ## Problem
 
@@ -103,6 +106,21 @@ ARCH-024 Admin model-assignment work is integrated in the reviewed baseline: the
 
 The current security suite intentionally reads the builder source and asserts product/security UI invariants. ADMIN-001 therefore makes those assertions extraction-safe by scanning the bounded builder module set without deleting or weakening them before JSX begins moving into child modules.
 
+### Admin queue monitor
+
+`moda-interact-admin/src/components/admin/queue-monitor.tsx` is approximately 1,058 lines and combines three independent browser read lifecycles plus substantial operational presentation:
+
+- queue-summary initial load, manual refresh and persisted polling cadence with single-flight admission;
+- queue-job browsing with queue/status/shop/direction/page/recent-vs-full state, stale-request abortion and bounded pagination;
+- selected-job detail loading with stale-selection abortion and distinct 404 handling;
+- resizable/maximisable drawer viewport/pointer/keyboard mechanics;
+- queue summary, queue information, job filters/table/pagination and job-detail rendering;
+- copy controls and bounded failed-job diagnostic presentation.
+
+The server boundary is already separated and remains canonical: `src/lib/admin/queue-monitor.ts` owns BullMQ/Redis reads and server-side queue types, while `/api/admin/queues`, `/jobs` and `/jobs/detail` own protected HTTP responses. The client refactor must not import that server reader into the browser bundle or change API authorization/response semantics.
+
+Existing source-based security/internationalisation assertions intentionally read the monolithic QueueMonitor component. ADMIN-009 makes those assertions extraction-safe by scanning only the public shell plus the bounded `src/components/admin/queue-monitor/` module set before state/JSX moves.
+
 The objective across all participating repositories is maintainability, not behavioural redesign. Existing callers, routes, worker entrypoints, form/action contracts, queue contracts, durable billing/recovery semantics and Admin product policy remain stable while internal owners are extracted incrementally.
 
 ## Goals
@@ -125,14 +143,18 @@ The objective across all participating repositories is maintainability, not beha
 - Move local Admin draft/state transitions into one typed reducer/controller without moving server/domain validation into React state.
 - Preserve create-versus-edit plan-kind/placement behaviour, exact navigation gates, economics-override invalidation semantics, Merchant Knowledge product-policy inclusion, unavailable-current-Commerce-model repair, translation-retention rules and the always-mounted translation workbook.
 - Keep existing pure/domain owners (`pricing-plan-builder.ts`, `pricing-builder-payload.ts`, `pricing-economics*`, `pricing-translations.ts`, `pricing-plan-feature-controls.ts`) authoritative.
-- Make Shopify `syncSubscription()`, Background `reconcileJob()`, the final `CheckoutRecoveryService` façade reduction and the final `MerchantPricingPlanBuilder` wizard-shell reduction the terminal extraction steps in their respective sub-tranches.
+- Keep `QueueMonitor` at `src/components/admin/queue-monitor.tsx` with the same export/caller boundary and preserve the current read-only operational surface.
+- Preserve the three QueueMonitor request lifecycles exactly: summary single-flight polling, queue-job browsing with stale-request cancellation, and selected-job detail loading with stale-selection cancellation and 404-specific messaging.
+- Preserve queue selection/filter/pagination/detail clearing asymmetries, drawer close/switch/maximise/resize behaviour, browser-local refresh preference semantics and last-successful-summary retention on errors.
+- Keep `src/lib/admin/queue-monitor.ts`, the protected queue API routes, `queue-monitor-refresh.ts`, catalogue-owned labels and server authorization/normalisation as canonical existing owners.
+- Make Shopify `syncSubscription()`, Background `reconcileJob()`, the final `CheckoutRecoveryService` façade reduction, the final `MerchantPricingPlanBuilder` wizard-shell reduction and the final `QueueMonitor` shell reduction the terminal extraction steps in their respective sub-tranches.
 
 ## Non-Goals
 
 ARCH-025 does not authorise:
 
 - implementation changes outside `moda-interact/`, `moda-interact-background/` and `moda-interact-admin/`;
-- Admin merchant-pricing-plan server-action transaction refactoring, QueueMonitor refactoring, other Admin UI refactors, Commerce Studio, Messaging, Shared, Database, Gateway or System Test feature work;
+- Admin merchant-pricing-plan server-action transaction refactoring, other Admin UI refactors, Commerce Studio, Messaging, Shared, Database, Gateway or System Test feature work;
 - redesigning CheckoutRecovery product behaviour, outreach policy, recovery capacity economics, candidate/order correlation semantics or CommerceAgent context contracts;
 - Prisma schema or migration changes;
 - Shared queue/event contract changes;
@@ -152,6 +174,8 @@ ARCH-025 does not authorise:
 - changing `mutateMerchantPricingPlanAction`, server-side pricing/economics/translation policy or SUPER_ADMIN authorization as part of the builder extraction;
 - introducing a new React form framework, client-side domain validation engine, global state store or UI component framework solely for this refactor;
 - conditionally unmounting `MerchantPricingTranslationWorkbook` during normal wizard navigation or otherwise discarding its local workbook/upload state;
+- changing QueueMonitor server reader/API authorization, HTTP response contracts, Redis/BullMQ behaviour, queue mutation capabilities or diagnostic data exposure as part of the client structural extraction;
+- introducing retry/requeue/delete/pause/resume controls, a client state framework or a new React/browser test framework solely for QueueMonitor extraction;
 
 If an implementation task discovers that a safe extraction requires one of these changes, it must stop and return the dependency/conflict to `moda_architect`.
 
@@ -312,6 +336,40 @@ Important current transition semantics that are part of the compatibility contra
 
 The form continues to submit to `mutateMerchantPricingPlanAction` with hidden `payload`, `translationJson`, `economicsOverrideRequested` and `economicsOverrideReason` fields. Server-side action validation/transactions remain outside this tranche.
 
+### Admin QueueMonitor
+
+Current public client entry point:
+
+```text
+src/components/admin/queue-monitor.tsx
+  QueueMonitor
+```
+
+Current client responsibilities are concentrated in one component:
+
+```text
+summary request/polling state
+queue selection
+queue-job browsing/filter/pagination state
+selected-job detail request/state
+viewport + drawer resize state
+summary table
+details drawer
+job table + pagination
+job detail + copy controls
+```
+
+The canonical server-side owners already exist and remain outside this refactor:
+
+```text
+src/lib/admin/queue-monitor.ts
+src/app/api/admin/queues/route.ts
+src/app/api/admin/queues/jobs/route.ts
+src/app/api/admin/queues/jobs/detail/route.ts
+```
+
+`src/components/admin/queue-monitor-refresh.ts` already owns refresh choices, storage key/default and browser-local preference parsing and remains canonical.
+
 ## Proposed Architecture
 
 ### Shopify application target
@@ -449,6 +507,30 @@ A deep pre-execution coherence review further establishes ADMIN-001 as the compl
 
 The Admin chain is independent of the Shopify and Background chains. Within ADMIN-001..008, tasks are sequential because each extraction relies on the accepted typed draft/controller and previously established child-module contracts.
 
+### Admin QueueMonitor target
+
+The final client boundary remains:
+
+```text
+protected Admin page
+        |
+        v
+QueueMonitor                         thin public shell
+        |
+        +--> queue-monitor.types.ts              browser HTTP-response mirrors only
+        +--> queue-monitor.client.ts             bounded fetch/query/response boundary
+        +--> use-queue-monitor-summary.ts         summary/polling/single-flight lifecycle
+        +--> use-queue-jobs.ts                    filters/page/recent/full/jobs lifecycle
+        +--> use-queue-job-detail.ts              selected-job lifecycle
+        +--> use-resizable-drawer.ts              viewport/pointer/keyboard geometry
+        +--> queue-summary-table.tsx              summary presentation
+        +--> queue-detail-drawer.tsx              selected queue/details composition
+        +--> queue-jobs-table.tsx                 jobs/filter/pagination presentation
+        +--> queue-job-detail.tsx                 selected normalized detail presentation
+```
+
+The browser type mirror is repository-internal and must not import the Redis/BullMQ server reader into the client bundle. No Shared-package contract is introduced. The shell coordinates accepted hook interfaces; it must not recreate request implementations after extraction.
+
 ## Regression Baseline
 
 ### Shopify frozen façade asset
@@ -539,11 +621,64 @@ tests/unit/merchant-pricing-translation-workbook.test.ts
 
 ADMIN-001 adds focused pure controller tests in `tests/unit/merchant-pricing-plan-builder-draft.test.ts`. Later step-extraction tasks reuse that controller suite plus the extraction-safe security suite rather than introducing a new React test framework solely for structural extraction.
 
+### Admin QueueMonitor regression baseline
+
+Reviewed source baseline:
+
+```text
+src/components/admin/queue-monitor.tsx
+  1,058 lines
+  SHA-256 851f8e5e25875a4bb6657ecd5d01bd2c4f3cf1bafa7928e342e332ce3012a4f7
+src/components/admin/queue-monitor-refresh.ts
+  SHA-256 14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc
+```
+
+The server boundary is frozen byte-for-byte throughout ADMIN-009..015:
+
+```text
+src/lib/admin/queue-monitor.ts
+  SHA-256 f2270a0c76992059793ce1a3184b4e424675d8ea0dc2a3bbef03a0fadd202486
+src/app/api/admin/queues/route.ts
+  SHA-256 f0eaed7214b6d57341f37a04afcc6636efa325358c0ea62321b09c086c6df408
+src/app/api/admin/queues/jobs/route.ts
+  SHA-256 fd6413d4afd37a4c46208d397f9bc5903a0766a651866ba414acedb1b95368a7
+src/app/api/admin/queues/jobs/detail/route.ts
+  SHA-256 c367a8e6ac3674f54df815ee05ecfe682f65e7e5f8eb0f2feeff80a05b298bab
+```
+
+Dedicated API/server tests are frozen throughout ADMIN-009..015:
+
+```text
+tests/security/admin-queue-jobs.test.mjs
+  SHA-256 3bfc3954b2938ea6f7028f2db51cae26e943ea5d8845e1d7cab2eb87b96bd6bc (7 tests)
+tests/security/admin-queue-job-detail.test.mjs
+  SHA-256 e567406ccace44955ef9ff43c3e5b138e19f4be92677f13fd1e47d47ec3011e0 (5 tests)
+tests/security/admin-failed-job-detail.test.mjs
+  SHA-256 da8dccc08b3981c45f39ca39cd0d6a0a98121e4f8b283c0cccb32db39a20e195 (4 tests)
+tests/security/admin-failed-jobs.test.mjs
+  SHA-256 fad750721202bd646b13c1aba6c37464e0698618e6707775265f8fdb0f281609 (4 tests)
+```
+
+These source-shape/UI harnesses start from the reviewed hashes below. ADMIN-009 may modify only their QueueMonitor source-loading mechanism so the same assertions/test names follow `queue-monitor.tsx` plus the bounded `queue-monitor/` module set. ADMIN-010..015 must not modify the accepted ADMIN-009 versions:
+
+```text
+tests/security/admin-queue-monitor.test.mjs
+  SHA-256 c97b0ead2a010f267e99dda03ee496d035138ab6d0a010a1a91f400745e591b4 (14 tests)
+tests/security/admin-queue-details-drawer.test.mjs
+  SHA-256 3a1fdee83b331c3cc3fc49127902b8b5e8ab0d8b05979c23868bca231d52b788 (5 tests)
+tests/security/admin-failed-job-detail-panel.test.mjs
+  SHA-256 540386d54ca03197bdbd5581964aa1951d86559b01b4ad889b0daa9c4eaacea5 (3 tests)
+tests/security/admin-internationalization.test.mjs
+  SHA-256 a3481170403d55c1d6869741b5d01cd303fa06c75315491465413aa51a886d29 (7 tests)
+```
+
 ## Data Model
 
 No schema or migration changes are authorised.
 
 Existing PostgreSQL tables, relationships, uniqueness constraints, BillingPeriod/Subscription lifecycle semantics, CheckoutRecovery/outreach/status-history semantics and entitlement counters remain unchanged. The Admin builder continues producing the same server-validated MerchantPricingPlan payload; ARCH-025 introduces no Admin schema/migration change.
+
+QueueMonitor remains read-only and introduces no durable client state beyond the existing browser-local refresh preference. No Redis/BullMQ mutation or PostgreSQL schema change is authorised.
 
 ## Contracts
 
@@ -558,6 +693,8 @@ The Background recovery compatibility contract remains `CheckoutRecoveryService`
 The Shared billing reconciliation queue contract remains owned by `@modainteract/moda-interact-shared/billing`; no ARCH-025 task may redefine or version it locally. CheckoutRecovery queue/provider/event contracts likewise remain unchanged. Extracted collaborator APIs are repository-internal implementation contracts only.
 
 The Admin compatibility contract remains the `MerchantPricingPlanBuilder` props/export and its HTML form submission to `mutateMerchantPricingPlanAction`, including hidden `intent`, `payload`, `translationJson`, `economicsOverrideRequested` and `economicsOverrideReason` fields. Extracted draft/step APIs are repository-internal UI contracts only.
+
+The QueueMonitor compatibility contract remains the `QueueMonitor` export at `src/components/admin/queue-monitor.tsx` and the existing protected HTTP endpoints `/api/admin/queues`, `/api/admin/queues/jobs` and `/api/admin/queues/jobs/detail`. Extracted browser types, client functions, hooks and presentation props are Admin-internal contracts only; no Shared contract or server-reader import is introduced.
 
 ## Consistency and Transactions
 
@@ -761,7 +898,7 @@ scope: billing subscription reconciliation and CheckoutRecovery maintainability 
 
 repository: moda-interact-admin
 assigned_agent: moda_admin
-scope: MerchantPricingPlanBuilder draft/controller and step extraction
+scope: MerchantPricingPlanBuilder draft/controller/step extraction and QueueMonitor client lifecycle/presentation extraction
 ```
 
 The parent workspace owns architecture/task coordination files. Repository implementation remains confined to the assigned implementation repository plus the assigned parent task report file permitted by the task/VCS protocol. No ARCH-025 task grants one repository agent ownership of another participating repository.
@@ -816,6 +953,13 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-006 | Extract Merchant content step | Pending | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
 | ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Pending | ADMIN-007 |
+| ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Ready | - |
+| ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook | Pending | ADMIN-009 |
+| ARCH-025-ADMIN-011 | Extract queue-jobs browsing/filter/pagination hook | Pending | ADMIN-010 |
+| ARCH-025-ADMIN-012 | Extract selected-job detail hook | Pending | ADMIN-011 |
+| ARCH-025-ADMIN-013 | Extract resizable drawer hook | Pending | ADMIN-012 |
+| ARCH-025-ADMIN-014 | Extract queue summary table | Pending | ADMIN-013 |
+| ARCH-025-ADMIN-015 | Extract queue details presentation and reduce final QueueMonitor shell | Pending | ADMIN-014 |
 
 Execution graph:
 
@@ -830,9 +974,12 @@ BACKGROUND-008 -> BACKGROUND-009 -> BACKGROUND-010 -> BACKGROUND-011
 
 ADMIN-001 -> ADMIN-002 -> ADMIN-003 -> ADMIN-004
       -> ADMIN-005 -> ADMIN-006 -> ADMIN-007 -> ADMIN-008
+
+ADMIN-009 -> ADMIN-010 -> ADMIN-011 -> ADMIN-012
+      -> ADMIN-013 -> ADMIN-014 -> ADMIN-015
 ```
 
-There is deliberately no dependency edge between the Shopify tranche, either Background chain and the Admin builder chain.
+There is deliberately no dependency edge between the Shopify tranche, either Background chain, the Admin builder chain and the Admin QueueMonitor chain.
 
 ## System Validation
 
@@ -852,6 +999,8 @@ tests/unit/services/checkout-recovery.capacity-resume.test.ts
 ```
 
 The Admin tranche must preserve the seven frozen pure-policy test files listed above, retain all 13 existing `admin-merchant-pricing-plan.test.mjs` tests/assertions through its ADMIN-001 extraction-safe loader adjustment, then keep the accepted security file unchanged for ADMIN-002..008. Every Admin task must pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. This does not waive repository-level integration/runtime validation already exercised by those commands.
+
+The QueueMonitor tranche must preserve the frozen server/API sources and dedicated server tests, retain the accepted ADMIN-009 extraction-safe UI/security harnesses for ADMIN-010..015, pass focused tests for newly introduced client/pure state/geometry helpers where applicable, pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. A new browser/React test framework is not required for this structural initiative; existing source/security assertions plus pure Node tests remain the accepted validation style.
 
 ## Open Questions
 

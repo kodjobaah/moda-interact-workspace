@@ -16,6 +16,7 @@ ARCH-026 is being defined iteratively. The extension foundation, local runtime/l
 | [WOOCOMMERCE-002](WOOCOMMERCE-002-establish-plugin-runtime-lifecycle-boundary.md) | Establish WordPress/WooCommerce/PHP compatibility, dependency gating and safe plugin activation/deactivation runtime | Complete | WOO-001 |
 | [WOOCOMMERCE-003](WOOCOMMERCE-003-connect-plugin-to-hosted-moda-api.md) | Implement PHP-side site-control challenge, server-side installation credential storage, authenticated Moda API client and local connection REST facade | Pending | WOO-002, API-002 |
 | [WOOCOMMERCE-004](WOOCOMMERCE-004-establish-admin-shell-connection-experience.md) | Replace the placeholder page with the real Woo Admin React shell and connection/setup experience over WOO-003 local REST | Pending | WOO-003 |
+| [WOOCOMMERCE-005](WOOCOMMERCE-005-render-authenticated-merchant-overview.md) | Render the first real authenticated merchant Overview from API-003 shared onboarding, Store Category and international-context data | Pending | WOO-004, API-003 |
 
 ## Execution frontier
 
@@ -32,5 +33,6 @@ the WOO-001 Admin foundation remained functional.
 
 WOO-003's WOO-002 dependency is now satisfied, but WOO-003 also depends on accepted
 API-002. API-002 remains Pending in this snapshot, so WOO-003 remains Pending. WOO-004
-remains Pending until WOO-003 is architect-accepted Complete. Do not execute WOO-003
-or WOO-004 early.
+remains Pending until WOO-003 is architect-accepted Complete. WOO-005 then requires both
+accepted WOO-004 and API-003 before it can render the first real merchant Overview. Do not
+execute WOO-003, WOO-004 or WOO-005 early.
