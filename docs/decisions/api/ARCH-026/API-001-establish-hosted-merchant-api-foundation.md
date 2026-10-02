@@ -9,7 +9,7 @@ assigned_agent: moda_api
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 12
 executor: copilot
 claimed_at: 2026-10-02T19:31:29Z
@@ -526,7 +526,7 @@ Normal execution must use the canonical `/moda-task` preparation flow after the 
 
 ### Status
 
-Review
+Ready for Review
 
 ### Files Changed
 
