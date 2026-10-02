@@ -83,6 +83,22 @@ Individual task YAML is authoritative.
 ## Execution frontier
 
 `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-009` are independently Ready, and both are independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`. ADMIN-002..008 and ADMIN-010..015 remain Pending until the immediately preceding task in their own Admin chain is architect-accepted Complete.
+## ADMIN-009 Attempt 1 architect disposition — 2026-10-02
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The browser-local
+contracts/client extraction and bounded source-loader changes are accepted in
+substance; no implementation/test source correction is requested.
+
+The former validation block is reclassified as inherited Admin baseline debt under
+`ARCH025-ADMIN-TEST-001`: the focused command's only two failures are global i18n
+assertions reproduced on pre-task `b8da632a...`, while every QueueMonitor-owned
+assertion passes. The two unit failures and all nine submitted package-suite failing
+identifiers are likewise reproduced at the starting revision.
+
+Attempt 2 is evidence-only: record the complete prepared-launch packet, cite the
+baseline, reconcile task checklists/report state, preserve implementation `eda069b...`
+and return to review. ADMIN-010 remains Pending until ADMIN-009 is Complete.
+
 ## Deep coherence review — 2026-10-02
 
 A source/task closure review against the 1,553-line post-ARCH-024 builder kept the ADMIN-001..008 graph unchanged and tightened the execution contract before ADMIN-001 starts. ADMIN-001 must establish the complete consume-only controller/action/selector interface for every later step, keep its pure reducer directly Node-testable, preserve hook-edge event/highlight identity generation and effect-driven economics-override invalidation, make the security harness scan the full bounded builder module set (including the ARCH-014 forbidden-dependency check), and preserve the exact hidden translation JSON fallback. ADMIN-002..008 may consume but not extend that accepted controller; a missing interface returns to `moda_architect`. Usage-event stale-field/tier quirks, the current empty secondary economics rows, and the workbook/final-step mount/conditional DOM semantics are explicitly preserved as move-only behaviour.
