@@ -1024,12 +1024,13 @@ In-progress structural refactor with two independent repository tranches. The Sh
 
 ## ARCH-026 — WooCommerce application foundation (2026-10-01)
 
-Proposed, iterative architecture. `ARCH-026-WOOCOMMERCE-001` is defined Pending to
-establish the installable PHP + React WordPress/WooCommerce extension foundation. The
-new `moda_woocommerce` owner and WOOCOMMERCE launcher route are registered by the
-definition patch; execution remains gated on provisioning/registering the actual
-`moda-interact-woocommerce` repository as a workspace submodule. Hosted Moda API,
-commerce-event, Background/recovery and billing boundaries are intentionally deferred
-until their later tasks are discussed.
+Proposed, iterative architecture. The WooCommerce plugin foundation (WOO-001/WOO-002),
+DATABASE-001 and the hosted API foundation (API-001) are materialised.
+`moda-interact-woocommerce` / `moda_woocommerce` owns the merchant-installed PHP + React
+extension; `moda-interact-api` / `moda_api` is the separate server-only synchronous
+Moda HTTP boundary. API-001 remains repository-provisioning-gated and intentionally
+contains only canonical database consumption plus liveness/readiness; installation
+authentication, merchant business APIs, commerce-event/Background integration and
+billing remain later tasks.
 
 [Architecture](ARCH-026-woocommerce-application-foundation.md)

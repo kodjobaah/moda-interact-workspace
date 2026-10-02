@@ -14,7 +14,7 @@ updated: 2026-10-02
 Proposed.
 
 This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001`,
-`ARCH-026-WOOCOMMERCE-002` and `ARCH-026-DATABASE-001` are currently materialised.
+`ARCH-026-WOOCOMMERCE-002`, `ARCH-026-DATABASE-001` and `ARCH-026-API-001` are currently materialised.
 Later tasks must be added only after their precise runtime, security and ownership
 boundaries have been discussed and inspected.
 
@@ -40,7 +40,10 @@ recovery processing, products, discounts or billing.
   asynchronous service ownership.
 - Preserve a clean path for later secure HTTPS integration with Moda services.
 - Establish the minimum durable Shop platform and Woo installation identity needed
-  by that future hosted API without refactoring existing Shopify/billing semantics.
+  by the hosted API without refactoring existing Shopify/billing semantics.
+- Establish `moda-interact-api` as the backend-only hosted synchronous API boundary
+  that later Woo tasks can authenticate against without exposing Moda database or
+  private-service credentials to merchant WordPress infrastructure.
 
 ## Non-Goals
 
@@ -90,19 +93,22 @@ WordPress
 The plugin is not a separately hosted Next.js application and does not directly
 connect to Moda PostgreSQL, Redis/BullMQ or private services.
 
-Future remote Moda integration is expected to use an architecture-approved HTTPS
-service boundary:
+Remote Moda integration uses a separate hosted service boundary:
 
 ```text
 React UI
     -> local WordPress REST
     -> PHP plugin
     -> authenticated HTTPS
-    -> Moda-hosted API
+    -> moda-interact-gateway
+    -> moda-interact-api
+    -> PostgreSQL / architecture-owned services
 ```
 
-That hosted API is not defined by WOO-001/WOO-002. `ARCH-026-DATABASE-001` prepares
-only the durable identity/credential state that a later hosted API will consume.
+`ARCH-026-API-001` establishes only the backend-only API runtime, canonical database
+consumption and health/readiness behavior. Installation authentication and merchant
+business APIs remain later tasks. `ARCH-026-DATABASE-001` prepares the durable
+identity/credential state that those later API tasks will consume.
 
 ## Repository Responsibilities
 
@@ -124,6 +130,17 @@ revocation state. The dedicated `woocommerce` PostgreSQL schema owns Woo-specifi
 installation/authentication persistence; `commerce` remains the shared tenant domain.
 It does not own the HTTP connection flow, raw secret generation, request
 authentication or provider business workflows.
+
+### `moda-interact-api` / `moda_api`
+
+Owns the Moda-hosted synchronous HTTP boundary for external merchant applications.
+API-001 establishes the server-only Node/TypeScript runtime, canonical database
+submodule/Prisma consumption and liveness/readiness endpoints only. Later tasks may
+add installation authentication, tenant authorization and bounded merchant queries/
+commands.
+
+It does not own WordPress/Woo runtime code, database schema/migrations, asynchronous
+Background workflows or Gateway deployment/routing.
 
 ## Data Model
 
@@ -158,7 +175,9 @@ other Shopify-specific historical fields.
 
 WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
 a durable database contract only: `commerce.Shop.platform` plus
-`woocommerce.WooCommerceInstallation`.
+`woocommerce.WooCommerceInstallation`. API-001 creates only operational HTTP
+contracts: `GET /health/live` and `GET /health/ready`; it does not create a merchant
+business API contract.
 The future hosted API must authenticate an installation using installation ID plus
 a presented raw credential whose SHA-256 digest matches the stored digest, then
 resolve the authoritative `shopId`; site URL alone is not authentication.
@@ -187,11 +206,15 @@ Not applicable to WOO-001.
 
 ## Failure Handling
 
-The foundation must fail safely when its local development/runtime prerequisites are
-not present and must not require Moda production secrets or remote services to render
+The plugin foundation must fail safely when its local development/runtime prerequisites
+are not present and must not require Moda production secrets or remote services to render
 the minimal Admin page. WOO-002 owns the local WordPress/WooCommerce/PHP compatibility
 contract, delayed Woo initialisation, bounded administrator dependency feedback and
 non-destructive activation/deactivation lifecycle.
+
+API-001 separates liveness from readiness: process liveness does not depend on
+PostgreSQL, while readiness returns 503 when the bounded database connectivity probe
+fails. It must not run migrations or mutate business state as part of readiness.
 
 ## Scalability
 
@@ -212,8 +235,11 @@ Moda ingress and shared Background workload separately.
 
 ## Observability
 
-No new Moda-hosted telemetry requirement is introduced by WOO-001. Do not add a
-second generic logger or remote telemetry pipeline merely for scaffolding.
+WOO-001 introduces no new Moda-hosted telemetry requirement. API-001 must use the
+canonical Shared structured logger for generic runtime logging and must not create
+duplicate custom HTTP metrics/spans when standard/framework telemetry can provide the
+signal. Hosted telemetry/export configuration remains deployment/Gateway work unless a
+later bounded API task identifies a concrete service-owned gap.
 
 ## Rollout / Migration
 
@@ -231,6 +257,11 @@ rows to `SHOPIFY`, creates the dedicated `woocommerce` schema, and adds the cros
 one-to-one Woo installation relation; there is no existing Woo installation state to
 migrate.
 
+API-001 is independently provisionable and does not require DATABASE-001 because its
+only database behavior is generic connectivity/readiness against the canonical schema.
+It remains Pending until the `moda-interact-api` repository is provisioned and registered
+as a workspace submodule.
+
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends On |
@@ -238,15 +269,15 @@ migrate.
 | ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Blocked | - |
 | ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-001 |
 | ARCH-026-DATABASE-001 | moda_database | Ready | - |
+| ARCH-026-API-001 | moda_api | Pending | - |
 
 DATABASE-001 may execute independently while the Woo plugin stream is blocked/pending.
+API-001 also has no task dependency and is gated only by repository provisioning.
 WOO-002 remains Pending until WOO-001 is architect-accepted Complete. Later ARCH-026
 tasks remain intentionally iterative and are not frozen by these materialised tasks.
 
 ## Open Questions
 
-- Exact hosted Moda merchant-API repository/service boundary for later real database
-  reads and merchant commands.
 - Exact hosted-API connection/credential-issuance handshake using the durable
   DATABASE-001 identity model.
 - Exact first DB-backed merchant capability after the plugin foundation.
@@ -266,3 +297,7 @@ tasks remain intentionally iterative and are not frozen by these materialised ta
 - 2026-10-02: DATABASE-001 schema ownership clarified: shared tenant/platform state remains
   in `commerce`; Woo-specific installation/authentication state is owned by the dedicated
   `woocommerce` PostgreSQL schema.
+
+- 2026-10-02: API-001 materialised to establish `moda-interact-api` as the backend-only
+  hosted synchronous API boundary with canonical database consumption and health/readiness
+  behavior. Repository provisioning remains its only readiness gate.
