@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: pending
 priority: 20
 executor: null
 claimed_at: null
@@ -181,7 +181,7 @@ None
 
 ### Status
 
-Implementation is complete. `npm test` remains nonzero, but its failure set matches the documented `ARCH025-TEST-001` baseline in `docs/development-baseline.md`, and no task-only regression has been reported. That baseline permits continuation under those conditions. The prior blocker interpretation was stale; the task is returned to `ready` for the next authorized execution. No Attempt 2 claim is taken here.
+Attempt 1 implementation and validation evidence remain recorded below. The task is now `pending` because its explicit dependency, `ARCH-025-BACKGROUND-001`, has been reopened; no Attempt 2 claim is taken.
 
 ### Files Changed
 
@@ -228,6 +228,10 @@ Implementation is complete. `npm test` remains nonzero, but its failure set matc
 ### Architectural Concerns
 
 - None identified in the queue extraction.
+
+## Developer Dependency-Frontier Reconciliation (2026-10-02)
+
+`ARCH-025-BACKGROUND-001` was reopened from `complete` to `ready` at its existing Attempt 2 after a developer request to reconcile the prerequisite lifecycle discrepancy. Because this task is unclaimed (`executor: null`, `claimed_at: null`) and explicitly depends on BACKGROUND-001, its state regresses from `ready` to `pending`. Attempt 1 implementation, validation and review history are preserved; the task must pass the normal dependency gate before another claim.
 
 ## Architect Review
 
