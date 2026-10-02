@@ -15,7 +15,8 @@ Proposed.
 
 This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001`,
 `ARCH-026-WOOCOMMERCE-002`, `ARCH-026-DATABASE-001`, `ARCH-026-API-001`,
-`ARCH-026-API-002`, `ARCH-026-WOOCOMMERCE-003` and `ARCH-026-WOOCOMMERCE-004`
+`ARCH-026-API-002`, `ARCH-026-WOOCOMMERCE-003`, `ARCH-026-WOOCOMMERCE-004`,
+`ARCH-026-SHOPIFY-001`, `ARCH-026-BACKGROUND-001` and `ARCH-026-ADMIN-001`
 are currently materialised. Later tasks must be added only after their precise runtime,
 security and ownership boundaries have been discussed and inspected.
 
@@ -41,7 +42,10 @@ recovery processing, products, discounts or billing.
   asynchronous service ownership.
 - Preserve a clean path for later secure HTTPS integration with Moda services.
 - Establish the minimum durable Shop platform and Woo installation identity needed
-  by the hosted API without refactoring existing Shopify/billing semantics.
+  by the hosted API.
+- Move the one-time merchant onboarding milestone toward provider-neutral `commerce.Shop`
+  ownership while retaining the existing Shopify field temporarily during bounded consumer
+  migration tasks.
 - Establish `moda-interact-api` as the backend-only hosted synchronous API boundary
   that later Woo tasks can authenticate against without exposing Moda database or
   private-service credentials to merchant WordPress infrastructure.
@@ -127,8 +131,8 @@ contracts, Gateway infrastructure or private platform credentials.
 
 ### `moda-interact-database` / `moda_database`
 
-Owns the additive ARCH-026 durable identity boundary: shared `commerce.Shop.platform`
-plus one provider-owned `woocommerce.WooCommerceInstallation` record containing the
+Owns the additive ARCH-026 durable identity/lifecycle boundary: shared
+`commerce.Shop.platform`, shared `commerce.Shop.onboardingCompleted`, plus one provider-owned `woocommerce.WooCommerceInstallation` record containing the
 canonical Woo site URL, current one-way installation-credential digest/version and
 revocation state. The dedicated `woocommerce` PostgreSQL schema owns Woo-specific
 installation/authentication persistence; `commerce` remains the shared tenant domain.
@@ -150,12 +154,14 @@ Background workflows or Gateway deployment/routing.
 ## Data Model
 
 ARCH-026 keeps `commerce.Shop` as the single Moda tenant. DATABASE-001 adds a
-provider discriminator to that shared tenant and places Woo-specific connection state
+provider discriminator and provider-neutral one-time onboarding milestone to that shared
+tenant, and places Woo-specific connection state
 under a dedicated `woocommerce` PostgreSQL schema:
 
 ```text
 commerce.Shop
     platform = SHOPIFY | WOOCOMMERCE
+    onboardingCompleted = false | true
     |
     `-- woocommerce.WooCommerceInstallation?
             id
@@ -173,14 +179,18 @@ Existing Shop rows are migrated/defaulted to `SHOPIFY`; existing `domain` and
 The installation row is deleted with its Shop but cannot be reassigned to another
 Shop. No raw installation credential is persisted.
 
-DATABASE-001 intentionally does not generalise `Customer`, billing, recovery or
-other Shopify-specific historical fields.
+DATABASE-001 intentionally does not generalise `Customer`, billing, recovery or other
+Shopify-specific historical fields. It retains `shopify.ShopSettings.onboardingCompleted`
+for transitional compatibility; SHOPIFY-001 and BACKGROUND-001 make the shared Shop field
+authoritative for their runtime lifecycle decisions while mirroring successful completion
+to the legacy field. ADMIN-001 then consumes the shared field for cross-platform tenant
+presentation. No task in this group removes the legacy field.
 
 ## Contracts
 
 WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
-a durable database contract only: `commerce.Shop.platform` plus
-`woocommerce.WooCommerceInstallation`. API-001 creates only operational HTTP
+a durable database contract: `commerce.Shop.platform`,
+`commerce.Shop.onboardingCompleted` and `woocommerce.WooCommerceInstallation`. API-001 creates only operational HTTP
 contracts: `GET /health/live` and `GET /health/ready`.
 
 API-002 owns the first PHP-consumable Woo installation API contract through
@@ -301,10 +311,16 @@ local plugin runtime/lifecycle behaviour and requires no deployment migration or
 backwards-compatibility adapter.
 
 DATABASE-001 is an additive pre-production migration that may execute independently.
-It preserves existing `commerce.Shop` data, defaults/backfills all pre-existing Shop
-rows to `SHOPIFY`, creates the dedicated `woocommerce` schema, and adds the cross-schema
-one-to-one Woo installation relation; there is no existing Woo installation state to
-migrate.
+It preserves existing `commerce.Shop` data, defaults/backfills all pre-existing Shop rows
+to `SHOPIFY`, backfills `commerce.Shop.onboardingCompleted` from the existing Shopify
+settings milestone, retains `shopify.ShopSettings.onboardingCompleted`, creates the
+dedicated `woocommerce` schema, and adds the cross-schema one-to-one Woo installation
+relation; there is no existing Woo installation state to migrate.
+
+SHOPIFY-001 and BACKGROUND-001 are bounded consumer migrations after DATABASE-001. Each
+uses the shared Shop milestone as its authoritative lifecycle read and mirrors a successful
+completion to the retained legacy Shopify field. ADMIN-001 waits for both current writers
+to migrate before using the shared field as its cross-platform tenant presentation source.
 
 API-001 is independently provisionable and does not require DATABASE-001 because its
 only database behavior is generic connectivity/readiness against the canonical schema.
@@ -324,13 +340,17 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 | ARCH-026-API-002 | moda_api | Pending | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
+| ARCH-026-SHOPIFY-001 | moda_app | Pending | ARCH-026-DATABASE-001 |
+| ARCH-026-BACKGROUND-001 | moda_background | Pending | ARCH-026-DATABASE-001 |
+| ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 
 WOO-001 Attempt 4 is Accepted and Complete. The final attempt was limited to the architect-requested VCS/evidence corrections; the validated Attempt 3 runtime implementation was preserved. WOO-002 now becomes Ready because WOO-001 was its only dependency.
 
-DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003 remains Pending until both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003 remains Pending until both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. SHOPIFY-001 and BACKGROUND-001 may become Ready independently after DATABASE-001 is accepted; ADMIN-001 waits for both so its provider-neutral read cannot outrun the current completion writers. The legacy Shopify onboarding field remains present throughout this phase. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
+- When to remove the retained `shopify.ShopSettings.onboardingCompleted` compatibility field after all runtime/test consumers have migrated.
 - Exact first DB-backed merchant capability after the plugin foundation.
 - Commerce-event and shared Background integration.
 - Woo Marketplace billing architecture.
@@ -358,3 +378,8 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
   principal over the DATABASE-001 identity model.
 - 2026-10-02: WOO-003 materialised as the PHP-side consumer of API-002, adding the public one-attempt site-control challenge callback, privileged local connection facade, server-side installation credential storage and authenticated Moda API client.
 - 2026-10-02: WOO-004 materialised to replace the placeholder Admin page with the first production-shaped React shell and real connection/setup experience, consuming only the accepted WOO-003 browser-safe local REST boundary.
+
+- 2026-10-02: Provider-neutral onboarding migration materialised without removing the
+  legacy Shopify field: DATABASE-001 adds/backfills `Shop.onboardingCompleted`; SHOPIFY-001
+  and BACKGROUND-001 migrate current runtime writers/readers with compatibility mirroring;
+  ADMIN-001 moves tenant presentation to the shared source after both writers migrate.
