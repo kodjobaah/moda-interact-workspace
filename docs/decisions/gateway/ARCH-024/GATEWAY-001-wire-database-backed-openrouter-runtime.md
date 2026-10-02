@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 60
-executor: copilot
-claimed_at: 2026-10-02T15:14:59Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-020-GATEWAY-003
@@ -710,28 +710,28 @@ Gateway validation must ensure no keyring variable is made a generic requirement
 
 ## Work Items
 
-- [ ] Re-read accepted ARCH-020-GATEWAY-003, ARCH-024-ADMIN-003, ARCH-024-COMMERCE-007 and ARCH-024-BACKGROUND-001 before editing Blueprint configuration.
-- [ ] Add exactly one Commerce credential-keyring env group to `render.test.yaml`.
-- [ ] Add exactly one Commerce credential-keyring env group to `render.production.yaml`.
-- [ ] Add exactly one Commerce credential-writer-config env group to each Blueprint.
-- [ ] Attach keyring group exactly to Admin, Commerce and messaging worker in each environment.
-- [ ] Attach writer-config group exactly to Admin and Commerce in each environment.
-- [ ] Preserve Commerce-only command-HMAC secret wiring from accepted ARCH-020-GATEWAY-003.
-- [ ] Remove `COMMERCE_PREVIEW_PROVIDER` from both active Blueprints/configuration.
-- [ ] Remove `COMMERCE_PREVIEW_MODEL` from both active Blueprints/configuration.
-- [ ] Remove `COMMERCE_PREVIEW_API_KEY` from both active Blueprints/configuration.
-- [ ] Preserve `COMMERCE_PREVIEW_ENABLED=true` in test.
-- [ ] Preserve `COMMERCE_PREVIEW_ENABLED=false` in production.
-- [ ] Preserve existing Groq/OpenAI transcription configuration required by the messaging worker.
-- [ ] Update positive Blueprint validator for exact new groups, attachments and forbidden legacy/static model variables.
-- [ ] Add all required negative validator cases R11.
-- [ ] Update Commerce deployment runbook with ARCH-024 model/config/credential/keyring ownership.
-- [ ] Document ordinary OpenRouter credential rotation as database-only/no-restart.
-- [ ] Document bounded encryption-keyring rotation and retained-old-key rule.
-- [ ] Update Test Conversation smoke wording to the current Feature-composed contract without inventing a payload.
-- [ ] Run focused Blueprint validation.
-- [ ] Run repository validation commands required below.
-- [ ] Record exact files changed, commands, results and any warnings in the Completion Report.
+- [x] Re-read accepted ARCH-020-GATEWAY-003, ARCH-024-ADMIN-003, ARCH-024-COMMERCE-007 and ARCH-024-BACKGROUND-001 before editing Blueprint configuration.
+- [x] Add exactly one Commerce credential-keyring env group to `render.test.yaml`.
+- [x] Add exactly one Commerce credential-keyring env group to `render.production.yaml`.
+- [x] Add exactly one Commerce credential-writer-config env group to each Blueprint.
+- [x] Attach keyring group exactly to Admin, Commerce and messaging worker in each environment.
+- [x] Attach writer-config group exactly to Admin and Commerce in each environment.
+- [x] Preserve Commerce-only command-HMAC secret wiring from accepted ARCH-020-GATEWAY-003.
+- [x] Remove `COMMERCE_PREVIEW_PROVIDER` from both active Blueprints/configuration.
+- [x] Remove `COMMERCE_PREVIEW_MODEL` from both active Blueprints/configuration.
+- [x] Remove `COMMERCE_PREVIEW_API_KEY` from both active Blueprints/configuration.
+- [x] Preserve `COMMERCE_PREVIEW_ENABLED=true` in test.
+- [x] Preserve `COMMERCE_PREVIEW_ENABLED=false` in production.
+- [x] Preserve existing Groq/OpenAI transcription configuration required by the messaging worker.
+- [x] Update positive Blueprint validator for exact new groups, attachments and forbidden legacy/static model variables.
+- [x] Add all required negative validator cases R11.
+- [x] Update Commerce deployment runbook with ARCH-024 model/config/credential/keyring ownership.
+- [x] Document ordinary OpenRouter credential rotation as database-only/no-restart.
+- [x] Document bounded encryption-keyring rotation and retained-old-key rule.
+- [x] Update Test Conversation smoke wording to the current Feature-composed contract without inventing a payload.
+- [x] Run focused Blueprint validation.
+- [x] Run repository validation commands required below; the Docker integration harness was attempted and its unavailable prerequisite is recorded below.
+- [x] Record exact files changed, commands, results and any warnings in the Completion Report.
 
 ## Interfaces / Contracts
 
@@ -806,22 +806,22 @@ None in this architecture session. Terminal ARCH-024 integrated system-test task
 
 ## Acceptance Criteria
 
-- [ ] Both Blueprints contain exactly one environment-specific `commerce-credential-keyring` group containing only `COMMERCE_CONNECTION_KEYS_JSON` with `sync: false` and no committed value.
-- [ ] Both Blueprints contain exactly one environment-specific `commerce-credential-writer-config` group containing only `COMMERCE_CONNECTION_ACTIVE_KEY_ID` with `sync: false` and no committed value.
-- [ ] Admin, Commerce and messaging worker receive the same keyring group for their environment; no other runtime receives it.
-- [ ] Admin and Commerce receive the writer-config group; messaging worker and all other runtimes do not.
-- [ ] `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` remains Commerce-only.
-- [ ] `COMMERCE_PREVIEW_PROVIDER`, `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY` are absent from active Gateway Blueprints, validation contracts and operator runbook.
-- [ ] No `OPENROUTER_API_KEY`, `COMMERCE_OPENROUTER_API_KEY`, renamed static model API key or `GROQ_COMMERCE_MODEL` is introduced.
-- [ ] `COMMERCE_PREVIEW_ENABLED` remains `true` in test and `false` in production.
-- [ ] Existing transcription configuration/credentials required by the messaging worker remain intact.
-- [ ] Positive Blueprint validation enforces the exact variable/group ownership matrix.
-- [ ] Negative validation independently rejects every R11 architecture failure.
-- [ ] Operator documentation distinguishes database OpenRouter-credential rotation from encryption-keyring rotation.
-- [ ] Operator documentation states that ordinary OpenRouter credential replacement requires no Render config change or Commerce/Background restart.
-- [ ] Operator documentation does not contain plaintext credentials or encryption keys.
-- [ ] No public/private route, service type, database, Redis resource, service count or worker topology is changed by ARCH-024.
-- [ ] No live Render deployment is claimed or performed by this task.
+- [x] Both Blueprints contain exactly one environment-specific `commerce-credential-keyring` group containing only `COMMERCE_CONNECTION_KEYS_JSON` with `sync: false` and no committed value.
+- [x] Both Blueprints contain exactly one environment-specific `commerce-credential-writer-config` group containing only `COMMERCE_CONNECTION_ACTIVE_KEY_ID` with `sync: false` and no committed value.
+- [x] Admin, Commerce and messaging worker receive the same keyring group for their environment; no other runtime receives it.
+- [x] Admin and Commerce receive the writer-config group; messaging worker and all other runtimes do not.
+- [x] `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` remains Commerce-only.
+- [x] `COMMERCE_PREVIEW_PROVIDER`, `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY` are absent from active Gateway Blueprints, validation contracts and operator runbook; occurrences are confined to validator deny-lists and negative fixtures.
+- [x] No `OPENROUTER_API_KEY`, `COMMERCE_OPENROUTER_API_KEY`, renamed static model API key or `GROQ_COMMERCE_MODEL` is introduced as active configuration.
+- [x] `COMMERCE_PREVIEW_ENABLED` remains `true` in test and `false` in production.
+- [x] Existing transcription configuration/credentials required by the messaging worker remain intact.
+- [x] Positive Blueprint validation enforces the exact variable/group ownership matrix.
+- [x] Negative validation independently rejects every R11 architecture failure.
+- [x] Operator documentation distinguishes database OpenRouter-credential rotation from encryption-keyring rotation.
+- [x] Operator documentation states that ordinary OpenRouter credential replacement requires no Render config change or Commerce/Background restart.
+- [x] Operator documentation does not contain plaintext credentials or encryption keys.
+- [x] No public/private route, service type, database, Redis resource, service count or worker topology is changed by ARCH-024.
+- [x] No live Render deployment is claimed or performed by this task.
 
 ## Validation
 
@@ -984,56 +984,76 @@ Do preserve unrelated durable infrastructure and secrets. Pre-production status 
 
 ### Status
 
-Not Started.
+Ready for Review.
 
 ### Files Changed
 
-None; task definition only.
+- Implementation repository (`moda-interact-gateway/`):
+  - `render.test.yaml`
+  - `render.production.yaml`
+  - `tests/validate-render-blueprints.sh`
+  - `tests/validate-render-blueprints-negative.sh`
+  - `docs/commerce-deployment.md`
+- Parent workspace: this task definition/report only.
 
 ### Work Completed
 
-None.
+Added exactly one environment-specific `commerce-credential-keyring` group and one `commerce-credential-writer-config` group to each Blueprint. Admin and Commerce receive both; the messaging worker receives only the keyring; no other runtime receives either. `COMMERCE_CONNECTION_COMMAND_HMAC_KEY` remains a Commerce-only service-level `sync: false` input. No key material or active key ID value is committed.
+
+Removed static Preview provider/model/API-key declarations. The Commerce config groups now contain only their existing `ADMIN_ORIGIN` plus `COMMERCE_PREVIEW_ENABLED` (`true` in test, `false` in production). Existing `GROQ_API_KEY`, transcription provider/model configuration, and `WHATSAPP_OPENAI_API_KEY` wiring remain unchanged.
+
+Updated the positive validator to enforce exact groups, values, attachments and uniqueness; Commerce-only HMAC; Preview switch cardinality/value; transcription retention; and rejection of the legacy/static model variable set. Added all 19 required ARCH-024 negative mutations. Updated the deployment runbook with the model/config/credential ownership boundary, no-restart database credential rotation, retained-key keyring rotation, failure isolation, configuration-last rollout, and current Feature-composed Test Conversation smoke wording. No service, route, service type, count, database, Redis resource, or worker topology was changed. No live Render deployment or credential operation was performed.
 
 ### Validation Results
 
-No implementation validation performed.
+Passed:
+
+- `bash tests/validate-render-blueprints.sh` — PASS for both test and production Blueprints; YAML parsed and the exact ownership/Preview/transcription contracts validated.
+- `bash tests/validate-render-blueprints-negative.sh` — PASS; all 92 existing and new negative mutations were rejected for their expected reasons, including the 19 required ARCH-024 cases.
+- `bash -n tests/validate-render-blueprints.sh tests/validate-render-blueprints-negative.sh tests/run-tests.sh` — PASS.
+- Bounded forbidden-variable search across both Blueprints, tests, docs and README — no active configuration or operator-runbook matches. Matches are intentional validator deny-list entries and negative fixtures proving rejection.
+- Bounded ownership search — Blueprint declarations are exactly the two shared-group keys per environment and Commerce-only HMAC; validator and runbook references match that ownership contract.
+- Changed diff inspection — both shared values use `sync: false` without `value`; Commerce HMAC uses service-level `sync: false`; no secret values are present.
+- `git diff --check` — PASS.
+
+Blocked by local tooling:
+
+- `bash tests/run-tests.sh` — NOT COMPLETED. It exited before image/container creation at line 196 with `docker: command not found`; no containers were started. The developer must rerun this exact command in a Docker-capable environment. Expected result: the local gateway/upstream integration suite completes with all tests passing.
+
+Gateway repository has no `package.json`; no npm validation command is declared. `rg` is unavailable in this shell, so the required bounded searches used `grep`. No live Render validation was run or claimed.
 
 ### Deviations
 
-None.
+The requested broader Docker integration harness could not run because Docker is not installed/available in this execution environment. Fast self-contained Blueprint/shell checks all passed; the broader result remains unverified pending developer execution.
 
 ### Assumptions
 
-- Accepted ARCH-020-GATEWAY-003 provides the existing Commerce credential keyring and command-HMAC infrastructure described by ARCH-020.
-- ARCH-024-ADMIN-003, COMMERCE-007 and BACKGROUND-001 consume the exact variable names defined by their accepted task contracts.
-- Render environment groups may be attached to Admin, private Commerce and worker services as already demonstrated by current Blueprint usage.
+Accepted dependencies were Complete before execution and their reports agree with this task's contracts: ARCH-020-GATEWAY-003 preserves the three existing key/HMAC names and Commerce-only HMAC; ARCH-024-ADMIN-003 consumes the shared keyring plus active key ID; ARCH-024-COMMERCE-007 and ARCH-024-BACKGROUND-001 decrypt using the shared keyring and do not require the active selector. Admin, Commerce, and Background report the accepted Shared package `@modainteract/moda-interact-shared@1.1.0`. Reviewed implementation evidence includes Admin `b0a894d65878b81bf533212fab98a48296b34fcf`, Commerce `c3a7fe7ff4414fa8c731361dbc171f52f39bb59d`, Background `9304da2599800c63b2b649dd7a414286859faeac`, and accepted Gateway prerequisite head `1102490fec44be11920f563552ceb26ec4d85f3d`.
 
 ### Unresolved Issues
 
-No implementation issues reported. Dependencies gate execution.
+The task-explicit repository integration suite remains pending developer execution in an environment with Docker.
 
 ### Architectural Concerns
 
-If any accepted application dependency still reads a static Preview provider/model/API key, or if accepted ARCH-020 keyring wiring conflicts with the target ownership matrix, stop and return the contradiction to `moda_architect` rather than broadening this task.
+None. Accepted dependency contracts and implemented ownership agree.
 
 ### Git / VCS
 
-Expected mirrored branch:
+Prepared execution evidence:
 
-`task/ARCH-024-GATEWAY-001`
+- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-GATEWAY-001`, branch `task/ARCH-024-GATEWAY-001`.
+- Gateway implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-GATEWAY-001`, branch `task/ARCH-024-GATEWAY-001`.
+- Launcher synchronization: both worktrees were newly created; task-branch fast-forward was not needed; `origin/main` was already current; recursive submodule operations passed with no submodules.
+- Dependency gate passed for ARCH-020-GATEWAY-003, ARCH-024-ADMIN-003, ARCH-024-COMMERCE-007 and ARCH-024-BACKGROUND-001.
+- Durable parent claim commit: `215f3867e566907df8218deb84abbdaf0e85e59b`.
+- Implementation start commit before edits: `c321ded98cc06244e6abc06fe3ede2f7316ca088`.
+- Implementation commit: `6b574199dc76589e12dc6ca37e15f8ad658ce905`; published explicitly to `origin/task/ARCH-024-GATEWAY-001` (the new remote task ref).
+- The local implementation branch's configured upstream pointed at `origin/main`; it was not used for publication. The task branch was pushed using an explicit task-ref destination. No push to `main` occurred.
+- Parent Completion Report commit, final push results, clean status and remote-head equality are recorded in the final handoff after publication.
 
-Attempt 0; no implementation worktree, implementation commit or push is claimed by this task definition.
-
-At submission record:
-
-- launcher-resolved parent worktree;
-- launcher-resolved Gateway worktree;
-- synchronization evidence;
-- accepted dependency commits/versions;
-- implementation commit;
-- parent Completion Report commit;
-- clean-worktree evidence;
-- remote-alignment evidence.
+No unrelated task file, architecture/index file, implementation gitlink, or `main` branch was modified.
 
 ## Architect Review
 
