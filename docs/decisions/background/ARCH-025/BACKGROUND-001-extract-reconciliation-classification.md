@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -75,7 +75,7 @@ A directly adjacent pure types file is permitted only if required to keep `class
 - Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
 - Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
-- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 146 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
 - Full `npm test` must pass. If execution reveals a pre-existing baseline condition, stop and report it to `moda_architect` unless it is already durably documented in `docs/development-baseline.md`; do not silently redefine the baseline inside this task.
@@ -258,24 +258,55 @@ Blocked pending architect disposition of the required full-suite validation fail
 
 ### Review Status
 
-Pending
+Changes Requested
 
 ### Review Notes
 
-None
+Attempt 1 blocked disposition reviewed the submitted extraction rather than treating the full-suite failure as an implementation defect. The scoped source change is architecture-conformant: classification is pure/I/O-free, the coordinator still performs the same durable read before classification, post-classification plan gates remain outside the classifier, accepted/skip decision order and strings are preserved, and the changed implementation surface is limited to the three authorised files. No source or focused-test correction is requested.
+
+A1-R1 is evidence-only. The required full `npm test` gate failed with eight failed tests plus a fixture-loading failure, and those conditions are not currently recorded in `docs/development-baseline.md`. Some failures are in Background billing/recovery test areas, so architect review cannot infer that they are unrelated merely from the focused/frozen suites passing. Attempt 2 must prove whether the exact failure set is pre-existing by running the same full suite against both the exact pre-task implementation commit and the submitted implementation commit under the same dependency/environment state.
+
+The frozen reconciliation asset count in the architect-authored task set was also stale. The byte-identical required-hash file executes 146 passing tests, not 98. This reconciliation corrects the durable count across ARCH-025 BACKGROUND-001..007; the SHA-256 remains the invariant.
 
 ### Reviewed Files
 
-None
+- `moda-interact-background/src/services/billing-subscription-reconciliation.service.ts`
+- `moda-interact-background/src/services/billing-subscription-reconciliation/classification.ts`
+- `moda-interact-background/tests/unit/services/billing-subscription-reconciliation/classification.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-001-extract-reconciliation-classification.md`
+- `docs/development-baseline.md`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
 
 ### Validation Reviewed
 
-None
+Submitted Attempt 1 evidence:
+
+- Prisma generation passed.
+- Frozen regression SHA-256 matched `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`; frozen file diff was empty.
+- Frozen reconciliation suite passed all 146 tests discovered.
+- Focused classifier suite passed 22 tests.
+- Billing entrypoint-isolation suite passed 10 tests.
+- Production build passed.
+- `git diff --check` passed.
+- Full `npm test` did not pass: eight failed tests plus a fixture-loading failure, including Background billing/recovery assertions, a missing ARCH-020 fixture worktree and four PostgreSQL connection failures to `localhost:5432`. No matching durable baseline entry exists.
+
+Implementation commit `b3c7a1264a22baf498b14916a341686a751de869` is exactly one commit ahead of pre-task implementation commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` and changes only the three authorised implementation/test files. Parent blocked report tip `fdb4ad853f9ade8f39aca0cf34e764bfd9d52ef0` was also reviewed.
 
 ### Architecture Conformance
 
-Pending.
+The scoped extraction conforms to ARCH-025 and repository ownership. Acceptance remains gated only by unresolved repository-wide regression evidence; no product, queue, provider, transaction or lifecycle redesign is requested.
 
 ### Follow-up
 
-None
+Return the same task through the normal `moda_background` execution path for Attempt 2. This is an evidence-only retry:
+
+1. keep implementation commit `b3c7a1264a22baf498b14916a341686a751de869` unchanged unless the differential proves a task-only regression;
+2. create/use an isolated temporary comparison worktree for exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a`, derived from the canonical repository rather than another task worktree;
+3. ensure the pre-task and submitted runs use the same Node/dependency state and the same external-service/fixture availability;
+4. run full `npm test` on the pre-task commit and on submitted commit `b3c7a1264a22baf498b14916a341686a751de869`;
+5. record the sorted failing test identifiers and the fixture-loading failure identity from both runs, plus PostgreSQL connection/error identity;
+6. prove whether every submitted failure is already present on the pre-task commit. If the sets match, do not change production/tests and return the evidence to review; if any submitted-only failure exists, investigate only that regression;
+7. do not modify `docs/development-baseline.md` inside the repository-agent attempt. A new ARCH-025 Background baseline, if justified, is an architect-owned acceptance reconciliation;
+8. remove the temporary comparison worktree, record final clean/remote-aligned state, set the task back to `review`, and STOP. Do not start BACKGROUND-002.
+
+No rerun of already-passing focused/frozen/build validation is required solely to manufacture evidence if implementation/dependency state is unchanged, beyond checks needed to establish the same comparison environment.
