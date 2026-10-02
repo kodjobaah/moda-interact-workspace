@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -238,9 +238,46 @@ Final implementation branch is clean and matches its task remote at `77a5e68`. T
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Accepted — Attempt 2.
 
 ### Review Notes
+
+Attempt 2 satisfies the sole A1-R1 correction from Attempt 1 and ADMIN-002 is
+accepted Complete.
+
+The correction commit
+`77a5e68f323667c863caa54d6aa9edb87dc624c4` has parent
+`4a98b7a27198932861bbdaed462d85d7cc174f57` and changes only the two
+task-authorised presentation files. Its complete delta is the bounded correction
+requested by the architect:
+
+- `PlanStep` no longer imports or accepts `MerchantPricingPlanWithChildren`;
+- `Controller["draft"]["isEditing"]` is included in the child draft Pick;
+- handle read-only state is `readOnly={draft.isEditing}`;
+- the shell passes `controller.draft.isEditing` through the existing draft object.
+
+No controller, reducer, action, payload, policy, server or test source changed. The
+accepted ADMIN-001 consume-only controller boundary is therefore preserved rather than
+extended.
+
+GitHub independently confirms the current pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-002
+  77a5e68f323667c863caa54d6aa9edb87dc624c4
+
+workspace task/ARCH-025-ADMIN-002
+  7659e2511f865fe2f5372745da54111d058c5b94
+```
+
+The move-only implementation findings from Attempt 1 otherwise remain valid: both
+Plan-step JSX regions live in the bounded child; the shell retains the form action,
+hidden payload fields, wizard/navigation and all non-Plan steps; Commerce-model
+repair, FREE-plan disablement, product-policy feature controls, Merchant Knowledge
+source filtering/validation and economics invalidation semantics remain unchanged.
+
+`ARCH025-ADMIN-BUILDER-TEST-001` continues to govern only the exact inherited broad
+Admin failures. No new or worsened task failure is present.
 
 The submitted Plan-step extraction is conformant in substance and preserves the
 move-only product behaviour. Architect inspection of Admin implementation
@@ -352,8 +389,7 @@ a boolean.
 
 ### Follow-up
 
-Return this same task to Ready, Attempt 1 retained and claim clear. Reclaim through
-`/moda-task ARCH-025-ADMIN-002`, which must create Attempt 2 exactly once. Apply only
-A1-R1, rerun the defined validation, update the Completion Report and return to review.
-
-Do not begin ADMIN-003 until ADMIN-002 is architect-accepted Complete.
+`ARCH-025-ADMIN-002` is Complete / Accepted at Attempt 2. Its sole dependant,
+`ARCH-025-ADMIN-003`, now has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-004 or later builder-chain tasks
+implicitly.

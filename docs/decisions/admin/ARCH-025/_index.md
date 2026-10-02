@@ -65,8 +65,8 @@ Individual task YAML is authoritative.
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
 | [ADMIN-001](ADMIN-001-extract-pricing-plan-draft-controller.md) | Typed draft/controller + extraction-safe security loader | Complete (Accepted, Attempt 2) | - |
-| [ADMIN-002](ADMIN-002-extract-plan-step.md) | Plan/model/features/knowledge step | Ready | ADMIN-001 |
-| [ADMIN-003](ADMIN-003-extract-catalogue-placement-step.md) | Catalogue placement step | Pending | ADMIN-002 |
+| [ADMIN-002](ADMIN-002-extract-plan-step.md) | Plan/model/features/knowledge step | Complete (Accepted, Attempt 2) | ADMIN-001 |
+| [ADMIN-003](ADMIN-003-extract-catalogue-placement-step.md) | Catalogue placement step | Ready | ADMIN-002 |
 | [ADMIN-004](ADMIN-004-extract-shopify-pricing-step.md) | Shopify pricing step | Pending | ADMIN-003 |
 | [ADMIN-005](ADMIN-005-extract-usage-events-step.md) | Usage-event/tier step | Pending | ADMIN-004 |
 | [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Pending | ADMIN-005 |
@@ -82,7 +82,18 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2 and `ARCH-025-ADMIN-002` is now Ready. `ARCH-025-ADMIN-009` remains an independent Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+`ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2, and `ARCH-025-ADMIN-003` is now the builder-chain Ready frontier. `ARCH-025-ADMIN-009` remains an independent Ready frontier in this branch snapshot. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+## ADMIN-002 Attempt 2 architect acceptance — 2026-10-02
+
+**Accepted / Complete, Attempt 2.** Correction commit `77a5e68f...` removes the full
+persisted `plan` object from `PlanStep`, consumes existing
+`controller.draft.isEditing`, and changes only the two task-authorised presentation
+files. No controller/test/server/policy source changed. Focused security 13/13,
+draft/controller 14/14 and all seven frozen hashes pass independently; broader failures
+remain exactly within `ARCH025-ADMIN-BUILDER-TEST-001`.
+
+ADMIN-003 is promoted Ready; ADMIN-004..008 remain dependency-gated.
+
 ## ADMIN-002 Attempt 1 architect review — 2026-10-02
 
 **Changes Requested / Ready, Attempt 1 retained; claim clear.** The two-file Plan-step
