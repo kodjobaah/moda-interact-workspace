@@ -15,11 +15,12 @@ Proposed.
 
 This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001`,
 `ARCH-026-WOOCOMMERCE-002`, `ARCH-026-DATABASE-001`, `ARCH-026-API-001`,
-`ARCH-026-API-002`, `ARCH-026-API-003`, `ARCH-026-WOOCOMMERCE-003`, `ARCH-026-WOOCOMMERCE-004`,
-`ARCH-026-DATABASE-002`, `ARCH-026-SHOPIFY-001`, `ARCH-026-SHOPIFY-002`,
-`ARCH-026-BACKGROUND-001`, `ARCH-026-BACKGROUND-002`, `ARCH-026-ADMIN-001` and
-`ARCH-026-ADMIN-002` are currently materialised. Later tasks must be added only after their precise runtime,
-security and ownership boundaries have been discussed and inspected.
+`ARCH-026-API-002`, `ARCH-026-API-003`, `ARCH-026-WOOCOMMERCE-003`,
+`ARCH-026-WOOCOMMERCE-004`, `ARCH-026-WOOCOMMERCE-005`, `ARCH-026-DATABASE-002`,
+`ARCH-026-SHOPIFY-001`, `ARCH-026-SHOPIFY-002`, `ARCH-026-BACKGROUND-001`,
+`ARCH-026-BACKGROUND-002`, `ARCH-026-ADMIN-001`, `ARCH-026-ADMIN-002` and
+`ARCH-026-GATEWAY-001` are currently materialised. Later tasks must be added only after
+their precise runtime, security and ownership boundaries have been discussed and inspected.
 
 ## Problem
 
@@ -363,8 +364,11 @@ Moda ingress and shared Background workload separately.
 WOO-001 introduces no new Moda-hosted telemetry requirement. API-001 must use the
 canonical Shared structured logger for generic runtime logging and must not create
 duplicate custom HTTP metrics/spans when standard/framework telemetry can provide the
-signal. Hosted telemetry/export configuration remains deployment/Gateway work unless a
-later bounded API task identifies a concrete service-owned gap.
+signal. GATEWAY-001 deploys the private API service with the existing environment-specific
+general/observability configuration and routes it only through the public Gateway. It must
+not invent duplicate application HTTP telemetry or make telemetry transport a correctness
+dependency. Later bounded API tasks may add service-owned telemetry only for concrete
+Moda-specific semantic gaps.
 
 ## Rollout / Migration
 
@@ -398,6 +402,13 @@ as a workspace submodule. API-002 remains Pending until API-001 and DATABASE-001
 architect-accepted Complete; it must then pin the API repository's nested `database/`
 gitlink to the accepted DATABASE-001 main commit before implementing the connection flow.
 
+GATEWAY-001 remains Pending until API-001 is architect-accepted Complete. It then adds
+`moda-interact-api` as a private Render service in both environments and routes the exact
+public hosts `api-test.modainteract.com` / `api.modainteract.com` through the existing
+public Gateway. The API service receives only the environment's general configuration,
+`NODE_ENV=production` and PostgreSQL `DATABASE_URL` at this stage; no Redis/provider
+credentials or database-migration command are introduced.
+
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends On |
@@ -418,10 +429,11 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 | ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
+| ARCH-026-GATEWAY-001 | moda_gateway | Pending | ARCH-026-API-001 |
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003's WOO-002 dependency is now satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. GATEWAY-001 is independently gated only on accepted API-001 and may codify the private API service plus exact API-host routing without waiting for API-002 business/authentication behavior. WOO-003's WOO-002 dependency is now satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -455,6 +467,7 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
 - 2026-10-02: WOO-003 materialised as the PHP-side consumer of API-002, adding the public one-attempt site-control challenge callback, privileged local connection facade, server-side installation credential storage and authenticated Moda API client.
 - 2026-10-02: WOO-004 materialised to replace the placeholder Admin page with the first production-shaped React shell and real connection/setup experience, consuming only the accepted WOO-003 browser-safe local REST boundary.
 - 2026-10-02: WOO-005 materialised as the first real authenticated merchant-data surface, consuming accepted WOO-004 + API-003 to render read-only shared onboarding, Store Category projection and provider-neutral international context inside WooCommerce Admin.
+- 2026-10-02: GATEWAY-001 materialised to deploy `moda-interact-api` as a private Render service in test/production and route the exact API hostnames through the existing public Gateway without transferring authentication, database-migration or business-logic ownership to Gateway.
 
 - 2026-10-02: Provider-neutral onboarding migration materialised without removing the
   legacy Shopify field: DATABASE-001 adds/backfills `Shop.onboardingCompleted`; SHOPIFY-001
