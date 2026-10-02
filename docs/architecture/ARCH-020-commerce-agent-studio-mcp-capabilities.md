@@ -734,8 +734,8 @@ Attempt 2 and is Accepted / Complete. See the architect acceptance below.
 | [ARCH-020-SHOPIFY-001](../decisions/shopify/ARCH-020/SHOPIFY-001-expose-merchant-capability-feature-preferences.md) | Expose merchant capability feature preferences | moda_app | complete | ARCH-020-SHARED-001, ARCH-016-SHOPIFY-002 |
 | [ARCH-020-GATEWAY-001](../decisions/gateway/ARCH-020/GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | moda_gateway | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
 | [ARCH-020-GATEWAY-002](../decisions/gateway/ARCH-020/GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | moda_gateway | superseded (developer-managed Grafana, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| [ARCH-020-GATEWAY-003](../decisions/gateway/ARCH-020/GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | moda_gateway | ready (Changes Requested, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
-| [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md) | Add frequency-based tool-result caching | moda_commerce | pending | All other ARCH-020 implementation tasks; exact list in task |
+| [ARCH-020-GATEWAY-003](../decisions/gateway/ARCH-020/GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | moda_gateway | complete (Accepted, Attempt 3) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
+| [ARCH-020-COMMERCE-012](../decisions/commerce/ARCH-020/COMMERCE-012-add-frequency-based-tool-result-caching.md) | Add frequency-based tool-result caching | moda_commerce | ready | All other ARCH-020 implementation tasks; exact list in task |
 | [ARCH-020-SYSTEM-TEST-001](../decisions/system-test/ARCH-020/SYSTEM-TEST-001-validate-merchant-configured-mcp-conversations-end-to-end.md) | Validate merchant-configured MCP conversations end to end | moda_system_test | pending | ARCH-020-BACKGROUND-001, ARCH-020-BACKGROUND-002, ARCH-020-COMMERCE-001, ARCH-020-COMMERCE-002, ARCH-020-COMMERCE-003, ARCH-020-COMMERCE-004, ARCH-020-COMMERCE-005, ARCH-020-COMMERCE-006, ARCH-020-COMMERCE-007, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-009, ARCH-020-COMMERCE-010, ARCH-020-COMMERCE-011, ARCH-020-DATABASE-001, ARCH-020-GATEWAY-001, ARCH-020-SHARED-001, ARCH-020-SHOPIFY-001 , ARCH-020-COMMERCE-012  |
 
 ## Open Questions and Explicit Assumptions
@@ -2240,3 +2240,16 @@ The developer override authorizes the next claim as Attempt 3. Preserve Gateway 
 Blueprint/validator/runbook plan change needed to satisfy C21 §7 without reducing the
 four-worker contract. COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 remain
 gated.
+
+## GATEWAY-003 Attempt 3 architect acceptance — 2026-10-02
+
+GATEWAY-003 is **Complete / Accepted, Attempt 3** with implementation merge
+`1102490f` unchanged. C21 is amended so host-plus-four-worker RSS measurement is a
+deployment-readiness requirement before deployed Code Response mode is enabled, not a
+repository-task acceptance gate for a task that performs no live deployment. The
+four-worker cap remains unchanged and neither current Render plan is represented as
+capacity-proven.
+
+This acceptance promotes COMMERCE-012 and SYSTEM-TEST-002 Ready. SYSTEM-TEST-002
+remains developer-invoked. ARCH-024-GATEWAY-001 is also Ready because its remaining
+ARCH-024 prerequisites were already Complete.

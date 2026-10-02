@@ -22,10 +22,11 @@ its bounded browser-lifecycle correction made cancellation reachable for the exa
 run, prevented pending/UNKNOWN runs from being abandoned, fenced stale asynchronous results,
 and recorded the required deterministic execution evidence.
 
-No ARCH-024 task is currently Ready. `ARCH-024-GATEWAY-001` remains Pending because its
-external prerequisite `ARCH-020-GATEWAY-003` is still `Ready`, not `Complete`.
+`ARCH-024-GATEWAY-001` is now Ready because external prerequisite
+`ARCH-020-GATEWAY-003` is Complete / Accepted at Attempt 3 and its other declared
+prerequisites are already Complete.
 
-The architecture task table currently records 16 Complete, 0 Ready and 1 Pending task.
+The architecture task table currently records 16 Complete, 1 Ready and 0 Pending tasks.
 
 Integrated system-test tasks are **deliberately not materialised in this architecture session** because final acceptance overlaps frozen ARCH-023 completion and upcoming architecture work. Any terminal integrated validation will be defined separately against the final combined architecture.
 
@@ -1125,7 +1126,7 @@ Individual task YAML is authoritative.
 | `ARCH-024-COMMERCE-007` | `moda_commerce` | Complete | COMMERCE-006, SHARED-002 |
 | `ARCH-024-BACKGROUND-001` | `moda_background` | Complete | DATABASE-001, SHARED-002 |
 | `ARCH-024-BACKGROUND-002` | `moda_background` | Complete | BACKGROUND-001 |
-| `ARCH-024-GATEWAY-001` | `moda_gateway` | Pending | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
+| `ARCH-024-GATEWAY-001` | `moda_gateway` | Ready | ARCH-020-GATEWAY-003, ADMIN-003, COMMERCE-007, BACKGROUND-001 |
 
 No ARCH-024 system-test task is materialised in this session. This remains an intentional coordination decision due to overlap with frozen ARCH-023 and upcoming architecture work. Any terminal integrated acceptance work will be defined separately against the final combined architecture.
 
@@ -1224,3 +1225,10 @@ The final integrated system-test decomposition across ARCH-023, ARCH-024 and sub
 - **2026-10-01** — ARCH-024 amended before implementation to add optional `MerchantPricingPlan.commerceModelId` product-tier model assignment. Effective model precedence is now `SHOP -> PRICING_PLAN -> PLATFORM`; current `Subscription.planId`/`BillingPlan.shopifyPlanHandle` resolves the current MerchantPricingPlan, pending plans are ignored until effective, explicit invalid Price Plan selections fail closed, and Admin owns the Price Plan association without introducing merchant model selection or duplicating model identity onto `BillingPlan`.
 - **2026-10-01** — ARCH-024 amended before implementation: adopted a modular low-level Shared LangGraph `StateGraph` inside `runCommerceTurn`, retained the host-neutral `RunnerTool`/official Background MCP SDK boundary, preserved ARCH-023 runtime-data/Merchant Knowledge trust semantics, added canonical `commerce.turn.*` structured logging, collapsed Shared implementation into SHARED-001 plus publication-only SHARED-002, retained BACKGROUND-002, and retargeted all consumers to the SHARED-002 publication gate.
 - **2026-10-01** — ARCH-024 agreed. Consolidated Admin-owned Model Availability/Catalogue/Credential design, dynamic `provider + providerModelId`, extensible OpenRouter-style model configuration, Shared LangChain/OpenRouter runtime, Commerce Studio selection-only ownership, Feature-composed selected-Shop Test Conversations, production Background parity and Gateway cutover. ARCH-021 COMMERCE-105..109 / GATEWAY-002 / SYSTEM-TEST-004 superseded. ARCH-024 system-test task materialisation deliberately deferred.
+
+- **2026-10-02 — external GATEWAY-003 accepted at Attempt 3:** C21 moves
+  Commerce-host-plus-four-worker RSS measurement to a deployment-readiness gate before
+  deployed Code Response mode is enabled. GATEWAY-003 is Complete without claiming the
+  current Render plans are capacity-proven; the four-worker contract is unchanged.
+  With the remaining ARCH-024 prerequisites already Complete, ARCH-024-GATEWAY-001 is
+  promoted Ready.

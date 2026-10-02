@@ -9,10 +9,10 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: complete
 priority: 175
-executor: copilot
-claimed_at: 2026-10-02T14:01:45Z
+executor: null
+claimed_at: null
 attempt: 3
 depends_on:
   - ARCH-020-GATEWAY-001
@@ -39,7 +39,7 @@ limits, errors, ownership and acceptance IDs. No model-selected replacement desi
 
 ## Objective
 
-Own Commerce Render blueprint/configuration examples and operator runbook only. Follow C21 section7 settings and existing001 private MCP topology. Package worker/WASM runtime assets and verify process memory capacity as section2.2 requires. No real secret values, application implementation or automatic live deployment.
+Own Commerce Render blueprint/configuration examples and operator runbook only. Follow C21 section7 settings and existing001 private MCP topology. Package worker/WASM runtime assets and document the deployment-capacity boundary from section2.2. Host-plus-worker RSS measurement remains required before deployed code-mode enablement, but is not a repository-task acceptance gate when this task performs no live deployment. No real secret values, application implementation or automatic live deployment.
 
 ## Context
 
@@ -50,7 +50,7 @@ This is new scope, not a correction to an accepted task.
 
 ## Scope
 
-Own Commerce Render blueprint/configuration examples and operator runbook only. Follow C21 section7 settings and existing001 private MCP topology. Package worker/WASM runtime assets and verify process memory capacity as section2.2 requires. No real secret values, application implementation or automatic live deployment.
+Own Commerce Render blueprint/configuration examples and operator runbook only. Follow C21 section7 settings and existing001 private MCP topology. Package worker/WASM runtime assets and document the deployment-capacity boundary from section2.2. Host-plus-worker RSS measurement remains required before deployed code-mode enablement, but is not a repository-task acceptance gate when this task performs no live deployment. No real secret values, application implementation or automatic live deployment.
 
 ## Out of Scope
 
@@ -264,16 +264,17 @@ Expected mirrored branch: `task/ARCH-020-GATEWAY-003`, Attempt 2. Implementation
 
 ### Review Status
 
-Changes Requested — Attempt 2.
+Accepted — Attempt 3.
 
 ### Review Notes
 
-Attempt 2 is reviewed in place. A1-R1, A1-R3 and A1-R4 are satisfied. A1-R2
-correctly surfaced a deployment-capacity gap instead of weakening the accepted
-four-worker C21 runtime contract. The developer subsequently reopened the task to
-`ready`, Attempt 2 retained and claim clear, so the next authorized `/moda-task`
-claim is Attempt 3 exactly once. Architect conflict reconciliation also produced
-Gateway implementation head `1102490f`; preserve that merged validator state.
+Attempt 3 is accepted after an explicit C21 architecture amendment. The repository
+implementation correctly preserved the accepted four-worker runtime contract, made no
+unsupported capacity claim and returned the exact missing Commerce-owned measurement
+seam instead of crossing repository ownership. Because this task performs no live
+Render deployment or code-mode enablement, host-plus-four-worker RSS measurement is
+now classified as a deployment-readiness gate rather than a repository-task acceptance
+gate. Gateway implementation head `1102490f` is preserved unchanged.
 
 ### Reviewed Files
 
@@ -299,19 +300,21 @@ Gateway implementation head `1102490f`; preserve that merged validator state.
 
 ### Architecture Conformance
 
-Partially conformant. Secret placement, U15/U16 routing, packaged-runtime
-consumption and HMAC-rotation wording conform. C21 §7 capacity remains unresolved:
-the accepted four-worker hard ceilings total 576 MiB before the Commerce host, the
-512 MiB test plan is insufficient, and the 1 GiB production plan has not been proven
-sufficient with host/process headroom.
+Conformant under the amended C21 capacity boundary. Secret placement, U15/U16 routing,
+packaged-runtime consumption and HMAC-rotation wording conform. The four-worker limit
+is unchanged. The unmeasured Commerce-host RSS is retained as a deployment-readiness
+condition before deployed code-mode enablement; no claim is made that the current
+512 MiB or 1 GiB plans are proven sufficient.
 
 ### Follow-up
 
-Return through the existing `ready`, Attempt 2 state. Do not alter the four-worker
-contract. Attempt 3 is bounded to the capacity correction below and final report/VCS
-reconciliation; preserve implementation merge `1102490f` unless the capacity work
-requires an authorized Blueprint/validator/runbook change. COMMERCE-012,
-SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 remain gated.
+`ARCH-020-GATEWAY-003` is Complete / Accepted at Attempt 3. Preserve implementation
+merge `1102490f`. Before Code Response mode is enabled on a deployed Commerce
+environment, obtain a representative Commerce-host-plus-four-worker RSS measurement
+and select a replica plan with sufficient headroom. This non-blocking operational gate
+does not reduce the four-worker contract. Recalculate the dependency frontier:
+COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 may become Ready where their
+other dependencies are Complete.
 ### Architect scope clarification — 2026-09-22
 
 C21 was added after the original GATEWAY-001 U01–U14 route contract. This task now
@@ -699,3 +702,21 @@ Do not silently reduce the four-worker cap. If the bounded host-level proof cann
 constructed without changing Commerce runtime source, stop and return the task
 `blocked` with the exact missing measurement seam rather than inventing capacity
 evidence.
+
+## Attempt 3 — Accepted after capacity-gate amendment (2026-10-02)
+
+`moda_architect` accepts Attempt 3 without changing Gateway implementation
+`1102490fec44be11920f563552ceb26ec4d85f3d`. The Attempt 3 report correctly proves
+that Gateway cannot manufacture a production-host RSS measurement without crossing
+into Commerce-owned runtime/composition source, and it preserves the four-worker
+contract rather than silently reducing concurrency.
+
+C21 is amended so host-plus-four-worker RSS measurement is required before a deployed
+environment enables Code Response mode, but it is not a repository-task acceptance
+gate for this no-deployment Gateway task. The current `0.5c-512mb` and `0.5c-1g` plans
+remain **unproven** for four-worker host capacity; acceptance is not a capacity claim.
+
+Attempt 3 validation remains accepted: `./scripts/validate:arch020-external-runtime`
+PASS; Docker/HAProxy `162 passed, 0 failed`; both positive Blueprint validations and
+the complete negative Blueprint matrix PASS; shell syntax and `git diff --check` PASS.
+No live Render deployment, external credential or provider operation was performed.

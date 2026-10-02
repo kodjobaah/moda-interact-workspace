@@ -999,11 +999,11 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
 Agreed architecture. Combined parent task state after reconciling accepted Admin, Commerce and
-Background branches: **Complete 16, Ready 0, Pending 1**. All ARCH-024 Admin, Background and
+Background branches plus accepted external GATEWAY-003: **Complete 16, Ready 1, Pending 0**. All ARCH-024 Admin, Background and
 Commerce tasks are Complete / architect-accepted. COMMERCE-007 is Complete / Accepted at Attempt 2
 after its bounded cancellation/unresolved-run lifecycle correction and complete validation/evidence
-handoff. No ARCH-024 task is currently Ready; GATEWAY-001 remains Pending because external
-prerequisite `ARCH-020-GATEWAY-003` is still Ready rather than Complete. COMMERCE-002 and
+handoff. GATEWAY-001 is now Ready because external prerequisite
+`ARCH-020-GATEWAY-003` is Complete / Accepted at Attempt 3. COMMERCE-002 and
 BACKGROUND-001/002 are Complete from their accepted mainline reconciliations; ADMIN-001 and
 ADMIN-004 remain Complete from their accepted Admin reconciliations. The canonical published Shared revision is
 `@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter credential
