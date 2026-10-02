@@ -61,7 +61,7 @@ moda-interact-api
     |
     +-- canonicalise site URL
     +-- issue one random challenge
-    +-- SSRF-safe pinned HTTPS callback to the installed plugin
+    +-- environment-gated site-control callback to the installed plugin
     +-- verify HMAC site-control proof
     |
     v
@@ -106,7 +106,7 @@ woocommerce.WooCommerceInstallation
 
 DATABASE-001 deliberately stores no raw installation secret and leaves secret generation, hashing, constant-time comparison, canonical-site normalization, reconnection/rotation and HTTP authentication to this API task.
 
-The Woo plugin executes on merchant-controlled infrastructure. An unauthenticated caller claiming `https://merchant.example` therefore cannot be allowed to create/claim that merchant's Moda Shop merely by supplying the URL. API-002 must prove live control of the installed plugin at that exact public HTTPS site before issuing a Moda credential.
+The Woo plugin executes on merchant-controlled infrastructure. An unauthenticated caller claiming a merchant site therefore cannot be allowed to create/claim that merchant's Moda Shop merely by supplying the URL. API-002 must prove live control of the installed plugin before issuing a Moda credential. Production verification remains public-HTTPS-only. ARCH-026 also permits one explicit local-development mode so a developer can exercise the same challenge/credential flow against a local WordPress/WooCommerce site without paying for or operating a public WordPress host.
 
 The proof mechanism is an ephemeral bootstrap challenge. The raw bootstrap secret exists only for one connection attempt and is never durable Moda state.
 
@@ -165,6 +165,32 @@ The OpenAPI contract and runtime validators must agree for every route/body/resp
 
 Do not create a duplicate structurally similar contract in `moda-interact-shared` merely to support the PHP client.
 
+### Connection verification mode
+
+Support exactly two server-side verification modes:
+
+```text
+public
+local-development
+```
+
+Use one explicit runtime setting, for example:
+
+```text
+MODA_WOOCOMMERCE_CONNECTION_MODE=public|local-development
+```
+
+Requirements:
+
+- default to `public` when the setting is absent;
+- `local-development` is an explicit developer opt-in, never inferred from the submitted hostname, request headers or browser input;
+- startup/configuration MUST fail closed if `local-development` is selected while `NODE_ENV=production`;
+- the production Render/Gateway topology continues to run with `NODE_ENV=production`, so the local-development verifier cannot be enabled accidentally in production;
+- both modes use the same request schema, bootstrap-secret lifecycle, challenge nonce/HMAC proof, credential issuance/rotation, database transaction/CAS rules and secret-redaction requirements;
+- the mode changes only which callback network identities/schemes may be verified and how TLS is applied to that callback transport.
+
+The selected mode is server configuration, not part of the external connect request and not a merchant-editable field.
+
 ### Connection route
 
 Expose:
@@ -203,7 +229,7 @@ The API MUST NOT log, persist, meter or return the bootstrap secret.
 
 Canonicalize `siteUrl` before any DNS/network/database action.
 
-The accepted production shape is:
+The accepted `public` production shape is:
 
 ```text
 scheme:       https only
@@ -214,6 +240,20 @@ query:        forbidden
 fragment:     forbidden
 path:         allowed for WordPress subdirectory installations
 ```
+
+When and only when `local-development` mode is explicitly enabled, a callback site may instead use a local development identity:
+
+```text
+scheme:       http or https
+credentials:  forbidden
+hostname:     localhost, *.local, or a loopback/private/link-local IP/DNS target
+port:         explicit local-development ports permitted
+query:        forbidden
+fragment:     forbidden
+path:         allowed for WordPress subdirectory installations
+```
+
+A public/global target encountered while `local-development` mode is enabled still uses the normal production/public HTTPS policy; local-development mode MUST NOT turn arbitrary public HTTP origins into accepted targets.
 
 Canonicalization must:
 
@@ -233,6 +273,10 @@ https://example.com/store?q=1   -> rejected
 http://example.com              -> rejected
 https://127.0.0.1               -> rejected
 https://user:pass@example.com   -> rejected
+
+local-development only:
+http://woocommerce-sandbox.local/ -> http://woocommerce-sandbox.local
+http://127.0.0.1:8080/             -> http://127.0.0.1:8080
 ```
 
 The canonical URL is the authoritative Woo site identity stored in `woocommerce.WooCommerceInstallation.canonicalSiteUrl`.
@@ -286,11 +330,11 @@ The API computes the expected HMAC-SHA256 locally and compares the decoded proof
 
 A response with the wrong attempt ID, nonce, proof, media type or schema is rejected with zero database mutation.
 
-### SSRF-safe challenge transport
+### Environment-gated challenge transport
 
 The site-control callback is an outbound request to user-supplied network identity and MUST be treated as an SSRF boundary.
 
-Before connection:
+In `public` mode, before connection:
 
 - resolve the canonical hostname through a bounded DNS resolver;
 - reject zero answers;
@@ -299,9 +343,11 @@ Before connection:
 - select/pin one validated public/global address for the request;
 - preserve the original hostname for TLS SNI and certificate validation.
 
-During connection:
+In `local-development` mode, the verifier may additionally accept only explicitly local targets: `localhost`, `.local` hostnames, or DNS/IP identities resolving exclusively to loopback/private/link-local addresses. It MUST still resolve and pin the actual callback peer; a mixed local/public answer set is rejected rather than broadening the trust boundary. Public/global targets continue to use the `public` HTTPS policy even while local-development mode is enabled.
 
-- connect only to the pinned address;
+During connection in both modes:
+
+- connect only to the pinned approved address;
 - verify the connected peer address still matches an approved resolved address;
 - do not use environment/system HTTP proxies;
 - do not send cookies or Moda credentials;
@@ -310,7 +356,9 @@ During connection:
 - use a total challenge deadline <= 5 seconds;
 - accept only a JSON response body <= 4 KiB after decoding;
 - reject unsupported compression/media types/invalid UTF-8/NUL content;
-- terminate/abort the response stream promptly on deadline/body-limit failure.
+- terminate/abort the response stream promptly on deadline/body-limit failure;
+- for HTTPS callbacks, preserve the original hostname for TLS SNI/certificate validation;
+- plain HTTP is permitted only for an approved local target while explicit `local-development` mode is active.
 
 Do not merely perform a preflight DNS check followed by an ordinary unpinned `fetch`, because that re-opens DNS rebinding between validation and connection.
 
@@ -527,57 +575,61 @@ Authentication failure logs MUST NOT echo presented credentials.
 
 No Shop/installation/credential database mutation may occur until the site-control challenge has succeeded.
 
-### R2 — Public-network-only challenge
+### R2 — Production/public verification remains strict
 
-Connection proof must never permit the API to connect to loopback, private, link-local, metadata/special-use or otherwise non-global addresses, including mixed DNS answer sets and IPv4-mapped IPv6 forms.
+In `public` mode, connection proof must never permit the API to connect to loopback, private, link-local, metadata/special-use or otherwise non-global addresses, including mixed DNS answer sets and IPv4-mapped IPv6 forms. HTTPS with normal hostname/certificate verification remains mandatory.
 
-### R3 — DNS/socket/TLS pinning
+### R3 — Local development is explicit and fail-closed
 
-The actual TLS socket must be pinned to the validated resolved address while preserving the original hostname for SNI/certificate verification, with connected-peer validation and no redirects.
+Local HTTP/private/loopback/`.local` verification is permitted only when the server-side connection mode is explicitly `local-development`. That mode cannot start under `NODE_ENV=production` and cannot be selected by the connect request/browser.
 
-### R4 — Ephemeral bootstrap secret
+### R4 — Address pinning and peer validation survive both modes
+
+The actual callback socket must be pinned to an approved resolved address with connected-peer validation and no redirects. HTTPS callbacks preserve the original hostname for SNI/certificate verification; local-development HTTP only removes TLS from an explicitly local target, not challenge proof or network pinning.
+
+### R5 — Ephemeral bootstrap secret
 
 The bootstrap secret is a one-attempt proof key only. It is never durable Moda state and never becomes the long-lived installation credential.
 
-### R5 — Raw installation credential returned once
+### R6 — Raw installation credential returned once
 
 The API persists only the SHA-256 digest. Successful connect/reconnect returns the newly generated raw credential once; no later endpoint can retrieve it.
 
-### R6 — Reconnect reuses the same tenant
+### R7 — Reconnect reuses the same tenant
 
 A verified reconnect for the same canonical site URL must retain the same Shop and installation IDs and rotate only installation credential/lifecycle fields defined by this task.
 
-### R7 — Concurrent connection safety
+### R8 — Concurrent connection safety
 
 Two overlapping valid connection attempts cannot leave two Shops/installations for one site or cause a successful caller's newly returned credential to be silently invalidated by a racing rotation.
 
-### R8 — Onboarding/billing separation
+### R9 — Onboarding/billing separation
 
 Connection/reconnection must not mark onboarding complete, create/reset Shopify settings, activate a billing plan, create subscription state or otherwise encode account/billing lifecycle into `WooCommerceInstallationStatus`.
 
-### R9 — Constant-time credential verification
+### R10 — Constant-time credential verification
 
 Steady-state authentication hashes the presented high-entropy raw secret and compares fixed-length digests using a timing-safe comparison primitive.
 
-### R10 — Tenant identity is server-resolved
+### R11 — Tenant identity is server-resolved
 
 Authenticated routes derive `shopId` exclusively from the installation row. Caller-supplied tenant identity is never trusted.
 
-### R11 — Enumeration-resistant authentication failure
+### R12 — Enumeration-resistant authentication failure
 
 Missing ID, revoked installation, invalid credential and incompatible tenant state return the same public authentication failure shape.
 
-### R12 — PHP-consumable versioned contract
+### R13 — PHP-consumable versioned contract
 
 OpenAPI v1 documents the exact connection, challenge and authentication-probe contracts for the later Woo plugin task.
 
 ## Work Items
 
 - [ ] Update the API repository's `database/` gitlink to the accepted DATABASE-001 commit and regenerate Prisma.
-- [ ] Add strict canonical Woo site URL parsing/normalisation.
+- [ ] Add strict canonical Woo site URL parsing/normalisation for public mode plus the explicitly gated local-development variant.
 - [ ] Add bounded connect request/response runtime validators.
 - [ ] Implement the cryptographic challenge nonce/HMAC proof contract.
-- [ ] Implement SSRF-safe DNS resolution, public-address validation, socket pinning, TLS hostname verification, connected-peer checking, deadline/body/media-type limits and no-redirect challenge transport.
+- [ ] Implement environment-gated challenge transport: strict public/global HTTPS validation plus explicit local-development local-target allowance while retaining DNS/address pinning, peer checking, limits, no redirects and HMAC proof.
 - [ ] Implement first-connection Shop + WooCommerceInstallation transaction.
 - [ ] Implement reconnect credential rotation with credential-version compare-and-swap/concurrency handling.
 - [ ] Generate 32-byte installation credentials and persist only their 32-byte SHA-256 digests.
@@ -585,8 +637,8 @@ OpenAPI v1 documents the exact connection, challenge and authentication-probe co
 - [ ] Add the authenticated `GET /v1/woocommerce/installation` probe.
 - [ ] Add the OpenAPI 3.1 installation v1 contract.
 - [ ] Add bounded structured logging with secret/body redaction requirements.
-- [ ] Add focused unit/security/integration tests, including a controlled TLS/DNS fixture for site verification.
-- [ ] Document local connection/authentication testing without requiring a real merchant WordPress site.
+- [ ] Add focused unit/security/integration tests, including controlled public TLS/DNS verification and local-development HTTP/private-target fixtures.
+- [ ] Document local connection/authentication testing against a local WordPress/WooCommerce fixture without requiring public/paid WordPress hosting.
 
 ## Interfaces / Contracts
 
@@ -690,11 +742,11 @@ API-003 may add the first real DB-backed merchant read/write capability behind t
 
 - [ ] API-002 uses the accepted DATABASE-001 Prisma schema through the pinned `database/` submodule.
 - [ ] `POST /v1/woocommerce/installations/connect` rejects invalid/oversized/unknown-field request bodies before DNS/network/database action.
-- [ ] Canonical site URL validation enforces HTTPS, DNS hostname, default HTTPS port, no credentials/query/fragment and deterministic WordPress base-path normalization.
-- [ ] Literal IP site URLs are rejected.
-- [ ] Private/loopback/link-local/special-use/non-global IPv4 and IPv6 answers are rejected.
-- [ ] Mixed public/private DNS answer sets are rejected.
-- [ ] The challenge socket is pinned to an approved resolved address and validates the original hostname via TLS.
+- [ ] `public` mode canonical site validation enforces HTTPS, DNS hostname, default HTTPS port, no credentials/query/fragment and deterministic WordPress base-path normalization.
+- [ ] `public` mode rejects literal IPs and private/loopback/link-local/special-use/non-global IPv4/IPv6 answers, including mixed public/private sets.
+- [ ] `local-development` mode is disabled by default and startup/configuration fails if it is requested under `NODE_ENV=production`.
+- [ ] Explicit `local-development` mode accepts a local HTTP fixture such as `http://woocommerce-sandbox.local` and a loopback/private local target while continuing to reject arbitrary public HTTP targets.
+- [ ] The challenge socket is pinned to an approved resolved address in both modes; HTTPS callbacks validate the original hostname via TLS.
 - [ ] Connected-peer mismatch is rejected.
 - [ ] Redirects are not followed.
 - [ ] Challenge deadline, response-body and media-type/UTF-8 limits are enforced.
@@ -726,9 +778,10 @@ Required validation categories:
 - [ ] Prisma generation from the accepted DATABASE-001 gitlink;
 - [ ] typecheck;
 - [ ] lint;
-- [ ] focused unit tests for URL canonicalization and credential encoding/digest/constant-time comparison;
+- [ ] focused unit tests for public/local-development URL canonicalization, mode gating and credential encoding/digest/constant-time comparison;
 - [ ] focused challenge HMAC contract tests with fixed vectors;
-- [ ] controlled DNS/TLS transport tests for public success, private IPv4/IPv6 rejection, IPv4-mapped rejection, mixed answers, peer mismatch, certificate/SNI behavior, redirect rejection, deadline and body limits;
+- [ ] controlled transport tests for public HTTPS success, private IPv4/IPv6 rejection in public mode, IPv4-mapped rejection, mixed answers, peer mismatch, certificate/SNI behavior, redirect rejection, deadline and body limits;
+- [ ] controlled local-development transport tests for HTTP `.local` and loopback/private success, explicit-port handling, peer pinning, public-HTTP rejection and production-mode fail-closed behavior;
 - [ ] request parser/body-limit/unknown-field tests proving invalid requests perform zero network/database work;
 - [ ] disposable PostgreSQL integration test for first connection;
 - [ ] disposable PostgreSQL integration test for reconnect/credential rotation;
@@ -744,7 +797,7 @@ Required validation categories:
 
 Do not satisfy the SSRF acceptance contract only with mocked `fetch`. At least one controlled TLS/socket fixture must prove that the actual transport pins the resolved address while retaining the original hostname for TLS verification and checks the connected peer.
 
-No live merchant WooCommerce store is required for API-002 validation; WOO-003/system validation owns the real PHP integration.
+No live/public merchant WooCommerce store is required for API-002 validation. The accepted development path may use a local WordPress/WooCommerce fixture; WOO-003 proves the PHP integration and terminal system validation proves the deployed public-mode policy separately.
 
 ## Stop Condition
 
