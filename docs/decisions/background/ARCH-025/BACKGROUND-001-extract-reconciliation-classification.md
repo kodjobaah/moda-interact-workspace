@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: complete
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -312,3 +312,9 @@ Conforms to ARCH-025, the authorised Background repository/file boundary, pure-c
 ### Follow-up
 
 `ARCH-025-BACKGROUND-002` is now Ready. BACKGROUND-003..007 remain Pending behind the sequential reconciliation chain. The independent BACKGROUND-008 and ADMIN-001 frontiers are unchanged. No further BACKGROUND-001 implementation work is required.
+
+## Developer Override - Reopen (2026-10-02)
+
+- Previous accepted attempt: 2.
+- Reason: The developer requested reopening after the BACKGROUND-002 launcher reported this dependency as `ready` despite the accepted/completed record on this task branch. Reopen this prerequisite to reconcile its lifecycle state before continuing the dependent sequence; no implementation correction was specified.
+- Historical Architect acceptance and Attempt 2 evidence are preserved above. This reopen does not claim the task or increment the attempt.
