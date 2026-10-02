@@ -182,7 +182,7 @@ a durable database contract only: `commerce.Shop.platform` plus
 contracts: `GET /health/live` and `GET /health/ready`.
 
 API-002 owns the first PHP-consumable Woo installation API contract through
-`openapi/woocommerce-installation-v1.yaml`:
+`openapi/woocommerce-installation-v1.yaml` and WOO-003 implements its WordPress/PHP consumer boundary:
 
 ```text
 POST /v1/woocommerce/installations/connect
@@ -194,6 +194,19 @@ HTTPS Woo site through a bounded HMAC challenge callback before creating or rota
 installation state. Subsequent Woo API calls authenticate with installation ID plus
 a presented raw credential whose SHA-256 digest matches the stored digest, then
 resolve the authoritative `shopId`; site URL alone is never authentication.
+
+WOO-003 additionally owns the local WordPress connection facade:
+
+```text
+GET  /wp-json/moda-interact/v1/connection
+POST /wp-json/moda-interact/v1/connection
+GET  /wp-json/moda-interact/v1/connection/challenge
+```
+
+Only the challenge route is public; the browser-facing GET/POST routes require a privileged
+WooCommerce administrator and WordPress REST cookie/nonce authentication. Raw bootstrap
+and long-lived installation credentials remain PHP/server-side and are never returned to
+React.
 
 WOO-001 establishes stable local plugin identities:
 
@@ -207,7 +220,7 @@ Woo Admin path: /moda-interact
 
 ## Consistency and Transactions
 
-WOO-001/WOO-002 perform no Moda durable-state mutation. DATABASE-001 establishes
+WOO-001/WOO-002 perform no Moda durable-state mutation. WOO-003 persists only merchant-side WordPress connection state after an API-002 verified connect/reconnect; it does not mutate Moda PostgreSQL directly. DATABASE-001 establishes
 constraints so one Woo installation belongs to exactly one Shop, credential/revocation
 state is internally consistent and an installation cannot be reassigned to another
 tenant. API-002 performs site verification outside the database transaction, then
@@ -230,6 +243,8 @@ non-destructive activation/deactivation lifecycle.
 API-001 separates liveness from readiness: process liveness does not depend on
 PostgreSQL, while readiness returns 503 when the bounded database connectivity probe
 fails. It must not run migrations or mutate business state as part of readiness.
+
+WOO-003 must fail locally before connection when the store is not HTTPS, uses Plain permalinks or cannot expose the exact API-002 challenge REST route. Remote outage must not be interpreted as disconnection, and site URL mismatch must prevent silent credential reuse on a cloned/migrated WordPress database.
 
 API-002 treats Woo site verification as an SSRF boundary: public HTTPS only, public/global
 DNS answers only, pinned socket, original-host TLS verification, connected-peer checks,
@@ -257,6 +272,8 @@ Moda ingress and shared Background workload separately.
   returns it once to the PHP plugin; the browser never receives it.
 - API-002 never trusts caller-supplied `shopId`/domain as tenant identity after connection;
   steady-state authorization resolves the Shop from the authenticated installation row.
+- WOO-003 stores the raw installation credential only in non-autoloaded server-side WordPress state and never exposes it to browser JavaScript, localized data or logs.
+- WOO-003 derives site identity and API authentication material server-side; browser requests cannot choose the remote tenant or API origin.
 - Installation status remains connection/authentication state only; onboarding and billing
   lifecycle are not encoded in `WooCommerceInstallationStatus`.
 
@@ -300,13 +317,16 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 | ARCH-026-DATABASE-001 | moda_database | Ready | - |
 | ARCH-026-API-001 | moda_api | Pending | - |
 | ARCH-026-API-002 | moda_api | Pending | ARCH-026-API-001, ARCH-026-DATABASE-001 |
+| ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 
 DATABASE-001 may execute independently while the Woo plugin stream is blocked/pending.
 API-001 also has no task dependency and is gated only by repository provisioning.
 API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the
-connection/authentication contract consumed by the later PHP plugin task. WOO-002 remains
-Pending until WOO-001 is architect-accepted Complete. Later ARCH-026 tasks remain
-intentionally iterative and are not frozen by these materialised tasks.
+connection/authentication contract consumed by WOO-003. WOO-003 remains Pending until
+both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side
+challenge callback, server-side credential storage, authenticated Moda API client and local
+WordPress REST connection facade. Later ARCH-026 tasks remain intentionally iterative and
+are not frozen by these materialised tasks.
 
 ## Open Questions
 
@@ -334,3 +354,4 @@ intentionally iterative and are not frozen by these materialised tasks.
 - 2026-10-02: API-002 materialised to establish SSRF-safe Woo site-control proof,
   first-connect/reconnect credential issuance, and a reusable authenticated installation
   principal over the DATABASE-001 identity model.
+- 2026-10-02: WOO-003 materialised as the PHP-side consumer of API-002, adding the public one-attempt site-control challenge callback, privileged local connection facade, server-side installation credential storage and authenticated Moda API client.
