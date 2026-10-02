@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T22:05:25Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-ADMIN-001
@@ -147,7 +147,7 @@ None
 
 ### Status
 
-Completed; submitted for Architect Review.
+Attempt 2 completed. Architect correction A1-R1 is implemented and validated; returned to Architect Review.
 
 ### Files Changed
 
@@ -158,15 +158,17 @@ Completed; submitted for Architect Review.
 
 Moved both Plan-step JSX regions into `PlanStep`. The shell continues to own the form, hidden payload fields, step selection and navigation. The child receives only the required draft fields, action callbacks, selector values and model/source-type catalogues; payload construction, server validation, economics and navigation remain outside it. Existing Commerce-model repair guidance, FREE-option behavior, product-policy feature controls, active Merchant Knowledge source options and validation are preserved.
 
+Implemented Architect correction A1-R1: removed the full persisted `plan` prop and `MerchantPricingPlanWithChildren` import from `plan-step.tsx`; added the accepted `draft.isEditing` value to the bounded draft Pick; changed handle read-only behavior to `draft.isEditing`; and passed `controller.draft.isEditing` from the shell. No controller, test, action, payload or policy source changed. Focused validation: `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passed 13/13, `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passed 14/14, targeted ESLint on both changed components completed without warnings or errors, and editor diagnostics reported no errors.
+
 ### Validation Results
 
-Focused `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: 13/13 passed. The test file was not modified. Focused `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts`: 14/14 passed. All seven frozen SHA-256 values matched; frozen unit-test and accepted ADMIN-001 security-test diffs were empty. `npm run prisma:generate` succeeded. Required scoped ESLint command completed with zero errors; it warned that the specified unit and security test files are ignored by the repository ESLint configuration. `npm run build` succeeded; Next emitted BullMQ dynamic-require and optional `@valkey/valkey-glide` resolution warnings.
+Attempt 2 focused `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: 13/13 passed; the test file was not modified. Focused `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts`: 14/14 passed. All seven frozen SHA-256 values matched; frozen unit-test and accepted ADMIN-001 security-test diffs were empty. `npm run prisma:generate` succeeded. The required scoped ESLint command completed with zero errors; it warned that the specified unit and security test files are ignored by repository configuration. Targeted ESLint on the two changed component files completed without warnings or errors. `npm run build` succeeded; Next emitted existing BullMQ dynamic-require and optional `@valkey/valkey-glide` resolution warnings. `git diff --check` passed.
 
-`npm run test:unit`: 242 passed / 2 failed. Both failures exactly match the inherited `ARCH025-ADMIN-BUILDER-TEST-001` identifiers: stale translation-workbook metadata/header/highlight identity and canonical translation issue ordering. `npm test`: 226 passed / 9 failed / 0 skipped. All nine failures exactly match the baseline identifiers (shared runtime ownership, lifetime-Free defaults, billing-pack status/i18n, shared release declaration, security boundary, and tenant KPI assertions). No task-introduced regression was observed. `git diff --check` passed.
+`npm run test:unit`: 242 passed / 2 failed. Both failures exactly match the inherited `ARCH025-ADMIN-BUILDER-TEST-001` identifiers: stale translation-workbook metadata/header/highlight identity and canonical translation issue ordering. `npm test`: 226 passed / 9 failed / 0 skipped. All nine failures exactly match the documented baseline identifiers (shared runtime ownership, lifetime-Free defaults, billing-pack status/i18n, shared release declaration, security boundary, and tenant KPI assertions). No task-introduced regression was observed; the Architect correction affects only the boolean source for handle read-only presentation.
 
 ### Deviations
 
-The prepared implementation worktree had no `node_modules`; installed the exact locked dependencies with `npm ci` before running the required validation. The initial standard push default pointed at `origin/main`; published explicitly to `origin/task/ARCH-025-ADMIN-002` and aligned local upstream tracking to that task branch. No dependency manifest or lockfile changes were made.
+Attempt 1's recorded deviations remain historical. Attempt 2 required no dependency installation or manifest/lockfile changes; the existing task branch tracking was aligned with its task remote.
 
 ### Assumptions
 
@@ -203,7 +205,34 @@ Another task worktree reused: no
 Implementation commit: 4a98b7a27198932861bbdaed462d85d7cc174f57 (pushed; local task branch tracks matching origin task branch)
 ```
 
-Implementation worktree is clean and its task branch matches `origin/task/ARCH-025-ADMIN-002` at the implementation commit above.
+Attempt 1 implementation was clean at `4a98b7a27198932861bbdaed462d85d7cc174f57`. After the A1-R1 correction, Attempt 2 implementation HEAD is `77a5e68f323667c863caa54d6aa9edb87dc624c4`, pushed to and matching `origin/task/ARCH-025-ADMIN-002`; the implementation worktree is clean.
+
+Attempt 2 prepared execution:
+
+```text
+Claim: attempt 2; executor copilot; claimed at 2026-10-02T22:05:25Z
+Parent claim commit: 6f6c9290155d5f158750ea80b8aa26ff92ac6c91 (committed and pushed)
+Canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-002
+Parent branch: task/ARCH-025-ADMIN-002
+Parent task-branch fast-forward: not-needed
+Parent origin/main incorporated: already-current
+Parent prepared HEAD: 30c379d3f0851f76cedffd0368472f71ab1308b6
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-002
+Implementation branch: task/ARCH-025-ADMIN-002
+Implementation task-branch fast-forward: not-needed
+Implementation origin/main incorporated: already-current
+Implementation prepared HEAD: 4a98b7a27198932861bbdaed462d85d7cc174f57
+Recursive submodule sync: passed
+Recursive submodule update/init: passed
+Recorded database submodule commit: cfeeb12456b4e05067a96857a8c47837d7e33bbd
+Shared workspace checkout switched/mutated for task work: no
+Shared implementation checkout switched/mutated for task work: no
+Another task worktree reused: no
+Implementation correction commit: 77a5e68f323667c863caa54d6aa9edb87dc624c4 (pushed to task/ARCH-025-ADMIN-002)
+```
+
+Final implementation branch is clean and matches its task remote at `77a5e68`. The parent report finalization is committed and pushed; its final commit and local-equals-remote state are verified after publication.
 
 ## Architect Review
 
