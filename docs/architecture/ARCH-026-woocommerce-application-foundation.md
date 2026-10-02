@@ -338,6 +338,7 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 | ARCH-026-DATABASE-001 | moda_database | Ready | - |
 | ARCH-026-API-001 | moda_api | Pending | - |
 | ARCH-026-API-002 | moda_api | Pending | ARCH-026-API-001, ARCH-026-DATABASE-001 |
+| ARCH-026-API-003 | moda_api | Pending | ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-SHOPIFY-001 | moda_app | Pending | ARCH-026-DATABASE-001 |
@@ -346,12 +347,11 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 
 WOO-001 Attempt 4 is Accepted and Complete. The final attempt was limited to the architect-requested VCS/evidence corrections; the validated Attempt 3 runtime implementation was preserved. WOO-002 now becomes Ready because WOO-001 was its only dependency.
 
-DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003 remains Pending until both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. SHOPIFY-001 and BACKGROUND-001 may become Ready independently after DATABASE-001 is accepted; ADMIN-001 waits for both so its provider-neutral read cannot outrun the current completion writers. The legacy Shopify onboarding field remains present throughout this phase. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. API-003 remains Pending until API-002 is architect-accepted Complete and then exposes the first authenticated, read-only merchant bootstrap model from shared Shop/store-profile state. WOO-003 remains Pending until both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. WOO-005 will depend on both WOO-004 and API-003 so its first DB-backed merchant presentation cannot outrun either the UI shell or the hosted merchant read contract. SHOPIFY-001 and BACKGROUND-001 may become Ready independently after DATABASE-001 is accepted; ADMIN-001 waits for both so its provider-neutral read cannot outrun the current completion writers. The legacy Shopify onboarding field remains present throughout this phase. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
 - When to remove the retained `shopify.ShopSettings.onboardingCompleted` compatibility field after all runtime/test consumers have migrated.
-- Exact first DB-backed merchant capability after the plugin foundation.
 - Commerce-event and shared Background integration.
 - Woo Marketplace billing architecture.
 
@@ -383,3 +383,4 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
   legacy Shopify field: DATABASE-001 adds/backfills `Shop.onboardingCompleted`; SHOPIFY-001
   and BACKGROUND-001 migrate current runtime writers/readers with compatibility mirroring;
   ADMIN-001 moves tenant presentation to the shared source after both writers migrate.
+- 2026-10-02: API-003 materialised as the first authenticated Woo merchant business read boundary, exposing shared `Shop.onboardingCompleted` plus bounded Commerce store-profile category identity without duplicating Store Category mutation logic or touching billing.
