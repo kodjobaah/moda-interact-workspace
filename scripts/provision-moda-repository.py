@@ -91,17 +91,28 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--create-private",
+        "--create",
         action="store_true",
         help=(
-            "If the remote is a github.com URL and does not exist, create it as a private "
-            "GitHub repository with an initial README commit. Requires authenticated gh."
+            "If the remote is a github.com URL and does not exist, create it. "
+            "Requires --visibility and authenticated gh."
         ),
+    )
+    parser.add_argument(
+        "--visibility",
+        choices=("public", "private"),
+        default=None,
+        help="GitHub repository visibility used only with --create.",
+    )
+    parser.add_argument(
+        "--create-private",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--description",
         default=None,
-        help="Description used only when --create-private creates a new GitHub repository.",
+        help="Description used only when --create creates a new GitHub repository.",
     )
     parser.add_argument(
         "--dry-run",
@@ -326,8 +337,9 @@ def inspect_primary_main(
     }
 
 
-def ensure_private_github_remote(
+def ensure_github_remote(
     remote: str,
+    visibility: str,
     description: str | None,
     *,
     local_registration_present: bool,
@@ -335,7 +347,7 @@ def ensure_private_github_remote(
     slug = github_slug(remote)
     if slug is None:
         raise ProvisionError(
-            "--create-private is supported only for github.com HTTPS or SSH remotes."
+            "--create is supported only for github.com HTTPS or SSH remotes."
         )
 
     auth = run(["gh", "auth", "status"], check=False)
@@ -351,9 +363,14 @@ def ensure_private_github_remote(
     )
     if view.returncode == 0:
         info = parse_json_output(view, label="gh repo view")
-        if info.get("isPrivate") is not True:
+        is_private = info.get("isPrivate") is True
+        actual_visibility = "private" if is_private else "public"
+        if actual_visibility != visibility:
             raise ProvisionError(
-                f"Remote GitHub repository already exists but is not private: {slug}"
+                "Remote GitHub repository already exists with different visibility.\n\n"
+                f"Repository: {slug}\n"
+                f"Requested:  {visibility}\n"
+                f"Actual:     {actual_visibility}"
             )
         return False
 
@@ -364,7 +381,8 @@ def ensure_private_github_remote(
             "for ambiguous local state."
         )
 
-    command = ["gh", "repo", "create", slug, "--private", "--add-readme"]
+    visibility_flag = "--private" if visibility == "private" else "--public"
+    command = ["gh", "repo", "create", slug, visibility_flag, "--add-readme"]
     if description:
         command.extend(["--description", description])
     run(command)
@@ -616,6 +634,7 @@ def render_human(evidence: dict[str, Any]) -> str:
         f"Workspace commit:     {evidence.get('workspace_commit') or '(unchanged / dry-run)'}",
         f"Already provisioned:  {str(evidence['already_provisioned']).lower()}",
         f"Remote created:       {str(evidence['remote_created']).lower()}",
+        f"Remote visibility:    {evidence.get('remote_visibility') or '(existing / not requested)'}",
         f"Dry run:              {str(evidence['dry_run']).lower()}",
         f"Workspace dirty:      {str(evidence.get('workspace_dirty', False)).lower()}",
         f"Task verification:    {task_id}",
@@ -657,6 +676,27 @@ def render_human(evidence: dict[str, Any]) -> str:
 def main() -> int:
     args = parse_args()
     try:
+        if args.create_private:
+            if args.create and args.visibility not in (None, "private"):
+                raise ProvisionError(
+                    "Deprecated --create-private conflicts with --visibility public."
+                )
+            args.create = True
+            args.visibility = "private"
+
+        if args.create and args.visibility is None:
+            raise ProvisionError(
+                "--create requires an explicit --visibility public|private."
+            )
+        if args.visibility is not None and not args.create:
+            raise ProvisionError(
+                "--visibility is valid only together with --create."
+            )
+        if args.description and not args.create:
+            raise ProvisionError(
+                "--description is valid only together with --create."
+            )
+
         repository = args.repository.strip()
         if not repository or "/" in repository or "\\" in repository or repository in {".", ".."}:
             raise ProvisionError(
@@ -707,12 +747,15 @@ def main() -> int:
         )
 
         remote_created = False
-        if args.create_private:
+        remote_visibility: str | None = None
+        if args.create:
+            assert args.visibility is not None
+            remote_visibility = args.visibility
             if args.dry_run:
                 slug = github_slug(remote)
                 if slug is None:
                     raise ProvisionError(
-                        "--create-private is supported only for github.com HTTPS or SSH remotes."
+                        "--create is supported only for github.com HTTPS or SSH remotes."
                     )
                 auth = run(["gh", "auth", "status"], check=False)
                 if auth.returncode != 0:
@@ -726,10 +769,16 @@ def main() -> int:
                 )
                 if view.returncode == 0:
                     info = parse_json_output(view, label="gh repo view")
-                    if info.get("isPrivate") is not True:
+                    is_private = info.get("isPrivate") is True
+                    actual_visibility = "private" if is_private else "public"
+                    if actual_visibility != args.visibility:
                         raise ProvisionError(
-                            f"Remote GitHub repository already exists but is not private: {slug}"
+                            "Remote GitHub repository already exists with different visibility.\n\n"
+                            f"Repository: {slug}\n"
+                            f"Requested:  {args.visibility}\n"
+                            f"Actual:     {actual_visibility}"
                         )
+                    remote_visibility = actual_visibility
                 else:
                     if registration_present:
                         raise ProvisionError(
@@ -751,7 +800,8 @@ def main() -> int:
                         "dry_run": True,
                         "task_status": route["status"] if route else None,
                         "route_verified": bool(route),
-                        "remote_state": "would_create_private",
+                        "remote_state": f"would_create_{args.visibility}",
+                        "remote_visibility": args.visibility,
                         "workspace_dirty": workspace_state["dirty"],
                         "workspace_status": workspace_state["status"],
                         "workspace_staged_paths": workspace_state["staged_paths"],
@@ -760,8 +810,9 @@ def main() -> int:
                     print(json.dumps(evidence, indent=2) if args.json else render_human(evidence))
                     return 0
             else:
-                remote_created = ensure_private_github_remote(
+                remote_created = ensure_github_remote(
                     remote,
+                    args.visibility,
                     args.description,
                     local_registration_present=registration_present,
                 )
@@ -792,6 +843,7 @@ def main() -> int:
                 "task_status": route["status"] if route else None,
                 "route_verified": bool(route),
                 "remote_state": "ready",
+                "remote_visibility": remote_visibility,
                 "workspace_dirty": workspace_state["dirty"],
                 "workspace_status": workspace_state["status"],
                 "workspace_staged_paths": workspace_state["staged_paths"],
@@ -869,6 +921,7 @@ def main() -> int:
             "workspace_commit": workspace_commit,
             "already_provisioned": already_provisioned,
             "remote_created": remote_created,
+            "remote_visibility": remote_visibility,
             "dry_run": False,
             "task_status": route["status"] if route else None,
             "route_verified": bool(route),

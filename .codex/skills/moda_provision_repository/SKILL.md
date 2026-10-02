@@ -9,7 +9,7 @@ for example:
 
 ```text
 /moda_provision_repository moda-interact-woocommerce --remote <GIT_REMOTE>
-/moda_provision_repository moda-interact-woocommerce --remote <GITHUB_REMOTE> --create-private
+/moda_provision_repository moda-interact-woocommerce --remote <GITHUB_REMOTE> --create --visibility public
 ```
 
 An architecture task may be supplied as optional validation context:
@@ -48,8 +48,8 @@ The workflow may:
   them;
 - verify an existing implementation remote has default branch `main` and an
   initial commit;
-- when and only when `--create-private` is explicitly present, create a missing
-  private GitHub repository using the authenticated `gh` CLI;
+- when and only when `--create --visibility public|private` is explicitly present, create a missing
+  GitHub repository with exactly that visibility using the authenticated `gh` CLI;
 - register the implementation repository using `git submodule add`;
 - verify `.gitmodules`, Git mode `160000`, the child `origin`, and the exact
   remote-main SHA;
@@ -62,7 +62,7 @@ The workflow MUST NOT:
 
 - invent or infer a remote URL;
 - require an architecture task merely to provision a repository;
-- create a public GitHub repository;
+- create a GitHub repository without explicit `--create --visibility public|private`;
 - overwrite or repoint an existing submodule;
 - update an existing submodule pin implicitly;
 - stage or commit unrelated workspace changes;
@@ -101,8 +101,7 @@ python3 "$MODA_WORKSPACE_ROOT/scripts/provision-moda-repository.py" \
   --json
 ```
 
-When the invocation includes `--create-private`, pass it through unchanged.
-If the user supplied a repository description, pass it with `--description`.
+When the invocation includes repository creation, pass `--create` and the user-selected `--visibility public|private` unchanged. Never choose visibility on the user's behalf. If the user supplied a repository description, pass it with `--description`.
 
 ## Recommended preflight
 
@@ -121,9 +120,7 @@ python3 "$MODA_WORKSPACE_ROOT/scripts/provision-moda-repository.py" \
 report `real_run_blockers`, but it MUST NOT create a remote, add a submodule,
 commit, or push.
 
-A `--create-private --dry-run` invocation verifies GitHub CLI authentication and
-reports that a missing private repository *would* be created, but it does not
-create it.
+A `--create --visibility public|private --dry-run` invocation verifies GitHub CLI authentication and reports the exact requested visibility that a missing repository *would* be created with, but it does not create it.
 
 ## Real-run safety invariants
 
@@ -155,9 +152,7 @@ Unrelated **unstaged** changes are allowed on a real run. The script stages only
 
 and verifies the existing dirty status is unchanged after the provisioning commit.
 
-Repository creation is an explicit external side effect. Never add
-`--create-private` unless the user invoked the skill with that option or clearly
-asked this invocation to create the private remote.
+Repository creation is an explicit external side effect. Never add `--create` unless the user invoked the skill with that option or clearly asked this invocation to create the remote. Never select `public` or `private` on the user's behalf.
 
 ## Evidence and handoff
 
@@ -171,6 +166,7 @@ workspace_root
 workspace_commit
 already_provisioned
 remote_created
+remote_visibility
 dry_run
 workspace_dirty
 route_verified
