@@ -999,13 +999,13 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
 Agreed architecture. Combined parent task state after reconciling accepted Admin, Commerce and
-Background branches: **Complete 14, Ready 1, Pending 2**. Current frontier: `COMMERCE-006`.
-COMMERCE-005 is Complete / Accepted at Attempt 2 after its evidence-only retry recorded the
-launcher packet and demonstrated no C005-owned regression against the synchronized pre-task
-Commerce suite. All Admin and Background tasks and COMMERCE-001 through COMMERCE-005 are
-Complete; COMMERCE-007 and GATEWAY-001 remain dependency-gated. COMMERCE-002 and BACKGROUND-001/002 are
-Complete from their accepted mainline reconciliations; ADMIN-001 and ADMIN-004 remain Complete
-from their accepted Admin reconciliations. The canonical published Shared revision is
+Background branches: **Complete 15, Ready 1, Pending 1**. Current frontier: `COMMERCE-007`.
+COMMERCE-006 is Complete / Accepted at Attempt 2 after its bounded shared-Tool correction accepts
+valid many-Capabilities-to-one-Tool manifests while rejecting conflicting duplicate descriptors
+before provider dispatch. All Admin and Background tasks and COMMERCE-001 through COMMERCE-006 are
+Complete; COMMERCE-007 is Ready and GATEWAY-001 remains dependency-gated. COMMERCE-002 and
+BACKGROUND-001/002 are Complete from their accepted mainline reconciliations; ADMIN-001 and
+ADMIN-004 remain Complete from their accepted Admin reconciliations. The canonical published Shared revision is
 `@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter credential
 administration is Admin-owned; Commerce Studio selects one effective active model and composes
 Test Conversations from selected Features; Background adopts the same OpenRouter runtime for
