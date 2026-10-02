@@ -13,7 +13,7 @@ This directory contains two independent Background maintainability chains under 
 - BACKGROUND-001..007: billing-subscription reconciliation coordinator;
 - BACKGROUND-008..015: CheckoutRecoveryService lifecycle façade.
 
-Neither Background chain depends on the Shopify tranche or on the other Background chain. They may therefore advance independently. BACKGROUND-001 is now Complete, so the current independent Background frontiers are `ARCH-025-BACKGROUND-002` and `ARCH-025-BACKGROUND-008`. Each chain is sequential internally because it progressively extracts from one high-churn compatibility façade/coordinator.
+Neither Background chain depends on the Shopify tranche or on the other Background chain. `ARCH-025-BACKGROUND-002` and `ARCH-025-BACKGROUND-008` are independently Ready. Each chain is sequential internally because it progressively extracts from one high-churn compatibility façade/coordinator.
 
 ```text
 BACKGROUND-001 -> BACKGROUND-002 -> BACKGROUND-003 -> BACKGROUND-004
