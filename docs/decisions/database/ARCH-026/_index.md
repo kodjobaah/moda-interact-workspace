@@ -20,4 +20,4 @@ The database stream establishes only the minimum durable Woo installation identi
 ARCH-026-DATABASE-001 is Ready and may execute independently of the blocked/pending Woo plugin tasks.
 ```
 
-A later hosted-API installation/authentication task will depend on this database capability once that API boundary is materialised. Do not begin such API work from DATABASE-001.
+`ARCH-026-API-002` depends on this database capability and will consume the architect-accepted database commit through the API repository's nested `database/` gitlink. Do not begin API-002 from DATABASE-001; the API task remains separately owned by `moda_api`.

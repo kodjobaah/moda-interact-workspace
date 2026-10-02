@@ -15,7 +15,8 @@ executor: null
 claimed_at: null
 attempt: 0
 depends_on: []
-enables: []
+enables:
+  - ARCH-026-API-002
 created: 2026-10-02
 updated: 2026-10-02
 ---

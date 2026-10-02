@@ -1025,12 +1025,13 @@ In-progress structural refactor with two independent repository tranches. The Sh
 ## ARCH-026 — WooCommerce application foundation (2026-10-01)
 
 Proposed, iterative architecture. The WooCommerce plugin foundation (WOO-001/WOO-002),
-DATABASE-001 and the hosted API foundation (API-001) are materialised.
+DATABASE-001 plus hosted API-001/API-002 are materialised.
 `moda-interact-woocommerce` / `moda_woocommerce` owns the merchant-installed PHP + React
 extension; `moda-interact-api` / `moda_api` is the separate server-only synchronous
 Moda HTTP boundary. API-001 remains repository-provisioning-gated and intentionally
-contains only canonical database consumption plus liveness/readiness; installation
-authentication, merchant business APIs, commerce-event/Background integration and
-billing remain later tasks.
+contains only canonical database consumption plus liveness/readiness; API-002 is pending
+on accepted API-001 + DATABASE-001 and owns Woo site-control proof, installation credential
+issuance/rotation and steady-state installation authentication. Merchant business APIs,
+commerce-event/Background integration and billing remain later tasks.
 
 [Architecture](ARCH-026-woocommerce-application-foundation.md)
