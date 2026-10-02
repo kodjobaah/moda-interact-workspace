@@ -33,7 +33,7 @@ The first Background tranche refactors `src/services/billing-subscription-reconc
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2; ADMIN-003 is Ready and ADMIN-004 through ADMIN-008 remain dependency-gated.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1; ADMIN-004 is Ready and ADMIN-005 through ADMIN-008 remain dependency-gated.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; ADMIN-010 is Ready and ADMIN-011 through ADMIN-015 remain dependency-gated.
 
@@ -1138,8 +1138,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 |---|---|---|---|
 | ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Complete | - |
 | ARCH-025-ADMIN-002 | Extract Plan step | Complete | ADMIN-001 |
-| ARCH-025-ADMIN-003 | Extract Catalogue placement step | Ready | ADMIN-002 |
-| ARCH-025-ADMIN-004 | Extract Shopify pricing step | Pending | ADMIN-003 |
+| ARCH-025-ADMIN-003 | Extract Catalogue placement step | Complete | ADMIN-002 |
+| ARCH-025-ADMIN-004 | Extract Shopify pricing step | Ready | ADMIN-003 |
 | ARCH-025-ADMIN-005 | Extract Usage events step | Pending | ADMIN-004 |
 | ARCH-025-ADMIN-006 | Extract Merchant content step | Pending | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
@@ -1222,6 +1222,7 @@ None.
 ## Change History
 
 - 2026-10-03: ADMIN-010 Attempt 1 summary-hook implementation `0b3b540873b4ab59098d95ea3efb5088b1e16fbf` was accepted in substance and returned Ready for an evidence-only Attempt 2. The three-file move preserves the ADMIN-009 client/frozen/security boundary and required polling/single-flight/abort/last-good-snapshot semantics. Acceptance awaits complete broad security/observability file-set evidence because the submitted `npm test` rerun was interrupted, plus correction of the implementation branch upstream from `origin/main` to `origin/task/ARCH-025-ADMIN-010`. ADMIN-011 remains gated.
+- 2026-10-03: ADMIN-003 Accepted / Complete at Attempt 1. Implementation `c31959af6c019f7ba8553ccad6bf09d341b460c7` moves only Catalogue-placement presentation into a bounded child while the accepted controller/canonical helper retain placement derivation and transitions. Focused security/controller checks and all seven frozen hashes pass. The six remaining broad failures are a strict subset of `ARCH025-ADMIN-BUILDER-TEST-001`; fixed baseline failures are not recreated. ADMIN-004 is promoted Ready.
 - 2026-10-02: ADMIN-002 Accepted / Complete at Attempt 2. Correction commit `77a5e68f323667c863caa54d6aa9edb87dc624c4` removes the full persisted `plan` prop from the Plan-step child, consumes existing `controller.draft.isEditing`, and changes only the two authorised presentation files. Focused security/controller tests and frozen hashes pass; inherited broad failures remain bounded by `ARCH025-ADMIN-BUILDER-TEST-001`. ADMIN-003 is promoted Ready.
 - 2026-10-02: ADMIN-002 Attempt 1 Plan-step extraction was accepted in substance at `4a98b7a27198932861bbdaed462d85d7cc174f57`, but returned Ready for one bounded R2 correction: replace the full persisted `plan` child prop (used only for handle read-only state) with the already-accepted `controller.draft.isEditing` value. All other move-only semantics, focused tests, frozen hashes and `ARCH025-ADMIN-BUILDER-TEST-001` baseline-aware suite results are conformant; ADMIN-003 remains gated.
 - 2026-10-02: BACKGROUND-002 Attempt 2 is architect-accepted Complete at implementation `8bfb6dcaf57ee852407e8650d8449b0818ce75e5` with parent report `a4b258a80743d047e78a228ddcaae78625693b5e`. The queue/reconstruction collaborator is a move-only extraction preserving deterministic job identity/options, reconstruction predicate/count semantics, clock/log boundaries and durable schedule publication. Full `npm test` remained nonzero: eight failures plus the fixture-loading error match `ARCH025-BACKGROUND-TEST-001`; five unrelated GenAI/observability process-spawn timeouts passed on isolated reruns and are treated as transient, not added to the durable baseline. BACKGROUND-003 is promoted Ready.
