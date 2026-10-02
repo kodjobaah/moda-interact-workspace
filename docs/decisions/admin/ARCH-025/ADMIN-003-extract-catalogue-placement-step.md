@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 30
-executor: copilot
-claimed_at: 2026-10-02T23:02:10Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-002
@@ -93,9 +93,9 @@ Existing plan edits remain disabled/`UNCHANGED`; create FREE remains forced befo
 
 ## Work Items
 
-- [ ] Extract step-1 presentation.
-- [ ] Keep placement transition/derivation in the controller/canonical helper.
-- [ ] Run accepted security/controller/policy suites.
+- [x] Extract step-1 presentation.
+- [x] Keep placement transition/derivation in the controller/canonical helper.
+- [x] Run accepted security/controller/policy suites.
 
 ## Interfaces / Contracts
 
@@ -111,23 +111,23 @@ Repository-internal UI extraction only. Public contract remains `MerchantPricing
 
 ## Acceptance Criteria
 
-- [ ] Catalogue placement behaviour/text/options are unchanged.
-- [ ] No catalogue CAS/server persistence logic enters the child component.
-- [ ] Accepted ADMIN-001 security test file is unmodified and passes.
+- [x] Catalogue placement behaviour/text/options are unchanged.
+- [x] No catalogue CAS/server persistence logic enters the child component.
+- [x] Accepted ADMIN-001 security test file is unmodified and passes.
 
 ## Validation
 
-- [ ] `npm run prisma:generate` succeeds.
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen SHA-256 values.
-- [ ] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
-- [ ] `git diff -- tests/security/admin-merchant-pricing-plan.test.mjs` is empty for this task and `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
+- [x] `npm run prisma:generate` succeeds.
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen SHA-256 values.
+- [x] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
+- [x] `git diff -- tests/security/admin-merchant-pricing-plan.test.mjs` is empty for this task and `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes.
+- [x] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` passes without task-introduced regression.
+- [x] `npm test` passes without task-introduced regression.
+- [x] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
+- [x] `npm run build` succeeds.
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -141,35 +141,49 @@ None
 
 ### Status
 
-Not Started
+Review
 
 ### Files Changed
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/catalogue-placement-step.tsx`
 
 ### Work Completed
 
-None
+- Extracted the Catalogue placement select, explanatory FREE-first copy and edit current-position display into `CataloguePlacementStep`.
+- Kept plan-kind transition and placement derivation in the accepted draft controller and canonical `resolveMerchantPricingCreatePlacement(...)` helper; the child only receives bounded display values and `setPlacement`.
+- Preserved create/edit, FREE, empty-catalogue and paid placement options/disabled states. No server/CAS/persistence logic or controller changes were made.
+- Implementation commit `c31959a` was pushed to `origin/task/ARCH-025-ADMIN-003`.
 
 ### Validation Results
 
-None
+- Prisma generation passed.
+- Focused draft/controller test: 14 passed, 0 failed. Accepted `admin-merchant-pricing-plan.test.mjs`: 13 passed, 0 failed.
+- Frozen payload/model/Merchant Knowledge/economics/translation test SHA-256 values all matched; frozen pure/domain test diff and accepted security test diff were empty.
+- Full unit suite: 245 passed, 2 failed. The exact failures (`rejects stale metadata, locale/header changes, and highlight identity changes`; `returns all bounded validation issues in canonical order`) match `ARCH025-ADMIN-BUILDER-TEST-001`; no task-specific regression appeared.
+- Full `npm test`: the exact six existing baseline failures were observed in billing-pack presentation, Shared ICU/catalogue alignment, shared-release consumption, security-boundary wiring and tenant KPIs. The accepted ADMIN-001 security test passed.
+- Task lint command passed with zero errors; ESLint reports the two test files as ignored by configuration. Direct ESLint on both changed JSX files passed without warnings/errors.
+- Production build and TypeScript passed. Existing BullMQ dynamic dependency and optional `@valkey/valkey-glide` warnings remain.
+- `git diff --check` passed.
+- Launcher claimed Attempt 1 at `2026-10-02T23:02:10Z` with executor `copilot`; durable claim commit `6d74b6566516393bf16aa52ec486c6427bb334aa` was pushed. Dependency gate passed for `ARCH-025-ADMIN-002` (`complete`).
+- Canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-003`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-003`; both task branches are `task/ARCH-025-ADMIN-003`.
+- Parent and implementation task-branch fast-forward were `not-needed`; `origin/main` incorporation was `already-current`. Recursive submodule sync/update passed with database at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. No shared/default checkout or other task worktree was used or mutated.
 
 ### Deviations
 
-None
+- Broad unit and security suites retain the exact failures documented by `ARCH025-ADMIN-BUILDER-TEST-001`; no unrelated baseline changes were made.
 
 ### Assumptions
 
-None
+- Existing catalogue rows are presentation inputs only; the controller remains authoritative for effective placement and transitions.
 
 ### Unresolved Issues
 
-None
+- None.
 
 ### Architectural Concerns
 
-None
+- None within the bounded ADMIN-003 scope.
 
 ## Architect Review
 
