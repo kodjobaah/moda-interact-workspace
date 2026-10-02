@@ -671,11 +671,11 @@ The 2 October 2026 source snapshot contains:
 
 ```text
 moda-interact-background/tests/unit/services/billing-subscription-reconciliation.service.test.ts
-98 tests
+146 tests
 SHA-256: 0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239
 ```
 
-This file is frozen for BACKGROUND-001..007. Every reconciliation-chain task MUST leave it byte-for-byte unchanged, verify the SHA-256, run the complete file, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without regression, and add no test bypasses or weakened production assertions.
+This file is frozen for BACKGROUND-001..007. Every reconciliation-chain task MUST leave it byte-for-byte unchanged, verify the SHA-256, run all 146 currently discovered tests in the complete file, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without regression, and add no test bypasses or weakened production assertions.
 
 BACKGROUND-001 Attempt 2 established durable development baseline `ARCH025-BACKGROUND-TEST-001` for the full `moda-interact-background` suite by comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same dependency/environment state. Later ARCH-025 Background tasks may reference that baseline only when they introduce no new failing test or suite identity; if an upstream/environment repair resolves a baseline failure, tasks must not recreate it.
 
@@ -1194,7 +1194,7 @@ There is deliberately no dependency edge between ARCH-025 Shopify, either Backgr
 
 A separate `moda_system_test` task is **not applicable** to this structural maintainability initiative because ARCH-025 introduces no new cross-service contract, infrastructure topology, schema, queue protocol or externally observable product behaviour.
 
-Architecture completion instead requires all seven sub-tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background reconciliation, all 98 frozen reconciliation tests are required to pass. CheckoutRecovery extraction additionally freezes these integrated post-ARCH-024 regression assets byte-for-byte:
+Architecture completion instead requires all seven sub-tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background reconciliation, all 146 frozen reconciliation tests are required to pass. CheckoutRecovery extraction additionally freezes these integrated post-ARCH-024 regression assets byte-for-byte:
 
 ```text
 tests/unit/services/matured-candidate.materialization.test.ts
@@ -1220,6 +1220,8 @@ The Commerce ToolEditor tranche must keep the Shopify Admin, Tool Authoring Scre
 None.
 
 ## Change History
+
+- 2026-10-02: BACKGROUND-001 Attempt 3 accepted the lifecycle/report reconciliation at parent report commit `fc303934c4b92eb22f5116fb501339b779c41417`. No source/test change occurred; implementation task ref `3cc3b89da4c008d00b2cb6c21505eb738b15cf3f` contains reviewed implementation `b3c7a1264a22baf498b14916a341686a751de869` with no file delta. Cleared stale task claim state and made the previously identified frozen reconciliation count correction durable across BACKGROUND-001..007: the required-hash asset currently executes 146 tests, not 98.
 
 - 2026-10-02: ADMIN-001 Accepted / Complete at Attempt 2. The evidence-only retry preserves implementation `0cd5c010926acfbfaf808fb5d727df9269b30fdb`; same-environment comparison against pre-task `b8da632a1fcaef7e364be1dc5cca40dfafde4703` proves the same two unit and nine package-suite failures with no new/worsened failure, while launcher/worktree/submodule evidence is now durable. Added `ARCH025-ADMIN-BUILDER-TEST-001` for those exact inherited failures and promoted ADMIN-002 Ready.
 - 2026-10-02: ADMIN-001 Attempt 1 implementation was accepted in substance at `0cd5c010926acfbfaf808fb5d727df9269b30fdb`: the five-file delta establishes the typed consume-only controller, pure draft reducer and bounded extraction-safe security loader without a source-level product regression. Acceptance is deferred for an evidence-only Attempt 2 because the reported `npm run test:unit` / `npm test` failures have no Admin baseline ID; the retry must compare exact pre-task `b8da632a1fcaef7e364be1dc5cca40dfafde4703` versus submitted failure identities under the same environment and durably record prepared worktree/synchronization/submodule evidence. ADMIN-002 remains gated.
