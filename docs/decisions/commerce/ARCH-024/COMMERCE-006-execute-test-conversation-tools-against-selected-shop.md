@@ -9,17 +9,17 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 50
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 2
 depends_on:
   - ARCH-024-COMMERCE-005
 enables:
   - ARCH-024-COMMERCE-007
 created: 2026-09-30
-updated: 2026-10-01
+updated: 2026-10-02
 ---
 
 # Execute Test Conversation Tools against the selected shop
@@ -721,22 +721,22 @@ Normal provider reads and existing non-mutating runtime evaluation are allowed.
 
 ## Work Items
 
-- [ ] Consume and validate the C005 `PreviewConversationSnapshot`; do not add another Shop/authored-state field to `StoredConversation`.
-- [ ] Split human conversation Tool execution from retained fixture Tool-test execution.
-- [ ] Add `PreviewConversationToolExecutionPort` with the exact R3 contract.
-- [ ] Implement `createSelectedShopPreviewToolExecutor(...)` using `backend.execution` only.
-- [ ] Enforce frozen-definition and descriptor/grant integrity before provider dispatch.
-- [ ] Construct the exact selected-Shop `AuthorizedToolCall` from R7.
-- [ ] Apply the production-equivalent 10-second / 12-provider-request Tool budget.
-- [ ] Route Shopify Admin execution through the current selected-Shop offline session.
-- [ ] Route Policy Operations through the production registry without fabricated durable business state.
-- [ ] Correct runtime Platform/per-Shop External credential resolution per R11.
-- [ ] Route External HTTP execution through the production connection/credential machinery.
-- [ ] Update PreviewService conversation Tool execution to use only the selected-Shop executor.
-- [ ] Preserve independent fixture-backed Tool Authoring / Code Response Tool tests.
-- [ ] Add the full selected-Shop Tool execution regression matrix.
-- [ ] Keep human message execution disabled until C007.
-- [ ] Validate secret/telemetry/persistence safety.
+- [x] Consume and validate the C005 `PreviewConversationSnapshot`; do not add another Shop/authored-state field to `StoredConversation`.
+- [x] Split human conversation Tool execution from retained fixture Tool-test execution.
+- [x] Add `PreviewConversationToolExecutionPort` with the exact R3 contract.
+- [x] Implement `createSelectedShopPreviewToolExecutor(...)` using `backend.execution` only.
+- [x] Enforce frozen-definition and descriptor/grant integrity before provider dispatch.
+- [x] Construct the exact selected-Shop `AuthorizedToolCall` from R7.
+- [x] Apply the production-equivalent 10-second / 12-provider-request Tool budget.
+- [x] Route Shopify Admin execution through the current selected-Shop offline session.
+- [x] Route Policy Operations through the production registry without fabricated durable business state.
+- [x] Correct runtime Platform/per-Shop External credential resolution per R11.
+- [x] Route External HTTP execution through the production connection/credential machinery.
+- [x] Update PreviewService conversation Tool execution to use only the selected-Shop executor.
+- [x] Preserve independent fixture-backed Tool Authoring / Code Response Tool tests.
+- [x] Add the full selected-Shop Tool execution regression matrix.
+- [x] Keep human message execution disabled until C007.
+- [x] Validate secret/telemetry/persistence safety.
 
 ## Interfaces / Contracts
 
@@ -803,24 +803,24 @@ No Database/Shared/Admin dependency is added directly here because this task reu
 
 ## Acceptance Criteria
 
-- [ ] Human Feature Test Conversations no longer execute Shopify/Policy/External Tools through fixture execution.
-- [ ] The selected Shop ID/domain come only from C005 `conversation.snapshot.shop` and are never accepted from browser domain input.
-- [ ] `bundle.grant.shopId` must equal `conversation.snapshot.shop.id`.
-- [ ] Conversation Tool execution uses `backend.execution` / the existing production `DefinitionExecutor`.
-- [ ] Exact frozen Tool revision definitions are used; later Tool publication does not alter a started conversation.
-- [ ] Descriptor/grant/snapshot mismatch fails closed before any provider request.
-- [ ] Shopify Admin Tools resolve the current selected-Shop offline session/token at Tool execution time.
-- [ ] Missing Shopify offline session produces bounded failure and never falls back to fixture facts.
-- [ ] Policy Operations receive the selected Shop identity and no fake durable recovery/customer/order state is created.
-- [ ] Platform External connections work with their global credential while the Tool call retains selected-Shop identity.
-- [ ] Per-Shop External connections can use only the exact selected Shop credential.
-- [ ] Credential rotation is observed by the next Tool invocation without recreating the Test Conversation.
-- [ ] Selected-Shop Tool execution uses a 10-second deadline and at most 12 provider reservations.
-- [ ] Caller cancellation propagates to provider execution.
-- [ ] `/api/studio/preview/tool-tests` and its retained fixture executor remain functional and separate.
-- [ ] The human Test Conversation message composer remains disabled after C006.
-- [ ] No Shopify/External secret is persisted into Preview conversation state, returned to the browser or added to telemetry.
-- [ ] No new durable business-state mutation is introduced by Test Conversation Tool execution.
+- [x] Human Feature Test Conversations no longer execute Shopify/Policy/External Tools through fixture execution.
+- [x] The selected Shop ID/domain come only from C005 `conversation.snapshot.shop` and are never accepted from browser domain input.
+- [x] `bundle.grant.shopId` must equal `conversation.snapshot.shop.id`.
+- [x] Conversation Tool execution uses `backend.execution` / the existing production `DefinitionExecutor`.
+- [x] Exact frozen Tool revision definitions are used; later Tool publication does not alter a started conversation.
+- [x] Descriptor/grant/snapshot mismatch fails closed before any provider request.
+- [x] Shopify Admin Tools resolve the current selected-Shop offline session/token at Tool execution time.
+- [x] Missing Shopify offline session produces bounded failure and never falls back to fixture facts.
+- [x] Policy Operations receive the selected Shop identity and no fake durable recovery/customer/order state is created.
+- [x] Platform External connections work with their global credential while the Tool call retains selected-Shop identity.
+- [x] Per-Shop External connections can use only the exact selected Shop credential.
+- [x] Credential rotation is observed by the next Tool invocation without recreating the Test Conversation.
+- [x] Selected-Shop Tool execution uses a 10-second deadline and at most 12 provider reservations.
+- [x] Caller cancellation propagates to provider execution.
+- [x] `/api/studio/preview/tool-tests` and its retained fixture executor remain functional and separate.
+- [x] The human Test Conversation message composer remains disabled after C006.
+- [x] No Shopify/External secret is persisted into Preview conversation state, returned to the browser or added to telemetry.
+- [x] No new durable business-state mutation is introduced by Test Conversation Tool execution.
 
 ## Validation
 
@@ -830,7 +830,7 @@ Inspect `package.json` before running repository commands; do not invent missing
 
 Required validation:
 
-- [ ] Focused tests including at minimum:
+- [x] Focused tests including at minimum:
 
 ```text
 tests/selected-shop-preview-tool-execution.test.ts
@@ -839,17 +839,17 @@ tests/preview-integration.test.ts
 tests/external-http-executor.test.ts or the accepted equivalent credential/external execution regression suite
 ```
 
-- [ ] Existing DefinitionExecutor tests covering Shopify Admin / Policy / External remain green.
-- [ ] Existing Tool Authoring / Code Response fixture Tool-test tests remain green.
-- [ ] Same-tick/cancellation/unknown Preview service tests affected by the port split remain green.
-- [ ] TypeScript typecheck using the repository-declared command.
-- [ ] Targeted ESLint for every changed TS/TSX file using the repository-declared lint capability.
-- [ ] Production build using the repository-declared build command.
-- [ ] Changed-file diagnostics contain no new errors.
-- [ ] `git diff --check`.
-- [ ] Static search proves the human conversation path no longer references `preview.myshopify.com`, `fixtureQuery(...)` or `backend.createFixtureExecution(...)`.
-- [ ] Static search proves retained `/api/studio/preview/tool-tests` still has its fixture-backed implementation.
-- [ ] Static/fixture inspection proves no secret-bearing field was added to `StoredConversation`, Preview result contracts, logs or browser props.
+- [x] Existing DefinitionExecutor tests covering Shopify Admin / Policy / External remain green.
+- [x] Existing Tool Authoring / Code Response fixture Tool-test tests remain green.
+- [x] Same-tick/cancellation/unknown Preview service tests affected by the port split remain green.
+- [x] TypeScript typecheck using the repository-declared command.
+- [x] Targeted ESLint for every changed TS/TSX file using the repository-declared lint capability.
+- [x] Production build using the repository-declared build command.
+- [x] Changed-file diagnostics contain no new errors.
+- [x] `git diff --check`.
+- [x] Static search proves the human conversation path no longer references `preview.myshopify.com`, `fixtureQuery(...)` or `backend.createFixtureExecution(...)`.
+- [x] Static search proves retained `/api/studio/preview/tool-tests` still has its fixture-backed implementation.
+- [x] Static/fixture inspection proves no secret-bearing field was added to `StoredConversation`, Preview result contracts, logs or browser props.
 
 Live Shopify/OpenRouter/External network calls are NOT required for this repository task. Deterministic injected integration tests are the required proof.
 
@@ -881,58 +881,193 @@ Do not begin ARCH-024-COMMERCE-007 or any adjacent OpenRouter/model-runtime work
 
 ### Status
 
-Not Started
+Ready for Review
+
+### Attempt 2 Rework — 2026-10-02
+
+**Architect Review A1-R1: implemented.** In `src/commerce/integration/preview/adapters.ts`, the selected-Shop executor now fails closed when no manifest capability matches the exact `toolId + toolRevisionId`, accepts one or more matching capabilities, and compares every matching descriptor with the requested descriptor before dispatch. The single deduplicated grant-entry check and all frozen-definition checks remain unchanged. `tests/selected-shop-preview-tool-execution.test.ts` adds coverage for two distinct capabilities sharing one Tool revision with one grant entry containing both keys, plus a conflicting duplicate descriptor that returns `INCOMPATIBLE_VERSION` without calling `backend.execution`.
+
+### Attempt 2 Validation Results
+
+- Focused duplicate-capability matrix: `npm test -- tests/selected-shop-preview-tool-execution.test.ts` passed; 1 file, 8 tests.
+- Complete focused C006 packet: Vitest passed 11 files and 102 tests, covering selected-Shop execution, Preview service/integration/routes/store/Redis, External HTTP/credentials, DefinitionExecutor, snapshot and Feature composition.
+- Targeted ESLint over all 16 C006-changed TypeScript/TSX files: passed with no output.
+- `npm run typecheck`: passed (`next typegen`, `tsc --noEmit`).
+- `npm run build`: passed; emitted the existing Nunjucks dynamic-dependency warning.
+- Changed-file diagnostics for both Attempt 2 files: no errors.
+- Static audits: the human conversation service contains no `preview.myshopify.com`, fixture query/executor, or fixture response data references; independent `/api/studio/preview/tool-tests` routes and fixture executor remain. No credential-bearing field was added to Preview types/service.
+- `git diff --check`: passed. No live Shopify or External network calls were made.
+
+### Attempt 2 Execution Evidence
+
+- Prepared claim: `in_progress`, attempt `2`, executor `copilot`, claimed `2026-10-02T00:34:11Z`; durable parent claim commit `976eba68e4aad52ca0fc8258aac8f1cb720de68b` was pushed.
+- Dedicated worktrees reused without rerunning launcher, claim or synchronization: parent `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-006`; implementation `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-006`. Both use `task/ARCH-024-COMMERCE-006`.
+- Prepared evidence: parent start head `e3e960dd986ef786e69a94df18f645b8125acff4`; implementation start head `0fa6a8ad088886d4b9573b6abcd507c59003ff5e`; parent already included `origin/main`, implementation was current, and task-branch remote fast-forwards were not needed. Dependency ARCH-024-COMMERCE-005 was complete; recursive Database submodule was `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Implementation commit `78257d26c0dbc08e261d10ee80221bef314667b2` is pushed; local and remote task heads match, and the implementation worktree is clean.
+- Parent task/report changes are limited to this task file. The report branch was pushed and local/remote equality plus clean status were verified after publication.
+
+No C007 work was started. The task is returned to review and is not marked complete.
 
 ### Files Changed
 
-None
+Implementation commit `0fa6a8ad088886d4b9573b6abcd507c59003ff5e` contains:
+
+- `lib/discovery/admin-compiler.ts` — mechanically required correction: iterate `compiled.variables.entries()` so the required-variable check uses each mapped GraphQL variable name, not the `Map.values()` callback index. The selected-Shop DefinitionExecutor matrix exposed this defect while validating exact Admin query variables.
+- `lib/preview/runtime.ts`
+- `src/commerce/connections/credentials/index.ts`
+- `src/commerce/integration/external/index.ts`
+- `src/commerce/integration/preview/adapters.ts`
+- `src/commerce/preview/service.ts`
+- `src/commerce/preview/types.ts`
+- `tests/external-credentials.test.ts`
+- `tests/feature-preview-composition.test.ts`
+- `tests/preview-integration.test.ts`
+- `tests/preview-redis-lua.test.ts`
+- `tests/preview-routes.test.ts`
+- `tests/preview-service.test.ts`
+- `tests/preview-store.test.ts`
+- `tests/test-conversation-snapshot.test.ts`
+- `tests/selected-shop-preview-tool-execution.test.ts`
 
 ### Work Completed
 
-None
+Feature-composed human Test Conversations now use a separate selected-Shop executor backed by `CommerceBackend.execution`. It validates the C005 snapshot, grant, descriptor and exact frozen definition before dispatch, constructs the bounded `AuthorizedToolCall`, and enforces the 10-second/12-reservation budget with cancellation propagation. Shopify sessions and External credentials resolve live at each invocation; Platform and per-Shop credential scopes are handled correctly. Preview conversation state no longer carries fixture-only execution data, while independent fixture-backed Tool tests remain supported. The composer remains disabled for C007. No durable business state or provider credentials are fabricated or persisted.
+
+The selected-Shop regression matrix exercises the real `DefinitionExecutor` dependency seam for frozen definitions, selected-Shop identity, Shopify offline-session rotation/missing-session handling, Policy Operations without fabricated recovery state, Platform/per-Shop External credential selection and rotation, provider budget, cancellation, and deadline cleanup.
 
 ### Validation Results
 
-Not run.
+Agent-executed validation passed:
+
+- Focused Vitest command covering 11 files (`selected-shop-preview-tool-execution`, Preview service/integration/routes/client/store/Redis, External HTTP/credentials, DefinitionExecutor, snapshot and Feature composition): 11 files passed, 100 tests passed.
+- Targeted ESLint over all 16 changed TypeScript/TSX files: passed with no output.
+- `npm run typecheck`: passed (`next typegen`, `tsc --noEmit`).
+- `npm run build`: passed; emitted only the existing Nunjucks dynamic-dependency warning.
+- Changed production files and selected-Shop matrix diagnostics: no errors.
+- `git diff --check`: passed for the staged implementation and parent task changes.
+- Static inspection confirmed the human conversation path no longer references `preview.myshopify.com`, `fixtureQuery(...)` or `backend.createFixtureExecution(...)`; fixture references remain in the independent Tool-test executor.
+- Static inspection confirmed the disabled composer message and Send control remain, and no access token, ciphertext, nonce, auth tag, auth header value, session body or credential-secret field was added to Preview/browser contracts.
+- No live Shopify or External network calls were made. The full repository suite was not run; it is not required by this task.
+
+Launcher/preparation evidence: dedicated parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-024-COMMERCE-006` and implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-024-COMMERCE-006` were created fresh on `task/ARCH-024-COMMERCE-006`. Parent start head was `4e07e97cc70b9a0e796408a7389245e4ced95409`; implementation start head was `d60360a6fa7a16861c5b68a613379d43e81e7b37`. Both task remote fast-forwards were not needed; `origin/main` was already current. Dependency gate passed with ARCH-024-COMMERCE-005 complete. Recursive submodule sync/update passed; Database submodule was `cfeeb12456b4e05067a96857a8c47837d7e33bbd`. Attempt 1 was claimed by `copilot` at `2026-10-01T23:33:44Z`; durable parent claim commit `60e1e7629b2ecbc62336cb6b32ce705bcd8272f1` was pushed.
+
+Implementation publication: local and remote `task/ARCH-024-COMMERCE-006` both point to `0fa6a8ad088886d4b9573b6abcd507c59003ff5e`; implementation worktree was clean after push. Parent review-report publication is recorded by the current parent task branch commit; local and remote equality and clean status were verified after push.
 
 ### Deviations
 
-None
+The focused matrix uncovered the narrow `lib/discovery/admin-compiler.ts` mapped-variable validation defect. The correction is included because it is mechanically required for production DefinitionExecutor Admin variable validation; no other scope was expanded.
 
 ### Assumptions
 
-None
+The prepared execution packet is authoritative for Attempt 1 isolation, dependency, submodule synchronization and claim evidence. Existing Nunjucks dynamic-dependency build warning is unchanged and unrelated to C006.
 
 ### Unresolved Issues
 
-None
+None.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending.
+Attempt 2 — Accepted (2026-10-02).
+
+A1-R1 is closed. The selected-Shop executor now accepts one or more manifest Capability members matching the exact `toolId + toolRevisionId`, fails closed when no matching member exists, and requires every matching member's `toolDescriptor` to canonical-equal the requested descriptor before provider dispatch. This preserves the accepted C004 many-Capabilities-to-one-Tool composition while remaining fail closed for conflicting duplicate descriptors.
+
+The Attempt 2 regression constructs two distinct Capability members sharing one Tool revision and one deduplicated grant entry containing both Capability keys, proves the Tool executes exactly once through `backend.execution`, and separately proves a conflicting duplicate descriptor returns `INCOMPATIBLE_VERSION` without dispatch. The single deduplicated grant-entry integrity check and frozen-definition checks remain unchanged.
+
+The Attempt 2 implementation delta is bounded to `src/commerce/integration/preview/adapters.ts` and `tests/selected-shop-preview-tool-execution.test.ts`; `tsconfig.tsbuildinfo` is generated validation output. No C007 source was started.
+
+Attempt 1 — Changes Requested (2026-10-02).
+
+The selected-Shop execution architecture is otherwise conformant: the human conversation path is separated from retained fixture Tool tests, `backend.execution` / the production `DefinitionExecutor` is reused, frozen definitions and selected-Shop identity are validated before provider dispatch, current Shopify sessions and External credentials remain live, the 10-second / 12-provider-request envelope is present, the composer remains locked for C007, and the submitted Completion Report contains the required dedicated-worktree / synchronization / recursive-submodule / claim / clean-remote evidence.
+
+**A1-R1 — valid C004 compositions with more than one Capability using the same Tool revision are rejected.**
+
+ARCH-024-COMMERCE-004 explicitly requires every Capability member to remain in the manifest while Tool definitions and `grantedTools` are deduplicated by exact Tool revision. Its accepted contract therefore permits multiple `manifest.capabilities` entries to carry the same `toolId + toolRevisionId`, with one deduplicated `grantedTools` entry whose `capabilityKeys` contains every Capability key using that revision.
+
+The C006 selected-Shop executor currently does:
+
+```ts
+const manifestMatches = bundle.manifest.capabilities.filter(
+  (item) =>
+    item.toolDescriptor.toolId === tool.toolId
+    && item.toolDescriptor.toolRevisionId === tool.toolRevisionId,
+);
+
+if (
+  manifestMatches.length !== 1
+  || canonicalJson(manifestMatches[0]!.toolDescriptor) !== canonicalJson(tool)
+) {
+  return incompatibleToolResult();
+}
+```
+
+That `length !== 1` check makes a valid C004 composition fail with `INCOMPATIBLE_VERSION` before provider dispatch whenever two or more Capability members legitimately share one Tool revision. This contradicts the accepted C004 invariant and C006 R6, which requires that the descriptor **appears** in `bundle.manifest.capabilities`; it does not require the Tool revision to occur in exactly one Capability member.
+
+Attempt 2 correction contract:
+
+1. Keep the exact `toolId + toolRevisionId` manifest lookup, but accept one-or-more matching Capability members.
+2. Fail closed when there are zero matching Capability members.
+3. Because duplicate Capability members are valid, validate the requested descriptor against **every** matching Capability member (or an equivalent fail-closed check) so a conflicting duplicate descriptor still returns `INCOMPATIBLE_VERSION` before provider dispatch.
+4. Preserve the single deduplicated `bundle.grant.grantedTools` integrity check and the frozen-definition checks.
+5. Add focused selected-Shop regression coverage using a manifest with at least two distinct Capability members that share the same Tool revision and one deduplicated grant entry containing both Capability keys. Prove the valid Tool executes through `backend.execution`.
+6. Add or retain a fail-closed regression proving a conflicting descriptor among matching duplicate Capability members does not dispatch the provider.
+7. Rerun the complete C006 required validation and return the same task to review.
+8. Do not begin COMMERCE-007.
+
+No database, Shared, Admin, Background, Gateway, model-runtime, credential-administration, or broader Feature-composition redesign is requested.
 
 ### Reviewed Files
 
-Pending.
+- `docs/decisions/commerce/ARCH-024/COMMERCE-006-execute-test-conversation-tools-against-selected-shop.md`
+- `docs/decisions/commerce/ARCH-024/COMMERCE-004-compose-test-conversations-from-selected-features.md`
+- `docs/architecture/ARCH-024-commerce-agent-model-runtime-and-test-conversations.md`
+- `moda-interact-commerce/src/commerce/integration/preview/adapters.ts`
+- `moda-interact-commerce/src/commerce/preview/service.ts`
+- `moda-interact-commerce/src/commerce/preview/types.ts`
+- `moda-interact-commerce/lib/preview/runtime.ts`
+- `moda-interact-commerce/src/commerce/connections/credentials/index.ts`
+- `moda-interact-commerce/src/commerce/integration/external/index.ts`
+- `moda-interact-commerce/lib/discovery/admin-compiler.ts`
+- `moda-interact-commerce/tests/selected-shop-preview-tool-execution.test.ts`
+- `moda-interact-commerce/tests/feature-preview-composition.test.ts`
+- `moda-interact-commerce/tests/preview-integration.test.ts`
+- `moda-interact-commerce/tests/preview-service.test.ts`
+- `moda-interact-commerce/tests/external-credentials.test.ts`
+- `moda-interact-commerce/tests/test-conversation-snapshot.test.ts`
 
 ### Validation Reviewed
 
-Pending.
+- Re-reviewed the exact Attempt 2 delta against Attempt 1: only `src/commerce/integration/preview/adapters.ts`, `tests/selected-shop-preview-tool-execution.test.ts` and generated `tsconfig.tsbuildinfo` differ in the Commerce tree.
+- Confirmed the valid shared-revision regression retains distinct Capability members, one deduplicated grant entry and both Capability keys, and dispatches exactly once through the production DefinitionExecutor seam.
+- Confirmed the conflicting duplicate-descriptor regression returns `INCOMPATIBLE_VERSION` and does not call the execution port.
+- Reviewed the submitted Attempt 2 validation evidence: focused duplicate-capability matrix 8/8; complete C006 packet 11 files / 102 tests; targeted ESLint; TypeScript; production build; changed-file diagnostics; static audits; `git diff --check`.
+- The uploaded review archive contains no installed dependency tree or Git metadata, so dependency-backed validation and remote-head equality were not independently replayed in this review environment; the Completion Report records those results and the clean remote-aligned task heads.
+
+- Inspected the exact C006 implementation delta against the accepted C005 snapshot.
+- Confirmed C004's accepted contract and regression fixture retain multiple Capability members sharing one Tool revision while deduplicating Tool/grant entries.
+- Confirmed the current C006 `manifestMatches.length !== 1` guard rejects that valid manifest shape before `backend.execution.execute(...)`.
+- Reviewed the submitted focused-validation evidence: 11 test files / 100 tests, targeted ESLint, TypeScript, production build, changed-file diagnostics, static audits and `git diff --check`.
+- Confirmed the uploaded archive contains no installed dependency tree or Git metadata, so dependency-backed test/build commands and remote refs were not independently replayed in the review environment.
 
 ### Architecture Conformance
 
-Pending.
+Conforms.
+
+The implementation now conforms to the selected-Shop execution, C004 shared-Tool composition, frozen-definition, live-credential/session, fixture-separation, provider-budget, secret-safety, persistence and C007-lockout boundaries. A1-R1 is corrected without broadening task scope.
 
 ### Follow-up
 
-Pending.
+`ARCH-024-COMMERCE-006` is Complete / Accepted at Attempt 2.
+
+`ARCH-024-COMMERCE-007` is promoted to Ready because both declared dependencies, `ARCH-024-COMMERCE-006` and `ARCH-024-SHARED-002`, are Complete. Do not start C007 as part of this acceptance reconciliation.
+
+`ARCH-024-GATEWAY-001` remains Pending on `ARCH-024-COMMERCE-007`.
