@@ -33,7 +33,7 @@ The first Background tranche refactors `src/services/billing-subscription-reconc
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Ready; ADMIN-002 through ADMIN-008 remain dependency-gated.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2; ADMIN-002 is Ready and ADMIN-003 through ADMIN-008 remain dependency-gated.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Ready; ADMIN-010 through ADMIN-015 remain dependency-gated.
 
@@ -1136,8 +1136,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Ready | - |
-| ARCH-025-ADMIN-002 | Extract Plan step | Pending | ADMIN-001 |
+| ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Complete | - |
+| ARCH-025-ADMIN-002 | Extract Plan step | Ready | ADMIN-001 |
 | ARCH-025-ADMIN-003 | Extract Catalogue placement step | Pending | ADMIN-002 |
 | ARCH-025-ADMIN-004 | Extract Shopify pricing step | Pending | ADMIN-003 |
 | ARCH-025-ADMIN-005 | Extract Usage events step | Pending | ADMIN-004 |
@@ -1207,7 +1207,7 @@ tests/unit/services/checkout-recovery.capacity-resume.test.ts
   SHA-256 8c11db2f98681899742579db2766527ec5f26b5dfdf15a264551eecea9a115e1
 ```
 
-The Admin tranche must preserve the seven frozen pure-policy test files listed above, retain all 13 existing `admin-merchant-pricing-plan.test.mjs` tests/assertions through its ADMIN-001 extraction-safe loader adjustment, then keep the accepted security file unchanged for ADMIN-002..008. Every Admin task must pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. This does not waive repository-level integration/runtime validation already exercised by those commands.
+The Admin tranche must preserve the seven frozen pure-policy test files listed above, retain all 13 existing `admin-merchant-pricing-plan.test.mjs` tests/assertions through its ADMIN-001 extraction-safe loader adjustment, then keep the accepted security file unchanged for ADMIN-002..008. Every Admin task must run `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check` and introduce no task regression. `ARCH025-ADMIN-BUILDER-TEST-001` may cover only its exact unchanged inherited failures; any new/worsened failure remains blocking. This does not waive repository-level integration/runtime validation already exercised by those commands.
 
 The QueueMonitor tranche must preserve the frozen server/API sources and dedicated server tests, retain the accepted ADMIN-009 extraction-safe UI/security harnesses for ADMIN-010..015, pass focused tests for newly introduced client/pure state/geometry helpers where applicable, pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. A new browser/React test framework is not required for this structural initiative; existing source/security assertions plus pure Node tests remain the accepted validation style.
 
@@ -1221,6 +1221,7 @@ None.
 
 ## Change History
 
+- 2026-10-02: ADMIN-001 Accepted / Complete at Attempt 2. The evidence-only retry preserves implementation `0cd5c010926acfbfaf808fb5d727df9269b30fdb`; same-environment comparison against pre-task `b8da632a1fcaef7e364be1dc5cca40dfafde4703` proves the same two unit and nine package-suite failures with no new/worsened failure, while launcher/worktree/submodule evidence is now durable. Added `ARCH025-ADMIN-BUILDER-TEST-001` for those exact inherited failures and promoted ADMIN-002 Ready.
 - 2026-10-02: ADMIN-001 Attempt 1 implementation was accepted in substance at `0cd5c010926acfbfaf808fb5d727df9269b30fdb`: the five-file delta establishes the typed consume-only controller, pure draft reducer and bounded extraction-safe security loader without a source-level product regression. Acceptance is deferred for an evidence-only Attempt 2 because the reported `npm run test:unit` / `npm test` failures have no Admin baseline ID; the retry must compare exact pre-task `b8da632a1fcaef7e364be1dc5cca40dfafde4703` versus submitted failure identities under the same environment and durably record prepared worktree/synchronization/submodule evidence. ADMIN-002 remains gated.
 - 2026-10-02: Deep Commerce COMMERCE-001..010 coherence review retained the ten-task graph, made the completed ARCH-024 Studio model-selection prerequisite explicit, corrected seeded Release Composer ADMIN/SUPER_ADMIN client-gate wording, closed the persisted ToolEditor controller state-ownership/Cancel contract, preserved exact authoring-session and no-port External revision quirks, and made RevisionHistory ownership deterministic across the wrapper extraction sequence.
 
