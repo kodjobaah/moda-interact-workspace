@@ -14,7 +14,8 @@ priority: 20
 executor: null
 claimed_at: null
 attempt: 0
-depends_on: []
+depends_on:
+  - ARCH-024-COMMERCE-003
 enables:
   - ARCH-025-COMMERCE-002
 created: 2026-10-02
@@ -95,7 +96,11 @@ Change only source-loading mechanics in `legacy-capability-surface.test.ts` and 
 
 ### R5 — focused controller tests
 
-Add focused tests proving hydration suppression, stale-load rejection, no reload on authoring-session-only change, single-flight/unknown-operation admission, reconciliation with the original operation ID and content-revision dirty fencing. Existing 13/3/90-test assets remain unchanged.
+Add focused tests proving hydration suppression, stale-load rejection, no reload on authoring-session-only change, single-flight/unknown-operation admission, reconciliation with the original operation ID and content-revision dirty fencing.
+
+### R6 — preserve current cross-route/global-state asymmetries
+
+Do not introduce route-change resets that do not exist today. In particular, route changes must not opportunistically clear `message`, global `dirty`, Agent Configuration dirty/unconfirmed state or an unresolved `unknown` operation. Preserve the current global navigation-blocker `onDiscard` behaviour, which clears only the workspace `dirty` flag; Agent Configuration owns its own dirty/unconfirmed convergence. Existing 13/3/90-test assets remain unchanged.
 
 
 ## Work Items
@@ -113,7 +118,7 @@ Internal Commerce UI controller/type contract only. `components/studio-workspace
 
 ## Dependencies
 
-None
+- `ARCH-024-COMMERCE-003` — Complete and integrated; establishes the final Studio model-selection shape before this high-churn component is structurally extracted.
 
 ## Enables
 

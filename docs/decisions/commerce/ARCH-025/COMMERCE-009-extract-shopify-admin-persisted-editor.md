@@ -98,9 +98,14 @@ Preserve current Test requirement before save, result-contract/mapping gates, CA
 
 Preserve output-schema fallback, Result Template metadata/validation and Review candidate/presentation exactly.
 
+### R6 — RevisionHistory remains shell-owned until COMMERCE-010
+
+Keep `RevisionHistory` rendered by `ToolEditor`; do not duplicate it in the Admin wrapper or import it back from the shell. COMMERCE-010 owns the eventual `revision-history.tsx` extraction.
+
 ## Work Items
 
 - [ ] Extract Shopify Admin persisted DRAFT wrapper.
+- [ ] Keep RevisionHistory shell-owned until COMMERCE-010.
 - [ ] Keep `ShopifyAdminEditor`, `ShopifyAdminResponseEditor` and `ShopifyAdminTestTab` canonical.
 - [ ] Add focused wrapper tests where useful.
 - [ ] Prove controller, Policy/External wrappers and frozen suites remain unchanged.

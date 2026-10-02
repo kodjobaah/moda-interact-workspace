@@ -94,10 +94,15 @@ Preserve current owning-section validation, current Test requirement, CAS `expec
 
 The wrapper composes `PolicyOperationEditor` and existing server actions/state helpers; it must not duplicate descriptor, mapping or live-Test implementations.
 
+### R5 — RevisionHistory remains shell-owned until COMMERCE-010
+
+Do not import `RevisionHistory` back from `tool-editor.tsx` (which would create a wrapper/shell cycle) and do not duplicate it inside the Policy wrapper. During COMMERCE-007, `ToolEditor` continues to render the existing `RevisionHistory` immediately around the extracted Policy DRAFT wrapper. `RevisionHistory` itself is extracted only by COMMERCE-010.
+
 ## Work Items
 
 - [ ] Extract Policy DRAFT candidate/build/save/publish orchestration.
 - [ ] Keep published Policy read-only handling outside this wrapper.
+- [ ] Keep `RevisionHistory` rendered by the ToolEditor shell; do not duplicate or reverse-import it into the wrapper.
 - [ ] Add focused wrapper tests where frozen suites do not already pinpoint the boundary.
 - [ ] Prove common controller and accepted COMMERCE-006 External source harness remain unchanged.
 

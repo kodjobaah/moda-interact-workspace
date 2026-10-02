@@ -29,7 +29,7 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is Ready; BACKGROUND-002 through BACKGROUND-007 remain dependency-gated.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete; `ARCH-025-BACKGROUND-002` is Ready and BACKGROUND-003 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
@@ -631,7 +631,7 @@ src/studio/tools/authoring/
   definition-read-only.tsx                       generic published definition facts
 ```
 
-The common controller owns execution-kind-neutral state/freshness/reset/convergence only. Provider/execution-specific candidate construction and validation remain with their wrappers and existing specialised editor/server-action owners. COMMERCE-007..010 are consume-only with respect to the accepted COMMERCE-006 controller.
+The common controller owns the complete co-located persisted-editor **state lifecycle** required for exact Cancel/save convergence, including execution-kind-local raw buffers and validation flags, while provider/execution-specific candidate construction, validation algorithms and server/provider calls remain with their wrappers and existing specialised editor/server-action owners. COMMERCE-007..010 are consume-only with respect to the accepted COMMERCE-006 controller.
 
 ## Regression Baseline
 
@@ -676,6 +676,8 @@ SHA-256: 0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239
 ```
 
 This file is frozen for BACKGROUND-001..007. Every reconciliation-chain task MUST leave it byte-for-byte unchanged, verify the SHA-256, run the complete file, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without regression, and add no test bypasses or weakened production assertions.
+
+BACKGROUND-001 Attempt 2 established durable development baseline `ARCH025-BACKGROUND-TEST-001` for the full `moda-interact-background` suite by comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same dependency/environment state. Later ARCH-025 Background tasks may reference that baseline only when they introduce no new failing test or suite identity; if an upstream/environment repair resolves a baseline failure, tasks must not recreate it.
 
 ### Background frozen CheckoutRecovery assets
 
@@ -1114,8 +1116,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Ready | - |
-| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Pending | BACKGROUND-001 |
+| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Complete | - |
+| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Ready | BACKGROUND-001 |
 | ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Pending | BACKGROUND-002 |
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Pending | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
@@ -1154,7 +1156,7 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Ready | - |
+| ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Ready | ARCH-024-COMMERCE-003 (Complete) |
 | ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Pending | COMMERCE-001 |
 | ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Pending | COMMERCE-002 |
 | ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Pending | COMMERCE-003 |
@@ -1182,11 +1184,11 @@ ADMIN-001 -> ADMIN-002 -> ADMIN-003 -> ADMIN-004
 ADMIN-009 -> ADMIN-010 -> ADMIN-011 -> ADMIN-012
       -> ADMIN-013 -> ADMIN-014 -> ADMIN-015
 
-COMMERCE-001 -> COMMERCE-002 -> COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005
+ARCH-024-COMMERCE-003 (Complete) -> COMMERCE-001 -> COMMERCE-002 -> COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005
       -> COMMERCE-006 -> COMMERCE-007 -> COMMERCE-008 -> COMMERCE-009 -> COMMERCE-010
 ```
 
-There is deliberately no dependency edge between Shopify, either Background chain, either Admin chain and Commerce. Within Commerce, COMMERCE-006 depends on COMMERCE-005 only to sequence ownership of `tests/external-tools-ui.test.tsx`; there is no runtime dependency between StudioWorkspace and ToolEditor extraction.
+There is deliberately no dependency edge between ARCH-025 Shopify, either Background chain, either Admin chain and Commerce. COMMERCE-001 explicitly depends on the already-Complete ARCH-024-COMMERCE-003 because that task established the final high-churn Studio model-selection shape used by the reviewed baseline. Within ARCH-025 Commerce, COMMERCE-006 depends on COMMERCE-005 only to sequence ownership of `tests/external-tools-ui.test.tsx`; there is no runtime dependency between StudioWorkspace and ToolEditor extraction.
 
 ## System Validation
 
@@ -1220,10 +1222,14 @@ None.
 ## Change History
 
 - 2026-10-02: ADMIN-009 Attempt 1 implementation `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1` was accepted in substance and returned Ready for an evidence-only Attempt 2. Same-revision comparison against `b8da632a1fcaef7e364be1dc5cca40dfafde4703` proved the two co-located global i18n failures, two unit failures and all nine submitted package-suite failing identifiers are inherited rather than QueueMonitor regressions. Added durable baseline `ARCH025-ADMIN-TEST-001`; ADMIN-010 remains gated until ADMIN-009 is Complete.
+
+- 2026-10-02: Deep Commerce COMMERCE-001..010 coherence review retained the ten-task graph, made the completed ARCH-024 Studio model-selection prerequisite explicit, corrected seeded Release Composer ADMIN/SUPER_ADMIN client-gate wording, closed the persisted ToolEditor controller state-ownership/Cancel contract, preserved exact authoring-session and no-port External revision quirks, and made RevisionHistory ownership deterministic across the wrapper extraction sequence.
 - 2026-10-02: Added the gated Commerce ToolEditor maintainability chain COMMERCE-006..010. Established a complete persisted-authoring controller before execution-kind extraction, preserved existing Policy/External/Admin validation/Test/CAS/publication semantics and recorded observed source quirks/follow-up candidates separately in `ARCH-025-tool-editor-refactor-observations.md` so the structural refactor does not silently change them.
 
 - 2026-10-02: Added the independent Commerce `StudioWorkspace` maintainability chain COMMERCE-001..005 against the post-ARCH-024 model-selection baseline. Preserved the public `StudioWorkspace`/`StudioPage` module boundary, route/hydration/stale-load and unknown-operation reconciliation semantics, specialised Tool/Agent Configuration boundaries, Release validation/activation/rollback invariants and current Shop views; froze the strong integration suites and made source-inspection assertions extraction-safe before JSX moves.
 - 2026-10-02: Added the independent Admin QueueMonitor maintainability chain ADMIN-009..015. Preserved the read-only public shell, protected API/server-reader boundaries, summary single-flight polling, queue-job/detail stale-request cancellation, filter/pagination/selection asymmetries, drawer mechanics, catalogue/i18n ownership and bounded failed-job diagnostics; established browser-local contracts/client and extraction-safe source assertions before hook/presentation extraction.
+- 2026-10-02: BACKGROUND-001 blocked-task disposition found no source-level defect in the pure classification extraction. Corrected the architect-authored frozen reconciliation suite count from 98 to the 146 tests actually executed by the byte-identical required-hash asset. Returned BACKGROUND-001 to Ready for an evidence-only Attempt 2 comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same environment; no Background full-suite baseline is created until that differential proves the failure set is pre-existing.
+- 2026-10-02: BACKGROUND-001 Attempt 2 was accepted after the same-environment differential proved the exact same eight failing tests plus the same commerce-evidence fixture-loading failure on the pre-task and submitted commits. Recorded durable no-regression baseline `ARCH025-BACKGROUND-TEST-001`, marked BACKGROUND-001 Complete and promoted BACKGROUND-002 to Ready.
 - 2026-10-02: Deep ADMIN-001..008 source/task coherence review kept the eight-task graph unchanged, made ADMIN-001 the complete consume-only controller contract for all later steps, preserved pure-Node testability and UI-edge identity/effect semantics, closed the extracted-module security-scan blind spot, and characterized exact translation fallback, usage-event stale-field/tier behaviour, secondary economics rows and translation-workbook/final-step mount semantics.
 
 - 2026-10-02: Added the independent Admin `MerchantPricingPlanBuilder` maintainability chain ADMIN-001..008 against the post-ARCH-024 model-assignment baseline. Preserved the seven-step form/action contract, exact navigation/economics/translation/product-policy semantics, established a typed draft/controller boundary before JSX extraction, froze seven pure-policy test assets, and made the existing source-based security assertions extraction-safe without weakening them.

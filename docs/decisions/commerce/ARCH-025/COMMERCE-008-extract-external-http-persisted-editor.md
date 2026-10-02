@@ -88,7 +88,7 @@ Preserve `ExternalHttpEditor`, preview request, request validation, response obs
 
 ### R3 — External revisions/Test/Result Template
 
-Preserve Request/Response/Result Template revision advancement and STALE transitions, local raw response-processing/result-schema retention, Result Template metadata and validation, and current live-Test requirement before save.
+Preserve Request/Response/Result Template revision advancement and STALE transitions, local raw response-processing/result-schema retention, Result Template metadata and validation, and current live-Test requirement before save. Preserve the current no-port asymmetry recorded as observation O9: when the authorised External port is unavailable, editing the fallback raw Input Schema marks dirty and invalidates External validation but does **not** explicitly advance the common Request revision. Do not normalise that path during extraction.
 
 ### R4 — Review validation/save convergence
 
@@ -98,9 +98,14 @@ Preserve Review action-key generation/in-flight fencing. On save, preserve `cand
 
 Preserve current SUPER_ADMIN gate, dirty/definition/authoritative-validation/reason checks and server-authoritative `LIVE_TEST_REQUIRED` behaviour exactly. Do not add a new client Test publication gate in this structural task.
 
+### R6 — shell-owned RevisionHistory and source-shape branch
+
+Keep `RevisionHistory` rendered by `ToolEditor` until COMMERCE-010; do not duplicate it or import it back from the shell into the wrapper. Keep exactly one source-shape branch matching the accepted persisted External DRAFT uniqueness assertion (`selected?.status === "DRAFT"` plus `definition.execution.kind === "EXTERNAL_HTTP"`) in the bounded ToolEditor module set after extraction.
+
 ## Work Items
 
 - [ ] Extract External persisted DRAFT wrapper and server-action wiring.
+- [ ] Keep RevisionHistory and the single persisted-External dispatch condition shell-owned until COMMERCE-010.
 - [ ] Keep existing specialised External editor/result/review components canonical.
 - [ ] Add focused wrapper tests for save/validation convergence if needed.
 - [ ] Prove controller, Policy wrapper and accepted External source harness remain unchanged.

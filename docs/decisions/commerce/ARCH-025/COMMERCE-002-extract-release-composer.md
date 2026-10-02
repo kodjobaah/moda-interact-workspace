@@ -89,7 +89,7 @@ Preserve `CommerceResponseContractSchema.safeParse(...)`, raw invalid JSON reten
 
 ### R4 — role/create/cancel semantics
 
-Preserve SUPER_ADMIN-only create affordance, ADMIN explanatory copy, Create button gating (`pending || locked || !validated`), exact create payload, success navigation to `/releases/<id>?tab=response-contract`, and `DirtyNavigationGuard` Cancel behaviour. Do not restore any obsolete Preview/Test handoff.
+Preserve the current asymmetric role behaviour exactly. The top-level **Create release** opener is shown only to `SUPER_ADMIN`, while `ADMIN` receives the explanatory copy. However, when the composer is already open from `composer.release` seed state (for example via Edit as new release), the inner **Create immutable release** button is currently gated only by `pending || locked || !validated` and is not independently hidden/disabled by role; server authorization remains authoritative. Do not add a new client role gate during extraction. Preserve the exact create payload, success navigation to `/releases/<id>?tab=response-contract`, and `DirtyNavigationGuard` Cancel behaviour. Do not restore any obsolete Preview/Test handoff.
 
 
 ## Work Items
@@ -118,6 +118,7 @@ Consumes the accepted COMMERCE-001 common workspace props/command contract. Rele
 - [ ] Validation freshness/single-flight/hash semantics are unchanged.
 - [ ] Publication reason still does not stale validation.
 - [ ] No Preview handoff or new server action is introduced.
+- [ ] SUPER_ADMIN-only opener / seeded-composer ADMIN submission asymmetry is unchanged; no new client create-role gate is introduced.
 - [ ] Frozen 13/3/90-test assets and accepted COMMERCE-001 source-inspection tests are unchanged and pass.
 
 

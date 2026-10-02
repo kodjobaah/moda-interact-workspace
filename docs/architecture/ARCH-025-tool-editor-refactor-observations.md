@@ -86,6 +86,12 @@ Execution kinds other than Policy/External/Shopify Admin fall through to a simpl
 
 Potential follow-up: if another execution kind becomes authorable, define it explicitly instead of expanding this fallback opportunistically.
 
+### O12 — Authoring-session overlays are gated inconsistently across fields
+
+The selected definition base uses `authoringSession.definition` only when the session is `mode === "existing"` and its tool/revision identity matches the selected revision. In contrast, the raw Input Schema / Result Template / Admin result-path / literal buffers currently read from the supplied session whenever values are present; the active persisted section checks `mode === "existing"` but not tool/revision identity; and Result Template authoring metadata is applied whenever supplied. Current `ToolAuthoringScreen` composition is expected to pass the relevant session, so this normally converges correctly.
+
+Potential follow-up: decide whether ToolEditor should independently validate one consistent authoring-session identity before applying every overlay. ARCH-025 preserves the current behaviour.
+
 ## Follow-up handling
 
 No issue above is automatically a bug. After COMMERCE-010 is accepted, `moda_architect` may create separate bounded correction tasks for behaviours the developer chooses to change. Any such task should have its own behavioural acceptance criteria and tests rather than being folded into the structural extraction.
