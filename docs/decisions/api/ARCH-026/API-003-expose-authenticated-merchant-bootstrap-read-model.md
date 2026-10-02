@@ -16,6 +16,7 @@ claimed_at: null
 attempt: 0
 depends_on:
   - ARCH-026-API-002
+  - ARCH-026-DATABASE-002
 enables:
   - ARCH-026-WOOCOMMERCE-005
 created: 2026-10-02
@@ -42,7 +43,7 @@ Coordinator:
 
 Expose the first authenticated, database-backed merchant read model from `moda-interact-api` for the WooCommerce application.
 
-The completed task must allow an already-connected WooCommerce plugin to authenticate through the accepted API-002 installation principal and load one bounded merchant bootstrap document containing the shared Moda `Shop` identity/lifecycle milestone plus the current Commerce store-profile selection state.
+The completed task must allow an already-connected WooCommerce plugin to authenticate through the accepted API-002 installation principal and load one bounded merchant bootstrap document containing the shared Moda `Shop` identity/lifecycle milestone, provider-neutral merchant international context and the current Commerce store-profile selection state.
 
 The runtime is:
 
@@ -90,6 +91,17 @@ commerce.Shop.onboardingCompleted
 ```
 
 while retaining `shopify.ShopSettings.onboardingCompleted` temporarily for current Shopify compatibility. Woo merchant APIs must consume the shared `Shop` field and MUST NOT read or create `shopify.ShopSettings` merely to determine onboarding state.
+
+DATABASE-002 establishes provider-neutral merchant international context on the same shared Shop:
+
+```text
+commerce.Shop.storeLocale
+commerce.Shop.defaultLanguageTag
+commerce.Shop.defaultTimeZone
+commerce.Shop.defaultCountryCode
+```
+
+`storeLocale` preserves provider-native store locale identity and is deliberately not constrained by a Moda locale allowlist. `defaultLanguageTag` is a separate normalized Moda/BCP-47-compatible value when one has been established. Woo bootstrap reads MUST NOT fall back to `shopify.ShopSettings` for language, time zone or country.
 
 The existing Commerce store-profile model is already shared tenant state:
 
@@ -188,6 +200,12 @@ Return one strict versioned logical response:
     "onboardingCompleted": false,
     "installedAt": "2026-10-02T10:00:00.000Z"
   },
+  "internationalContext": {
+    "storeLocale": "pt_BR",
+    "languageTag": "pt-BR",
+    "timeZone": "America/Sao_Paulo",
+    "countryCode": "BR"
+  },
   "storeProfile": {
     "activeCategory": null,
     "pendingCategory": null,
@@ -206,6 +224,8 @@ When a profile/category exists, category identity is bounded to:
   "displayName": "Fashion"
 }
 ```
+
+International-context fields are independently nullable. A valid `storeLocale` may be returned even when `languageTag` is null because provider-native locale support and Moda translation/language-tag coverage are separate concepts. API-003 must not normalize/rewrite the stored provider locale on read and must not reject a valid stored provider locale because it is absent from a translation catalogue.
 
 The response MUST NOT expose:
 
@@ -256,6 +276,27 @@ Do not:
 - write the onboarding flag in this task.
 
 `false` means the merchant has not yet crossed Moda's one-time onboarding milestone. It does not mean the Woo installation is disconnected or unauthenticated.
+
+### International context projection
+
+Return international context only from shared `commerce.Shop` fields introduced by DATABASE-002:
+
+```text
+internationalContext.storeLocale  <- Shop.storeLocale
+internationalContext.languageTag  <- Shop.defaultLanguageTag
+internationalContext.timeZone     <- Shop.defaultTimeZone
+internationalContext.countryCode  <- Shop.defaultCountryCode
+```
+
+Do not:
+
+- query `shopify.ShopSettings.defaultLanguageTag/defaultTimeZone/defaultCountryCode`;
+- create ShopSettings for Woo;
+- maintain an API-owned locale allowlist;
+- infer `storeLocale` from `defaultLanguageTag`;
+- substitute English into durable/read state merely because Moda lacks translation coverage.
+
+The endpoint may return nulls exactly as durable shared state records them. Validation/canonicalization belongs to the provider-owned writer, not this read model.
 
 ### Store profile projection
 
@@ -330,7 +371,7 @@ Do not log customer data, credentials or prompt text.
 - Creating `ACCOUNT_PENDING_ACTIVATION` as a stored state.
 - Store Category selection/update/activation commands.
 - Extracting Shopify Store Category mutation services into Shared.
-- `shopify.ShopSettings` writes or reads.
+- `shopify.ShopSettings` writes or reads, including legacy international-context fields.
 - Billing/subscription projection.
 - Pricing-plan selection.
 - Feature/entitlement queries.
@@ -363,40 +404,49 @@ Every database read is scoped from `principal.shopId`; caller-supplied tenant id
 
 Woo onboarding state is read only from `commerce.Shop.onboardingCompleted`. `shopify.ShopSettings` is not queried or created.
 
-### R4 — Read means read
+### R4 — Shared international context is authoritative
+
+Woo merchant bootstrap international context is projected only from DATABASE-002 shared Shop fields. The API has no fixed locale allowlist and does not require ShopSettings.
+
+### R5 — Provider locale and translation coverage are separate
+
+A valid stored provider-native locale is returned even when normalized language-tag/translation coverage is absent.
+
+### R6 — Read means read
 
 `GET /v1/merchant/bootstrap` performs zero database writes, profile creation, billing/provider operations or queue publication.
 
-### R5 — Connection and account lifecycle remain separate
+### R7 — Connection and account lifecycle remain separate
 
 A valid installation principal can return `onboardingCompleted = false`; authenticated connection must not be presented as completed onboarding.
 
-### R6 — Store profile projection is bounded
+### R8 — Store profile projection is bounded
 
 Only category identity required for merchant setup presentation is returned; prompt text/revisions and Admin-only category metadata remain private.
 
-### R7 — Empty profile is not materialised
+### R9 — Empty profile is not materialised
 
 Missing `CommerceShopProfile` returns a deterministic empty read model without creating a row.
 
-### R8 — Integrity mismatch fails closed
+### R10 — Integrity mismatch fails closed
 
 Authenticated principal/Shop identity mismatch or impossible referenced profile/category state is a bounded integrity failure, not a fallback lookup or silently-normalized success.
 
-### R9 — No new cache correctness boundary
+### R11 — No new cache correctness boundary
 
 No Redis/process-global merchant bootstrap cache is introduced.
 
-### R10 — Contract is PHP-consumable and versioned
+### R12 — Contract is PHP-consumable and versioned
 
 A version-controlled OpenAPI 3.1 document describes the exact response/error contract that WOO-005's PHP/local REST layer will consume.
 
 ## Work Items
 
-- [ ] Verify the API repository consumes an architect-accepted database gitlink containing DATABASE-001.
+- [ ] Verify the API repository consumes an architect-accepted database gitlink containing DATABASE-001 and DATABASE-002.
 - [ ] Add the strict merchant-bootstrap response/runtime schema.
 - [ ] Implement a bounded read service scoped exclusively by authenticated `shopId`.
 - [ ] Load the shared Shop lifecycle fields required by the bootstrap response.
+- [ ] Project shared provider-neutral international context from Shop without a locale allowlist or ShopSettings fallback.
 - [ ] Project optional active/pending Commerce Store Category identity without returning prompt internals.
 - [ ] Return the deterministic empty store-profile shape without creating a database row.
 - [ ] Implement `GET /v1/merchant/bootstrap` through the existing API-002 authenticator.
@@ -448,9 +498,10 @@ openapi/merchant-bootstrap-v1.yaml
 
 ### Database contract
 
-Owner:
+Owners:
 
 `ARCH-026-DATABASE-001`
+`ARCH-026-DATABASE-002`
 
 Read models:
 
@@ -465,10 +516,11 @@ The task does not own or modify those models.
 ## Dependencies
 
 - `ARCH-026-API-002`
+- `ARCH-026-DATABASE-002`
 
-API-002 must be architect-accepted `complete` before API-003 becomes Ready.
+Both tasks must be architect-accepted `complete` before API-003 becomes Ready.
 
-API-003 relies transitively on the accepted DATABASE-001 schema through API-002's database dependency. Do not execute against an in-review DATABASE-001 branch.
+API-003 must consume an accepted database gitlink containing both DATABASE-001 and DATABASE-002. Do not execute against an in-review database task branch.
 
 ## Enables
 
@@ -483,7 +535,10 @@ WOO-005 may build the first real DB-backed merchant overview/setup presentation 
 - [ ] Every durable read is scoped from `principal.shopId`.
 - [ ] Shop platform/status/domain invariants are verified and mismatch fails closed.
 - [ ] `onboardingCompleted` comes only from `commerce.Shop.onboardingCompleted`.
-- [ ] The API does not query or create `shopify.ShopSettings` for Woo bootstrap reads.
+- [ ] `internationalContext` comes only from DATABASE-002 shared Shop fields.
+- [ ] A provider-native `storeLocale` is not rejected because it lacks Moda translation coverage.
+- [ ] The API does not infer/rewrite `storeLocale` from `languageTag`.
+- [ ] The API does not query or create `shopify.ShopSettings` for Woo bootstrap reads, including international context.
 - [ ] Connection/authentication state is not interpreted as onboarding completion.
 - [ ] Missing `CommerceShopProfile` returns the deterministic empty profile projection with zero write.
 - [ ] Existing active/pending category projection returns only category `id`, `slug`, and `displayName` plus bounded profile generation/timestamp state.
@@ -509,6 +564,8 @@ Required validation categories:
 - [ ] focused runtime-schema/OpenAPI contract tests;
 - [ ] authentication middleware integration test proving the route reuses API-002 rather than accepting caller tenant identity;
 - [ ] disposable PostgreSQL integration test for Woo Shop with `onboardingCompleted = false`;
+- [ ] international-context projection tests covering WordPress-style locale such as `pt_BR`, regional BCP-47 language tag, time zone/country and nullable language tag;
+- [ ] test proving an unrecognised-but-bounded provider locale is returned without a locale allowlist rejection;
 - [ ] disposable PostgreSQL integration test for Woo Shop with `onboardingCompleted = true`;
 - [ ] integration test proving no `ShopSettings` row is required for a Woo Shop;
 - [ ] missing-profile test proving zero `CommerceShopProfile` insertion/update;
@@ -577,6 +634,7 @@ None.
 
 - API-002 is complete and exposes the accepted reusable Woo installation authenticator.
 - The accepted DATABASE-001 schema includes `Shop.platform` and `Shop.onboardingCompleted` while retaining the legacy Shopify onboarding field.
+- The accepted DATABASE-002 schema includes shared Shop international-context fields while retaining legacy Shopify compatibility fields.
 - WOO-005 will consume this route only through the PHP/server-side plugin boundary and will not receive the installation credential in browser code.
 
 ### Unresolved Issues

@@ -330,9 +330,17 @@ At minimum:
 - do not permit a late GET response to overwrite a newer successful POST connection result;
 - one explicit retry action may start a new GET after the previous request has settled/cancelled.
 
-### Accessibility and localisation
+### Accessibility and internationalization
 
-All merchant-visible strings must use the existing WordPress/WooCommerce i18n tooling.
+Internationalization is a first-class requirement of the Woo Admin shell.
+
+All merchant-visible PHP/JavaScript strings must use the existing WordPress/WooCommerce i18n tooling and the canonical `moda-interact` text domain. React/browser strings should use WordPress i18n primitives rather than a Moda-maintained locale switch. PHP must register script translations through the supported WordPress mechanism when required by the accepted build.
+
+The UI locale is the current WordPress administrator/request locale. It is distinct from the store's business/default locale that later merchant bootstrap/setup APIs expose. WOO-004 MUST NOT persist the current admin user's locale as merchant/store international context.
+
+Do not introduce a fixed Moda-specific Woo locale allowlist. Any locale that WordPress/WooCommerce can legitimately run for the current administrator must be allowed to reach the normal translation/fallback mechanism. Missing Moda translation coverage falls back through WordPress/i18n behavior; it does not make the locale unsupported.
+
+The browser must not rewrite WordPress locale identity into a different merchant/store locale. Locale conversion for shared backend store context belongs to the later provider-owned synchronization path, not this connection shell.
 
 Interactive controls must have accessible names and keyboard behavior.
 
@@ -365,7 +373,7 @@ If the accepted WOO-001 scaffold already provides React/WordPress packages, reus
 - WhatsApp.
 - Cart/checkout/order event ingress.
 - Redis/BullMQ/Background.
-- API-003 merchant business read/write capability.
+- API-003 merchant business read capability.
 - Gateway/Render deployment.
 - Site/domain migration.
 - Installation revocation/uninstall flow.
@@ -413,9 +421,9 @@ No bootstrap secret, installation credential, digest or Authorization header is 
 
 Only connection/setup functionality proven by accepted backend/plugin capabilities is navigable in this task.
 
-### R10 — Accessible/localizable presentation
+### R10 — Accessible and open-ended WordPress locale presentation
 
-All merchant-visible text and actions use the repository's WordPress/WooCommerce i18n and accessibility conventions.
+All merchant-visible text and actions use the repository's WordPress/WooCommerce i18n and accessibility conventions. The shell does not maintain a fixed Woo locale allowlist and does not reject an administrator locale because a Moda translation is missing.
 
 ## Work Items
 
@@ -431,6 +439,8 @@ All merchant-visible text and actions use the repository's WordPress/WooCommerce
 - [ ] Implement non-automatic `SITE_URL_CHANGED` blocked/support presentation.
 - [ ] Implement bounded `API_NOT_CONFIGURED`, `LOCAL_STATE_INVALID` and browser-load failure presentation.
 - [ ] Add reusable notice/loading/action-state primitives only where they directly support this shell.
+- [ ] Route all merchant-visible React strings through WordPress/WooCommerce i18n with the `moda-interact` text domain and supported script-translation registration.
+- [ ] Add a static/test guard proving the shell does not introduce a fixed Woo locale allowlist or persist current-admin locale as store context.
 - [ ] Ensure unavailable future pages are not exposed as active navigation destinations.
 - [ ] Add focused React/controller/client tests for all states, action admission and request races.
 - [ ] Verify browser bundles/state/logs contain no WOO-003 secret material.
@@ -510,7 +520,10 @@ WOO-005 may add the first real merchant business screen only after this shell is
 - [ ] `API_NOT_CONFIGURED` and `LOCAL_STATE_INVALID` are shown as bounded configuration/recovery states rather than raw PHP/API errors.
 - [ ] Browser-visible state, bundles, console/log captures and local/session storage contain no bootstrap secret, installation credential, Authorization header or credential digest.
 - [ ] Future unimplemented merchant pages are not navigable.
-- [ ] All merchant-visible strings are localizable through existing WordPress/WooCommerce tooling.
+- [ ] All merchant-visible strings are localizable through existing WordPress/WooCommerce tooling and the `moda-interact` text domain.
+- [ ] The shell does not contain a fixed Moda/Woo locale allowlist.
+- [ ] A non-English WordPress administrator locale can render the normal shell/fallback path without being classified unsupported.
+- [ ] Current administrator locale is not persisted or submitted as merchant/store international context.
 - [ ] All connection actions/statuses have accessible text semantics and keyboard-operable controls.
 - [ ] No billing, recovery, Merchant Knowledge, promotions, product/discount, event-ingress or Background functionality is introduced.
 
@@ -539,6 +552,8 @@ Required validation categories:
 - [ ] runtime smoke with a controlled WOO-003 local REST fixture for DISCONNECTED -> CONNECTED;
 - [ ] runtime smoke for REMOTE_UNAVAILABLE and RECONNECT_REQUIRED presentation;
 - [ ] accessibility-focused assertions for action names/status text/busy state;
+- [ ] i18n/static audit proving merchant-visible strings use the `moda-interact` text domain and no fixed Woo locale allowlist is introduced;
+- [ ] non-English WordPress administrator-locale render/fallback test proving the shell remains usable without persisting that locale as store context;
 - [ ] production plugin ZIP still builds after shell changes;
 - [ ] `git diff --check`;
 - [ ] clean repository/worktree evidence required by the task protocol.

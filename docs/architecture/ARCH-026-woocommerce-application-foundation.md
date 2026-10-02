@@ -15,9 +15,10 @@ Proposed.
 
 This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001`,
 `ARCH-026-WOOCOMMERCE-002`, `ARCH-026-DATABASE-001`, `ARCH-026-API-001`,
-`ARCH-026-API-002`, `ARCH-026-WOOCOMMERCE-003`, `ARCH-026-WOOCOMMERCE-004`,
-`ARCH-026-SHOPIFY-001`, `ARCH-026-BACKGROUND-001` and `ARCH-026-ADMIN-001`
-are currently materialised. Later tasks must be added only after their precise runtime,
+`ARCH-026-API-002`, `ARCH-026-API-003`, `ARCH-026-WOOCOMMERCE-003`, `ARCH-026-WOOCOMMERCE-004`,
+`ARCH-026-DATABASE-002`, `ARCH-026-SHOPIFY-001`, `ARCH-026-SHOPIFY-002`,
+`ARCH-026-BACKGROUND-001`, `ARCH-026-BACKGROUND-002`, `ARCH-026-ADMIN-001` and
+`ARCH-026-ADMIN-002` are currently materialised. Later tasks must be added only after their precise runtime,
 security and ownership boundaries have been discussed and inspected.
 
 ## Problem
@@ -43,6 +44,10 @@ recovery processing, products, discounts or billing.
 - Preserve a clean path for later secure HTTPS integration with Moda services.
 - Establish the minimum durable Shop platform and Woo installation identity needed
   by the hosted API.
+- Treat internationalization as a first-class Woo architecture invariant: accept and preserve
+  WordPress/WooCommerce locale identity without a Moda-specific Woo locale allowlist,
+  distinguish administrator UI locale from merchant/store international context, and
+  move durable store language/time-zone/country defaults to provider-neutral Shop state.
 - Move the one-time merchant onboarding milestone toward provider-neutral `commerce.Shop`
   ownership while retaining the existing Shopify field temporarily during bounded consumer
   migration tasks.
@@ -136,6 +141,11 @@ Owns the additive ARCH-026 durable identity/lifecycle boundary: shared
 canonical Woo site URL, current one-way installation-credential digest/version and
 revocation state. The dedicated `woocommerce` PostgreSQL schema owns Woo-specific
 installation/authentication persistence; `commerce` remains the shared tenant domain.
+DATABASE-002 additionally owns provider-neutral `commerce.Shop` international context:
+provider-native `storeLocale`, normalized `defaultLanguageTag`, `defaultTimeZone` and
+`defaultCountryCode`, while retaining the existing Shopify compatibility fields during
+bounded consumer migrations. It deliberately defines no locale enum/allowlist.
+
 It does not own the HTTP connection flow, raw secret generation, request
 authentication or provider business workflows.
 
@@ -186,6 +196,58 @@ authoritative for their runtime lifecycle decisions while mirroring successful c
 to the legacy field. ADMIN-001 then consumes the shared field for cross-platform tenant
 presentation. No task in this group removes the legacy field.
 
+DATABASE-002 adds shared merchant/store international context:
+
+```text
+commerce.Shop
+    storeLocale?          provider-native platform locale
+    defaultLanguageTag?   normalized Moda/BCP-47 language tag when available
+    defaultTimeZone?      IANA time zone
+    defaultCountryCode?   ISO-3166 alpha-2 country code
+```
+
+The existing `shopify.ShopSettings.defaultLanguageTag/defaultTimeZone/defaultCountryCode`
+fields remain present temporarily. Existing Shopify normalized values are backfilled to the
+shared Shop fields, but historical `storeLocale` remains null because the provider-native
+locale was not stored separately. SHOPIFY-002 becomes the provider writer/mirror for current
+Shopify tenants; BACKGROUND-002 and ADMIN-002 migrate cross-platform readers.
+
+## Internationalization
+
+Internationalization is a first-class ARCH-026 requirement rather than a later UI cleanup.
+
+The Woo integration MUST NOT maintain a fixed Moda-specific allowlist of Woo/WordPress
+locales. Provider-native locale identifiers accepted by the WordPress/Woo integration are
+preserved as bounded strings; translation coverage is a separate concern. A merchant/admin
+locale does not become invalid merely because Moda has not yet published translated strings
+for it.
+
+ARCH-026 distinguishes:
+
+```text
+current administrator UI locale
+    -> WordPress/Woo request/user locale
+    -> drives PHP/React translation only
+
+merchant/store locale
+    -> provider-native store locale
+    -> durable shared Shop international context
+```
+
+Those values may differ. The Woo Admin React/PHP UI uses WordPress internationalization
+facilities and the canonical `moda-interact` text domain; it must not persist the current
+administrator locale as the store default.
+
+Backend business context uses provider-neutral Shop fields. `storeLocale` preserves the
+provider-native identifier (for Woo this may use WordPress forms such as `pt_BR`), while
+`defaultLanguageTag` is a separately normalized language tag such as `pt-BR` when a safe
+conversion/selection has been established. The architecture must not implement this as a
+blind underscore-to-hyphen replacement or a closed enum.
+
+Missing translation coverage uses normal fallback behavior; it must not rewrite or reject
+the persisted provider locale. Time zone and country are likewise shared store context, not
+Shopify-only settings.
+
 ## Contracts
 
 WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
@@ -219,6 +281,10 @@ Only the challenge route is public; the browser-facing GET/POST routes require a
 WooCommerce administrator and WordPress REST cookie/nonce authentication. Raw bootstrap
 and long-lived installation credentials remain PHP/server-side and are never returned to
 React.
+
+API-003's merchant bootstrap contract additionally exposes provider-neutral Shop international
+context from DATABASE-002 and never falls back to Shopify settings. Provider-native locale
+and normalized language tag remain separate nullable response fields.
 
 WOO-001 establishes stable local plugin identities:
 
@@ -311,6 +377,9 @@ local plugin runtime/lifecycle behaviour and requires no deployment migration or
 backwards-compatibility adapter.
 
 DATABASE-001 is an additive pre-production migration that may execute independently.
+DATABASE-002 follows DATABASE-001 to avoid concurrent Shop-schema migrations, backfills the
+shared normalized international-context fields from retained Shopify settings and leaves
+provider-native `storeLocale` null for historical rows until a provider writer establishes it.
 It preserves existing `commerce.Shop` data, defaults/backfills all pre-existing Shop rows
 to `SHOPIFY`, backfills `commerce.Shop.onboardingCompleted` from the existing Shopify
 settings milestone, retains `shopify.ShopSettings.onboardingCompleted`, creates the
@@ -336,21 +405,26 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 | ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Complete | - |
 | ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Ready | ARCH-026-WOOCOMMERCE-001 |
 | ARCH-026-DATABASE-001 | moda_database | Ready | - |
+| ARCH-026-DATABASE-002 | moda_database | Pending | ARCH-026-DATABASE-001 |
 | ARCH-026-API-001 | moda_api | Pending | - |
 | ARCH-026-API-002 | moda_api | Pending | ARCH-026-API-001, ARCH-026-DATABASE-001 |
-| ARCH-026-API-003 | moda_api | Pending | ARCH-026-API-002 |
+| ARCH-026-API-003 | moda_api | Pending | ARCH-026-API-002, ARCH-026-DATABASE-002 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-SHOPIFY-001 | moda_app | Pending | ARCH-026-DATABASE-001 |
+| ARCH-026-SHOPIFY-002 | moda_app | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
 | ARCH-026-BACKGROUND-001 | moda_background | Pending | ARCH-026-DATABASE-001 |
+| ARCH-026-BACKGROUND-002 | moda_background | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-BACKGROUND-001 |
 | ARCH-026-ADMIN-001 | moda_admin | Pending | ARCH-026-SHOPIFY-001, ARCH-026-BACKGROUND-001 |
+| ARCH-026-ADMIN-002 | moda_admin | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-002, ARCH-026-ADMIN-001 |
 
 WOO-001 Attempt 4 is Accepted and Complete. The final attempt was limited to the architect-requested VCS/evidence corrections; the validated Attempt 3 runtime implementation was preserved. WOO-002 now becomes Ready because WOO-001 was its only dependency.
 
-DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. API-003 remains Pending until API-002 is architect-accepted Complete and then exposes the first authenticated, read-only merchant bootstrap model from shared Shop/store-profile state. WOO-003 remains Pending until both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. WOO-005 will depend on both WOO-004 and API-003 so its first DB-backed merchant presentation cannot outrun either the UI shell or the hosted merchant read contract. SHOPIFY-001 and BACKGROUND-001 may become Ready independently after DATABASE-001 is accepted; ADMIN-001 waits for both so its provider-neutral read cannot outrun the current completion writers. The legacy Shopify onboarding field remains present throughout this phase. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 may execute independently while the Woo plugin stream is pending. DATABASE-002 follows it and establishes shared international context before API-003 or provider consumer migrations use those fields. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. API-003 remains Pending until API-002 and DATABASE-002 are architect-accepted Complete and then exposes the first authenticated, read-only merchant bootstrap model from shared Shop/store-profile/international-context state. WOO-003 remains Pending until both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade, with WordPress-native open-ended locale handling, without adding merchant business screens. WOO-005 will depend on both WOO-004 and API-003 so its first DB-backed merchant presentation cannot outrun either the UI shell or hosted merchant read contract. SHOPIFY-001/BACKGROUND-001/ADMIN-001 migrate the shared onboarding milestone; DATABASE-002 then enables SHOPIFY-002, followed by bounded Background/Admin international-context reader migrations. The legacy Shopify onboarding and international-context fields remain present throughout this phase. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
+- Exact Woo provider-owned synchronization command for store locale/time-zone/country into shared Shop context.
 - When to remove the retained `shopify.ShopSettings.onboardingCompleted` compatibility field after all runtime/test consumers have migrated.
 - Commerce-event and shared Background integration.
 - Woo Marketplace billing architecture.
@@ -384,3 +458,4 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
   and BACKGROUND-001 migrate current runtime writers/readers with compatibility mirroring;
   ADMIN-001 moves tenant presentation to the shared source after both writers migrate.
 - 2026-10-02: API-003 materialised as the first authenticated Woo merchant business read boundary, exposing shared `Shop.onboardingCompleted` plus bounded Commerce store-profile category identity without duplicating Store Category mutation logic or touching billing.
+- 2026-10-02: Internationalization made a first-class ARCH-026 invariant. DATABASE-002 materialised provider-neutral Shop store-locale/language/time-zone/country state without a Woo locale allowlist; SHOPIFY-002, BACKGROUND-002 and ADMIN-002 materialised bounded consumer migrations; API-003 and WOO-004 were tightened to consume/present international context without treating translation coverage as locale support.
