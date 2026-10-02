@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -219,24 +219,112 @@ None
 
 ### Review Status
 
-Pending
+Changes Requested — Attempt 1.
 
 ### Review Notes
 
-None
+The implementation is accepted in substance and no source/test correction is requested
+at this stage. Architect inspection of submitted Admin commit
+`0cd5c010926acfbfaf808fb5d727df9269b30fdb` against its pre-task parent
+`b8da632a1fcaef7e364be1dc5cca40dfafde4703` found exactly the five task-authorised
+files changed and no unrelated repository delta.
+
+The typed controller preserves the existing public builder/form boundary, exposes the
+consume-only state/action/selector surface required by ADMIN-002..008, keeps the pure
+draft module React/Next/browser-free and free of the `@/` alias, preserves UI-edge
+usage-event/highlight identity generation and hook-effect economics invalidation, and
+keeps canonical pricing/economics/translation/feature/Merchant Knowledge policy in
+the existing domain helpers.
+
+The extraction-safe security loader is bounded to the public builder shell plus sorted
+direct `.ts`/`.tsx` modules under `merchant-pricing-plan-builder/`, and the existing
+ARCH-014 forbidden-operational-dependency scan consumes that bounded source. All 13
+security test names/assertions remain present.
+
+Acceptance is withheld only for deterministic regression evidence and prepared-launch
+recording. The architecture requires `npm run test:unit` and `npm test` to introduce
+no task regression. The submitted current tree reports two unit failures and six
+broader-suite failures, but `docs/development-baseline.md` has no matching Admin
+baseline identifier. Unchanged/frozen ownership is strong evidence, but it is not a
+same-environment pre-task/current differential.
+
+#### A1-R1 — prove broad-suite non-regression
+
+Evidence/report changes required. Source/test changes only if the comparison reveals a
+submitted regression.
+
+Run the same commands under equivalent Node/npm/dependency/environment conditions on:
+
+```text
+pre-task baseline:
+  b8da632a1fcaef7e364be1dc5cca40dfafde4703
+
+submitted implementation:
+  0cd5c010926acfbfaf808fb5d727df9269b30fdb
+```
+
+Compare:
+
+```text
+npm run test:unit
+npm test
+```
+
+Record for both trees the exact failing test files, exact failing test names and
+failure reasons/counts. If the submitted tree has the same failures or is better,
+record the evidence and do not churn implementation code. If a failure is new or
+worse on the submitted tree, correct only that regression in this same task and rerun
+the required validation.
+
+#### A1-R2 — record prepared execution provenance durably
+
+Evidence/report changes required only.
+
+The Completion Report must record the launcher/prepared execution packet rather than
+relying on chat handoff: canonical workspace root; dedicated parent and Admin
+implementation worktrees; matching `task/ARCH-025-ADMIN-001` branches; start-of-attempt
+synchronization identities; recursive submodule materialisation/database gitlink
+evidence where applicable; claim commit
+`ba629b61612a512a78db9feb060190869209c09d`; implementation commit
+`0cd5c010926acfbfaf808fb5d727df9269b30fdb`; Attempt 1 parent report commit
+`4dc50f22a90ae10a4099db17585ccbba7a201f46`; and final clean/local-equals-remote
+evidence for both worktrees.
+
+No controller, builder or test source change is requested merely to create a new
+implementation commit.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/merchant-pricing-plan-draft.ts`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/use-merchant-pricing-plan-draft.ts`
+- `tests/unit/merchant-pricing-plan-builder-draft.test.ts`
+- `tests/security/admin-merchant-pricing-plan.test.mjs`
+- `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- `docs/decisions/admin/ARCH-025/ADMIN-002-extract-plan-step.md` through
+  `ADMIN-008-extract-translations-review-and-reduce-builder.md`
+- this task Completion Report
 
 ### Validation Reviewed
 
-None
+- Git commit comparison `b8da632a1fcaef7e364be1dc5cca40dfafde4703` ->
+  `0cd5c010926acfbfaf808fb5d727df9269b30fdb`: exactly five authorised files.
+- Frozen seven-test SHA-256 verification: all hashes independently reproduced.
+- `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: independently
+  rerun against the uploaded snapshot, 13/13 passed.
+- Submitted focused pure-controller result: 14/14 passed.
+- Submitted Prisma generation, scoped lint, production build and `git diff --check`:
+  recorded as passed.
+- Submitted broad-suite failures require A1-R1 differential before acceptance.
 
 ### Architecture Conformance
 
-Pending.
+Conformant in implementation. The move-only controller/security-loader extraction
+matches ARCH-025 and establishes the required downstream consume-only boundary.
+Acceptance is pending evidence-only A1-R1/A1-R2 reconciliation.
 
 ### Follow-up
 
-None
+Return this same task to `ready`, Attempt 1 retained and claim clear. Reclaim through
+the normal `/moda-task ARCH-025-ADMIN-001` path, which must create Attempt 2 exactly
+once. Do not begin ADMIN-002. ADMIN-009 remains independently Ready and is unaffected.
