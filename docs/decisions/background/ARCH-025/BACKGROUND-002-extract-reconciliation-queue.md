@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T19:02:35Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-BACKGROUND-001
@@ -181,7 +181,7 @@ None
 
 ### Status
 
-Blocked before review. Queue extraction and focused validation are complete, but `npm test` exits nonzero with the same pre-existing full-suite failure set recorded under `ARCH025-BACKGROUND-TEST-001`; the latest run reported no additional task-specific failures. That condition is not documented in `docs/development-baseline.md`. The task explicitly requires stopping and reporting an observed pre-existing condition unless it is durably recorded there, so no full-suite pass is claimed and architect direction is required before this task can proceed to review.
+Implementation is complete. `npm test` remains nonzero, but its failure set matches the documented `ARCH025-TEST-001` baseline in `docs/development-baseline.md`, and no task-only regression has been reported. That baseline permits continuation under those conditions. The prior blocker interpretation was stale; the task is returned to `ready` for the next authorized execution. No Attempt 2 claim is taken here.
 
 ### Files Changed
 
@@ -211,11 +211,11 @@ Blocked before review. Queue extraction and focused validation are complete, but
 - `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 10 tests.
 - `npm run build`: passed; includes Prisma generation and TypeScript compilation.
 - `git diff --check`: passed.
-- `npm test`: failed (exit code 1); the latest run retained the previously reported full-suite failures under `ARCH025-BACKGROUND-TEST-001`, with no new task-specific failure reported. The same condition is not present in `docs/development-baseline.md`; per task instructions, the gate remains unmet and the issue is escalated rather than reclassified as an accepted baseline.
+- `npm test`: failed (exit code 1); the reported failures match the pre-task failure set documented under `ARCH025-TEST-001` in `docs/development-baseline.md`. No task-only failure has been reported, so the documented baseline permits continuation; no full-suite pass is claimed.
 
 ### Deviations
 
-- Task status is `blocked`, not `review`, because the mandatory full-suite gate did not pass and the observed pre-existing failure condition has not been recorded in the development baseline.
+- The task was blocked based on a stale baseline reference. `ARCH025-TEST-001` documents the matching pre-task failures and permits continuation when there is no task-only regression.
 
 ### Assumptions
 
@@ -223,11 +223,11 @@ Blocked before review. Queue extraction and focused validation are complete, but
 
 ### Unresolved Issues
 
-- `npm test` remains nonzero for the pre-existing failure set; `moda_architect` must determine the authorized next step under the task's stop condition.
+- `npm test` remains nonzero for the documented pre-task failure set. Continue only while the failures match `ARCH025-TEST-001` and no task-only regression is present.
 
 ### Architectural Concerns
 
-- None identified in the queue extraction. No development-baseline entry was created or changed by this task.
+- None identified in the queue extraction.
 
 ## Architect Review
 

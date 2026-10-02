@@ -70,4 +70,4 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-BACKGROUND-002` and `ARCH-025-BACKGROUND-008` are independently Ready. BACKGROUND-003..007 and BACKGROUND-009..015 remain Pending until the immediately preceding task in their own chain is architect-accepted Complete. BACKGROUND-001 is architect-accepted Complete; full-suite no-regression evidence for this repository is governed by `ARCH025-BACKGROUND-TEST-001` in `docs/development-baseline.md`.
+`ARCH-025-BACKGROUND-002` and `ARCH-025-BACKGROUND-008` are independently Ready. BACKGROUND-003..007 and BACKGROUND-009..015 remain Pending until the immediately preceding task in their own chain is architect-accepted Complete. BACKGROUND-001 is architect-accepted Complete; full-suite no-regression evidence for this repository is governed by `ARCH025-TEST-001` in `docs/development-baseline.md`.
