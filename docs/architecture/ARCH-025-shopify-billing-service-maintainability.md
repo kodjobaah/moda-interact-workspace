@@ -29,7 +29,7 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is in review at Attempt 3; `ARCH-025-BACKGROUND-002` remains Pending until its dependency gate passes. BACKGROUND-003 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3 and `ARCH-025-BACKGROUND-002` is architect-accepted Complete at Attempt 2; BACKGROUND-003 is Ready and BACKGROUND-004 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
@@ -1117,8 +1117,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
 | ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Complete | - |
-| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Pending | BACKGROUND-001 |
-| ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Pending | BACKGROUND-002 |
+| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Complete | BACKGROUND-001 |
+| ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Ready | BACKGROUND-002 |
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Pending | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
 | ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Pending | BACKGROUND-005 |
@@ -1220,6 +1220,8 @@ The Commerce ToolEditor tranche must keep the Shopify Admin, Tool Authoring Scre
 None.
 
 ## Change History
+
+- 2026-10-02: BACKGROUND-002 Attempt 2 is architect-accepted Complete at implementation `8bfb6dcaf57ee852407e8650d8449b0818ce75e5` with parent report `a4b258a80743d047e78a228ddcaae78625693b5e`. The queue/reconstruction collaborator is a move-only extraction preserving deterministic job identity/options, reconstruction predicate/count semantics, clock/log boundaries and durable schedule publication. Full `npm test` remained nonzero: eight failures plus the fixture-loading error match `ARCH025-BACKGROUND-TEST-001`; five unrelated GenAI/observability process-spawn timeouts passed on isolated reruns and are treated as transient, not added to the durable baseline. BACKGROUND-003 is promoted Ready.
 
 - 2026-10-02: BACKGROUND-001 Attempt 3 is architect-accepted Complete. Reconciled the earlier dependency regression by restoring BACKGROUND-002 to Ready at unchanged Attempt 1, with no claim; the standard launcher remains the only path to claim Attempt 2.
 

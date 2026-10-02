@@ -9,10 +9,10 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T22:29:25Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-BACKGROUND-001
@@ -259,24 +259,35 @@ BACKGROUND-001 has since been re-audited and accepted Complete at Attempt 3. BAC
 
 ### Review Status
 
-Pending
+Accepted — Attempt 2
 
 ### Review Notes
 
-None
+The queue/reconstruction extraction is accepted. `ReconciliationQueueService` owns the moved `enqueue`, `reconstruct`, `publishNext`, `publishCommittedLifecycleSchedule` and payload helper implementations while `BillingSubscriptionReconciliationService` retains its public compatibility delegates/exports. Source comparison against the pre-task implementation confirms the reconstruction Prisma predicate, per-row clock reads, structured log events, no-queue semantics/counting, deterministic job identity, BullMQ options, durable schedule reread and queue-failure isolation are preserved.
+
+The full-suite command remained nonzero and is therefore not recorded as a pass. Eight failing test identities plus the ARCH-020 fixture-loading failure are covered by `ARCH025-BACKGROUND-TEST-001`. Five additional full-suite timeout failures occurred only in unrelated GenAI-metrics / observability-startup process-spawn tests and all passed on isolated reruns (1/1 and 10/10 respectively). They are treated as investigated transient execution-time failures, are not added to the durable baseline, and do not constitute a BACKGROUND-002 regression.
 
 ### Reviewed Files
 
-None
+- `src/services/billing-subscription-reconciliation.service.ts`
+- `src/services/billing-subscription-reconciliation/reconciliation-queue.service.ts`
+- `tests/unit/services/billing-subscription-reconciliation/reconciliation-queue.service.test.ts`
+- `docs/decisions/background/ARCH-025/BACKGROUND-002-extract-reconciliation-queue.md`
 
 ### Validation Reviewed
 
-None
+- implementation task ref `8bfb6dcaf57ee852407e8650d8449b0818ce75e5` is unchanged from the reviewed extraction and contains only the three authorised files;
+- parent report tip `a4b258a80743d047e78a228ddcaae78625693b5e` is pushed;
+- focused queue/reconstruction suite: 6/6 passed;
+- frozen reconciliation suite: 146/146 passed and SHA-256 `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239` remained exact;
+- entrypoint isolation: 10/10 passed;
+- Prisma generation/build and `git diff --check`: passed;
+- full suite: 13 failed / 1,415 passed / 38 skipped; eight failures plus the fixture-loading error match `ARCH025-BACKGROUND-TEST-001`, and the five additional timeout failures passed on isolated rerun. No changed-extraction test failed.
 
 ### Architecture Conformance
 
-Pending.
+Accepted. The task is a move-only extraction with no queue contract, retry-policy, provider-call, worker-entrypoint or lifecycle-state semantic change.
 
 ### Follow-up
 
-None
+`ARCH-025-BACKGROUND-003` may proceed. Do not add the transient GenAI/observability timeouts to `ARCH025-BACKGROUND-TEST-001`; investigate again only if they recur or worsen in later full-suite runs.
