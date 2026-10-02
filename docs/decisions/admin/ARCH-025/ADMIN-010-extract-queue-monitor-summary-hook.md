@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T23:30:35Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-ADMIN-009
@@ -187,9 +187,83 @@ Review
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Accepted — Attempt 2.
 
 ### Review Notes
+
+Attempt 2 satisfies both evidence/repository-state corrections from Attempt 1 and
+ADMIN-010 is accepted Complete.
+
+#### A1-R1 — complete broad coverage
+
+The required broad Admin security/observability run completed to a terminal result:
+
+```text
+npm test
+  total:  235
+  passed: 226
+  failed: 9
+```
+
+All nine failing identifiers are the exact unchanged failures recorded in
+`ARCH025-ADMIN-TEST-001`:
+
+```text
+no Moda-owned span/metric creation exists in application code
+accepts strict non-negative lifetime Free defaults
+every RecoveryCreditPurchaseStatus has an ICU label and filter support
+purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups
+Admin validates and consumes the published Shared ICU runtime
+Admin canonical catalogue keys are independent and intentionally aligned
+consumes the published shared release without a local declaration shim
+identity, revocation, mutation, session, and route contracts are wired
+Tenant Directory KPIs are derived from durable business state
+```
+
+QueueMonitor-specific assertions passed and no new or worsened failure is present.
+
+#### A1-R2 — task-branch tracking
+
+The implementation branch now tracks
+`origin/task/ARCH-025-ADMIN-010`. The submitted evidence records implementation HEAD
+and task remote equal at:
+
+```text
+e518c14471b6446e701a7ff95175de96a2019c9c
+```
+
+with a clean implementation worktree. GitHub independently confirms that task ref.
+
+`e518c144...` is the launcher-required merge of current `origin/main` into the
+previously reviewed ADMIN-010 implementation
+`0b3b540873b4ab59098d95ea3efb5088b1e16fbf`. Architect comparison of
+`0b3b5408... -> e518c144...` shows only three unrelated Merchant Pricing builder files
+from the independent ADMIN-002/003 chain:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/plan-step.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/catalogue-placement-step.tsx
+```
+
+No ADMIN-010/QueueMonitor source or test file, frozen QueueMonitor/API file,
+`package.json`, lockfile or dependency metadata changed. The synchronization merge
+therefore does not invalidate the reviewed ADMIN-010 implementation or its validation.
+
+The substantive Attempt 1 architecture findings remain valid: the summary hook owns
+refresh preference, summary snapshot/error/loading, AbortController and single-flight
+admission; the accepted ADMIN-009 client remains the only summary HTTP boundary;
+immediate mount refresh, paused polling, preference persistence, abort-safe errors and
+last-good-snapshot convergence are preserved; and the shell retains selected-queue
+coupling plus jobs/detail/drawer ownership.
+
+The uploaded Attempt 2 snapshot also independently reproduces all nine required frozen
+QueueMonitor SHA-256 values exactly.
+
+The task arrived at review with stale `executor` / `claimed_at` metadata despite the
+worktrees being clean and the task having been handed back to the architect. This
+acceptance reconciliation clears those lifecycle fields; no additional implementation
+attempt is required.
 
 The ADMIN-010 implementation is accepted in substance. No hook, shell, client, type,
 security-test or frozen-source correction is requested.
@@ -330,8 +404,7 @@ complete broad-suite evidence and deterministic task-branch upstream alignment.
 
 ### Follow-up
 
-Return this same task to Ready, Attempt 1 retained and claim clear. Reclaim through
-`/moda-task ARCH-025-ADMIN-010`, which must create Attempt 2 exactly once.
-
-Attempt 2 is evidence/repository-state work unless A1-R1 reveals a genuine regression.
-Do not begin ADMIN-011 until ADMIN-010 is architect-accepted Complete.
+`ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2. Its sole dependant,
+`ARCH-025-ADMIN-011`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-012 or later QueueMonitor tasks
+implicitly.

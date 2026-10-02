@@ -35,7 +35,7 @@ The second Background tranche refactors `src/services/checkout-recovery.service.
 
 The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1; ADMIN-004 is Ready and ADMIN-005 through ADMIN-008 remain dependency-gated.
 
-The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; ADMIN-010 is Ready and ADMIN-011 through ADMIN-015 remain dependency-gated.
+The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; `ARCH-025-ADMIN-010` is Complete / Accepted at Attempt 2; ADMIN-011 is Ready and ADMIN-012 through ADMIN-015 remain dependency-gated.
 
 The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Ready; COMMERCE-002 through COMMERCE-005 remain dependency-gated.
 
@@ -1145,8 +1145,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
 | ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Pending | ADMIN-007 |
 | ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Complete | - |
-| ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook | Ready | ADMIN-009 |
-| ARCH-025-ADMIN-011 | Extract queue-jobs browsing/filter/pagination hook | Pending | ADMIN-010 |
+| ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook | Complete | ADMIN-009 |
+| ARCH-025-ADMIN-011 | Extract queue-jobs browsing/filter/pagination hook | Ready | ADMIN-010 |
 | ARCH-025-ADMIN-012 | Extract selected-job detail hook | Pending | ADMIN-011 |
 | ARCH-025-ADMIN-013 | Extract resizable drawer hook | Pending | ADMIN-012 |
 | ARCH-025-ADMIN-014 | Extract queue summary table | Pending | ADMIN-013 |
@@ -1221,6 +1221,7 @@ None.
 
 ## Change History
 
+- 2026-10-03: ADMIN-010 Accepted / Complete at Attempt 2. The evidence-only retry completed the full `npm test` file set at 235 tests / 226 passed / 9 exact `ARCH025-ADMIN-TEST-001` failures, corrected implementation upstream tracking to `origin/task/ARCH-025-ADMIN-010`, and records clean task-remote alignment at `e518c14471b6446e701a7ff95175de96a2019c9c`. The launcher synchronization merge adds only unrelated ADMIN-002/003 Merchant Pricing files relative to reviewed ADMIN-010 implementation `0b3b540873b4ab59098d95ea3efb5088b1e16fbf`; no QueueMonitor/frozen/dependency state changed. ADMIN-011 is promoted Ready.
 - 2026-10-03: ADMIN-010 Attempt 1 summary-hook implementation `0b3b540873b4ab59098d95ea3efb5088b1e16fbf` was accepted in substance and returned Ready for an evidence-only Attempt 2. The three-file move preserves the ADMIN-009 client/frozen/security boundary and required polling/single-flight/abort/last-good-snapshot semantics. Acceptance awaits complete broad security/observability file-set evidence because the submitted `npm test` rerun was interrupted, plus correction of the implementation branch upstream from `origin/main` to `origin/task/ARCH-025-ADMIN-010`. ADMIN-011 remains gated.
 - 2026-10-03: ADMIN-003 Accepted / Complete at Attempt 1. Implementation `c31959af6c019f7ba8553ccad6bf09d341b460c7` moves only Catalogue-placement presentation into a bounded child while the accepted controller/canonical helper retain placement derivation and transitions. Focused security/controller checks and all seven frozen hashes pass. The six remaining broad failures are a strict subset of `ARCH025-ADMIN-BUILDER-TEST-001`; fixed baseline failures are not recreated. ADMIN-004 is promoted Ready.
 - 2026-10-02: ADMIN-002 Accepted / Complete at Attempt 2. Correction commit `77a5e68f323667c863caa54d6aa9edb87dc624c4` removes the full persisted `plan` prop from the Plan-step child, consumes existing `controller.draft.isEditing`, and changes only the two authorised presentation files. Focused security/controller tests and frozen hashes pass; inherited broad failures remain bounded by `ARCH025-ADMIN-BUILDER-TEST-001`. ADMIN-003 is promoted Ready.
