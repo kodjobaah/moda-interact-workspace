@@ -9,10 +9,10 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 10
-executor: copilot
-claimed_at: 2026-10-02T12:30:02Z
+executor: null
+claimed_at: null
 attempt: 4
 depends_on: []
 enables:
@@ -857,7 +857,7 @@ None. This is an environment prerequisite blocker, not an architecture or scope 
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
@@ -953,3 +953,54 @@ Return this same task through `/moda-task ARCH-026-WOOCOMMERCE-001` after the ex
 implementation worktree has been made deliberately clean. The next claim increments
 Attempt 3 to Attempt 4. Address A3-R1 through A3-R3 only, publish both task branches,
 set the task back to `review`, and STOP. Do not start ARCH-026-WOOCOMMERCE-002.
+
+### Attempt 4 — Accepted (2026-10-02)
+
+Attempt 4 satisfies the complete A3-R1 through A3-R3 VCS/evidence correction
+contract. No WOO-001 runtime or application-code correction was required.
+
+Architect re-review verified:
+
+- the Attempt 3 implementation/runtime review remains valid and no runtime/source
+  implementation changed in Attempt 4 beyond the already-reviewed `.gitignore`
+  hygiene rule for `.phpunit.cache/`; comparison of the submitted Attempt 3 and
+  Attempt 4 snapshots shows no application-source drift;
+- implementation correction commit
+  `5f3a08dba9cb6d00070eec57739b2b06716eb6af` contains the `.phpunit.cache/`
+  exclusion and is recorded as pushed on implementation
+  `task/ARCH-026-WOOCOMMERCE-001`;
+- the prepared Attempt 4 launcher packet records the canonical workspace plus
+  dedicated parent and implementation task worktrees, proves the task branch is not
+  executing from either shared/default checkout or another task worktree, and records
+  both task branches as synchronized with their remote task refs and already
+  containing their respective `origin/main`;
+- recursive submodule synchronization completed and reported no submodule entries;
+- parent pre-claim/reconciliation head is
+  `64863ad921327be845fe1a770106544effb53cd8`; the Attempt 4 claim commit is
+  `f8014ee416c985a94a02967a398bbb260e8f28b9`;
+- the submitted handoff identifies final parent review-report commit `fe0623f` as
+  pushed on parent `task/ARCH-026-WOOCOMMERCE-001`; as with any final report commit,
+  that commit cannot contain its own final hash inside the same committed report;
+- the Completion Report records the implementation task worktree clean and aligned
+  with its remote at `5f3a08dba9cb6d00070eec57739b2b06716eb6af`, and the submission records both
+  dedicated task worktrees clean and up to date with their remotes;
+- `git diff --check` passed for the focused Attempt 4 correction;
+- not rerunning WordPress/WooCommerce runtime, browser, ZIP-install, lint, build or
+  test validation conforms exactly to the Attempt 3 architect correction contract,
+  because no runtime/source implementation changed.
+
+The historical clean-state sentence in the Attempt 3 validation results describes the
+pre-correction worktree state; the later `Attempt 4 Review Corrections` and `Git / VCS`
+sections are the final-state evidence for this submission.
+
+Architecture conformance remains unchanged from Attempt 3: WOO-001 is an ordinary
+installable WooCommerce extension using PHP plus locally built React assets, with no
+Moda backend/database/queue/credential coupling and no WOO-002 functionality.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 4` is preserved.
+
+`ARCH-026-WOOCOMMERCE-002` depends only on this task and is therefore promoted to
+`ready`. WOO-003 and WOO-004 remain Pending under their existing dependency gates.
