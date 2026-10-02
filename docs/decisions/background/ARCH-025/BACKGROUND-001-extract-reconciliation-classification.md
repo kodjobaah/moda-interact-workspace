@@ -9,7 +9,7 @@ assigned_agent: moda_background
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-10-02T15:28:25Z
@@ -182,7 +182,7 @@ None
 - [x] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes (146 discovered tests; task text specifies 98)
 - [x] `npm test -- tests/unit/services/billing-subscription-reconciliation/classification.test.ts` passes
 - [x] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
-- [ ] `npm test` passes with no regression (blocked: 8 failed tests plus fixture-loading failure; see Completion Report)
+- [ ] `npm test` passes (both exact baseline and submitted commits have the same 8 failed tests plus the same fixture-loading failure; differential evidence is recorded in the Completion Report)
 - [x] `npm run build` succeeds
 - [x] `git diff --check` passes
 
@@ -198,7 +198,7 @@ None
 
 ### Status
 
-Blocked pending architect disposition of the required full-suite validation failures.
+Ready for Review. Attempt 2 proves the full-suite failures are identical on the exact pre-task and submitted commits under the same Node/dependency environment; no submitted-only failure was found.
 
 ### Files Changed
 
@@ -213,6 +213,7 @@ Blocked pending architect disposition of the required full-suite validation fail
 - Added focused exhaustive classification tests, including accepted-kind/skip precedence and permissive nullable expected-state shapes. Focused classifier tests passed.
 - Preserved the frozen regression file byte-for-byte; its SHA-256 matches the required value and all 146 tests reported by the current suite passed (the task text's stated count of 98 does not match the current test inventory).
 - Implementation commit `b3c7a12` was pushed to `origin/task/ARCH-025-BACKGROUND-001`.
+- Attempt 2 made no implementation or test changes. Full-suite differential runs on baseline `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` and submitted `b3c7a1264a22baf498b14916a341686a751de869` reproduced the exact same eight failing test identities and fixture-loading failure; there are no submitted-only failures.
 
 ### Validation Results
 
@@ -223,20 +224,26 @@ Blocked pending architect disposition of the required full-suite validation fail
 - `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts`: passed, 10 tests.
 - `npm run build`: passed.
 - `git diff --check`: passed.
-- `npm test`: failed with 8 failed tests and a fixture-loading failure. Reported categories: billing-reconciliation and matured-candidate assertions; missing ARCH-020 fixture worktree; and four PostgreSQL tests unable to connect to `localhost:5432`. These failures have not been established as pre-existing or unrelated and are not documented by `docs/development-baseline.md`; full-suite validation remains unmet pending architect disposition. No unrelated tests, environment services, or baseline records were changed.
+- `npm test` on baseline `670fbad4d52308c96ef41a6a4d29116f1ad42f1a`: failed with 8 tests and 1 suite-loading failure; 1,392 passed, 38 skipped, across 114 files (4 failed, 95 passed, 15 skipped).
+- `npm test` on submitted `b3c7a1264a22baf498b14916a341686a751de869`: failed with the same 8 test identities and 1 suite-loading failure; 1,414 passed, 38 skipped, across 115 files (4 failed, 96 passed, 15 skipped). The additional passing file/tests are the extracted classifier suite.
+- Identical failing test identities on both commits: `billing-reconciliation.service.test.ts` — “persists rotating provider-cycle lag and enqueues the existing +60 second job”, “repairs a missing Paid cycle schedule during rotating provider-cycle lag”, and “repairs a missing pack-enabled Free cycle schedule during rotating provider-cycle lag”; `matured-candidate.materialization.test.ts` — “creates a recovery from current Shopify data when the lookup is found and recoverable”; `translation-enum-bindings.integration.test.ts` — “persists submission failure statuses through the real enum column”, “persists terminal poll Batch and translation statuses through real enum columns”, “persists failed provider results through the real translation enum column”, and “persists SUBMISSION_UNKNOWN correlation adoption through the real Batch enum column”.
+- Identical suite-loading failure: `tests/unit/commerce/evidence.test.ts` cannot open `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-020-BACKGROUND-002/docs/architecture/ARCH-020-evidence-contract-fixtures.json` (ENOENT; no tests collected).
+- Each of the four PostgreSQL integration failures reports `Can't reach database server at localhost:5432` on both commits. The three billing assertion failures and the matured-candidate assertion also have identical expected/actual differences on both commits.
+- Baseline and submitted runs used Node `v24.21.0`, identical `package-lock.json` SHA-256 `24b51056b787611cc08f854679c6570ad823c345e03f24101847d7b4829334bc`, and the same `node_modules` directory (the baseline worktree symlinked to the submitted worktree's dependencies). The temporary clean baseline worktree was removed after comparison.
+- Full-suite execution remains red, but the differential proves these failures are present before this task's implementation commit. No source, test, environment-service, or baseline-document changes were made in Attempt 2.
 
 ### Deviations
 
-- Task lifecycle is `blocked`, not `review`, because required `npm test` did not pass and the observed failures are not documented in the development baseline.
+- The full `npm test` command remains unsuccessful on both commits. Per the latest Architect Review, the exact baseline comparison resolves the Attempt 1 regression-evidence question; the task is returned to `review` without claiming the suite itself passed.
 - This task's frozen-test count states 98, while the current execution reports 146 passing tests; the source file digest requirement was satisfied.
 
 ### Assumptions
 
-- No assumption is made that the full-suite failures are pre-existing or unrelated. Architect disposition is required before further full-suite investigation or review submission.
+- The same full-suite failures on baseline and submitted commits are treated as pre-existing with respect to this task only; no repository-wide baseline disposition is inferred or written.
 
 ### Unresolved Issues
 
-- Required full `npm test` remains failing as detailed above. Per task instruction, implementation/test churn stopped and the condition is returned to `moda_architect`.
+- Full `npm test` remains failing identically on baseline and submitted commits. The exact failing identities and environment errors are returned to `moda_architect` for acceptance/baseline disposition.
 
 ### Architectural Concerns
 
