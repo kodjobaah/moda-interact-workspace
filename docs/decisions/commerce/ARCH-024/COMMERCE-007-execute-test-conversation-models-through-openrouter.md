@@ -9,7 +9,7 @@ assigned_agent: moda_commerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 50
 executor: copilot
 claimed_at: 2026-10-02T07:46:08Z
@@ -880,23 +880,23 @@ retained fixture Tool-test executor remains referenced
 
 ## Work Items
 
-- [ ] Update Commerce to the exact SHARED-002 published package version.
-- [ ] Remove the bespoke Preview HTTP model provider and obsolete provider tests.
-- [ ] Consume and validate the exact C005 `PreviewConversationSnapshot`; do not extend authored state in C007.
-- [ ] Prove model/instructions/Shop are never re-resolved for an already-started conversation.
-- [ ] Implement the AES-256-GCM current-environment OpenRouter credential resolver using the shared Commerce keyring.
-- [ ] Refactor generic credential-keyring parsing only as required for reuse; preserve External Connection behaviour.
-- [ ] Implement per-invocation current-credential OpenRouter model construction through Shared `OpenRouterModelClient`.
-- [ ] Remove human conversation FIXTURE/MODEL mode state and scripted fixture model execution.
-- [ ] Make model-run quota unconditional for human conversation runs in both stores.
-- [ ] Wire exact host instruction order and selected-Shop context into `runCommerceTurn`.
-- [ ] Pass the existing Commerce `StructuredLogger` child (`purpose=preview`, `previewRunId`) into `runCommerceTurn`; do not create a second logger.
-- [ ] Reduce Commerce Preview config to `COMMERCE_PREVIEW_ENABLED` only.
-- [ ] Enable Test Conversation message Send/reconcile/cancel behaviour with same-tick single-flight protection.
-- [ ] Add focused runtime tests.
-- [ ] Add disposable PostgreSQL credential-rotation/decryption proof.
-- [ ] Preserve independent fixture-backed Tool Authoring / Code Response Tool-test APIs.
-- [ ] Perform final static cleanup/reference audit.
+- [x] Update Commerce to the exact SHARED-002 published package version (`@modainteract/moda-interact-shared@1.1.0`).
+- [x] Remove the bespoke Preview HTTP model provider and obsolete provider tests.
+- [x] Consume and validate the exact C005 `PreviewConversationSnapshot`; do not extend authored state in C007.
+- [x] Prove model/instructions/Shop are never re-resolved for an already-started conversation.
+- [x] Implement the AES-256-GCM current-environment OpenRouter credential resolver using the shared Commerce keyring.
+- [x] Refactor generic credential-keyring parsing only as required for reuse; preserve External Connection behaviour.
+- [x] Implement per-invocation current-credential OpenRouter model construction through Shared `OpenRouterModelClient`.
+- [x] Remove human conversation FIXTURE/MODEL mode state and scripted fixture model execution.
+- [x] Make model-run quota unconditional for human conversation runs in both stores.
+- [x] Wire exact host instruction order and selected-Shop context into `runCommerceTurn`.
+- [x] Pass the existing Commerce `StructuredLogger` child (`purpose=preview`, `previewRunId`) into `runCommerceTurn`; do not create a second logger.
+- [x] Reduce Commerce Preview config to `COMMERCE_PREVIEW_ENABLED` only.
+- [x] Enable Test Conversation message Send/reconcile/cancel behaviour with same-tick single-flight protection.
+- [x] Add focused runtime tests.
+- [x] Add disposable PostgreSQL credential-rotation/decryption proof.
+- [x] Preserve independent fixture-backed Tool Authoring / Code Response Tool-test APIs.
+- [x] Perform final static cleanup/reference audit.
 
 ## Interfaces / Contracts
 
@@ -997,28 +997,28 @@ Later ARCH-024 system-test tasks will also depend on this task when materialised
 
 ## Acceptance Criteria
 
-- [ ] Human Test Conversations use the exact effective active Agent model already captured by C005 in `conversation.snapshot.model`.
-- [ ] Platform + optional Shop Instructions already captured by C005 remain stable for the conversation and are not re-resolved by C007.
-- [ ] Later Agent Configuration/Instruction edits do not alter an already-started conversation.
-- [ ] A new conversation observes current Agent Configuration/Instructions.
-- [ ] Every model invocation resolves the current environment OpenRouter credential from PostgreSQL.
-- [ ] Replacing the credential takes effect on the next model invocation without Commerce restart or new conversation.
-- [ ] Removing/misconfiguring the credential fails bounded `UNAVAILABLE` without leaking secret material.
-- [ ] The decrypted credential is never persisted in Preview state or browser data.
-- [ ] Commerce uses the published Shared `OpenRouterModelClient`/`runCommerceTurn`; there is no direct LangChain/OpenRouter/LangGraph SDK dependency.
-- [ ] The existing Commerce `StructuredLogger` is passed into `runCommerceTurn` with safe preview context, and logging failure does not change the run result.
-- [ ] The old bespoke Preview provider implementation is removed.
-- [ ] `COMMERCE_PREVIEW_PROVIDER`, `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY` are no longer read by Commerce application/runtime code.
-- [ ] `COMMERCE_PREVIEW_ENABLED` remains the only Preview model-execution kill switch.
-- [ ] Human conversation FIXTURE/MODEL mode state is removed.
-- [ ] Human conversation runs always use the existing model quota in memory and Redis.
-- [ ] Tool-test fixture APIs remain separate and functional.
-- [ ] `runCommerceTurn` receives host safety, Platform and optional Shop Instructions in deterministic trusted order.
-- [ ] Human conversation context uses the selected Shop and no synthetic fixture context.
-- [ ] Test Conversation message composer is enabled only after a conversation starts and has same-tick single-flight protection.
-- [ ] Unknown run outcomes preserve the original run ID for reconciliation.
-- [ ] No live OpenRouter call occurs in automated validation.
-- [ ] Disposable PostgreSQL proof demonstrates hot credential replacement without recreating the resolver/service.
+- [x] Human Test Conversations use the exact effective active Agent model already captured by C005 in `conversation.snapshot.model`.
+- [x] Platform + optional Shop Instructions already captured by C005 remain stable for the conversation and are not re-resolved by C007.
+- [x] Later Agent Configuration/Instruction edits do not alter an already-started conversation.
+- [x] A new conversation observes current Agent Configuration/Instructions.
+- [x] Every model invocation resolves the current environment OpenRouter credential from PostgreSQL.
+- [x] Replacing the credential takes effect on the next model invocation without Commerce restart or new conversation.
+- [x] Removing/misconfiguring the credential fails bounded `UNAVAILABLE` without leaking secret material.
+- [x] The decrypted credential is never persisted in Preview state or browser data.
+- [x] Commerce uses the published Shared `OpenRouterModelClient`/`runCommerceTurn`; there is no direct LangChain/OpenRouter/LangGraph SDK dependency.
+- [x] The existing Commerce `StructuredLogger` is passed into `runCommerceTurn` with safe preview context, and logging failure does not change the run result.
+- [x] The old bespoke Preview provider implementation is removed.
+- [x] `COMMERCE_PREVIEW_PROVIDER`, `COMMERCE_PREVIEW_MODEL` and `COMMERCE_PREVIEW_API_KEY` are no longer read by Commerce application/runtime code.
+- [x] `COMMERCE_PREVIEW_ENABLED` remains the only Preview model-execution kill switch.
+- [x] Human conversation FIXTURE/MODEL mode state is removed.
+- [x] Human conversation runs always use the existing model quota in memory and Redis.
+- [x] Tool-test fixture APIs remain separate and functional.
+- [x] `runCommerceTurn` receives host safety, Platform and optional Shop Instructions in deterministic trusted order.
+- [x] Human conversation context uses the selected Shop and no synthetic fixture context.
+- [x] Test Conversation message composer is enabled only after a conversation starts and has same-tick single-flight protection.
+- [x] Unknown run outcomes preserve the original run ID for reconciliation.
+- [x] No live OpenRouter call occurs in automated validation.
+- [x] Disposable PostgreSQL proof demonstrates hot credential replacement without recreating the resolver/service.
 
 ## Validation
 
@@ -1031,8 +1031,8 @@ command -v node >/dev/null 2>&1 || \
 
 Inspect the synchronized `package.json` first and use the declared scripts. Required validation for this task:
 
-- [ ] Prisma generation succeeds against the integrated ARCH-024 database submodule.
-- [ ] Focused runtime tests pass:
+- [x] Prisma generation succeeds against the integrated ARCH-024 database submodule.
+- [x] Focused runtime tests pass (7 files, 54 tests):
 
 ```bash
 npx vitest run \
@@ -1045,30 +1045,30 @@ npx vitest run \
   tests/preview-integration.test.ts
 ```
 
-- [ ] Redis parity/regression test passes:
+- [x] Redis parity/regression test passes (1 file, 9 tests):
 
 ```bash
 npx vitest run tests/preview-redis-lua.test.ts
 ```
 
-- [ ] Independent Tool-test/Code Response regressions covering `/api/studio/preview/tool-tests` remain green using the repository's current focused suites.
-- [ ] Disposable PostgreSQL credential proof passes:
+- [x] Independent Tool-test/Code Response regressions covering `/api/studio/preview/tool-tests` remain green using the repository's current focused suites (16 external-preview tests and 7 Code Response tests).
+- [x] Disposable PostgreSQL credential proof passes:
 
 ```bash
 node scripts/run-preview-openrouter-disposable.mjs
 ```
 
-- [ ] `npm run typecheck` succeeds, or any pre-existing baseline diagnostics are recorded exactly according to `docs/development-baseline.md`; no changed-file diagnostic may be introduced.
-- [ ] Targeted ESLint succeeds for every changed TypeScript/TSX/JavaScript file.
-- [ ] Production build succeeds:
+- [x] `npm run typecheck` succeeds; no changed-file diagnostic was introduced.
+- [x] Targeted ESLint succeeds for every changed TypeScript/TSX/JavaScript file with no warnings or errors on the final pass.
+- [x] Production build succeeds:
 
 ```bash
 npm run build
 ```
 
-- [ ] Static reference audit from R18 passes.
-- [ ] `git diff --check` passes.
-- [ ] The disposable PostgreSQL runner removes every task-owned container/network in `finally`.
+- [x] Static reference audit from R18 passes.
+- [x] `git diff --check` passes.
+- [x] The disposable PostgreSQL runner removes every task-owned container/network in `finally`.
 
 No validation command may send a real request to OpenRouter or any other LLM provider.
 
@@ -1097,35 +1097,46 @@ Do not begin Background, Gateway or ARCH-024 system-test work.
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None
+`.env.example`, `README.md`, `app/preview/page.tsx`, `docs/commerce-preview-integration.md`, `docs/runtime-compatibility.md`, `lib/preview/runtime.ts`, `lib/server/config.ts`, `lib/server/credential-keyring.ts`, `package.json`, `scripts/clean-clone.sh`, `scripts/run-preview-openrouter-disposable.mjs`, `src/commerce/integration/backend.ts`, `src/commerce/integration/preview/adapters.ts`, `src/commerce/integration/preview/model-provider.ts` (deleted), `src/commerce/integration/preview/model-runtime.ts`, `src/commerce/integration/preview/openrouter-credential.ts`, `src/commerce/preview/redis-store.ts`, `src/commerce/preview/service.ts`, `src/commerce/preview/store.ts`, `src/commerce/preview/types.ts`, `src/studio/test-conversations/client.ts`, `src/studio/test-conversations/test-conversations-screen.tsx`, `tests/external-preview.test.ts`, `tests/preview-integration.test.ts`, `tests/preview-model-provider.test.ts` (deleted), `tests/preview-openrouter-postgres.test.ts`, `tests/preview-openrouter-runtime.test.ts`, `tests/preview-redis-lua.test.ts`, `tests/preview-routes.test.ts`, `tests/preview-service.test.ts`, `tests/preview-store.test.ts`, `tests/test-conversations-screen.test.tsx`.
 
 ### Work Completed
 
-None
+Replaced the human Test Conversation fixture/provider split with the published Shared runtime and exact C005 snapshot; implemented the environment-scoped encrypted credential resolver and per-invocation credential refresh; reused the existing Commerce keyring; retained isolated fixture Tool-test APIs and unconditional conversation quotas; enabled composer/send/reconcile/cancel flows; added frozen-snapshot, logger-failure, runtime and PostgreSQL credential-rotation regressions. The Shared dependency remains pinned to the exact accepted `@modainteract/moda-interact-shared@1.1.0`; no Shared or database schema changes were made. The generic keyring helper and retained fixture adapter domain correction are the only mechanically related additional implementation files. No automated test called OpenRouter.
 
 ### Validation Results
 
-None
+All required validation passed:
+
+- `npm run prisma:generate` — Prisma Client v6.19.3 generated against `database/prisma/schema.prisma`.
+- Required seven-file focused Vitest command — 7 files, 54 tests passed. Final post-cleanup focused rerun of `tests/preview-service.test.ts` and `tests/preview-openrouter-runtime.test.ts` — 2 files, 26 tests passed.
+- `npx vitest run tests/preview-redis-lua.test.ts` — 1 file, 9 tests passed.
+- `npm run code-runtime:package` followed by `npm run test:arch020-external-preview` — 1 file, 16 tests passed; `npm run test:arch020-code-processor` — 1 file, 7 tests passed.
+- `node scripts/run-preview-openrouter-disposable.mjs` — integrated migrations passed; real PostgreSQL credential proof passed (1 test), including credential A-to-B rotation through the same resolver, missing row, unknown key ID and tampered authentication tag; final cleanup verified zero task-owned containers/networks remain. No OpenRouter request was made.
+- `npm run typecheck` — passed after final test typing cleanup.
+- Targeted ESLint over changed TS/TSX/JS/MJS files — final pass clean, zero warnings/errors.
+- `npm run build` — passed. Existing Nunjucks `node-loaders.js` dynamic-dependency warnings appeared in two traces.
+- R18 static audit — passed: no forbidden provider/mode/hostname/direct-SDK references in application/runtime source; `/api/studio/preview/tool-tests` and its fixture executor remain wired.
+- `git diff --check` — passed.
 
 ### Deviations
 
-None
+No scope or contract deviation. The stale `preview.myshopify.com` literal in the retained fixture adapter was changed to `fixture.invalid` to satisfy R18. A no-op legacy-selector test input was removed because spreading an empty object left the valid request unchanged.
 
 ### Assumptions
 
-None
+The accepted Shared release remains `1.1.0`, and the integrated database submodule already contains the accepted ARCH-024 schema/migrations; both were verified in the task worktree. The disposable proof is local-only and uses no provider credentials.
 
 ### Unresolved Issues
 
-None
+None identified. The production build retains the noted Nunjucks dynamic-dependency warnings; the build succeeds and the warnings are outside the changed runtime path.
 
 ### Architectural Concerns
 
-None
+None.
 
 ## Architect Review
 
