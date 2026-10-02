@@ -14,9 +14,10 @@ updated: 2026-10-02
 Proposed.
 
 This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001`,
-`ARCH-026-WOOCOMMERCE-002`, `ARCH-026-DATABASE-001` and `ARCH-026-API-001` are currently materialised.
-Later tasks must be added only after their precise runtime, security and ownership
-boundaries have been discussed and inspected.
+`ARCH-026-WOOCOMMERCE-002`, `ARCH-026-DATABASE-001`, `ARCH-026-API-001`,
+`ARCH-026-API-002`, `ARCH-026-WOOCOMMERCE-003` and `ARCH-026-WOOCOMMERCE-004`
+are currently materialised. Later tasks must be added only after their precise runtime,
+security and ownership boundaries have been discussed and inspected.
 
 ## Problem
 
@@ -246,6 +247,8 @@ fails. It must not run migrations or mutate business state as part of readiness.
 
 WOO-003 must fail locally before connection when the store is not HTTPS, uses Plain permalinks or cannot expose the exact API-002 challenge REST route. Remote outage must not be interpreted as disconnection, and site URL mismatch must prevent silent credential reuse on a cloned/migrated WordPress database.
 
+WOO-004 consumes only WOO-003's local browser-safe connection GET/POST routes. Its React shell must preserve the distinction between local connection state, remote availability and account/billing lifecycle; unknown/malformed responses fail closed rather than becoming connected/disconnected.
+
 API-002 treats Woo site verification as an SSRF boundary: public HTTPS only, public/global
 DNS answers only, pinned socket, original-host TLS verification, connected-peer checks,
 no redirects, bounded deadline/body and exact HMAC proof. Connection/proof failure causes
@@ -274,6 +277,7 @@ Moda ingress and shared Background workload separately.
   steady-state authorization resolves the Shop from the authenticated installation row.
 - WOO-003 stores the raw installation credential only in non-autoloaded server-side WordPress state and never exposes it to browser JavaScript, localized data or logs.
 - WOO-003 derives site identity and API authentication material server-side; browser requests cannot choose the remote tenant or API origin.
+- WOO-004 browser code calls only the local WordPress REST connection facade and never receives the long-lived installation credential, bootstrap secret, Authorization header or credential digest.
 - Installation status remains connection/authentication state only; onboarding and billing
   lifecycle are not encoded in `WooCommerceInstallationStatus`.
 
@@ -318,6 +322,7 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 | ARCH-026-API-001 | moda_api | Pending | - |
 | ARCH-026-API-002 | moda_api | Pending | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
+| ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 
 DATABASE-001 may execute independently while the Woo plugin stream is blocked/pending.
 API-001 also has no task dependency and is gated only by repository provisioning.
@@ -325,8 +330,10 @@ API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes t
 connection/authentication contract consumed by WOO-003. WOO-003 remains Pending until
 both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side
 challenge callback, server-side credential storage, authenticated Moda API client and local
-WordPress REST connection facade. Later ARCH-026 tasks remain intentionally iterative and
-are not frozen by these materialised tasks.
+WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell
+and connection/setup experience over that accepted local facade without adding merchant
+business screens. Later ARCH-026 tasks remain intentionally iterative and are not frozen by
+these materialised tasks.
 
 ## Open Questions
 
@@ -355,3 +362,4 @@ are not frozen by these materialised tasks.
   first-connect/reconnect credential issuance, and a reusable authenticated installation
   principal over the DATABASE-001 identity model.
 - 2026-10-02: WOO-003 materialised as the PHP-side consumer of API-002, adding the public one-attempt site-control challenge callback, privileged local connection facade, server-side installation credential storage and authenticated Moda API client.
+- 2026-10-02: WOO-004 materialised to replace the placeholder Admin page with the first production-shaped React shell and real connection/setup experience, consuming only the accepted WOO-003 browser-safe local REST boundary.
