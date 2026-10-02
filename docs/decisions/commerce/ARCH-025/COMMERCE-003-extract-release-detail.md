@@ -81,7 +81,7 @@ Move the complete current `ReleaseDetail` presentation/workflow into `components
 
 ### R2 — edit-as-new handoff
 
-Preserve `composer.setRelease(...)` exactly: a newly generated Studio operation/handoff ID using the accepted COMMERCE-001 helper, exact members, `structuredClone(responseContract)`, existing validation hash, blank reason and return route `/releases/<id>?tab=response-contract`; then navigate to `/releases?cloneResponseFrom=<id>`.
+Preserve the current role-independent **Edit as new release** affordance exactly; it remains available before the SUPER_ADMIN activation/rollback gate, including for `ADMIN`. Preserve `composer.setRelease(...)` exactly: a newly generated Studio operation/handoff ID using the accepted COMMERCE-001 helper, exact members, `structuredClone(responseContract)`, existing validation hash, blank reason and return route `/releases/<id>?tab=response-contract`; then navigate to `/releases?cloneResponseFrom=<id>`.
 
 ### R3 — activation/rollback role and fence
 
@@ -114,7 +114,7 @@ Consumes accepted COMMERCE-001 common props plus `useStudioComposer`; no new pub
 
 ## Acceptance Criteria
 
-- [ ] Edit-as-new handoff shape and destinations are unchanged.
+- [ ] Edit-as-new remains role-independent and its handoff shape/destinations are unchanged.
 - [ ] Activation/rollback role gating, confirmation and active-pointer fencing are unchanged.
 - [ ] Current dirty-on-reason / cancel-does-not-clear-dirty behaviour is preserved.
 - [ ] Frozen 13/3/90-test assets remain unchanged and pass.
