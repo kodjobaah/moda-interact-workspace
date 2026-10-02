@@ -1,19 +1,19 @@
 ---
 id: ARCH-025
-title: Runtime and Admin maintainability refactor
+title: Runtime, Admin and Commerce maintainability refactor
 status: in_progress
 coordinator: moda_architect
 created: 2026-10-01
 updated: 2026-10-02
 ---
 
-# ARCH-025: Runtime and Admin maintainability refactor
+# ARCH-025: Runtime, Admin and Commerce maintainability refactor
 
 ## Status
 
 In Progress.
 
-ARCH-025 now contains five **independent maintainability sub-tranches** across three repository owners:
+ARCH-025 now contains six **independent maintainability sub-tranches** across four repository owners:
 
 ```text
 moda-interact/             Shopify BillingService façade
@@ -21,6 +21,7 @@ moda-interact-background/  billing subscription reconciliation coordinator
 moda-interact-background/  CheckoutRecoveryService lifecycle façade
 moda-interact-admin/       MerchantPricingPlanBuilder wizard
 moda-interact-admin/       QueueMonitor operational UI
+moda-interact-commerce/    StudioWorkspace orchestration/presentation
 ```
 
 The historical architecture filename is retained so already-materialised task files keep a stable durable reference. The architecture ID and this document remain authoritative for all ARCH-025 tranches.
@@ -35,7 +36,9 @@ The first Admin tranche refactors `src/components/admin/merchant/merchant-pricin
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Ready; ADMIN-010 through ADMIN-015 remain dependency-gated.
 
-There is deliberately **no dependency edge between the five sub-tranches**. They modify different high-churn files across three repositories and may proceed independently; each chain remains sequential internally so accepted extraction interfaces are stable before the next extraction builds on them.
+The Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Ready; COMMERCE-002 through COMMERCE-005 remain dependency-gated.
+
+There is deliberately **no dependency edge between the six sub-tranches**. They modify different high-churn files across four repositories and may proceed independently; each chain remains sequential internally so accepted extraction interfaces are stable before the next extraction builds on them.
 
 ## Problem
 
@@ -121,7 +124,22 @@ The server boundary is already separated and remains canonical: `src/lib/admin/q
 
 Existing source-based security/internationalisation assertions intentionally read the monolithic QueueMonitor component. ADMIN-009 makes those assertions extraction-safe by scanning only the public shell plus the bounded `src/components/admin/queue-monitor/` module set before state/JSX moves.
 
-The objective across all participating repositories is maintainability, not behavioural redesign. Existing callers, routes, worker entrypoints, form/action contracts, queue contracts, durable billing/recovery semantics and Admin product policy remain stable while internal owners are extracted incrementally.
+### Commerce StudioWorkspace
+
+`moda-interact-commerce/components/studio-workspace.tsx` is approximately 937 lines and combines global Studio orchestration with several substantial page/workflow implementations:
+
+- route identity, initial-hydration suppression and stale-load rejection;
+- global dirty/unconfirmed navigation blocking;
+- write single-flight admission, operation IDs and unknown-operation reconciliation;
+- generic Explore/Releases/Shops page/detail routing;
+- immutable Release composition and response-contract validation freshness;
+- Release edit-as-new, activation and rollback presentation;
+- Shop list/inspection presentation;
+- specialised Tool authoring and Agent Configuration handoff boundaries.
+
+ARCH-024 Commerce model-selection work is integrated in the reviewed baseline. `AgentConfigurationScreen` remains a specialised Studio boundary; this structural tranche does not redesign model selection, Tool authoring, Test Conversations, Discovery or server actions. Existing source-inspection tests intentionally read `components/studio-workspace.tsx`; COMMERCE-001 makes those assertions extraction-safe by scanning the bounded StudioWorkspace shell/module set before Release/page JSX moves.
+
+The objective across all participating repositories is maintainability, not behavioural redesign. Existing callers, routes, worker entrypoints, form/action contracts, queue contracts, durable billing/recovery semantics, Admin product policy and Commerce Studio UI/server-action contracts remain stable while internal owners are extracted incrementally.
 
 ## Goals
 
@@ -147,14 +165,21 @@ The objective across all participating repositories is maintainability, not beha
 - Preserve the three QueueMonitor request lifecycles exactly: summary single-flight polling, queue-job browsing with stale-request cancellation, and selected-job detail loading with stale-selection cancellation and 404-specific messaging.
 - Preserve queue selection/filter/pagination/detail clearing asymmetries, drawer close/switch/maximise/resize behaviour, browser-local refresh preference semantics and last-successful-summary retention on errors.
 - Keep `src/lib/admin/queue-monitor.ts`, the protected queue API routes, `queue-monitor-refresh.ts`, catalogue-owned labels and server authorization/normalisation as canonical existing owners.
-- Make Shopify `syncSubscription()`, Background `reconcileJob()`, the final `CheckoutRecoveryService` façade reduction, the final `MerchantPricingPlanBuilder` wizard-shell reduction and the final `QueueMonitor` shell reduction the terminal extraction steps in their respective sub-tranches.
+- Keep `StudioWorkspace` and the `StudioPage` type exported from `components/studio-workspace.tsx` so production callers and browser-evidence fixtures require no migration.
+- Preserve route identity/hydration/stale-load semantics, including the current load-effect dependency set (`page`, `detailId`, `revisionId`) rather than reloading merely because `authoringSessionId` changes.
+- Preserve one-write-at-a-time command admission, content-revision dirty fencing and unknown-operation reconciliation through the original operation ID/run callback.
+- Preserve the specialised Tool authoring and Agent Configuration early-return boundaries rather than forcing them through a generic page router.
+- Preserve Release Composer candidate parsing, capability membership ordering, validation-generation/single-flight/hash freshness and SUPER_ADMIN create gating without restoring an obsolete Preview handoff.
+- Preserve Release Detail clone/activation/rollback role and active-pointer fencing semantics, plus current Shop list/Inspector presentation and navigation.
+- Keep `StudioComposerContext`, `DirtyNavigationGuard`, `StudioState`, `ToolAuthoringScreen`, `AgentConfigurationScreen`, `AdminExplorer` and Studio server actions as canonical existing owners.
+- Make Shopify `syncSubscription()`, Background `reconcileJob()`, the final `CheckoutRecoveryService` façade reduction, the final `MerchantPricingPlanBuilder` wizard-shell reduction, the final `QueueMonitor` shell reduction and the final `StudioWorkspace` shell reduction the terminal extraction steps in their respective sub-tranches.
 
 ## Non-Goals
 
 ARCH-025 does not authorise:
 
-- implementation changes outside `moda-interact/`, `moda-interact-background/` and `moda-interact-admin/`;
-- Admin merchant-pricing-plan server-action transaction refactoring, other Admin UI refactors, Commerce Studio, Messaging, Shared, Database, Gateway or System Test feature work;
+- implementation changes outside `moda-interact/`, `moda-interact-background/`, `moda-interact-admin/` and `moda-interact-commerce/`;
+- Admin merchant-pricing-plan server-action transaction refactoring, other Admin UI refactors, Commerce ToolEditor/persisted-tool-authoring refactoring, Test Conversations/model-runtime redesign, Messaging, Shared, Database, Gateway or System Test feature work;
 - redesigning CheckoutRecovery product behaviour, outreach policy, recovery capacity economics, candidate/order correlation semantics or CommerceAgent context contracts;
 - Prisma schema or migration changes;
 - Shared queue/event contract changes;
@@ -176,6 +201,9 @@ ARCH-025 does not authorise:
 - conditionally unmounting `MerchantPricingTranslationWorkbook` during normal wizard navigation or otherwise discarding its local workbook/upload state;
 - changing QueueMonitor server reader/API authorization, HTTP response contracts, Redis/BullMQ behaviour, queue mutation capabilities or diagnostic data exposure as part of the client structural extraction;
 - introducing retry/requeue/delete/pause/resume controls, a client state framework or a new React/browser test framework solely for QueueMonitor extraction;
+- changing Studio server-action signatures/authorization, release publication/activation semantics, Tool authoring contracts, Agent Configuration semantics, Discovery behaviour, Test Conversations/Preview behaviour or Shop execution contracts as part of StudioWorkspace extraction;
+- adding Shop search, a generic page/plugin framework, a new global state framework or a new routing abstraction solely for StudioWorkspace extraction;
+- changing current Studio route/load quirks, dirty-navigation semantics, operation-ID format, Release validation freshness rules, activation/rollback confirmation behaviour or current Shop Inspector links as incidental cleanup;
 
 If an implementation task discovers that a safe extraction requires one of these changes, it must stop and return the dependency/conflict to `moda_architect`.
 
@@ -370,6 +398,20 @@ src/app/api/admin/queues/jobs/detail/route.ts
 
 `src/components/admin/queue-monitor-refresh.ts` already owns refresh choices, storage key/default and browser-local preference parsing and remains canonical.
 
+### Commerce StudioWorkspace
+
+The public Commerce Studio boundary is:
+
+```text
+components/studio-workspace.tsx
+  StudioWorkspace
+  StudioPage
+```
+
+Production callers include `components/unavailable-studio-workspace.tsx`, `components/production-studio-page.tsx` and browser-evidence fixtures. The monolithic source currently owns workspace load/command/navigation orchestration plus `PageContent`, `Detail`, `Discovery`, `ReleaseComposer`, `ReleaseDetail` and `ShopInspector`. `ToolAuthoringScreen` and `AgentConfigurationScreen` remain specialised early-return boundaries.
+
+Important current compatibility details include: route identity contains `authoringSessionId` while the load effect intentionally depends only on `page`, `detailId` and `revisionId`; initial server data suppresses one duplicate browser load; `loadToken` prevents stale route results from winning; command completion clears dirty state only when the admitted content revision is still current; an `unknown` operation blocks another write until the original operation is reconciled; and Release validation accepts results only when both its generation token and canonical input hash remain current.
+
 ## Proposed Architecture
 
 ### Shopify application target
@@ -531,6 +573,26 @@ QueueMonitor                         thin public shell
 
 The browser type mirror is repository-internal and must not import the Redis/BullMQ server reader into the client bundle. No Shared-package contract is introduced. The shell coordinates accepted hook interfaces; it must not recreate request implementations after extraction.
 
+### Commerce StudioWorkspace target
+
+The final Commerce boundary remains:
+
+```text
+components/studio-workspace.tsx                thin public shell + StudioPage re-export
+components/studio-workspace/
+  studio-workspace.types.ts                    internal page/detail/common contracts
+  use-studio-workspace-controller.ts           load tokens, hydration identity, dirty/write reconciliation
+  release-composer.tsx                         immutable release composition/validation
+  release-detail.tsx                           clone/activation/rollback presentation
+  shop-list.tsx                                current Shop summary list presentation
+  shop-inspector.tsx                           current Shop detail/tool presentation
+  studio-page-content.tsx                      Explore/Releases/Shops page + detail routing
+```
+
+The controller owns global workspace orchestration only. It must not absorb Release Composer form/validation state or domain-specific Tool/Agent Configuration state. It establishes the complete `CommonProps`/command/navigation contract consumed by COMMERCE-002..005; later tasks are consume-only and must return a missing interface to `moda_architect` rather than silently expanding accepted controller scope.
+
+`ToolAuthoringScreen` and `AgentConfigurationScreen` remain explicit early-return boundaries in the public shell. `AdminExplorer`, `StudioComposerContext`, `DirtyNavigationGuard`, `StudioState` and Studio server actions remain canonical owners rather than being wrapped in new frameworks.
+
 ## Regression Baseline
 
 ### Shopify frozen façade asset
@@ -670,6 +732,31 @@ tests/security/admin-internationalization.test.mjs
   SHA-256 a3481170403d55c1d6869741b5d01cd303fa06c75315491465413aa51a886d29 (7 tests)
 ```
 
+### Commerce StudioWorkspace regression baseline
+
+Reviewed source baseline:
+
+```text
+components/studio-workspace.tsx
+  937 lines
+  SHA-256 62c5720bf07144c6cbc61ff35398dc749450feb9f500b919cf842809f8622afb
+```
+
+These integration/state assets are frozen byte-for-byte throughout COMMERCE-001..005:
+
+```text
+tests/studio-workspace.test.tsx
+  SHA-256 400ce6b68cb5a9fdeecf9233bc2b3f58a42742c974da2c5b6ffd2b5a16ae44a7 (13 tests)
+tests/agent-configuration-screen-state.test.tsx
+  SHA-256 72c71a09eaf5bdc2d79c686cf5ec43d5abfd49cfe421cadedbbe665140582b0a (3 tests)
+tests/external-tools-ui.test.tsx
+  SHA-256 97ffbc70e29d4ff60a48e5aabd0ff3faec6dea7984ed0f239fcb4a8fc868f4d3 (90 tests)
+```
+
+COMMERCE-001 may modify only source-loading mechanics in `tests/legacy-capability-surface.test.ts` (starting SHA-256 `9e5575292f22855164cf0bf663bc8fdf3e82a7317ba433bc07277f309f2accb0`, 2 tests) and `tests/arch024-preview-cleanup.test.ts` (starting SHA-256 `09ab5152a9cfe012d3f4b51728fc99805111e040d8d06f854fdb7c469f7cf4f3`, 1 test) so their existing assertions follow the bounded StudioWorkspace module set. COMMERCE-002..005 must not modify the accepted COMMERCE-001 versions.
+
+These existing adjacent owners are frozen throughout COMMERCE-001..005 except for import-only changes explicitly required by the task: `components/studio-composer-context.tsx` (`3c69d5d113cc3794ddcf30d504229316853d17506b760686cc8f2d6f99bc1705`), `components/dirty-navigation-guard.tsx` (`3c95afddd5cea28871538f39b3297e04ed4638279452223728453409ff855029`), `components/studio-state.tsx` (`1267e9218728a35909ede92e41d217a09cc84e1985fa427a90bc4bdc4c564f76`), `src/studio/server-actions.ts` (`8749c43699a8d48eaca70d81a28d857eb3fbbee16332ebceea86f5f10fd11994`), `src/studio/agent-configuration/agent-configuration-screen.tsx` (`de01be99e3bb25c06ce52af7b0dba3ffc4c48defed75f73fd94390b9e77984c7`), `src/studio/tools/tool-authoring-screen.tsx` (`a720319be6df87cf71cabf7481830b2944e91b3a3c832571379d01bfc33409f3`) and `src/studio/discovery/admin-explorer.tsx` (`8a9a12b3b13ce13645d9b8fb474c5e45747835450f6ff3b584a3da4a34acefd8`).
+
 ## Data Model
 
 No schema or migration changes are authorised.
@@ -677,6 +764,8 @@ No schema or migration changes are authorised.
 Existing PostgreSQL tables, relationships, uniqueness constraints, BillingPeriod/Subscription lifecycle semantics, CheckoutRecovery/outreach/status-history semantics and entitlement counters remain unchanged. The Admin builder continues producing the same server-validated MerchantPricingPlan payload; ARCH-025 introduces no Admin schema/migration change.
 
 QueueMonitor remains read-only and introduces no durable client state beyond the existing browser-local refresh preference. No Redis/BullMQ mutation or PostgreSQL schema change is authorised.
+
+StudioWorkspace extraction introduces no durable state or schema change. Existing release/shop/tool/agent-configuration persistence and server-action contracts remain unchanged.
 
 ## Contracts
 
@@ -693,6 +782,8 @@ The Shared billing reconciliation queue contract remains owned by `@modainteract
 The Admin compatibility contract remains the `MerchantPricingPlanBuilder` props/export and its HTML form submission to `mutateMerchantPricingPlanAction`, including hidden `intent`, `payload`, `translationJson`, `economicsOverrideRequested` and `economicsOverrideReason` fields. Extracted draft/step APIs are repository-internal UI contracts only.
 
 The QueueMonitor compatibility contract remains the `QueueMonitor` export at `src/components/admin/queue-monitor.tsx` and the existing protected HTTP endpoints `/api/admin/queues`, `/api/admin/queues/jobs` and `/api/admin/queues/jobs/detail`. Extracted browser types, client functions, hooks and presentation props are Admin-internal contracts only; no Shared contract or server-reader import is introduced.
+
+The Commerce compatibility contract remains `StudioWorkspace` and `StudioPage` exported from `components/studio-workspace.tsx`. Existing production callers, browser-evidence fixtures, Tool/Agent Configuration boundaries and Studio server-action signatures remain valid. Extracted controller/page/release/shop APIs are Commerce-repository-internal UI contracts only.
 
 ## Consistency and Transactions
 
@@ -843,6 +934,19 @@ No infrastructure implementation is required. ARCH-025 does not change Render se
 
 Therefore no `moda_gateway` task is required.
 
+### Commerce StudioWorkspace
+
+StudioWorkspace extraction changes no database transaction. Structural extraction must preserve asynchronous/UI consistency boundaries instead:
+
+- stale route loads remain fenced by the monotonic load token;
+- the initial hydrated identity suppresses one duplicate browser load only;
+- changing only `authoringSessionId` does not newly trigger the page/detail load effect;
+- one write remains admitted at a time, with unknown outcomes retaining the original operation ID/run callback;
+- command completion clears global dirty state only when no newer content revision was admitted;
+- Release validation remains generation- and canonical-input-hash-fenced, with duplicate validation suppressed;
+- Release activation/rollback continues to send the current active-pointer version fence;
+- structural extraction must not add server-action calls or move specialised Tool/Agent Configuration state into the global controller.
+
 ## Rollout / Migration
 
 Classification: **PRODUCTION / COMPATIBLE ROLLOUT** for behavioural purposes.
@@ -881,9 +985,13 @@ Rollback is ordinary code rollback of the affected repository commit; there is n
 
 ADMIN-001..008 are a pre-production-compatible structural UI extraction with no form/action/schema migration. Each task is independently reviewable, retains the public component module, and can be rolled back by reverting that task's repository commit. The Admin chain may run independently of both Background chains because it modifies a different repository and no shared runtime contract.
 
+### Commerce StudioWorkspace rollout
+
+COMMERCE-001..005 are a structural UI/orchestration extraction with no server-action, schema, route or cross-service contract migration. Each task retains `components/studio-workspace.tsx` as the public import boundary and can be rolled back by reverting that repository task commit. The Commerce chain is independent of Shopify, Background and Admin ARCH-025 chains because it changes a fourth repository and no shared runtime contract.
+
 ## Repository Responsibilities
 
-Three implementation repositories participate, independently:
+Four implementation repositories participate, independently:
 
 ```text
 repository: moda-interact
@@ -897,6 +1005,10 @@ scope: billing subscription reconciliation and CheckoutRecovery maintainability 
 repository: moda-interact-admin
 assigned_agent: moda_admin
 scope: MerchantPricingPlanBuilder draft/controller/step extraction and QueueMonitor client lifecycle/presentation extraction
+
+repository: moda-interact-commerce
+assigned_agent: moda_commerce
+scope: StudioWorkspace controller/release/shop/page extraction
 ```
 
 The parent workspace owns architecture/task coordination files. Repository implementation remains confined to the assigned implementation repository plus the assigned parent task report file permitted by the task/VCS protocol. No ARCH-025 task grants one repository agent ownership of another participating repository.
@@ -959,6 +1071,16 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-014 | Extract queue summary table | Pending | ADMIN-013 |
 | ARCH-025-ADMIN-015 | Extract queue details presentation and reduce final QueueMonitor shell | Pending | ADMIN-014 |
 
+### Commerce tranche
+
+| Task | Outcome | Status | Depends On |
+|---|---|---|---|
+| ARCH-025-COMMERCE-001 | Extract StudioWorkspace controller and make source assertions extraction-safe | Ready | - |
+| ARCH-025-COMMERCE-002 | Extract immutable Release Composer | Pending | COMMERCE-001 |
+| ARCH-025-COMMERCE-003 | Extract Release Detail clone/activation/rollback view | Pending | COMMERCE-002 |
+| ARCH-025-COMMERCE-004 | Extract Shop list and Shop Inspector views | Pending | COMMERCE-003 |
+| ARCH-025-COMMERCE-005 | Extract generic page/detail routing and reduce final StudioWorkspace shell | Pending | COMMERCE-004 |
+
 Execution graph:
 
 ```text
@@ -975,15 +1097,17 @@ ADMIN-001 -> ADMIN-002 -> ADMIN-003 -> ADMIN-004
 
 ADMIN-009 -> ADMIN-010 -> ADMIN-011 -> ADMIN-012
       -> ADMIN-013 -> ADMIN-014 -> ADMIN-015
+
+COMMERCE-001 -> COMMERCE-002 -> COMMERCE-003 -> COMMERCE-004 -> COMMERCE-005
 ```
 
-There is deliberately no dependency edge between the Shopify tranche, either Background chain, the Admin builder chain and the Admin QueueMonitor chain.
+There is deliberately no dependency edge between the Shopify tranche, either Background chain, either Admin chain and the Commerce StudioWorkspace chain.
 
 ## System Validation
 
 A separate `moda_system_test` task is **not applicable** to this structural maintainability initiative because ARCH-025 introduces no new cross-service contract, infrastructure topology, schema, queue protocol or externally observable product behaviour.
 
-Architecture completion instead requires all four sub-tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background reconciliation, all 98 frozen reconciliation tests are required to pass. CheckoutRecovery extraction additionally freezes these integrated post-ARCH-024 regression assets byte-for-byte:
+Architecture completion instead requires all six sub-tranches to preserve their frozen regression assets and introduce no full-suite regression, while each extracted owner gains focused tests. For Shopify, the durable `ARCH025-TEST-001` baseline remains authoritative; for Background reconciliation, all 98 frozen reconciliation tests are required to pass. CheckoutRecovery extraction additionally freezes these integrated post-ARCH-024 regression assets byte-for-byte:
 
 ```text
 tests/unit/services/matured-candidate.materialization.test.ts
@@ -1000,12 +1124,15 @@ The Admin tranche must preserve the seven frozen pure-policy test files listed a
 
 The QueueMonitor tranche must preserve the frozen server/API sources and dedicated server tests, retain the accepted ADMIN-009 extraction-safe UI/security harnesses for ADMIN-010..015, pass focused tests for newly introduced client/pure state/geometry helpers where applicable, pass `npm run test:unit`, `npm test`, targeted lint, production build and `git diff --check`. A new browser/React test framework is not required for this structural initiative; existing source/security assertions plus pure Node tests remain the accepted validation style.
 
+The Commerce StudioWorkspace tranche must keep the 13-test workspace, 3-test Agent Configuration state and 90-test External Tools UI assets byte-identical, retain all existing source-inspection assertions through the bounded COMMERCE-001 loader update, add focused controller/release/shop/page tests as responsibilities move, pass `npm test`, `npm run typecheck`, targeted `npm run lint`, `npm run build` and `git diff --check`.
+
 ## Open Questions
 
 None.
 
 ## Change History
 
+- 2026-10-02: Added the independent Commerce `StudioWorkspace` maintainability chain COMMERCE-001..005 against the post-ARCH-024 model-selection baseline. Preserved the public `StudioWorkspace`/`StudioPage` module boundary, route/hydration/stale-load and unknown-operation reconciliation semantics, specialised Tool/Agent Configuration boundaries, Release validation/activation/rollback invariants and current Shop views; froze the strong integration suites and made source-inspection assertions extraction-safe before JSX moves.
 - 2026-10-02: Added the independent Admin QueueMonitor maintainability chain ADMIN-009..015. Preserved the read-only public shell, protected API/server-reader boundaries, summary single-flight polling, queue-job/detail stale-request cancellation, filter/pagination/selection asymmetries, drawer mechanics, catalogue/i18n ownership and bounded failed-job diagnostics; established browser-local contracts/client and extraction-safe source assertions before hook/presentation extraction.
 - 2026-10-02: Deep ADMIN-001..008 source/task coherence review kept the eight-task graph unchanged, made ADMIN-001 the complete consume-only controller contract for all later steps, preserved pure-Node testability and UI-edge identity/effect semantics, closed the extracted-module security-scan blind spot, and characterized exact translation fallback, usage-event stale-field/tier behaviour, secondary economics rows and translation-workbook/final-step mount semantics.
 
