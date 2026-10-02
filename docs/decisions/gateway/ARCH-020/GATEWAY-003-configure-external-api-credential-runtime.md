@@ -561,8 +561,10 @@ review.
   was submitted for architect review but has not been accepted.
 - Reopen reason: the developer explicitly requested reopening after the Attempt 2
   submission so another agent execution cycle can proceed once task preparation is
-  available. The prior launcher stopped at the `review` status gate; this override
-  records the developer's explicit lifecycle decision without claiming the task.
+  available, specifically so the normal `/moda-task` launcher can recreate the
+  missing canonical implementation worktree. The prior launcher stopped at the
+  `review` status gate; this override records the developer's explicit lifecycle
+  decision without claiming the task.
 - Reopen transition: `review` to `ready`; executor and claimed_at remain null;
   attempt remains 2. The next authorized `/moda-task` claim increments it once to
   Attempt 3.
