@@ -21,10 +21,18 @@ _moda_find_workspace() {
   return 1
 }
 
-MODA_WORKSPACE_ROOT="$(_moda_find_workspace)" || {
-  _moda_fail "Moda Interact workspace root not found."
-  return 1 2>/dev/null || exit 1
-}
+if [ -n "${MODA_WORKSPACE_ROOT:-}" ]; then
+  if [ ! -f "$MODA_WORKSPACE_ROOT/.nvmrc" ] || \
+     [ ! -d "$MODA_WORKSPACE_ROOT/.codex/agents" ]; then
+    _moda_fail "MODA_WORKSPACE_ROOT does not identify a valid Moda Interact workspace: $MODA_WORKSPACE_ROOT"
+    return 1 2>/dev/null || exit 1
+  fi
+else
+  MODA_WORKSPACE_ROOT="$(_moda_find_workspace)" || {
+    _moda_fail "Moda Interact workspace root not found."
+    return 1 2>/dev/null || exit 1
+  }
+fi
 export MODA_WORKSPACE_ROOT
 
 _selector="$(tr -d '[:space:]' < "$MODA_WORKSPACE_ROOT/.nvmrc")"

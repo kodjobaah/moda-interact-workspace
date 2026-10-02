@@ -245,6 +245,19 @@ exist.
 
 ### Development baseline
 
+Before the first Node, PHP, Composer, Docker, or `wp-env`-related command in this
+task, source the workspace-owned WooCommerce toolchain bootstrap exactly once for
+the shell:
+
+```bash
+source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"
+```
+
+The bootstrap verifies the host prerequisites and canonical workspace Node
+version. It does not install PHP, Composer, Docker, or Node. A bootstrap failure
+is an environment blocker and MUST NOT be worked around by silently installing
+replacement tooling or using an ad-hoc WordPress environment.
+
 Provide a reproducible local WordPress/WooCommerce environment using repository-owned
 `wp-env` configuration.
 
@@ -661,6 +674,9 @@ exact names/results in the Completion Report.
 
 Required validation categories:
 
+- [ ] `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"` succeeds and
+  the Completion Report records the resolved Node/npm, PHP, Composer and Docker
+  versions;
 - [ ] clean npm dependency installation from lockfile;
 - [ ] clean Composer dependency installation from lockfile;
 - [ ] production asset build;

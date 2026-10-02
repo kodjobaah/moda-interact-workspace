@@ -61,6 +61,10 @@ case "$TASK_ID" in
     COMPONENT="shopify"
     REPOSITORY="moda-interact"
     ;;
+  *-WOOCOMMERCE-*)
+    COMPONENT="woocommerce"
+    REPOSITORY="moda-interact-woocommerce"
+    ;;
   *-ADMIN-*)
     COMPONENT="admin"
     REPOSITORY="moda-interact-admin"
@@ -94,7 +98,7 @@ case "$TASK_ID" in
     echo >&2
     echo "Expected the task ID to contain one of:" >&2
     echo "  SHOPIFY, ADMIN, BACKGROUND, DATABASE, GATEWAY," >&2
-    echo "  MESSAGING, SHARED, SITE, SYSTEM-TEST" >&2
+    echo "  MESSAGING, SHARED, SITE, SYSTEM-TEST, WOOCOMMERCE" >&2
     exit 1
     ;;
 esac
