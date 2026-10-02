@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T21:41:13Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-ADMIN-001
@@ -97,10 +97,10 @@ Preserve read-only handle-on-edit, existing FREE option disablement, current-una
 
 ## Work Items
 
-- [ ] Extract the complete Plan step into `plan-step.tsx`.
-- [ ] Wire it only through the accepted controller/bounded props.
-- [ ] Keep the top-level shell responsible for form/navigation.
-- [ ] Run extraction-safe security assertions and frozen policy tests.
+- [x] Extract the complete Plan step into `plan-step.tsx`.
+- [x] Wire it only through the accepted controller/bounded props.
+- [x] Keep the top-level shell responsible for form/navigation.
+- [x] Run extraction-safe security assertions and frozen policy tests.
 
 ## Interfaces / Contracts
 
@@ -116,24 +116,24 @@ Repository-internal UI extraction only. Public contract remains `MerchantPricing
 
 ## Acceptance Criteria
 
-- [ ] Both current Plan-step JSX regions are owned by the child component.
-- [ ] Commerce-model and Merchant Knowledge repair/product-policy semantics are unchanged.
-- [ ] No hidden payload or server validation moves into the child.
-- [ ] Accepted ADMIN-001 security test file is unmodified and passes.
+- [x] Both current Plan-step JSX regions are owned by the child component.
+- [x] Commerce-model and Merchant Knowledge repair/product-policy semantics are unchanged; focused security assertions pass.
+- [x] No hidden payload or server validation moves into the child; the child receives only bounded draft, action, selector, and catalogue props.
+- [x] Accepted ADMIN-001 security test file is unmodified and passes (13/13).
 
 ## Validation
 
-- [ ] `npm run prisma:generate` succeeds.
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'tests/unit/merchant-pricing-builder-payload.test.ts':'a985f89cbc9f4d41901d2c1e400935faf8453a5bd866ac0834a58b0851feb243','tests/unit/merchant-pricing-plan-model.test.ts':'e953adaa54f7aceb31cc43af21f8088c800b32d69c2fc2561dff69fc27ce1086','tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts':'610a7b0d0860490575cdec508f52e438a4e7bee87970a101b6b39d4591d6630f','tests/unit/merchant-pricing-economics.test.ts':'eb7164c84a7c056edfc461fd5b9213ab87e3537511ccf426d32f6bc6804e05e8','tests/unit/merchant-pricing-economics-override.test.ts':'434ad7ca05dad91bfb4fb62ce3ad5cbcd1f27355cc51c879dc7bd9a9967c79f7','tests/unit/merchant-pricing-translations.test.ts':'90e0e5e37687d3037712afac1828175fe8e6623550525572fbcb9d2dc57d8c92','tests/unit/merchant-pricing-translation-workbook.test.ts':'385e79ffcd761b046fb119be18de5f313461cb8d81d6a4f0fb23d3b7837e3ce8'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected frozen SHA-256 values.
-- [ ] `git diff -- tests/unit/merchant-pricing-builder-payload.test.ts tests/unit/merchant-pricing-plan-model.test.ts tests/unit/merchant-pricing-plan-merchant-knowledge.test.ts tests/unit/merchant-pricing-economics.test.ts tests/unit/merchant-pricing-economics-override.test.ts tests/unit/merchant-pricing-translations.test.ts tests/unit/merchant-pricing-translation-workbook.test.ts` is empty.
-- [ ] `git diff -- tests/security/admin-merchant-pricing-plan.test.mjs` is empty for this task and `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes.
+- [x] `npm run prisma:generate` succeeds.
+- [x] The required `node -e` frozen-file hash check prints all seven expected SHA-256 values.
+- [x] The required frozen pure/domain test diff is empty.
+- [x] `git diff -- tests/security/admin-merchant-pricing-plan.test.mjs` is empty for this task and `node --test tests/security/admin-merchant-pricing-plan.test.mjs` passes (13/13).
+- [x] `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts` passes (14/14).
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] `npm run lint -- src/components/admin/merchant/merchant-pricing-plan-builder.tsx src/components/admin/merchant/merchant-pricing-plan-builder tests/unit/merchant-pricing-plan-builder-draft.test.ts tests/security/admin-merchant-pricing-plan.test.mjs` passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` completes with 242 passed / 2 failed; both exact failures match `ARCH025-ADMIN-BUILDER-TEST-001`, with no task-introduced regression.
+- [x] `npm test` completes with 226 passed / 9 failed / 0 skipped; all nine exact failures match `ARCH025-ADMIN-BUILDER-TEST-001`, with no task-introduced regression.
+- [x] The required scoped `npm run lint -- ...` completes with zero errors; ESLint reports the two test files ignored by repository configuration.
+- [x] `npm run build` succeeds (Next reports existing BullMQ optional dependency/dynamic-require warnings).
+- [x] `git diff --check` passes.
 
 ## Stop Condition
 
@@ -147,23 +147,26 @@ None
 
 ### Status
 
-Not Started
+Completed; submitted for Architect Review.
 
 ### Files Changed
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/plan-step.tsx`
 
 ### Work Completed
 
-None
+Moved both Plan-step JSX regions into `PlanStep`. The shell continues to own the form, hidden payload fields, step selection and navigation. The child receives only the required draft fields, action callbacks, selector values and model/source-type catalogues; payload construction, server validation, economics and navigation remain outside it. Existing Commerce-model repair guidance, FREE-option behavior, product-policy feature controls, active Merchant Knowledge source options and validation are preserved.
 
 ### Validation Results
 
-None
+Focused `node --test tests/security/admin-merchant-pricing-plan.test.mjs`: 13/13 passed. The test file was not modified. Focused `node --experimental-strip-types --test tests/unit/merchant-pricing-plan-builder-draft.test.ts`: 14/14 passed. All seven frozen SHA-256 values matched; frozen unit-test and accepted ADMIN-001 security-test diffs were empty. `npm run prisma:generate` succeeded. Required scoped ESLint command completed with zero errors; it warned that the specified unit and security test files are ignored by the repository ESLint configuration. `npm run build` succeeded; Next emitted BullMQ dynamic-require and optional `@valkey/valkey-glide` resolution warnings.
+
+`npm run test:unit`: 242 passed / 2 failed. Both failures exactly match the inherited `ARCH025-ADMIN-BUILDER-TEST-001` identifiers: stale translation-workbook metadata/header/highlight identity and canonical translation issue ordering. `npm test`: 226 passed / 9 failed / 0 skipped. All nine failures exactly match the baseline identifiers (shared runtime ownership, lifetime-Free defaults, billing-pack status/i18n, shared release declaration, security boundary, and tenant KPI assertions). No task-introduced regression was observed. `git diff --check` passed.
 
 ### Deviations
 
-None
+The prepared implementation worktree had no `node_modules`; installed the exact locked dependencies with `npm ci` before running the required validation. The initial standard push default pointed at `origin/main`; published explicitly to `origin/task/ARCH-025-ADMIN-002` and aligned local upstream tracking to that task branch. No dependency manifest or lockfile changes were made.
 
 ### Assumptions
 
@@ -171,11 +174,36 @@ None
 
 ### Unresolved Issues
 
-None
+No task-owned unresolved issues. The broader inherited Admin suite failures remain tracked under `ARCH025-ADMIN-BUILDER-TEST-001`; the workspace doctor also reported `DEP-ZOD-001` in Admin, outside this presentation-only task's ownership and scope.
 
 ### Architectural Concerns
 
-None
+None. The accepted ADMIN-001 controller/action/selector contract was consumed without extension or redesign.
+
+### Prepared Execution and VCS Evidence
+
+```text
+Claim: attempt 1; executor copilot; claimed at 2026-10-02T21:41:13Z
+Parent claim commit: cadaf4e9edfcd70b09eae4c338a470c41c60cdbb (committed and pushed)
+Canonical workspace: /Users/kwadwoadomafriyie/project/moda-interact-workspace
+Parent worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-002
+Parent branch: task/ARCH-025-ADMIN-002
+Implementation worktree: /Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-002
+Implementation branch: task/ARCH-025-ADMIN-002
+Parent remote task fast-forwarded: not-needed
+Parent origin/main incorporated: already-current
+Implementation remote task fast-forwarded: not-needed
+Implementation origin/main incorporated: already-current
+Recursive submodule sync: passed
+Recursive submodule update/init: passed
+Recorded database submodule commit: cfeeb12456b4e05067a96857a8c47837d7e33bbd
+Shared workspace checkout switched/mutated for task work: no
+Shared implementation checkout switched/mutated for task work: no
+Another task worktree reused: no
+Implementation commit: 4a98b7a27198932861bbdaed462d85d7cc174f57 (pushed; local task branch tracks matching origin task branch)
+```
+
+Implementation worktree is clean and its task branch matches `origin/task/ARCH-025-ADMIN-002` at the implementation commit above.
 
 ## Architect Review
 
