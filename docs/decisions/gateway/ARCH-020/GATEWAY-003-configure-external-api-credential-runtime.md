@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: ready
 priority: 175
 executor: null
 claimed_at: null
@@ -554,3 +554,15 @@ must claim **Attempt 2 exactly once**.
 Do not start COMMERCE-012 or SYSTEM-TEST-002. GATEWAY-002 remains Superseded.
 COMMERCE-024 remains independently in Architect Review and is not changed by this
 review.
+
+## Developer Override — Reopen (2026-10-02)
+
+- Previous accepted attempt: none. Attempt 1 received Changes Requested; Attempt 2
+  was submitted for architect review but has not been accepted.
+- Reopen reason: the developer explicitly requested reopening after the Attempt 2
+  submission so another agent execution cycle can proceed once task preparation is
+  available. The prior launcher stopped at the `review` status gate; this override
+  records the developer's explicit lifecycle decision without claiming the task.
+- Reopen transition: `review` to `ready`; executor and claimed_at remain null;
+  attempt remains 2. The next authorized `/moda-task` claim increments it once to
+  Attempt 3.
