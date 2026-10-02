@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 110
 executor: null
 claimed_at: null
@@ -296,15 +296,15 @@ All seven report-only corrections are implemented in this task file; no producti
 
 ### Review Status
 
-Changes Requested
+Accepted
 
 ### Review Notes
 
-Attempt 1 implementation review found no source-level architectural defect. `SubscriptionSyncService` is the single owner of the remaining provider-to-local synchronization workflow and `BillingService.syncSubscription(...)` is a thin compatibility delegate. The implementation branch changes only the three authorised files, preserves provider-read placement, shared `ShopSettings -> Subscription` locking, stale-token fencing, no-contract projection and post-commit notification, raw UNMAPPED/SYNC_ERROR BillingPeriod upsert, mapped projection delegation, initial-Paid projection suppression, same-transaction SHOPIFY-010 finalisation, pending-state preservation and sync-error mapping.
+Attempt 2 is accepted. A1-R1 was completed exactly as a report-only reconciliation: all six Work Items, all seven Acceptance Criteria and all ten Validation items are checked; the execution claim is cleared; and the Completion Report records the reviewed implementation and report evidence. No production or test source changed and validation was not rerun, as explicitly permitted because implementation/dependency state did not change.
 
-The task cannot be accepted in its current durable state because the implementing agent moved it to `review` while every Work Item, every Acceptance Criterion and every Validation checkbox remains unchecked. Those fields are owned by the implementing repository agent and must not be silently completed by `moda_architect`. The Completion Report also omits the pushed implementation and parent-report commit identities.
+The reviewed implementation remains `3e96f68decc0051aefa9dfbb53101a3661895a9b`. The published Attempt 2 parent report tip is `ac475108c5ec5326d14cbc151d2825786b4b008b`. GitHub review confirmed `origin/task/ARCH-025-SHOPIFY-011` still points exactly at the reviewed implementation commit with no implementation delta.
 
-A1-R1 is therefore **report-only**. No production or test source correction is requested.
+The source-level conclusion from Attempt 1 is unchanged: `SubscriptionSyncService` is the single owner of the remaining provider-to-local synchronization workflow and `BillingService.syncSubscription(...)` is a thin compatibility delegate. Provider-read placement, shared `ShopSettings -> Subscription` locking, stale-token fencing, no-contract projection and post-commit notification, raw UNMAPPED/SYNC_ERROR BillingPeriod upsert, mapped projection delegation, initial-Paid projection suppression, same-transaction SHOPIFY-010 finalisation, pending-state preservation and sync-error mapping remain intact.
 
 ### Reviewed Files
 
@@ -312,31 +312,23 @@ A1-R1 is therefore **report-only**. No production or test source correction is r
 - `moda-interact/app/services/billing/subscription-sync.service.ts`
 - `moda-interact/tests/unit/services/billing/subscription-sync.service.test.ts`
 - `docs/decisions/shopify/ARCH-025/SHOPIFY-011-extract-subscription-sync-service.md`
+- `docs/decisions/shopify/ARCH-025/_index.md`
 - `docs/architecture/ARCH-025-shopify-billing-service-maintainability.md`
+- `docs/architecture/_index.md`
 
 ### Validation Reviewed
 
-- Reviewed reported focused sync suite: 6/6 passed.
-- Reviewed reported Prisma generation, typecheck, task-scoped ESLint, production build and `git diff --check`: passed.
-- Frozen regression SHA remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; frozen file is reported byte-identical.
-- Frozen suite: 18 failures, all attributed to durable baseline `ARCH025-TEST-001`.
-- Full suite: 24 failures across five files, with no task-owned failing identifier reported outside `ARCH025-TEST-001`.
-- GitHub task refs reviewed: implementation `3e96f68decc0051aefa9dfbb53101a3661895a9b`; parent report `f14293bae4bef10cb97f0100b0dac542a35dc2b9`.
+- Attempt 1 source/validation evidence retained: focused sync suite 6/6 passed; Prisma generation, typecheck, task-scoped ESLint, production build and `git diff --check` passed.
+- Frozen regression SHA remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; frozen file remained byte-identical.
+- Frozen suite: 18 failures, all within durable baseline `ARCH025-TEST-001`.
+- Full suite: 24 failures across five files, with no task-owned failing identifier outside `ARCH025-TEST-001`.
+- Attempt 2 correctly did not rerun validation because it changed only this task report.
+- GitHub refs verified during re-review: implementation task ref `3e96f68decc0051aefa9dfbb53101a3661895a9b`; parent report tip `ac475108c5ec5326d14cbc151d2825786b4b008b`.
 
 ### Architecture Conformance
 
-Source implementation conforms to ARCH-025 and SHOPIFY-011 scope. Acceptance is withheld solely because the repository-agent-owned execution/checklist record is incomplete.
+Conforms. SHOPIFY-011 completes the Shopify `BillingService` maintainability tranche without changing public contracts, provider/transaction ordering, durable billing semantics or caller boundaries. ARCH-025 itself remains **In Progress** because the independent Background tranche (`ARCH-025-BACKGROUND-001` through `ARCH-025-BACKGROUND-007`) is not complete.
 
 ### Follow-up
 
-A1-R1 — Reclaim the same task for Attempt 2 and perform a report-only reconciliation:
-
-1. mark each completed `## Work Items` checkbox `[x]`;
-2. mark each satisfied `## Acceptance Criteria` checkbox `[x]`;
-3. mark each completed `## Validation` checkbox `[x]`;
-4. record implementation commit `3e96f68decc0051aefa9dfbb53101a3661895a9b` and parent report commit `f14293bae4bef10cb97f0100b0dac542a35dc2b9`, together with final clean/remote-aligned branch evidence;
-5. leave all production and test source unchanged;
-6. validation does not need to be rerun solely for this report correction unless implementation/dependency state changes;
-7. set the task back to `review`, clear the execution claim and STOP.
-
-Do not begin or modify the independent ARCH-025 Background tranche as part of this correction.
+None for the Shopify tranche. Do not mark ARCH-025 Implemented yet; continue the independent Background tranche from its existing frontier.
