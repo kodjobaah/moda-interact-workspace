@@ -29,11 +29,11 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete; `ARCH-025-BACKGROUND-002` is Ready and BACKGROUND-003 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete at Attempt 3 and `ARCH-025-BACKGROUND-002` is architect-accepted Complete at Attempt 2; BACKGROUND-003 is Ready and BACKGROUND-004 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
-The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2; ADMIN-002 is Ready and ADMIN-003 through ADMIN-008 remain dependency-gated.
+The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` and `ARCH-025-ADMIN-002` are Complete / Accepted at Attempt 2; `ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1; ADMIN-004 is Ready and ADMIN-005 through ADMIN-008 remain dependency-gated.
 
 The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; ADMIN-010 is Ready and ADMIN-011 through ADMIN-015 remain dependency-gated.
 
@@ -1117,8 +1117,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
 | ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Complete | - |
-| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Ready | BACKGROUND-001 |
-| ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Pending | BACKGROUND-002 |
+| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Complete | BACKGROUND-001 |
+| ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Ready | BACKGROUND-002 |
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Pending | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
 | ARCH-025-BACKGROUND-006 | Extract established plan-change reconciliation | Pending | BACKGROUND-005 |
@@ -1137,9 +1137,9 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
 | ARCH-025-ADMIN-001 | Extract typed draft/controller and make security assertions extraction-safe | Complete | - |
-| ARCH-025-ADMIN-002 | Extract Plan step | Ready | ADMIN-001 |
-| ARCH-025-ADMIN-003 | Extract Catalogue placement step | Pending | ADMIN-002 |
-| ARCH-025-ADMIN-004 | Extract Shopify pricing step | Pending | ADMIN-003 |
+| ARCH-025-ADMIN-002 | Extract Plan step | Complete | ADMIN-001 |
+| ARCH-025-ADMIN-003 | Extract Catalogue placement step | Complete | ADMIN-002 |
+| ARCH-025-ADMIN-004 | Extract Shopify pricing step | Ready | ADMIN-003 |
 | ARCH-025-ADMIN-005 | Extract Usage events step | Pending | ADMIN-004 |
 | ARCH-025-ADMIN-006 | Extract Merchant content step | Pending | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
