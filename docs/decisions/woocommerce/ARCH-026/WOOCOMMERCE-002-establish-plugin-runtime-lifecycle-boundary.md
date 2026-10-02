@@ -9,11 +9,11 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 20
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 1
 depends_on:
   - ARCH-026-WOOCOMMERCE-001
 enables:
@@ -452,25 +452,25 @@ version or dependency checks.
 
 ## Work Items
 
-- [ ] Inspect the WOO-001 scaffold/runtime entry points before changing lifecycle behaviour.
-- [ ] Add/verify canonical WordPress/WooCommerce/PHP requirement headers.
-- [ ] Align README/plugin readme compatibility metadata with the canonical headers.
-- [ ] Add deterministic checked-in `wp-env` configurations for the minimum and current ARCH-026 compatibility matrices.
-- [ ] Introduce a bounded runtime-requirements/compatibility check for conditions not safely covered by native WordPress metadata.
-- [ ] Keep `moda-interact.php` as a thin lifecycle/bootstrap file.
-- [ ] Add direct-access guards to applicable PHP entry files if the WOO-001 scaffold does not already provide them.
-- [ ] Introduce one clear Moda plugin/runtime coordinator.
-- [ ] Delay Woo-dependent initialisation until the selected documented public load boundary.
-- [ ] Make runtime initialisation idempotent within one request.
-- [ ] Implement safe missing/inactive WooCommerce behaviour.
-- [ ] Implement safe unsupported-WooCommerce-version behaviour.
-- [ ] Add privileged/localisable administrator dependency/version notices.
-- [ ] Add bounded activation handling with no remote/business side effects.
-- [ ] Add bounded non-destructive deactivation handling.
-- [ ] Preserve WOO-001 Admin-page registration/rendering on both supported matrices.
-- [ ] Add focused lifecycle/compatibility tests.
-- [ ] Document the support matrix and lifecycle behaviour.
-- [ ] Verify no future feature compatibility declaration was introduced prematurely.
+- [x] Inspect the WOO-001 scaffold/runtime entry points before changing lifecycle behaviour.
+- [x] Add/verify canonical WordPress/WooCommerce/PHP requirement headers.
+- [x] Align README/plugin readme compatibility metadata with the canonical headers.
+- [x] Add deterministic checked-in `wp-env` configurations for the minimum and current ARCH-026 compatibility matrices.
+- [x] Introduce a bounded runtime-requirements/compatibility check for conditions not safely covered by native WordPress metadata.
+- [x] Keep `moda-interact.php` as a thin lifecycle/bootstrap file.
+- [x] Add direct-access guards to applicable PHP entry files if the WOO-001 scaffold does not already provide them.
+- [x] Introduce one clear Moda plugin/runtime coordinator.
+- [x] Delay Woo-dependent initialisation until the selected documented public load boundary.
+- [x] Make runtime initialisation idempotent within one request.
+- [x] Implement safe missing/inactive WooCommerce behaviour.
+- [x] Implement safe unsupported-WooCommerce-version behaviour.
+- [x] Add privileged/localisable administrator dependency/version notices.
+- [x] Add bounded activation handling with no remote/business side effects.
+- [x] Add bounded non-destructive deactivation handling.
+- [x] Preserve WOO-001 Admin-page registration/rendering on both supported matrices.
+- [x] Add focused lifecycle/compatibility tests.
+- [x] Document the support matrix and lifecycle behaviour.
+- [x] Verify no future feature compatibility declaration was introduced prematurely.
 
 ## Interfaces / Contracts
 
@@ -544,28 +544,28 @@ its actual dependencies are Complete.
 
 ## Acceptance Criteria
 
-- [ ] Main plugin metadata declares `Requires at least: 7.0`.
-- [ ] Main plugin metadata declares `Tested up to: 7.1`.
-- [ ] Main plugin metadata declares `Requires PHP: 8.1`.
-- [ ] Main plugin metadata declares `Requires Plugins: woocommerce`.
-- [ ] Woo metadata declares `WC requires at least: 11.0`.
-- [ ] Woo metadata declares `WC tested up to: 11.1`.
-- [ ] Checked-in compatibility configuration pins WordPress 7.0.6 + WooCommerce 11.0.1 + PHP 8.1.
-- [ ] Checked-in compatibility configuration pins WordPress 7.1.2 + WooCommerce 11.1.2 + PHP 8.1.
-- [ ] The plugin activates and the WOO-001 Moda Admin foundation renders on both compatibility matrices.
-- [ ] Native WordPress plugin requirements remain in use for WordPress/PHP/plugin dependency validation.
-- [ ] Missing/inactive WooCommerce cannot cause a Moda PHP fatal.
-- [ ] WooCommerce below 11.0 does not initialise the normal Moda application runtime.
-- [ ] Unsupported dependency/version state produces a bounded notice only for an appropriately privileged administrator.
-- [ ] Dependency/version notices do not leak into storefront/customer-facing output.
-- [ ] Woo-dependent code is not invoked before the selected public load boundary.
-- [ ] Runtime initialisation occurs at most once per request.
-- [ ] Activation makes no external network request and creates no remote/business state.
-- [ ] Deactivation is non-destructive.
-- [ ] React/Woo Admin foundation remains functional after deactivate/reactivate on a supported runtime.
-- [ ] Production code contains no dependency on `Automattic\\WooCommerce\\Internal\\*` or another Woo API explicitly marked internal for lifecycle/version handling.
-- [ ] No HPOS or Cart/Checkout compatibility declaration was added without a corresponding feature implementation/validation.
-- [ ] No Moda remote API, billing, recovery, event-ingress, product, discount, Merchant Knowledge or Background capability was introduced.
+- [x] Main plugin metadata declares `Requires at least: 7.0`.
+- [x] Main plugin metadata declares `Tested up to: 7.1`.
+- [x] Main plugin metadata declares `Requires PHP: 8.1`.
+- [x] Main plugin metadata declares `Requires Plugins: woocommerce`.
+- [x] Woo metadata declares `WC requires at least: 11.0`.
+- [x] Woo metadata declares `WC tested up to: 11.1`.
+- [x] Checked-in compatibility configuration pins WordPress 7.0.6 + WooCommerce 11.0.1 + PHP 8.1.
+- [x] Checked-in compatibility configuration pins WordPress 7.1.2 + WooCommerce 11.1.2 + PHP 8.1.
+- [x] The plugin activates and the WOO-001 Moda Admin foundation renders on both compatibility matrices.
+- [x] Native WordPress plugin requirements remain in use for WordPress/PHP/plugin dependency validation.
+- [x] Missing/inactive WooCommerce cannot cause a Moda PHP fatal.
+- [x] WooCommerce below 11.0 does not initialise the normal Moda application runtime.
+- [x] Unsupported dependency/version state produces a bounded notice only for an appropriately privileged administrator.
+- [x] Dependency/version notices do not leak into storefront/customer-facing output.
+- [x] Woo-dependent code is not invoked before the selected public load boundary.
+- [x] Runtime initialisation occurs at most once per request.
+- [x] Activation makes no external network request and creates no remote/business state.
+- [x] Deactivation is non-destructive.
+- [x] React/Woo Admin foundation remains functional after deactivate/reactivate on a supported runtime.
+- [x] Production code contains no dependency on `Automattic\\WooCommerce\\Internal\\*` or another Woo API explicitly marked internal for lifecycle/version handling.
+- [x] No HPOS or Cart/Checkout compatibility declaration was added without a corresponding feature implementation/validation.
+- [x] No Moda remote API, billing, recovery, event-ingress, product, discount, Merchant Knowledge or Background capability was introduced.
 
 ## Validation
 
@@ -584,30 +584,30 @@ WOO-001/WOO-002 and record their exact command lines/results.
 
 Required validation categories:
 
-- [ ] clean npm dependency installation from lockfile;
-- [ ] clean Composer dependency installation from lockfile;
-- [ ] production asset build;
-- [ ] JavaScript lint/tests where affected;
-- [ ] PHP lint/code-standard/static checks declared by the repository;
-- [ ] focused PHP runtime/lifecycle tests;
-- [ ] plugin-header requirement assertions;
-- [ ] missing/inactive-Woo runtime test;
-- [ ] unsupported-Woo-version runtime test;
-- [ ] privileged-admin notice test;
-- [ ] storefront no-notice test;
-- [ ] duplicate runtime-initialisation test;
-- [ ] activation no-network-side-effect test;
-- [ ] deactivation non-destructive test;
-- [ ] minimum `wp-env` compatibility matrix: WordPress 7.0.6 + WooCommerce 11.0.1 + PHP 8.1;
-- [ ] current `wp-env` compatibility matrix: WordPress 7.1.2 + WooCommerce 11.1.2 + PHP 8.1;
-- [ ] plugin activation smoke on each supported matrix;
-- [ ] Woo Admin `/moda-interact` render smoke on each supported matrix;
-- [ ] deactivate/reactivate smoke on a supported matrix;
-- [ ] source scan proving no new `Automattic\\WooCommerce\\Internal\\` dependency;
-- [ ] source/config scan proving no HPOS/Cart-Checkout compatibility declaration was introduced by this task;
-- [ ] `git diff --check`;
-- [ ] implementation worktree clean after commit/push;
-- [ ] implementation task branch matches its remote task branch.
+- [x] clean npm dependency installation from lockfile;
+- [x] clean Composer dependency installation from lockfile;
+- [x] production asset build;
+- [x] JavaScript lint/tests where affected;
+- [x] PHP lint/code-standard/static checks declared by the repository;
+- [x] focused PHP runtime/lifecycle tests;
+- [x] plugin-header requirement assertions;
+- [x] missing/inactive-Woo runtime test;
+- [x] unsupported-Woo-version runtime test;
+- [x] privileged-admin notice test;
+- [x] storefront no-notice test;
+- [x] duplicate runtime-initialisation test;
+- [x] activation no-network-side-effect test;
+- [x] deactivation non-destructive test;
+- [x] minimum `wp-env` compatibility matrix: WordPress 7.0.6 + WooCommerce 11.0.1 + PHP 8.1;
+- [x] current `wp-env` compatibility matrix: WordPress 7.1.2 + WooCommerce 11.1.2 + PHP 8.1;
+- [x] plugin activation smoke on each supported matrix;
+- [x] Woo Admin `/moda-interact` render smoke on each supported matrix;
+- [x] deactivate/reactivate smoke on a supported matrix;
+- [x] source scan proving no new `Automattic\\WooCommerce\\Internal\\` dependency;
+- [x] source/config scan proving no HPOS/Cart-Checkout compatibility declaration was introduced by this task;
+- [x] `git diff --check`;
+- [x] implementation worktree clean after commit/push;
+- [x] implementation task branch matches its remote task branch.
 
 If the task's controlled compatibility matrix cannot run because Docker/`wp-env`
 or another required prepared prerequisite is unavailable, do not substitute a
@@ -675,37 +675,55 @@ boundary.
 
 ### Status
 
-Not Started
+Ready for Architect Review
 
 ### Files Changed
 
-None.
+Implementation repository changes are recorded in commit `95de52f` on
+`task/ARCH-026-WOOCOMMERCE-002`:
+
+- `.wp-env.json`, `.wp-env.minimum.json`, `package.json`
+- `moda-interact.php`, `includes/Plugin.php`, `includes/Runtime.php`
+- `includes/Admin/Setup.php`
+- `composer.json`, `tests/bootstrap.php`, `tests/PluginTest.php`
+- `README.md`
 
 ### Work Completed
 
-None.
+- Declared the frozen WordPress 7.0/7.1, PHP 8.1+, and WooCommerce 11.0/11.1 support window in native plugin metadata and documentation.
+- Added minimum and current pinned `wp-env` matrices using PHP 8.1 containers.
+- Added an idempotent runtime coordinator that gates missing/unsupported WooCommerce, delays normal setup until `woocommerce_init`, and limits dependency notices to privileged administrators.
+- Kept activation/deactivation bounded and non-destructive; added direct-access guards.
+- Removed the WooCommerce internal `PageController` dependency; Admin assets now use WordPress's current-screen API.
+- Added focused lifecycle, requirement, notice, runtime, and screen-scoped asset tests.
 
 ### Validation Results
 
-Not run.
+- Bootstrap: Node `24.19.0`, npm `11.17.0`, host PHP `8.5.11`, Composer `2.10.3`, Docker `29.7.2`; Docker context `colima`, daemon available.
+- Launcher: WOO-001 dependency was `complete`; Attempt 1 was claimed by `copilot` in parent claim commit `6260528276393f95d33ec01f3cc257ff70c8affd`. Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-002`; implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-002`. Both use branch `task/ARCH-026-WOOCOMMERCE-002` in their isolated worktrees.
+- Launcher synchronization: parent pre-claim HEAD `ceffbb199a2c8914358384270de539029f5428be`; implementation pre-edit HEAD `71004b218a02c6c2943f4006f27c326211f989ca`. Both task branches already contained `origin/main`; no fast-forward was required. Recursive submodule sync/update passed with no submodule entries.
+- `npm ci`, `npm run install:php`, `npm run build`, `npm run lint:js`, `npm run lint:css`, and `npm run test:js` passed; JavaScript tests: 1 passed.
+- `npm run test:php` passed: 9 tests, 29 assertions. `npm run lint:php` passed all six PHP files.
+- Minimum matrix passed in containers: PHP `8.1.34`, WordPress `7.0.6`, WooCommerce `11.0.1`; plugin active, `/wp-admin/admin.php?page=wc-admin&path=/moda-interact` rendered `Moda Interact` and `WooCommerce extension foundation`.
+- Current matrix passed in containers: PHP `8.1.34`, WordPress `7.1.2`, WooCommerce `11.1.2`; plugin active, the same WooCommerce Admin route rendered the foundation content, and deactivate/reactivate succeeded.
+- Minimum matrix was restarted against the final source and its WooCommerce Admin route was refreshed and rendered successfully. Both task-owned environments were stopped after validation.
+- Production/config source scan found no WooCommerce internal namespace or HPOS/Cart-Checkout compatibility declaration. `git diff --check` passed.
+- Implementation commit `95de52f` was pushed to `origin/task/ARCH-026-WOOCOMMERCE-002`; final implementation worktree is clean and the task branch tracks that remote ref.
 
 ### Deviations
 
-None.
+`npm ci` reported 11 dependency audit advisories (10 moderate, 1 high); dependency remediation is outside this task's runtime-boundary scope.
 
 ### Assumptions
 
-- WOO-001 will provide the canonical plugin scaffold, dependency lockfiles,
-  local build/test commands and minimal Woo Admin page before this task becomes
-  Ready.
-- `wp-env` supports controlled PHP-version selection for the required
-  compatibility matrices.
-- ARCH-026 intentionally adopts an L-1 WordPress/WooCommerce support window for
-  its initial Woo extension.
+- The ARCH-026 compatibility window remains WordPress 7.0/7.1, WooCommerce
+  11.0/11.1 and PHP 8.1+ as specified by this task.
+- Container PHP versions from the checked-in `wp-env` configurations are the
+  compatibility evidence; the host PHP version is used only for local tooling.
 
 ### Unresolved Issues
 
-None.
+No WOO-002 implementation or validation blockers. Dependency audit advisories are noted under Deviations.
 
 ### Architectural Concerns
 
@@ -715,24 +733,94 @@ None.
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Attempt 1 is accepted. The implementation establishes the bounded local
+WordPress/WooCommerce runtime and lifecycle boundary required by WOO-002 without
+introducing Moda-hosted connectivity or merchant business behaviour.
+
+The main plugin bootstrap remains thin and uses native WordPress requirement
+metadata. `Plugin::boot()` establishes the runtime coordinator from
+`plugins_loaded`; supported WooCommerce runtimes defer normal Moda setup until
+public `woocommerce_init`, while missing or pre-11.0 WooCommerce leaves the
+application inert and registers only bounded privileged-admin feedback. Runtime
+boot and initialisation are both idempotent within a request.
+
+Activation/deactivation remain local and non-destructive. The accepted change
+also removes the prior WooCommerce internal Admin page-controller dependency and
+uses the WordPress screen API for Woo Admin asset scoping. No HPOS or
+Cart/Checkout compatibility declaration, Moda API client, WordPress REST
+application endpoint, database/queue integration, billing/recovery capability or
+other WOO-003+ behaviour was introduced.
+
+The Completion Report records implementation commit `95de52f` as pushed and the
+implementation worktree as clean/remote-aligned. The review submission reports
+parent task-report commits `32668a62` and `061a7298` as pushed. Launcher evidence
+records dedicated parent and implementation worktrees, task-branch
+synchronisation, `origin/main` incorporation and recursive-submodule preparation.
+
+`npm ci` reported 11 audit advisories (10 moderate, 1 high). They are retained as
+reported dependency-maintenance evidence. This snapshot provides no evidence that
+they violate a WOO-002 lifecycle/security acceptance invariant, so they do not
+block this bounded task. Any dependency remediation that changes the approved
+toolchain or runtime must be handled separately rather than expanding WOO-002.
 
 ### Reviewed Files
 
-None.
+- `moda-interact-woocommerce/moda-interact.php`
+- `moda-interact-woocommerce/includes/Plugin.php`
+- `moda-interact-woocommerce/includes/Runtime.php`
+- `moda-interact-woocommerce/includes/Admin/Setup.php`
+- `moda-interact-woocommerce/tests/bootstrap.php`
+- `moda-interact-woocommerce/tests/PluginTest.php`
+- `moda-interact-woocommerce/.wp-env.json`
+- `moda-interact-woocommerce/.wp-env.minimum.json`
+- `moda-interact-woocommerce/package.json`
+- `moda-interact-woocommerce/composer.json`
+- `moda-interact-woocommerce/README.md`
+- `docs/architecture/ARCH-026-woocommerce-application-foundation.md`
+- `docs/decisions/woocommerce/ARCH-026/_index.md`
 
 ### Validation Reviewed
 
-None.
+Accepted the task-recorded successful validation for:
+
+- clean npm and Composer installs;
+- production asset build;
+- JavaScript lint/style/test checks;
+- PHPUnit: 9 tests / 29 assertions;
+- PHP lint;
+- minimum matrix: WordPress 7.0.6 / WooCommerce 11.0.1 / PHP 8.1;
+- current matrix: WordPress 7.1.2 / WooCommerce 11.1.2 / PHP 8.1;
+- activation and Woo Admin render on both matrices;
+- current-matrix deactivate/reactivate;
+- final-source minimum-matrix render recheck;
+- source-policy scans for Woo internal APIs and premature compatibility declarations;
+- `git diff --check`;
+- clean, remote-aligned implementation task branch.
+
+Architect inspection independently confirmed the declared plugin headers, exact
+checked-in matrix pins, direct-access guards on production PHP entry files,
+missing/unsupported-Woo gating, privileged/storefront notice boundaries, delayed
+`woocommerce_init` setup, single-request idempotence, empty bounded lifecycle
+hooks, public screen API usage and absence of prohibited Woo internal/feature
+compatibility declarations in production source.
 
 ### Architecture Conformance
 
-Pending.
+Conforms. WOO-002 remains entirely inside the merchant-controlled WooCommerce
+plugin boundary and preserves ARCH-026's rule that the extension does not access
+Moda PostgreSQL, Redis/BullMQ or hosted credentials directly. The implementation
+uses native WordPress requirements plus the smallest additional runtime guard,
+waits for the public WooCommerce initialisation boundary, and preserves the WOO-001
+Admin foundation on both supported matrices.
 
 ### Follow-up
 
-Pending.
+Mark `ARCH-026-WOOCOMMERCE-002` Complete.
+
+`ARCH-026-WOOCOMMERCE-003` remains Pending: WOO-002 is now satisfied, but its
+other dependency `ARCH-026-API-002` is still Pending. Do not start WOO-003 until
+API-002 is architect-accepted Complete.
