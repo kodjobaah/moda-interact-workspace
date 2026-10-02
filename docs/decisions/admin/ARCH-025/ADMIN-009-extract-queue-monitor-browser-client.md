@@ -9,10 +9,10 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
-executor: copilot
-claimed_at: 2026-10-02T21:34:30Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on: []
 enables:
@@ -98,11 +98,11 @@ Add Node tests proving exact paths/query parameters, recent/full limits, directi
 
 ## Work Items
 
-- [ ] Introduce browser-only QueueMonitor response types.
-- [ ] Introduce bounded HTTP client functions and rewire the monolith without changing request lifecycle ownership yet.
-- [ ] Add focused pure/client tests.
-- [ ] Make the four source-based QueueMonitor test loaders extraction-safe without weakening assertions.
-- [ ] Prove frozen server/API sources and dedicated server tests remain byte-identical.
+- [x] Introduce browser-only QueueMonitor response types.
+- [x] Introduce bounded HTTP client functions and rewire the monolith without changing request lifecycle ownership yet.
+- [x] Add focused pure/client tests.
+- [x] Make the four source-based QueueMonitor test loaders extraction-safe without weakening assertions.
+- [x] Prove frozen server/API sources and dedicated server tests remain byte-identical.
 
 ## Interfaces / Contracts
 
@@ -126,16 +126,16 @@ None
 
 ## Validation
 
-- [ ] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'src/lib/admin/queue-monitor.ts':'f2270a0c76992059793ce1a3184b4e424675d8ea0dc2a3bbef03a0fadd202486','src/app/api/admin/queues/route.ts':'f0eaed7214b6d57341f37a04afcc6636efa325358c0ea62321b09c086c6df408','src/app/api/admin/queues/jobs/route.ts':'fd6413d4afd37a4c46208d397f9bc5903a0766a651866ba414acedb1b95368a7','src/app/api/admin/queues/jobs/detail/route.ts':'c367a8e6ac3674f54df815ee05ecfe682f65e7e5f8eb0f2feeff80a05b298bab','tests/security/admin-queue-jobs.test.mjs':'3bfc3954b2938ea6f7028f2db51cae26e943ea5d8845e1d7cab2eb87b96bd6bc','tests/security/admin-queue-job-detail.test.mjs':'e567406ccace44955ef9ff43c3e5b138e19f4be92677f13fd1e47d47ec3011e0','tests/security/admin-failed-job-detail.test.mjs':'da8dccc08b3981c45f39ca39cd0d6a0a98121e4f8b283c0cccb32db39a20e195','tests/security/admin-failed-jobs.test.mjs':'fad750721202bd646b13c1aba6c37464e0698618e6707775265f8fdb0f281609','src/components/admin/queue-monitor-refresh.ts':'14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values.
-- [ ] `git diff -- src/lib/admin/queue-monitor.ts src/app/api/admin/queues/route.ts src/app/api/admin/queues/jobs/route.ts src/app/api/admin/queues/jobs/detail/route.ts src/components/admin/queue-monitor-refresh.ts tests/security/admin-queue-jobs.test.mjs tests/security/admin-queue-job-detail.test.mjs tests/security/admin-failed-job-detail.test.mjs tests/security/admin-failed-jobs.test.mjs` is empty.
-- [ ] For ADMIN-009 only, run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` with all existing test names/assertions retained. QueueMonitor-owned assertions must pass; only the exact inherited global Admin i18n failures documented by `ARCH025-ADMIN-TEST-001` may remain red when pre-task/current parity is recorded.
-- [ ] `node --experimental-strip-types --test tests/unit/queue-monitor-client.test.ts` passes.
+- [x] `node -e "const fs=require('node:fs'),c=require('node:crypto');const e={'src/lib/admin/queue-monitor.ts':'f2270a0c76992059793ce1a3184b4e424675d8ea0dc2a3bbef03a0fadd202486','src/app/api/admin/queues/route.ts':'f0eaed7214b6d57341f37a04afcc6636efa325358c0ea62321b09c086c6df408','src/app/api/admin/queues/jobs/route.ts':'fd6413d4afd37a4c46208d397f9bc5903a0766a651866ba414acedb1b95368a7','src/app/api/admin/queues/jobs/detail/route.ts':'c367a8e6ac3674f54df815ee05ecfe682f65e7e5f8eb0f2feeff80a05b298bab','tests/security/admin-queue-jobs.test.mjs':'3bfc3954b2938ea6f7028f2db51cae26e943ea5d8845e1d7cab2eb87b96bd6bc','tests/security/admin-queue-job-detail.test.mjs':'e567406ccace44955ef9ff43c3e5b138e19f4be92677f13fd1e47d47ec3011e0','tests/security/admin-failed-job-detail.test.mjs':'da8dccc08b3981c45f39ca39cd0d6a0a98121e4f8b283c0cccb32db39a20e195','tests/security/admin-failed-jobs.test.mjs':'fad750721202bd646b13c1aba6c37464e0698618e6707775265f8fdb0f281609','src/components/admin/queue-monitor-refresh.ts':'14463cd5480aa82cd05ef569968ee579c14d94f610baab1d5ebdf1d31584a0cc'};for(const [p,x] of Object.entries(e)){const h=c.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!==x){console.error(p,h);process.exitCode=1}else console.log(p,h)}"` prints all expected SHA-256 values.
+- [x] `git diff -- src/lib/admin/queue-monitor.ts src/app/api/admin/queues/route.ts src/app/api/admin/queues/jobs/route.ts src/app/api/admin/queues/jobs/detail/route.ts src/components/admin/queue-monitor-refresh.ts tests/security/admin-queue-jobs.test.mjs tests/security/admin-queue-job-detail.test.mjs tests/security/admin-failed-job-detail.test.mjs tests/security/admin-failed-jobs.test.mjs` is empty.
+- [x] For ADMIN-009 only, run `node --test tests/security/admin-queue-monitor.test.mjs tests/security/admin-queue-details-drawer.test.mjs tests/security/admin-failed-job-detail-panel.test.mjs tests/security/admin-internationalization.test.mjs` with all existing test names/assertions retained. QueueMonitor-owned assertions pass; the two global Admin i18n failures are the exact inherited identifiers documented by `ARCH025-ADMIN-TEST-001` and reproduced at pre-task/current revisions.
+- [x] `node --experimental-strip-types --test tests/unit/queue-monitor-client.test.ts` passes (Attempt 2 rerun: 3/3).
 
-- [ ] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` passes without task-introduced regression.
-- [ ] targeted ESLint for every changed Admin source/test file passes.
-- [ ] `npm run build` succeeds.
-- [ ] `git diff --check` passes.
+- [x] `npm run test:unit` passes without task-introduced regression; the two exact inherited failures are documented by `ARCH025-ADMIN-TEST-001` and were reproduced at the pre-task revision.
+- [x] `npm test` passes without task-introduced regression; the nine exact inherited failures are documented by `ARCH025-ADMIN-TEST-001` and were reproduced at the pre-task revision.
+- [x] targeted ESLint for every changed Admin source/test file passes (Attempt 1: zero errors; two hook-dependency warnings).
+- [x] `npm run build` succeeds (Attempt 1; no source changes in Attempt 2).
+- [x] `git diff --check` passes (Attempt 1 and Attempt 2 parent report).
 
 ## Stop Condition
 
@@ -149,7 +149,7 @@ None
 
 ### Status
 
-Blocked pending architect disposition of inherited focused security/i18n and broad-suite failures. No task-introduced regression was found by same-revision comparison, but the required focused suite remains red.
+Attempt 2 completed as evidence-only rework. A1-R1 is satisfied by the same-revision comparison recorded below and baseline `ARCH025-ADMIN-TEST-001`; QueueMonitor-owned focused assertions pass, while only its two documented global Admin i18n failures remain red. A1-R2 prepared execution provenance is recorded below. No implementation source or test changes were made in Attempt 2. Returned to review for architect acceptance.
 
 ### Files Changed
 
@@ -171,6 +171,10 @@ Implementation commit `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1` (pushed to `tas
 - Implementation branch is clean at `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1` and matches its origin task branch.
 - Launcher preparation succeeded for attempt 1 with canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`, parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-009`, implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-009`, and task branch `task/ARCH-025-ADMIN-009` in both worktrees. The dedicated worktrees were used; the shared workspace and shared implementation checkout were not used for task edits, and no other task worktree was reused.
 - The preparation packet's individual parent/implementation fast-forward and origin/main incorporation fields were not retained in the available session record. The implementation starting revision recorded for attribution was `b8da632a1fcaef7e364be1dc5cca40dfafde4703`. The prepared launcher's recursive submodule synchronization/initialization completed before handoff; its complete recorded submodule list was not retained.
+- Attempt 2 followed the full prepared packet: canonical workspace `/Users/kwadwoadomafriyie/project/moda-interact-workspace`; parent worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-ADMIN-009`; implementation worktree `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-ADMIN-009`; matching `task/ARCH-025-ADMIN-009` branches. Both worktrees were reused, not created. Parent task-branch fast-forward was `not-needed`, `origin/main` was `already-current`, and start HEAD was `1b3204eb242af3f22264d9ba296749d5ed4450f3`. Implementation task-branch fast-forward was `not-needed`, `origin/main` was `already-current`, and start HEAD was `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1`.
+- Launcher ran `git submodule sync --recursive` and `git submodule update --init --recursive` successfully; recursive submodule status was `ready`. The initialized `database` gitlink is `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
+- Attempt 2 claim: from `ready`, attempt 1 to `in_progress`, attempt 2; executor `copilot`; claimed at `2026-10-02T21:34:30Z`; parent claim commit `7dc93bd9a19e265e1e882e0db6cba714bf1d21de`, committed and pushed. The shared workspace and shared implementation checkout were not used for implementation edits; no other task worktree was reused.
+- No-drift validation rerun in Attempt 2: the client test passed 3/3; all nine frozen source/test hashes matched their required SHA-256 values, and the frozen-source/test `git diff` was empty. The prior same-revision comparison remains authoritative; broad suite archaeology was not repeated per Architect Review.
 
 ### Validation Results
 
@@ -202,7 +206,9 @@ The exact retained failures at the task revision were:
 
 Same-revision comparison reports the same focused failures at `b8da632a1fcaef7e364be1dc5cca40dfafde4703`, the same two merchant-pricing unit failures, and all nine selected package-suite failures with the same assertion categories. This supports that the failures predate ADMIN-009, but does not make the required focused suite pass or waive acceptance. The named package-suite check was filtered to those nine cases; no claim is made that a full baseline `npm test` passed. Raw temporary logs and the disposable baseline snapshot have been removed. Exit codes not retained are explicitly recorded as unavailable above.
 
-Additional implementation validation reported before triage: frozen-file hashes and frozen-source diffs passed; focused client tests passed 3/3; production build passed; targeted ESLint reported zero errors and two hook-dependency warnings; and `git diff --check` passed. The focused security/i18n suite, `npm run test:unit`, and `npm test` remain unresolved red checks at both task and starting revisions.
+Attempt 1 implementation validation: focused client test 3/3; production build passed; targeted ESLint reported zero errors and two hook-dependency warnings; `git diff --check` passed; frozen hashes and frozen-source diffs passed. Attempt 2 reran the client test (3/3), all frozen hashes (all match), the frozen-source diff (empty), and report `git diff --check` (passed).
+
+The prior same-environment comparison established that the two global i18n failures in the focused four-file command, two unit failures, and nine `npm test` failures have matching identities/reasons at the starting revision. Architect Review records these inherited identifiers as `ARCH025-ADMIN-TEST-001`; no broad baseline archaeology was repeated in Attempt 2. The baseline-aware focused criterion is met because all QueueMonitor-owned assertions pass and only the two specifically permitted global i18n assertions remain red. No implementation/test source changed.
 
 ### Deviations
 
@@ -214,11 +220,16 @@ None
 
 ### Unresolved Issues
 
-Required focused QueueMonitor security/i18n validation is 27/29 at both the task and starting revisions because of inherited Shared ICU/catalogue failures. Required broad validations also contain inherited failures. The failure attribution indicates no task regression, but no documented baseline ID or architect waiver has been provided; acceptance therefore remains incomplete pending architect disposition.
+The repository retains the documented `ARCH025-ADMIN-TEST-001` Admin baseline failures. They are unchanged from the pre-task revision and do not include QueueMonitor-owned focused assertions.
 
 ### Architectural Concerns
 
 None identified in the bounded implementation. Validation disposition remains with `moda_architect`.
+
+### Final Branch State
+
+- Implementation branch `task/ARCH-025-ADMIN-009`: HEAD `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1`, equal to its task remote and clean; Attempt 2 made no implementation commit.
+- Parent task branch before report publication: claim HEAD `7dc93bd9a19e265e1e882e0db6cba714bf1d21de`, equal to its task remote and clean apart from this report edit. Final report commit and post-push refs will be verified after publication.
 
 ## Architect Review
 
