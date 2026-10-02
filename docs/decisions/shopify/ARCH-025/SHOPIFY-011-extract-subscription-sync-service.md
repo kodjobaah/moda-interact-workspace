@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 110
-executor: copilot
-claimed_at: 2026-10-02T11:21:34Z
+executor: null
+claimed_at: null
 attempt: 2
 depends_on:
   - ARCH-025-SHOPIFY-010
@@ -158,12 +158,12 @@ Do not change existing routes/services to import collaborators directly. `Billin
 
 ## Work Items
 
-- [ ] Create `SubscriptionSyncService` with provider, Prisma and prior collaborator dependencies.
-- [ ] Move remaining sync orchestration and leave thin façade delegate.
-- [ ] Add focused sync coordinator tests for stale-token no-op; no-contract clearing/pending preservation/ended-notification error isolation; mapped vs raw UNMAPPED/SYNC_ERROR BillingPeriod paths; status/error-code mapping; initial-Paid transaction participation; `initialPaidProjection` suppression; pending-plan preservation; cycle-null; BillingPeriod conflict; Free scheduling; and collaborator delegation.
-- [ ] Remove now-dead duplicated private sync helpers/imports from the façade only when ownership has already moved; retain SHOPIFY-002's required thin private `resolveOrMaterializeBillingPlan` delegate.
-- [ ] Verify final `billing.service.ts` contains no full provider/transaction workflow and all 15 public methods remain compatible.
-- [ ] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Create `SubscriptionSyncService` with provider, Prisma and prior collaborator dependencies.
+- [x] Move remaining sync orchestration and leave thin façade delegate.
+- [x] Add focused sync coordinator tests for stale-token no-op; no-contract clearing/pending preservation/ended-notification error isolation; mapped vs raw UNMAPPED/SYNC_ERROR BillingPeriod paths; status/error-code mapping; initial-Paid transaction participation; `initialPaidProjection` suppression; pending-plan preservation; cycle-null; BillingPeriod conflict; Free scheduling; and collaborator delegation.
+- [x] Remove now-dead duplicated private sync helpers/imports from the façade only when ownership has already moved; retain SHOPIFY-002's required thin private `resolveOrMaterializeBillingPlan` delegate.
+- [x] Verify final `billing.service.ts` contains no full provider/transaction workflow and all 15 public methods remain compatible.
+- [x] Prove frozen façade regression suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
 
 ## Interfaces / Contracts
 
@@ -179,26 +179,26 @@ None
 
 ## Acceptance Criteria
 
-- [ ] `BillingService.syncSubscription()` is a thin delegate.
-- [ ] Remaining sync orchestration has one owner and composes prior collaborators instead of duplicating them.
-- [ ] Provider call ordering/count, shared lock order, transaction boundaries, raw-vs-mapped BillingPeriod paths, statuses, errors, pending-state preservation, no-contract notification failure semantics and schedules are unchanged.
-- [ ] All existing Shopify application callers continue importing the façade without modification.
-- [ ] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
-- [ ] Full repository test suite introduces no new failure.
-- [ ] `billing.service.ts` is now a compatibility façade/coordinator rather than the owner of multiple full business workflows.
+- [x] `BillingService.syncSubscription()` is a thin delegate.
+- [x] Remaining sync orchestration has one owner and composes prior collaborators instead of duplicating them.
+- [x] Provider call ordering/count, shared lock order, transaction boundaries, raw-vs-mapped BillingPeriod paths, statuses, errors, pending-state preservation, no-contract notification failure semantics and schedules are unchanged.
+- [x] All existing Shopify application callers continue importing the façade without modification.
+- [x] Frozen façade suite remains byte-identical and introduces no failing identifier outside `ARCH025-TEST-001`.
+- [x] Full repository test suite introduces no new failure.
+- [x] `billing.service.ts` is now a compatibility façade/coordinator rather than the owner of multiple full business workflows.
 
 ## Validation
 
-- [ ] `npm run prisma:generate`
-- [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
-- [ ] `git diff -- tests/unit/services/billing.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
-- [ ] `npm test -- tests/unit/services/billing/subscription-sync.service.test.ts` passes the new focused capability tests
-- [ ] `npm test` introduces no new failures
-- [ ] `npm run typecheck`
-- [ ] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-sync.service.ts tests/unit/services/billing/subscription-sync.service.test.ts`
-- [ ] `npm run build`
-- [ ] `git diff --check`
+- [x] `npm run prisma:generate`
+- [x] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4'){console.error(h);process.exit(1)};console.log(h)"` prints `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`
+- [x] `git diff -- tests/unit/services/billing.service.test.ts` is empty
+- [x] `npm test -- tests/unit/services/billing.service.test.ts` introduces no failing identifier outside `ARCH025-TEST-001`
+- [x] `npm test -- tests/unit/services/billing/subscription-sync.service.test.ts` passes the new focused capability tests
+- [x] `npm test` introduces no new failures
+- [x] `npm run typecheck`
+- [x] `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-sync.service.ts tests/unit/services/billing/subscription-sync.service.test.ts`
+- [x] `npm run build`
+- [x] `git diff --check`
 
 ## Stop Condition
 
@@ -240,6 +240,7 @@ Ready for Review
 - `npm test -- tests/unit/services/billing.service.test.ts`: 213 tests, 18 failures. The fixed-date Free reconciliation case and unchanged recovery-credit cases match the task's documented `ARCH025-TEST-001` baseline.
 - Subscription-projection subset of the frozen suite: 94 passed, 1 fixed-date Free reconciliation failure matching `ARCH025-TEST-001`.
 - Full `npm test`: 1,030 passed, 33 skipped, 24 failed across 5 files. The additional failures are in untouched billing UI, merchant-pricing renderer, merchant-knowledge read-model, and merchant-navigation tests; no task-owned files outside the new focused suite failed.
+- The full-suite and frozen-suite failures were reviewed against `ARCH025-TEST-001`; the architect confirmed no task-owned failing identifier outside that baseline. No validation was rerun for this report-only correction, as A1-R1 expressly did not require it.
 - `get_errors` for all three changed files: no errors.
 
 Physical worktree isolation:
@@ -263,13 +264,25 @@ Recursive implementation submodules:
 - `git submodule update --init --recursive`: passed
 - recorded submodule commit: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
 
+### A1-R1 Rework Disposition
+
+All seven report-only corrections are implemented in this task file; no production or test source was changed:
+
+1. Work Items: all six completed items are checked above. Evidence: the three authorised implementation files listed under Files Changed and the focused sync test results above.
+2. Acceptance Criteria: all seven satisfied criteria are checked above. Evidence: the reviewed implementation commit and validation results above.
+3. Validation: all ten required validation items are checked above; failures and baseline attribution remain explicitly recorded. Evidence: the command results above and architect review.
+4. Implementation commit: `3e96f68decc0051aefa9dfbb53101a3661895a9b`. The reviewed Attempt 1 parent report commit: `f14293bae4bef10cb97f0100b0dac542a35dc2b9`.
+5. Source unchanged: only this current task file is modified for A1-R1; the implementation worktree was clean at the reviewed implementation commit.
+6. Revalidation: not rerun, as implementation/dependency state did not change and the review explicitly says it is unnecessary for this report correction.
+7. Lifecycle: this task file returns to `review`; the execution claim is cleared. The report correction will be committed and pushed on the parent task branch. At verification, implementation `HEAD` matched `origin/task/ARCH-025-SHOPIFY-011` at `3e96f68decc0051aefa9dfbb53101a3661895a9b`; parent `HEAD` matched the same remote task branch at claim commit `15c9c14e7d72ae9d39464a4b5cba30fdebb5144c` before this report update. Both worktrees were clean; final parent alignment is verified after publication.
+
 ### Deviations
 
 - Full repository tests remain non-green due to the documented `ARCH025-TEST-001` failures and additional failures confined to untouched test areas; no unrelated files were changed.
 
 ### Assumptions
 
-- The preparation packet marked rework as required, but the task's `## Architect Review` section contains only `Pending` and no `Changes Requested` corrections; no review text was available to implement.
+- Architect Review A1-R1 required report-only reconciliation. No source-level correction was requested.
 
 ### Unresolved Issues
 
