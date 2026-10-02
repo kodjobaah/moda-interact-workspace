@@ -117,21 +117,25 @@ contracts, Gateway infrastructure or private platform credentials.
 
 ### `moda-interact-database` / `moda_database`
 
-Owns the additive ARCH-026 durable identity boundary: explicit `Shop.platform` and
-one one-to-one `WooCommerceInstallation` record containing the canonical Woo site
-URL, current one-way installation-credential digest/version and revocation state.
+Owns the additive ARCH-026 durable identity boundary: shared `commerce.Shop.platform`
+plus one provider-owned `woocommerce.WooCommerceInstallation` record containing the
+canonical Woo site URL, current one-way installation-credential digest/version and
+revocation state. The dedicated `woocommerce` PostgreSQL schema owns Woo-specific
+installation/authentication persistence; `commerce` remains the shared tenant domain.
 It does not own the HTTP connection flow, raw secret generation, request
 authentication or provider business workflows.
 
 ## Data Model
 
-ARCH-026 keeps `commerce.Shop` as the single Moda tenant. DATABASE-001 adds only:
+ARCH-026 keeps `commerce.Shop` as the single Moda tenant. DATABASE-001 adds a
+provider discriminator to that shared tenant and places Woo-specific connection state
+under a dedicated `woocommerce` PostgreSQL schema:
 
 ```text
 commerce.Shop
     platform = SHOPIFY | WOOCOMMERCE
     |
-    `-- WooCommerceInstallation?
+    `-- woocommerce.WooCommerceInstallation?
             id
             shopId                 UNIQUE -> Shop.id
             canonicalSiteUrl       UNIQUE
@@ -153,7 +157,8 @@ other Shopify-specific historical fields.
 ## Contracts
 
 WOO-001 and WOO-002 create no cross-service runtime contract. DATABASE-001 creates
-a durable database contract only: `Shop.platform` plus `WooCommerceInstallation`.
+a durable database contract only: `commerce.Shop.platform` plus
+`woocommerce.WooCommerceInstallation`.
 The future hosted API must authenticate an installation using installation ID plus
 a presented raw credential whose SHA-256 digest matches the stored digest, then
 resolve the authoritative `shopId`; site URL alone is not authentication.
@@ -221,8 +226,10 @@ local plugin runtime/lifecycle behaviour and requires no deployment migration or
 backwards-compatibility adapter.
 
 DATABASE-001 is an additive pre-production migration that may execute independently.
-It preserves existing Shop data and defaults/backfills all pre-existing Shop rows to
-`SHOPIFY`; there is no existing Woo installation state to migrate.
+It preserves existing `commerce.Shop` data, defaults/backfills all pre-existing Shop
+rows to `SHOPIFY`, creates the dedicated `woocommerce` schema, and adds the cross-schema
+one-to-one Woo installation relation; there is no existing Woo installation state to
+migrate.
 
 ## Decisions / Tasks
 
@@ -256,3 +263,6 @@ tasks remain intentionally iterative and are not frozen by these materialised ta
 - 2026-10-02: DATABASE-001 materialised independently to persist explicit Shop platform
   identity plus the minimal one-to-one Woo installation credential/revocation state
   required by the future hosted API.
+- 2026-10-02: DATABASE-001 schema ownership clarified: shared tenant/platform state remains
+  in `commerce`; Woo-specific installation/authentication state is owned by the dedicated
+  `woocommerce` PostgreSQL schema.

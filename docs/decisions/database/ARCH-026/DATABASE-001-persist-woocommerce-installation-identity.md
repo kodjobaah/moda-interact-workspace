@@ -47,7 +47,7 @@ commerce.Shop
     |
     | platform = WOOCOMMERCE
     |
-    `-- 0..1 commerce.WooCommerceInstallation
+    `-- 0..1 woocommerce.WooCommerceInstallation
             |
             +-- canonicalSiteUrl
             +-- credentialDigest (one-way only)
@@ -159,6 +159,25 @@ Add:
 
 The migration MUST preserve every existing `Shop` row and establish `platform = SHOPIFY` for all rows that existed before ARCH-026.
 
+### Required PostgreSQL / Prisma schema registration
+
+Add the provider-owned PostgreSQL schema to the Prisma datasource's `schemas` list:
+
+```text
+woocommerce
+```
+
+Retain every existing schema registration.
+
+The migration MUST create the schema idempotently before creating Woo-owned objects:
+
+```sql
+CREATE SCHEMA IF NOT EXISTS "woocommerce";
+```
+
+`commerce` remains the owner of shared tenant state such as `Shop` and `ShopPlatform`.
+WooCommerce-specific installation/authentication state belongs to `woocommerce`.
+
 ### Required `WooCommerceInstallationStatus` enum
 
 Add exactly:
@@ -168,7 +187,7 @@ enum WooCommerceInstallationStatus {
   ACTIVE
   REVOKED
 
-  @@schema("commerce")
+  @@schema("woocommerce")
 }
 ```
 
@@ -191,7 +210,7 @@ model WooCommerceInstallation {
   updatedAt        DateTime                          @default(now()) @updatedAt @db.Timestamptz(3)
 
   @@index([status, shopId])
-  @@schema("commerce")
+  @@schema("woocommerce")
 }
 ```
 
@@ -236,7 +255,7 @@ WooCommerceInstallation_status_shopId_idx
 Create the FK:
 
 ```text
-commerce.WooCommerceInstallation.shopId
+woocommerce.WooCommerceInstallation.shopId
     -> commerce.Shop.id
     ON DELETE CASCADE
     ON UPDATE RESTRICT
@@ -245,7 +264,7 @@ commerce.WooCommerceInstallation.shopId
 Add a bounded update guard using deterministic names:
 
 ```text
-commerce.arch026_woocommerce_installation_guard()
+woocommerce.arch026_woocommerce_installation_guard()
 arch026_woocommerce_installation_guard
 ```
 
@@ -426,7 +445,24 @@ support
 public
 ```
 
-except for Prisma-generated relation metadata where the schema source references `Shop`; physical migration SQL for ARCH-026 must modify only the required `commerce` enum/table/index/constraint/function/trigger objects.
+except for Prisma-generated relation metadata where the schema source references `Shop`.
+
+Physical migration SQL for ARCH-026 may:
+
+```text
+commerce
+    add ShopPlatform
+    add Shop.platform
+    add the required Shop index/check
+
+woocommerce
+    create the schema
+    create WooCommerceInstallationStatus
+    create WooCommerceInstallation
+    create the required FK/indexes/checks/guard function/trigger
+```
+
+It MUST NOT create `WooCommerceInstallation`, `WooCommerceInstallationStatus` or the Woo installation guard function in `commerce`.
 
 In particular, this task MUST NOT change billing plan/subscription/usage schema.
 
@@ -435,8 +471,9 @@ In particular, this task MUST NOT change billing plan/subscription/usage schema.
 - [ ] Add `commerce.ShopPlatform` with exactly `SHOPIFY` and `WOOCOMMERCE`.
 - [ ] Add `Shop.platform` with default `SHOPIFY` and the `platform,status` index.
 - [ ] Add the database check preventing Woo shops from carrying `shopifyShopId`.
-- [ ] Add `commerce.WooCommerceInstallationStatus` with exactly `ACTIVE` and `REVOKED`.
-- [ ] Add `commerce.WooCommerceInstallation` with the exact identity, credential and lifecycle shape defined by this task.
+- [ ] Register/create the `woocommerce` PostgreSQL schema without altering existing schema registrations.
+- [ ] Add `woocommerce.WooCommerceInstallationStatus` with exactly `ACTIVE` and `REVOKED`.
+- [ ] Add `woocommerce.WooCommerceInstallation` with the exact identity, credential and lifecycle shape defined by this task.
 - [ ] Add the one-to-one inverse relation on `Shop`.
 - [ ] Add required uniqueness, digest-length, version, revocation-state and non-blank-site constraints.
 - [ ] Add the `shopId` FK with `ON DELETE CASCADE` / `ON UPDATE RESTRICT`.
@@ -474,6 +511,12 @@ shopifyShopId = NULL
 ```
 
 ### Woo installation contract
+
+The provider-specific record is physically owned by:
+
+```text
+woocommerce.WooCommerceInstallation
+```
 
 ```text
 WooCommerceInstallation.id
@@ -533,7 +576,10 @@ A future ARCH-026 hosted-API installation/authentication task will depend on thi
 - [ ] `Shop_platform_shopify_id_check` rejects a WOOCOMMERCE Shop with non-null `shopifyShopId`.
 - [ ] A SHOPIFY Shop with null `shopifyShopId` remains valid.
 - [ ] `Shop_platform_status_idx` exists.
-- [ ] `WooCommerceInstallationStatus` exists with exactly `ACTIVE` and `REVOKED`.
+- [ ] PostgreSQL schema `woocommerce` exists and is registered in the Prisma datasource.
+- [ ] `WooCommerceInstallationStatus` exists in `woocommerce` with exactly `ACTIVE` and `REVOKED`.
+- [ ] `WooCommerceInstallation` exists in `woocommerce`, not `commerce`.
+- [ ] The Woo installation guard function/trigger is owned by `woocommerce`, not `commerce`.
 - [ ] `WooCommerceInstallation.shopId` is one-to-one with `Shop`.
 - [ ] `WooCommerceInstallation.canonicalSiteUrl` is unique and rejects blank/whitespace-only values.
 - [ ] `WooCommerceInstallation.credentialDigest` rejects any value that is not exactly 32 bytes.
@@ -563,9 +609,11 @@ Required validation:
 - [ ] Prisma schema validation passes;
 - [ ] Prisma client generation passes;
 - [ ] focused static ARCH-026 schema/migration/ERD validator passes;
+- [ ] PostgreSQL catalog validation proves the Woo table, enum, guard function and trigger are owned by `woocommerce` and no duplicate Woo objects exist in `commerce`;
 - [ ] fresh PostgreSQL migration rehearsal passes;
 - [ ] upgrade PostgreSQL migration rehearsal passes;
 - [ ] migration rehearsal proves existing Shopify Shop preservation/backfill;
+- [ ] migration rehearsal proves `commerce.Shop` -> `woocommerce.WooCommerceInstallation` cross-schema FK behaviour;
 - [ ] migration rehearsal proves Woo installation uniqueness/FK/check/trigger behaviour;
 - [ ] migration rehearsal proves cascade deletion;
 - [ ] migration rehearsal proves no Woo rows are seeded;

@@ -8,11 +8,11 @@ Repository: `moda-interact-database`.
 
 Coordinator: `moda_architect`.
 
-The database stream establishes only the minimum durable Woo installation identity needed by the later hosted Moda API. It does not generalise billing, customers or recovery persistence.
+The database stream establishes only the minimum durable Woo installation identity needed by the later hosted Moda API. Shared tenant/platform state remains in `commerce`; Woo-specific installation/authentication state is persisted in the dedicated `woocommerce` PostgreSQL schema. It does not generalise billing, customers or recovery persistence.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [DATABASE-001](DATABASE-001-persist-woocommerce-installation-identity.md) | Add explicit Shop platform identity and one secure WooCommerce installation/credential record per Woo tenant | Ready | - |
+| [DATABASE-001](DATABASE-001-persist-woocommerce-installation-identity.md) | Add `commerce.Shop` platform identity plus one secure `woocommerce.WooCommerceInstallation` record per Woo tenant | Ready | - |
 
 ## Execution frontier
 
