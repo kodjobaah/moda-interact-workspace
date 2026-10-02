@@ -1156,7 +1156,7 @@ None.
 - Attempt 1 claim metadata from parent history: executor `copilot`, claimed at `2026-10-02T07:46:08Z`, attempt `1`; durable claim commit `cd4ef983c823e7b1abc3b444adc10568b27ad078`. The attempt-1 Changes Requested review is commit `55089c6007302c79ee895fd144e86ba91b3a9581`.
 - Attempt 2 claim metadata: executor `copilot`, claimed at `2026-10-02T09:21:33Z`, attempt `2`; durable parent claim commit `bb9df450128b3c45d98fb9bd3f675f7b2785c89e`.
 - Final implementation commit and remote task-branch head: `c3a7fe7ff4414fa8c731361dbc171f52f39bb59d`; local and `origin/task/ARCH-024-COMMERCE-007` matched, and the implementation worktree was clean.
-- The parent Completion Report commit and remote task-branch head were pushed and verified equal; the exact resulting SHA is reported in the task handoff.
+- Parent Completion Report publication commit and remote task-branch head: `a264d9d1cd1b20a4be4de843a544c5a0bf4962a3`; local and `origin/task/ARCH-024-COMMERCE-007` matched, and the parent worktree was clean at verification. This evidence-only follow-up updates the report without changing the implementation commit or task status.
 
 ## Architect Review
 
