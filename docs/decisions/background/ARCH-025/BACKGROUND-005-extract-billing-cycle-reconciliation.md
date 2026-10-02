@@ -75,7 +75,7 @@ Earlier ARCH-025 Background collaborators are consumable dependencies.
 - Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
 - Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
-- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
+- `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 146 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
 - Full `npm test` must pass. If execution reveals a pre-existing baseline condition, stop and report it to `moda_architect` unless it is already durably documented in `docs/development-baseline.md`; do not silently redefine the baseline inside this task.
@@ -141,7 +141,7 @@ Paid same-plan transition continues to schedule `recoveryCapacityResumeService` 
 - [ ] Reuse queue/timing/locking collaborators and existing canonical projection/rollover services.
 - [ ] Add focused tests for cycle discovery, pack-enabled Free exact projection, pending/cancellation projection, before/inside drain window, both distinct pre-close error-clearing behaviours, provider null/lag, same-plan rollover and capacity-resume isolation.
 - [ ] Prove no provider call is made by the handler itself; it consumes the coordinator's snapshot result.
-- [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
+- [ ] Prove the frozen 146-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
 
@@ -162,14 +162,14 @@ Internal cycle handler receives already-loaded current plan/provider evidence, e
 - [ ] Exactly one coordinator-captured runtime config is reused for usage publishing.
 - [ ] Existing canonical rollover/projection services own durable period transitions.
 - [ ] Exact timing, CAS, error clearing and best-effort capacity-resume semantics remain unchanged.
-- [ ] Frozen regression suite remains byte-identical and all 98 tests pass.
+- [ ] Frozen regression suite remains byte-identical and all 146 tests pass.
 
 ## Validation
 
 - [ ] `npm run prisma:generate`
 - [ ] `node -e "const fs=require('node:fs'),crypto=require('node:crypto');const p='tests/unit/services/billing-subscription-reconciliation.service.test.ts';const h=crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');if(h!=='0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239'){console.error(h);process.exit(1)};console.log(h)"` prints the expected SHA-256
 - [ ] `git diff -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` is empty
-- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 98 frozen regression tests
+- [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation.service.test.ts` passes all 146 frozen regression tests
 - [ ] `npm test -- tests/unit/services/billing-subscription-reconciliation/billing-cycle-reconciliation.service.test.ts` passes
 - [ ] `npm test -- tests/unit/runtime/entrypoint-isolation.test.ts` passes
 - [ ] `npm test` passes with no regression
