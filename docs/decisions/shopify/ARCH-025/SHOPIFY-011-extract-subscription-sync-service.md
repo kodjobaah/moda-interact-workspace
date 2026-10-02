@@ -9,7 +9,7 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 110
 executor: copilot
 claimed_at: 2026-10-02T10:27:12Z
@@ -213,35 +213,71 @@ Do not pursue a line-count target mechanically. Completion is defined by respons
 
 ### Status
 
-Not Started
+Ready for Review
 
 ### Files Changed
 
-None.
+- `app/services/billing/billing.service.ts`
+- `app/services/billing/subscription-sync.service.ts`
+- `tests/unit/services/billing/subscription-sync.service.test.ts`
 
 ### Work Completed
 
-None.
+- Extracted provider-to-local subscription synchronization into `SubscriptionSyncService`; `BillingService.syncSubscription()` is now a thin delegate.
+- Preserved all 15 public `BillingService` methods, current exports, constructor compatibility, and the private `resolveOrMaterializeBillingPlan(...)` compatibility delegate.
+- Reused the existing plan-resolution, activation/finalisation, lock/retry, BillingPeriod projection, and ended-notification collaborators without modifying their production files.
+- Added six focused tests for stale-token no-op, commit-before-notification, raw unmapped projection, mapped projection, initial Paid intent suppression, and same-transaction Paid finalisation.
 
 ### Validation Results
 
-Not run.
+- `npm run prisma:generate`: passed.
+- Frozen regression integrity: SHA-256 is `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`; `git diff -- tests/unit/services/billing.service.test.ts` is empty.
+- `npm test -- tests/unit/services/billing/subscription-sync.service.test.ts`: passed, 6 tests.
+- `npm run typecheck`: passed.
+- `npx eslint app/services/billing/billing.service.ts app/services/billing/subscription-sync.service.ts tests/unit/services/billing/subscription-sync.service.test.ts`: passed; ESLint emitted its existing TypeScript-version compatibility warning.
+- `npm run build`: passed.
+- `git diff --check`: passed.
+- `npm test -- tests/unit/services/billing.service.test.ts`: 213 tests, 18 failures. The fixed-date Free reconciliation case and unchanged recovery-credit cases match the task's documented `ARCH025-TEST-001` baseline.
+- Subscription-projection subset of the frozen suite: 94 passed, 1 fixed-date Free reconciliation failure matching `ARCH025-TEST-001`.
+- Full `npm test`: 1,030 passed, 33 skipped, 24 failed across 5 files. The additional failures are in untouched billing UI, merchant-pricing renderer, merchant-knowledge read-model, and merchant-navigation tests; no task-owned files outside the new focused suite failed.
+- `get_errors` for all three changed files: no errors.
+
+Physical worktree isolation:
+- canonical workspace root: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`
+- parent worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-025-SHOPIFY-011`
+- parent branch: `task/ARCH-025-SHOPIFY-011`
+- implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-025-SHOPIFY-011`
+- implementation branch: `task/ARCH-025-SHOPIFY-011`
+- shared workspace checkout switched/mutated for task work: no
+- shared implementation checkout switched/mutated for task work: no
+- another task worktree reused: no
+
+Start-of-attempt synchronization:
+- parent remote task branch fast-forwarded: not-needed
+- parent `origin/main` incorporated: already-current
+- implementation remote task branch fast-forwarded: not-needed
+- implementation `origin/main` incorporated: already-current
+
+Recursive implementation submodules:
+- `git submodule sync --recursive`: passed
+- `git submodule update --init --recursive`: passed
+- recorded submodule commit: `database` at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`
 
 ### Deviations
 
-None.
+- Full repository tests remain non-green due to the documented `ARCH025-TEST-001` failures and additional failures confined to untouched test areas; no unrelated files were changed.
 
 ### Assumptions
 
-None.
+- The preparation packet marked rework as required, but the task's `## Architect Review` section contains only `Pending` and no `Changes Requested` corrections; no review text was available to implement.
 
 ### Unresolved Issues
 
-None.
+- Full repository test suite does not pass in this worktree; see the validation results for the failing test files and counts.
 
 ### Architectural Concerns
 
-None.
+- None. All implementation changes remain within the authorized façade, new sync service, and new focused test file.
 
 ## Architect Review
 
