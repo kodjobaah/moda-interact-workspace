@@ -1834,3 +1834,14 @@ the first failing stage.
 
 COMMERCE-012 and SYSTEM-TEST-002 remain Pending in this snapshot because GATEWAY-003
 is not Complete.
+
+## GATEWAY-003 Attempt 2 architect review — 2026-10-02
+
+ARCH-020-GATEWAY-003 remains **Ready, Attempt 2 retained, claim clear** after the
+developer override. Attempt 2 satisfied the route, HMAC and task-record corrections;
+the remaining C21 §7 gate is measured per-replica capacity for the accepted four-worker
+Commerce runtime. Architect conflict reconciliation produced implementation head
+`1102490f`, which must be preserved as the Attempt 3 starting point.
+
+The next `/moda-task ARCH-020-GATEWAY-003` claim increments to Attempt 3 exactly once.
+COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 remain gated.

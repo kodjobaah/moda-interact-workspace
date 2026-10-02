@@ -10,7 +10,7 @@ Definitions are on local main for review by explicit developer request. Individu
 |---|---|---|---|
 | [ARCH-020-GATEWAY-001](GATEWAY-001-deploy-commerce-topology-through-the-render-blueprint.md) | Deploy Commerce topology through the Render Blueprint | complete (Accepted, Attempt 4) | ARCH-020-COMMERCE-002, ARCH-020-BACKGROUND-001, ARCH-020-COMMERCE-008, ARCH-020-COMMERCE-011, ARCH-020-COMMERCE-013, ARCH-020-COMMERCE-017, ARCH-020-COMMERCE-018, ARCH-020-COMMERCE-019 |
 | [ARCH-020-GATEWAY-002](GATEWAY-002-add-commerce-operational-dashboards-and-alerts.md) | Add Commerce operational dashboards and alerts | superseded (developer-managed Grafana, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-010, ARCH-020-BACKGROUND-002 |
-| [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | ready (Changes Requested, Attempt 1) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
+| [ARCH-020-GATEWAY-003](GATEWAY-003-configure-external-api-credential-runtime.md) | Configure external API credential runtime | ready (Changes Requested, Attempt 2) | ARCH-020-GATEWAY-001, ARCH-020-COMMERCE-020, ARCH-020-COMMERCE-021, ARCH-020-COMMERCE-026, ARCH-020-COMMERCE-028, ARCH-020-COMMERCE-029 |
 
 ## ARCH-020-GATEWAY-001 readiness — 2026-09-22
 
@@ -124,3 +124,16 @@ a replay-strategy migration rather than an env-only rotation; and reconcile task
 checklists.
 
 GATEWAY-002 remains Superseded. COMMERCE-012 and SYSTEM-TEST-002 remain Pending.
+
+## GATEWAY-003 Attempt 2 architect review — 2026-10-02
+
+**Changes Requested / Ready, Attempt 2 retained; claim clear.** The local HAProxy
+proof, HMAC-rotation wording and task-record reconciliation are accepted. The sole
+remaining gate is C21 §7 per-replica memory capacity. The architect-resolved Gateway
+merge `1102490f` preserves both the new credential validators and mainline
+routing/security validations and is the required Attempt 3 starting point.
+
+Attempt 3 must preserve four-worker concurrency, measure Commerce host + four-worker
+peak process-tree RSS, choose/prove a sufficient Render Commerce plan for test and
+production with at least 25% headroom, then rerun the complete Gateway validation.
+COMMERCE-012, SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 remain gated.

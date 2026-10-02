@@ -25,7 +25,7 @@ enables:
   - ARCH-020-COMMERCE-012
   - ARCH-020-SYSTEM-TEST-002
 created: 2026-09-21
-updated: 2026-09-22
+updated: 2026-10-02
 ---
 
 # Configure external API credential runtime
@@ -194,27 +194,54 @@ Expected mirrored branch: `task/ARCH-020-GATEWAY-003`, Attempt 2. Implementation
 
 ### Review Status
 
-Changes Requested — Attempt 1.
+Changes Requested — Attempt 2.
 
 ### Review Notes
 
-Definition only; no implementation acceptance.
+Attempt 2 is reviewed in place. A1-R1, A1-R3 and A1-R4 are satisfied. A1-R2
+correctly surfaced a deployment-capacity gap instead of weakening the accepted
+four-worker C21 runtime contract. The developer subsequently reopened the task to
+`ready`, Attempt 2 retained and claim clear, so the next authorized `/moda-task`
+claim is Attempt 3 exactly once. Architect conflict reconciliation also produced
+Gateway implementation head `1102490f`; preserve that merged validator state.
 
 ### Reviewed Files
 
-Not applicable.
+- `render.test.yaml`
+- `render.production.yaml`
+- `haproxy/haproxy.cfg`
+- `tests/validate-render-blueprints.sh`
+- `tests/validate-render-blueprints-negative.sh`
+- `tests/run-tests.sh`
+- `scripts/validate:arch020-external-runtime`
+- `docs/commerce-deployment.md`
+- C21 §2.2 and §7
+- Attempt 2 Completion Report and Developer Override
 
 ### Validation Reviewed
 
-Not applicable.
+- Submitted `bash tests/run-tests.sh`: `162 passed, 0 failed`.
+- Submitted `./scripts/validate:arch020-external-runtime`: PASS.
+- Architect rerun on the exact post-merge snapshot:
+  - `bash tests/validate-render-blueprints.sh render.test.yaml`: PASS.
+  - `bash tests/validate-render-blueprints.sh render.production.yaml`: PASS.
+  - `bash tests/validate-render-blueprints-negative.sh`: PASS.
 
 ### Architecture Conformance
 
-Awaiting implementation.
+Partially conformant. Secret placement, U15/U16 routing, packaged-runtime
+consumption and HMAC-rotation wording conform. C21 §7 capacity remains unresolved:
+the accepted four-worker hard ceilings total 576 MiB before the Commerce host, the
+512 MiB test plan is insufficient, and the 1 GiB production plan has not been proven
+sufficient with host/process headroom.
 
 ### Follow-up
 
-Reconcile readiness/indexes after prerequisite acceptance; no automatic launch.
+Return through the existing `ready`, Attempt 2 state. Do not alter the four-worker
+contract. Attempt 3 is bounded to the capacity correction below and final report/VCS
+reconciliation; preserve implementation merge `1102490f` unless the capacity work
+requires an authorized Blueprint/validator/runbook change. COMMERCE-012,
+SYSTEM-TEST-002 and ARCH-024-GATEWAY-001 remain gated.
 ### Architect scope clarification — 2026-09-22
 
 C21 was added after the original GATEWAY-001 U01–U14 route contract. This task now
@@ -568,3 +595,37 @@ review.
 - Reopen transition: `review` to `ready`; executor and claimed_at remain null;
   attempt remains 2. The next authorized `/moda-task` claim increments it once to
   Attempt 3.
+## Attempt 2 — Changes Requested (2026-10-02)
+
+Attempt 2 closed A1-R1, A1-R3 and A1-R4. The only remaining acceptance gate is C21
+§7 per-replica memory capacity. The developer override legitimately returned the
+task from `review` to `ready` without claiming Attempt 3.
+
+### A2-R1 — prove a sufficient Commerce replica plan without reducing concurrency
+
+**Gateway Blueprint/validation/runbook/report changes are authorized; Commerce runtime
+source changes are not.**
+
+Preserve the accepted maximum of four active transform workers. Attempt 3 must:
+
+1. preserve the conflict-resolved Gateway implementation head `1102490f` as its
+   synchronized starting point;
+2. run a bounded local production-host capacity proof using the accepted COMMERCE-029
+   packaged runtime with the Commerce production build and four concurrent fresh
+   workers; measure the Commerce host plus child-worker process-tree peak RSS while
+   exercising the accepted worker/WASM profile;
+3. configure the Commerce service plan in **both** `render.test.yaml` and
+   `render.production.yaml` to a Render plan whose memory is sufficient for that
+   measured peak with at least 25% operating headroom; `1c-2g` is the architect-approved
+   default target unless the measured proof demonstrates another plan is sufficient;
+4. update the positive/negative Blueprint validators and deployment runbook to assert
+   and document the chosen Commerce plan/capacity decision;
+5. rerun `./scripts/validate:arch020-external-runtime`, `bash tests/run-tests.sh`, both
+   Blueprint validators, shell syntax checks and `git diff --check`;
+6. record the measured peak, chosen plan, headroom calculation, Attempt 3 implementation
+   commit, parent report commit, clean worktrees and remote-head equality.
+
+Do not silently reduce the four-worker cap. If the bounded host-level proof cannot be
+constructed without changing Commerce runtime source, stop and return the task
+`blocked` with the exact missing measurement seam rather than inventing capacity
+evidence.
