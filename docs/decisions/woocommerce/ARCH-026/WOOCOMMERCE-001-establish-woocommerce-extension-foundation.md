@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 10
 executor: copilot
 claimed_at: 2026-10-02T12:30:02Z
@@ -774,11 +774,11 @@ worktrees created/resolved by the launcher.
 
 ### Status
 
-Ready for architect review after Attempt 3. Colima was started by the developer; the configured Docker daemon became reachable and all required WordPress/WooCommerce runtime checks passed. Do not begin WOO-002 until architect review accepts this task as complete.
+Ready for architect review after Attempt 4. Attempt 3's validated implementation is preserved; this attempt only resolved the requested `.gitignore` hygiene change and completed the publication/evidence corrections. Do not begin WOO-002 until architect review accepts this task as complete.
 
 ### Files Changed
 
-Implementation repository: `.distignore`, `.editorconfig`, `.eslintrc.js`, `.gitignore`, `.prettierrc.json`, `.wp-env.json`, `CHANGELOG.md`, `README.md`, `composer.json`, `composer.lock`, `includes/Admin/Setup.php`, `includes/Plugin.php`, `languages/woo-plugin-setup.pot`, `moda-interact.php`, `package-lock.json`, `package.json`, `phpunit.xml.dist`, `src/index.js`, `src/index.scss`, `src/page.js`, `tests/PluginTest.php`, `tests/bootstrap.php`, `tests/js/page.test.js`, and `webpack.config.js`. The package manifest was updated during Attempt 3 to include the required Composer autoloader in the plugin ZIP. The implementation worktree retains the previous attempt's unstaged `.gitignore` exclusion for `.phpunit.cache/`; it was preserved. Parent workspace: this task file only. Generated `build/`, `vendor/`, `node_modules/`, ZIP output and PHPUnit cache are not committed.
+Implementation repository: `.distignore`, `.editorconfig`, `.eslintrc.js`, `.gitignore`, `.prettierrc.json`, `.wp-env.json`, `CHANGELOG.md`, `README.md`, `composer.json`, `composer.lock`, `includes/Admin/Setup.php`, `includes/Plugin.php`, `languages/woo-plugin-setup.pot`, `moda-interact.php`, `package-lock.json`, `package.json`, `phpunit.xml.dist`, `src/index.js`, `src/index.scss`, `src/page.js`, `tests/PluginTest.php`, `tests/bootstrap.php`, `tests/js/page.test.js`, and `webpack.config.js`. The package manifest was updated during Attempt 3 to include the required Composer autoloader in the plugin ZIP. Attempt 4 deliberately restored, committed, and pushed the `.gitignore` rule excluding `.phpunit.cache/`. Parent workspace: this task file only. Generated `build/`, `vendor/`, `node_modules/`, ZIP output and PHPUnit cache are not committed.
 
 ### Work Completed
 
@@ -803,6 +803,13 @@ Attempt 3 resumed the existing claimed task in its canonical implementation work
 - Clean ZIP installation: a separate pinned wp-env instance on port `8890` started with WooCommerce active and Moda absent. `wp plugin install /tmp/moda-interact.zip --activate` passed and listed `moda-interact` active. The browser page at `http://localhost:8890/wp-admin/admin.php?page=wc-admin&path=/moda-interact` rendered the same React DOM from the installed ZIP's local assets, with no Moda backend request or credential.
 - Generated plugin ZIP filename: `moda-interact.zip`. WordPress `7.1.2`, WooCommerce `11.1.2` and wp-env PHP `8.5` are both pinned and runtime-verified.
 
+### Attempt 4 Review Corrections
+
+- **A3-R1 — implemented.** This Completion Report is being published on parent `task/ARCH-026-WOOCOMMERCE-001`; the report commit and successful push are recorded in the Git / VCS evidence below and the submission response.
+- **A3-R2 — implemented.** Restored the existing stash `preserve prior WOO-001 phpunit cache ignore`, whose only change is `.gitignore` adding `.phpunit.cache/`. Committed and pushed that one-file change on implementation `task/ARCH-026-WOOCOMMERCE-001` as `5f3a08dba9cb6d00070eec57739b2b06716eb6af`. The stash was retained as a recovery copy; the generated PHPUnit cache remains outside the repository at `/tmp/ARCH-026-WOOCOMMERCE-001-phpunit-cache`.
+- **A3-R3 — implemented.** The prepared launcher packet for Attempt 4 resolved the canonical workspace and both dedicated task worktrees to the exact paths recorded below. The shared workspace and implementation source checkout were not used for task edits, and neither dedicated worktree was reused from another task. Launcher evidence states both local task branches were current with their own `origin/task/ARCH-026-WOOCOMMERCE-001` branches and already incorporated their respective `origin/main` before the claim; recursive submodule synchronization completed with no submodule entries. The packet records parent pre-claim HEAD/merge commit `64863ad921327be845fe1a770106544effb53cd8`, implementation pre-claim HEAD `e62a3a3726d54d7017c323670168a128d47270d1`, and Attempt 4 claim commit `f8014ee416c985a94a02967a398bbb260e8f28b9`, pushed on the parent task branch.
+- Focused Attempt 4 validation: `git diff --check` passed after restoring `.gitignore`; final implementation and parent task worktrees were checked for clean state. No runtime, browser, build, lint or test suite was rerun, as requested; no implementation/runtime file other than `.gitignore` changed.
+
 ### Deviations
 
 The Docker blocker was resolved after the developer started Colima. No alternate runtime, replacement host tooling or ad-hoc WordPress environment was used. The npm install reported dependency audit warnings; dependency versions were not changed outside task scope. The one-time `create-woo-extension` generator version was not recorded in the original scaffold run; all current project build/test tool versions are pinned and recorded above.
@@ -824,12 +831,13 @@ None. This is an environment prerequisite blocker, not an architecture or scope 
 
 ### Git / VCS
 
-- Canonical workspace: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
-- Parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-001`, branch `task/ARCH-026-WOOCOMMERCE-001`.
-- Implementation worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-001`, branch `task/ARCH-026-WOOCOMMERCE-001`.
-- Attempt 3 parent claim commit: `96f417a75c5661e3adce34da419bd1e2efb30fa2`, pushed to the parent task branch.
-- Implementation commit: `e62a3a3` (`feat(woocommerce): establish plugin foundation`), pushed to `origin/task/ARCH-026-WOOCOMMERCE-001`.
-- This completion-report update is unstaged in the parent task worktree; the implementation worktree retains the prior unstaged `.gitignore` cache exclusion. No commit or push was made for this continuation; no submodule gitlink is included.
+- Canonical workspace resolved by the Attempt 4 launcher: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-001`, branch `task/ARCH-026-WOOCOMMERCE-001`.
+- Dedicated implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-001`, branch `task/ARCH-026-WOOCOMMERCE-001`.
+- Physical-isolation check: parent `git worktree list` maps the task branch only to the dedicated parent task path; implementation `git worktree list` maps it only to the dedicated implementation task path. The canonical/shared workspace remains on parent `main`; the implementation source checkout remains on implementation `main`. No shared checkout was edited and no other task worktree was used. Both task paths, repositories and branch identities match the launcher packet.
+- Start-of-attempt packet: both repositories were fetched/synchronized; local task branches were already current with their own `origin/task/ARCH-026-WOOCOMMERCE-001` refs, and each task branch already contained its current `origin/main` (no new fast-forward or mainline merge was needed). Recursive submodule sync/update passed; no submodule entries were present. Parent pre-claim HEAD and parent merge commit: `64863ad921327be845fe1a770106544effb53cd8`. Implementation pre-claim HEAD: `e62a3a3726d54d7017c323670168a128d47270d1`. Attempt 4 claim commit: `f8014ee416c985a94a02967a398bbb260e8f28b9`, pushed to parent `origin/task/ARCH-026-WOOCOMMERCE-001`.
+- Implementation history: foundation commit `e62a3a3726d54d7017c323670168a128d47270d1` remains intact. Attempt 4 `.gitignore` correction commit `5f3a08dba9cb6d00070eec57739b2b06716eb6af` (`chore(woocommerce): ignore PHPUnit cache`) is pushed; local implementation HEAD matches `origin/task/ARCH-026-WOOCOMMERCE-001` at that commit. The implementation worktree is clean.
+- Parent report publication: this task file is the only parent-worktree file changed for Attempt 4. It is being committed and pushed on parent `task/ARCH-026-WOOCOMMERCE-001`; the exact resulting parent report commit is recorded in the final submission response. No architecture document, index, main branch, implementation gitlink or other worktree was changed.
 
 ## Developer Override - Reopened
 
