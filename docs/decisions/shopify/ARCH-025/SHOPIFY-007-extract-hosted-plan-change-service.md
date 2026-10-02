@@ -9,10 +9,10 @@ assigned_agent: moda_app
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 70
-executor: copilot
-claimed_at: 2026-10-01T23:36:30Z
+executor: null
+claimed_at: null
 attempt: 1
 depends_on:
   - ARCH-025-SHOPIFY-006
@@ -233,24 +233,43 @@ implementation commit: a72bd153f3cafd0e8301d64172421cfe066b801b (pushed to origi
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-None.
+Attempt 1 accepted. Reviewed implementation commit `a72bd153f3cafd0e8301d64172421cfe066b801b` and final submitted parent report tip `3b1103fbd2d36ff1d9692eb90dd89a544ee771d7`.
+
+`HostedPlanChangeService` is a move-only owner for hosted-plan verification fencing. The pre-provider fence capture, locked post-provider reread, `current` / `pending` / `mismatch` / `no_active` / `unverified` outcomes, pending-plan mapping and retry-state updates preserve the pre-task method bodies and transaction boundaries. `BillingService` retains compatible public delegate methods and re-exports `HostedPlanChangeReturnResult` and `HostedPlanVerificationFence`.
+
+The durable fence comparison still protects the complete pre-task projection: `id`, `updatedAt`, status, observed handle, plan/billing-period identity, current-period dates, trial/cancellation state, pending-plan facts, reconciliation timestamp and sync-error fields. Changed protected content is therefore fenced even when `updatedAt` is identical. Both success and failure mutations reuse SHOPIFY-006 `lockInitialFreeActivationState` before rereading Subscription state. The hosted service contains no copied lock SQL and uses the shared `INITIAL_BILLING_RETRY_DELAY_MS`; provider verification failure remains `PARTNER_API_ERROR` and does not manufacture Subscription state when no row exists.
+
+The callback route, `subscription-locks.ts` and `billing-retry-policy.ts` are unchanged. The implementation branch changes only the three files authorised by SHOPIFY-007. The initial unrelated observability timeout was not accepted as evidence by itself; the isolated test passed and the final full-suite rerun returned exactly to durable baseline `ARCH025-TEST-001`.
 
 ### Reviewed Files
 
-None.
+- `moda-interact/app/services/billing/hosted-plan-change.service.ts`
+- `moda-interact/app/services/billing/billing.service.ts`
+- `moda-interact/tests/unit/services/billing/hosted-plan-change.service.test.ts`
+- `moda-interact/app/services/billing/subscription-locks.ts`
+- `moda-interact/app/services/billing/billing-retry-policy.ts`
+- `moda-interact/app/routes/app/billing/callback/route.tsx`
+- `docs/decisions/shopify/ARCH-025/SHOPIFY-007-extract-hosted-plan-change-service.md`
+- ARCH-025 architecture/frontier and `ARCH025-TEST-001` coordination state
 
 ### Validation Reviewed
 
-None.
+- implementation branch is one commit ahead of its recorded base and changes only `billing.service.ts`, new `hosted-plan-change.service.ts`, and its focused test file;
+- focused hosted-plan-change suite: 8/8 passed;
+- frozen façade asset SHA-256 remains `bb7c0f4d16e2745abe2dcdb3eb32aa4e247a770daf2e1adf7dfb45833810c7e4`;
+- frozen façade suite: 195 passed / 18 failed, with every failing identifier in `ARCH025-TEST-001`;
+- final full suite: 991 passed / 24 failed / 33 skipped, with every failing identifier in `ARCH025-TEST-001`;
+- reported Prisma generation, typecheck, task-scoped ESLint, production build and `git diff --check` passed;
+- launcher/worktree evidence records dedicated parent and implementation worktrees, start-of-attempt synchronization, recursive submodule preparation, clean final worktrees and pushed task branches.
 
 ### Architecture Conformance
 
-Pending.
+Conforms to ARCH-025 and SHOPIFY-007. Hosted verification has one repository-internal owner outside the façade; compatibility exports/callers are preserved; complete durable-state fencing, transaction/lock order, retry timing/error semantics and no-row failure behaviour are unchanged; no callback-route, shared lock/retry, database, provider-contract or cross-repository change was introduced.
 
 ### Follow-up
 
-None.
+`ARCH-025-SHOPIFY-008` is promoted to `ready`. No SHOPIFY-007 implementation follow-up is required.
