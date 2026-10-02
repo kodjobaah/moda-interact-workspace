@@ -29,7 +29,7 @@ The historical architecture filename is retained so already-materialised task fi
 
 The Shopify tranche refactors `app/services/billing/billing.service.ts` behind its existing public façade. `ARCH-025-SHOPIFY-001` through `ARCH-025-SHOPIFY-011` are architect-accepted Complete; the Shopify tranche is complete.
 
-The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is Ready; BACKGROUND-002 through BACKGROUND-007 remain dependency-gated.
+The first Background tranche refactors `src/services/billing-subscription-reconciliation.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-001` is architect-accepted Complete; `ARCH-025-BACKGROUND-002` is Ready and BACKGROUND-003 through BACKGROUND-007 remain dependency-gated. Full-suite no-regression evidence is governed by `ARCH025-BACKGROUND-TEST-001`.
 
 The second Background tranche refactors `src/services/checkout-recovery.service.ts` behind its existing worker/service façade. `ARCH-025-BACKGROUND-008` is Ready; BACKGROUND-009 through BACKGROUND-015 remain dependency-gated.
 
@@ -677,6 +677,8 @@ SHA-256: 0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239
 
 This file is frozen for BACKGROUND-001..007. Every reconciliation-chain task MUST leave it byte-for-byte unchanged, verify the SHA-256, run the complete file, add separate focused tests for the extracted owner, run `tests/unit/runtime/entrypoint-isolation.test.ts`, run the full existing `npm test` suite without regression, and add no test bypasses or weakened production assertions.
 
+BACKGROUND-001 Attempt 2 established durable development baseline `ARCH025-BACKGROUND-TEST-001` for the full `moda-interact-background` suite by comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same dependency/environment state. Later ARCH-025 Background tasks may reference that baseline only when they introduce no new failing test or suite identity; if an upstream/environment repair resolves a baseline failure, tasks must not recreate it.
+
 ### Background frozen CheckoutRecovery assets
 
 The integrated post-ARCH-024 source snapshot freezes these four existing CheckoutRecovery regression files for BACKGROUND-008..015:
@@ -1114,8 +1116,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 
 | Task | Outcome | Status | Depends On |
 |---|---|---|---|
-| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Ready | - |
-| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Pending | BACKGROUND-001 |
+| ARCH-025-BACKGROUND-001 | Extract pure reconciliation classification | Complete | - |
+| ARCH-025-BACKGROUND-002 | Extract queue publication and startup reconstruction | Ready | BACKGROUND-001 |
 | ARCH-025-BACKGROUND-003 | Extract initial activation reconciliation | Pending | BACKGROUND-002 |
 | ARCH-025-BACKGROUND-004 | Extract reinstall reconciliation | Pending | BACKGROUND-003 |
 | ARCH-025-BACKGROUND-005 | Extract billing-cycle/pre-close/rollover reconciliation | Pending | BACKGROUND-004 |
@@ -1225,6 +1227,8 @@ None.
 
 - 2026-10-02: Added the independent Commerce `StudioWorkspace` maintainability chain COMMERCE-001..005 against the post-ARCH-024 model-selection baseline. Preserved the public `StudioWorkspace`/`StudioPage` module boundary, route/hydration/stale-load and unknown-operation reconciliation semantics, specialised Tool/Agent Configuration boundaries, Release validation/activation/rollback invariants and current Shop views; froze the strong integration suites and made source-inspection assertions extraction-safe before JSX moves.
 - 2026-10-02: Added the independent Admin QueueMonitor maintainability chain ADMIN-009..015. Preserved the read-only public shell, protected API/server-reader boundaries, summary single-flight polling, queue-job/detail stale-request cancellation, filter/pagination/selection asymmetries, drawer mechanics, catalogue/i18n ownership and bounded failed-job diagnostics; established browser-local contracts/client and extraction-safe source assertions before hook/presentation extraction.
+- 2026-10-02: BACKGROUND-001 blocked-task disposition found no source-level defect in the pure classification extraction. Corrected the architect-authored frozen reconciliation suite count from 98 to the 146 tests actually executed by the byte-identical required-hash asset. Returned BACKGROUND-001 to Ready for an evidence-only Attempt 2 comparing exact pre-task commit `670fbad4d52308c96ef41a6a4d29116f1ad42f1a` with submitted commit `b3c7a1264a22baf498b14916a341686a751de869` under the same environment; no Background full-suite baseline is created until that differential proves the failure set is pre-existing.
+- 2026-10-02: BACKGROUND-001 Attempt 2 was accepted after the same-environment differential proved the exact same eight failing tests plus the same commerce-evidence fixture-loading failure on the pre-task and submitted commits. Recorded durable no-regression baseline `ARCH025-BACKGROUND-TEST-001`, marked BACKGROUND-001 Complete and promoted BACKGROUND-002 to Ready.
 - 2026-10-02: Deep ADMIN-001..008 source/task coherence review kept the eight-task graph unchanged, made ADMIN-001 the complete consume-only controller contract for all later steps, preserved pure-Node testability and UI-edge identity/effect semantics, closed the extracted-module security-scan blind spot, and characterized exact translation fallback, usage-event stale-field/tier behaviour, secondary economics rows and translation-workbook/final-step mount semantics.
 
 - 2026-10-02: Added the independent Admin `MerchantPricingPlanBuilder` maintainability chain ADMIN-001..008 against the post-ARCH-024 model-assignment baseline. Preserved the seven-step form/action contract, exact navigation/economics/translation/product-policy semantics, established a typed draft/controller boundary before JSX extraction, froze seven pure-policy test assets, and made the existing source-based security assertions extraction-safe without weakening them.
