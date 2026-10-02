@@ -111,6 +111,20 @@ failure identities/reasons, and add the prepared launcher/worktree/synchronizati
 submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
 independently Ready.
 
+## ADMIN-010 Attempt 1 architect review — 2026-10-03
+
+**Changes Requested / Ready, Attempt 1 retained; claim clear.** The three-file summary
+hook extraction is accepted in substance; no implementation/test source correction is
+requested. Focused summary tests are 3/3, QueueMonitor-owned security assertions pass,
+the full unit failures are inherited, and all frozen QueueMonitor hashes remain exact.
+
+Attempt 2 is evidence/repository-state only: complete the entire
+`tests/observability/*.test.mjs` + `tests/security/*.test.mjs` coverage (prefer a
+terminal `npm test`; deterministic complete file-set execution is the fallback if the
+monolithic runner is interrupted again) and change the Admin implementation branch
+upstream from `origin/main` to `origin/task/ARCH-025-ADMIN-010`. ADMIN-011 remains
+Pending.
+
 ## ADMIN-009 Attempt 3 architect acceptance — 2026-10-02
 
 **Accepted / Complete, Attempt 3.** The final report-only retry reconciles all five
