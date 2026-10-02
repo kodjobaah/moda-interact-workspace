@@ -8,12 +8,13 @@ Repository: `moda-interact-woocommerce`.
 
 Coordinator: `moda_architect`.
 
-ARCH-026 is being defined iteratively. Only the extension-foundation task is
-materialised at this stage.
+ARCH-026 is being defined iteratively. The extension foundation and its local runtime/
+lifecycle hardening task are materialised at this stage.
 
 | Task | Outcome | Status | Dependencies |
 |---|---|---|---|
-| [WOOCOMMERCE-001](WOOCOMMERCE-001-establish-woocommerce-extension-foundation.md) | Establish a reproducible installable PHP + React WooCommerce extension foundation and minimal Woo Admin page | Pending | - |
+| [WOOCOMMERCE-001](WOOCOMMERCE-001-establish-woocommerce-extension-foundation.md) | Establish a reproducible installable PHP + React WooCommerce extension foundation and minimal Woo Admin page | Blocked | - |
+| [WOOCOMMERCE-002](WOOCOMMERCE-002-establish-plugin-runtime-lifecycle-boundary.md) | Establish WordPress/WooCommerce/PHP compatibility, dependency gating and safe plugin activation/deactivation runtime | Pending | WOO-001 |
 
 ## Execution frontier
 
@@ -21,20 +22,9 @@ materialised at this stage.
 No WooCommerce task is Ready.
 ```
 
-WOOCOMMERCE-001 has no architecture-task dependency, but it has a mandatory
-repository-provisioning readiness gate. `moda-interact-woocommerce` does not exist in
-the supplied snapshot and therefore cannot yet have a launcher-created implementation
-worktree.
+The repository-provisioning gate has been satisfied. WOO-001 is currently Blocked by
+a host WooCommerce-toolchain prerequisite recorded in its Completion Report; no plugin
+implementation work has completed yet. WOO-002 remains Pending and cannot become Ready
+until WOO-001 is architect-accepted Complete.
 
-Before the architect promotes WOO-001 to Ready, verify:
-
-```text
-private/canonical repository exists and is reachable
-workspace .gitmodules registers moda-interact-woocommerce
-workspace gitlink points to the approved initial main commit
-WOOCOMMERCE launcher route resolves moda_woocommerce/moda-interact-woocommerce
-Codex/Claude moda_woocommerce definitions are synchronized
-```
-
-Do not execute WOO-001 from another repository or a shared/default checkout to bypass
-that gate.
+Do not execute WOO-002 early to work around the WOO-001 blocker.

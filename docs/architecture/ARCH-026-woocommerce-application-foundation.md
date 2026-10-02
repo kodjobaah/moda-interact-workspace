@@ -4,7 +4,7 @@ title: WooCommerce application foundation
 status: proposed
 coordinator: moda_architect
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-02
 ---
 
 # ARCH-026: WooCommerce application foundation
@@ -13,9 +13,10 @@ updated: 2026-10-01
 
 Proposed.
 
-This architecture is being defined iteratively. Only `ARCH-026-WOOCOMMERCE-001` is
-currently materialised. Later tasks must be added only after their precise runtime,
-security and ownership boundaries have been discussed and inspected.
+This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001` and
+`ARCH-026-WOOCOMMERCE-002` are currently materialised. Later tasks must be added only
+after their precise runtime, security and ownership boundaries have been discussed
+and inspected.
 
 ## Problem
 
@@ -41,7 +42,7 @@ recovery processing, products, discounts or billing.
 
 ## Non-Goals
 
-ARCH-026-WOOCOMMERCE-001 does not implement:
+The WOO-001/WOO-002 foundation stage does not implement:
 
 - Moda-hosted merchant APIs or database reads/writes;
 - installation credentials or Woo store -> Moda Shop association;
@@ -54,12 +55,14 @@ ARCH-026-WOOCOMMERCE-001 does not implement:
 - recovery-credit purchases.
 
 Those capabilities require later architecture discussion/tasks and must not be
-smuggled into the foundation task.
+smuggled into the foundation tasks.
 
 ## Current Architecture
 
-The supplied workspace snapshot contains no `moda-interact-woocommerce` repository,
-no `moda_woocommerce` logical agent and no WooCommerce task route.
+`moda-interact-woocommerce` is now provisioned as the canonical workspace submodule,
+with `moda_woocommerce` ownership and a `WOOCOMMERCE` launcher route. WOO-001 has
+started execution but is currently blocked by an unresolved host-toolchain prerequisite;
+no WooCommerce scaffold implementation has yet been committed.
 
 `moda-interact/` remains the Shopify merchant-facing application. Existing shared
 Background, Database, Commerce, Messaging, Admin, Shared and Gateway repositories
@@ -118,9 +121,9 @@ ARCH-026 database/API task after that boundary is agreed.
 
 ## Contracts
 
-WOO-001 creates no cross-service runtime contract.
+WOO-001 and WOO-002 create no cross-service runtime contract.
 
-It establishes only stable local plugin identities:
+WOO-001 establishes stable local plugin identities:
 
 ```text
 Plugin name:   Moda Interact
@@ -142,7 +145,9 @@ Not applicable to WOO-001.
 
 The foundation must fail safely when its local development/runtime prerequisites are
 not present and must not require Moda production secrets or remote services to render
-the minimal Admin page. Detailed dependency/version gating belongs to WOO-002.
+the minimal Admin page. WOO-002 owns the local WordPress/WooCommerce/PHP compatibility
+contract, delayed Woo initialisation, bounded administrator dependency feedback and
+non-destructive activation/deactivation lifecycle.
 
 ## Scalability
 
@@ -169,18 +174,20 @@ second generic logger or remote telemetry pipeline merely for scaffolding.
 This is a pre-production foundation with no existing WooCommerce Moda installation
 state to migrate. No backwards-compatibility adapter is required.
 
-Before WOO-001 can execute, the developer/architect must provision the new repository
-and register it as the canonical workspace submodule. The task itself must not invent
-a remote URL or create implementation work in another repository.
+The WooCommerce repository-provisioning checkpoint has been satisfied. WOO-001 must
+complete and be architect-accepted before WOO-002 can execute. WOO-002 changes only
+local plugin runtime/lifecycle behaviour and requires no deployment migration or
+backwards-compatibility adapter.
 
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Pending | - |
+| ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Blocked | - |
+| ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-001 |
 
-WOO-001 remains Pending until repository provisioning and workspace submodule
-registration are verified. Later ARCH-026 tasks are intentionally not frozen yet.
+WOO-002 remains Pending until WOO-001 is architect-accepted Complete. Later ARCH-026
+tasks remain intentionally iterative and are not frozen by the existence of WOO-002.
 
 ## Open Questions
 
@@ -195,3 +202,6 @@ registration are verified. Later ARCH-026 tasks are intentionally not frozen yet
 
 - 2026-10-01: Initial iterative ARCH-026 foundation defined; WOO-001 materialised as
   the first bounded implementation task and `moda_woocommerce` ownership introduced.
+- 2026-10-02: Repository provisioning completed and WOO-002 materialised to establish
+  local plugin dependency, compatibility, initialisation and lifecycle behaviour after
+  WOO-001 completes.
