@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 30
 executor: null
 claimed_at: null
@@ -189,24 +189,97 @@ Review
 
 ### Review Status
 
-Pending
+Accepted — Attempt 1.
 
 ### Review Notes
 
-None
+The Catalogue-placement extraction is accepted as a move-only presentation refactor.
+
+Architect inspection of Admin implementation
+`c31959af6c019f7ba8553ccad6bf09d341b460c7` found exactly the two
+task-authorised files changed:
+
+```text
+src/components/admin/merchant/merchant-pricing-plan-builder.tsx
+src/components/admin/merchant/merchant-pricing-plan-builder/catalogue-placement-step.tsx
+```
+
+The child receives only bounded presentation inputs: catalogue `id`/`displayName`
+pairs, edit state, current catalogue position, the accepted controller's `planKind`
+and `effectivePlacement`, plus the accepted `setPlacement` action. It contains no
+catalogue CAS, persistence, payload construction, server validation or placement
+transition logic.
+
+The accepted controller/canonical helper continue to own create/edit placement
+semantics. The final-review `placementLabel` selector remains controller-owned and in
+use elsewhere; ADMIN-003 does not duplicate or replace that policy surface.
+
+The extracted JSX preserves the exact existing behavior and copy:
+
+- edit mode is disabled and presents `UNCHANGED`;
+- an empty create catalogue presents `ONLY`;
+- FREE create is forced before the first catalogue plan;
+- paid create presents `AFTER:<id>` options;
+- the FREE-first explanation and edit current-position display are unchanged.
+
+GitHub independently confirms the pushed task heads:
+
+```text
+Admin implementation task/ARCH-025-ADMIN-003
+  c31959af6c019f7ba8553ccad6bf09d341b460c7
+
+workspace task/ARCH-025-ADMIN-003
+  9edcec5bbf8155bbd5ff5ff36feabd1a1a7eb0ca
+```
+
+The implementation base contains independent accepted/mainline QueueMonitor work, but
+the ADMIN-003 commit itself is limited to the two Catalogue-placement files and does
+not alter the accepted ADMIN-001/002 controller, security test, server action, payload
+or policy modules.
+
+The broad suite result is baseline-conformant. `ARCH025-ADMIN-BUILDER-TEST-001`
+documents nine historical failures and explicitly requires later tasks not to recreate
+failures that upstream work fixes. ADMIN-003 reports only six remaining broad failures;
+all reported categories are a subset of the documented baseline and no new/worsened
+identifier is present. The disappearance of the other baseline failures is an
+improvement, not drift.
 
 ### Reviewed Files
 
-None
+- `src/components/admin/merchant/merchant-pricing-plan-builder.tsx`
+- `src/components/admin/merchant/merchant-pricing-plan-builder/catalogue-placement-step.tsx`
+- accepted ADMIN-001 draft/controller modules
+- accepted ADMIN-001 security test
+- seven frozen pricing-policy test assets
+- this task Completion Report
+- `ARCH025-ADMIN-BUILDER-TEST-001`
+- ARCH-025 parent architecture and ADMIN-004 downstream contract
 
 ### Validation Reviewed
 
-None
+- GitHub implementation commit
+  `c31959af6c019f7ba8553ccad6bf09d341b460c7`: exactly two authorised files.
+- Seven frozen pricing-policy SHA-256 values independently reproduced from the uploaded
+  snapshot: all exact.
+- Submitted draft/controller tests: 14/14 passed.
+- Submitted accepted pricing-plan security tests: 13/13 passed.
+- Submitted full unit suite: 245 passed / 2 exact documented translation-baseline
+  failures.
+- Submitted `npm test`: six remaining failures, all within the existing
+  `ARCH025-ADMIN-BUILDER-TEST-001` failure set; no new task regression identified.
+- Submitted Prisma generation, targeted source lint, TypeScript/production build and
+  `git diff --check`: passed as recorded.
+- Parent and implementation task worktrees are recorded clean and remote-aligned.
 
 ### Architecture Conformance
 
-Pending.
+Conformant. ADMIN-003 moves only Catalogue-placement presentation while keeping
+placement derivation/transitions in the accepted controller and canonical helper.
+Public builder/form/server/CAS semantics remain unchanged.
 
 ### Follow-up
 
-None
+`ARCH-025-ADMIN-003` is Complete / Accepted at Attempt 1. Its sole dependant,
+`ARCH-025-ADMIN-004`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-005 or later builder-chain tasks
+implicitly.
