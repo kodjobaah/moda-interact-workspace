@@ -97,9 +97,11 @@ Latest generation ordering comes from BACKGROUND-008. `DETECTED`, `MESSAGE_SENT`
 
 Only current Shopify lookup data and BACKGROUND-010 mapping populate durable basket/customer recovery fields. Candidate-embedded stale/hostile basket/customer fields remain ignored.
 
-### R5 — worker compatibility
+### R5 — result/type and worker compatibility
 
-`pending-recovery-candidate.worker.ts` continues invoking `checkoutRecoveryService.materializeMaturedCandidate(...)`; do not migrate the worker.
+`MaturedCandidateMaterializationResult` belongs to this materialisation capability if moved, but MUST remain compatibility-exported from `checkout-recovery.service.ts`. `recovery-created` continues to mean that a durable recoverable snapshot reached canonical initiation; it does **not** guarantee that WhatsApp was sent (bounded template selection or billing/revalidation suppression can still leave the materialisation result as `recovery-created`).
+
+Preserve the current initiation invocation shape: generation 1 calls initiation with the seed only; later generations pass the explicit generation. `pending-recovery-candidate.worker.ts` continues invoking `checkoutRecoveryService.materializeMaturedCandidate(...)`; do not migrate the worker.
 
 ## Work Items
 

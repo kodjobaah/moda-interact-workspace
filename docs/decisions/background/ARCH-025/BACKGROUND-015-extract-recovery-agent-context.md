@@ -96,9 +96,11 @@ Continue calling `loadCommerceHistory(conversationId, pendingTurnStartedAt ?? ne
 
 `getAgentContextForStandaloneConversation(...)` continues loading the recovery/shop/customer then delegates to `ConversationService.getAgentSnapshot(conversationId, pendingTurnStartedAt)` and overlays the recovery shop domain. Unlike `getAgentContext(...)`, the standalone path does not load the conversation through the recovery relation; do not add a new ownership check as incidental hardening. Preserve current error semantics.
 
-### R5 — final façade
+### R5 — final façade and compatibility wiring
 
 After extraction, `CheckoutRecoveryService` should contain constructor/wiring, compatibility re-exports and thin delegates only. All 17 existing public methods and both exported result types remain available from `checkout-recovery.service.ts`. Do not migrate callers in this task.
+
+The final thin façade MUST retain the dynamic compatibility ports established earlier in this chain: initial outreach can still observe a replaced/spied `upsertRecovery(...)`, and capacity resume can still observe a replaced/spied `handleCheckoutCreated(...)`. Do not simplify those callbacks into eagerly bound collaborator methods during final cleanup. This preserves the frozen post-ARCH-024 regression contract without moving lifecycle logic back into the façade.
 
 ### R6 — no hidden framework
 
@@ -127,7 +129,7 @@ None
 ## Acceptance Criteria
 
 - [ ] Agent-context reads have one owner and retain the integrated ARCH-024 contract exactly.
-- [ ] CheckoutRecoveryService is a thin compatibility façade with no full lifecycle implementation remaining.
+- [ ] CheckoutRecoveryService is a thin compatibility façade with no full lifecycle implementation remaining and retains the accepted dynamic compatibility ports required by frozen façade-spy tests.
 - [ ] All existing worker/Commerce callers continue using the same public singleton/methods.
 - [ ] Frozen regression assets remain byte-identical and all required tests/build pass.
 

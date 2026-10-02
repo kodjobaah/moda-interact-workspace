@@ -87,15 +87,17 @@ Only a durable `DETECTED` recovery with `admissionBlockReason = RECOVERY_CAPACIT
 
 ### R2 — provider lookup outcomes
 
-Lookup uses the durable recovery's shop/checkout/cart/url/detectedAt. `provider-error`, `ambiguous` and `bounded-limit-exceeded` retain current thrown/retryable behaviour. `not-found` or a completed checkout terminalises the blocked recovery.
+Lookup uses the durable recovery's shop/checkout/cart/url/detectedAt. `provider-error`, `ambiguous` and `bounded-limit-exceeded` retain current thrown/retryable behaviour. `not-found` or a completed checkout terminalises the blocked recovery. Preserve the current externally returned terminal reason quirk: not-found returns `{ kind: "terminal", reason: "not-found" }`, while a found-but-completed checkout returns `{ kind: "terminal", reason: "found" }`; do not normalise the latter to `completed`.
 
 ### R3 — terminalisation transaction
 
 Move `terminalizeUnrecoverableBlockedRecovery(...)` with this processor. Preserve one Prisma transaction with status/block CAS, `CANCELLED`, `expiredAt = new Date()`, clearing block fields and status-history creation only when update count is one. Keep source `recovery-capacity-resume` and current reason strings.
 
-### R4 — canonical re-entry
+### R4 — canonical re-entry with frozen façade-call compatibility
 
-For a still-abandoned checkout, reuse BACKGROUND-010 snapshot mapping and BACKGROUND-008 initiation using the current generation. After initiation, preserve the durable reread that distinguishes `capacity-exhausted` from `initiated`. Do not duplicate the initial send path.
+For a still-abandoned checkout, reuse BACKGROUND-010 snapshot mapping and BACKGROUND-008 initiation using the current generation. The frozen capacity-resume suite replaces `service.handleCheckoutCreated` and expects `resumeCapacityBlockedRecovery(...)` to invoke that **current replaceable façade method**. Preserve that observable relationship with a narrow dynamic callback/port that resolves `this.handleCheckoutCreated` at invocation time; do not eagerly bind the original method in the constructor and do not reverse-import the façade from the processor.
+
+Preserve call arity exactly: generation 1 calls `handleCheckoutCreated(seed)` with one argument; only later generations call `handleCheckoutCreated(seed, generation)`. After initiation, preserve the durable reread that distinguishes `capacity-exhausted` from `initiated`. If the reread is missing, current behaviour still returns `initiated` with fallback status `DETECTED`; do not turn that into an error. Do not duplicate the initial send path.
 
 ### R5 — first-block timestamp semantics
 
@@ -125,7 +127,7 @@ Repository-internal extraction only. The public worker/application contract rema
 
 - [ ] Capacity-blocked recovery state remains durable and race-safe.
 - [ ] Provider failure/unrecoverable outcomes preserve current retry/terminal behaviour.
-- [ ] Re-entry uses the one canonical initiation workflow.
+- [ ] Re-entry uses the one canonical initiation workflow through the replaceable façade compatibility port, including current generation-1 call arity.
 - [ ] Queue/repair scheduling is not duplicated or moved.
 
 ## Validation
