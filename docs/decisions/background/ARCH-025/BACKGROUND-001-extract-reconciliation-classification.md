@@ -251,7 +251,8 @@ Blocked pending architect disposition of the required full-suite validation fail
 - Recursive submodule sync and update passed; `database` was initialized at `cfeeb12456b4e05067a96857a8c47837d7e33bbd`.
 - Shared/default checkouts were not switched or used for implementation; no other task worktree was reused.
 - Implementation commit: `b3c7a12` (`refactor(background): extract reconciliation classification`), pushed to `origin/task/ARCH-025-BACKGROUND-001`.
-- Parent claim commit: `8fb5de5c0b415bc6c8db3772de593560f44bf115`; this report correction will be published on the same parent task branch.
+- Parent claim commit: `8fb5de5c0b415bc6c8db3772de593560f44bf115`.
+- Parent blocked-report commit: `8ac808b93f7b6862662b989b72cee0c13cb9dd8e`, pushed to `origin/task/ARCH-025-BACKGROUND-001`.
 
 ## Architect Review
 
