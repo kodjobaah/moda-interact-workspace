@@ -9,7 +9,7 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: blocked
+status: ready
 priority: 10
 executor: null
 claimed_at: null
@@ -773,7 +773,7 @@ worktrees created/resolved by the launcher.
 
 ### Status
 
-Attempt 1 was blocked because PHP was unavailable. After the explicit reopen, Attempt 2 passed the PHP prerequisite but was blocked by the required WooCommerce bootstrap because Composer is unavailable on `PATH`. No implementation has begun.
+Attempt 1 was blocked because PHP was unavailable. After the first explicit reopen, Attempt 2 passed the PHP prerequisite but was blocked by the required WooCommerce bootstrap because Composer is unavailable on `PATH`. Reopened again by explicit developer request; Attempt 3 has not been claimed and implementation has not begun.
 
 ### Files Changed
 
@@ -805,7 +805,7 @@ Attempts 1 and 2 stopped at required bootstrap prerequisites. No implementation,
 
 ### Unresolved Issues
 
-The host must provide Composer on `PATH` as required by `scripts/bootstrap-woocommerce.sh`; PHP is now detected. After Composer is deliberately configured, rerun task execution from the normal deterministic `/moda-task` preparation flow; no implementation work or required runtime validation is complete.
+The host must provide Composer on `PATH` as required by `scripts/bootstrap-woocommerce.sh`; PHP is now detected. The task was explicitly reopened while this remains unresolved. After Composer is deliberately configured, rerun task execution from the normal deterministic `/moda-task` preparation flow; no implementation work or required runtime validation is complete.
 
 ### Architectural Concerns
 
@@ -830,6 +830,13 @@ None. This is an environment prerequisite blocker, not an architecture or scope 
 - Previous accepted attempt: none. Attempt 1 remained blocked before implementation.
 - Reopen reason: the developer explicitly requested reopening this task after the required WooCommerce bootstrap reported PHP unavailable on `PATH`, so the environment prerequisite can be addressed and the task retried through the normal preparation flow.
 - Transition: `blocked` -> `ready`; `executor` and `claimed_at` cleared; `attempt` remains `1`.
+- This reopen is not a claim. No implementation worktree changes or implementation commits were made.
+
+## Developer Override - Reopened (Attempt 2)
+
+- Previous accepted attempt: none. Attempt 2 remained blocked before implementation.
+- Reopen reason: the developer explicitly requested reopening again after Attempt 2's required WooCommerce bootstrap detected PHP but reported Composer unavailable on `PATH`, so the host prerequisite can be addressed and the task retried.
+- Transition: `blocked` -> `ready`; `executor` and `claimed_at` cleared; `attempt` remains `2`.
 - This reopen is not a claim. No implementation worktree changes or implementation commits were made.
 
 ## Architect Review
