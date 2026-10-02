@@ -132,7 +132,8 @@ Requirements:
 - the default is owned by the PHP/server-side WOO-003 API configuration boundary;
 - browser JavaScript cannot choose or override it;
 - the raw installation credential remains PHP/server-side;
-- the accepted development/test override mechanism remains available without weakening production HTTPS validation;
+- the accepted explicit local-development/test override mechanism remains available without weakening production HTTPS validation;
+- local-development mode is disabled by default in the packaged runtime and requires deliberate server-side developer configuration;
 - no production runtime path defaults to `api-test.modainteract.com`, localhost, wp-env ports or a test fixture origin;
 - the built browser JS bundle must not contain the production API origin because browser code does not call the hosted API directly.
 
@@ -412,7 +413,7 @@ The final package retains the required Composer autoloader/runtime while excludi
 
 ## Work Items
 
-- [ ] Freeze the canonical server-side production API default to `https://api.modainteract.com` while retaining accepted test/development injection.
+- [ ] Freeze the canonical server-side production API default to `https://api.modainteract.com` while retaining accepted explicit local-development/test injection with the bypass disabled by default.
 - [ ] Reconcile package/release version metadata so all package surfaces use one current version.
 - [ ] Harden the canonical production packaging command/allowlist around accepted WOO-005 runtime files.
 - [ ] Ensure production Composer autoload/runtime is included without Composer development packages or `vendor/bin`.
@@ -504,7 +505,7 @@ A later terminal ARCH-026 system-test task may depend on WOO-006 together with t
 - [ ] Package excludes `node_modules`, source/test/development environment files, `vendor/bin`, Composer development packages, source maps, caches/logs and real credentials/secrets.
 - [ ] Packaged production PHP defaults to `https://api.modainteract.com` through the accepted server-side configuration owner.
 - [ ] Built browser JS contains no production/test Moda API origin and no installation credential/bootstrap secret.
-- [ ] Packaged runtime contains no localhost/wp-env/test API origin as a production default.
+- [ ] Packaged runtime contains no localhost/wp-env/test API origin as a production default and does not enable local-development connection mode unless a server-side developer explicitly opts in.
 - [ ] `languages/moda-interact.pot` reflects Moda Interact/text-domain identity and merchant-visible strings; scaffold translation identity is removed from the package.
 - [ ] No fixed WordPress/WooCommerce locale allowlist is introduced.
 - [ ] Standard packaged `readme.txt` accurately discloses the current external Moda hosted-service dependency and does not advertise unimplemented features.
