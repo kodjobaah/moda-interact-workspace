@@ -66,9 +66,10 @@ smuggled into the foundation tasks.
 ## Current Architecture
 
 `moda-interact-woocommerce` is now provisioned as the canonical workspace submodule,
-with `moda_woocommerce` ownership and a `WOOCOMMERCE` launcher route. WOO-001 has
-started execution but is currently blocked by an unresolved host-toolchain prerequisite;
-no WooCommerce scaffold implementation has yet been committed.
+with `moda_woocommerce` ownership and a `WOOCOMMERCE` launcher route. WOO-001 is
+architect-accepted Complete after Attempt 4; its installable PHP + React foundation and
+pinned local runtime were accepted without introducing Moda backend coupling. WOO-002's
+only dependency is therefore satisfied and WOO-002 is Ready.
 
 `moda-interact/` remains the Shopify merchant-facing application. Existing shared
 Background, Database, Commerce, Messaging, Admin, Shared and Gateway repositories
@@ -316,24 +317,17 @@ gitlink to the accepted DATABASE-001 main commit before implementing the connect
 
 | Task | Owner | Status | Depends On |
 |---|---|---|---|
-| ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Blocked | - |
-| ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-001 |
+| ARCH-026-WOOCOMMERCE-001 | moda_woocommerce | Complete | - |
+| ARCH-026-WOOCOMMERCE-002 | moda_woocommerce | Ready | ARCH-026-WOOCOMMERCE-001 |
 | ARCH-026-DATABASE-001 | moda_database | Ready | - |
 | ARCH-026-API-001 | moda_api | Pending | - |
 | ARCH-026-API-002 | moda_api | Pending | ARCH-026-API-001, ARCH-026-DATABASE-001 |
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 
-DATABASE-001 may execute independently while the Woo plugin stream is blocked/pending.
-API-001 also has no task dependency and is gated only by repository provisioning.
-API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the
-connection/authentication contract consumed by WOO-003. WOO-003 remains Pending until
-both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side
-challenge callback, server-side credential storage, authenticated Moda API client and local
-WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell
-and connection/setup experience over that accepted local facade without adding merchant
-business screens. Later ARCH-026 tasks remain intentionally iterative and are not frozen by
-these materialised tasks.
+WOO-001 Attempt 4 is Accepted and Complete. The final attempt was limited to the architect-requested VCS/evidence corrections; the validated Attempt 3 runtime implementation was preserved. WOO-002 now becomes Ready because WOO-001 was its only dependency.
+
+DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. WOO-003 remains Pending until both WOO-002 and API-002 are architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade without adding merchant business screens. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -345,6 +339,8 @@ these materialised tasks.
 
 - 2026-10-01: Initial iterative ARCH-026 foundation defined; WOO-001 materialised as
   the first bounded implementation task and `moda_woocommerce` ownership introduced.
+- 2026-10-02: WOO-001 Attempt 3 implementation/runtime behavior found architecture-conformant; task returned to Ready with Changes Requested for bounded VCS/evidence correction before acceptance.
+- 2026-10-02: WOO-001 Attempt 4 accepted after completing the bounded VCS/evidence correction contract; WOO-001 marked Complete and WOO-002 promoted to Ready.
 - 2026-10-02: Repository provisioning completed and WOO-002 materialised to establish
   local plugin dependency, compatibility, initialisation and lifecycle behaviour after
   WOO-001 completes.
@@ -354,7 +350,6 @@ these materialised tasks.
 - 2026-10-02: DATABASE-001 schema ownership clarified: shared tenant/platform state remains
   in `commerce`; Woo-specific installation/authentication state is owned by the dedicated
   `woocommerce` PostgreSQL schema.
-
 - 2026-10-02: API-001 materialised to establish `moda-interact-api` as the backend-only
   hosted synchronous API boundary with canonical database consumption and health/readiness
   behavior. Repository provisioning remains its only readiness gate.

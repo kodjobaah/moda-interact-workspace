@@ -9,16 +9,16 @@ assigned_agent: moda_woocommerce
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: ready
+status: complete
 priority: 10
 executor: null
 claimed_at: null
-attempt: 0
+attempt: 4
 depends_on: []
 enables:
   - ARCH-026-WOOCOMMERCE-002
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-02
 ---
 
 # Establish the Moda Interact WooCommerce extension foundation
@@ -550,27 +550,27 @@ The extension foundation MUST not require any secret to render its minimal Admin
 
 ## Work Items
 
-- [ ] Scaffold the repository from the current official WooCommerce
+- [x] Scaffold the repository from the current official WooCommerce
   `create-woo-extension` template using the `moda-interact` plugin slug.
-- [ ] Remove generated sample/demo behaviour unrelated to the Moda WooCommerce Admin
+- [x] Remove generated sample/demo behaviour unrelated to the Moda WooCommerce Admin
   foundation.
-- [ ] Establish the canonical Moda plugin name, slug, text domain, PHP namespace and
+- [x] Establish the canonical Moda plugin name, slug, text domain, PHP namespace and
   bootstrap entry point.
-- [ ] Commit deterministic npm and Composer dependency metadata/lockfiles.
-- [ ] Add repository-owned local WordPress/WooCommerce development configuration
+- [x] Commit deterministic npm and Composer dependency metadata/lockfiles.
+- [x] Add repository-owned local WordPress/WooCommerce development configuration
   pinned to the ARCH-026 baseline.
-- [ ] Register one minimal React-powered `Moda Interact` page under WooCommerce Admin
+- [x] Register one minimal React-powered `Moda Interact` page under WooCommerce Admin
   at `/moda-interact`.
-- [ ] Ensure the React page is served from plugin-built local assets and requires no
+- [x] Ensure the React page is served from plugin-built local assets and requires no
   remote Moda service.
-- [ ] Establish documented build, lint, PHP check, JS test, PHP test,
+- [x] Establish documented build, lint, PHP check, JS test, PHP test,
   local-environment and plugin-ZIP commands.
-- [ ] Generate `moda-interact.zip` with the correct plugin root and without
+- [x] Generate `moda-interact.zip` with the correct plugin root and without
   development-only dependency directories/secrets.
-- [ ] Add focused tests covering PHP bootstrap/Admin registration and React foundation
+- [x] Add focused tests covering PHP bootstrap/Admin registration and React foundation
   rendering.
-- [ ] Document clean-checkout setup and local validation in the repository README.
-- [ ] Verify no Moda backend/API/database/queue integration has been introduced.
+- [x] Document clean-checkout setup and local validation in the repository README.
+- [x] Verify no Moda backend/API/database/queue integration has been introduced.
 
 ## Interfaces / Contracts
 
@@ -645,26 +645,26 @@ WOO-002 may begin only after this task is architect-reviewed and `complete`.
 
 ## Acceptance Criteria
 
-- [ ] `moda-interact-woocommerce` contains a conventional installable
+- [x] `moda-interact-woocommerce` contains a conventional installable
   WordPress/WooCommerce extension rather than a separately hosted web application.
-- [ ] The installed WordPress plugin directory is `moda-interact/`.
-- [ ] The main plugin bootstrap is `moda-interact.php`.
-- [ ] Plugin name, slug, text domain and PHP namespace match this task.
-- [ ] Clean npm and Composer dependency installation succeeds from committed
+- [x] The installed WordPress plugin directory is `moda-interact/`.
+- [x] The main plugin bootstrap is `moda-interact.php`.
+- [x] Plugin name, slug, text domain and PHP namespace match this task.
+- [x] Clean npm and Composer dependency installation succeeds from committed
   manifests/lockfiles.
-- [ ] Production JavaScript build succeeds.
-- [ ] PHP checks/tests succeed.
-- [ ] JavaScript lint/tests succeed.
-- [ ] The pinned local WordPress/WooCommerce environment starts successfully.
-- [ ] The plugin installs and activates with WooCommerce active.
-- [ ] WooCommerce Admin exposes the Moda Interact page without creating a branded
+- [x] Production JavaScript build succeeds.
+- [x] PHP checks/tests succeed.
+- [x] JavaScript lint/tests succeed.
+- [x] The pinned local WordPress/WooCommerce environment starts successfully.
+- [x] The plugin installs and activates with WooCommerce active.
+- [x] WooCommerce Admin exposes the Moda Interact page without creating a branded
   top-level WordPress menu.
-- [ ] Navigating to the Moda page renders the minimal React foundation successfully.
-- [ ] The browser does not require or receive a Moda server credential.
-- [ ] The foundation makes no network call to a Moda backend.
-- [ ] `moda-interact.zip` installs with the correct root directory and contains no
+- [x] Navigating to the Moda page renders the minimal React foundation successfully.
+- [x] The browser does not require or receive a Moda server credential.
+- [x] The foundation makes no network call to a Moda backend.
+- [x] `moda-interact.zip` installs with the correct root directory and contains no
   `node_modules`, `.git`, local secrets or environment state.
-- [ ] No billing, recovery, event-ingress, Merchant Knowledge, CommerceAgent or
+- [x] No billing, recovery, event-ingress, Merchant Knowledge, CommerceAgent or
   Background behaviour has been implemented.
 
 ## Validation
@@ -674,26 +674,27 @@ exact names/results in the Completion Report.
 
 Required validation categories:
 
-- [ ] `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"` succeeds and
+- [x] `source "$MODA_WORKSPACE_ROOT/scripts/bootstrap-woocommerce.sh"` succeeds and
   the Completion Report records the resolved Node/npm, PHP, Composer and Docker
   versions;
-- [ ] clean npm dependency installation from lockfile;
-- [ ] clean Composer dependency installation from lockfile;
-- [ ] production asset build;
-- [ ] JavaScript lint;
-- [ ] PHP lint/static/code-standard checks provided by the repository;
-- [ ] JavaScript unit tests;
-- [ ] PHP unit tests;
-- [ ] `git diff --check`;
-- [ ] repository clean-state check;
-- [ ] local `wp-env` start using the pinned WordPress/WooCommerce baseline;
-- [ ] plugin activation smoke;
-- [ ] Woo Admin `/moda-interact` page smoke;
-- [ ] browser/DOM evidence that the React foundation rendered;
-- [ ] plugin ZIP creation;
-- [ ] ZIP-content audit proving required files are present and prohibited
+- [x] clean npm dependency installation from lockfile;
+- [x] clean Composer dependency installation from lockfile;
+- [x] production asset build;
+- [x] JavaScript lint;
+- [x] PHP lint/static/code-standard checks provided by the repository;
+- [x] JavaScript unit tests;
+- [x] PHP unit tests;
+- [x] `git diff --check`;
+- [x] repository clean-state check (completed; the implementation worktree retains
+  one documented, unstaged `.gitignore` cache exclusion from the prior attempt);
+- [x] local `wp-env` start using the pinned WordPress/WooCommerce baseline;
+- [x] plugin activation smoke;
+- [x] Woo Admin `/moda-interact` page smoke;
+- [x] browser/DOM evidence that the React foundation rendered;
+- [x] plugin ZIP creation;
+- [x] ZIP-content audit proving required files are present and prohibited
   development/secret files are absent;
-- [ ] clean installation of the generated ZIP into a clean local
+- [x] clean installation of the generated ZIP into a clean local
   WordPress/WooCommerce environment.
 
 The Completion Report MUST record:
@@ -773,62 +774,233 @@ worktrees created/resolved by the launcher.
 
 ### Status
 
-Not Started
+Ready for architect review after Attempt 4. Attempt 3's validated implementation is preserved; this attempt only resolved the requested `.gitignore` hygiene change and completed the publication/evidence corrections. Do not begin WOO-002 until architect review accepts this task as complete.
 
 ### Files Changed
 
-None.
+Implementation repository: `.distignore`, `.editorconfig`, `.eslintrc.js`, `.gitignore`, `.prettierrc.json`, `.wp-env.json`, `CHANGELOG.md`, `README.md`, `composer.json`, `composer.lock`, `includes/Admin/Setup.php`, `includes/Plugin.php`, `languages/woo-plugin-setup.pot`, `moda-interact.php`, `package-lock.json`, `package.json`, `phpunit.xml.dist`, `src/index.js`, `src/index.scss`, `src/page.js`, `tests/PluginTest.php`, `tests/bootstrap.php`, `tests/js/page.test.js`, and `webpack.config.js`. The package manifest was updated during Attempt 3 to include the required Composer autoloader in the plugin ZIP. Attempt 4 deliberately restored, committed, and pushed the `.gitignore` rule excluding `.phpunit.cache/`. Parent workspace: this task file only. Generated `build/`, `vendor/`, `node_modules/`, ZIP output and PHPUnit cache are not committed.
 
 ### Work Completed
 
-None.
+Attempt 3 resumed the existing claimed task in its canonical implementation worktree. The WordPress plugin entry, Composer namespace autoloading, WooCommerce Admin page registration, local React page/assets, pinned wp-env configuration, lockfiles, tests and repository-local commands are present. The first ZIP audit found that npm packlist omitted Git-ignored `vendor/` even though the plugin bootstrap requires `vendor/autoload.php`; an explicit package file allowlist fixed this, and the rebuilt ZIP contains the Composer autoloader while excluding tests, `node_modules`, `.git`, environment files and `vendor/bin`. With Colima available, the pinned source-mounted environment and a separate clean package-install environment both passed activation and Woo Admin render checks. No Moda backend, database, queue, billing or business integration was introduced.
 
 ### Validation Results
 
-Not run.
+- Required WooCommerce bootstrap: passed with `MODA_WORKSPACE_ROOT=/Users/kwadwoadomafriyie/project/moda-interact-workspace` explicitly exported because the implementation worktree is a sibling of the canonical workspace. Node `v24.19.0`, npm `11.17.0`, host PHP `8.5.11`, Composer `2.10.3`, Docker client `29.7.2`; Docker context `colima`, daemon reachable. wp-env uses PHP `8.5` (`wordpress:php8.5`).
+- Locked tool versions include `@wordpress/scripts` `36.0.0`, `@wordpress/env` `11.16.0`, `@woocommerce/dependency-extraction-webpack-plugin` `5.1.0`, `@woocommerce/eslint-plugin` `4.0.0`, `vite` `8.3.2`, and `vitest` `5.0.3`. The transient `create-woo-extension` generator version was not captured.
+- `npm ci`: passed from `package-lock.json` (1,606 packages installed); npm reported 11 audit findings (10 moderate, 1 high) and peer/deprecation/install-script warnings.
+- `npm run install:php`: passed from `composer.lock`, restoring 27 development packages after the production packaging command.
+- `npm run build`: passed after the clean npm install and again as part of `npm run plugin-zip`.
+- `npm run lint:js`: passed; ESLint emitted the existing legacy `.eslintrc` configuration warning.
+- `npm run lint:css`: passed.
+- `npm run lint:php`: passed; no syntax errors in the plugin or PHP tests.
+- `npm run test:js`: passed, 1 test.
+- `npm run test:php`: passed, 3 tests and 6 assertions, including after restoring Composer development dependencies following ZIP creation.
+- `npm run plugin-zip`: passed; generated `moda-interact.zip`. `unzip -t` and the content audit passed, confirming the `moda-interact/` root, `moda-interact.php`, `vendor/autoload.php`, built assets, and absence of `node_modules`, tests, `.git`, `.env` files, `.wp-env` state and `vendor/bin`.
+- `git diff --check`: passed. Final implementation status check found only the retained unstaged `.gitignore` exclusion for `.phpunit.cache/`; the temporary clean wp-env config was removed. The parent task worktree contains this completion-report update. No commit was created.
+- `npm run env:start`: passed with WordPress `7.1.2`, WooCommerce `11.1.2`, PHP `8.5`; `wp core version` returned `7.1.2` and `wp plugin list` showed both `moda-interact` and `woocommerce` active.
+- Source-mounted activation and page smoke: passed at `http://localhost:8888/wp-admin/admin.php?page=wc-admin&path=/moda-interact`. Browser DOM contained `Moda Interact` and `WooCommerce extension foundation`; plugin CSS/JS loaded from the local plugin directory. Observed external Gravatar resource only; no Moda endpoint or credential was requested or present.
+- Clean ZIP installation: a separate pinned wp-env instance on port `8890` started with WooCommerce active and Moda absent. `wp plugin install /tmp/moda-interact.zip --activate` passed and listed `moda-interact` active. The browser page at `http://localhost:8890/wp-admin/admin.php?page=wc-admin&path=/moda-interact` rendered the same React DOM from the installed ZIP's local assets, with no Moda backend request or credential.
+- Generated plugin ZIP filename: `moda-interact.zip`. WordPress `7.1.2`, WooCommerce `11.1.2` and wp-env PHP `8.5` are both pinned and runtime-verified.
+
+### Attempt 4 Review Corrections
+
+- **A3-R1 — implemented.** This Completion Report is being published on parent `task/ARCH-026-WOOCOMMERCE-001`; the report commit and successful push are recorded in the Git / VCS evidence below and the submission response.
+- **A3-R2 — implemented.** Restored the existing stash `preserve prior WOO-001 phpunit cache ignore`, whose only change is `.gitignore` adding `.phpunit.cache/`. Committed and pushed that one-file change on implementation `task/ARCH-026-WOOCOMMERCE-001` as `5f3a08dba9cb6d00070eec57739b2b06716eb6af`. The stash was retained as a recovery copy; the generated PHPUnit cache remains outside the repository at `/tmp/ARCH-026-WOOCOMMERCE-001-phpunit-cache`.
+- **A3-R3 — implemented.** The prepared launcher packet for Attempt 4 resolved the canonical workspace and both dedicated task worktrees to the exact paths recorded below. The shared workspace and implementation source checkout were not used for task edits, and neither dedicated worktree was reused from another task. Launcher evidence states both local task branches were current with their own `origin/task/ARCH-026-WOOCOMMERCE-001` branches and already incorporated their respective `origin/main` before the claim; recursive submodule synchronization completed with no submodule entries. The packet records parent pre-claim HEAD/merge commit `64863ad921327be845fe1a770106544effb53cd8`, implementation pre-claim HEAD `e62a3a3726d54d7017c323670168a128d47270d1`, and Attempt 4 claim commit `f8014ee416c985a94a02967a398bbb260e8f28b9`, pushed on the parent task branch.
+- Focused Attempt 4 validation: `git diff --check` passed after restoring `.gitignore`; final implementation and parent task worktrees were checked for clean state. No runtime, browser, build, lint or test suite was rerun, as requested; no implementation/runtime file other than `.gitignore` changed.
 
 ### Deviations
 
-None.
+The Docker blocker was resolved after the developer started Colima. No alternate runtime, replacement host tooling or ad-hoc WordPress environment was used. The npm install reported dependency audit warnings; dependency versions were not changed outside task scope. The one-time `create-woo-extension` generator version was not recorded in the original scaffold run; all current project build/test tool versions are pinned and recorded above.
 
 ### Assumptions
 
-- Repository provisioning and workspace submodule registration will be completed
-  before this task is promoted to Ready.
+- Repository provisioning and workspace submodule registration have been completed and were route-verified by the launcher.
 - ARCH-026-WOOCOMMERCE-002 will own explicit runtime compatibility/version-gating
   policy.
 - No remote Moda service is required by this foundation task.
 
 ### Unresolved Issues
 
-None within the implementation scope.
+No required runtime validation remains. The exact transient `create-woo-extension` generator version remains unrecorded; it is not a runtime dependency and the resolved project tooling is pinned in the lockfile.
 
 ### Architectural Concerns
 
-None.
+None. This is an environment prerequisite blocker, not an architecture or scope conflict.
+
+### Git / VCS
+
+- Canonical workspace resolved by the Attempt 4 launcher: `/Users/kwadwoadomafriyie/project/moda-interact-workspace`.
+- Dedicated parent task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace-task-ARCH-026-WOOCOMMERCE-001`, branch `task/ARCH-026-WOOCOMMERCE-001`.
+- Dedicated implementation task worktree: `/Users/kwadwoadomafriyie/project/moda-interact-workspace.worktrees/ARCH-026-WOOCOMMERCE-001`, branch `task/ARCH-026-WOOCOMMERCE-001`.
+- Physical-isolation check: parent `git worktree list` maps the task branch only to the dedicated parent task path; implementation `git worktree list` maps it only to the dedicated implementation task path. The canonical/shared workspace remains on parent `main`; the implementation source checkout remains on implementation `main`. No shared checkout was edited and no other task worktree was used. Both task paths, repositories and branch identities match the launcher packet.
+- Start-of-attempt packet: both repositories were fetched/synchronized; local task branches were already current with their own `origin/task/ARCH-026-WOOCOMMERCE-001` refs, and each task branch already contained its current `origin/main` (no new fast-forward or mainline merge was needed). Recursive submodule sync/update passed; no submodule entries were present. Parent pre-claim HEAD and parent merge commit: `64863ad921327be845fe1a770106544effb53cd8`. Implementation pre-claim HEAD: `e62a3a3726d54d7017c323670168a128d47270d1`. Attempt 4 claim commit: `f8014ee416c985a94a02967a398bbb260e8f28b9`, pushed to parent `origin/task/ARCH-026-WOOCOMMERCE-001`.
+- Implementation history: foundation commit `e62a3a3726d54d7017c323670168a128d47270d1` remains intact. Attempt 4 `.gitignore` correction commit `5f3a08dba9cb6d00070eec57739b2b06716eb6af` (`chore(woocommerce): ignore PHPUnit cache`) is pushed; local implementation HEAD matches `origin/task/ARCH-026-WOOCOMMERCE-001` at that commit. The implementation worktree is clean.
+- Parent report publication: this task file is the only parent-worktree file changed for Attempt 4. It is being committed and pushed on parent `task/ARCH-026-WOOCOMMERCE-001`; the exact resulting parent report commit is recorded in the final submission response. No architecture document, index, main branch, implementation gitlink or other worktree was changed.
+
+## Developer Override - Reopened
+
+- Previous accepted attempt: none. Attempt 1 remained blocked before implementation.
+- Reopen reason: the developer explicitly requested reopening this task after the required WooCommerce bootstrap reported PHP unavailable on `PATH`, so the environment prerequisite can be addressed and the task retried through the normal preparation flow.
+- Transition: `blocked` -> `ready`; `executor` and `claimed_at` cleared; `attempt` remains `1`.
+- This reopen is not a claim. No implementation worktree changes or implementation commits were made.
+
+## Developer Override - Reopened (Attempt 2)
+
+- Previous accepted attempt: none. Attempt 2 remained blocked before implementation.
+- Reopen reason: the developer explicitly requested reopening again after Attempt 2's required WooCommerce bootstrap detected PHP but reported Composer unavailable on `PATH`, so the host prerequisite can be addressed and the task retried.
+- Transition: `blocked` -> `ready`; `executor` and `claimed_at` cleared; `attempt` remains `2`.
+- This reopen is not a claim. No implementation worktree changes or implementation commits were made.
 
 ## Architect Review
 
 ### Review Status
 
-Pending
+Accepted
 
 ### Review Notes
 
-Pending implementation.
+Attempt 3 implementation behaviour is architecturally acceptable, including the
+installable PHP + React WooCommerce foundation, pinned local runtime, source-mounted
+activation/render smoke, clean ZIP installation smoke, local plugin assets and the
+absence of Moda backend/credential coupling. No WOO-001 runtime or application-code
+defect was found in this review.
+
+The submission cannot yet be Accepted because the durable repository-task publication
+contract is incomplete. The combined review archive is a filesystem convenience and
+does not replace the two published task branches or the required Completion Report
+Git/worktree evidence.
+
+Required corrections:
+
+- **A3-R1 — Publish the parent review submission.** The Completion Report explicitly
+  states that this final report update is unstaged/uncommitted and that no parent
+  review-submission commit/push was made. The task must be committed and pushed on
+  parent `task/ARCH-026-WOOCOMMERCE-001` before re-review.
+- **A3-R2 — Resolve the dirty implementation worktree deliberately.** The Completion
+  Report says the implementation worktree still contains the existing unstaged
+  `.gitignore` exclusion for `.phpunit.cache/`. If that exclusion is part of WOO-001,
+  commit and push it on implementation `task/ARCH-026-WOOCOMMERCE-001`; otherwise the
+  developer must deliberately restore the intended branch state. Do not leave the
+  implementation task worktree dirty at review submission. No runtime source/test
+  change is requested.
+- **A3-R3 — Record the mandatory physical-isolation and start-of-attempt evidence.**
+  The current `Git / VCS` section names the worktree paths and branches but omits the
+  required explicit evidence for shared-checkout non-mutation, no other-task worktree
+  reuse, parent/implementation remote-task synchronization, and parent/implementation
+  `origin/main` incorporation. Reclaim through the normal `/moda-task` preparation
+  path for the next attempt and record the launcher-resolved preparation packet plus
+  the final implementation and parent commit/push evidence.
+
+This is an evidence/VCS correction contract. Preserve the validated implementation.
+Do not rerun the WordPress/WooCommerce runtime, browser smoke, clean ZIP installation,
+JS/PHP test suites, lint or production build solely for this review unless the
+correction changes implementation/runtime files beyond the already-existing
+`.gitignore` hygiene change. `git diff --check` and final branch/worktree cleanliness
+should be recorded after the correction.
 
 ### Reviewed Files
 
-None.
+- `docs/decisions/woocommerce/ARCH-026/WOOCOMMERCE-001-establish-woocommerce-extension-foundation.md`
+- `docs/architecture/ARCH-026-woocommerce-application-foundation.md`
+- `docs/decisions/woocommerce/ARCH-026/_index.md`
+- `moda-interact-woocommerce/moda-interact.php`
+- `moda-interact-woocommerce/includes/Plugin.php`
+- `moda-interact-woocommerce/includes/Admin/Setup.php`
+- `moda-interact-woocommerce/src/index.js`
+- `moda-interact-woocommerce/src/page.js`
+- `moda-interact-woocommerce/package.json`
+- `moda-interact-woocommerce/package-lock.json`
+- `moda-interact-woocommerce/composer.json`
+- `moda-interact-woocommerce/.wp-env.json`
+- `moda-interact-woocommerce/.distignore`
+- `moda-interact-woocommerce/tests/PluginTest.php`
+- `moda-interact-woocommerce/tests/js/page.test.js`
+- submitted `moda-interact-woocommerce/moda-interact.zip`
 
 ### Validation Reviewed
 
-None.
+- Attempt 3 Completion Report runtime evidence: WordPress `7.1.2`, WooCommerce
+  `11.1.2`, wp-env PHP `8.5`, activation, Woo Admin render and clean ZIP installation.
+- Submitted ZIP: `unzip -t` passed; archive root is `moda-interact/`; built JS/CSS and
+  Composer runtime autoload files are present; prohibited `.git`, `node_modules`,
+  tests, `.env`, `.wp-env` state and `vendor/bin` paths are absent.
+- Static package/source scan found no Moda backend endpoint, database/Redis credential
+  or private-service coupling.
+- Lockfile inspection confirms the project tool versions recorded in the Completion
+  Report, including `@wordpress/scripts` `36.0.0`, `@wordpress/env` `11.16.0`,
+  `@woocommerce/dependency-extraction-webpack-plugin` `5.1.0`,
+  `@woocommerce/eslint-plugin` `4.0.0`, Vite `8.3.2` and Vitest `5.0.3`.
+- Supplemental PHP syntax checks passed for the plugin/bootstrap/test PHP files in the
+  review environment. The review environment does not reproduce the submitted Colima
+  runtime and the combined archive contains no Git histories, so the reported remote
+  branch/commit state cannot be independently verified from the archive.
 
 ### Architecture Conformance
 
-Pending.
+The implementation conforms to the WOO-001 architecture and repository boundary. It
+is an ordinary installable WooCommerce extension with PHP runtime and locally built
+React assets, introduces no separately hosted merchant UI, no Moda durable-state or
+queue access, no remote Moda dependency, and no follow-on WOO-002 functionality.
+
+Architectural acceptance is withheld only for the task publication/evidence
+non-conformance described in A3-R1 through A3-R3.
 
 ### Follow-up
 
-Pending.
+Return this same task through `/moda-task ARCH-026-WOOCOMMERCE-001` after the existing
+implementation worktree has been made deliberately clean. The next claim increments
+Attempt 3 to Attempt 4. Address A3-R1 through A3-R3 only, publish both task branches,
+set the task back to `review`, and STOP. Do not start ARCH-026-WOOCOMMERCE-002.
+
+### Attempt 4 — Accepted (2026-10-02)
+
+Attempt 4 satisfies the complete A3-R1 through A3-R3 VCS/evidence correction
+contract. No WOO-001 runtime or application-code correction was required.
+
+Architect re-review verified:
+
+- the Attempt 3 implementation/runtime review remains valid and no runtime/source
+  implementation changed in Attempt 4 beyond the already-reviewed `.gitignore`
+  hygiene rule for `.phpunit.cache/`; comparison of the submitted Attempt 3 and
+  Attempt 4 snapshots shows no application-source drift;
+- implementation correction commit
+  `5f3a08dba9cb6d00070eec57739b2b06716eb6af` contains the `.phpunit.cache/`
+  exclusion and is recorded as pushed on implementation
+  `task/ARCH-026-WOOCOMMERCE-001`;
+- the prepared Attempt 4 launcher packet records the canonical workspace plus
+  dedicated parent and implementation task worktrees, proves the task branch is not
+  executing from either shared/default checkout or another task worktree, and records
+  both task branches as synchronized with their remote task refs and already
+  containing their respective `origin/main`;
+- recursive submodule synchronization completed and reported no submodule entries;
+- parent pre-claim/reconciliation head is
+  `64863ad921327be845fe1a770106544effb53cd8`; the Attempt 4 claim commit is
+  `f8014ee416c985a94a02967a398bbb260e8f28b9`;
+- the submitted handoff identifies final parent review-report commit `fe0623f` as
+  pushed on parent `task/ARCH-026-WOOCOMMERCE-001`; as with any final report commit,
+  that commit cannot contain its own final hash inside the same committed report;
+- the Completion Report records the implementation task worktree clean and aligned
+  with its remote at `5f3a08dba9cb6d00070eec57739b2b06716eb6af`, and the submission records both
+  dedicated task worktrees clean and up to date with their remotes;
+- `git diff --check` passed for the focused Attempt 4 correction;
+- not rerunning WordPress/WooCommerce runtime, browser, ZIP-install, lint, build or
+  test validation conforms exactly to the Attempt 3 architect correction contract,
+  because no runtime/source implementation changed.
+
+The historical clean-state sentence in the Attempt 3 validation results describes the
+pre-correction worktree state; the later `Attempt 4 Review Corrections` and `Git / VCS`
+sections are the final-state evidence for this submission.
+
+Architecture conformance remains unchanged from Attempt 3: WOO-001 is an ordinary
+installable WooCommerce extension using PHP plus locally built React assets, with no
+Moda backend/database/queue/credential coupling and no WOO-002 functionality.
+
+**Architect decision: Accepted.**
+
+Because `completion_mode: automatic`, this task is complete. `executor` and
+`claimed_at` are cleared while `attempt: 4` is preserved.
+
+`ARCH-026-WOOCOMMERCE-002` depends only on this task and is therefore promoted to
+`ready`. WOO-003 and WOO-004 remain Pending under their existing dependency gates.
