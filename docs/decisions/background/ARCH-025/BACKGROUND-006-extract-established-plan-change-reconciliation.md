@@ -69,12 +69,12 @@ Earlier ARCH-025 Background collaborators are consumable dependencies.
 - Preserve the positional constructor `(database, partner, queue, logger, now, runtimeConfig, discountQueue)`. Do not modify `src/entrypoints/billing.ts` or `src/services/billing-reconciliation.service.ts` to accommodate extraction.
 - Extracted modules MUST NOT import `billing-subscription-reconciliation.service.ts`; dependency direction is coordinator -> collaborator. Symbols moved out of the coordinator file that are currently exported must be compatibility re-exported from it.
 - Collaborator constructors are inert wiring only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during construction.
-- Capture exactly one `BackgroundRuntimeConfigSnapshot` per `reconcileJob()` invocation and pass that immutable snapshot to every downstream operation that currently consumes runtime configuration.
+- Preserve parse-before-runtime-config ordering: only after `parseBillingSubscriptionReconcileJob(...)` succeeds, call `runtimeConfig.current()` exactly once and pass that immutable snapshot downstream. Malformed input must still fail during parsing before runtime-config, database or provider work.
 - Normal accepted queued reconciliation performs at most the current single `getSubscriptionReconciliationSnapshot(...)` provider call and reuses `activeSubscription` plus `latestLifecycleEvent`. Do not multiply provider calls while splitting handlers.
 - Reinstall reconciliation remains on its distinct `partner.getActiveSubscription(...)` path; do not replace it with the normal reconciliation snapshot helper.
-- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
+- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
-- Preserve the meaning and boundary of existing `billing.subscription_reconciliation.*` structured log events; use the canonical Shared logger and do not log whole provider/customer payloads.
+- Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
@@ -93,7 +93,7 @@ recordEstablishedPlanChangeRetry
 schedulePlanChangeCapacityResume
 ```
 
-The handler may own the current single BillingPlan lookup for `provider.planHandle` when resolving the target plan. Do not add a second equivalent lookup.
+Keep the existing BillingPlan lookup for `provider.planHandle` in the coordinator/final provider-plan dispatch through BACKGROUND-007 and pass its result into this handler as `targetPlan`. Do not duplicate, remove or conditionally skip that lookup on branches where the source currently performs it. The handler retains the separate provider-`pendingPlanHandle` lookup inside the `providerIsCurrent` branch exactly as today.
 
 ### R2 — reuse shared retryable-status definition
 
@@ -125,7 +125,7 @@ The handler consumes the one provider snapshot already acquired by the coordinat
 ## Work Items
 
 - [ ] Add the established plan-change reconciliation service and move the full method cluster.
-- [ ] Move the provider-handle target-plan lookup into the handler or otherwise keep exactly one lookup on the branch.
+- [ ] Consume the coordinator-provided provider-handle plan lookup result and preserve the separate pending-handle lookup on the provider-current branch without adding/removing reads.
 - [ ] Reuse the BACKGROUND-001 retryable error set and BACKGROUND-003 timing/BACKGROUND-002 queue collaborators.
 - [ ] Continue delegating durable transitions to `ShopifyPlanChangeTransitionService`.
 - [ ] Add focused tests for provider-current refresh/withdrawal, exact drain/effective scheduling, same-cycle immediate change, missing cycle/meter/allowance, provider null/error retry, unmapped/unexpected plan and capacity-resume failure isolation.
@@ -150,7 +150,7 @@ Internal handler receives expected durable plan-change snapshot, current plan, p
 - [ ] Provider-current, early target, valid transition, unmapped and fail-closed/retry branches are behaviourally unchanged.
 - [ ] `ShopifyPlanChangeTransitionService` remains the durable transition owner.
 - [ ] Capacity resume remains post-transition/best-effort.
-- [ ] No extra provider or BillingPlan lookup is introduced.
+- [ ] The exact source BillingPlan lookup sequence is preserved: current-plan-by-id upstream, one provider-handle lookup in the final coordinator dispatch, and the existing pending-handle lookup only when `providerIsCurrent` requires it.
 - [ ] Frozen regression suite remains byte-identical and all 98 tests pass.
 
 ## Validation

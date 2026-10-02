@@ -69,12 +69,12 @@ Previously accepted ARCH-025 Background collaborator files may be wired/imported
 - Preserve the positional constructor `(database, partner, queue, logger, now, runtimeConfig, discountQueue)`. Do not modify `src/entrypoints/billing.ts` or `src/services/billing-reconciliation.service.ts` to accommodate extraction.
 - Extracted modules MUST NOT import `billing-subscription-reconciliation.service.ts`; dependency direction is coordinator -> collaborator. Symbols moved out of the coordinator file that are currently exported must be compatibility re-exported from it.
 - Collaborator constructors are inert wiring only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during construction.
-- Capture exactly one `BackgroundRuntimeConfigSnapshot` per `reconcileJob()` invocation and pass that immutable snapshot to every downstream operation that currently consumes runtime configuration.
+- Preserve parse-before-runtime-config ordering: only after `parseBillingSubscriptionReconcileJob(...)` succeeds, call `runtimeConfig.current()` exactly once and pass that immutable snapshot downstream. Malformed input must still fail during parsing before runtime-config, database or provider work.
 - Normal accepted queued reconciliation performs at most the current single `getSubscriptionReconciliationSnapshot(...)` provider call and reuses `activeSubscription` plus `latestLifecycleEvent`. Do not multiply provider calls while splitting handlers.
 - Reinstall reconciliation remains on its distinct `partner.getActiveSubscription(...)` path; do not replace it with the normal reconciliation snapshot helper.
-- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
+- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
-- Preserve the meaning and boundary of existing `billing.subscription_reconciliation.*` structured log events; use the canonical Shared logger and do not log whole provider/customer payloads.
+- Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
@@ -84,7 +84,7 @@ Previously accepted ARCH-025 Background collaborator files may be wired/imported
 
 Create `reconciliation-context.ts` owning the exact durable context read currently at the start of `reconcileJob()` and the current-plan-by-id read used by cycle/rollover/plan-change/FROZEN work. Preserve selected fields and query count; do not broaden to whole-row/domain-object loading.
 
-The pure BACKGROUND-001 classifier still owns state classification/skip results. Context loading does not perform lifecycle decisions.
+The pure BACKGROUND-001 classifier still owns state classification/skip results. Context loading does not perform lifecycle decisions. After loading the current plan, preserve the **only two** pre-provider plan eligibility gates from the source: cycle discovery skips with `cycle-discovery-plan-ineligible` unless the plan is active, Free and pack-enabled; rollover skips with `rollover-plan-ineligible` unless the plan is active and, when Free, pack-enabled. Do **not** add the same gate to established-plan-change or FROZEN kinds.
 
 ### R2 — final coordinator flow and ordering
 
@@ -92,18 +92,20 @@ Refactor `reconcileJob()` into a dispatcher with this exact high-level order:
 
 ```text
 parse Shared job
-capture runtimeConfig.current() exactly once
+capture runtimeConfig.current() exactly once **after successful parse**
 load bounded durable context
 classify / log exact skip or accepted result
 if reinstall -> delegate reinstall handler and return
-load current plan when required; apply current plan eligibility gates
+load current plan when required; apply only the source cycle-discovery/rollover eligibility gates
 request one getSubscriptionReconciliationSnapshot(...) and reuse it
 on provider-fetch failure -> delegate lifecycle-specific failure handler
 for non-initial work, run existing ShopifySubscriptionLifecycleReconciliationService when lifecycle evidence exists or kind is FROZEN
 if lifecycle handled/restored -> republish committed durable schedule and return
 delegate cycle/pre-close/rollover where applicable (preserving pre-close-before-provider-null ordering)
 resolve provider-null outcomes through the owning handler
-then delegate established plan change or initial activation
+perform the source provider-handle BillingPlan lookup once
+if established-plan-change with currentPlan -> delegate established plan-change handler
+otherwise preserve the exact final Free/Paid/mismatch/applyOtherCurrentPlan predicate sequence, including legacy FROZEN `continue` fallthrough
 ```
 
 No lifecycle transaction implementation should remain in `reconcileJob()`.
@@ -120,11 +122,11 @@ When it returns `handled` or `restored`, read the committed `nextReconcileAt` an
 
 ### R5 — frozen provider failure stays exact
 
-The existing FROZEN snapshot-fetch failure path may remain as one small coordinator-private failure helper or move to a tightly scoped adjacent helper, but preserve its exact CAS (`status: FROZEN`, plan id, consumed schedule), `PARTNER_API_ERROR`, captured `billingFrozenRecheckSeconds`, logging and next-job publication. Do not create a generic retry switch.
+The existing `recordFrozenProviderFailure(...)` FROZEN snapshot-fetch failure path may remain as one small coordinator-private failure helper or move to a tightly scoped adjacent helper, but preserve its exact CAS (`status: FROZEN`, plan id, consumed schedule), `PARTNER_API_ERROR`, captured `billingFrozenRecheckSeconds`, logging and next-job publication. Do not create a generic retry switch.
 
 ### R6 — preserve current fallthrough behaviour; do not opportunistically fix it
 
-If an edge path (including FROZEN lifecycle `continue` behaviour) appears questionable during extraction, preserve the source behaviour and frozen tests. Report any suspected product defect to `moda_architect` rather than changing convergence semantics inside this maintainability task.
+If an edge path appears questionable during extraction, preserve the source behaviour and frozen tests. In particular, when a FROZEN reconciliation reaches lifecycle result `continue`, do **not** add a new early return or a `kind === initial-activation` guard: continue through the same provider-handle plan lookup and final Free/Paid/mismatch/`applyOtherCurrentPlan` predicates as the source, using BACKGROUND-001's unnormalised FROZEN expected-object shape and BACKGROUND-003's independently invocable `applyOtherCurrentPlan` operation. Report this as a suspected product defect if appropriate, but do not change it inside ARCH-025.
 
 ### R7 — final façade/entrypoint compatibility
 
@@ -135,9 +137,9 @@ The final `BillingSubscriptionReconciliationService` retains the same constructo
 - [ ] Add bounded reconciliation context loading with the exact current select/query shape.
 - [ ] Reduce `reconcileJob()` to parse -> one runtime snapshot -> load -> classify -> one provider snapshot -> lifecycle replay -> handler delegation.
 - [ ] Remove full lifecycle transaction implementations/private helpers from the coordinator once their accepted owners exist; retain only compatibility delegates and bounded orchestration/frozen provider-failure logic.
-- [ ] Preserve exact skip/accepted/provider-snapshot structured log boundaries and fields.
+- [ ] Preserve exact skip/accepted/provider-snapshot structured log event names, levels, fields and emission order; explicitly cover `cycle-discovery-plan-ineligible` and `rollover-plan-ineligible`.
 - [ ] Prove stale/ineligible jobs remain provider-free and accepted normal jobs perform at most one snapshot provider call.
-- [ ] Add focused coordinator/context tests for dispatch, provider-call count, runtime-config-single-read, lifecycle handled/restored schedule publication, provider-error routing and no caller migration.
+- [ ] Add focused coordinator/context tests for invalid-input parse-before-runtime-config behaviour, dispatch, exact current-plan eligibility gates, provider-call count, runtime-config-single-read after parse, lifecycle handled/restored schedule publication, FROZEN `continue` legacy fallthrough, provider-error routing and no caller migration.
 - [ ] Prove `src/entrypoints/billing.ts` and `src/services/billing-reconciliation.service.ts` require no changes.
 - [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
 
@@ -160,7 +162,7 @@ None
 - [ ] Reinstall retains its separate provider path.
 - [ ] Existing lifecycle reconciliation service remains canonical and committed lifecycle schedules are republished exactly as today.
 - [ ] Public constructor/methods/exports, billing worker entrypoint and `billing-reconciliation.service.ts` caller remain unchanged.
-- [ ] No provider/database/queue work is added to stale/ineligible hot paths.
+- [ ] No provider/database/queue work is added to stale/ineligible hot paths; malformed input still fails before runtime-config/database/provider work, and established/FROZEN kinds do not gain cycle/rollover plan-eligibility gates.
 - [ ] Frozen regression suite remains byte-identical and all 98 tests pass; full repository test/build pass.
 
 ## Validation

@@ -69,12 +69,12 @@ BACKGROUND-001 through BACKGROUND-003 internal modules may be consumed but not b
 - Preserve the positional constructor `(database, partner, queue, logger, now, runtimeConfig, discountQueue)`. Do not modify `src/entrypoints/billing.ts` or `src/services/billing-reconciliation.service.ts` to accommodate extraction.
 - Extracted modules MUST NOT import `billing-subscription-reconciliation.service.ts`; dependency direction is coordinator -> collaborator. Symbols moved out of the coordinator file that are currently exported must be compatibility re-exported from it.
 - Collaborator constructors are inert wiring only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during construction.
-- Capture exactly one `BackgroundRuntimeConfigSnapshot` per `reconcileJob()` invocation and pass that immutable snapshot to every downstream operation that currently consumes runtime configuration.
+- Preserve parse-before-runtime-config ordering: only after `parseBillingSubscriptionReconcileJob(...)` succeeds, call `runtimeConfig.current()` exactly once and pass that immutable snapshot downstream. Malformed input must still fail during parsing before runtime-config, database or provider work.
 - Normal accepted queued reconciliation performs at most the current single `getSubscriptionReconciliationSnapshot(...)` provider call and reuses `activeSubscription` plus `latestLifecycleEvent`. Do not multiply provider calls while splitting handlers.
 - Reinstall reconciliation remains on its distinct `partner.getActiveSubscription(...)` path; do not replace it with the normal reconciliation snapshot helper.
-- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
+- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
-- Preserve the meaning and boundary of existing `billing.subscription_reconciliation.*` structured log events; use the canonical Shared logger and do not log whole provider/customer payloads.
+- Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
@@ -109,6 +109,8 @@ Do not normalise reinstall locks. Preserve the exact existing shapes, including:
 - no-contract and Free/same-cycle Paid activation: `Shop -> ShopSettings -> Subscription` before authority reread;
 - later-cycle Paid transition: existing Shop lock/authority check followed by `SamePlanBillingPeriodRolloverService.transitionInTransaction(...)` in the same transaction;
 - `activateReinstallAfterRollover`'s current `ShopSettings -> Subscription` shape.
+
+Before choosing same-cycle versus later-cycle Paid handling, preserve the current **non-transactional** `database.subscription.findUnique(...)` alignment read in `completeReinstallPaid(...)`; do not move it under a lock/transaction or eliminate it as redundant during extraction.
 
 `isReinstallAuthority` must continue rereading both Shop status/marker and Subscription schedule inside the current transaction boundary.
 

@@ -69,12 +69,12 @@ Earlier ARCH-025 Background collaborators are consumable dependencies.
 - Preserve the positional constructor `(database, partner, queue, logger, now, runtimeConfig, discountQueue)`. Do not modify `src/entrypoints/billing.ts` or `src/services/billing-reconciliation.service.ts` to accommodate extraction.
 - Extracted modules MUST NOT import `billing-subscription-reconciliation.service.ts`; dependency direction is coordinator -> collaborator. Symbols moved out of the coordinator file that are currently exported must be compatibility re-exported from it.
 - Collaborator constructors are inert wiring only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during construction.
-- Capture exactly one `BackgroundRuntimeConfigSnapshot` per `reconcileJob()` invocation and pass that immutable snapshot to every downstream operation that currently consumes runtime configuration.
+- Preserve parse-before-runtime-config ordering: only after `parseBillingSubscriptionReconcileJob(...)` succeeds, call `runtimeConfig.current()` exactly once and pass that immutable snapshot downstream. Malformed input must still fail during parsing before runtime-config, database or provider work.
 - Normal accepted queued reconciliation performs at most the current single `getSubscriptionReconciliationSnapshot(...)` provider call and reuses `activeSubscription` plus `latestLifecycleEvent`. Do not multiply provider calls while splitting handlers.
 - Reinstall reconciliation remains on its distinct `partner.getActiveSubscription(...)` path; do not replace it with the normal reconciliation snapshot helper.
-- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
+- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
-- Preserve the meaning and boundary of existing `billing.subscription_reconciliation.*` structured log events; use the canonical Shared logger and do not log whole provider/customer payloads.
+- Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
@@ -123,8 +123,8 @@ Preserve:
 - exact drain boundary `periodEnd - APP_PRICING_BILLING_PERIOD_DRAIN_WINDOW_MS`;
 - final-minute retry capped at exact period end;
 - exact source projection CAS fields for pre-close/current-cycle updates;
-- clearing only `PRE_CLOSE_USAGE_FLUSH_FAILED` after successful exact-cycle drain retry;
-- preserving unrelated sync errors;
+- in the **inline same-current-cycle provider-truth branch**, clear `lastSyncErrorCode/At` only when the source row carried `PRE_CLOSE_USAGE_FLUSH_FAILED`; otherwise omit those fields and preserve unrelated sync errors exactly as today;
+- in the separate `reconcilePreClose(...)` success path, preserve the current unconditional write of `lastSyncErrorCode: null` and `lastSyncErrorAt: null` when scheduling the exact period boundary; do not apply the inline branch's conditional-clear rule to this path;
 - current `PROVIDER_CYCLE_LAG`, `MISSING_BILLING_CYCLE`, `BILLING_PERIOD_PLAN_CONFLICT` and usage-publish failure semantics.
 
 ### R6 — recovery-capacity resume remains best effort
@@ -137,7 +137,7 @@ Paid same-plan transition continues to schedule `recoveryCapacityResumeService` 
 - [ ] Move cycle discovery, current-cycle pending/cancel projection, pre-close flush, same-plan rollover and their failure/retry helpers.
 - [ ] Pass the one captured runtime-config snapshot into every usage-publish call.
 - [ ] Reuse queue/timing collaborators and existing canonical projection/rollover services.
-- [ ] Add focused tests for cycle discovery, pack-enabled Free exact projection, pending/cancellation projection, before/inside drain window, pre-close failure/retry/error clearing, provider null/lag, same-plan rollover and capacity-resume isolation.
+- [ ] Add focused tests for cycle discovery, pack-enabled Free exact projection, pending/cancellation projection, before/inside drain window, both distinct pre-close error-clearing behaviours, provider null/lag, same-plan rollover and capacity-resume isolation.
 - [ ] Prove no provider call is made by the handler itself; it consumes the coordinator's snapshot result.
 - [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
 

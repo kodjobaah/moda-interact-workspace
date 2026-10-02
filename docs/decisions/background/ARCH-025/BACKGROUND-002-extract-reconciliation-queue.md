@@ -69,12 +69,12 @@ The BACKGROUND-001 pure classification module may be imported but not behavioura
 - Preserve the positional constructor `(database, partner, queue, logger, now, runtimeConfig, discountQueue)`. Do not modify `src/entrypoints/billing.ts` or `src/services/billing-reconciliation.service.ts` to accommodate extraction.
 - Extracted modules MUST NOT import `billing-subscription-reconciliation.service.ts`; dependency direction is coordinator -> collaborator. Symbols moved out of the coordinator file that are currently exported must be compatibility re-exported from it.
 - Collaborator constructors are inert wiring only. Do not perform provider/database I/O, environment discovery or eager Prisma-model access during construction.
-- Capture exactly one `BackgroundRuntimeConfigSnapshot` per `reconcileJob()` invocation and pass that immutable snapshot to every downstream operation that currently consumes runtime configuration.
+- Preserve parse-before-runtime-config ordering: only after `parseBillingSubscriptionReconcileJob(...)` succeeds, call `runtimeConfig.current()` exactly once and pass that immutable snapshot downstream. Malformed input must still fail during parsing before runtime-config, database or provider work.
 - Normal accepted queued reconciliation performs at most the current single `getSubscriptionReconciliationSnapshot(...)` provider call and reuses `activeSubscription` plus `latestLifecycleEvent`. Do not multiply provider calls while splitting handlers.
 - Reinstall reconciliation remains on its distinct `partner.getActiveSubscription(...)` path; do not replace it with the normal reconciliation snapshot helper.
-- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
+- Preserve all provider/network versus Prisma transaction boundaries, `SELECT ... FOR UPDATE` targets/order, `updateMany` CAS predicates, durable rereads and post-commit side-effect ordering exactly. Preserve existing clock-read points/order too: do not coalesce, hoist or reorder repeated `now()` reads where doing so could move drain-window, period-boundary, retry or queue-delay decisions. Do not impose one global lock order across lifecycles where the current code uses different transaction shapes.
 - Continue delegating canonical work to `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService`, `ensureCurrentBillingPeriodProjection`, `shopifyUsageEventPublisherService`, `shopifyDiscountCatalogueService` and `recoveryCapacityResumeService`; do not duplicate those implementations.
-- Preserve the meaning and boundary of existing `billing.subscription_reconciliation.*` structured log events; use the canonical Shared logger and do not log whole provider/customer payloads.
+- Preserve existing `billing.subscription_reconciliation.*` structured log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe; use the canonical Shared logger and do not log whole provider/customer payloads.
 - `tests/unit/services/billing-subscription-reconciliation.service.test.ts` is frozen: do not edit it. SHA-256 must remain `0b53c44561a166e26c358d0b4b05a4a30da2f6dbb192e0b5d922064f90919239`, and all 98 tests must pass after every task.
 - Add separate focused tests for the extracted owner. Do not move assertions out of the frozen regression file, skip tests, weaken assertions or change expected behaviour to make an extraction pass.
 - `tests/unit/runtime/entrypoint-isolation.test.ts` must continue passing so the billing-worker construction/startup contract remains unchanged.
@@ -117,7 +117,7 @@ billing.subscription_reconciliation.reconstruction_finished
 billing.subscription_reconciliation.enqueue_failed
 ```
 
-The returned reconstructed count remains the number of successful enqueue attempts, not the number of eligible rows.
+The returned reconstructed count preserves the source implementation exactly: increment once for each eligible row whose delegated `enqueue(...)` call resolves without throwing. Because public `enqueue(...)` currently resolves as a no-op when no queue dependency exists, reconstruction also increments in that no-queue case; this is **not** a count of BullMQ inserts.
 
 ### R4 — payload helper compatibility
 
@@ -133,7 +133,7 @@ The queue owner accepts an already-decided durable next schedule. It MUST NOT ce
 - [ ] Move `enqueue`, `publishNext`, `publishCommittedLifecycleSchedule` and `reconstruct` behind it with exact current semantics.
 - [ ] Keep public `enqueue`/`reconstruct` façade delegates and `createSubscriptionReconcilePayload` compatibility export.
 - [ ] Route coordinator/later-handler publication through the collaborator without changing queue call count/options.
-- [ ] Add focused queue/reconstruction tests for deterministic IDs, overdue/future delay, no-queue no-op, reconstruction predicate coverage and enqueue-failure isolation.
+- [ ] Add focused queue/reconstruction tests for deterministic IDs, overdue/future delay, public no-queue no-op, no-queue reconstruction count semantics, reconstruction predicate coverage and enqueue-failure isolation.
 - [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
 
 ## Interfaces / Contracts
@@ -152,7 +152,7 @@ Internal queue collaborator. Public `BillingSubscriptionReconciliationService.en
 
 - [ ] Queue publication/reconstruction no longer lives in the coordinator implementation.
 - [ ] Existing job payload/schema, job identity and BullMQ options are unchanged.
-- [ ] Reconstruction selects the same durable rows and performs no provider calls.
+- [ ] Reconstruction selects the same durable rows, preserves the current count semantics including the no-queue case, and performs no provider calls.
 - [ ] Existing public helper/method imports continue to work without caller edits.
 - [ ] Lifecycle retry choice remains outside the queue service.
 - [ ] Frozen regression suite remains byte-identical and all 98 tests pass.

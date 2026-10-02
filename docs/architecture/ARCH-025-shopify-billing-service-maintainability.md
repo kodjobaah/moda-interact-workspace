@@ -73,7 +73,7 @@ The objective in both repositories is maintainability, not behavioural redesign.
 - Extract one coherent billing responsibility per task into bounded modules/services.
 - Preserve all provider/network versus Prisma transaction boundaries and current lock/CAS behaviour in both repositories.
 - Preserve all current billing lifecycle, retry, error-code, provider-evidence and entitlement semantics.
-- Preserve the Background invariant of one immutable `BackgroundRuntimeConfigSnapshot` per accepted queued job.
+- Preserve the Background invariant that every **successfully parsed** queued job captures exactly one immutable `BackgroundRuntimeConfigSnapshot` immediately after parsing and before durable context loading; malformed input still fails during parsing before runtime-config/database/provider work.
 - Preserve normal queued reconciliation as one `getSubscriptionReconciliationSnapshot(...)` call per accepted job and preserve reinstall's distinct `getActiveSubscription(...)` path.
 - Reuse existing Background rollover, plan-change, lifecycle, projection, usage-publishing, discount and capacity-resume owners instead of duplicating their behaviour.
 - Add focused tests for each extracted owner while preserving both large regression suites byte-for-byte.
@@ -277,11 +277,14 @@ parse job
   -> load current local plan when required
   -> request exactly one provider reconciliation snapshot when required
   -> run existing lifecycle reconciliation with the captured runtime config
-  -> delegate to exactly one extracted lifecycle owner
+  -> delegate using the same source ordering to the applicable extracted owner(s)
+  -> preserve the legacy final provider-plan dispatch/fallthrough (including FROZEN `continue`)
   -> publish only the committed durable next schedule
 ```
 
 Reinstall intentionally remains separate from the normal snapshot path and continues to call `partner.getActiveSubscription(...)` once. Lifecycle retry decisions stay with the owning handler; the queue collaborator only publishes a requested durable schedule and does not become a generic retry-policy engine.
+
+The final provider-plan lookup/branch dispatch remains bounded coordinator orchestration rather than being hidden inside an initial-activation-only entry point. This preserves the current source ordering shared by initial activation, established plan change and the legacy FROZEN lifecycle `continue` fallthrough. In particular, ARCH-025 does not add a new `kind === initial-activation` guard around the existing final Free/Paid/mismatch/`applyOtherCurrentPlan` predicates.
 
 All collaborator constructors in both repositories are inert wiring only: no provider/database I/O, environment discovery or eager Prisma-model access.
 
@@ -381,12 +384,14 @@ Structural extraction MUST preserve:
 - exact `expectedNextReconcileAt` stale-job authority/CAS fencing;
 - deterministic queue job identity derived from `subscriptionId` + `expectedNextReconcileAt`;
 - current queue options and delayed scheduling;
-- exactly one immutable runtime-config snapshot per `reconcileJob()` invocation;
+- after `parseBillingSubscriptionReconcileJob(...)` succeeds, exactly one immutable runtime-config snapshot is captured before durable context loading; malformed input performs no runtime-config/database/provider work;
 - normal reconciliation's single `getSubscriptionReconciliationSnapshot(...)` call and snapshot reuse;
 - reinstall's distinct single `getActiveSubscription(...)` call;
 - current provider/network versus transaction boundaries;
+- current clock-read boundaries as well as database/provider boundaries: do not coalesce, hoist or reorder repeated `now()` reads where the source currently reads the clock separately, especially around drain-window, period-boundary, retry and queue-delay decisions;
 - every current `SELECT ... FOR UPDATE` target/order per lifecycle rather than imposing one global lock order;
 - existing `updateMany` CAS predicates and no-op behaviour on stale source state;
+- existing structured-log event names, levels, bounded field sets and emission boundaries/order relative to the I/O they describe;
 - post-commit/best-effort discount-sync and recovery-capacity-resume isolation where they are best-effort today;
 - current pre-close usage-publish-before-period-boundary ordering;
 - existing canonical `SamePlanBillingPeriodRolloverService`, `ShopifyPlanChangeTransitionService`, `ShopifySubscriptionLifecycleReconciliationService` and `ensureCurrentBillingPeriodProjection` transaction ownership.
@@ -547,6 +552,7 @@ None.
 
 ## Change History
 
+- 2026-10-02: Deep Background task-coherence review tightened parse-before-runtime-config semantics, clock/log preservation, reconstruction count semantics, cycle error-clearing distinctions, exact current-plan eligibility gates, reinstall pre-transaction rereads and the legacy FROZEN `continue` provider-plan fallthrough. Kept the final provider-plan lookup/branch dispatch as bounded coordinator orchestration so accepted lifecycle-service interfaces remain sufficient through BACKGROUND-007.
 - 2026-10-02: Extended ARCH-025 with an independent Background billing-subscription reconciliation maintainability tranche. Added seven sequential `moda_background` tasks, froze the 98-test reconciliation regression asset, preserved worker constructor/entrypoint and provider-call invariants, and kept lifecycle-specific retries with their owning handlers rather than creating a generic retry service.
 - 2026-10-01: Initial agreed Shopify-only BillingService maintainability architecture and eleven-task deterministic extraction sequence defined from the supplied current snapshot.
 - 2026-10-01: Meticulous source/task reconciliation tightened hidden helper ownership, preserved the frozen-suite private resolution delegate, introduced single owners for shared lock/retry mechanics, corrected initial-Paid finalisation to remain inside the caller-owned sync transaction, fixed notification/no-contract semantics, preserved deliberate provider/catalogue rereads and raw UNMAPPED/SYNC_ERROR BillingPeriod projection, added explicit Stop Conditions, and made hash validation cross-platform.
