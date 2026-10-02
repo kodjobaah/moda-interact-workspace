@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: review
+status: complete
 priority: 20
 executor: null
 claimed_at: null
@@ -241,9 +241,50 @@ None identified in the bounded implementation. Validation disposition remains wi
 
 ### Review Status
 
-Changes Requested — Attempt 2.
+Accepted — Attempt 3.
 
 ### Review Notes
+
+Attempt 3 satisfies the final report-only correction contract and ADMIN-009 is
+accepted Complete.
+
+All five Acceptance Criteria are checked. The Attempt 3 launcher/claim, physical
+worktree, synchronization and recursive submodule evidence are durably recorded.
+GitHub independently confirms the final task refs:
+
+```text
+workspace task/ARCH-025-ADMIN-009
+  1c9a130564660b664025a21f59434ec90c505c2b
+
+Admin implementation task/ARCH-025-ADMIN-009
+  b09d421d4c18484c33fd70d6929c50bc43b6afcd
+```
+
+The implementation-task head `b09d421d...` is the launcher-required merge of current
+`origin/main` (`dfb790ffe613f7afeb8630e740010bdd12d5e014`) into the previously
+reviewed ADMIN-009 implementation `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1`.
+Architect comparison of `eda069b4... -> b09d421d...` shows that merge changes only
+the five already-accepted ADMIN-001 pricing-plan-controller files. It does **not**
+change any ADMIN-009 source/test file, frozen QueueMonitor/API file, `package.json`,
+lockfile or dependency configuration. Therefore the Attempt 2 no-drift validation
+remains applicable and no additional broad rerun is required.
+
+The accepted ADMIN-009 behavior remains:
+
+- browser-local QueueMonitor response mirrors with no server/BullMQ/Redis runtime
+  import;
+- exact summary/jobs/detail endpoint construction, query names/order,
+  `cache: "no-store"`, AbortSignal forwarding and detail 404/non-OK distinction;
+- request lifecycle/state-transition ownership retained in the public
+  `QueueMonitor` shell;
+- extraction-safe source loaders bounded to the public shell plus sorted direct
+  `queue-monitor/` modules;
+- frozen server/API source and dedicated server-test boundaries unchanged;
+- focused client proof 3/3;
+- inherited global Admin failures governed only by `ARCH025-ADMIN-TEST-001`, with
+  QueueMonitor-owned assertions green.
+
+The final report state is now durable. No source/test correction remains.
 
 Attempt 2 satisfies the substantive evidence-only correction contract from Attempt 1:
 the implementation remains unchanged at
@@ -403,6 +444,7 @@ documented inherited Admin baseline debt, not an ADMIN-009 defect.
 
 ### Follow-up
 
-Reclaim this same task through `/moda-task ARCH-025-ADMIN-009` for a final report-only
-Attempt 3. Do not start ADMIN-010 until ADMIN-009 is architect-accepted Complete.
-No source/test change or broad validation rerun is requested.
+`ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3. Its sole dependant,
+`ARCH-025-ADMIN-010`, has all declared dependencies satisfied and is promoted to
+Ready, Attempt 0, claim clear. Do not start ADMIN-011 or later QueueMonitor tasks
+implicitly.

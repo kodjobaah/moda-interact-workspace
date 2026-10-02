@@ -35,7 +35,7 @@ The second Background tranche refactors `src/services/checkout-recovery.service.
 
 The first Admin tranche refactors `src/components/admin/merchant/merchant-pricing-plan-builder.tsx` behind its unchanged exported React component/form boundary. All ARCH-024 Admin model-assignment work is integrated in the reviewed baseline. `ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2; ADMIN-002 is Ready and ADMIN-003 through ADMIN-008 remain dependency-gated.
 
-The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Ready; ADMIN-010 through ADMIN-015 remain dependency-gated.
+The second Admin tranche refactors `src/components/admin/queue-monitor.tsx` behind its unchanged `QueueMonitor` export while separating browser contracts/client I/O, the three asynchronous read lifecycles, drawer mechanics and presentation. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3; ADMIN-010 is Ready and ADMIN-011 through ADMIN-015 remain dependency-gated.
 
 The first Commerce tranche refactors `components/studio-workspace.tsx` behind its unchanged `StudioWorkspace` / `StudioPage` public module boundary while separating workspace orchestration, Release composition/detail, Shop views and generic page routing. ARCH-024 Studio model-selection work is integrated in the reviewed baseline. `ARCH-025-COMMERCE-001` is Ready; COMMERCE-002 through COMMERCE-005 remain dependency-gated.
 
@@ -1144,8 +1144,8 @@ The parent workspace owns architecture/task coordination files. Repository imple
 | ARCH-025-ADMIN-006 | Extract Merchant content step | Pending | ADMIN-005 |
 | ARCH-025-ADMIN-007 | Extract Portfolio economics step | Pending | ADMIN-006 |
 | ARCH-025-ADMIN-008 | Extract Translations/review and reduce final builder shell | Pending | ADMIN-007 |
-| ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Ready | - |
-| ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook | Pending | ADMIN-009 |
+| ARCH-025-ADMIN-009 | Extract QueueMonitor browser contracts/client and make UI assertions extraction-safe | Complete | - |
+| ARCH-025-ADMIN-010 | Extract queue-summary polling/single-flight hook | Ready | ADMIN-009 |
 | ARCH-025-ADMIN-011 | Extract queue-jobs browsing/filter/pagination hook | Pending | ADMIN-010 |
 | ARCH-025-ADMIN-012 | Extract selected-job detail hook | Pending | ADMIN-011 |
 | ARCH-025-ADMIN-013 | Extract resizable drawer hook | Pending | ADMIN-012 |
@@ -1221,6 +1221,7 @@ None.
 
 ## Change History
 
+- 2026-10-02: ADMIN-009 Accepted / Complete at Attempt 3. The final report-only retry reconciled all Acceptance Criteria and final branch identities. Launcher merge head `b09d421d4c18484c33fd70d6929c50bc43b6afcd` incorporated current main but changed only already-accepted ADMIN-001 files relative to reviewed ADMIN-009 implementation `eda069b4b165f0b6cbb0c3fa3ac821aef32662e1`; no ADMIN-009/frozen/dependency state changed. Final parent report head is `1c9a130564660b664025a21f59434ec90c505c2b`. ADMIN-010 is promoted Ready.
 - 2026-10-02: BACKGROUND-001 Attempt 3 accepted the lifecycle/report reconciliation at parent report commit `fc303934c4b92eb22f5116fb501339b779c41417`. No source/test change occurred; implementation task ref `3cc3b89da4c008d00b2cb6c21505eb738b15cf3f` contains reviewed implementation `b3c7a1264a22baf498b14916a341686a751de869` with no file delta. Cleared stale task claim state and made the previously identified frozen reconciliation count correction durable across BACKGROUND-001..007: the required-hash asset currently executes 146 tests, not 98.
 
 - 2026-10-02: ADMIN-001 Accepted / Complete at Attempt 2. The evidence-only retry preserves implementation `0cd5c010926acfbfaf808fb5d727df9269b30fdb`; same-environment comparison against pre-task `b8da632a1fcaef7e364be1dc5cca40dfafde4703` proves the same two unit and nine package-suite failures with no new/worsened failure, while launcher/worktree/submodule evidence is now durable. Added `ARCH025-ADMIN-BUILDER-TEST-001` for those exact inherited failures and promoted ADMIN-002 Ready.

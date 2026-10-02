@@ -72,8 +72,8 @@ Individual task YAML is authoritative.
 | [ADMIN-006](ADMIN-006-extract-merchant-content-step.md) | Merchant content/highlights step | Pending | ADMIN-005 |
 | [ADMIN-007](ADMIN-007-extract-portfolio-economics-step.md) | Portfolio economics/override step | Pending | ADMIN-006 |
 | [ADMIN-008](ADMIN-008-extract-translations-review-and-reduce-builder.md) | Mounted translations/review + final thin shell | Pending | ADMIN-007 |
-| [ADMIN-009](ADMIN-009-extract-queue-monitor-browser-client.md) | Browser contracts/client + extraction-safe QueueMonitor assertions | Ready | - |
-| [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Pending | ADMIN-009 |
+| [ADMIN-009](ADMIN-009-extract-queue-monitor-browser-client.md) | Browser contracts/client + extraction-safe QueueMonitor assertions | Complete (Accepted, Attempt 3) | - |
+| [ADMIN-010](ADMIN-010-extract-queue-monitor-summary-hook.md) | Queue-summary polling/single-flight hook | Ready | ADMIN-009 |
 | [ADMIN-011](ADMIN-011-extract-queue-jobs-hook.md) | Queue jobs filters/page/recent-full hook | Pending | ADMIN-010 |
 | [ADMIN-012](ADMIN-012-extract-queue-job-detail-hook.md) | Selected-job detail hook | Pending | ADMIN-011 |
 | [ADMIN-013](ADMIN-013-extract-resizable-queue-drawer-hook.md) | Resizable drawer viewport/pointer/keyboard hook | Pending | ADMIN-012 |
@@ -82,7 +82,7 @@ Individual task YAML is authoritative.
 
 ## Execution frontier
 
-`ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2 and `ARCH-025-ADMIN-002` is now Ready. `ARCH-025-ADMIN-009` remains an independent Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
+`ARCH-025-ADMIN-001` is Complete / Accepted at Attempt 2 and `ARCH-025-ADMIN-002` is Ready. `ARCH-025-ADMIN-009` is Complete / Accepted at Attempt 3 and `ARCH-025-ADMIN-010` is now the independent QueueMonitor Ready frontier. The two Admin chains remain independent of `ARCH-025-BACKGROUND-001` / `ARCH-025-BACKGROUND-008`; later tasks in each chain remain Pending until the immediately preceding task is architect-accepted Complete.
 
 ## ADMIN-001 Attempt 2 architect acceptance — 2026-10-02
 
@@ -110,6 +110,17 @@ versus submitted `0cd5c010926acfbfaf808fb5d727df9269b30fdb`, recording exact
 failure identities/reasons, and add the prepared launcher/worktree/synchronization/
 submodule evidence to the Completion Report. ADMIN-002 remains Pending; ADMIN-009 is
 independently Ready.
+
+## ADMIN-009 Attempt 3 architect acceptance — 2026-10-02
+
+**Accepted / Complete, Attempt 3.** The final report-only retry reconciles all five
+Acceptance Criteria and final branch state. The launcher-required implementation
+merge head `b09d421d...` changes only already-accepted ADMIN-001 files relative to
+reviewed ADMIN-009 implementation `eda069b4...`; no QueueMonitor/frozen/dependency
+state changed, so the Attempt 2 validation remains authoritative. Final parent task
+head is `1c9a1305...`.
+
+ADMIN-010 is promoted Ready; ADMIN-011..015 remain dependency-gated.
 
 ## ADMIN-009 Attempt 2 architect disposition — 2026-10-02
 
