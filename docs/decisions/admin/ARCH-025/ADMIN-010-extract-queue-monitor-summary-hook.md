@@ -9,7 +9,7 @@ assigned_agent: moda_admin
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: in_progress
+status: review
 priority: 20
 executor: copilot
 claimed_at: 2026-10-02T23:30:35Z
@@ -121,7 +121,7 @@ ADMIN-010 consumes ADMIN-009 `queue-monitor.client.ts` and existing `queue-monit
 - [x] `node --experimental-strip-types --test tests/unit/queue-monitor-summary.test.ts` passes for the pure/request-state helpers introduced by this task.
 
 - [x] `npm run test:unit` passes without task-introduced regression.
-- [ ] `npm test` completes without task-introduced regression. If the monolithic Node test runner is interrupted again before a terminal result, deterministic execution of the complete `tests/observability/*.test.mjs` + `tests/security/*.test.mjs` file set is an accepted equivalent only when every matched file is executed and every failure is either fixed or an exact unchanged `ARCH025-ADMIN-TEST-001` failure.
+- [x] Attempt 2 `npm test` completed the full `tests/observability/*.test.mjs` + `tests/security/*.test.mjs` file set: 235 tests, 226 passed, 9 failed. Every failure identifier matches the unchanged `ARCH025-ADMIN-TEST-001` set; QueueMonitor-specific assertions passed.
 - [x] targeted ESLint for every changed Admin source/test file passes.
 - [x] `npm run build` succeeds.
 - [x] `git diff --check` passes.
@@ -158,7 +158,8 @@ Review
 - Focused summary test: 3 passed, 0 failed.
 - Accepted QueueMonitor/drawer/detail/internationalization harness: 27 passed, 2 failed. The two failures are the existing ADMIN baseline ICU runtime/catalogue expectations; all QueueMonitor, drawer and detail assertions passed.
 - Full unit suite: 248 passed, 2 failed. The exact failures are `rejects stale metadata, locale/header changes, and highlight identity changes` and `returns all bounded validation issues in canonical order`, both documented by `ARCH025-ADMIN-BUILDER-TEST-001`; no new failure appeared.
-- Full `npm test`: baseline failures were observed in the already documented observability, billing-pack status, ICU catalogue, shared-release, security-boundary and tenant-KPI contracts. QueueMonitor-specific assertions passed. A later repeat was interrupted by Node's test runner before completion and is not counted as a separate result.
+- Attempt 2 full `npm test` completed: 235 tests, 226 passed, 9 failed. The failures were exactly `no Moda-owned span/metric creation exists in application code`, `accepts strict non-negative lifetime Free defaults`, `every RecoveryCreditPurchaseStatus has an ICU label and filter support`, `purchase-status rendering uses the bounded presenter rather than dynamic ICU lookups`, `Admin validates and consumes the published Shared ICU runtime`, `Admin canonical catalogue keys are independent and intentionally aligned`, `consumes the published shared release without a local declaration shim`, `identity, revocation, mutation, session, and route contracts are wired`, and `Tenant Directory KPIs are derived from durable business state`. These are the exact inherited identifiers recorded by `ARCH025-ADMIN-TEST-001`; all QueueMonitor-specific security assertions passed and no new or worsened failure was observed.
+- Implementation task branch tracking now points to `origin/task/ARCH-025-ADMIN-010`; `HEAD` and the task remote both resolve to `e518c14471b6446e701a7ff95175de96a2019c9c`, and the implementation worktree is clean. The synchronized task branch was pushed without changing `main`.
 - All required frozen hashes matched; frozen source/API/helper/test diff was empty; accepted ADMIN-009 queue harness files were unchanged.
 - Targeted ESLint, editor diagnostics and `git diff --check` passed.
 - `npm run build` passed. Existing BullMQ dynamic-dependency and optional `@valkey/valkey-glide` warnings remain.
@@ -176,7 +177,7 @@ Review
 
 ### Unresolved Issues
 
-- The existing external `origin/main` upstream mapping for the implementation worktree does not match the task branch. The implementation commit was explicitly pushed only to `origin/task/ARCH-025-ADMIN-010`; no main ref was changed.
+- None.
 
 ### Architectural Concerns
 
