@@ -999,11 +999,11 @@ The architecture adds Store Category onboarding/default prompt seeding, Admin-ow
 ## ARCH-024 — CommerceAgent model runtime and Feature-composed Test Conversations (2026-10-01)
 
 Agreed architecture. Combined parent task state after reconciling accepted Admin, Commerce and
-Background branches: **Complete 16, Ready 0, Pending 1**. All ARCH-024 Admin, Background and
+Background branches plus accepted external GATEWAY-003: **Complete 16, Ready 1, Pending 0**. All ARCH-024 Admin, Background and
 Commerce tasks are Complete / architect-accepted. COMMERCE-007 is Complete / Accepted at Attempt 2
 after its bounded cancellation/unresolved-run lifecycle correction and complete validation/evidence
-handoff. No ARCH-024 task is currently Ready; GATEWAY-001 remains Pending because external
-prerequisite `ARCH-020-GATEWAY-003` is still Ready rather than Complete. COMMERCE-002 and
+handoff. GATEWAY-001 is now Ready because external prerequisite
+`ARCH-020-GATEWAY-003` is Complete / Accepted at Attempt 3. COMMERCE-002 and
 BACKGROUND-001/002 are Complete from their accepted mainline reconciliations; ADMIN-001 and
 ADMIN-004 remain Complete from their accepted Admin reconciliations. The canonical published Shared revision is
 `@modainteract/moda-interact-shared@1.1.0`. Model Catalogue/Availability/OpenRouter credential
@@ -1016,9 +1016,9 @@ remains frozen and is consumed as an external instruction dependency. ARCH-024 t
 system-test task materialisation is deliberately deferred to a later architecture session.
 
 [Architecture](ARCH-024-commerce-agent-model-runtime-and-test-conversations.md)
-## ARCH-025 — Shopify and Background runtime maintainability refactor (2026-10-01)
+## ARCH-025 — Runtime and Admin maintainability refactor (2026-10-01)
 
-In-progress structural refactor with three independent sub-tranches. The Shopify tranche extracts `moda-interact/app/services/billing/billing.service.ts` behind the unchanged `BillingService` façade; SHOPIFY-001 through SHOPIFY-011 are architect-accepted Complete, with the byte-identical 213-test façade asset governed by `ARCH025-TEST-001`. Background has two independent chains: BACKGROUND-001..007 decompose `billing-subscription-reconciliation.service.ts`, while BACKGROUND-008..015 decompose the integrated post-ARCH-024 `checkout-recovery.service.ts` behind its unchanged worker/service façade. BACKGROUND-001 and BACKGROUND-008 are both Ready; later tasks in each chain are dependency-gated. No Database, Shared, Admin, Commerce, Gateway or System Test implementation task is required.
+In-progress structural refactor with four independent sub-tranches. The Shopify tranche extracts `moda-interact/app/services/billing/billing.service.ts` behind the unchanged `BillingService` façade; SHOPIFY-001 through SHOPIFY-011 are architect-accepted Complete, with the byte-identical 213-test façade asset governed by `ARCH025-TEST-001`. Background has two independent chains: BACKGROUND-001..007 decompose `billing-subscription-reconciliation.service.ts`, while BACKGROUND-008..015 decompose the integrated post-ARCH-024 `checkout-recovery.service.ts` behind its unchanged worker/service façade. Admin adds ADMIN-001..008 to extract `merchant-pricing-plan-builder.tsx` behind the unchanged seven-step form/action boundary after ARCH-024 Commerce-model assignment. BACKGROUND-001, BACKGROUND-008 and ADMIN-001 are independently Ready; later tasks in each chain are dependency-gated. No Database, Shared, Commerce, Gateway or System Test implementation task is required.
 
 [Architecture](ARCH-025-shopify-billing-service-maintainability.md)
 

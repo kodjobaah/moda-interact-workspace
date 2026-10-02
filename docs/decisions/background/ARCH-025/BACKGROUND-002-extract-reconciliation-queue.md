@@ -82,7 +82,7 @@ The BACKGROUND-001 pure classification module may be imported but not behavioura
 
 ### R1 — deterministic queue publisher
 
-Create `reconciliation-queue.service.ts` owning the existing subscription-reconcile queue mechanics. Move the implementation of `enqueue(...)`, `publishNext(...)` and `publishCommittedLifecycleSchedule(...)` without changing:
+Create `reconciliation-queue.service.ts` owning the existing subscription-reconcile queue mechanics. It must receive the exact `database`, subscription queue, structured logger and `now` function supplied to the façade; do not silently fall back to module-level defaults or create a second clock/logger. Move the implementation of `enqueue(...)`, `publishNext(...)` and `publishCommittedLifecycleSchedule(...)` without changing:
 
 ```text
 queue name/job name
@@ -138,7 +138,7 @@ The queue owner accepts an already-decided durable next schedule. It MUST NOT ce
 
 ## Interfaces / Contracts
 
-Internal queue collaborator. Public `BillingSubscriptionReconciliationService.enqueue()` and `.reconstruct()` remain delegates. `createSubscriptionReconcilePayload` remains import-compatible from the façade file.
+Internal queue collaborator using the façade-supplied database/queue/logger/clock identities. Public `BillingSubscriptionReconciliationService.enqueue()` and `.reconstruct()` remain delegates. `createSubscriptionReconcilePayload` remains import-compatible from the façade file.
 
 ## Dependencies
 

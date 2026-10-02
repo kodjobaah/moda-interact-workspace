@@ -116,7 +116,7 @@ For every accepted non-reinstall job requiring provider evidence, call `getSubsc
 
 ### R4 — lifecycle replay remains existing-service owned
 
-Continue using `ShopifySubscriptionLifecycleReconciliationService` with the one captured runtime config. Do not move its durable lifecycle logic into the coordinator or create a competing lifecycle service.
+Continue using `ShopifySubscriptionLifecycleReconciliationService` with the one captured runtime config. Preserve its current dependency source as well as its behaviour: the source constructs it with the façade database and captured runtime config while leaving its existing default resume-service/logger dependencies in place. Do not silently replace those defaults with different collaborators during this structural refactor. Do not move its durable lifecycle logic into the coordinator or create a competing lifecycle service.
 
 When it returns `handled` or `restored`, read the committed `nextReconcileAt` and publish it through the BACKGROUND-002 queue collaborator exactly as today.
 
@@ -126,7 +126,12 @@ The existing `recordFrozenProviderFailure(...)` FROZEN snapshot-fetch failure pa
 
 ### R6 — preserve current fallthrough behaviour; do not opportunistically fix it
 
-If an edge path appears questionable during extraction, preserve the source behaviour and frozen tests. In particular, when a FROZEN reconciliation reaches lifecycle result `continue`, do **not** add a new early return or a `kind === initial-activation` guard: continue through the same provider-handle plan lookup and final Free/Paid/mismatch/`applyOtherCurrentPlan` predicates as the source, using BACKGROUND-001's unnormalised FROZEN expected-object shape and BACKGROUND-003's independently invocable `applyOtherCurrentPlan` operation. Report this as a suspected product defect if appropriate, but do not change it inside ARCH-025.
+If an edge path appears questionable during extraction, preserve the source behaviour and frozen tests. In particular, when a FROZEN reconciliation reaches lifecycle result `continue`, do **not** add a new early return or a `kind === initial-activation` guard.
+
+- When `snapshot.activeSubscription` is present, continue through the same provider-handle plan lookup and final Free/Paid/mismatch/`applyOtherCurrentPlan` predicates as the source, using BACKGROUND-001's unnormalised FROZEN expected-object shape and BACKGROUND-003's independently invocable `applyOtherCurrentPlan` operation.
+- When `snapshot.activeSubscription` is null after a lifecycle `continue`, preserve the source provider-null dispatch to BACKGROUND-003 `recordMissingSubscription(...)` with that same FROZEN-shaped expected object. For a genuine FROZEN durable row its `NO_CONTRACT` CAS does not match, so the path remains a non-throwing no-op with no newly scheduled job. Do not substitute `recordFrozenProviderFailure`, `PROVIDER_STATE_UNRESOLVED`, or another newly invented retry.
+
+Report either edge as a suspected product defect if appropriate, but do not change it inside ARCH-025.
 
 ### R7 — final façade/entrypoint compatibility
 
@@ -139,7 +144,7 @@ The final `BillingSubscriptionReconciliationService` retains the same constructo
 - [ ] Remove full lifecycle transaction implementations/private helpers from the coordinator once their accepted owners exist; retain only compatibility delegates and bounded orchestration/frozen provider-failure logic.
 - [ ] Preserve exact skip/accepted/provider-snapshot structured log event names, levels, fields and emission order; explicitly cover `cycle-discovery-plan-ineligible` and `rollover-plan-ineligible`.
 - [ ] Prove stale/ineligible jobs remain provider-free and accepted normal jobs perform at most one snapshot provider call.
-- [ ] Add focused coordinator/context tests for invalid-input parse-before-runtime-config behaviour, dispatch, exact current-plan eligibility gates, provider-call count, runtime-config-single-read after parse, lifecycle handled/restored schedule publication, FROZEN `continue` legacy fallthrough, provider-error routing and no caller migration.
+- [ ] Add focused coordinator/context tests for invalid-input parse-before-runtime-config behaviour, dispatch, exact current-plan eligibility gates, provider-call count, runtime-config-single-read after parse, lifecycle handled/restored schedule publication, both FROZEN `continue` legacy fallthroughs (provider present and provider null), provider-error routing and no caller migration.
 - [ ] Prove `src/entrypoints/billing.ts` and `src/services/billing-reconciliation.service.ts` require no changes.
 - [ ] Prove the frozen 98-test regression file remains byte-identical and passes.
 

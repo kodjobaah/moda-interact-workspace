@@ -9,7 +9,7 @@ assigned_agent: moda_gateway
 coordinator: moda_architect
 execution_mode: agent
 completion_mode: automatic
-status: pending
+status: ready
 priority: 60
 executor: null
 claimed_at: null
@@ -21,7 +21,7 @@ depends_on:
   - ARCH-024-BACKGROUND-001
 enables: []
 created: 2026-10-01
-updated: 2026-10-01
+updated: 2026-10-02
 ---
 
 # Wire database-backed OpenRouter runtime configuration
