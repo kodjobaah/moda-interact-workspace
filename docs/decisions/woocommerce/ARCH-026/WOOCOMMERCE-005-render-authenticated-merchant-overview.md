@@ -17,7 +17,8 @@ attempt: 0
 depends_on:
   - ARCH-026-WOOCOMMERCE-004
   - ARCH-026-API-003
-enables: []
+enables:
+  - ARCH-026-WOOCOMMERCE-006
 created: 2026-10-02
 updated: 2026-10-02
 ---

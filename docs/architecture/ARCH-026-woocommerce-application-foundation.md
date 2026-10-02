@@ -19,7 +19,7 @@ This architecture is being defined iteratively. `ARCH-026-WOOCOMMERCE-001`,
 `ARCH-026-WOOCOMMERCE-004`, `ARCH-026-WOOCOMMERCE-005`, `ARCH-026-DATABASE-002`,
 `ARCH-026-SHOPIFY-001`, `ARCH-026-SHOPIFY-002`, `ARCH-026-BACKGROUND-001`,
 `ARCH-026-BACKGROUND-002`, `ARCH-026-ADMIN-001`, `ARCH-026-ADMIN-002` and
-`ARCH-026-GATEWAY-001` are currently materialised. Later tasks must be added only after
+`ARCH-026-GATEWAY-001` and `ARCH-026-WOOCOMMERCE-006` are currently materialised. Later tasks must be added only after
 their precise runtime, security and ownership boundaries have been discussed and inspected.
 
 ## Problem
@@ -409,6 +409,13 @@ public Gateway. The API service receives only the environment's general configur
 `NODE_ENV=production` and PostgreSQL `DATABASE_URL` at this stage; no Redis/provider
 credentials or database-migration command are introduced.
 
+WOO-006 remains Pending until WOO-005 and GATEWAY-001 are architect-accepted Complete. It
+then freezes the canonical server-side production API default, hardens the self-contained
+`moda-interact.zip` distribution artifact, corrects release/i18n/readme packaging metadata
+and proves clean install plus in-place upgrade/deactivate/reactivate preservation of the
+accepted WOO-003 local connection state. Marketplace submission and billing remain outside
+ARCH-026 WOO-006.
+
 ## Decisions / Tasks
 
 | Task | Owner | Status | Depends On |
@@ -423,6 +430,7 @@ credentials or database-migration command are introduced.
 | ARCH-026-WOOCOMMERCE-003 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-002, ARCH-026-API-002 |
 | ARCH-026-WOOCOMMERCE-004 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-003 |
 | ARCH-026-WOOCOMMERCE-005 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-004, ARCH-026-API-003 |
+| ARCH-026-WOOCOMMERCE-006 | moda_woocommerce | Pending | ARCH-026-WOOCOMMERCE-005, ARCH-026-GATEWAY-001 |
 | ARCH-026-SHOPIFY-001 | moda_app | Pending | ARCH-026-DATABASE-001 |
 | ARCH-026-SHOPIFY-002 | moda_app | Pending | ARCH-026-DATABASE-002, ARCH-026-SHOPIFY-001 |
 | ARCH-026-BACKGROUND-001 | moda_background | Pending | ARCH-026-DATABASE-001 |
@@ -433,7 +441,7 @@ credentials or database-migration command are introduced.
 
 WOO-001 Attempt 4 and WOO-002 Attempt 1 are Accepted and Complete. WOO-002 establishes the frozen WordPress/WooCommerce/PHP compatibility window, native plugin requirement metadata, bounded missing/unsupported-Woo runtime guard, delayed idempotent `woocommerce_init` initialisation and non-destructive local activation/deactivation lifecycle while preserving the WOO-001 Admin foundation.
 
-DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. GATEWAY-001 is independently gated only on accepted API-001 and may codify the private API service plus exact API-host routing without waiting for API-002 business/authentication behavior. WOO-003's WOO-002 dependency is now satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
+DATABASE-001 may execute independently while the Woo plugin stream is pending. API-001 also has no task dependency and is gated only by repository provisioning. API-002 is separately gated on accepted API-001 + DATABASE-001 and establishes the connection/authentication contract consumed by WOO-003. GATEWAY-001 is independently gated only on accepted API-001 and may codify the private API service plus exact API-host routing without waiting for API-002 business/authentication behavior. WOO-003's WOO-002 dependency is now satisfied, but it remains Pending until API-002 is architect-accepted Complete; it implements the PHP-side challenge callback, server-side credential storage, authenticated Moda API client and local WordPress REST connection facade. WOO-004 then establishes the real Woo Admin React shell and connection/setup experience over that accepted local facade. WOO-005 follows accepted WOO-004 + API-003 and renders the first real authenticated merchant Overview using shared onboarding, Store Category projection and provider-neutral international context without adding write-side onboarding/category/billing behavior. WOO-006 follows accepted WOO-005 + GATEWAY-001 and hardens the self-contained production plugin ZIP, canonical production API origin, internationalization/readme release assets and local upgrade lifecycle. Later ARCH-026 tasks remain intentionally iterative and are not frozen here.
 
 ## Open Questions
 
@@ -468,6 +476,7 @@ DATABASE-001 may execute independently while the Woo plugin stream is pending. A
 - 2026-10-02: WOO-004 materialised to replace the placeholder Admin page with the first production-shaped React shell and real connection/setup experience, consuming only the accepted WOO-003 browser-safe local REST boundary.
 - 2026-10-02: WOO-005 materialised as the first real authenticated merchant-data surface, consuming accepted WOO-004 + API-003 to render read-only shared onboarding, Store Category projection and provider-neutral international context inside WooCommerce Admin.
 - 2026-10-02: GATEWAY-001 materialised to deploy `moda-interact-api` as a private Render service in test/production and route the exact API hostnames through the existing public Gateway without transferring authentication, database-migration or business-logic ownership to Gateway.
+- 2026-10-02: WOO-006 materialised as the terminal Woo implementation packaging task for ARCH-026 foundation work, freezing the canonical production API default, self-contained release ZIP, internationalization/readme assets and clean install/upgrade/deactivate lifecycle without adding Marketplace billing or submission behavior.
 
 - 2026-10-02: Provider-neutral onboarding migration materialised without removing the
   legacy Shopify field: DATABASE-001 adds/backfills `Shop.onboardingCompleted`; SHOPIFY-001
